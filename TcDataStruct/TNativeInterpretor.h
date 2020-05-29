@@ -52,7 +52,7 @@ public:
      *
      * Note: this method is intended to be called in interpretors that represent specific methods or functions
      */
-    virtual ReportObject Run(TDataArray<TVariable>& params) override;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) override;
 
 private:
     /**

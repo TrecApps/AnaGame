@@ -118,7 +118,7 @@ public:
      *
      * Note: this method is intended to be called in interpretors that represent specific methods or functions
      */
-    virtual ReportObject Run(TDataArray<TVariable>& params) = 0;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) = 0;
 
 
     /**
@@ -128,6 +128,14 @@ public:
      * Returns: TrecPointer<TVariable> - the variable requested (null if not found)
      */
     TrecPointer<TVariable> GetVariable(TString& varName);
+
+    /**
+     * Method: TInterretor::SetParamNames
+     * Purpose: Sets the names of parameters
+     * Parameters: TDataArray<TString>& names - list of names for the parameters
+     * Returns: void
+     */
+    void SetParamNames(TDataArray<TString>& names);
     
 
 protected:

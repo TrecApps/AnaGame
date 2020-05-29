@@ -36,7 +36,7 @@ UINT TNativeInterpretor::SetCode(TFile&)
  */
 ReportObject TNativeInterpretor::Run()
 {
-	TDataArray<TVariable> blankParams;
+	TDataArray<TrecPointer<TVariable>> blankParams;
 	return Run(blankParams);
 }
 
@@ -48,7 +48,7 @@ ReportObject TNativeInterpretor::Run()
  *
  * Note: this method is intended to be called in interpretors that represent specific methods or functions
  */
-ReportObject TNativeInterpretor::Run(TDataArray<TVariable>& params)
+ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params)
 {
 	ReportObject result;
 	if (!nativeFunction)

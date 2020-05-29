@@ -230,6 +230,78 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
 	return rString.GetSize();
 }
 
+/**
+ * Method: TFile::ReadString
+ * Purpose: Reads the file up to one of the provided characters
+ * Parameters: TString& rString - the string to retun
+ *				TString& chars - the characters to stop at
+ *				UCHAR flags - flags influence the behavior of this method
+ * Returns: UINT - the size of the resulting string
+ *
+ * Note: Written with Source code interpretation in mind
+ * Flags variable values:
+ *		0b00000001 - TFile::include_end - include the terminating character in the return String
+ */
+UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
+{
+	bool success = false;
+	rString.Empty();
+	switch (fileEncode)
+	{
+	case FileEncodingType::fet_acsii:
+		char letter[1];
+		while (Read(&letter, 1))
+		{
+			if (chars.Find(letter[0]) != 1)
+			{
+				if( flags & 0b00000001)
+					rString.AppendChar(ReturnWCharType(letter[0]));
+				break;
+			}
+			rString.AppendChar(ReturnWCharType(letter[0]));
+			success = true;
+		}
+
+		break;
+	case FileEncodingType::fet_unicode:
+		UCHAR letter2[2];
+		while (Read(&letter2, 2))
+		{
+			WCHAR cLetter;
+			UCHAR temp = letter2[0];
+			letter2[0] = letter2[1];
+			letter2[1] = temp;
+			memcpy(&cLetter, letter2, 2);
+			if (chars.Find(cLetter) != -1)
+			{
+				if (flags & 0b00000001)
+					rString.AppendChar(ReturnWCharType(letter[0]));
+				break;
+			}
+			rString.AppendChar(cLetter);
+			success = true;
+		}
+
+		break;
+	case FileEncodingType::fet_unicode_little:
+		WCHAR wLetter;
+		while (Read(&wLetter, 2))
+		{
+			if (chars.Find(wLetter) != -1)
+			{
+				if (flags & 0b00000001)
+					rString.AppendChar(ReturnWCharType(letter[0]));
+				break;
+			}
+				
+			rString.AppendChar(wLetter);
+			success = true;
+		}
+
+	}
+	return rString.GetSize();
+}
+
 /*
 * Method: TFile - WriteString
 * Purpose: Wrties a string to the file
@@ -287,7 +359,7 @@ void TFile::WriteString(const TString& lpsz)
 * Parameters: void
 * Returns: bool - is the file open
 */
-bool TFile::IsOpen()
+bool TFile::IsOpen() const
 {
 	return fileHandle != 0;
 }
@@ -487,7 +559,7 @@ void TFile::ConvertFlags(UINT& input, UINT& open, UINT& security, UINT& creation
 	creation = (input >> 16) & 0x000000ff;
 }
 
-TString TFile::GetFileName()
+TString TFile::GetFileName() const
 {
 	TString sep(L"/\\");
 	int seperate = filePath.FindLastOneOf(sep);
@@ -498,12 +570,12 @@ TString TFile::GetFileName()
 	return filePath.SubString(seperate + 1);
 }
 
-TString TFile::GetFilePath()
+TString TFile::GetFilePath() const
 {
 	return filePath;
 }
 
-TString TFile::GetFileTitle()
+TString TFile::GetFileTitle() const
 {
 	UINT length = filePath.GetSize();
 	WCHAR* cTitle = new WCHAR[length + 1];
@@ -521,7 +593,7 @@ TString TFile::GetFileTitle()
 	return ret;
 }
 
-ULONGLONG TFile::GetLength()
+ULONGLONG TFile::GetLength() const
 {
 	LARGE_INTEGER  len_li;
 	GetFileSizeEx((HANDLE)fileHandle, &len_li);
@@ -529,7 +601,7 @@ ULONGLONG TFile::GetLength()
 	return len_ll;
 }
 
-ULONGLONG TFile::GetPosition()
+ULONGLONG TFile::GetPosition() const
 {
 	return position;
 }

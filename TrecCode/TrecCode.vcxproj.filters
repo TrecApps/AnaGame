@@ -36,7 +36,7 @@
     <ClInclude Include="TMavenEnvironment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TEnvironment.h">
+    <ClInclude Include="TJavaScriptInterpretor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -59,7 +59,7 @@
     <ClCompile Include="TMavenEnvironment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TEnvironment.cpp">
+    <ClCompile Include="TJavaScriptInterpretor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

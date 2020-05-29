@@ -38,6 +38,8 @@ public:
 	static const UINT t_file_open_existing = (OPEN_EXISTING << 16);
 	static const UINT t_file_truncate_existing = TRUNCATE_EXISTING << 16;
 
+	static const UCHAR t_file_include_terminator = 0b00000001;
+
 	TFile();
 	TFile(const TString& lpszFileName,
 		UINT nOpenFlags);
@@ -54,9 +56,11 @@ public:
 	UINT ReadString(TString& rString, UINT nMax);
 
 	UINT ReadString(TString& rString, WCHAR chara);
+
+	UINT ReadString(TString& rString, const TString& chars, UCHAR flags);
 	
 	void WriteString(const TString& lpsz);
-	bool IsOpen();
+	bool IsOpen()const;
 	bool SetEncoding(FileEncodingType fet);
 	TString GetFileDirectory();
 	virtual UCHAR* GetAnaGameType() override;
@@ -65,11 +69,11 @@ public:
 
 	void Close();
 	void Flush();
-	TString GetFileName();
-	TString GetFilePath();
-	TString GetFileTitle();
-	ULONGLONG GetLength();
-	ULONGLONG GetPosition();
+	TString GetFileName() const;
+	TString GetFilePath() const;
+	TString GetFileTitle()const;
+	ULONGLONG GetLength()const;
+	ULONGLONG GetPosition()const;
 
 	UINT Read(void* buffer, UINT count);
 	ULONGLONG Seek(LONGLONG offset, UINT from);

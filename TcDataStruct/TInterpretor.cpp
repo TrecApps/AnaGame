@@ -45,6 +45,21 @@ TrecPointer<TVariable> TInterpretor::GetVariable(TString& varName)
 }
 
 /**
+ * Method: TInterretor::SetParamNames
+ * Purpose: Sets the names of parameters
+ * Parameters: TDataArray<TString>& names - list of names for the parameters
+ * Returns: void
+ */
+void TInterpretor::SetParamNames(TDataArray<TString>& names)
+{
+	this->paramNames.RemoveAll();
+	for (UINT Rust = 0; Rust < names.Size(); Rust++)
+	{
+		paramNames.push_back(names[Rust]);
+	}
+}
+
+/**
  * Method: TInterpretor::TInterpretor
  * Purpose: Constructor
  * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)

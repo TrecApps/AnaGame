@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\Tap;..\Anaface;..\VideoGraphics;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\TcDataStruct;..\Tap;..\Anaface;..\VideoGraphics;..\TrecLib;$(IncludePath)</IncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -162,6 +162,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="TAnaGameCodeEnvironment.h" />
     <ClInclude Include="TGradleEnvironment.h" />
+    <ClInclude Include="TJavaScriptInterpretor.h" />
     <ClInclude Include="TLanguage.h" />
     <ClInclude Include="TMavenEnvironment.h" />
     <ClInclude Include="TrecCode.h" />
@@ -176,6 +177,7 @@
     </ClCompile>
     <ClCompile Include="TAnaGameCodeEnvironment.cpp" />
     <ClCompile Include="TGradleEnvironment.cpp" />
+    <ClCompile Include="TJavaScriptInterpretor.cpp" />
     <ClCompile Include="TLanguage.cpp" />
     <ClCompile Include="TMavenEnvironment.cpp" />
   </ItemGroup>

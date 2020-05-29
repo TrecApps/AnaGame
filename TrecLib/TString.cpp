@@ -335,10 +335,15 @@ short TString::ConvertToFloat(float* value)
 * Method: TString::split
 * Purpose: Splits a String by the provided deliniators
 * Parameters: TString str - the TString holding deliniators
-			bool checkBackSlash - if true, then the method will ignore characters if a single backslash preceeds it
+*			UCHAR flags - flags to use to control the behavior of this method
+			WCHAR exitQuote - quote to look for if String is believed to begin in quotes
 * Returns: TrecPointer<TArray<TString>> - Array of TStrings holding tokens
+*
+* flags: 0b00000001 - t_file_check_back_slash - ignore a hit if odd number of backslashes are present
+*		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
+*		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
 */
-TrecPointer<TDataArray<TString>> TString::split(TString str, bool checkBackSlash)
+TrecPointer<TDataArray<TString>> TString::split(TString str, UCHAR flags, WCHAR exitQuote)
 {
 	//TArray<TString>* tats = new TArray<TString>();
 	TrecPointer<TDataArray<TString>> ret;
@@ -351,14 +356,16 @@ TrecPointer<TDataArray<TString>> TString::split(TString str, bool checkBackSlash
 
 	TString tok;
 
-	int pos = 0, begPos = 0;
+	int pos = (flags & 0b00000110 == 0b00000110) ? Find(exitQuote) : 0;
+	
+	int begPos = pos;
 	tok.Set(this->Tokenize(str, pos));
 	while (!tok.IsEmpty() && begPos != -1)
 	{
-		if (checkBackSlash)
+		if (flags & 0b00000001)
 		{
 			
-			while (tok[tok.GetSize() - 1] == L'\\' && (tok.GetSize() == 1 || tok[tok.GetSize() - 2] != L'\\'))
+			while (tok.IsBackSlashChar(tok.GetSize()))
 			{
 				tok.Set(this->Tokenize(str, pos));
 				tok.Set(this->SubString(begPos, pos));
@@ -376,6 +383,19 @@ TrecPointer<TDataArray<TString>> TString::split(TString str, bool checkBackSlash
 	}
 
 	return ret;
+}
+
+bool TString::IsBackSlashChar(UINT index)
+{
+	if(index > size)
+		return false;
+
+	UINT comp = 0;
+
+	for (int C = index - 1; C >= 0 && this->string[C]; C--)
+		comp++;
+
+	return comp % 2 == 1;
 }
 
 /*
@@ -414,7 +434,7 @@ const WCHAR* TString::GetConstantBuffer() const
 *			int endIndex - exclusive index to end (use negative value to go to end)
 * Returns: TString::the Substring generated
 */
-TString TString::SubString(UINT beginningIndex, int endIndex)
+TString TString::SubString(UINT beginningIndex, int endIndex) const
 {
 
 	TString returnable;
@@ -1543,6 +1563,13 @@ WCHAR ReturnWCharType(char c)
 	return w[0];
 }
 
+bool _TREC_LIB_DLL IndexComesFirst(int focusIndex, int checkIndex)
+{
+	if(focusIndex == -1)
+		return false;
+	return checkIndex == -1 || focusIndex < checkIndex;
+}
+
 TString formatSpecifiers(L"diuoxXfFeEgGaAcCsSpT");
 
 /*
@@ -1686,7 +1713,7 @@ TString TString::GetDelete(int& ret, int index, int count)
  *				int start - the index to begin the search from 
  * Returns: int - the index of the string found
  */
-int TString::Find(const TString& sub, int start)
+int TString::Find(const TString& sub, int start) const 
 {
 	int indexStart = start;
 
@@ -1730,7 +1757,7 @@ int TString::Find(const TString& sub, int start)
  *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
  * Returns: int - the index of the character found
  */
-int TString::Find(WCHAR sub, int start, bool ignoreEscape)
+int TString::Find(WCHAR sub, int start, bool ignoreEscape) const 
 {
 	if (start < 0)
 		return -1;
@@ -1753,7 +1780,7 @@ int TString::Find(WCHAR sub, int start, bool ignoreEscape)
  *				int start - the index to begin the search from 
  * Returns: int - the index of the character found
  */
-int TString::FindOneOf(const TString& chars, int start)
+int TString::FindOneOf(const TString& chars, int start) const
 {
 	if (start < 0)
 		return -1;
@@ -1777,7 +1804,7 @@ int TString::FindOneOf(const TString& chars, int start)
  *				int start - the index to begin the search from (searches backwards)
  * Returns: int - the index of the string found
  */
-int TString::FindLast(const TString& sub, int start)
+int TString::FindLast(const TString& sub, int start) const
 {
 	if (start >= static_cast<int>(size))
 		return -1;
@@ -1808,7 +1835,7 @@ int TString::FindLast(const TString& sub, int start)
  *				int start - the index to begin the search from (searches backwards)
  * Returns: int - the index of the character found
  */
-int TString::FindLast(WCHAR sub, int start)
+int TString::FindLast(WCHAR sub, int start) const 
 {
 	if (start >= static_cast<int>(size))
 		return -1;
@@ -1827,7 +1854,7 @@ int TString::FindLast(WCHAR sub, int start)
  *				int start - the index to begin the search from (searches backwards)
  * Returns: int - the index of the character found
  */
-int TString::FindLastOneOf(const TString& chars, int start)
+int TString::FindLastOneOf(const TString& chars, int start) const 
 {
 	if (start >= static_cast<int>(size))
 		return -1;

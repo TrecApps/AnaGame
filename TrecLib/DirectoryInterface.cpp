@@ -204,7 +204,7 @@ TString GetShadowDirectoryWithSlash(CentralDirectories cd)
 * Returns: TString - the Path of the intended Shadow file
 * Note: The provided File has to be open AND it has to be found in an AnaGame approved directory. Otherwise, an empty string is returned
 */
-TString GetShadowFilePath(TFile& f)
+TString GetShadowFilePath(const TFile& f)
 {
 	if (!f.IsOpen())
 		return TString();

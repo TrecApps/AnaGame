@@ -144,7 +144,15 @@ public:
 				bool checkBackSlash - if true, then the method will ignore characters if a single backslash preceeds it
 	* Returns: TrecPointer<TArray<TString>> - Array of TStrings holding tokens
 	*/
-	TrecPointer<TDataArray<TString>> split(TString, bool checkBackSlash = false);
+	TrecPointer<TDataArray<TString>> split(TString, UCHAR flags = 0, WCHAR exitQuote = L'\"');
+
+	/**
+	 * Method: TString::IsBackslahedChar
+	 * Purpose: Reports whether the character indexed has an odd number of backslashes in front of it
+	 * Parameters: UINT index - the index to start
+	 * returns: bool - whether there are an odd number of backslashes infron of the characetr in the index
+	 */
+	bool IsBackSlashChar(UINT index);
 
 	/*
 	* Method: TString::GetBufferCopy
@@ -172,7 +180,7 @@ public:
 	*			int endIndex - exclusive index to end (use negative value to go to end)
 	* Returns: TString::the Substring generated
 	*/
-	TString SubString(UINT beginningIndex, int endIndex = -1);
+	TString SubString(UINT beginningIndex, int endIndex = -1) const;
 
 
 	/*
@@ -502,7 +510,7 @@ public:
 	 *				int start - the index to begin the search from
 	 * Returns: int - the index of the string found
 	 */
-	int Find(const TString& sub, int start = 0);
+	int Find(const TString& sub, int start = 0) const;
 	/**
 	 * Method: TString::Find
 	 * Purpose: Finds the first instance of the specified character
@@ -511,7 +519,7 @@ public:
 	 *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
 	 * Returns: int - the index of the character found
 	 */
-	int Find(WCHAR sub, int start = 0, bool ignoreEscape = true);
+	int Find(WCHAR sub, int start = 0, bool ignoreEscape = true)const;
 	/**
 	 * Method: TString::FindOneOf
 	 * Purpose: Searches for one of the specified characters
@@ -519,7 +527,7 @@ public:
 	 *				int start - the index to begin the search from
 	 * Returns: int - the index of the character found
 	 */
-	int FindOneOf(const TString& chars, int start = 0);
+	int FindOneOf(const TString& chars, int start = 0)const;
 
 
 	/**
@@ -529,7 +537,7 @@ public:
 	 *				int start - the index to begin the search from (searches backwards)
 	 * Returns: int - the index of the string found
 	 */
-	int FindLast(const TString& sub, int start = -1);
+	int FindLast(const TString& sub, int start = -1) const;
 	/**
 	 * Method: TString::FindLast
 	 * Purpose: Finds the last instance of the specified character
@@ -537,7 +545,7 @@ public:
 	 *				int start - the index to begin the search from (searches backwards)
 	 * Returns: int - the index of the character found
 	 */
-	int FindLast(WCHAR sub, int start = -1);
+	int FindLast(WCHAR sub, int start = -1)const ;
 	/**
 	 * Method: TString::FindLastOneOf
 	 * Purpose: Searches backwards for one of the specified characters
@@ -545,7 +553,7 @@ public:
 	 *				int start - the index to begin the search from (searches backwards)
 	 * Returns: int - the index of the character found
 	 */
-	int FindLastOneOf(const TString& chars, int start = -1);
+	int FindLastOneOf(const TString& chars, int start = -1) const;
 
 
 	/**
@@ -820,3 +828,12 @@ float ConvertHueToRGB(float p, float q, int hue);
 * Returns: WCHAR - the wide version of the character
 */
 WCHAR ReturnWCharType(char c);
+
+/**
+ * Function: IndexComesFirst
+ * Purpose: Reports whether a given Index "comes first" in a string
+ * Parameters: int focusIndex - the index to see if it "comes first"
+ *				int checkIndex - the index to check the focus index against
+ * Returns: bool - whether the focus index comes first - meaning it is not -1 and the check Index is -1 or comes after the focus index
+ */
+bool _TREC_LIB_DLL IndexComesFirst(int focusIndex, int checkIndex);
