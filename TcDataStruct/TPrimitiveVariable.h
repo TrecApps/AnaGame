@@ -5,17 +5,10 @@
  * Class TPrimitiveVariable
  * Purpose: Represents a primitive variable, such as a number or a character
  */
-class TPrimitiveVariable :
+class TC_DATA_STRUCT TPrimitiveVariable :
     public TVariable
 {
-    /**
-     * Method: TPrimitiveVarible::IsObject
-     * Purpose: Reports whether the variable holds an object or not
-     * Parameters: void
-     * Returns: bool - whether the variable is an object or not
-     */
-    virtual bool IsObject()override;
-
+public:
 
     /**
      * Method: TPrimitiveVarible::GetObject
@@ -28,13 +21,12 @@ class TPrimitiveVariable :
     virtual TrecPointer<TObject> GetObject()override;
 
     /**
-     * Method: TPrimitiveVarible::IsString
-     * Purpose: Reports whether the variable holds a string or not
+     * Method: TPrimitiveVariable::GetVarType
+     * Purpose: Reports the type of varible that this object represents
      * Parameters: void
-     * Returns: bool - whether the variable is a string or not
+     * Returns: var_type - the type of variable this represents
      */
-    virtual bool IsString()override;
-
+    virtual var_type GetVarType() override;
 
     /**
      * Method: TPrimitiveVarible::GetObject

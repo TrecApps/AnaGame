@@ -339,17 +339,6 @@ void TPrimitiveVariable::Set(bool value)
 }
 
 /**
- * Method: TPrimitiveVarible::IsObject
- * Purpose: Reports whether the variable holds an object or not
- * Parameters: void
- * Returns: bool - whether the variable is an object or not
- */
-bool TPrimitiveVariable::IsObject()
-{
-    return false;
-}
-
-/**
  * Method: TPrimitiveVarible::GetObject
  * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
  * Parameters: void
@@ -363,14 +352,14 @@ TrecPointer<TObject> TPrimitiveVariable::GetObject()
 }
 
 /**
- * Method: TPrimitiveVarible::IsString
- * Purpose: Reports whether the variable holds a string or not
+ * Method: TPrimitiveVariable::GetVarType
+ * Purpose: Reports the type of varible that this object represents
  * Parameters: void
- * Returns: bool - whether the variable is a string or not
+ * Returns: var_type - the type of variable this represents
  */
-bool TPrimitiveVariable::IsString()
+var_type TPrimitiveVariable::GetVarType()
 {
-    return false;
+    return var_type::primitive;
 }
 
 /**

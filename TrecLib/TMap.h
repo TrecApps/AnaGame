@@ -128,10 +128,11 @@ public:
 			TrecPointer<tEntry<t2>> point = map.ElementAt(c);
 			if (point->key == str)
 			{
-				return map.RemoveAt(c);
+				map.RemoveAt(c);
+				return point->object;
 			}
 		}
-		return nullptr;
+		return TrecPointer<t2>();
 	}
 	
 	/*

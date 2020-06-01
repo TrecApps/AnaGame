@@ -13,17 +13,17 @@ TStringVariable::TStringVariable(TString& string)
     this->string.Set(string);
 }
 
-
 /**
- * Method: TStringVariable::IsObject
- * Purpose: Reports whether the variable holds an object or not
+ * Method: TStringVariable::GetVarType
+ * Purpose: Reports the type of varible that this object represents (in this case, the string)
  * Parameters: void
- * Returns: bool - whether the variable is an object or not
+ * Returns: var_type - the type of variable this represents
  */
-bool TStringVariable::IsObject()
+var_type TStringVariable::GetVarType()
 {
-    return false;
+    return var_type::string;
 }
+
 
 /**
  * Method: TStringVariable::GetObject
@@ -38,16 +38,6 @@ TrecPointer<TObject> TStringVariable::GetObject()
     return TrecPointer<TObject>();
 }
 
-/**
- * Method: TStringVariable::IsString
- * Purpose: Reports whether the variable holds a string or not
- * Parameters: void
- * Returns: bool - whether the variable is a string or not
- */
-bool TStringVariable::IsString()
-{
-    return true;
-}
 
 /**
  * Method: TStringVariable::GetObject

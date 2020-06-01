@@ -13,6 +13,16 @@ TObjectVariable::TObjectVariable(TrecPointer<TObject> obj)
 {
 	Set(obj);
 }
+/**
+ * Method: TObjectVariable::GetVarType
+ * Purpose: Reports the type of varible that this object represents
+ * Parameters: void
+ * Returns: var_type - the type of variable this represents
+ */
+var_type TObjectVariable::GetVarType()
+{
+	return var_type::native_object;
+}
 
 /**
  * Method: TObjectVariable::Set
@@ -25,16 +35,6 @@ void TObjectVariable::Set(TrecPointer<TObject> obj)
 	object = obj;
 }
 
-/**
- * Method: TObjectVariable::IsObject
- * Purpose: Reports whether the variable holds an object or not
- * Parameters: void
- * Returns: bool - whether the variable is an object or not
- */
-bool TObjectVariable::IsObject()
-{
-	return true;
-}
 
 /**
  * Method: TObjectVariable::GetObject
@@ -49,16 +49,6 @@ TrecPointer<TObject> TObjectVariable::GetObject()
 	return object;
 }
 
-/**
- * Method: TObjectVariable::IsString
- * Purpose: Reports whether the variable holds a string or not
- * Parameters: void
- * Returns: bool - whether the variable is a string or not
- */
-bool TObjectVariable::IsString()
-{
-	return false;
-}
 
 /**
  * Method: TObjectVariable::GetObject

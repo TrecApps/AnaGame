@@ -4,7 +4,7 @@
  * Class: TStringVariable
  * Purpose: Represents a Variable that holds a String
  */
-class TStringVariable :
+class TC_DATA_STRUCT TStringVariable :
     public TVariable
 {
     /**
@@ -15,14 +15,13 @@ class TStringVariable :
      */
     TStringVariable(TString& string);
 
-
     /**
-     * Method: TStringVariable::IsObject
-     * Purpose: Reports whether the variable holds an object or not
+     * Method: TStringVariable::GetVarType
+     * Purpose: Reports the type of varible that this object represents (in this case, the string)
      * Parameters: void
-     * Returns: bool - whether the variable is an object or not
+     * Returns: var_type - the type of variable this represents
      */
-    virtual bool IsObject()override;
+    virtual var_type GetVarType() override;
 
 
     /**
@@ -34,14 +33,6 @@ class TStringVariable :
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
      */
     virtual TrecPointer<TObject> GetObject()override;
-
-    /**
-     * Method: TStringVariable::IsString
-     * Purpose: Reports whether the variable holds a string or not
-     * Parameters: void
-     * Returns: bool - whether the variable is a string or not
-     */
-    virtual bool IsString()override;
 
 
     /**

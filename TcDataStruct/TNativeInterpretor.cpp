@@ -8,7 +8,7 @@
  *              TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
  * Returns: New TInterpretor Object
  */
-TNativeInterpretor::TNativeInterpretor(NativeFunction function, TrecPointer<TInterpretor> parent): TInterpretor(parent)
+TNativeInterpretor::TNativeInterpretor(NativeFunction function, TrecSubPointer<TVariable, TInterpretor> parent): TInterpretor(parent)
 {
 	nativeFunction = function;
 }

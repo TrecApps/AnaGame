@@ -20,7 +20,7 @@ typedef enum class ContainerType
  * Class: TContainerVariable
  * Purpose: Variable that represents a collection of variables
  */
-class TContainerVariable :
+class TC_DATA_STRUCT TContainerVariable :
     public TVariable
 {
 public:
@@ -32,6 +32,14 @@ public:
      * Returns: New Container Variable
      */
     TContainerVariable(ContainerType ct);
+
+    /**
+     * Method: TContainerVariable::GetVarType
+     * Purpose: Reports the type of varible that this object represents
+     * Parameters: void
+     * Returns: var_type - the type of variable this represents
+     */
+    virtual var_type GetVarType() override;
 
     /**
      * Method: TContainerVariable::Initialize
@@ -106,15 +114,6 @@ public:
 
 
     /**
-     * Method: TContainerVariable::IsObject
-     * Purpose: Reports whether the variable holds an object or not
-     * Parameters: void
-     * Returns: bool - whether the variable is an object or not
-     */
-    virtual bool IsObject()override;
-
-
-    /**
      * Method: TContainerVariable::GetObject
      * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
      * Parameters: void
@@ -123,14 +122,6 @@ public:
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
      */
     virtual TrecPointer<TObject> GetObject()override;
-
-    /**
-     * Method: TContainerVariable::IsString
-     * Purpose: Reports whether the variable holds a string or not
-     * Parameters: void
-     * Returns: bool - whether the variable is a string or not
-     */
-    virtual bool IsString()override;
 
 
     /**

@@ -9,7 +9,7 @@ typedef void (*NativeFunction)(TDataArray<TrecPointer<TVariable>>& params, Repor
  * Class: TNativeInterpretor
  * Purpose: Allows Code interpretors and high-level source code to call native functions and methods provided by Anagame 
  */
-class TNativeInterpretor :
+class TC_DATA_STRUCT TNativeInterpretor :
 	public TInterpretor
 {
 public:
@@ -20,7 +20,7 @@ public:
      *              TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
      * Returns: New TInterpretor Object
      */
-    TNativeInterpretor(NativeFunction function, TrecPointer<TInterpretor> parent);
+    TNativeInterpretor(NativeFunction function, TrecSubPointer<TVariable, TInterpretor> parent);
 
 
     /**

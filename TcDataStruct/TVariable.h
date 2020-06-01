@@ -3,20 +3,31 @@
 #include <TObject.h>
 #include <TrecReference.h>
 #include <TString.h>
+#include "TcDataStruct.h"
+
+typedef enum class var_type
+{
+    primitive,
+    collection,
+    native_object,
+    string,
+    interpretor
+}var_type;
+
 /**
  * Class TVariable
  * Purpose: Represents a given variable in the system, abstract to support both Objects and raw data types
  */
-class TVariable
+class TC_DATA_STRUCT TVariable
 {
 public:
     /**
-     * Method: TVariable::IsObject
-     * Purpose: Reports whether the variable holds an object or not
+     * Method: TVariable::GetVarType
+     * Purpose: Reports the type of varible that this object represents
      * Parameters: void
-     * Returns: bool - whether the variable is an object or not
+     * Returns: var_type - the type of variable this represents
      */
-    virtual bool IsObject() = 0;
+    virtual var_type GetVarType() = 0;
 
 
     /**
@@ -25,17 +36,9 @@ public:
      * Parameters: void
      * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
      *
-     * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
+     * Note: Call "GetVarType" first and make sure that it returns "var_type::native_object" first
      */
     virtual TrecPointer<TObject> GetObject() = 0;
-
-    /**
-     * Method: TVariable::IsString
-     * Purpose: Reports whether the variable holds a string or not
-     * Parameters: void
-     * Returns: bool - whether the variable is a string or not
-     */
-    virtual bool IsString() = 0;
 
 
     /**
@@ -44,7 +47,7 @@ public:
      * Parameters: void
      * Returns: TString - The TString referered by the variable (empty if not a string)
      *
-     * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
+     * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
      */
     virtual TString GetString() = 0;
 
@@ -52,18 +55,12 @@ public:
      * Method: TVariable::Get4Value
      * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)
      * Parameters: void
-     * Returns: UINT - The value held as a UINT (0 if not a primitive type
+     * Returns: UINT - The value held as a UINT (0 if not a primitive type)
+     *
+     * Note: Call "GetVarType" first and make sure that it returns "var_type::primitive" first
      */
     virtual UINT Get4Value() = 0;
 
-
-    /**
-     * Method: TVariable::Get4Value
-     * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)
-     * Parameters: void
-     * Returns: UINT - The value held as a UINT (0 if not a primitive type
-     */
-    virtual UINT Get4Value() = 0;
 
 
     /**
@@ -91,6 +88,14 @@ public:
      * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
      */
     virtual UINT GetType() = 0;
+
+    /**
+     * Method: TVariable::SetSelf
+     * Purpose: Allows the Variable to have a reference to itself
+     * Parameters: TrecPointer<TVariable> - reference to assign
+     * Returns: void
+     */
+    virtual void SetSelf(TrecPointer<TVariable>);
 };
 
 namespace VarFunction
@@ -105,6 +110,6 @@ namespace VarFunction
      * 
      * Note: if this function returns false, the interpretor should consider the line to be an error and handle it accordingly.
      */
-    bool IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def = 0);
+    TC_DATA_STRUCT bool IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def = 0);
 
 }

@@ -13,6 +13,17 @@ TContainerVariable::TContainerVariable(ContainerType ct)
 }
 
 /**
+ * Method: TContainerVariable::GetVarType
+ * Purpose: Reports the type of varible that this object represents
+ * Parameters: void
+ * Returns: var_type - the type of variable this represents
+ */
+var_type TContainerVariable::GetVarType()
+{
+    return var_type::collection;
+}
+
+/**
  * Method: TContainerVariable::Initialize
  * Purpose: Allows initialization of the container, if the restriction is "immutable", then this is an opportunity to set the values before the immutability restriction kicks in
  * Parameters: TMap<TVariable> - the values to initialize with
@@ -197,16 +208,6 @@ bool TContainerVariable::RemoveByValue(TrecPointer<TVariable> value)
     return false;
 }
 
-/**
- * Method: TContainerVariable::IsObject
- * Purpose: Reports whether the variable holds an object or not
- * Parameters: void
- * Returns: bool - whether the variable is an object or not
- */
-bool TContainerVariable::IsObject()
-{
-    return false;
-}
 
 /**
  * Method: TContainerVariable::GetObject
@@ -221,16 +222,6 @@ TrecPointer<TObject> TContainerVariable::GetObject()
     return TrecPointer<TObject>();
 }
 
-/**
- * Method: TContainerVariable::IsString
- * Purpose: Reports whether the variable holds a string or not
- * Parameters: void
- * Returns: bool - whether the variable is a string or not
- */
-bool TContainerVariable::IsString()
-{
-    return false;
-}
 
 /**
  * Method: TContainerVariable::GetObject

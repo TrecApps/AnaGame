@@ -98,7 +98,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;Tap.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;Tap.lib;TcDataStruct.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

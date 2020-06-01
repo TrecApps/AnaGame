@@ -60,14 +60,104 @@ void TInterpretor::SetParamNames(TDataArray<TString>& names)
 }
 
 /**
+ * Method: TInterpretor::GetObject
+ * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
+ * Parameters: void
+ * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+ *
+ * Note: Call "GetVarType" first and make sure that it returns "var_type::native_object" first
+ */
+TrecPointer<TObject> TInterpretor::GetObject()
+{
+	return TrecPointer<TObject>();
+}
+
+/**
+ * Method: TInterpretor::GetObject
+ * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
+ * Parameters: void
+ * Returns: TString - The TString referered by the variable (empty if not a string)
+ *
+ * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
+ */
+TString TInterpretor::GetString()
+{
+	return TString();
+}
+
+/**
+ * Method: TInterpretor::Get4Value
+ * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)
+ * Parameters: void
+ * Returns: UINT - The value held as a UINT (0 if not a primitive type)
+ *
+ * Note: Call "GetVarType" first and make sure that it returns "var_type::primitive" first
+ */
+UINT TInterpretor::Get4Value()
+{
+	return 0;
+}
+
+/**
+ * Method: TInterpretor::Get8Value
+ * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
+ * Parameters: void
+ * Returns: ULONG64 - The value held as an 8 bit integer (0 if not a primitive type)
+ */
+ULONG64 TInterpretor::Get8Value()
+{
+	return ULONG64();
+}
+
+/**
+ * Method: TInterpretor::GetSize
+ * Purpose: Returns the estimated size of the value held
+ * Parameters: void
+ * Returns: UINT - The estimated size in bytes of the data
+ */
+UINT TInterpretor::GetSize()
+{
+	return 0;
+}
+
+/**
+ * Method: TInterpretor::GetType
+ * Purpose: Returns the basic type of the object
+ * Parameters: void
+ * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
+ */
+UINT TInterpretor::GetType()
+{
+	return 0;
+}
+
+void TInterpretor::SetSelf(TrecPointer<TVariable> self)
+{
+	if (this != self.Get())
+		throw L"Error! Not Properly called";
+	this->self = TrecPointerKey::GetSoftSubPointerFromSoft<TVariable, TInterpretor>(TrecPointerKey::GetSoftPointerFromTrec<TVariable>(self));
+}
+
+/**
  * Method: TInterpretor::TInterpretor
  * Purpose: Constructor
  * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
  * Returns: New TInterpretor Object
  */
-TInterpretor::TInterpretor(TrecPointer<TInterpretor> parentInterpretor)
+TInterpretor::TInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor)
 {
 	parent = parentInterpretor;
+}
+
+/**
+ * Method: TInterpretor::GetVarType
+ * Purpose: Reports the type of varible that this object represents
+ * Parameters: void
+ * Returns: var_type - the type of variable this represents
+ */
+var_type TInterpretor::GetVarType()
+{
+	return var_type::interpretor;
 }
 
 /**

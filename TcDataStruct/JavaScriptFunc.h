@@ -15,7 +15,7 @@ namespace JavaScriptFunc{
 	 *
 	 * Note: This Function is intended to fulfill the "isFinite" function in JavaScript
 	 */
-	void isFinite(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
+	TC_DATA_STRUCT void isFinite(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
 
 	/**
 	 * Function: isFinite
@@ -26,7 +26,7 @@ namespace JavaScriptFunc{
 	 *
 	 * Note: This Function is intended to fulfill the "isNan" function in JavaScript
 	 */
-	void isNan(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
+	TC_DATA_STRUCT void isNan(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
 
 	/**
 	 * Function: parseFloat
@@ -37,7 +37,7 @@ namespace JavaScriptFunc{
 	 *
 	 * Note: This Function is intended to fulfill the "parseFloat" function in JavaScript. 
 	 */
-	void parseFloat(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
+	TC_DATA_STRUCT void parseFloat(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
 
 	/**
 	 * Function: parseInt
@@ -48,7 +48,7 @@ namespace JavaScriptFunc{
 	 *
 	 * Note: This Function is intended to fulfill the "parseInt" function in JavaScript
 	 */
-	void parseInt(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
+	TC_DATA_STRUCT void parseInt(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
 
 
 

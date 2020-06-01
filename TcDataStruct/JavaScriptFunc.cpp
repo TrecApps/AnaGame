@@ -6,10 +6,10 @@ TMap<TNativeInterpretor> GetJavaScriptFunctions()
 {
     TMap<TNativeInterpretor> jsFunctions;
 
-    jsFunctions.addEntry(L"isFinite", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isFinite));
-    jsFunctions.addEntry(L"isNan", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isNan));
-    jsFunctions.addEntry(L"parseFloat", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseFloat));
-    jsFunctions.addEntry(L"parseInt", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseInt));
+    jsFunctions.addEntry(L"isFinite", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isFinite, TrecSubPointer<TVariable, TInterpretor>()));
+    jsFunctions.addEntry(L"isNan", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isNan, TrecSubPointer<TVariable, TInterpretor>()));
+    jsFunctions.addEntry(L"parseFloat", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseFloat, TrecSubPointer<TVariable, TInterpretor>()));
+    jsFunctions.addEntry(L"parseInt", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseInt, TrecSubPointer<TVariable, TInterpretor>()));
 
 
     return jsFunctions;
@@ -25,7 +25,7 @@ void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, Report
     }
 
     auto var = params[0];
-    if (var->IsString())
+    if (var->GetVarType() == var_type::string)
     {
         parseFloat(params, ret);
     }
@@ -65,21 +65,21 @@ void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, Repo
 
     auto var = params[0];
 
-    if (var->IsObject())
+    if (var->GetVarType() == var_type::native_object)
     {
         // To-Do: Attempt to convert to string
         ret.returnCode = ReportObject::not_number;
         return;
     }
 
-    if (var->IsString())
+    if (var->GetVarType() == var_type::string)
     {
         auto str = var->GetString();
         float f = 0.0f;
         if (!str.ConvertToFloat(&f))
         {
             ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(f);
+            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(f);
             return;
         }
 
@@ -87,14 +87,14 @@ void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, Repo
         if (!str.ConvertToDouble(&d))
         {
             ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
+            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
             return;
         }
 
         if (IsInfinity(str))
         {
             ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(INFINITY);
+            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(INFINITY);
             return;
         }
 
@@ -116,21 +116,21 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, Report
 
     auto var = params[0];
 
-    if (var->IsObject())
+    if (var->GetVarType() == var_type::native_object)
     {
         // To-Do: Attempt to convert to string
         ret.returnCode = ReportObject::not_number;
         return;
     }
 
-    if (var->IsString())
+    if (var->GetVarType() == var_type::string)
     {
         auto str = var->GetString();
         float f = 0.0f;
         if (!str.ConvertToFloat(&f))
         {
             ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<int>(f));
+            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<int>(f));
             return;
         }
 
@@ -138,7 +138,7 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, Report
         if (!str.ConvertToDouble(&d))
         {
             ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<LONG64>(d));
+            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<LONG64>(d));
             return;
         }
 
@@ -146,7 +146,7 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, Report
         if (!str.ConvertToInt(&i))
         {
             ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(i);
+            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(i);
             return;
         }
 
@@ -154,7 +154,7 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, Report
         if (!str.ConvertToLong(&l))
         {
             ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(l);
+            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(l);
             return;
         }
     }

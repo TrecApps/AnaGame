@@ -14,7 +14,7 @@
  * Class ReportObject
  * Purpose: allows the Interpretors to report the results of a run 
  */
-class ReportObject
+class TC_DATA_STRUCT ReportObject
 {
 public:
 
@@ -66,7 +66,7 @@ public:
  * Class: TInterpretor
  * Purpose: Interface Class that represents a runnable program, most likely some source code
  */
-class TInterpretor : public TObject
+class TC_DATA_STRUCT TInterpretor : public TVariable
 {
 public:
 
@@ -76,7 +76,16 @@ public:
      * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
      * Returns: New TInterpretor Object
      */
-    TInterpretor(TrecPointer<TInterpretor> parentInterpretor);
+    TInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor);
+
+
+    /**
+     * Method: TInterpretor::GetVarType
+     * Purpose: Reports the type of varible that this object represents
+     * Parameters: void
+     * Returns: var_type - the type of variable this represents
+     */
+    virtual var_type GetVarType() override;
 
     /**
      * Method: TInterpretor::SetCode
@@ -138,11 +147,84 @@ public:
     void SetParamNames(TDataArray<TString>& names);
     
 
+    /**
+     * Method: TInterpretor::GetObject
+     * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
+     * Parameters: void
+     * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+     *
+     * Note: Call "GetVarType" first and make sure that it returns "var_type::native_object" first
+     */
+    virtual TrecPointer<TObject> GetObject() override;
+
+
+    /**
+     * Method: TInterpretor::GetObject
+     * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
+     * Parameters: void
+     * Returns: TString - The TString referered by the variable (empty if not a string)
+     *
+     * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
+     */
+    virtual TString GetString() override;
+
+    /**
+     * Method: TInterpretor::Get4Value
+     * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)
+     * Parameters: void
+     * Returns: UINT - The value held as a UINT (0 if not a primitive type)
+     *
+     * Note: Call "GetVarType" first and make sure that it returns "var_type::primitive" first
+     */
+    virtual UINT Get4Value() override;
+
+
+
+    /**
+     * Method: TInterpretor::Get8Value
+     * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
+     * Parameters: void
+     * Returns: ULONG64 - The value held as an 8 bit integer (0 if not a primitive type)
+     */
+    virtual ULONG64 Get8Value() override;
+
+
+    /**
+     * Method: TInterpretor::GetSize
+     * Purpose: Returns the estimated size of the value held
+     * Parameters: void
+     * Returns: UINT - The estimated size in bytes of the data
+     */
+    virtual UINT GetSize() override;
+
+
+    /**
+     * Method: TInterpretor::GetType
+     * Purpose: Returns the basic type of the object
+     * Parameters: void
+     * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
+     */
+    virtual UINT GetType() override;
+
+
+    /**
+     * Method: TVariable::SetSelf
+     * Purpose: Allows the Variable to have a reference to itself
+     * Parameters: TrecPointer<TVariable> - reference to assign
+     * Returns: void
+     */
+    virtual void SetSelf(TrecPointer<TVariable>) override;
+
 protected:
     /**
      * The Interpretor that created this interpretor 
      */
-    TrecPointer<TInterpretor> parent;
+    TrecSubPointer<TVariable, TInterpretor> parent;
+
+    /**
+     * Self Reference
+     */
+    TrecSubPointerSoft<TVariable, TInterpretor> self;
 
     /**
      * Variables declared in this interpretor's scope

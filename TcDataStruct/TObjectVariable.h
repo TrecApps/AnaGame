@@ -4,7 +4,7 @@
  * Class TObjectVariable
  * Purpose: Represents an Object variable, refering to an actual Native Anagame Object
  */
-class TObjectVariable :
+class TC_DATA_STRUCT TObjectVariable :
     public TVariable
 {
     /**
@@ -16,22 +16,20 @@ class TObjectVariable :
     TObjectVariable(TrecPointer<TObject> obj);
 
     /**
+     * Method: TObjectVariable::GetVarType
+     * Purpose: Reports the type of varible that this object represents
+     * Parameters: void
+     * Returns: var_type - the type of variable this represents
+     */
+    virtual var_type GetVarType() override;
+
+    /**
      * Method: TObjectVariable::Set
      * Purpose: Sets up the object
      * Parameters: TrecPointer<TObject> obj - the object to hold
      * Returns: void
      */
     void Set(TrecPointer<TObject> obj);
-
-
-    /**
-     * Method: TObjectVariable::IsObject
-     * Purpose: Reports whether the variable holds an object or not
-     * Parameters: void
-     * Returns: bool - whether the variable is an object or not
-     */
-    virtual bool IsObject()override;
-
 
     /**
      * Method: TObjectVariable::GetObject
@@ -42,15 +40,6 @@ class TObjectVariable :
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
      */
     virtual TrecPointer<TObject> GetObject()override;
-
-    /**
-     * Method: TObjectVariable::IsString
-     * Purpose: Reports whether the variable holds a string or not
-     * Parameters: void
-     * Returns: bool - whether the variable is a string or not
-     */
-    virtual bool IsString()override;
-
 
     /**
      * Method: TObjectVariable::GetObject
