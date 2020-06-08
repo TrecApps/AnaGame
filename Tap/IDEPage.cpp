@@ -1111,7 +1111,7 @@ IDEPageHolder::IDEPageHolder(TString name, TrecPointer<DrawingBoard> rt, UINT ba
 	if (w)
 	{
 		initLoc.right = initLoc.left + minWidth;
-		text->setNewLocation(convertD2DRectToRECT(initLoc));
+		text->SetLocation(initLoc);
 	}
 	location = initLoc;
 
@@ -1176,12 +1176,12 @@ D2D1_RECT_F IDEPageHolder::SetLocation(const D2D1_RECT_F& newLoc)
 	location = newLoc;
 	if (text.Get())
 	{
-		text->setNewLocation(convertD2DRectToRECT( newLoc));
+		text->SetLocation(newLoc);
 		bool w;
 		float width = text->GetMinWidth(w);
 		location.right = location.left + width;
 
-		text->setNewLocation(convertD2DRectToRECT(location));
+		text->SetLocation(location);
 
 	}
 	return location;
@@ -1221,7 +1221,7 @@ void IDEPageHolder::Move(TPoint& moveBy)
 	curPoint = tempPoint;
 
 	if (text.Get())
-		text->setNewLocation(convertD2DRectToRECT(location));
+		text->SetLocation(location);
 }
 
 /**

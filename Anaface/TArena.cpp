@@ -13,7 +13,7 @@
 *				CAMERA_TYPE type - type of camera to start as
 * Returns: void
 */
-TArena::TArena(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> st, HWND h, CAMERA_TYPE type):TControl(rt, st,false)
+TArena::TArena(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> st, HWND h, CAMERA_TYPE type):TControl(rt, st)
 {
 	cameraType = type;
 	windowHandle = h;

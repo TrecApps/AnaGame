@@ -247,12 +247,12 @@ D2D1_RECT_F Tab::SetLocation(const D2D1_RECT_F& newLoc)
 	location = newLoc;
 	if (text.Get())
 	{
-		text->setNewLocation(convertD2DRectToRECT(newLoc));
+		text->SetLocation(newLoc);
 		bool w;
 		float width = text->GetMinWidth(w);
 		location.right = location.left + width;
 
-		text->setNewLocation(convertD2DRectToRECT(location));
+		text->SetLocation(location);
 
 	}
 	return location;

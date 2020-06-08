@@ -18,10 +18,9 @@
 * Purpose: Constructor
 * Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on
 *				TrecPointer<TArray<styleTable>> styTab - Smart Pointer to the list of styles to draw from
-*				bool base - (DEPRECIATED) added to distinguish between base control and sub-classes
 * Return: New TControl Object
 */
-TControl::TControl(TrecPointer<DrawingBoard> db,TrecPointer<TArray<styleTable>> styTab, bool base)
+TControl::TControl(TrecPointer<DrawingBoard> db,TrecPointer<TArray<styleTable>> styTab)
 {
 	arrayID = -1;
 	eventHandler = NULL;
@@ -43,12 +42,7 @@ TControl::TControl(TrecPointer<DrawingBoard> db,TrecPointer<TArray<styleTable>> 
 	margin = D2D1_RECT_F{ 0.0f,0.0f,0.0f,0.0f };
 	marginSet = false;
 	//PointerCase = TrecPointer<TControl>(this);
-	
-	if (base)
-	{
-		isLayout = false;
-		isTextControl = false;
-	}
+
 
 	shape =TShape::T_Rect;
 	fixHeight = fixWidth = false;
@@ -129,9 +123,6 @@ TControl::TControl(TControl & rCont)
 	else
 		dimensions = NULL;
 
-	isLayout = rCont.isLayout;
-	isTextControl = rCont.isTextControl;
-
 
 	marginPriority = rCont.marginPriority;
 	marginSet = rCont.marginSet;
@@ -196,9 +187,7 @@ TControl::TControl()
 	dimensions = NULL;
 	margin = D2D1_RECT_F{ 0.0f,0.0f,0.0f,0.0f };
 	marginSet = false;
-	
-	isLayout = false;
-	isTextControl = false;
+
 	//PointerCase =TrecPointer<TControl>(this);
 	shape =TShape::T_Rect;
 	fixHeight = fixWidth = false;
@@ -1180,88 +1169,6 @@ bool TControl::onBeingScrolled(int x, int y)
 }
 
 /*
-* Method: TControl::scroll
-* Purpose: Use in the event that scrolling needs to be done by a parent so control ends up in view
-* Parameters: RECT& loc - the location of the control that needs to be in view
-* Returns: void
-*/
-void TControl::scroll(RECT& loc)
-{
-	// Make sure that this Control is not out of view
-
-	//TControl* sh_parent = parent.Get();
-
-	//// Test for need to Vertically Scroll
-	//if (loc.bottom < location.top)
-	//{
-	//	if (!vScroll.Get() && sh_parent)
-	//	{
-	//		sh_parent->scroll(loc);
-	//		return;
-	//	}
-
-	//}
-	//else if (loc.top > location.bottom)
-	//{
-	//	if (!vScroll.Get() && sh_parent)
-	//	{
-	//		sh_parent->scroll(loc);
-	//		return;
-	//	}
-	//}
-
-	//if (loc.left > location.right)
-	//{
-	//	if (!hScroll.Get() && sh_parent)
-	//	{
-	//		sh_parent->scroll(loc);
-	//		return;
-	//	}
-	//}
-	//else if (loc.right < location.left)
-	//{
-	//	if (!hScroll.Get() && sh_parent)
-	//	{
-	//		sh_parent->scroll(loc);
-	//		return;
-	//	}
-	//}
-
-}
-
-
-/*
-* Method: TControl::BreakShared
-* Purpose: Allows Tcontrol to be deleted by removing links to it by its conponents
-* Parameters: void
-* Returns: void
-* Note: DEPRECIATED - Method was made redundant when std:shared_ptr's were replaced with TrecPointers
-*/
-void TControl::BreakShared()
-{
-	if (text1.Get())
-		text1->BreakShared();
-	if (content1.Get())
-		content1->BreakShared();
-	if (border1.Get())
-		border1->BreakShared();
-
-	if (text2.Get())
-		text2->BreakShared();
-	if (content2.Get())
-		content2->BreakShared();
-	if (border2.Get())
-		border2->BreakShared();
-
-	if (text3.Get())
-		text3->BreakShared();
-	if (content3.Get())
-		content3->BreakShared();
-	if (border3.Get())
-		border3->BreakShared();
-}
-
-/*
 * Method: TControl::AddClass
 * Purpose: Labels to serve as id's to draw styles from, useful in determining what HTML/TML element was used in creating the control
 * Parameters: TString& t - Class Name to add
@@ -1288,11 +1195,6 @@ void TControl::AddClass(const TString & t)
 TString TControl::GetID()
 {
 	return ID;
-}
-
-UCHAR * TControl::GetAnaGameType()
-{
-	return nullptr;
 }
 
 /*
@@ -1531,30 +1433,6 @@ TrecPointer<TControl> TControl::getParent()
 	if (!parent.Get())
 		return TrecPointer<TControl>();
 	return parent->GetParent();
-}
-
-/*
-* Method:
-* Purpose:
-* Parameters:
-* Returns:
-*/
-void TControl::setExternalBounds(D2D1_RECT_F r)
-{
-	location = r;
-	boundsPreset = true;
-}
-
-/*
-* Method:  TControl::getLayoutStatus
-* Purpose: Returns whether or not the control is a TLayout 
-* Parameters: void
-* Returns: bool - whether or not control is a TLayout
-* Note: DEPRECIATED - C++ RTTI functionality can assume this purpose with greater precision
-*/
-bool TControl::getLayoutStatus()
-{
-	return isLayout;
 }
 
 /*
@@ -1991,28 +1869,6 @@ TrecPointer<TBorder> TControl::getBorder(int n)
 		return  TrecPointer<TBorder>();
 	}
 	
-}
-
-/*
-* Method: TControl::setNewText
-* Purpose: Prepares a new TText component, likely called by the Builder when designing controls
-* Parameters: int n - the id of the new TText o override
-* Returns: void
-*/
-void TControl::setNewText(int n)
-{
-	switch (n)
-	{
-	case 1:
-		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		break;
-	case 2:
-		text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		break;
-	case 3:
-		text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		break;
-	}
 }
 
 /**
@@ -3989,19 +3845,6 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 	} // end if "isContained" if
 }
 
-/*
-* Method: TControl::Remove_Builder_Click_Focus
-* Purpose: Removes the burden of being dragged by the Builder
-* Parameters: void
-* Returns: void
-*/
-void TControl::Remove_Builder_Click_Focus()
-{
-	if (resistFocusRemoval)
-		resistFocusRemoval = false;
-	else
-		onFocus = false;
-}
 
 /*
 * Method: TControl::setActive
@@ -4500,18 +4343,6 @@ int TBorder::storeInTML(TFile * ar, int childLevel,messageState ms)
 }
 
 /*
-* Method: TBorder::BreakShared
-* Purpose: Breaks the link between the Border and the Parent Control, allowing deletion
-* Parameters: void
-* Returns: void
-* Note: DEPRECIATED - Method was made redundant when std:shared_ptr's were replaced with TrecPointers
-*/
-void TBorder::BreakShared()
-{
-	cap = nullptr;
-}
-
-/*
 * Method: TText::TText
 * Purpose: Constructor
 * Parameters: TrecPointer<DrawingBoard> dbp - Smart Pointer to the Render Target to draw to
@@ -4850,15 +4681,6 @@ bool TText::setOpaquency(float o)
 	return true;
 }
 
-void TText::setNewLocation(RECT r)
-{
-	if (r.bottom < r.top || r.left > r.right)
-		return;
-
-	bounds = convertRECTToD2DRectF(r);
-	reCreateLayout();
-}
-
 /*
 * Method: TText::getFontSize
 * Purpose: Retrieves the current font size of the text
@@ -5065,8 +4887,7 @@ D2D1_RECT_F TText::GetLocation()
 void TText::SetLocation(const D2D1_RECT_F& loc)
 {
 	bounds = loc;
-	if (cap)
-		cap->setLocation(loc);
+	this->reCreateLayout();
 }
 
 TrecPointer<TBrush> TText::GetBrush()
@@ -5257,18 +5078,6 @@ int TText::storeInTML(TFile * ar, int childLevel,messageState ms)
 
 
 	return 0;
-}
-
-/*
-* Method: TText::BreakShared
-* Purpose: Breaks the link between the Text Element and the Parent Control, allowing deletion
-* Parameters: void
-* Returns: void
-* Note: DEPRECIATED - Method was made redundant when std:shared_ptr's were replaced with TrecPointers
-*/
-void TText::BreakShared()
-{
-	cap = nullptr;
 }
 
 /*
@@ -5738,18 +5547,6 @@ int TContent::storeInTML(TFile * ar, int childLevel,messageState ms)
 	//ar->WriteString(val);
 	//ar->WriteString(L"\n");
 	return 0;
-}
-
-/*
-* Method: TContent::BreakShared
-* Purpose: Breaks the link between the Content and the Parent Control, allowing deletion
-* Parameters: void
-* Returns: void
-* Note: DEPRECIATED - Method was made redundant when std:shared_ptr's were replaced with TrecPointers
-*/
-void TContent::BreakShared()
-{
-	cap = nullptr;
 }
 
 /*

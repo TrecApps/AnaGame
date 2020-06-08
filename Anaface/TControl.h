@@ -378,12 +378,11 @@ private:
 	/**
 	 * Pointer to the DrawingBoard to Draw to
 	 */
-	TrecPointer<DrawingBoard> drawingBoard;											// 
+	TrecPointer<DrawingBoard> drawingBoard;	
 	/**
-	 *
+	 *In the event that an image is part of the Border
 	 */
-	TrecPointer<TBitmapBrush> bitBrush;										// In the event that an image is part of the Border
-											// the Image of the above structure
+	TrecPointer<TBitmapBrush> bitBrush;	
 
 
 	/*
@@ -434,15 +433,6 @@ private:
 	 * the rounded rect to pass into the Border and content if used
 	 */
 	D2D1_ROUNDED_RECT roundedRect;
-
-	/*
-	* Method: TBorder::BreakShared
-	* Purpose: Breaks the link between the Border and the Parent Control, allowing deletion
-	* Parameters: void
-	* Returns: void
-	* Note: DEPRECIATED - Method was made redundant when std:shared_ptr's were replaced with TrecPointers
-	*/
-	void BreakShared();
 };
 
 /*
@@ -458,7 +448,6 @@ class _ANAFACE_DLL TText :public TControlComponent
 	friend class TPromptControl;
 	friend class TCheckBox;
 	friend class TRadioButton;
-//	friend class TComboBox;
 	friend class TContextMenu;
 	friend class TTabBar;
 public:
@@ -574,7 +563,6 @@ public:
 	* Returns: bool - true if data is valid, false otherwise
 	*/
 	bool setOpaquency(float o);
-	void setNewLocation(RECT r);
 
 	// Get Methods
 
@@ -807,15 +795,6 @@ private:
 	 */
 	TrecComPointer<IDWriteTextFormat> format;
 
-
-	/*
-	 * Method: TText::BreakShared
-	 * Purpose: Breaks the link between the Text Element and the Parent Control, allowing deletion
-	 * Parameters: void
-	 * Returns: void
-	 * Note: DEPRECIATED - Method was made redundant when std:shared_ptr's were replaced with TrecPointers
-	 */
-	void BreakShared();
 };
 
 
@@ -1007,14 +986,6 @@ private:
 	 */
 	D2D1_ROUNDED_RECT roundedRect;
 
-	/*
-	* Method: TContent::BreakShared
-	* Purpose: Breaks the link between the Content and the Parent Control, allowing deletion
-	* Parameters: void
-	* Returns: void
-	* Note: DEPRECIATED - Method was made redundant when std:shared_ptr's were replaced with TrecPointers
-	*/
-	void BreakShared();
 };
 
 /**
@@ -1093,10 +1064,9 @@ public:
 	* Purpose: Constructor
 	* Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on
 	*				TrecPointer<TArray<styleTable>> styTab - Smart Pointer to the list of styles to draw from
-	*				bool base - (DEPRECIATED) added to distinguish between base control and sub-classes
 	* Return: New TControl Object
 	*/
-	TControl(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles, bool base = true);
+	TControl(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles);
 
 	/*
 	* Method: TControl::TControl
@@ -1277,14 +1247,6 @@ public:
 	afx_msg void Builder_OnMouseMove(UINT flags, TPoint, TControl** mOut,const RECT&, messageOutput* o);
 
 	/*
-	* Method: TControl::Remove_Builder_Click_Focus
-	* Purpose: Removes the burden of being dragged by the Builder
-	* Parameters: void
-	* Returns: void
-	*/
-	afx_msg void Remove_Builder_Click_Focus();
-
-	/*
 	* Method: TControl::setActive
 	* Purpose: Enables controls to be either active (default) or inactive (they don't draw or respond to events)
 	* Parameters: bool act - whether control should be active or not
@@ -1375,20 +1337,6 @@ public:
 	* Returns: TrecPointer<TControl> - Smart Pointer to the Parent Control
 	*/
 	TrecPointer<TControl> getParent();
-
-	/**
-	 * DEPRECATED
-	 */
-	void setExternalBounds(D2D1_RECT_F);
-
-	/*
-	* Method:  TControl::getLayoutStatus
-	* Purpose: Returns whether or not the control is a TLayout
-	* Parameters: void
-	* Returns: bool - whether or not control is a TLayout
-	* Note: DEPRECIATED - C++ RTTI functionality can assume this purpose with greater precision
-	*/
-	bool getLayoutStatus();
 
 	/*
 	* Method: TControl::offsetLocation
@@ -1594,14 +1542,6 @@ public:
 	*/
 	TrecPointer<TBorder> getBorder(int n);
 
-	/*
-	* Method: TControl::setNewText
-	* Purpose: Prepares a new TText component, likely called by the Builder when designing controls
-	* Parameters: int n - the id of the new TText o override
-	* Returns: void
-	*/
-	void setNewText(int n);
-
 
 	/**
 	 * Method: TControl::RegisterAnimations
@@ -1636,22 +1576,7 @@ public:
 	*/
 	bool onBeingScrolled(int x, int y);
 
-	/*
-	* Method: TControl::scroll
-	* Purpose: Use in the event that scrolling needs to be done by a parent so control ends up in view
-	* Parameters: RECT& loc - the location of the control that needs to be in view
-	* Returns: void
-	*/
-	void scroll(RECT& loc);
 
-	/*
-	* Method: TControl::BreakShared
-	* Purpose: Allows Tcontrol to be deleted by removing links to it by its conponents
-	* Parameters: void
-	* Returns: void
-	* Note: DEPRECIATED - Method was made redundant when std:shared_ptr's were replaced with TrecPointers
-	*/
-	void BreakShared();
 
 	/*
 	* Method: TControl::AddClass
@@ -1676,7 +1601,6 @@ public:
 	* Returns: void
 	*/
 	void resetArgs();
-	virtual UCHAR* GetAnaGameType()override;
 
 
 	/*
@@ -1715,12 +1639,6 @@ protected:
 	 * Returns: void
 	 */
 	virtual void SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPointer<TControl> newControl);
-
-
-	/**
-	 * ?
-	 */
-	bool resistFocusRemoval;
 
 	/**
 	 * Unsure if this is still useful ?
@@ -1894,11 +1812,6 @@ protected:
 	 * Holds the dimensions of the Control (if specified)
 	 */
 	sizeControl* dimensions;
-
-	/**
-	 * DEPRECATED
-	 */
-	bool isLayout, isTextControl;
 
 
 	/**

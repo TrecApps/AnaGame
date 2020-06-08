@@ -15,7 +15,7 @@
 *				TrecPointer<TArray<styleTable>> ta - the Class Style list (TControl handles this)
 * Returns: New TLayout
 */
-TLayout::TLayout(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta):TControl(rt,ta, false)
+TLayout::TLayout(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta):TControl(rt,ta)
 {
 	organization = orgLayout::VBuff;
 	specialFunction = specialLayout::Basic;
@@ -25,7 +25,6 @@ TLayout::TLayout(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> t
 	rows = 0;
 	updateColumn = true;
 	updateRow = true;
-	isLayout = true;
 	main = NULL;
 
 	internalColor = D2D1::ColorF(D2D1::ColorF::Black);

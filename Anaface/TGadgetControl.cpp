@@ -9,11 +9,9 @@
 *				bool isGadgetBase - the gadget base
 * Return: new Gadget Control object
 */
-TGadgetControl::TGadgetControl(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta, bool isGadgetBase):TControl(rt, ta, false)
+TGadgetControl::TGadgetControl(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta, bool isGadgetBase):TControl(rt, ta)
 {
 	isGadBase = isGadgetBase;
-	if (isGadBase)
-		isTextControl = false;
 	bSize = 30;
 	checker = RECT{ 0,0,0,0 };
 	thickness = 1.0;

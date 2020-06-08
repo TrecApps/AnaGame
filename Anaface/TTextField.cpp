@@ -24,7 +24,7 @@ TTextField::TTextField(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTab
 	TGadgetControl(rt,st,false),
 	highlighter(rt)
 {
-	isTextControl = drawNumBoxes = true;
+	drawNumBoxes = true;
 	bool notFound = true;
 	for (UINT c = 0; c < TextList.Size(); c++)
 	{

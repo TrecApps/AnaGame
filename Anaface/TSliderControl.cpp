@@ -2,7 +2,7 @@
 
 
 
-TSliderControl::TSliderControl(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> styles) : TControl(rt,styles,false)
+TSliderControl::TSliderControl(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> styles) : TControl(rt,styles)
 {
 }
 

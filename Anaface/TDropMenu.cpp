@@ -8,7 +8,7 @@
 *				TrecPointer<TArray<styleTable>> ta - the style list for Anaface
 * Returns: void
 */
-TDropMenu::TDropMenu(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> styles) :TControl(rt,styles,false)
+TDropMenu::TDropMenu(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> styles) :TControl(rt,styles)
 {
 }
 

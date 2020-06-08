@@ -9,7 +9,7 @@
 *				HWND win - the window handle to use
 * Returns void
 */
-AnafaceUI::AnafaceUI(TrecPointer<DrawingBoard>rt, TrecPointer <TArray<styleTable>> ta, HWND win):TControl(rt,ta,false)
+AnafaceUI::AnafaceUI(TrecPointer<DrawingBoard>rt, TrecPointer <TArray<styleTable>> ta, HWND win):TControl(rt,ta)
 {
 	winHandle = win;
 	tabHeight = unknownTab = 0;

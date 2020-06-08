@@ -2,7 +2,7 @@
 
 static D2D1_MATRIX_3X2_F identityMatrix = D2D1::Matrix3x2F::Identity();
 
-TImage::TImage(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> styles): TControl(rt, styles, false)
+TImage::TImage(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> styles): TControl(rt, styles)
 {
 	rotation = identityMatrix;
 	currentImage = 0;
