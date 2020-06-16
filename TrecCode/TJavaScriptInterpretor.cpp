@@ -160,6 +160,10 @@ ReportObject TJavaScriptInterpretor::Run()
 
     UINT startQuoteSearch = 0;
 
+    TFile tokenLog(file->GetFilePath() + L".output", TFile::t_file_create_new | TFile::t_file_write);
+
+
+
     for (currentPoint = start; currentPoint < end; currentPoint += file->ReadString(code, TString(L";\n{"), TFile::t_file_include_terminator))
     {
         int firstQuote;
@@ -220,9 +224,18 @@ ReportObject TJavaScriptInterpretor::Run()
 
 
         // Now Parse the Statement we got
+        if (tokenLog.IsOpen())
+        {
+            for (UINT Rust = 0; Rust < tokens.Size(); Rust++)
+            {
+                tokenLog.WriteString(tokens[Rust] + L'\n');
+            }
 
-
+            tokenLog.WriteString(L"\n\n");
+        }
     }
+
+    tokenLog.Close();
 
     return ReportObject();
 }
