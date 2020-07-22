@@ -1,6 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.CppCoreCheck.14.0.24210.1\build\native\Microsoft.CppCoreCheck.props" Condition="Exists('..\packages\Microsoft.CppCoreCheck.14.0.24210.1\build\native\Microsoft.CppCoreCheck.props')" />
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -20,10 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{CB8C5157-B4B6-4027-81B1-DC8CC3D86FA1}</ProjectGuid>
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{CFF62851-FF9C-43D4-A17C-54C02C0E26FB}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
     <RootNamespace>Anaface</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <Keyword>MFCDLLProj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -31,7 +31,6 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -39,14 +38,12 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -54,7 +51,6 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -76,15 +72,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
     <IncludePath>..\VideoGraphics;..\TrecLib;$(IncludePath)</IncludePath>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-    <EnableCppCoreCheck>false</EnableCppCoreCheck>
+    <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\VideoGraphics;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\TrecLib;..\VideoGraphics;$(IncludePath)</IncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -96,141 +89,142 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level2</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <EnablePREfast>false</EnablePREfast>
+      <PreprocessorDefinitions>WIN32;_DEBUG;ANAFACE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>.\Anaface.def</ModuleDefinitionFile>
-      <AdditionalDependencies>dwrite.lib;d2d1.lib;TrecLib.lib;VideoGraphics.lib;evr.lib;mf.lib;mfplay.lib;mfreadwrite.lib;mfuuid.lib;mfplat.lib;dxva2.lib;Strmiids.lib</AdditionalDependencies>
-      <AdditionalOptions>/VERBOSE /EXPORTS /SYMBOLS %(AdditionalOptions)</AdditionalOptions>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>dwrite.lib;d2d1.lib;windowscodecs.lib;TrecLib.lib;VideoGraphics.lib;evr.lib;mf.lib;mfplay.lib;mfreadwrite.lib;mfuuid.lib;mfplat.lib;dxva2.lib;Strmiids.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <Midl>
-      <MkTypLibCompatible>false</MkTypLibCompatible>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </Midl>
-    <ResourceCompile>
-      <Culture>0x0409</Culture>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;ANAFACE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>.\Anaface.def</ModuleDefinitionFile>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;d2d1.lib;d2d1helper.lib;d2d1effects.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>d2d1.lib;VideoGraphics.lib;TrecLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <Midl>
-      <MkTypLibCompatible>false</MkTypLibCompatible>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </Midl>
-    <ResourceCompile>
-      <Culture>0x0409</Culture>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;ANAFACE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>.\Anaface.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
     </Link>
-    <Midl>
-      <MkTypLibCompatible>false</MkTypLibCompatible>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </Midl>
-    <ResourceCompile>
-      <Culture>0x0409</Culture>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_WINDOWS;NDEBUG;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;ANAFACE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>.\Anaface.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
     </Link>
-    <Midl>
-      <MkTypLibCompatible>false</MkTypLibCompatible>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </Midl>
-    <ResourceCompile>
-      <Culture>0x0409</Culture>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <ClInclude Include="Anaface.h" />
+    <ClInclude Include="AnafaceParser.h" />
+    <ClInclude Include="AnafaceUI.h" />
+    <ClInclude Include="AnimationBuilder.h" />
+    <ClInclude Include="ColorAnimation.h" />
+    <ClInclude Include="ControlTypeSafety.h" />
+    <ClInclude Include="EventTarget.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="GeoGroup.h" />
+    <ClInclude Include="GifAnimation.h" />
+    <ClInclude Include="HTMLParser.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="RotateAnimation.h" />
+    <ClInclude Include="SSGenerator.h" />
+    <ClInclude Include="TArena.h" />
+    <ClInclude Include="TCanvas.h" />
+    <ClInclude Include="TCheckBox.h" />
+    <ClInclude Include="TComboBox.h" />
+    <ClInclude Include="TContextMenu.h" />
+    <ClInclude Include="TControl.h" />
+    <ClInclude Include="TCurveGeometry.h" />
+    <ClInclude Include="TDataBind.h" />
+    <ClInclude Include="TDropMenu.h" />
+    <ClInclude Include="TEllipseGeometry.h" />
+    <ClInclude Include="TFlyout.h" />
+    <ClInclude Include="TGadgetControl.h" />
+    <ClInclude Include="TDrawGeometry.h" />
+    <ClInclude Include="TImage.h" />
+    <ClInclude Include="TLayout.h" />
+    <ClInclude Include="TLayoutEx.h" />
+    <ClInclude Include="TLineGeometry.h" />
+    <ClInclude Include="TParentHolder.h" />
+    <ClInclude Include="TPathGeometry.h" />
+    <ClInclude Include="TPromptControl.h" />
+    <ClInclude Include="TRadioButton.h" />
+    <ClInclude Include="TransitionAnimation.h" />
+    <ClInclude Include="TRectangleGeometry.h" />
+    <ClInclude Include="TScrollBar.h" />
+    <ClInclude Include="TScrollerControl.h" />
+    <ClInclude Include="TSliderControl.h" />
+    <ClInclude Include="TSpreadSheet.h" />
+    <ClInclude Include="TTabBar.h" />
+    <ClInclude Include="TTextField.h" />
+    <ClInclude Include="TTreeDataBind.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Anaface.cpp" />
     <ClCompile Include="AnafaceParser.cpp" />
     <ClCompile Include="AnafaceUI.cpp" />
+    <ClCompile Include="AnimationBuilder.cpp" />
+    <ClCompile Include="ColorAnimation.cpp" />
     <ClCompile Include="ControlTypeSafety.cpp" />
-    <ClCompile Include="dllmain.cpp">
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EventTarget.cpp" />
     <ClCompile Include="GeoGroup.cpp" />
+    <ClCompile Include="GifAnimation.cpp" />
     <ClCompile Include="HTMLParser.cpp" />
-    <ClCompile Include="Parser.cpp" />
-    <ClCompile Include="ParseReader.cpp" />
-    <ClCompile Include="SSGenerator.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RotateAnimation.cpp" />
+    <ClCompile Include="SSGenerator.cpp" />
     <ClCompile Include="TArena.cpp" />
     <ClCompile Include="TCanvas.cpp" />
     <ClCompile Include="TCheckBox.cpp" />
@@ -243,79 +237,29 @@
     <ClCompile Include="TEllipseGeometry.cpp" />
     <ClCompile Include="TFlyout.cpp" />
     <ClCompile Include="TGadgetControl.cpp" />
-    <ClCompile Include="TGeometry.cpp" />
+    <ClCompile Include="TDrawGeometry.cpp" />
     <ClCompile Include="TImage.cpp" />
     <ClCompile Include="TLayout.cpp" />
     <ClCompile Include="TLayoutEx.cpp" />
     <ClCompile Include="TLineGeometry.cpp" />
+    <ClCompile Include="TParentHolder.cpp" />
     <ClCompile Include="TPathGeometry.cpp" />
+    <ClCompile Include="TPromptControl.cpp" />
     <ClCompile Include="TRadioButton.cpp" />
+    <ClCompile Include="TransitionAnimation.cpp" />
     <ClCompile Include="TRectangleGeometry.cpp" />
     <ClCompile Include="TScrollBar.cpp" />
+    <ClCompile Include="TScrollerControl.cpp" />
     <ClCompile Include="TSliderControl.cpp" />
     <ClCompile Include="TSpreadSheet.cpp" />
+    <ClCompile Include="TTabBar.cpp" />
     <ClCompile Include="TTextField.cpp" />
-    <ClCompile Include="TVideo.cpp" />
+    <ClCompile Include="TTreeDataBind.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Anaface.def" />
-    <None Include="packages.config" />
-    <None Include="res\Anaface.rc2" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Anaface.h" />
-    <ClInclude Include="AnafaceParser.h" />
-    <ClInclude Include="AnafaceUI.h" />
-    <ClInclude Include="ControlTypeSafety.h" />
-    <ClInclude Include="EventTarget.h" />
-    <ClInclude Include="GeoGroup.h" />
-    <ClInclude Include="HTMLParser.h" />
-    <ClInclude Include="Parser.h" />
-    <ClInclude Include="ParseReader.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="SSGenerator.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="TArena.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="TCanvas.h" />
-    <ClInclude Include="TCheckBox.h" />
-    <ClInclude Include="TComboBox.h" />
-    <ClInclude Include="TContextMenu.h" />
-    <ClInclude Include="TControl.h" />
-    <ClInclude Include="TCurveGeometry.h" />
-    <ClInclude Include="TDataBind.h" />
-    <ClInclude Include="TDropMenu.h" />
-    <ClInclude Include="TEllipseGeometry.h" />
-    <ClInclude Include="TFlyout.h" />
-    <ClInclude Include="TGadgetControl.h" />
-    <ClInclude Include="TGeometry.h" />
-    <ClInclude Include="TImage.h" />
-    <ClInclude Include="TLayout.h" />
-    <ClInclude Include="TLayoutEx.h" />
-    <ClInclude Include="TLineGeometry.h" />
-    <ClInclude Include="TPathGeometry.h" />
-    <ClInclude Include="TRadioButton.h" />
-    <ClInclude Include="TRectangleGeometry.h" />
-    <ClInclude Include="TScrollBar.h" />
-    <ClInclude Include="TSliderControl.h" />
-    <ClInclude Include="TSpreadSheet.h" />
-    <ClInclude Include="TTextField.h" />
-    <ClInclude Include="TVideo.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Anaface.rc" />
+    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets" Condition="Exists('..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets')" />
-    <Import Project="..\packages\Microsoft.CppCoreCheck.14.0.24210.1\build\native\Microsoft.CppCoreCheck.targets" Condition="Exists('..\packages\Microsoft.CppCoreCheck.14.0.24210.1\build\native\Microsoft.CppCoreCheck.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.CppCoreCheck.14.0.24210.1\build\native\Microsoft.CppCoreCheck.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CppCoreCheck.14.0.24210.1\build\native\Microsoft.CppCoreCheck.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.CppCoreCheck.14.0.24210.1\build\native\Microsoft.CppCoreCheck.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CppCoreCheck.14.0.24210.1\build\native\Microsoft.CppCoreCheck.targets'))" />
-  </Target>
 </Project>

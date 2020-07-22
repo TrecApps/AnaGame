@@ -1,8 +1,9 @@
 #pragma once
-#include "ArenaEngine.h"
+#include "TArenaEngine.h"
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include "InlineMatrixOperators.h"
+#include <TFile.h>
 typedef union ShaderCard
 {
 	int id;
@@ -11,35 +12,39 @@ typedef union ShaderCard
 
 typedef struct ShaderKey
 {
-	bool default;
+	bool _default;
 	ShaderCard card;
 }ShaderKey;
 
-typedef struct TextureResources
+class _VIDEO_GRAPHICS TextureResources
 {
+public:
+	TextureResources();
+	TextureResources(const TextureResources& copy);
+	void operator=( TextureResources& copy);
 	TrecComPointer<ID3D11ShaderResourceView> colorMap;
 	TrecComPointer<ID3D11SamplerState> sampleState;
-}TextureResources;
+};
 
 
 class _VIDEO_GRAPHICS ArenaModel : public TObject
 {
 public:
-	ArenaModel(ArenaEngine&);
-	ArenaModel();
+	ArenaModel(TrecPointer<TArenaEngine> engine);
+	ArenaModel(ArenaModel& am);
 	~ArenaModel();
 
 	TString toString() override;
-	TString getVariableValueStr(TString& varName) override;
+	TString getVariableValueStr(const TString& varName) override;
 
-	void setName(TString& newName);
+	void setName(const TString& newName);
 	TString getName();
 
-	void SetNewEngine(ArenaEngine& e);
+	void SetNewEngine(TrecPointer<TArenaEngine> e);
 
 	bool ValidateConstruction();
 
-	HRESULT LoadModel(CArchive& ar);
+	HRESULT LoadModel(TFile& ar);
 	int SetVertexData(TDataArray<float>& data, int shaderID, D3D11_PRIMITIVE_TOPOLOGY prim = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	int SetVertexData(TDataArray<float>& data, DefaultShader ds, D3D11_PRIMITIVE_TOPOLOGY prim = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	int SetVertexData(TDataArray<float>& data);
@@ -47,7 +52,7 @@ public:
 	void ProjectionGPU(bool gpu);
 
 
-	void Render(DirectX::XMMATRIX& proj, DirectX::XMMATRIX& cam, ArenaEngine* e);  // Use if Shader expects CPU to perform Calculation
+	void Render(DirectX::XMMATRIX& proj, DirectX::XMMATRIX& cam);  // Use if Shader expects CPU to perform Calculation
 
 
 
@@ -69,6 +74,11 @@ public:
 
 	virtual UCHAR* GetAnaGameType() override;
 
+	void SetSelf(TrecPointer<ArenaModel>);
+
+protected:
+	TrecPointerSoft<ArenaModel> self;
+
 private:
 	TString name;
 
@@ -82,7 +92,7 @@ private:
 	TDataArray<UINT> sqIndex;
 	DirectX::XMFLOAT3 location, direction;
 	float size;
-	ArenaEngine* engine;
+	TrecPointer<TArenaEngine> engine;
 	ShaderKey shader;
 
 	// Color resources

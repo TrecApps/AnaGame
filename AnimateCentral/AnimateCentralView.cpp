@@ -117,7 +117,7 @@ void CAnimateCentralView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	//ClientToScreen(&point);
 	mo = negative;
-	if (messageControl.get())
+	if (messageControl.Get())
 		messageControl->OnLButtonDown(nFlags, point, &mo,cred);
 
 	ResetComboBoxes();
@@ -131,7 +131,7 @@ void CAnimateCentralView::OnRButtonDown(UINT nFlags, CPoint point)
 	TrecPointer<TControl> messageControl = thisDoc->rootControl;
 	//ClientToScreen(&point);
 	messageOutput mo = positiveContinue;
-	if (messageControl.get())
+	if (messageControl.Get())
 		messageControl->OnRButtonDown(nFlags, point, &mo,cred);
 	doUpdate(&mo);
 }
@@ -157,7 +157,7 @@ void CAnimateCentralView::OnMouseMove(UINT nFlags, CPoint point)
 		fly->OnMouseMove(nFlags, point, &mo, cred);
 	}
 
-	if (messageControl.get())
+	if (messageControl.Get())
 		messageControl->OnMouseMove(nFlags, point, &mo,cred);
 	doUpdate(&mo);
 }
@@ -175,7 +175,7 @@ void CAnimateCentralView::OnLButtonDblClk(UINT nFlags, CPoint point)
 	TrecPointer<TControl> messageControl = thisDoc->rootControl;
 	//ClientToScreen(&point);
 	messageOutput mo = positiveContinue;
-	if (messageControl.get())
+	if (messageControl.Get())
 		messageControl->OnLButtonDblClk(nFlags, point, &mo,cred);
 	doUpdate(&mo);
 }
@@ -207,7 +207,7 @@ void CAnimateCentralView::OnLButtonUp(UINT nFlags, CPoint point)
 		}
 	}
 
-	if (messageControl.get())
+	if (messageControl.Get())
 		messageControl->OnLButtonUp(nFlags, point, &mo,cred);
 	doUpdate(&mo);
 
@@ -225,7 +225,7 @@ void CAnimateCentralView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	TrecPointer<TControl> messageControl = thisDoc->rootControl;
 	//ClientToScreen(&point);
 	messageOutput mo = positiveContinue;
-	if (messageControl.get())
+	if (messageControl.Get())
 		messageControl->OnChar(true, nChar,nRepCnt,nFlags,&mo,cred);
 	doUpdate(&mo);
 }
@@ -244,7 +244,7 @@ void CAnimateCentralView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		TrecPointer<TControl> messageControl = thisDoc->rootControl;
 		//ClientToScreen(&point);
 		messageOutput mo = positiveContinue;
-		if (messageControl.get())
+		if (messageControl.Get())
 			messageControl->OnChar(false, nChar, nRepCnt, nFlags, &mo,cred);
 		doUpdate(&mo);
 	}

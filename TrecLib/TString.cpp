@@ -1,124 +1,163 @@
-#include "stdafx.h"
 #include "TString.h"
 #include "TDataArray.h"
 
 UCHAR TStringType[] = { 2, 0b10000000, 1 };
 
 /*
-* Method: (TString) (Constructor)
+* Method: TString::Constructor
 * Purpose: Default Constructor for the TString Class
 * Parameters: void
 * Returns: void
 */
 TString::TString()
 {
+	string = nullptr;
+	Empty();
 }
 
 
 
 /*
-* Method: (TString) (Destructor) 
+* Method: TString::Destructor
 * Purpose: Cleans up the TString
 * Parameters: void
 * Returns: void
 */
 TString::~TString()
-
 {
-	//CString::~CString();
-	//int e = 3;
+	if (string)
+		delete[] string;
 }
 
-/*
-* Method: (TString) (constructor) 
-* Purpose: Uses a pointer to an existing (MFC) CString to build the TString
-* Parameters: CString* cps - pointer to CString to copy
-* Returns: void
-*/
-TString::TString(CString* cps) : CString( *cps )
-{
-	//sys_Type = new LPCTSTR((LPCTSTR)"SYS_TSTRING");
-}
 
 /*
-* Method: (TString) (constructor) 
+* Method: TString::Constructor 
 * Purpose: Uses a pointer to another TString to build this one
 * Parameters: TString* orig - pointer to TString to copy
 * Returns: void
 */
-TString::TString(TString * orig) : CString(*orig)
+TString::TString(const TString * orig)
 {
+	if (!orig)
+	{
+		size = capacity = 0;
+		string = nullptr;
+		return;
+	}
 
+	capacity = orig->capacity;
+	size = orig->size;
+
+	string = new WCHAR[capacity];
+	memcpy(string, (orig->string), capacity * sizeof(WCHAR));
+	string[size] = L'\0';
 }
 
 /*
-* Method: (TString) (constructor) 
+* Method: TString::Constructor 
 * Purpose: Uses a C-String  to construct TString
 * Parameters: const char* cps - C-String to copy
 * Returns: void
 */
-TString::TString(const char* cps) : CString{ cps }
+TString::TString(const char* cps)
 {
-	//sys_Type = new LPCTSTR((LPCTSTR)"SYS_TSTRING");
+	if(!cps)
+	{
+		string = nullptr;
+		Empty();
+		return;
+	}
+
+	capacity = strlen(cps) + 1;
+	string = new WCHAR[capacity];
+	size = capacity - 1;
+
+	MultiByteToWideChar(CP_ACP, 0, cps, size, string, size);
+	string[capacity - 1] = L'\0';
 }
 
 /*
-* Method: (TString) (constructor) 
+* Method: TString::Constructor 
 * Purpose: Builds a TString off of a wide char array
 * Parameters: const WCHAR* wcps - Wide Character array to copy
 * Returns: void 
 */
-TString::TString(const WCHAR * wcps) : CString{wcps}
+TString::TString(const WCHAR * wcps)
 {
+	if (!wcps)
+	{
+		string = nullptr;
+		Empty();
+		return;
+	}
+
+	size = lstrlenW(wcps);
+	capacity = size + 1;
+	string = new WCHAR[capacity];
+	memcpy(string, wcps, size * sizeof(WCHAR));
+	string[capacity - 1] = L'\0';
 }
 
-/*
-* Method: (TString) (constructor)
-* Purpose: Uses a reference to an existing (MFC) CString to build the TString
-* Parameters: CString& c - reference to CString to copy
-* Returns: void
-*/
-TString::TString(CString & c) : CString{c}
-{
-}
 
 /*
-* Method: (TString) (constructor)
+* Method: TString::Constructor
 * Purpose: Uses a reference to another TString to build this one
 * Parameters: TString* orig - reference to TString to copy
 * Returns: void
 */
-TString::TString(TString & c):CString{c}
+TString::TString(const TString & c)
 {
+	size = c.size;
+	capacity = c.capacity;
+
+	string = new WCHAR[capacity];
+	memcpy(string, c.string, capacity * sizeof(WCHAR));
+	string[capacity - 1] = L'\0';
 }
+
 /*
-* Method: (TString) (constructor)
+* Method: TString::Constructor
 * Purpose: Uses a reference to an existing C++ String to build the TString
 * Parameters: CString* cps - reference to C++ String to copy
 * Returns: void
 */
-TString::TString(std::string & str): CString{str.c_str()}
+TString::TString(std::string & str)
 {
-}
-
-TString::TString(WCHAR c): CString(c)
-{
+	size = str.size();
+	capacity = size + 1;
+	string = new WCHAR[capacity];
+	memcpy(string, str.c_str(), size * sizeof(WCHAR));
+	string[capacity - 1] = L'\0';
 }
 
 /*
-* Method: TString - ConvertToInt
+* Method: TString::Constructor
+* Purpose: Uses a single WCHAR to build the TString
+* Parameters: WCHAR c - the Character to set the TString equal to
+* Returns: void
+*/
+TString::TString(WCHAR c)
+{
+	size = 1;
+	capacity = 5;
+	string = new WCHAR[capacity];
+	memset(string, 0, capacity * sizeof(WCHAR));
+	string[0] = c;
+}
+
+/*
+* Method: TString::ConvertToInt
 * Purpose: Converts a Compliant TString into an integer
 * Parameters: int* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToInt(int* value)
+short TString::ConvertToInt(int& value)
 {
-	int size = this->GetLength();
 	if (!size)
 		return NOT_NUMB;
-	int temp = *value;
+	int temp = value;
 
-	*value = 0;
+	value = 0;
 	int hold;
 	bool positive = true;
 
@@ -126,7 +165,7 @@ short TString::ConvertToInt(int* value)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
-			*value = (*value * 10) + hold;
+			value = (value * 10) + hold;
 		}
 		else if (!c && this->GetAt(c) == L'-')
 		{
@@ -134,33 +173,69 @@ short TString::ConvertToInt(int* value)
 		}
 		else
 		{
-			*value = temp;
+			value = temp;
 			return NOT_NUMB;
 		}
 	}
 	if (positive)
-		*value = abs(*value);
+		value = abs(value);
 	else
-		*value = -(abs(*value));
+		value = -(abs(value));
 	return T_NO_ERROR;
 }
 
 /*
-* Method: TString - ConvertToLong
+* Method: TString::ConvertToInt
+* Purpose: Converts a Compliant TString into an integer
+* Parameters: long* value - the value to store
+* Returns: short - 0 if successful, error code otherwise
+*/
+short TString::ConvertToInt(long& value)
+{
+	if (!size)
+		return NOT_NUMB;
+	int temp = value;
+
+	value = 0;
+	int hold;
+	bool positive = true;
+
+	for (int c = 0; c < size; c++)
+	{
+		if (convertToNumber(this->GetAt(c), &hold))
+		{
+			value = (value * 10) + hold;
+		}
+		else if (!c && this->GetAt(c) == L'-')
+		{
+			positive = false;
+		}
+		else
+		{
+			value = temp;
+			return NOT_NUMB;
+		}
+	}
+	if (positive)
+		value = abs(value);
+	else
+		value = -(abs(value));
+	return T_NO_ERROR;
+}
+
+/*
+* Method: TString::ConvertToLong
 * Purpose: Converts a Compliant TString into a long integer
 * Parameters: long* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToLong(long long* value)
+short TString::ConvertToLong(long long& value)
 {
-	
-	int size = this->GetLength();
-
 	if (!size)
 		return NOT_NUMB;
-	long long temp = *value;
+	long long temp = value;
 
-	*value = 0;
+	value = 0;
 	int hold;
 
 	bool positive = true;
@@ -169,7 +244,7 @@ short TString::ConvertToLong(long long* value)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
-			*value = (*value * 10) + hold;
+			value = (value * 10) + hold;
 		}
 		else if (!c && this->GetAt(c) == L'-')
 		{
@@ -177,32 +252,31 @@ short TString::ConvertToLong(long long* value)
 		}
 		else
 		{
-			*value = temp;
+			value = temp;
 			return NOT_NUMB;
 		}
 	}
 	if (positive)
-		*value = abs(*value);
+		value = abs(value);
 	else
-		*value = -(abs(*value));
+		value = -(abs(value));
 	return T_NO_ERROR;
 
 }
 
 /*
-* Method: TString - ConvertToDouble
+* Method: TString::ConvertToDouble
 * Purpose: Converts a Compliant TString into a double floating point number
 * Parameters: double* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToDouble(double* value)
+short TString::ConvertToDouble(double& value)
 {
-	int size = this->GetLength();
 	if (!size)
 		return NOT_NUMB;
-	double temp = *value;
+	double temp = value;
 
-	*value = 0;
+	value = 0;
 	double dec = 0.1;
 	bool fullInt = true;
 	int hold;
@@ -213,11 +287,11 @@ short TString::ConvertToDouble(double* value)
 	{
 		if (fullInt && convertToNumber(this->GetAt(c), &hold))
 		{
-			*value = (*value * 10) + hold;
+			value = (value * 10) + hold;
 		}
 		else if (convertToNumber(this->GetAt(c), &hold)) // moved to decimal portion
 		{
-			*value = *value + (double)hold * dec;
+			value = value + (double)hold * dec;
 			dec = dec / 10;
 		}
 		else if (this->GetAt(c) == L'.')
@@ -230,33 +304,32 @@ short TString::ConvertToDouble(double* value)
 		}
 		else
 		{
-			*value = temp;
+			value = temp;
 			return NOT_NUMB;
 		}
 
 	}
 	if (positive)
-		*value = abs(*value);
+		value = abs(value);
 	else
-		*value = -(abs(*value));
+		value = -(abs(value));
 
 	return T_NO_ERROR;
 }
 
 /*
-* Method: TString - ConvertToFloat
+* Method: TString::ConvertToFloat
 * Purpose: Converts a Compliant TString into a float
 * Parameters: float* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToFloat(float* value)
+short TString::ConvertToFloat(float& value)
 {
-	int size = this->GetLength();
 	if (!size)
 		return NOT_NUMB;
-	float temp = *value;
+	float temp = value;
 
-	*value = 0;
+	value = 0;
 	float dec = 0.1f;
 	bool fullInt = true;
 	int hold;
@@ -266,11 +339,11 @@ short TString::ConvertToFloat(float* value)
 	{
 		if (fullInt && convertToNumber(this->GetAt(c), &hold))
 		{
-			*value = (*value * 10) + hold;
+			value = (value * 10) + hold;
 		}
 		else if (convertToNumber(this->GetAt(c), &hold)) // moved to decimal portion
 		{
-			*value = *value + (float)hold * dec;
+			value = value + (float)hold * dec;
 			dec = dec / 10;
 		}
 		else if (this->GetAt(c) == L'.')
@@ -283,83 +356,102 @@ short TString::ConvertToFloat(float* value)
 		}
 		else
 		{
-			*value = temp;
+			value = temp;
 			return NOT_NUMB;
 		}
 
 	}
 
 	if (positive)
-		*value = abs(*value);
+		value = abs(value);
 	else
-		*value = -(abs(*value));
+		value = -(abs(value));
 
 	return T_NO_ERROR;
 }
 
 /*
-* Method: TString - split
+* Method: TString::split
 * Purpose: Splits a String by the provided deliniators
 * Parameters: TString str - the TString holding deliniators
 			bool checkBackSlash - if true, then the method will ignore characters if a single backslash preceeds it
 * Returns: TrecPointer<TArray<TString>> - Array of TStrings holding tokens
 */
-TrecPointer<TArray<TString>> TString::split(TString str, bool checkBackSlash)
+TrecPointer<TDataArray<TString>> TString::split(TString str, bool checkBackSlash)
 {
 	//TArray<TString>* tats = new TArray<TString>();
-	TrecPointer<TArray<TString>> ret;
-	ret = new TArray<TString>();
+	TrecPointer<TDataArray<TString>> ret;
+	ret = TrecPointerKey::GetNewTrecPointer<TDataArray<TString>>();
 
-	if (!this->GetLength())
+	if (!this->GetSize())
 	{
 		return ret;
 	}
 
-	CString tok;
+	TString tok;
 
 	int pos = 0, begPos = 0;
-	tok = this->Tokenize(str, pos);
-	while (!tok.IsEmpty())
+	tok.Set(this->Tokenize(str, pos));
+	while (!tok.IsEmpty() && begPos != -1)
 	{
 		if (checkBackSlash)
 		{
 			
-			while (tok[tok.GetLength() - 1] == L'\\' && (tok.GetLength() == 1 || tok[tok.GetLength() - 2] != L'\\'))
+			while (tok[tok.GetSize() - 1] == L'\\' && (tok.GetSize() == 1 || tok[tok.GetSize() - 2] != L'\\'))
 			{
-				tok = this->Tokenize(str, pos);
-				tok = this->SubString(begPos, pos);
+				tok.Set(this->Tokenize(str, pos));
+				tok.Set(this->SubString(begPos, pos));
 			}
 		}
 
-		(ret).get()->Add(new TString(new TString(&tok)));
+		for (UINT Rust = 0; Rust < str.size; Rust++)
+		{
+			tok.Remove(str[Rust]);
+		}
+
+		(ret).Get()->push_back(tok);
 		begPos = pos;
-		tok = this->Tokenize(str, pos);
+		tok.Set(this->Tokenize(str, pos));
 	}
-	ret.Boost();
+
 	return ret;
 }
 
 /*
-* Method: TString - GetBufferCopy
+* Method: TString::GetBufferCopy
 * Purpose: Gets a copy of the Raw Buffer
 * Parameters: void
 * Returns: WCHAR* - the copy of the TStrings buffer
+*
+* Note: the data returned was initialized via new[] and thereforem you need to call delete[] on it. It is recommended you
+*		use "GetConstantBuffer()" wherever possible
 */
-WCHAR * TString::GetBufferCopy()
+WCHAR * TString::GetBufferCopy() const 
 {
-	WCHAR* returnable = new WCHAR[GetLength() + 1];
-	for (int c = 0; c < GetLength(); c++)
-		returnable[c] = *this[c];
-	returnable[GetLength()] = L'\0';
+	WCHAR* returnable = new WCHAR[size+1];
+	for (UINT c = 0; c < GetSize(); c++)
+		returnable[c] = string[c];
+	returnable[size] = L'\0';
 	return returnable;
 }
 
 /*
-* Method: TString - SubString
+ * Mehtod: TString::GetConstantBuffer
+ * Purpose: Returns the underlying String 
+ * Parameters: void
+ * Returns: const WCHAR* - a constant pointer of the underlying string buffer
+ */
+const WCHAR* TString::GetConstantBuffer() const
+{
+	return string;
+}
+
+/*
+* Method: TString::SubString
 * Purpose: Returns a substring specified 
 * Parameters: UINT beginningIndex - the index to start at
 *			int endIndex - exclusive index to end (use negative value to go to end)
-* Returns: TString - the Substring generated
+* Returns: TString::the Substring generated
 */
 TString TString::SubString(UINT beginningIndex, int endIndex)
 {
@@ -367,22 +459,22 @@ TString TString::SubString(UINT beginningIndex, int endIndex)
 	TString returnable;
 	if (endIndex == -1)
 	{
-		for (int c = beginningIndex; c < GetLength(); c++)
+		for (UINT c = beginningIndex; c < GetSize(); c++)
 			returnable.AppendChar(GetAt(c));
 	}
 	else
 	{
 		endIndex = abs(endIndex);
-		if (endIndex > GetLength())
+		if (static_cast<UINT>(endIndex) > GetSize())
 			return returnable;
-		for (UINT c = beginningIndex; c < endIndex; c++)
+		for (UINT c = beginningIndex; c < static_cast<UINT>(endIndex); c++)
 			returnable.AppendChar(GetAt(c));
 	}
 	return returnable;
 }
 
 /*
-* Method: TString - Trim
+* Method: TString::Trim
 * Purpose: Removes Whitespace on both sides
 * Parameters: void
 * Returns: void
@@ -393,8 +485,132 @@ void TString::Trim()
 	TrimLeft();
 }
 
+/**
+ * Method: TString::GetTrim
+ * Purpose: Retrieves acopy of the TString with whitespace trimmed. It does not alter the original String
+ * Parameters: void
+ * Returns: TString::Trimmed copy of the String
+ */
+TString TString::GetTrim() const
+{
+	TString ret(this);
+	ret.Trim();
+	return ret;
+}
+
+/**
+ * Method: TString::TrimRight
+ * Purpose: Performs an in-place trimming of whitespace towards the end
+ * Parameters: void
+ * Returns: void
+ */
+void TString::TrimRight()
+{
+	int end = size - 1;
+	while (end >= 0 && iswspace(string[end]))
+	{
+		end--;
+	}
+	end++;
+	size = end;
+	string[size] = L'\0';
+}
+
+/**
+ * Method: TString::GetTrimRight
+ * Purpose: Retrieves a version of the string with no whitespace on the end
+ * Parameters: void
+ * Returns: TString::the String with the TrimRight operation performed
+ */
+TString TString::GetTrimRight()
+{
+	TString ret(this);
+	ret.TrimRight();
+	return ret;
+}
+
+/**
+ * Method: TString::TrimLeft
+ * Purpose: Performs an in-place trimming of whitespace at the beginning
+ * Parameters: void
+ * Returns: void
+ */
+void TString::TrimLeft()
+{
+	UINT end = 0;
+	while (end < size && iswspace(string[end])) end++;
+	UINT sEnd = end;
+	for (UINT Rust = 0; end < size; Rust++, end++)
+	{
+		string[Rust] = string[end];
+	}
+	size -= sEnd;
+	string[size] = L'\0';
+}
+
+/**
+ * Method: TString::GetTrimLeft
+ * Purpose: Retrieves a version of the string with no whitespace towards the beginning
+ * Parameters: void
+ * Returns: TString::the String with the TrimLeft  operation performed
+ */
+TString TString::GetTrimLeft()
+{
+	TString ret(this);
+	ret.TrimLeft();
+	return ret;
+}
+
+/**
+ * Method: TString::Empty
+ * Purpose: Dumps the contents of the string so it is empty
+ * Parameters: void
+ * Returns: void
+ */
+void TString::Empty()
+{
+	if (string)
+		delete[] string;
+	string = nullptr;
+	size = capacity = 0;
+
+	string = new WCHAR[3];
+	capacity = 3;
+	string[0] = string[1] = string[2] = L'\0';
+}
+
+/**
+ * Method: TString::IsEmpty
+ * Purpose: Reports whether the string is empty
+ * Parameters: void
+ * Returns: bool - whether the string is empty or not
+ */
+bool TString::IsEmpty()
+{
+	return size == 0;;
+}
+
+/**
+ * Method: TString::GetRegString
+ * Purpose: Retrieves a version of the string in ASCII, using the std::string as the return type
+ * Parameters: void
+ * Returns: std::string - the TString with ASCII content
+ */
+std::string TString::GetRegString()
+{
+	std::string reg;
+	char* regString = new char[size + 1];
+	BOOL bFlag = FALSE;
+	/*int convert =*/ WideCharToMultiByte(CP_ACP, 0, string, size, regString, size, NULL, &bFlag);
+
+	regString[size] = '\0';
+	reg = regString;
+	delete[] regString;
+	return reg;
+}
+
 /*
-* Method: TString - ConvertToColor
+* Method: TString::ConvertToColor
 * Purpose: Converts the string into a Direct2D color representation
 * Parameters: D2D1_COLOR_F & color - the color to generate
 *			ColorFrmat& cf - the Color Format detected in the string
@@ -402,14 +618,14 @@ void TString::Trim()
 */
 bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 {
-	if(!GetLength())
+	if(!GetSize())
 		return false;
 	// First Check for a Hex Format
-	if (GetAt(0) == L'#' && GetLength() == 7 || GetLength() == 9)
+	if (GetAt(0) == L'#' && GetSize() == 7 || GetSize() == 9)
 	{
 		UINT value = 0;
 		UCHAR c = 0,shift;
-		for (c = 1, shift = 24; c < GetLength(); c += 2, shift -= 8)
+		for (c = 1, shift = 24; c < GetSize(); c += 2, shift -= 8)
 		{
 			UINT v1, v2;
 			if (!convertToNumberHex(GetAt(c), v1) || convertToNumberHex(GetAt(c + 1), v2))
@@ -422,20 +638,20 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 
 		if (c == 7) // we have cform_hex
 		{
-			cf = cform_hex;
+			cf = ColorFormat::cform_hex;
 			value = value | 255; // Make alpha completly transparent
 		}
 		else if (c == 9) // we have cform_hexa
 		{
-			cf = cform_hexa;
+			cf = ColorFormat::cform_hexa;
 		}
 		else // Supposed to be hex, but invalid length encountered
 		{
 			return false;
 		}
-		UCHAR r = value >> 24;
-		UCHAR g = value >> 16;
-		UCHAR b = value >> 8;
+		UCHAR r = static_cast<UCHAR>(value >> 24);
+		UCHAR g = static_cast<UCHAR>(value >> 16);
+		UCHAR b = static_cast<UCHAR>(value >> 8);
 		UCHAR a = static_cast<UCHAR>(value);
 
 		color.r = static_cast<float>(r) / 255.0f;
@@ -446,59 +662,59 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 	}
 
 	// This wasn't a hex, try AnaGames format
-	TrecPointer<TArray<TString>> values = split(TString(L", "));
-	if (values.get() && values->Count() > 2)
+	TrecPointer<TDataArray<TString>> values = split(TString(L", "));
+	if (values.Get() && values->Size() > 2)
 	{
 		bool works = true;
 		D2D1_COLOR_F tempColor = { 0.0f,0.0f,0.0f,0.0f };
-		if (!works || !values->ElementAt(0).get() || values->ElementAt(0)->ConvertToFloat(&tempColor.r))
+		if (!works || !values->at(0).GetSize() || values->at(0).ConvertToFloat(tempColor.r))
 			works = false;
 
-		if (!works || !values->ElementAt(1).get() || values->ElementAt(1)->ConvertToFloat(&tempColor.g))
+		if (!works || !values->at(1).GetSize() || values->at(1).ConvertToFloat(tempColor.g))
 			works = false;
 
-		if (!works || !values->ElementAt(2).get() || values->ElementAt(2)->ConvertToFloat(&tempColor.b))
+		if (!works || !values->at(2).GetSize() || values->at(2).ConvertToFloat(tempColor.b))
 			works = false;
 
-		if (works && values->Count() > 3)
+		if (works && values->Size() > 3)
 		{
-			if (!values->ElementAt(3).get() || values->ElementAt(3)->ConvertToFloat(&tempColor.a))
+			if (!values->at(3).GetSize() || values->at(3).ConvertToFloat(tempColor.a))
 				works = false;
 			else
-				cf = cform_ana_a;
+				cf = ColorFormat::cform_ana_a;
 		}
 		else if (works)
 		{
 			tempColor.a = 1.0f;
-			cf = cform_ana;
+			cf = ColorFormat::cform_ana;
 		}
 
 		if (works)
+		{
 			color = tempColor;
+			return true;
+		}
 	}
 
 	// Okay, check for rbg[a] or hsl[a]
 	values = split(TString(L", ()"));
-	if (!values.get() || values->Count() < 4) // We don't have enough data for either format
+	if (!values.Get() || values->Size() < 4) // We don't have enough data for either format
 		return false;
 
-	if (!values->ElementAt(0).get())
-		return false;
-	values->ElementAt(0)->MakeLower();
 
-	if (!values->ElementAt(0)->Compare(L"rgb") || !values->ElementAt(0)->Compare(L"rgba"))
+	values->at(0).SetLower();
+
+	if (!values->at(0).Compare(L"rgb") || !values->at(0).Compare(L"rgba"))
 	{
 		// Okay, it seems we have an rgb[a] format
 
-		// First, make sure we have our strings.
-		if (!values->ElementAt(1).get() || !values->ElementAt(2).get() || !values->ElementAt(3).get())
-			return false;
+	
 
 		//D2D1_COLOR_F tempColor = { 0.0f,0.0f,0.0f,0.0f };
 		int tempColor[4];
-		if (values->ElementAt(1)->ConvertToInt(&tempColor[0]) ||
-			values->ElementAt(2)->ConvertToInt(&tempColor[1]) ||
-			values->ElementAt(3)->ConvertToInt(&tempColor[2]))
+		if (values->at(1).ConvertToInt(tempColor[0]) ||
+			values->at(2).ConvertToInt(tempColor[1]) ||
+			values->at(3).ConvertToInt(tempColor[2]))
 			return false;
 
 		// Okay, we have legitimate values now, time to convert
@@ -507,38 +723,36 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 		color.b = static_cast<float>(tempColor[2]) / 255.0f;
 
 		// Try to see if alpha is available
-		if (values->Count() > 4 && values->ElementAt(4).get() && !values->ElementAt(4)->ConvertToFloat(&color.a))
+		if (values->Size() > 4 && values->at(4).GetSize() && !values->at(4).ConvertToFloat(color.a))
 		{
-			cf = cform_rgba;
+			cf = ColorFormat::cform_rgba;
 			return true;
 		}
 
 		// Alpha didn't work, set to default of 1.0f
-		cf = cform_rgb;
+		cf = ColorFormat::cform_rgb;
 		color.a = 1.0f;
 		return true;
 
 	}
 
-	if (!values->ElementAt(0)->Compare(L"hsl") || !values->ElementAt(0)->Compare(L"hsla"))
+	if (!values->at(0).Compare(L"hsl") || !values->at(0).Compare(L"hsla"))
 	{
 		// Whoa! We have the more complex hsl format
 
 		// Try getting the hue
 		int h = 0;
-		if (!values->ElementAt(1).get() || values->ElementAt(1)->ConvertToInt(&h))
+		if (values->at(1).ConvertToInt(h))
 			return false;
 		
 		h = abs(h) % 360;
 
-		if (!values->ElementAt(2).get() || values->ElementAt(3).get())
-			return false;
 
-		values->ElementAt(2)->Remove(L'%');
-		values->ElementAt(3)->Remove(L'%');
+		values->at(2).Remove(L'%');
+		values->at(3).Remove(L'%');
 
 		float s, l;
-		if (values->ElementAt(2)->ConvertToFloat(&s) || values->ElementAt(2)->ConvertToFloat(&l))
+		if (values->at(2).ConvertToFloat(s) || values->at(2).ConvertToFloat(l))
 			return false;
 		if (s > 100.0f || l > 100.0f)
 			return false;
@@ -571,14 +785,14 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 		}
 
 		// Try to see if alpha is available
-		if (values->Count() > 4 && values->ElementAt(4).get() && !values->ElementAt(4)->ConvertToFloat(&color.a))
+		if (values->Size() > 4 && !values->at(4).ConvertToFloat(color.a))
 		{
-			cf = cform_hsla;
+			cf = ColorFormat::cform_hsla;
 			return true;
 		}
 
 		// Alpha didn't work, set to default of 1.0f
-		cf = cform_hsl;
+		cf = ColorFormat::cform_hsl;
 		color.a = 1.0f;
 		return true;
 	}
@@ -587,7 +801,14 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 	return false;
 }
 
-int TString::FindOutOfQuotes(TString& subString, int start)
+/**
+ * Method: TString::FindOutOfQuotes
+ * Purpose: Performs the find operation while ignoring hits found within quotation marks
+ * Parameters: const TString& subString - the substring to search for
+ *				 int start - location to start the search
+ * Returns: int - the index of the substring found (-1 if not found)
+ */
+int TString::FindOutOfQuotes(const TString& subString, int start)
 {
 	TDataArray<int> possibleIndeces;
 	while (start != -1) 
@@ -603,7 +824,7 @@ int TString::FindOutOfQuotes(TString& subString, int start)
 	TDataArray<IndexRange> quotes;
 	WCHAR quoteMode = 0;
 	IndexRange range{ -1,-1 };
-	for (UINT rust = 0; rust < GetLength() && rust != -1; rust++)
+	for (UINT rust = 0; rust < GetSize() && rust != -1; rust++)
 	{
 		switch (quoteMode)
 		{
@@ -653,58 +874,61 @@ int TString::FindOutOfQuotes(TString& subString, int start)
 }
 
 
-void TString::Set(TString& t)
+/**
+ * Method: TString::Set
+ * Purpose: Sets the contents of the string to the specified string
+ * Parameters: const TString& t - the string to set to
+ * Returns: void
+ */
+void TString::Set(const TString& t)
 {
-	this->Empty();
-	for (int c = 0;c < t.GetLength();c++)
-	{
-		this->AppendChar(t.GetAt(c));
-	}
+	Set(&t);
 }
 
-void TString::Set(TString* s)
+/**
+ * Method: TString::Set
+ * Purpose: Sets the contents of the string to the specified raw string
+ * Parameters: const TString* s - the raw string to set to
+ * Returns: void
+ */
+void TString::Set(const TString* s)
 {	
 	if (s)
 	{
-		this->Empty();
-		for (int c = 0; c < s->GetLength(); c++)
-		{
-			this->AppendChar(s->GetAt(c));
-		}
+		if (string)
+			delete[] string;
+		string = new WCHAR[s->capacity];
+		capacity = s->capacity;
+		size = s->size;
+
+		for (UINT c = 0; c < size; c++)
+			string[c] = s->string[c];
+		string[size] = L'\0';
 	}
 }
 
-void TString::Set(CString& t)
-{	
-	this->Empty();
-	for (int c = 0;c < t.GetLength();c++)
-	{
-		this->AppendChar(t.GetAt(c));
-	}
-}
 
-void TString::Set(CString* s)
-{
-	if (s)
-	{
-		this->Empty();
-		for (int c = 0; c < s->GetLength(); c++)
-		{
-			this->AppendChar(s->GetAt(c));
-		}
-	}
-}
-
-void TString::Set(WCHAR* w)
+/**
+ * Method: TString::Set
+ * Purpose: Sets the contents of the string to the specified raw string
+ * Parameters: const WCHAR* w - the raw string to set to
+ * Returns: void
+ */
+void TString::Set(const WCHAR* w)
 {
 	if (w)
 	{
-		this->Empty();
-		for (int c = 0; *w != L'\0'; c++, w++)
-			this->AppendChar(*w);
+		TString str(w);
+		Set(&str);
 	}
 }
 
+/**
+ * Method: TString::Set
+ * Purpose: Sets the contents of the string to the specified character
+ * Parameters: WCHAR w - the character to set to
+ * Returns: void
+ */
 void TString::Set(WCHAR w)
 {
 	this->Empty();
@@ -712,67 +936,47 @@ void TString::Set(WCHAR w)
 }
 
 /*
-* Method: TString - operator=
+* Method: TString::operator=
 * Purpose: Assigns an Existing TString to this TString
 * Parameters: TString& t - the TString to copy
 * Returns: void 
 */
-TString TString::operator=(TString &t)
+TString TString::operator=(const TString &t)
 {
 	Set(t);
 	return this;
 }
 
-/*
-* Method: TString - operator=
-* Purpose: Assigns an Existing TString to this TString
-* Parameters: TString& t - the TString to copy
-* Returns: void
-*/
-TString TString::operator=(CString &t)
-{
-	Set(t);
-	return this;
-}
+
 
 /*
-* Method: TString - operator=
+* Method: TString::operator=
 * Purpose: Assigns an Existing TString to this TString
 * Parameters: TString* s - the TString to copy
 * Returns: void
 */
-TString TString::operator=(TString * s)
+TString TString::operator=(const TString * s)
 {
 	Set(s);
 	return this;
 }
 
-/*
-* Method: TString - operator=
-* Purpose: Assigns an Existing CString to this TString
-* Parameters: CString* s - the CString to copy
-* Returns: void
-*/
-TString TString::operator=(CString * s)
-{
-	Set(s);
-	return this;
-}
+
 
 /*
-* Method: TString - operator=
+* Method: TString::operator=
 * Purpose: Assigns an existing wide string to this TString
 * Parameters: WCHAR* w - the wide string to copy
 * Returns: void
 */
-TString TString::operator=(WCHAR * w)
+TString TString::operator=(const WCHAR * w)
 {
 	Set(w);
 	return this;
 }
 
 /*
-* Method: TString - operator=
+* Method: TString::operator=
 * Purpose: Assigns a WCHAR to this TString
 * Parameters: WCHAR w - the Character to copy
 * Returns: void
@@ -784,76 +988,48 @@ TString TString::operator=(WCHAR w)
 }
 
 /*
-* Method: TString - operator+
+* Method: TString::operator+
 * Purpose: Adds the contents of an existing TString to this one 
 * Parameters: TString& t - the TString to append
 * Returns: void
 */
-TString TString::operator+(TString & t)
+TString TString::operator+(const TString & t)const
 {
 	TString returnString = this;
-	for (int c = 0; c < t.GetLength();c++)
+	for (UINT c = 0; c < t.GetSize();c++)
 		returnString.AppendChar(t.GetAt(c));
 	return returnString;
 }
 
-/*
-* Method: TString - operator+
-* Purpose: Adds the contents of an existing TString to this one
-* Parameters: TString& t - the TString to append
-* Returns: void
-*/
-TString TString::operator+(CString &t)
-{
-	TString returnString = this;
-	for (int c = 0; c < t.GetLength();c++)
-		returnString.AppendChar(t.GetAt(c));
-	return returnString;
-}
+
 
 /*
-* Method: TString - operator+
+* Method: TString::operator+
 * Purpose: Adds the contents of an existing TString to this one
 * Parameters: TString& t - the TString to append
 * Returns: void
 */
-TString TString::operator+(TString *t)
+TString TString::operator+(const TString *t) const
 {
 	if (t)
 	{
 		TString returnString = this;
-		for (int c = 0; c < t->GetLength(); c++)
+		for (UINT c = 0; c < t->GetSize(); c++)
 			returnString.AppendChar(t->GetAt(c));
 		return returnString;
 	}
 	return this;
 }
 
-/*
-* Method: TString - operator+
-* Purpose: Adds the contents of an existing CString to this one
-* Parameters: CString& t - the CString to append
-* Returns: void
-*/
-TString TString::operator+(CString *t)
-{
-	if (t)
-	{
-		TString returnString = this;
-		for (int c = 0; c < t->GetLength(); c++)
-			returnString.AppendChar(t->GetAt(c));
-		return returnString;
-	}
-	return this;
-}
+
 
 /*
-* Method: TString - operator+
+* Method: TString::operator+
 * Purpose: Adds the contents of an existing wide string to this one
 * Parameters: WCHAR* w - the wide string to append
 * Returns: void
 */
-TString TString::operator+(WCHAR * w)
+TString TString::operator+(const WCHAR * w)const 
 {
 	if (w)
 	{
@@ -865,7 +1041,13 @@ TString TString::operator+(WCHAR * w)
 	return this; // Return this string since there was nothing to add
 }
 
-TString TString::operator+(WCHAR w)
+/**
+ * Method: TString::operator+
+ * Purpose: Returns a version of this string with the character appended
+ * Parameters: WCHAR w -the character to append
+ * Returns: TString version of the string with the appended character
+ */
+TString TString::operator+(WCHAR w) const
 {
 	TString returnString = this;
 	returnString.AppendChar(w);
@@ -873,70 +1055,44 @@ TString TString::operator+(WCHAR w)
 }
 
 /*
-* Method: TString - operator+=
+* Method: TString::operator+=
 * Purpose: Adds the contents of an existing TString to this one
 * Parameters: TString& t - the TString to append
 * Returns: void
 */
-TString TString::operator+=(TString& t)
+TString TString::operator+=(const TString& t)
 {
-	for (int c = 0; c < t.GetLength(); c++)
+	for (UINT c = 0; c < t.GetSize(); c++)
 		AppendChar(t.GetAt(c));
 	return this;
 }
 
-/*
-* Method: TString - operator+=
-* Purpose: Adds the contents of an existing TString to this one
-* Parameters: TString& t - the TString to append
-* Returns: void
-*/
-TString TString::operator+=(CString& t)
-{
-	for (int c = 0; c < t.GetLength(); c++)
-		AppendChar(t.GetAt(c));
-	return this;
-}
 
 /*
-* Method: TString - operator+=
+* Method: TString::operator+=
 * Purpose: Adds the contents of an existing TString to this one
 * Parameters: TString& t - the TString to append
 * Returns: void
 */
-TString TString::operator+=(TString* t)
+TString TString::operator+=(const TString* t)
 {
 	if (t)
 	{
-		for (int c = 0; c < t->GetLength(); c++)
+		for (UINT c = 0; c < t->GetSize(); c++)
 			AppendChar(t->GetAt(c));
 	}
 	return this;
 }
 
-/*
-* Method: TString - operator+=
-* Purpose: Adds the contents of an existing CString to this one
-* Parameters: CString& t - the CString to append
-* Returns: void
-*/
-TString TString::operator+=(CString* t)
-{
-	if (t)
-	{
-		for (int c = 0; c < t->GetLength(); c++)
-			AppendChar(t->GetAt(c));
-	}
-	return this;
-}
+
 
 /*
-* Method: TString - operator+=
+* Method: TString::operator+=
 * Purpose: Adds the contents of an existing wide string to this one
 * Parameters: WCHAR* w - the wide string to append
 * Returns: void
 */
-TString TString::operator+=(WCHAR* w)
+TString TString::operator+=(const WCHAR* w)
 {
 	if (w)
 	{
@@ -946,6 +1102,12 @@ TString TString::operator+=(WCHAR* w)
 	return this;
 }
 
+/**
+ * Method: TString::operator+=
+ * Purpose: Appends the WCHAR to the string
+ * Parameters: WCHAR w
+ * Returns: TString::the result of the append operation
+ */
 TString TString::operator+=(WCHAR w)
 {
 	AppendChar(w);
@@ -953,39 +1115,25 @@ TString TString::operator+=(WCHAR w)
 }
 
 /*
-* Method: TString - operator==
+* Method: TString::operator==
 * Purpose: Conpares the TString with a TString and returns true if contents are equal
 * Parameters: TString& s - the string to compare
 * Returns: bool - result of comparison
 */
 bool TString::operator==(TString & s)
 {
-	if (GetLength() != s.GetLength())
+	if (GetSize() != s.GetSize())
 		return false;
-	for (int c = 0; c < GetLength(); c++)
+	for (UINT c = 0; c < GetSize(); c++)
 		if (GetAt(c) != s[c])
 			return false;
 	return true;
 }
 
-/*
-* Method: TString - operator==
-* Purpose: Conpares the TString with a CString and returns true if contents are equal
-* Parameters: CString& s - the string to compare
-* Returns: bool - result of comparison
-*/
-bool TString::operator==(CString & s)
-{
-	if (GetLength() != s.GetLength())
-		return false;
-	for (int c = 0; c < GetLength(); c++)
-		if (GetAt(c) != s[c])
-			return false;
-	return true;
-}
+
 
 /*
-* Method: TString - operator==
+* Method: TString::operator==
 * Purpose: Conpares the TString with a TString and returns true if contents are equal
 * Parameters: TString* s - the string to compare
 * Returns: bool - result of comparison
@@ -994,34 +1142,17 @@ bool TString::operator==(TString * s)
 {
 	if(!s)
 	return false;
-	if (GetLength() != s->GetLength())
+	if (GetSize() != s->GetSize())
 		return false;
-	for (int c = 0; c < GetLength(); c++)
+	for (UINT c = 0; c < GetSize(); c++)
 		if (GetAt(c) != s->GetAt(c))
 			return false;
 	return true;
 }
 
-/*
-* Method: TString - operator==
-* Purpose: Conpares the TString with a CString and returns true if contents are equal
-* Parameters: CString* s - the string to compare
-* Returns: bool - result of comparison
-*/
-bool TString::operator==(CString * s)
-{
-	if (!s)
-		return false;
-	if (GetLength() != s->GetLength())
-		return false;
-	for (int c = 0; c < GetLength(); c++)
-		if (GetAt(c) != s->GetAt(c))
-			return false;
-	return true;
-}
 
 /*
-* Method: TString - operator==
+* Method: TString::operator==
 * Purpose: Conpares the TString with a wide string and returns true if contents are equal
 * Parameters: WCHAR* s - the string to compare
 * Returns: bool - result of comparison
@@ -1030,7 +1161,7 @@ bool TString::operator==(WCHAR * s)
 {
 	if(!s)
 		return false;
-	for (int c = 0; c < GetLength(); c++,s++)
+	for (UINT c = 0; c < GetSize(); c++,s++)
 	{
 		if (*s == L'\0')
 			return false;
@@ -1041,7 +1172,7 @@ bool TString::operator==(WCHAR * s)
 }
 
 /*
-* Method: TString - operator!=
+* Method: TString::operator!=
 * Purpose: Conpares the TString with a TString and returns true if contents are unequal
 * Parameters: TString& s - the string to compare
 * Returns: bool - result of comparison
@@ -1051,19 +1182,10 @@ bool TString::operator!=(TString & s)
 	return !(*this == s);
 }
 
-/*
-* Method: TString - operator!=
-* Purpose: Conpares the TString with a CString and returns true if contents are unequal
-* Parameters: CString& s - the string to compare
-* Returns: bool - result of comparison
-*/
-bool TString::operator!=(CString & s)
-{
-	return !(*this == s);
-}
+
 
 /*
-* Method: TString - operator!=
+* Method: TString::operator!=
 * Purpose: Conpares the TString with a TString and returns true if contents are unequal
 * Parameters: TString* s - the string to compare
 * Returns: bool - result of comparison
@@ -1073,19 +1195,10 @@ bool TString::operator!=(TString * s)
 	return !(*this == s);
 }
 
-/*
-* Method: TString - operator!=
-* Purpose: Conpares the TString with a CString and returns true if contents are unequal
-* Parameters: CString* s - the string to compare
-* Returns: bool - result of comparison
-*/
-bool TString::operator!=(CString * s)
-{
-	return !(*this == s);
-}
+
 
 /*
-* Method: TString - operator!=
+* Method: TString::operator!=
 * Purpose: Conpares the TString with a wide string and returns true if contents are unequal
 * Parameters: WCHAR* s - the string to compare
 * Returns: bool - result of comparison
@@ -1095,8 +1208,19 @@ bool TString::operator!=(WCHAR * s)
 	return !(*this == s);
 }
 
+/**
+ * Method: TString::operator[]
+ * Purpose: Retrieves the character at the provided index
+ * Parameters: UINT loc - the index of the character
+ * Returns: WCHAR - the character at the index, '\0' if index is out of bounds
+ */
+WCHAR TString::operator[](UINT loc) const 
+{
+	return GetAt(loc);
+}
+
 /*
-* Method: TString - GetAnaGameType
+* Method: TString::GetAnaGameType
 * Purpose: Retrieves the Class type for the AnaGame Virtual Machine
 * Parameters: void
 * Returns: UCHAR* - The AnaGAme type ID
@@ -1104,6 +1228,205 @@ bool TString::operator!=(WCHAR * s)
 UCHAR * TString::GetAnaGameType()
 {
 	return TStringType;
+}
+
+/**
+ * Method: TString::GetSize
+ * Purpose: Retrieves the size of the string
+ * Parameters: void
+ * Returns: UINT - the current size of the string
+ */
+UINT TString::GetSize() const
+{
+	return size;
+}
+
+/**
+ * Method: TString::GetAt
+ * Purpose: Retrieves the character at the provided index
+ * Parameters: UINT c - the index of the character
+ * Returns: WCHAR - the character at the index, '\0' if index is out of bounds
+ */
+WCHAR TString::GetAt(UINT c) const
+{
+	if (c < size)
+		return string[c];
+	return L'\0';
+}
+
+/**
+ * Method: TString::AppendFormat
+ * Purpose: Appends the provided format to this string
+ * Parameters: const WCHAR* format - the template
+ *				... - the series of variables to add
+ * Returns: void
+ */
+void TString::AppendFormat(const WCHAR* format, ...)
+{
+	if (!format)
+		return;
+	va_list vList;
+	va_start(vList, format);
+	TString tFormat(format);
+
+	WCHAR* formatedString = new WCHAR[tFormat.capacity * 2 + 100];
+
+
+
+	int result = vswprintf(formatedString, (tFormat.capacity * 2) + 99, tFormat.string, vList);
+
+	va_end(vList);
+
+
+	TString ret;
+	if (result > -1)
+	{
+		formatedString[result] = L'\0';
+		Append(formatedString);
+	}
+
+	delete[] formatedString;
+}
+
+/**
+ * Method: TString::AppendFormat
+ * Purpose: Appends the provided format to this string
+ * Parameters: const TString format - the template
+ *				... - the series of variables to add
+ * Returns: void
+ */
+void TString::AppendFormat(const TString format, ...)
+{
+	WCHAR* formatedString = new WCHAR[format.capacity * 2 + 100];
+
+
+	va_list vList;
+	va_start(vList, format);
+	int result = vswprintf(formatedString, (format.capacity * 2) + 99, format.string, vList);
+
+	va_end(vList);
+
+
+	TString ret;
+	if (result > -1)
+	{
+		formatedString[result] = L'\0';
+		Append(formatedString);
+	}
+
+	delete[] formatedString;
+}
+
+/**
+ * Method: TString::Format
+ * Purpose: Sets this string to the provided format
+ * Parameters: const WCHAR* format - the template
+ *				... - the series of variables to add
+ * Returns: void
+ */
+void TString::Format(const WCHAR* format, ...)
+{
+	if (!format)
+		return;
+	va_list vList;
+	va_start(vList, format);
+	TString tFormat(format);
+
+	WCHAR* formatedString = new WCHAR[tFormat.capacity * 2 + 100];
+
+
+	int result = vswprintf(formatedString, (tFormat.capacity * 2) + 99, tFormat.string, vList);
+
+	va_end(vList);
+
+	TString ret;
+	if (result > -1)
+	{
+		formatedString[result] = L'\0';
+		Set(formatedString);
+	}
+
+	delete[] formatedString;
+}
+
+/**
+ * Method: TString::Format
+ * Purpose: Sets this string to the provided format
+ * Parameters: const TString format - the template
+ *				... - the series of variables to add
+ * Returns: void
+ */
+void TString::Format(const TString format, ...)
+{
+	va_list vList;
+	va_start(vList, format);
+	WCHAR* formatedString = new WCHAR[format.capacity * 2 + 100];
+
+
+
+	int result = vswprintf(formatedString, (format.capacity * 2) + 99, format.string, vList);
+
+	va_end(vList);
+
+
+	TString ret;
+	if (result > -1)
+	{
+		formatedString[result] = L'\0';
+		Set(formatedString);
+	}
+
+	delete[] formatedString;
+}
+
+/**
+ * Method: TString::AppendChar
+ * Purpose: Appends the provided character to this string
+ * Parameters: WCHAR ch - the character to append
+ * Returns: void
+ */
+void TString::AppendChar(WCHAR ch)
+{
+	if (size + 1 == capacity)
+	{
+		WCHAR* newString = new WCHAR[++capacity];
+
+		memcpy(newString, string, (capacity - 1) * sizeof(WCHAR));
+		delete[] string;
+		string = newString;
+	}
+
+	string[size++] = ch;
+	string[size] = L'\0';
+}
+
+/**
+ * Method: TString::Append
+ * Purpose: Appends the provided string to this string
+ * Parameters: const TString& app - the string to append
+ * Returns: void
+ */
+void TString::Append(const TString& app)
+{
+	capacity += app.capacity;
+
+	WCHAR* newString = new WCHAR[capacity];
+
+	for (UINT c = 0; c < size; c++)
+	{
+		newString[c] = string[c];
+	}
+
+	UINT newSize = size + app.size;
+
+	for (UINT c = size, rust = 0; c < newSize && rust < app.size; c++, rust++)
+	{
+		newString[c] = app[rust];
+	}
+	size = newSize;
+	newString[size] = L'\0';
+	delete[] string;
+	string = newString;
 }
 
 
@@ -1257,4 +1580,685 @@ WCHAR ReturnWCharType(char c)
 	char charTo[] = { c, '\0' };
 	mbstowcs_s(&conv, w, 2, charTo, 1);
 	return w[0];
+}
+
+TString formatSpecifiers(L"diuoxXfFeEgGaAcCsSpT");
+
+/*
+TString TString::GetFormattedString(const TString& format, va_list& data)
+{
+	WCHAR* formatedString = new WCHAR[format.capacity * 2 + 100];
+	WCHAR* cop = format.GetBufferCopy();
+
+	va_start(data, cop);
+
+	int result = vswprintf(formatedString, (format.capacity * 2) + 99, format.string, data);
+
+	va_end(data);
+	delete[] cop;
+
+	TString ret;
+	if (result > -1)
+	{
+		formatedString[result] = L'\0';
+		ret.Set(formatedString);
+	}
+
+	delete[] formatedString;
+	
+	return ret;
+}*/
+
+
+/**
+ * Method: TString::Compare
+ * Purpose: Compares this string with a provided string
+ * Parameters: const TString& other - the string to compare this string to
+ * Returns: int - 0 if they are the same
+ */
+int TString::Compare(const TString& other) const
+{
+	return Compare(other.string);
+}
+
+/**
+ * Method: TString::Compare
+ * Purpose: Compares this string with a provided raw string
+ * Parameters: const WCHAR* other - the string to compare this string to
+ * Returns: int - 0 if they are the same
+ */
+int TString::Compare(const WCHAR* other) const
+{
+	int min = min(size, lstrlenW(other));
+	for (int c = 0; c < min; c++)
+	{
+		if (string[c] < other[c])
+			return -(c + 1);
+		if (string[c] > other[c])
+			return c + 1;
+	}
+
+	if (size == lstrlenW(other)) return 0;
+	if (size > lstrlenW(other)) return lstrlenW(other); 
+	return static_cast<int>(-1);
+}
+
+/**
+ * Method: TString::CompareNoCase
+ * Purpose: Compares this string with a provided string, ignoring case
+ * Parameters: const TString& other - the string to compare this string to
+ * Returns: int - 0 if they are the same
+ */
+int TString::CompareNoCase(const TString& other)
+{
+	TString _this(this);
+	TString _other(other);
+	_this.SetLower();
+	_other.SetLower();
+	return _this.Compare(_other);
+}
+
+/**
+ * static Method: TString::Compare
+ * Purpose: Compares two strings for equality
+ * Parameters: const TString& str1 - the main string to compare
+ *				const TString& str2 - the second string to compare to
+ * Returns: int - 0 if they are the same
+ */
+int TString::Compare(const TString& str1, const TString& str2)
+{
+	return str1.Compare(str2);
+}
+
+/**
+ * Method: TString::Delete
+ * Purpose: Deletes a section of the string in -place
+ * Parameters: int index - the index of the first character to remove
+ *				int count - the number of characters to remove
+ * Returns: int - the new size of the string
+ */
+int TString::Delete(int index, int count)
+{
+	if (count < 1)
+		return size;
+	if (index < 0 || index > size)
+		return size;
+
+	WCHAR* newString = new WCHAR[capacity];
+	for (int c = 0; c < index; c++)
+	{
+		newString[c] = string[c];
+	}
+
+	for (int c = index, rust = index + count; rust < capacity; c++, rust++)
+	{
+		newString[c] = string[rust];
+	}
+
+	delete[] string;
+	string = newString;
+
+	size -= count;
+	string[size] = L'\0';
+	return size;
+}
+
+/**
+ * Method: TString::GetDelete
+ * Purpose: Retrieves a TString with a section deleted
+ * Parameters: int& ret - the size of the new string
+ *				int index - the index of the first character to remove
+ *				int count - the number of characters to remove
+ * Returns: TString::the String with the Delete operation applied
+ */
+TString TString::GetDelete(int& ret, int index, int count)
+{
+	TString retStr(this);
+	ret = retStr.Delete(index, count);
+	return retStr;
+}
+
+/**
+ * Method: TString::Find
+ * Purpose: Finds the last instance of the specified string
+ * Parameters: const TString& sub - the string to search for
+ *				int start - the index to begin the search from 
+ * Returns: int - the index of the string found
+ */
+int TString::Find(const TString& sub, int start)
+{
+	int indexStart = start;
+
+	while ((indexStart = Find(sub[0], indexStart)) != -1)
+	{
+		bool works = true;
+		for (int c = 0, rust = indexStart; c < sub.GetSize() || rust < size; c++, rust++)
+		{
+			if (c == sub.GetSize())
+			{
+				works = true;
+				break;
+			}
+			if (rust == size)
+			{
+				works = false;
+				break;
+			}
+			if (sub[c] != string[rust])
+			{
+				works = false;
+				break;
+			}
+		}
+
+		if (works)
+		{
+			return indexStart;
+		}
+		indexStart++;
+	}
+
+	return -1;
+}
+
+/**
+ * Method: TString::Find
+ * Purpose: Finds the first instance of the specified character
+ * Parameters: WCHAR sub - the character to search for
+ *				int start - the index to begin the search from
+ *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
+ * Returns: int - the index of the character found
+ */
+int TString::Find(WCHAR sub, int start, bool ignoreEscape)
+{
+	if (start < 0)
+		return -1;
+	for (int c = start; c < size; c++)
+	{
+		if (string[c] == sub)
+		{
+			if (!ignoreEscape && c > 0 && string[c - 1] == L'\\')
+				continue;
+			return c;
+		}
+	}
+	return -1;
+}
+
+/**
+ * Method: TString::FindOneOf
+ * Purpose: Searches for one of the specified characters
+ * Parameters: const TString& chars -  the list of characters to search for
+ *				int start - the index to begin the search from 
+ * Returns: int - the index of the character found
+ */
+int TString::FindOneOf(const TString& chars, int start)
+{
+	if (start < 0)
+		return -1;
+	for (int c = start; c < size; c++)
+	{
+		for (UINT rust = 0; rust < chars.GetSize(); rust++)
+		{
+			if (string[c] == chars[rust])
+				return c;
+		}
+	}
+
+
+	return -1;
+}
+
+/**
+ * Method: TString::FindLast
+ * Purpose: Finds the last instance of the specified string
+ * Parameters: const TString& sub - the string to search for
+ *				int start - the index to begin the search from (searches backwards)
+ * Returns: int - the index of the string found
+ */
+int TString::FindLast(const TString& sub, int start)
+{
+	if (start >= static_cast<int>(size))
+		return -1;
+	for (int c = start; c >= 0; c--)
+	{
+		if (sub[0] == string[c])
+		{
+			bool works = true;
+			for (int rust = c, C = 0; rust < size && C < sub.size; rust++, C++)
+			{
+				if (string[rust] != sub[C])
+				{
+					works = false;
+					break;
+				}
+			}
+			if (works)
+				return c;
+		}
+	}
+	return -1;
+}
+
+/**
+ * Method: TString::FindLast
+ * Purpose: Finds the last instance of the specified character
+ * Parameters: WCHAR sub - the character to search for
+ *				int start - the index to begin the search from (searches backwards)
+ * Returns: int - the index of the character found
+ */
+int TString::FindLast(WCHAR sub, int start)
+{
+	if (start >= static_cast<int>(size))
+		return -1;
+	for (int rust = ((start == -1) ? size - 1 : start); rust >= 0; rust--)
+	{
+		if (string[rust] == sub)
+			return rust;
+	}
+	return -1;
+}
+
+/**
+ * Method: TString::FindLastOneOf
+ * Purpose: Searches backwards for one of the specified characters
+ * Parameters: const TString& chars -  the list of characters to search for
+ *				int start - the index to begin the search from (searches backwards)
+ * Returns: int - the index of the character found
+ */
+int TString::FindLastOneOf(const TString& chars, int start)
+{
+	if (start >= static_cast<int>(size))
+		return -1;
+
+	if (start < 0)
+		start =  size-1;
+
+	for (int c = start; c >= 0; c--)
+	{
+		for (UINT rust = 0; rust < chars.GetSize(); rust++)
+		{
+			if (string[c] == chars[rust])
+				return c;
+		}
+	}
+
+	return -1;
+}
+
+/**
+ * Method: TString::SetAsEnvironmentVariable
+ * Purpose:
+ * Parameters: TString& var - the name of the Enviroment variable to set this string to
+ * Returns: bool - whether the operation was successful or not
+ */
+bool TString::SetAsEnvironmentVariable(TString& var)
+{
+	WCHAR* newString = new WCHAR[1000];
+
+	int newSize = GetEnvironmentVariableW(var.string, newString, 999);
+
+	if (!newSize)
+		return false;
+
+	WCHAR* newString2 = new WCHAR[newSize + 1];
+	for (int c = 0; c < newSize + 1; c++)
+	{
+		newString2[c] = newString[c];
+	}
+
+	if (string)
+		delete[] string;
+	string = newString2;
+	string[newSize] = L'\0';
+
+	size = newSize;
+	capacity = size + 1;
+
+	delete[] newString;
+
+	return true;
+}
+
+/**
+ * Method: TString::Insert
+ * Purpose: Inserts a sub-string in-place
+ * Parameters: int index - the index to insert the subStr at
+ *				TString& subStr - the string to insert
+ * Returns: int - the size of the new string
+ */
+int TString::Insert(int index, const TString& subStr)
+{
+	if(index < 0 || index > size)
+		return size;
+
+	WCHAR* newString = new WCHAR[capacity + subStr.capacity];
+
+	
+	for (int c = 0; c < index; c++)
+	{
+		newString[c] = string[c];
+	}
+
+	for (int c = index, rust = 0; rust < subStr.GetSize(); c++, rust++)
+	{
+		newString[c] = subStr.GetAt(rust);
+	}
+
+	for (int c = index + subStr.GetSize(), rust = index; rust < size; c++, rust++)
+	{
+		newString[c] = string[rust];
+	}
+
+	delete[]string;
+	string = newString;
+	size = size + subStr.GetSize();
+
+	capacity += subStr.capacity;
+	string[size] = L'\0';
+	return size;
+}
+
+/**
+ * Method: TString::GetInsert
+ * Purpose: Retrieves a String with a another string inserted
+ * Parameters: int& ret - reference to the size of the string
+ *				int index - the index to insert the character at
+ *				TString& subStr - the string to insert
+ * Returns: TString::The copy of the string with the parameter string inserted
+ */
+TString TString::GetInsert(int& ret, int index, TString& subStr)
+{
+	TString retStr(this);
+	ret = retStr.Insert(index, subStr);
+	return retStr;
+}
+
+/**
+ * Method: TString::Insert
+ * Purpose: Inserts a character in-place
+ * Parameters: int index - the index to insert the character at 
+ *				WCHAR ch - the character to insert
+ * Returns: int - the size of the new string
+ */
+int TString::Insert(int index, WCHAR ch)
+{
+	TString sub(ch);
+	return Insert(index,sub);
+}
+
+/**
+ * Method: TString::GetInsert
+ * Purpose: Retrieves a String with a character inserted
+ * Parameters: int& ret - reference to the size of the string
+ *				int index - the index to insert the character at 
+ *				WCHAR ch - the character to insert
+ * Returns: TString::The copy of the string with the character inserted
+ */
+TString TString::GetInsert(int& ret, int index, WCHAR ch)
+{
+	TString retStr(this);
+	ret = retStr.Insert(index, ch);
+	return retStr;
+}
+
+/**
+ * Method: TString::SetLower
+ * Purpose: Sets this string to have all lowercase in-place
+ * Parameters: void
+ * Returns: void
+ */
+void TString::SetLower()
+{
+	for (UINT c = 0; c < size; c++)
+	{
+		string[c] = towlower(string[c]);
+	}
+}
+
+/**
+ * Method: TString::GetLower
+ * Purpose: Retrieves a version of the String with all lowercase
+ * Parameters: void
+ * Returns: TString::the lowercase version of the String
+ */
+TString TString::GetLower()
+{
+	TString ret(this);
+	ret.SetLower();
+	return ret;
+}
+
+/**
+ * Method: TString::SetUpper
+ * Purpose: Sets this string to have all caps in-place
+ * Parameters: void
+ * Returns: void
+ */
+void TString::SetUpper()
+{
+	for (UINT c = 0; c < size; c++)
+	{
+		string[c] = towupper(string[c]);
+	}
+}
+
+/**
+ * Method: TString::GetUpper
+ * Purpose: Retrieves a version of the String with all caps
+ * Parameters: void
+ * Returns: TString::the Uppercase version of the String
+ */
+TString TString::GetUpper()
+{
+	TString ret(this);
+	ret.SetUpper();
+	return ret;
+}
+
+/**
+ * Method: TString::SetReverse
+ * Purpose: Reverses the contents of the string in-place
+ * Parameters: void
+ * Returns: void
+ */
+void TString::SetReverse()
+{
+	for (UINT Rust = 0; Rust < size / 2; Rust++)
+	{
+		WCHAR temp = string[Rust];
+		string[Rust] = string[size - (Rust + 1)];
+		string[size - (Rust + 1)] = temp;
+	}
+}
+
+/**
+ * Method: TString::GetReverse
+ * Purpose: Retrieves a TString that has the contents reversed
+ * Parameters: void
+ * Returns: TString::the copy with the characters reversed
+ */
+TString TString::GetReverse()
+{
+	TString ret(this);
+	ret.SetReverse();
+	return ret;
+}
+
+/**
+ * Method: TString::Remove
+ * Purpose: Removes the character from the TSTring in-place
+ * Parameters: WCHAR c - the character to remove
+ * Returns: int - The number of times the WCHAR was found in the string
+ */
+int TString::Remove(WCHAR c)
+{
+	WCHAR* newString = new WCHAR[capacity];
+
+	int newCount = 0;
+	for (int rust = 0; rust < size; rust++)
+	{
+		if (string[rust] == c)
+			continue;
+		newString[newCount++] = string[rust];
+	}
+	size = newCount;
+	delete[] string;
+	string = newString;
+	return size;
+}
+
+/**
+ * Method: TString::GetRemove
+ * Purpose: Returns a TString with a given character removed
+ * Parameters: int& ret - The number of times the WCHAR was found in the string
+ *				WCHAR c - the character to remove
+ * Returns: TString::copy with the specified character removed
+ */
+TString TString::GetRemove(int& ret, WCHAR c)
+{
+	TString retStr(this);
+	ret = retStr.Remove(c);
+	return retStr;
+}
+
+/**
+ * Method: TString::Replace
+ * Purpose: Applies the Replace operation via TStrings as parameters
+ * Parameters: const TString& oldStr - the String to replace
+ *				const TString& newStr - the String to replace the old string with
+ * Returns: int - the number of instances where the replacement operaiton was applied
+ */
+int TString::Replace(const TString& oldStr, const TString& newStr)
+{
+	TDataArray<int> indices;
+
+	int index = 0;
+	while (true)
+	{
+		index = Find(oldStr, index);
+		if (index == -1)
+			break;
+		indices.push_back(index);
+		index++;
+	}
+
+	// If the old string does not appear, make no changes
+	if (!indices.Size())
+		return 0;
+
+	int difference = (static_cast<int>(newStr.size) - static_cast<int>(oldStr.size)) * indices.Size();
+	int newSize = size + difference;
+
+	WCHAR* newString = new WCHAR[capacity + difference];
+
+	int currentIndex = indices[0];
+	int indexIndex = 1;
+	for (int rust = 0, c = 0; rust < size && c < newSize; rust++, c++)
+	{
+		if (rust == currentIndex)
+		{
+			for (UINT C = 0; C < newStr.size && c < newSize; C++, c++)
+			{
+				newString[c] = newStr[C];
+			}
+			c--; // So then the outer for loop increments again, it will be where it should
+			if (indexIndex >= indices.Size())
+			{
+				currentIndex = -1;
+			}
+			else
+			{
+				currentIndex = indices[indexIndex++];
+			}
+			rust += (oldStr.size - 1);
+			continue;
+		}
+
+		newString[c] = string[rust];
+	}
+
+	size = newSize;
+	newString[size] = L'\0';
+	delete[] string;
+	string = newString;
+	capacity += difference;
+
+	return indices.Size();
+}
+
+/**
+ * Method: TString::GetReplace
+ * Purpose: Returns a copy of the TString with the old String replaced by the new one
+ * Parameters: int& ret - reference of the replacemnt counter
+ *				const TString& oldStr - the String to replace
+ *				const TString& newStr - the String to replace the old string with
+ * Returns: TString::The Copy with the Replace operation applied
+ */
+TString TString::GetReplace(int& ret, const TString& oldStr, const TString& newStr)
+{
+	TString retStr(this);
+	ret = retStr.Replace(oldStr, newStr);
+	return retStr;
+}
+
+/**
+ * Method: TString::Replace
+ * Purpose: In-place character replacement operation
+ * Parameters: WCHAR& oldStr - the character to replace
+ *				 WCHAR& newStr - the character to replace the old one with
+ * Returns: The number of characters in the string replaced
+ */
+int TString::Replace(WCHAR& oldStr, WCHAR& newStr)
+{
+	int ret = 0;
+
+	for (UINT Rust = 0; Rust < size; Rust++)
+	{
+		if (string[Rust] == oldStr)
+		{
+			ret++;
+			string[Rust] = newStr;
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * Method: TString::GetReplace
+ * Purpose: Returns a copy of the TString with the old character replaced by the new one
+ * Parameters: int& ret - reference to the return value, see "Returns:" for the Replace method
+ *				 WCHAR& oldStr - the character to replace
+ *				 WCHAR& newStr - the character to replace the old one with
+ * Returns: TString::copy of the string with the replace operation applied
+ */
+TString TString::GetReplace(int& ret, WCHAR& oldStr, WCHAR& newStr)
+{
+	TString retStr(this);
+	ret = retStr.Replace(oldStr, newStr);
+	return retStr;
+}
+
+/**
+ * Method: TString::Tokenize
+ * Purpose: Allows the Traditional Tokenization routine to be performed in the TString
+ * Parameters: TString& tokens - characters to split by
+ *				 int& start - the location to begin at
+ * Returns:
+ */
+TString TString::Tokenize(TString& tokens, int& start)
+{
+	int end;
+	while ((end = FindOneOf(tokens, start)) == start)
+	{
+		start++;
+	}
+
+	TString ret = SubString(start, end);
+
+	start = end;
+
+
+	return ret;
 }

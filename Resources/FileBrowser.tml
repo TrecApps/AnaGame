@@ -1,0 +1,10 @@
+->TML
+-|Type:Anaface_UI
+-|Version:0.0.1
+-/
+
+->TTreeDataBind
+-|EventOnDblClick:OnOpenFile
+-->TControl
+--|FontColor: 0.0,0.0,0.0,1.0
+--|Caption:{}

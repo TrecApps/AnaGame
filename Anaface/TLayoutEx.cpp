@@ -1,16 +1,36 @@
-#include "stdafx.h"
+
 #include "TLayoutEx.h"
 
 
-TLayoutEx::TLayoutEx(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<styleTable>> st):TLayout(rt,st)
+/*
+ * Method: TLayoutEx::TLayoutEx
+ * Purpose: Constructor
+ * Parameters: TrecPointer<DrawingBoard> rt -  the Render target to draw to (TControl handles it)
+*				TrecPointer<TArray<styleTable>> ta - the Class Style list (TControl handles this)
+ * Returns: New TLayoutEx Object
+ */
+TLayoutEx::TLayoutEx(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> st):TLayout(rt,st)
 {
 }
 
 
+/*
+ * Method: TLayoutEx::~TLayoutEx
+ * Purpose: Destructor
+ * Parameters: void
+ * Returns: void
+ */
 TLayoutEx::~TLayoutEx()
 {
 }
 
+/*
+ * Method: TLayoutEx::RemoveChildWithPrejudice
+ * Purpose: Performs Delete on a child control
+ * Parameters: UINT x - the column of the control
+ *				UINT y - the row of the control
+ * Returns: int - 0
+ */
 int TLayoutEx::RemoveChildWithPrejudice(UINT x, UINT y)
 {
 	for (UINT c = 0; c < lChildren.Count(); c++)
@@ -21,6 +41,12 @@ int TLayoutEx::RemoveChildWithPrejudice(UINT x, UINT y)
 	return 0;
 }
 
+/*
+ * Method: TLayoutEx::RemoveColumn
+ * Purpose: Removes the specified column from the control
+ * Parameters: UINT c - index of the column to remove
+ * Returns: int - error code (0 if successful)
+ */
 int TLayoutEx::RemoveColumn(UINT c)
 {
 	if(c >= columnLines.Size())
@@ -54,8 +80,15 @@ int TLayoutEx::RemoveColumn(UINT c)
 	{
 		lChildren.RemoveAt(C);
 	}
+	return 0;
 }
 
+/*
+ * Method: TLayoutEx::RemoveRow
+ * Purpose: Removes the specified row from the control
+ * Parameters: UINT c - index of the row to remove
+ * Returns: int - error code (0 if successful)
+ */
 int TLayoutEx::RemoveRow(UINT c)
 {
 	if (c >= rowLines.Size())
@@ -89,8 +122,15 @@ int TLayoutEx::RemoveRow(UINT c)
 	{
 		lChildren.RemoveAt(C);
 	}
+	return 0;
 }
 
+/*
+ * Method: TLayoutEx::AddRow
+ * Purpose: Appends a Row to the Layout
+ * Parameters: UINT size - the height of the row to add
+ * Returns: UINT - 0 if falied, otherwise the number of rows currently in the control
+ */
 UINT TLayoutEx::AddRow(UINT size)
 {
 	// rowLines.push_back(size);
@@ -99,6 +139,12 @@ UINT TLayoutEx::AddRow(UINT size)
 	return 0;
 }
 
+/*
+ * Method: TLayoutEx::AddCol
+ * Purpose: Appends a Column to the Layout
+ * Parameters: UINT size - the width of the column to add
+ * Returns: UINT - 0 if falied, otherwise the number of collumns currently in the control
+ */
 UINT TLayoutEx::AddCol(UINT size)
 {
 	if(addColunm(size, false))
@@ -106,6 +152,13 @@ UINT TLayoutEx::AddCol(UINT size)
 	return 0;
 }
 
+/*
+ * Method: TLayoutEx::RemoveChild
+ * Purpose: Removes a certain control from the layout
+ * Parameters: UINT x - the column of the control
+ *				UINT y - the row of the control
+ * Returns: TrecPointer<TControl> - the control that has been removed
+ */
 TrecPointer<TControl> TLayoutEx::RemoveChild(UINT x, UINT y)
 {
 	TrecPointer<TControl> ret;
@@ -120,11 +173,23 @@ TrecPointer<TControl> TLayoutEx::RemoveChild(UINT x, UINT y)
 	return ret;
 }
 
-bool TLayoutEx::onCreate(RECT r)
+/*
+ * Method: TLayoutEx::onCreate
+ * Purpose: Sets up the attributes of the TLayout by processing the attributes and playing it out
+ * Parameters: RECT margin - the location the layout has to work with
+ * Returns: bool - success
+ */
+bool TLayoutEx::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
-	return TLayout::onCreate(r);
+	return TLayout::onCreate(r,d3d);
 }
 
+/*
+ * Method: TLayoutEx::onDraw
+ * Purpose: Draws out the Layout Generated
+ * Parameters: void
+ * Returns: void
+ */
 void TLayoutEx::onDraw(TObject* obj)
 {
 	TLayout::onDraw(obj);

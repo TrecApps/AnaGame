@@ -1,21 +1,22 @@
-#include "stdafx.h"
+
 #include "TFlyout.h"
 
-TDataArray<TFlyout*> flyouts;
 
 
 /*
 * Method: (TFlyout) (Constructor) 
 * Purpose: Sets up the basic features of the TFlyout
-* Parameters: TrecComPointer<ID2D1RenderTarget>cd, 
+* Parameters: TrecPointer<DrawingBoard>cd, 
 *			TrecPointer<TArray<styleTable>> ta - the list of styles to draw from
 * Returns: void
 */
-TFlyout::TFlyout(TrecComPointer<ID2D1RenderTarget>cd, TrecPointer<TArray<styleTable>> ta):TLayout(cd,ta)
+TFlyout::TFlyout(TrecPointer<TControl> cont)
 {
-	appearWhen = appear_unset;
-	isShown = false;
-	arrayLoc = flyouts.push_back(this);
+    if (!cont.Get())
+        throw L"Don't create a TFlyout with a Null Control!";
+    control = cont;
+
+
 }
 
 /*
@@ -26,243 +27,140 @@ TFlyout::TFlyout(TrecComPointer<ID2D1RenderTarget>cd, TrecPointer<TArray<styleTa
 */
 TFlyout::~TFlyout()
 {
-	flyouts.RemoveAt(arrayLoc);
-	for (int c = arrayLoc; c < flyouts.Size(); c++)
+
+}
+
+
+
+
+
+/**
+ * Method: TFlyout::AfterDraw
+ * Purpose: Allows a Window Object to Draw the Flyout last, while being able to set it's drawing space
+ * Parameters: D2D1_RECT_F& contain - the location it is allowed to draw in
+ * Returns: void
+ */
+void TFlyout::AfterDraw(D2D1_RECT_F& contain)
+{
+	if (control.Get())
 	{
-		flyouts.at(c)->arrayLoc--;
+		control->Resize(contain);
+		control->onDraw();
+	}
+}
+
+/**
+ * Method: TFlyout::AfterDraw
+ * Purpose: Allows a Window Object to Draw the Flyout last, while being able to set it's drawing space
+ * Parameters: D2D1_RECT_F& contain - the location it is allowed to draw in
+ * Returns: void
+ */
+void TFlyout::AfterDraw()
+{
+	if (control.Get())
+	{
+		control->onDraw();
+	}
+}
+
+/**
+ * Method: TFlyout::SwitchChildControl
+ * Purpose: Allows the TControl to insert a new control between itsef and the flyout (most likely a TScrollerControl)
+ * Parameters: TrecPointerSoft<TControl> c1 - the current child control (lets the parent control know which control to replace it with)
+ *              TrecPointer<TControl> c2 - the control to swap it with
+ * Returns: void
+ */
+void TFlyout::SwitchChildControl(TrecPointerSoft<TControl> c1, TrecPointer<TControl> c2)
+{
+	if (c1.Get() == control.Get() && c1.Get() && c2.Get())
+	{
+		control = c2;
 	}
 }
 
 /*
-* Method: TFlyout - onCreate
-* Purpose: Sets up the attributes of the TFlyout
-* Parameters: RECT r - the location of the Control
-* Returns: bool - false
-*/
-bool TFlyout::onCreate(RECT r)
+ * Method: TFlyout::OnMouseMove
+ * Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
+ * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+ *				TPoint point - the point on screen where the event occured
+ *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+ *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+ * Returns: void
+ */
+void TFlyout::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|Type"));
-
-	if (!valpoint.get() || valpoint->Compare(L"TCanvas"))
-	{
-		organization = tCanvas;
-	}
-	else
-	{
-		if (valpoint->Compare(L"TGrid"))
-			organization = grid;
-		else if (valpoint->Compare(L"TStack"))
-			organization = VMix;
-		else if (valpoint->Compare(L"TGallary"))
-			organization = HMix;
-		/*else if(valpoint->Compare(L""))
-
-		else if(valpoint->Compare(L""))
-
-		else if(valpoint->Compare(L""))*/
-	}
-
-	if (appearWhen == appear_unset) // this should change in the context menu
-	{
-		valpoint = attributes.retrieveEntry(TString(L"|OnAppear"));
-
-		if (!valpoint.get())
-		{
-			appearWhen = appear_onClick;
-
-		}
-		else
-		{
-			if (valpoint->Compare(L"Click"))
-				appearWhen = appear_onClick;
-			else if (valpoint->Compare(L"Hover"))
-				appearWhen = appear_onHover;
-			else if (valpoint->Compare(L"Click_Hover"))
-				appearWhen = appear_onClickOrHover;
-			else if (valpoint->Compare(L"R"))
-				appearWhen = appear_onRightClick;
-			else if (valpoint->Compare(L"Click_R"))
-				appearWhen = appear_onEitherClick;
-			else if (valpoint->Compare(L"Hover_R"))
-				appearWhen = appear_onRClickOrHover;
-			else if (valpoint->Compare(L"Click_Hover_R"))
-				appearWhen = appear_onEitherClickOrHover;
-			else if (valpoint->Compare(L"SriptOnly"))
-				appearWhen = appear_onScript;
-		}
-	}
-
-	int exitSize = 20;
-	if (exitSize > r.bottom - r.top)
-		exitSize = r.bottom - r.top;
-
-	exitRect.left = r.left;
-	exitRect.right = r.right;
-	exitRect.top = r.top;
-	exitRect.bottom = exitRect.top + exitSize;
-
-	r.top = exitRect.bottom;
-
-	if (organization == tCanvas)
-		TControl::onCreate(r);
-	else
-		TLayout::onCreate(r);
-
-	return false;
+    if (control.Get())
+        control->OnMouseMove(nFlags, point, mOut, eventAr);
 }
 
 /*
-* Method: TFlyout - onDraw
-* Purpose: The call to draw the flyout, if shown
-* Parameters: void
-* Returns: void
-*/
-void TFlyout::onDraw(TObject* obj)
+ * Method: TFlyout::OnLButtonDown
+ * Purpose: Allows Control to catch the LeftmessageState::mouse Button Down event and act accordingly
+ * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+ *				TPoint point - the point on screen where the event occured
+ *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+ *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+ * Returns: void
+ */
+void TFlyout::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
-	if (!isShown)
-		return;
-	else
-	{
-		ID2D1SolidColorBrush* redBrush = NULL; 
-		D2D1::ColorF redColor = D2D1::ColorF(D2D1::ColorF::Enum::Red);
-		if (mState != mouseHover || mState == mouseLClick ||mState == mouseRClick)
-			redColor.a = 0.5;
-
-		renderTarget->CreateSolidColorBrush(redColor,&redBrush);
-
-		renderTarget->FillRectangle(&exitRect, redBrush);
-
-		redColor.b = 1.0;
-		redColor.g = 1.0;
-		redColor.r = 1.0;
-		redBrush->SetColor(redColor);
-		renderTarget->DrawLine(D2D1::Point2F(exitRect.left, exitRect.top), D2D1::Point2F(exitRect.right, exitRect.bottom),
-			redBrush, 2);
-
-		renderTarget->DrawLine(D2D1::Point2F(exitRect.right, exitRect.top), D2D1::Point2F(exitRect.left, exitRect.bottom),
-			redBrush, 2);
-
-		if (organization == tCanvas)
-			TControl::onDraw(obj);
-		else
-			TLayout::onDraw(obj);
-	}
+    if (control.Get())
+        control->OnLButtonDown(nFlags, point, mOut, eventAr, clickedButtons);
 }
 
 /*
-* Method: TFlyout - Show
-* Purpose: Sets a TFlyout to show itself (if the purpose is correct)
-* Parameters: appearCondition ac - the condition on which the flyout is supposed to appear
-* Returns: bool - whether the control will be shown
-*/
-bool TFlyout::Show(appearCondition ac)
+ * Method: TFlyout::OnLButtonUp
+ * Purpose: Allows control to catch the Left Button Up event and act accordingly
+ * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+ *				TPoint point - the point on screen where the event occured
+ *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+ *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+ * Returns: void
+ */
+void TFlyout::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	if (ac == appear_onScript)
-		isShown = true;
-	else
-	{
-		switch (ac)
-		{
-		case appear_onClick:
-			if (appearWhen == 2 || appearWhen == 4 || appearWhen == 6 || appearWhen == 0)
-				isShown = false;
-			else
-				isShown = true;
-			break;
-		case appear_onHover:
-			if (appearWhen == 1 || appearWhen == 4 || appearWhen == 5 || !appearWhen)
-				isShown = false;
-			else
-				isShown = true;
-			break;
-		case appear_onRightClick:
-			if (appearWhen == 1 || appearWhen == 2 || appearWhen == 3 || !appearWhen)
-				isShown = false;
-			else
-				isShown = true;
-			break;
-		}
-	}
+    if (control.Get())
+        control->OnLButtonUp(nFlags, point, mOut, eventAr);
+}
+/**
+ * Method: TFlyout::SetSelf
+ * Purpose: Enables the TFlyout to hold a reference to itself
+ * Parameters: TrecPointer<TFlyout> self - the TrecReference to itself
+ * Returns: void
+ */
+void TFlyout::SetSelf(TrecPointer<TFlyout> self)
+{
+    if(self.Get() != this)
+        throw L"Error! Function expected to recieve a protected reference to 'this' Object!";
+    tThis = TrecPointerKey::GetSoftPointerFromTrec<TFlyout>(self);
 
-	return isShown;
+    holder = TrecPointerKey::GetNewTrecPointerAlt<TParentHolder, TFlyoutParentHolder>(tThis);
+
+    if (control.Get())
+        control->setParent(holder);
 }
 
-/*
-* Method: TFlyout - Hide
-* Purpose: Sets the TFlyout to not show (or draw) itself
-* Parameters: void
-* Returns: void
-*/
-void TFlyout::Hide()
+
+/**
+ * Method: TFlyoutParentHolder::TFlyoutParentHolder
+ * Purpose: Constructor
+ * Parameters: void
+ * Returns: New TFlyoutParentHolder
+ */
+TFlyoutParentHolder::TFlyoutParentHolder(TrecPointerSoft<TFlyout> flyout)
 {
-	isShown = false;
+	this->flyout = TrecPointerKey::GetTrecPointerFromSoft<TFlyout>(flyout);
 }
 
-/*
-* Method: TFlyout - OnLButtonDown
-* Purpose: Responds to mouse clicks with flyout specific functionality
-* Parameters: UINT nFlags - Details provided by Windows 
-*				CPoint point - The location of the click 
-*				messageOutput * mOut - The results of the Event (was a control updated?) 
-*				TDataArray<EventID_Cred>& eventAr - the List of Events in a User's actions
-* Returns: void
-*/
-void TFlyout::OnLButtonDown(UINT nFlags, CPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
+/**
+ * Method: TFlyoutParentHolder::SwitchChildControl
+ * Purpose: Allows the TControl to insert a new control between itse;f and it's parent (most likely a TScrollerControl)
+ * Parameters: TrecPointerSoft<TControl> c1 - the current child control (lets the parent control know which control to replace it with
+ *              TrecPointer<TControl> c2 - the control to swap it with
+ * Returns: void
+ */
+void TFlyoutParentHolder::SwitchChildControl(TrecPointerSoft<TControl> c1, TrecPointer<TControl> c2)
 {
-	if (!isShown)
-	{
-		*mOut = negative;return;
-	}
-
-	if (!isContained(&point, &location))
-	{
-		isShown = false;
-		*mOut = negativeUpdate;return;
-	}
-
-	TControl::OnLButtonDown(nFlags, point, mOut, eventAr);
-}
-
-/*
-* Method: TFlyout - DoDraw
-* Purpose: Retrieves the active TFlyout
-* Parameters: void
-* Returns: TFlyout* - the flyout to draw (or null) 
-*/
-TFlyout * TFlyout::DoDraw()
-{
-	for (int c = 0; c < flyouts.Size(); c++)
-	{
-		if (flyouts[c])
-		{
-			if (flyouts[c]->isShown)
-			{
-				//flyouts[c]->onDraw();
-				return flyouts[c];
-			}
-		}
-	}
-	return nullptr;
-}
-
-/*
-* Method: TFlyout - GetAnaGameType
-* Purpose: Retrieves the AnaGame type token
-* Parameters: void
-* Returns: UCHAR* the type representation of the TObject
-*/
-UCHAR * TFlyout::GetAnaGameType()
-{
-	return nullptr;
-}
-
-/*
-* Method: TFlyout - getFlyoutList
-* Purpose: Retrieves the pointer to the list of currently active flyouts
-* Parameters: void
-* Returns: TDataArray<TFlyout*>* - the list of TFlyouts
-*/
-TDataArray<TFlyout*>* getFlyoutList()
-{
-	return &flyouts;
+	if (flyout.Get())
+		flyout->SwitchChildControl(c1, c2);
 }

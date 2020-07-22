@@ -1,17 +1,17 @@
-#include "stdafx.h"
+
 #include "HTMLParser.h"
 #include "SSGenerator.h"
 
 /*
 * Method: (HTMLParser) (Constructor)
 * Purpose: Sets up the HTML Parser with a place to draw the web page
-* Parameters: TrecComPointer<ID2D1RenderTarget> resources - the region to draw the page to
+* Parameters: TrecPointer<DrawingBoard> resources - the region to draw the page to
 *			HWND window - the window to draw to
 *			TString location - The url the HTML file is located in
 *			bool onDrive - whether or not the URL is on the local drive (flase means it's on the web)
 * Returns: void
 */
-HTMLParser::HTMLParser(TrecComPointer<ID2D1RenderTarget> resources, HWND window, TString location, bool onDrive)
+HTMLParser::HTMLParser(TrecPointer<DrawingBoard> resources, HWND window, TString location, bool onDrive)
 {
 	renderer = resources;
 	windowHandle = window;
@@ -23,7 +23,7 @@ HTMLParser::HTMLParser(TrecComPointer<ID2D1RenderTarget> resources, HWND window,
 	mode = 0;
 	tableMode = 0;
 	listCount = 0;
-	classList = new TArray<styleTable>();
+	classList = TrecPointerKey::GetNewTrecPointer<TArray<styleTable>>();
 }
 
 /*
@@ -51,9 +51,9 @@ bool HTMLParser::Obj(TString * v)
 	
 	if (!v->Compare(L"body")) // This should be the Root Control
 	{
-		rootObj = new TLayout(renderer, classList);
+		rootObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TLayout>(renderer, classList);
 		rootObj->AddClass(TString(L"body"));
-		dynamic_cast<TLayout*>(rootObj.get())->setLayout(VStack);
+		dynamic_cast<TLayout*>(rootObj.Get())->setLayout(orgLayout::VStack);
 		tableMode = tableMode | 0b00001000;
 		AddToTree();
 	}
@@ -67,7 +67,7 @@ bool HTMLParser::Obj(TString * v)
 	}
 	else if (!v->Compare(L"p"))
 	{
-		currentObj = TrecPointer<TTextField>(new TTextField(renderer, classList, windowHandle));
+		currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(renderer, classList, windowHandle);
 		AppendAppropriateClasses();
 		currentObj->AddClass(TString(L"p"));
 		mode = mode | 0b00000100;
@@ -105,9 +105,8 @@ bool HTMLParser::Obj(TString * v)
 	}
 	else if (!v->Compare(L"li"))
 	{
-		TTextField* tl = new TTextField(renderer, classList,windowHandle);
 		//tl->setLayout(VStack);
-		currentObj = TrecPointer<TTextField>(tl);
+		currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(renderer, classList,windowHandle);
 
 		AppendAppropriateClasses();
 		currentObj->AddClass(TString(L"li"));
@@ -146,7 +145,7 @@ bool HTMLParser::Obj(TString * v)
 	}
 	else if (!v->Compare(L"img"))
 	{
-		currentObj = TrecPointer<TControl>(new TControl(renderer, classList));
+		currentObj = TrecPointerKey::GetNewSelfTrecPointer<TControl>(renderer, classList);
 		AddToTree();
 	}
 	else if (!v->Compare(L"a") || !v->Compare(L"<a>")|| !v->Compare(L"<a"))
@@ -159,10 +158,10 @@ bool HTMLParser::Obj(TString * v)
 	}
 	else if (!v->Compare(L"table") || !v->Compare(L"<table>") || !v->Compare(L"<table"))
 	{
-		TLayout* tl = new TLayout(renderer, classList);
-		tl->setLayout(grid);
+		currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TLayout>(renderer, classList);
+		TLayout* tl = dynamic_cast<TLayout*>(currentObj.Get());
+		tl->setLayout(orgLayout::grid);
 		tl->AddClass(TString(L"table"));
-		currentObj = TrecPointer<TLayout>(tl);
 		currentColunm = maxColunm = 0;
 
 		AddToTree();
@@ -177,15 +176,15 @@ bool HTMLParser::Obj(TString * v)
 	{
 		try
 		{
-			TLayout* tl = dynamic_cast<TLayout*>(baseObj.get());
-			if (tl->GetOrganization() == grid)
+			TLayout* tl = dynamic_cast<TLayout*>(baseObj.Get());
+			if (tl->GetOrganization() == orgLayout::grid)
 			{
 				tl->addRow( 100,false);
 			}
 		}
 		catch (std::bad_cast& e)
 		{
-			TRACE(e.what());
+			//TRACE(e.what());
 		}
 		currentColunm = 0;
 	}
@@ -197,8 +196,8 @@ bool HTMLParser::Obj(TString * v)
 	{
 		try
 		{
-			TLayout* tl = dynamic_cast<TLayout*>(baseObj.get());
-			if (tl->GetOrganization() == grid)
+			TLayout* tl = dynamic_cast<TLayout*>(baseObj.Get());
+			if (tl->GetOrganization() == orgLayout::grid)
 			{
 				tl->addColunm(100, true);// setNewColunmSize(currentColunm++, 100);
 				maxColunm++;
@@ -209,7 +208,7 @@ bool HTMLParser::Obj(TString * v)
 		}
 		catch (std::bad_cast& e)
 		{
-			TRACE(e.what());
+			//TRACE(e.what());
 		}
 		//currentColunm++;
 		
@@ -295,34 +294,36 @@ bool HTMLParser::Attribute(TString * v, TString e)
 */
 bool HTMLParser::Attribute(TrecPointer<TString> v, TString& e)
 {
-	if(!e || !v.get())
+	if(!e.GetSize() || !v.Get())
 		return false;
 
 	v->Trim();
 
-	if (!v->GetLength())
+	if (!v->GetSize())
 		return true;
 
-	if (!wcscmp(e, L"caption"))
+	if (!TString::Compare(e, L"caption"))
 	{
 		if (mode & 0b10000000)
 		{
-			TString cap = *v.get();
+			TString cap = *v.Get();
 			if (mode & 0b00010000) // Unordered List
 			{
-				v->Format(_T("*  %ws"), cap.GetBuffer());
-				cap.ReleaseBuffer();
+				WCHAR* buff = cap.GetBufferCopy();
+				v->Format(L"*  %ws", buff);
+				delete[] buff;
 			}
 			else if (mode & 0b00001000) // Ordered List
 			{
-				v->Format(_T("%hu. %ws"), listCount, cap.GetBuffer());
-				cap.ReleaseBuffer();
+				WCHAR* buff = cap.GetBufferCopy();
+				v->Format(L"%hu. %ws", listCount, buff);
+				delete[] buff;
 			}
 		}
 
 		if (tableMode & 0b00010000)
 		{
-			currentObj = TrecPointer<TTextField>(new TTextField(renderer, classList, windowHandle));
+			currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(renderer, classList, windowHandle);
 			AppendAppropriateClasses();
 			if (tableMode & 0b00100000)
 			{
@@ -337,7 +338,7 @@ bool HTMLParser::Attribute(TrecPointer<TString> v, TString& e)
 		}
 		if (linkMode & 1)
 		{
-			CSSGenerator* css = new CSSGenerator(v.get());
+			CSSGenerator* css = new CSSGenerator(v.Get());
 			css->Parse();
 
 			// To-Do: Retrieve styles from CSS object
@@ -353,7 +354,7 @@ bool HTMLParser::Attribute(TrecPointer<TString> v, TString& e)
 		}
 		else if (mode & 0b01000000)
 		{
-			pageTitle = v.get();
+			pageTitle = v.Get();
 		}
 		else
 		{
@@ -367,7 +368,7 @@ bool HTMLParser::Attribute(TrecPointer<TString> v, TString& e)
 					TLayout* layout = nullptr;
 					try
 					{
-						layout = dynamic_cast<TLayout*>(baseObj.get());
+						layout = dynamic_cast<TLayout*>(baseObj.Get());
 					}
 					catch (std::bad_cast& e)
 					{
@@ -376,53 +377,55 @@ bool HTMLParser::Attribute(TrecPointer<TString> v, TString& e)
 					if (!layout)
 						return true;
 
-					textObj = new TTextField(renderer, classList, windowHandle);
-					currentObj = textObj;
+					currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(renderer, classList, windowHandle);
 					AddToTree();
 				}
 			}
 			if (mode & 0b00000001) // Bold Mode is activated
 			{
 				if (mode & 0b00000010)
-					textObj->AppendBoldItalicText(*v.get());
+					textObj->AppendBoldItalicText(*v.Get());
 				else
-					textObj->AppendBoldText(*v.get());
+					textObj->AppendBoldText(*v.Get());
 			}
 			else // BoldMode is not activated
 			{
 				if (mode & 0b00000010)
-					textObj->AppendItalicText(*v.get());
+					textObj->AppendItalicText(*v.Get());
 				else
-					textObj->AppendNormalText(*v.get());
+					textObj->AppendNormalText(*v.Get());
 			}
 		}
 
 	}
-	else if (!wcscmp(e, L"rel"))
+	else if (!TString::Compare(e, L"rel"))
 	{
 		linkMode = linkMode | 0b00000010;
 	}
-	else if (!wcscmp(e, L"title"))
+	else if (!TString::Compare(e, L"title"))
 	{
-		pageTitle = v.get();
+		pageTitle = v.Get();
 	}
-	else if (!wcscmp(e, L"href"))
+	else if (!TString::Compare(e, L"href"))
 	{
 		if (linkMode & 0b00000011)
 		{
-			CFile file;
-			CFileException cfe;
-			//TString* str = v.get();
-			if(fileLoc.GetLength())
-				if (fileLoc.GetAt(fileLoc.GetLength() - 1) != L'\\')
+			TFile file;
+			//CFileException cfe;
+			//TString* str = v.Get();
+			if(fileLoc.GetSize())
+				if (fileLoc.GetAt(fileLoc.GetSize() - 1) != L'\\')
 					fileLoc.AppendChar(L'\\');
 			TString str = fileLoc;
-			if(v.get())
-				str += *v.get();
-			if (!file.Open(str, CFile::modeRead, &cfe))
+			if(v.Get())
+				str += *v.Get();
+
+			if (!file.Open(str, TFile::t_file_read))
+			{
 				return true;
-			CArchive* archie = new CArchive(&file, CArchive::load);
-			CSSGenerator* css = new CSSGenerator(*archie);
+			}
+
+			CSSGenerator* css = new CSSGenerator(file);
 			css->Parse();
 			// To-Do: retrieve styles from CSS object
 			TrecPointer<TArray<styleTable>> st = css->GetStyles();
@@ -434,8 +437,7 @@ bool HTMLParser::Attribute(TrecPointer<TString> v, TString& e)
 
 			//
 			delete css;
-			archie->Close();
-			delete archie;
+
 			file.Close();
 		}
 	}
@@ -475,7 +477,7 @@ bool HTMLParser::submitEdition(TString v)
 */
 bool HTMLParser::goChild()
 {
-	if (!currentObj.get())
+	if (!currentObj.Get())
 		return false;
 	baseObj = currentObj;
 	return true;
@@ -489,7 +491,7 @@ bool HTMLParser::goChild()
 */
 void HTMLParser::goParent()
 {
-	if (baseObj.get() && baseObj->getParent().get())
+	if (baseObj.Get() && baseObj->getParent().Get())
 		baseObj = baseObj->getParent();
 }
 
@@ -536,7 +538,7 @@ TTextField * HTMLParser::GetTextField()
 {
 	try
 	{
-		return dynamic_cast<TTextField*>(currentObj.get());
+		return dynamic_cast<TTextField*>(currentObj.Get());
 	}
 	catch (std::bad_cast& e)
 	{
@@ -553,15 +555,15 @@ TTextField * HTMLParser::GetTextField()
 */
 void HTMLParser::AddToTree()
 {
-	ASSERT(rootObj.get());
-	if (!baseObj.get())
+	assert(rootObj.Get());
+	if (!baseObj.Get())
 		baseObj = rootObj;
 	else
 	{
 		try
 		{
 			// First see if base object is a TLayout
-			TLayout* baseLayout = dynamic_cast<TLayout*>(baseObj.get());
+			TLayout* baseLayout = dynamic_cast<TLayout*>(baseObj.Get());
 
 			if (tableMode & 1)
 			{
@@ -592,8 +594,8 @@ void HTMLParser::AddToTree()
 */
 void HTMLParser::AppendAppropriateClasses()
 {
-	if (!currentObj.get())
+	if (!currentObj.Get())
 		return;
-	if (listClass.GetLength())
+	if (listClass.GetSize())
 		currentObj->AddClass(listClass);
 }

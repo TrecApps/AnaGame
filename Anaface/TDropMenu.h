@@ -1,7 +1,7 @@
 #pragma once
 #include "TLayout.h"
 
-typedef enum DropMenuType
+typedef enum class  DropMenuType
 {
 	dmt_File,
 	dmt_Class,
@@ -18,21 +18,25 @@ private:
 	bool hasChildren, childrenActive;
 };
 
+/**
+ * DEPRECATED in favor of the TTreeDataBind control and it's TObjectNode
+ */
 class TDropMenu :public TControl
 {
 public:
-	TDropMenu(TrecComPointer<ID2D1RenderTarget>, TrecPointer<TArray<styleTable>> styles);
+	TDropMenu(TrecPointer<DrawingBoard>, TrecPointer<TArray<styleTable>> styles);
 	~TDropMenu();
 
-	bool onCreate(RECT l) override;
+	bool onCreate(D2D1_RECT_F l, TrecPointer<TWindowEngine> d3d) override;
 	void onDraw(TObject* obj = nullptr) override;
+
 
 	bool SetFolderAsRoot(TString& folder);
 	virtual UCHAR* GetAnaGameType()override;
 protected:
 	TrecPointer<DropMenuNode> rootNode;
-	void DrawNode(long& top,TrecPointer<DropMenuNode> node);
+	void DrawNode(float& top,TrecPointer<DropMenuNode> node);
 	UINT nodeHeight;
-	ID2D1SolidColorBrush* dotBrush;
+	TrecPointer<TBrush> dotBrush;
 };
 

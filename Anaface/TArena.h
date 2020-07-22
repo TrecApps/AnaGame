@@ -1,6 +1,5 @@
 #pragma once
-#include <ArenaEngine.h>
-#include <ArenaModel.h>
+#include <TCamera.h>
 #include "TControl.h"
 
 // Macros for managing Look At vs Look To camera
@@ -15,57 +14,67 @@
 * class TArena
 * Purpose: Holds the Camera for view into a 3D Arena
 */
-class _ANAFACE_DLL TArena : public TControl
+class _ANAFACE_DLL TArena : public TControl, public TCamera
 {
 public:
-	TArena(TrecComPointer<ID2D1RenderTarget>, TrecPointer<TArray<styleTable>> ta, HWND h, CAMERA_TYPE lookTo = LOOK_TO);
+	/*
+	* Method: TArena::TArena
+	* Purpose: Constructor
+	* Parameters: TrecPointer<DrawingBoard> rt - the render target to draw to
+	*				TrecPointer<TArray<styleTable>> st - list of Anaface styles
+	*				HWND h - the window to attach to
+	*				CAMERA_TYPE type - type of camera to start as
+	* Returns: void
+	*/
+	TArena(TrecPointer<DrawingBoard>, TrecPointer<TArray<styleTable>> ta, HWND h, CAMERA_TYPE lookTo = LOOK_TO);
+	/*
+	* Method: TArena::~TArena
+	* Purpose: Destructor
+	* Parameters: void
+	* Returns: void
+	*/
 	~TArena();
 
-	bool onCreate(RECT) override;
-	TrecPointer<ArenaEngine> getEngine();
-	bool setEngine(TrecPointer<ArenaEngine> e);
-	void removeEngine();
+	/*
+	* Method: TArena::onCreate
+	* Purpose: Sets up Arena specific attributes
+	* Parameters: RECT r - the location on screen where arena is to show
+	* Returns: bool - ignore
+	*/
+	bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d) override;
+	/*
+	* Method: TArena::getEngine
+	* Purpose: Retrieves the engine the Arena control is attached to
+	* Parameters: void
+	* Returns: TrecPointer<ArenaEngine> - the engine arena control is attached to
+	*/
+	TrecPointer<TArenaEngine> getEngine();
 
+
+	/*
+	* Method: TArena::onDraw
+	* Purpose: Draws the Control as well as activates the 3D engine to draw
+	* Parameters: void
+	* Returns: void
+	*/
 	void onDraw(TObject* obj) override;
 
-	void Rotate(float leftRight, float upDown);
-	void Translate(float degree, DirectX::XMFLOAT3 direction);
-
-	void ChangeToLookAt();
-	void ChangeToLookAt(ArenaModel& am, float distance, bool changeAngle);
-	void ChangeToLookTo();
-	void ChangeToLookTo(float x, float y, float z);
-
+	/*
+	* Method: TArena::GetAnaGameType
+	* Purpose: Retrieves the AnaGame type for the TArena class
+	* Parameters: void
+	* Returns: UCHAR* - AnaGame representation of the type
+	*/
 	virtual UCHAR* GetAnaGameType()override;
 
-	void UpdatePos(float f, UCHAR dir);
-	void UpdateDir(float f, UCHAR dir);
+	/*
+	 * Method: TArena::Resize
+	 * Purpose: Resizes the control upon the window being resized
+	 * Parameters: D2D1_RECT_F& r - the new location for the control
+	 * Returns: void
+	 */
+	void Resize(D2D1_RECT_F& r) override;
 
-	void Resize(RECT r) override;
-
-	DirectX::XMFLOAT3 GetCameraLocation();
-	DirectX::XMFLOAT3 GetCameraDirection();
-
-private:
-	TrecPointer<ArenaEngine> arenaEngine;
-	HWND windowHandle;
-	HINSTANCE instanceHandle;
-
-	void RefreshVectors();
-	void UpdateCamera();
-
-	// View Attributes
-	D3D11_VIEWPORT *viewport;
-	DirectX::XMMATRIX projector;
-
-	//float rotX, rotY;
-
-	// Since this effectively holds the camera, attributes for the camera matrix
-	CAMERA_TYPE cameraType;
-	DirectX::XMMATRIX camera; // camera matrix (view in model-view-projection)
-	bool lookTo;              // use a look to if true, a look at if false
-	DirectX::XMFLOAT3 location_3, direction_3, up_3;
-	DirectX::XMVECTOR location, direction, up;
 
 };
 

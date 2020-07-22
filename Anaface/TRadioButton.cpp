@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "TRadioButton.h"
 
 
@@ -27,13 +27,13 @@ void runLoop()
 }
 
 /*
-* Method: (TRadioButton) (Constructor)
-* Purpose: Sets up the Radio Button
-* Parameters: TrecComPointer<ID2D1RenderTarget> rt - render target to use
+* Method: TRadioButton::TRadioButton
+* Purpose: Cunstructor
+* Parameters: TrecPointer<DrawingBoard> rt - render target to use
 *				TrecPointer<TArray<styleTable>> ta - the list of Anaface styles
 * Returns: void
 */
-TRadioButton::TRadioButton(TrecComPointer<ID2D1RenderTarget>rt, TrecPointer<TArray<styleTable>> ta):TGadgetControl(rt,ta)
+TRadioButton::TRadioButton(TrecPointer<DrawingBoard>rt, TrecPointer<TArray<styleTable>> ta):TGadgetControl(rt,ta)
 {
 	otherButtonLocation = otherButtons.push_back(this);
 	buttonClass = NULL;
@@ -44,8 +44,8 @@ TRadioButton::TRadioButton(TrecComPointer<ID2D1RenderTarget>rt, TrecPointer<TArr
 }
 
 /*
-* Method: (TRadioButton) (Destructor)
-* Purpose: Cleans up radio button
+* Method: TRadioButton::~TRadioButton
+* Purpose: Destructor
 * Parameters: void
 * Returns: void
 */
@@ -59,14 +59,14 @@ TRadioButton::~TRadioButton()
 }
 
 /*
-* Method: TRadioButton - onCreate
+* Method: TRadioButton::onCreate
 * Purpose: Sets up the control, including radio button specific aspects
 * Parameters: RECT r - the loaction of the button
 * Returns: bool - false (ignore)
 */
-bool TRadioButton::onCreate(RECT r)
+bool TRadioButton::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
-	TGadgetControl::onCreate(r);
+	TGadgetControl::onCreate(r,d3d);
 
 	runLoop();
 
@@ -86,13 +86,13 @@ bool TRadioButton::onCreate(RECT r)
 		}
 	}
 
-	if (text1.get())
+	if (text1.Get())
 	{
 		text1->bounds.left = text1->bounds.left + bSize;
 	}
 	else
 	{
-		text1 = new TText(renderTarget, this);
+		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 		text1->text = L"Radio-Button";
 
 
@@ -106,7 +106,7 @@ bool TRadioButton::onCreate(RECT r)
 }
 
 /*
-* Method: TRadioButton - onDraw
+* Method: TRadioButton::onDraw
 * Purpose: Draws Radio Button specific visuals
 * Parameters: void
 * Returns: void
@@ -119,13 +119,13 @@ void TRadioButton::onDraw(TObject* obj)
 		return;
 
 	if (isClicked)
-		renderTarget->FillEllipse(&ellBut, brush.get());
+		brush->FillEllipse(ellBut);
 	else
-		renderTarget->DrawEllipse(&ellBut,brush.get());
+		brush->DrawEllipse(ellBut);
 }
 
 /*
-* Method: TRadioButton - OnLButtonDown
+* Method: TRadioButton::OnLButtonDown
 * Purpose: Allows Radio buttons thair own control of the the click event
 * Parameters: UINT nFlags - flags involved
 *				CPoint point - point on screen affected
@@ -133,35 +133,36 @@ void TRadioButton::onDraw(TObject* obj)
 *				TDataArray<EventID_Cred>& eventAr - list of events to respond to
 * Returns: void
 */
-void TRadioButton::OnLButtonDown(UINT nFlags, CPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
+void TRadioButton::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
-	TControl::OnLButtonDown(nFlags, point, mOut, eventAr);
+	resetArgs();
+	TControl::OnLButtonDown(nFlags, point, mOut, eventAr, clickedControl);
 
 	if (isContained(&point, &location))
 	{
 		isClicked = !isClicked;
-		*mOut = positiveOverrideUpdate;
+		*mOut = messageOutput::positiveOverrideUpdate;
 		for (int c = 0; c < otherSameButtons.Size(); c++)
 		{
 			otherSameButtons[c]->isClicked = false;
 		}
-		eventAr.push_back({ On_radio_change, this });
+		eventAr.push_back({ R_Message_Type::On_radio_change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis) });
 
-		if (hasEvent(On_radio_change))
+		if (hasEvent(R_Message_Type::On_radio_change))
 		{
 		
-			args.eventType = On_radio_change;
+			args.eventType = R_Message_Type::On_radio_change;
 			args.positive = isClicked;
-			if (text1.get())
-				args.text = text1->text;
-			args.methodID = getEventID(On_radio_change);
+			if (text1.Get())
+				args.text.Set(text1->text);
+			args.methodID = getEventID(R_Message_Type::On_radio_change);
 		}
 	}
 
 }
 
 /*
-* Method: TRadioButton -
+* Method: TRadioButton::OnLButtonUp
 * Purpose: Calls the TControls version (Don't know why this version is here)
 * Parameters: UINT nFlags - flags involved
 *				CPoint point - point on screen affected
@@ -169,13 +170,13 @@ void TRadioButton::OnLButtonDown(UINT nFlags, CPoint point, messageOutput * mOut
 *				TDataArray<EventID_Cred>& eventAr - list of events to respond to
 * Returns: void
 */
-void TRadioButton::OnLButtonUp(UINT nFlags, CPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
+void TRadioButton::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	TControl::OnLButtonUp(nFlags, point, mOut,eventAr);
 }
 
 /*
-* Method: TRadioButton - GetAnaGameType
+* Method: TRadioButton::GetAnaGameType
 * Purpose: Returns the AnaGame type marker for Radio Buttons
 * Parameters: void
 * Returns: UCHAR* - pointer to AnaGame marker for radio button class
@@ -185,7 +186,13 @@ UCHAR * TRadioButton::GetAnaGameType()
 	return nullptr;
 }
 
-void TRadioButton::Resize(RECT r)
+/*
+ * Method: TRadioButton::Resize
+ * Purpose: Resizes the control upon the window being resized, applies to the box inside the control
+ * Parameters: D2D1_RECT_F& r - the new location for the control
+ * Returns: void
+ */
+void TRadioButton::Resize(D2D1_RECT_F& r)
 {
 	TGadgetControl::Resize(r);
 	ellBut.point = D2D1::Point2F((DxLocation.right + DxLocation.left) / 2, (DxLocation.top + DxLocation.bottom) / 2);
@@ -194,7 +201,7 @@ void TRadioButton::Resize(RECT r)
 }
 
 /*
-* Method: TRadioButton - addButton
+* Method: TRadioButton::addButton
 * Purpose: Adds a new radio button to the group
 * Parameters: TRadioButton* trb - button to add
 * Returns: void
@@ -213,7 +220,7 @@ void TRadioButton::addButton(TRadioButton* trb)
 }
 
 /*
-* Method: TRadioButton - onCreateClass
+* Method: TRadioButton::onCreateClass
 * Purpose: Creaes a new class of radio button, used to group buttons
 * Parameters: void 
 * Returns: void
@@ -221,21 +228,21 @@ void TRadioButton::addButton(TRadioButton* trb)
 void TRadioButton::onCreateClass()
 {
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|RadioClass"));
-	if (valpoint.get())
+	if (valpoint.Get())
 	{
-		buttonClass = new TString(valpoint.get());
+		buttonClass = new TString(valpoint.Get());
 	}
 }
 
 /*
-* Method: TRadioButton - storInTML
+* Method: TRadioButton::storInTML
 * Purpose: Stores the radio button in a TML file
 * Parameters: CArchive * ar - File to use
 *				int childLevel - Level of control in the UI tree
 *				bool overrideChildren - UNUSED
 * Returns: void
 */
-void TRadioButton::storeInTML(CArchive * ar, int childLevel, bool overrideChildren)
+void TRadioButton::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 {
 	//_Unreferenced_parameter_(overrideChildren);
 
@@ -245,8 +252,7 @@ void TRadioButton::storeInTML(CArchive * ar, int childLevel, bool overrideChildr
 		resetAttributeString(&appendable, childLevel + 1);
 
 		appendable.Append(L"|RadioClass:");
-		appendable.Append(buttonClass->GetBuffer());
-		buttonClass->ReleaseBuffer();
+		appendable.Append(buttonClass->GetConstantBuffer());
 		_WRITE_THE_STRING;
 	}
 	TControl::storeInTML(ar, childLevel);

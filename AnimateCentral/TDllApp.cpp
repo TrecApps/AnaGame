@@ -15,14 +15,14 @@ TDllApp::~TDllApp()
 
 bool TDllApp::Initialize(TMap<TString>& properties, TString& directory)
 {
-    TString* prop = properties.retrieveEntry(TString(L"DirectoryPath")).get();
+    TString* prop = properties.retrieveEntry(TString(L"DirectoryPath")).Get();
 
 	if (!prop)
 		return false;
-	if (!SetDllDirectoryW(directory)) return false;
+	if (!SetDllDirectoryW(directory.GetConstantBuffer())) return false;
 
-	library = LoadLibraryW(prop->GetBuffer());
-	prop->ReleaseBuffer();
+	library = LoadLibraryW(prop->GetConstantBuffer());
+
 
 	if (!library)
 		return false;

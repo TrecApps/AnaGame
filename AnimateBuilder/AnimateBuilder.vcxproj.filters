@@ -7,7 +7,7 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
@@ -15,100 +15,31 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="AnimateBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MainFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ChildFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimateBuilderDoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimateBuilderView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileView.h">
+    <ClInclude Include="AnimateBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClassView.h">
+    <ClInclude Include="MainLayoutHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ViewTree.h">
+    <ClInclude Include="ArenaApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OutputWnd.h">
+    <ClInclude Include="SourceCodeApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PropertiesWnd.h">
+    <ClInclude Include="SourceCodeApp2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CalendarBar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceCodeView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceCodeDoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AnafaceView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AnafaceDoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileNewDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BuilderDocManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NewProjectDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BuilderProject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectoryInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TControl_Edit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TLayoutEdit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelDoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TLayoutLocDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TControl_TDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NewObjectTDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EditObjectTDialog.h">
+    <ClInclude Include="ArenaApp2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -116,100 +47,21 @@
     <ClCompile Include="AnimateBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="MainLayoutHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MainFrm.cpp">
+    <ClCompile Include="ArenaApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ChildFrm.cpp">
+    <ClCompile Include="SourceCodeApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AnimateBuilderDoc.cpp">
+    <ClCompile Include="SourceCodeApp2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AnimateBuilderView.cpp">
+    <ClCompile Include="ArenaApp2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ViewTree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OutputWnd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PropertiesWnd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CalendarBar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceCodeView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceCodeDoc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AnafaceView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AnafaceDoc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileNewDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BuilderDocManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NewProjectDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BuilderProject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectoryInterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TControl_Edit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TLayoutEdit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelDoc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TLayoutLocDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TControl_TDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NewObjectTDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EditObjectTDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="AnimateBuilder.reg" />
-    <None Include="res\ribbon.mfcribbon-ms">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\AnimateBuilder.rc2">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AnimateBuilder.rc">
@@ -217,112 +69,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\file_view.ico">
+    <Image Include="small.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\file_view_hc.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\class_view.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\class_view_hc.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\fileview.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\fileview_hc.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\classview.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\classview_hc.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\explorer.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\explorer_hc.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\sort.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\sort_hc.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\menuimages.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\menuimages_hc.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\output_wnd.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\output_wnd_hc.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\properties_wnd.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\properties_wnd_hc.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\properties.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\properties_hc.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\nav_large.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\nav_large_hc.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\pages.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\pages_hc.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\pages_small.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\pages_small_hc.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\buttons.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\filelarge.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\filesmall.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\main.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\writelarge.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\writesmall.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\AnimateBuilderDoc.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\AnimateBuilder.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\Toolbar.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\Toolbar256.bmp">
+    <Image Include="AnimateBuilder.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

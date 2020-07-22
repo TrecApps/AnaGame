@@ -2,7 +2,7 @@
 class TControl;
 #include "Anaface.h"
 
-typedef enum _ANAFACE_DLL eventType
+typedef enum class  _ANAFACE_DLL eventType
 {
 	onClick,
 	onHover,

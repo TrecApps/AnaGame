@@ -48,6 +48,9 @@
     <ClInclude Include="TDllApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SwitchHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimateCentral.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TDllApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SwitchHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

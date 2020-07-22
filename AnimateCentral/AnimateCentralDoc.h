@@ -61,7 +61,7 @@ protected:
 	//CDC* contextPointer;
 	RECT area;
 	CView* attachedView;
-	TrecComPointer<ID2D1DCRenderTarget> rt;
+	TrecComPointer<ID2D1RenderTarget> rt;
 	TrecComPointer<ID2D1Factory> factory;
 
 	HWND windowHandle;

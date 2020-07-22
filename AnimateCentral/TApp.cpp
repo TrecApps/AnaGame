@@ -22,17 +22,17 @@ TApp* TApp::Initialize(TFile& file)
 	while (file.ReadString(line))
 	{
 		auto pair = line.split(TString(L"="));
-		if (pair->Count() == 2)
+		if (pair->Size() == 2)
 		{
-			TString prop = pair->ElementAt(0).get();
-			TString* value = pair->ElementAt(1).get();
+			TString prop = pair->at(0);
+			TrecPointer<TString> value = TrecPointerKey::GetNewTrecPointer<TString>(pair->at(1));
 			prop.Trim();
 			value->Trim();
 			properties.addEntry(prop, TrecPointer<TString>(value));
 		}
 	}
 
-	TString* appType = properties.retrieveEntry(TString(L"AppType")).get();
+	TString* appType = properties.retrieveEntry(TString(L"AppType")).Get();
 
 	TDllApp* app = nullptr;
 	if (!appType)

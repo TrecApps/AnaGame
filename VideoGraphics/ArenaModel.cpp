@@ -1,7 +1,8 @@
-#include "stdafx.h"
+
 #include "ArenaModel.h"
 #include <DirectXTex.h>
 #include <Logger.h>
+#include <TFile.h>
 
 /*
 * Method: ArenaModel
@@ -20,9 +21,9 @@ using namespace DirectX;
 * Parameters: ArenaEngine& ae - the engine to bound the model to
 * Return: void
 */
-ArenaModel::ArenaModel(ArenaEngine& ae)
+ArenaModel::ArenaModel(TrecPointer<TArenaEngine> ae)
 {
-	engine = &ae;
+	engine = ae;
 	size = 1.0f;
 	ZeroMemory(&location, sizeof(location));
 	ZeroMemory(&direction, sizeof(direction));
@@ -30,14 +31,7 @@ ArenaModel::ArenaModel(ArenaEngine& ae)
 	device = engine->getDeviceD();
 	renderTarget = engine->getRederTarget();
 	swapChain = engine->getSwapChain();
-	constructionWorked = context.get() && device.get() && renderTarget.get() && swapChain.get();
-
-	indexBuffer = (ID3D11Buffer*)nullptr;
-	singleColorBuffer = (ID3D11Buffer*)nullptr;
-	vertexBuffer = (ID3D11Buffer*)nullptr;
-	projectionBuffer = (ID3D11Buffer*)nullptr;
-
-	engine->AddModel(*this);
+	constructionWorked = context.Get() && device.Get() && renderTarget.Get() && swapChain.Get();
 
 	location.x = 0.0f;
 	location.z = 0.0f;
@@ -49,39 +43,41 @@ ArenaModel::ArenaModel(ArenaEngine& ae)
 	TString logMessage;
 	logMessage.Format(L"CREATE %p ArenaModel(ArenaEngine& ae)", this);
 
-	Log(lt_memory, logMessage);
+	Log(LogType::lt_memory, logMessage);
 }
 
-ArenaModel::ArenaModel()
+ArenaModel::ArenaModel(ArenaModel& am)
 {
-	size = 1.0f;
-	ZeroMemory(&location, sizeof(location));
-	ZeroMemory(&direction, sizeof(direction));
-	context = engine->getDevice();
-	device = engine->getDeviceD();
-	renderTarget = engine->getRederTarget();
-	swapChain = engine->getSwapChain();
-	constructionWorked = context.get() && device.get() && renderTarget.get() && swapChain.get();
-
-	indexBuffer = (ID3D11Buffer*)nullptr;
-	singleColorBuffer = (ID3D11Buffer*)nullptr;
-	vertexBuffer = (ID3D11Buffer*)nullptr;
-	projectionBuffer = (ID3D11Buffer*)nullptr;
-
-	//engine->AddModel(*this);
-
-	location.x = 0.0f;
-	location.z = 0.0f;
-	location.y = 0.0f;
-
-	direction.x = direction.y = direction.z = 1.0f;
-
-	hasPipeColor = false;
-	TString logMessage;
-	logMessage.Format(L"CREATE %p ArenaModel()", this);
-
-	Log(lt_memory, logMessage);
+	name.Set(am.name);
+	primitive = am.primitive;
+	vertexData = am.vertexData;
+	DataDescriptor = am.DataDescriptor;
+	index = am.index;
+	sqIndex = am.sqIndex;
+	location = am.location;
+	direction = am.direction;
+	size = am.size;
+	engine = am.engine;
+	shader = am.shader;
+	textures = am.textures;
+	singleColor = am.singleColor;
+	pipeColor = am.pipeColor;
+	context = am.context;
+	swapChain = am.swapChain;
+	renderTarget = am.renderTarget;
+	device = am.device;
+	indexBuffer = am.indexBuffer;
+	vertexBuffer = am.vertexBuffer;
+	projectionBuffer = am.projectionBuffer;
+	singleColorBuffer = am.singleColorBuffer;
+	singlePipeColorBuffer = am.singlePipeColorBuffer;
+	constantBuffer = am.constantBuffer;
+	shaderMatrix = am.shaderMatrix;
+	bufferSize = am.bufferSize;
+	constructionWorked = am.constructionWorked;
+	hasPipeColor = am.hasPipeColor;
 }
+
 
 /*
 * Method: (ArenaModel) (Destructor)
@@ -94,7 +90,7 @@ ArenaModel::~ArenaModel()
 	TString logMessage;
 	logMessage.Format(L"DELETE %p ArenaModel", this);
 
-	Log(lt_memory, logMessage);
+	Log(LogType::lt_memory, logMessage);
 }
 
 TString ArenaModel::toString()
@@ -102,10 +98,14 @@ TString ArenaModel::toString()
 	return TString();
 }
 
-TString ArenaModel::getVariableValueStr(TString & varName)
+TString ArenaModel::getVariableValueStr(const TString & varName)
 {
 	if (!varName.Compare(L"Name"))
-		return name;
+	{
+		TString ret(L"Name: ");
+		ret.Append(name);
+		return ret;
+	}
 	if (!varName.Compare(L"location"))
 	{
 		TString ret;
@@ -121,9 +121,9 @@ TString ArenaModel::getVariableValueStr(TString & varName)
 	return TString();
 }
 
-void ArenaModel::setName(TString & newName)
+void ArenaModel::setName(const TString & newName)
 {
-	name = newName;
+	name.Set(newName);
 }
 
 TString ArenaModel::getName()
@@ -137,13 +137,13 @@ TString ArenaModel::getName()
 * Parameters: ArenaEngine& e - the new engine to bound the model to
 * Return: void
 */
-void ArenaModel::SetNewEngine(ArenaEngine & e)
+void ArenaModel::SetNewEngine(TrecPointer<TArenaEngine> e)
 {
-	if (engine)
-		engine->RemoveModel(this);
+	if (engine.Get())
+		engine->RemoveModel(TrecPointerKey::GetTrecPointerFromSoft<ArenaModel>(self));
 
-	engine = &e;
-	engine->AddModel(*this);
+	engine = e;
+	engine->AddModel(TrecPointerKey::GetTrecPointerFromSoft<ArenaModel>(self));
 }
 
 /*
@@ -164,7 +164,7 @@ bool ArenaModel::ValidateConstruction()
 * Return:
 * Note: NOT IMPLEMENTED - purpose is not clear yet
 */
-HRESULT ArenaModel::LoadModel(CArchive & ar)
+HRESULT ArenaModel::LoadModel(TFile & ar)
 {
 	return E_NOTIMPL;
 }
@@ -179,13 +179,13 @@ HRESULT ArenaModel::LoadModel(CArchive & ar)
 int ArenaModel::SetVertexData(TDataArray<float>& data, int shaderID, D3D11_PRIMITIVE_TOPOLOGY prim)
 {
 	//GUARD_CODE -1;
-	int bSize = engine->getBufferSize(shaderID);
+	int bSize = engine->TShaderHost::getBufferSize(shaderID);
 	if (!bSize)
 		return 1;
 	bufferSize = bSize;
 	if(!SetVertexData(data))
 		return 2;
-	shader.default = false;
+	shader._default = false;
 	shader.card.id = shaderID;
 
 	//bufferSize = data.Size();
@@ -205,7 +205,7 @@ int ArenaModel::SetVertexData(TDataArray<float>& data, DefaultShader ds, D3D11_P
 	//GUARD_CODE -1;
 	if (!SetVertexData(data))
 		return 2;
-	shader.default = true;
+	shader._default = true;
 	shader.card.dID = ds;
 
 	bufferSize = engine->getBufferSize(ds);
@@ -229,8 +229,6 @@ int ArenaModel::SetVertexData(TDataArray<float>& data)
 	vertexData = data;
 
 
-	vertexBuffer = nullptr;
-
 	D3D11_SUBRESOURCE_DATA rd;
 	ZeroMemory(&rd, sizeof(rd));
 	rd.pSysMem = vertexData.data();
@@ -243,9 +241,9 @@ int ArenaModel::SetVertexData(TDataArray<float>& data)
 	vDesc.ByteWidth = sizeof(vertexData[0]) * vertexData.Size();
 
 
-	ID3D11Buffer* vb = nullptr;
-	HRESULT res = device->CreateBuffer(&vDesc, &rd, &vb);
-	vertexBuffer = vb;
+	TrecComPointer<ID3D11Buffer>::TrecComHolder vb;
+	HRESULT res = device->CreateBuffer(&vDesc, &rd, vb.GetPointerAddress());
+	vertexBuffer = vb.Extract();
 	return static_cast<int>(SUCCEEDED(res));
 }
 
@@ -282,10 +280,10 @@ bool ArenaModel::SetIndices(TDataArray<UINT>& indices)
 	ZeroMemory(&rd, sizeof(rd));
 	rd.pSysMem = indices.data();
 
-	indexBuffer = nullptr;
-	ID3D11Buffer* ib = nullptr;
-	HRESULT res = device->CreateBuffer(&vDesc, &rd, &ib);
-	indexBuffer = ib;
+	
+	TrecComPointer<ID3D11Buffer>::TrecComHolder ib;
+	HRESULT res = device->CreateBuffer(&vDesc, &rd, ib.GetPointerAddress());
+	indexBuffer = ib.Extract();
 
 	if(SUCCEEDED(res))
 		index = indices;
@@ -312,59 +310,58 @@ void ArenaModel::ProjectionGPU(bool gpu)
 *				DirectX::XMMATRIX& camera - the camera matrix to use
 * Return: void
 */
-void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera, ArenaEngine* e)
+void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera)
 {	//GUARD_CODE;
 
-	if (!e)
-		return;
+	if (!renderTarget.Get() && engine.Get())
+		renderTarget = engine->getRederTarget();
 
-	e->SetResources(context, swapChain, renderTarget, device);
-	if (!context.get() || !swapChain.get() ||
-		!renderTarget.get() || !device.get())
+	if (!context.Get() || !swapChain.Get() ||
+		!renderTarget.Get() || !device.Get())
 		return;
 
 
 	if (!vertexData.Size())
 		return;
 
-	if (!projectionBuffer.get())
+	if (!projectionBuffer.Get())
 	{
 		D3D11_BUFFER_DESC vDesc;
 		ZeroMemory(&vDesc, sizeof(vDesc));
 		vDesc.Usage = D3D11_USAGE_DEFAULT;
 		vDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		vDesc.ByteWidth = sizeof(XMMATRIX);
-		ID3D11Buffer* pb = nullptr;
-		if (FAILED(device->CreateBuffer(&vDesc, 0, &pb)))
+		TrecComPointer<ID3D11Buffer>::TrecComHolder pb;
+		if (FAILED(device->CreateBuffer(&vDesc, 0, pb.GetPointerAddress())))
 			return;
-		projectionBuffer = pb;
+		projectionBuffer = pb.Extract();
 	}
 	signed char modelLocation = -1;
 	signed char viewLocation = -1;
-	if (shader.default)
+	if (shader._default)
 	{
-		engine->setShader(shader.card.dID);
+		engine->SetShader(shader.card.dID);
 		modelLocation = engine->GetModelLocation(shader.card.dID);
 		viewLocation = engine->GetViewLocation(shader.card.dID);
 	}
 	else
 	{
-		engine->setShader(shader.card.id);
+		engine->SetShader(shader.card.id);
 		modelLocation = engine->GetModelLocation(shader.card.id);
 		viewLocation = engine->GetViewLocation(shader.card.id);
 	}
 	if (modelLocation < 0)
 		return;  // That's it! Back to the Chicken Farm
 
-	bool soft_mvp = engine->DoMVP();
+	bool soft_mvp = engine->DoMvp();
 
 
 	unsigned int offset = 0, buffSize = static_cast<unsigned int>(bufferSize);
 
 	//context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	ID3D11Buffer*const  buff = vertexBuffer.get();
+	ID3D11Buffer*const  buff = vertexBuffer.Get();
 	context->IASetVertexBuffers(0, 1, &buff, &buffSize, &offset);
-	//context->UpdateSubresource(indexBuffer.get(), 0, 0, index.data(), 0, 0);
+	//context->UpdateSubresource(indexBuffer.Get(), 0, 0, index.data(), 0, 0);
 
 
 	XMMATRIX rotator =  XMMatrixRotationRollPitchYaw(direction.x, direction.y, direction.z);
@@ -378,7 +375,7 @@ void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera, Are
 	}
 
 	signed char loc = 0;
-	if (shader.default)
+	if (shader._default)
 	{
 		loc = engine->getColorBufferLocation(shader.card.dID);
 	}
@@ -388,7 +385,7 @@ void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera, Are
 	if (loc >= 0)
 	{
 		setSingleColorBuffer(true);
-		ID3D11Buffer*const  cBuff = singleColorBuffer.get();
+		ID3D11Buffer*const  cBuff = singleColorBuffer.Get();
 		context->PSSetConstantBuffers(loc,1,&cBuff);
 	}
 
@@ -407,13 +404,13 @@ void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera, Are
 		context->VSSetConstantBuffers(viewLocation, 1, &viewBuffer);
 	}*/
 
-	context->UpdateSubresource(projectionBuffer.get(), 0, 0, &modelMat, 0, 0);
-	ID3D11Buffer*const  pBuff = projectionBuffer.get();
+	context->UpdateSubresource(projectionBuffer.Get(), 0, 0, &modelMat, 0, 0);
+	ID3D11Buffer*const  pBuff = projectionBuffer.Get();
 	context->VSSetConstantBuffers(modelLocation, 1, &pBuff);
 	//engine->ModelSetFillMode(D3D11_FILL_SOLID);
 
-	if(indexBuffer.get())
-		context->IASetIndexBuffer(indexBuffer.get(), DXGI_FORMAT_R32_UINT, 0);
+	if(indexBuffer.Get())
+		context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	context->IASetPrimitiveTopology(primitive);
 	
 	switch (primitive)
@@ -428,7 +425,7 @@ void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera, Are
 		context->DrawIndexed(index.Size(), 0, 0);
 		if (hasPipeColor && setSingleColorBuffer(false) && loc >= 0)
 		{
-			ID3D11Buffer*const  cBuff = singlePipeColorBuffer.get();
+			ID3D11Buffer*const  cBuff = singlePipeColorBuffer.Get();
 			context->PSSetConstantBuffers(loc, 1, &cBuff);
 			engine->ModelSetFillMode(D3D11_FILL_WIREFRAME);
 			context->DrawIndexed(index.Size(), 0, 0);
@@ -544,7 +541,7 @@ DirectX::XMFLOAT3 ArenaModel::GetDirection()
 bool ArenaModel::setColorBuffer(float r, float g, float b, float a)
 {
 	signed char loc = 0;
-	if (shader.default)
+	if (shader._default)
 	{
 		loc = engine->getColorBufferLocation(shader.card.dID);
 	}
@@ -554,15 +551,15 @@ bool ArenaModel::setColorBuffer(float r, float g, float b, float a)
 		return false;
 
 
-	int result = engine->GetConstantBuffer(16, singleColorBuffer);
+	int result = engine->GetConstantBuffer(16, singleColorBuffer, device);
 
 	if(result) // failed
 	{
-		singleColorBuffer = nullptr;
+		singleColorBuffer.Nullify();
 		return false;
 	}
 
-	if (!context.get())
+	if (!context.Get())
 		return false;
 
 	float color[4];
@@ -571,7 +568,7 @@ bool ArenaModel::setColorBuffer(float r, float g, float b, float a)
 	color[2] = b;
 	color[3] = a;
 
-	context->UpdateSubresource(singleColorBuffer.get(), 0, 0, &color, 0, 0);
+	context->UpdateSubresource(singleColorBuffer.Get(), 0, 0, &color, 0, 0);
 
 	
 
@@ -600,7 +597,7 @@ bool ArenaModel::setPipeColorBuffer(float r, float g, float b, float a)
 	hasPipeColor = true;
 
 	signed char loc = 0;
-	if (shader.default)
+	if (shader._default)
 	{
 		loc = engine->getColorBufferLocation(shader.card.dID);
 	}
@@ -610,15 +607,15 @@ bool ArenaModel::setPipeColorBuffer(float r, float g, float b, float a)
 		return false;
 
 
-	int result = engine->GetConstantBuffer(16, singlePipeColorBuffer);
+	int result = engine->GetConstantBuffer(16, singlePipeColorBuffer,device);
 
 	if (result) // failed
 	{
-		singlePipeColorBuffer = nullptr;
+		singlePipeColorBuffer.Nullify();
 		return false;
 	}
 
-	if (!context.get())
+	if (!context.Get())
 		return false;
 
 	float color[4];
@@ -627,7 +624,7 @@ bool ArenaModel::setPipeColorBuffer(float r, float g, float b, float a)
 	color[2] = b;
 	color[3] = a;
 
-	context->UpdateSubresource(singlePipeColorBuffer.get(), 0, 0, &color, 0, 0);
+	context->UpdateSubresource(singlePipeColorBuffer.Get(), 0, 0, &color, 0, 0);
 
 
 
@@ -645,7 +642,7 @@ bool ArenaModel::setPipeColorBuffer(float r, float g, float b, float a)
 bool ArenaModel::setSingleColorBuffer(bool solidColor)
 {
 	signed char loc;
-	if (shader.default)
+	if (shader._default)
 	{
 		loc = engine->getColorBufferLocation(shader.card.dID);
 	}
@@ -655,15 +652,15 @@ bool ArenaModel::setSingleColorBuffer(bool solidColor)
 		return false;
 	if (solidColor)
 	{
-		if (!singleColorBuffer.get())
+		if (!singleColorBuffer.Get())
 			return false;
-		engine->ReplaceConstantBuffer(default_shader_Single_Color, loc, singleColorBuffer.get());
+		engine->ReplaceConstantBuffer(DefaultShader::default_shader_Single_Color, loc, singleColorBuffer);
 	}
 	else
 	{
-		if (!singlePipeColorBuffer.get())
+		if (!singlePipeColorBuffer.Get())
 			return false;
-		engine->ReplaceConstantBuffer(default_shader_Single_Color, loc, singlePipeColorBuffer.get());
+		engine->ReplaceConstantBuffer(DefaultShader::default_shader_Single_Color, loc, singlePipeColorBuffer);
 	}
 	return true;
 }
@@ -677,9 +674,9 @@ bool ArenaModel::setSingleColorBuffer(bool solidColor)
 int ArenaModel::AddTexture(TString & fileName)
 {
 	signed char id = -2;
-	if (shader.default)
+	if (shader._default)
 	{
-		id = engine->GetTextureCount(shader.card.dID);
+		id = engine->GetTextureCount(static_cast<int>(shader.card.dID));
 	}
 	else
 	{
@@ -693,12 +690,12 @@ int ArenaModel::AddTexture(TString & fileName)
 		return -2;
 
 	TextureResources tr = GetTexture(fileName);
-	if (!tr.colorMap.get())
+	if (!tr.colorMap.Get())
 		return -3;
-	if (!tr.sampleState.get())
+	if (!tr.sampleState.Get())
 	{
 
-		tr.colorMap = nullptr;
+		tr.colorMap.Nullify();
 		return -4;
 	}
 
@@ -722,18 +719,18 @@ int ArenaModel::UpdateTexture(TString & fileName, int location)
 		return 2;
 
 	TextureResources tr = GetTexture(fileName);
-	if (!tr.colorMap.get())
+	if (!tr.colorMap.Get())
 		return -3;
-	if (!tr.sampleState.get())
+	if (!tr.sampleState.Get())
 	{
-		tr.colorMap = nullptr;
+		tr.colorMap.Nullify();
 		return -4;
 	}
 
 
-		textures[location].colorMap= nullptr;
+		textures[location].colorMap.Nullify();
 
-		textures[location].sampleState= nullptr;
+		textures[location].sampleState.Nullify();
 	textures[location] = tr;
 
 	return 0;
@@ -753,6 +750,13 @@ UCHAR * ArenaModel::GetAnaGameType()
 	return ArenaModelType;
 }
 
+void ArenaModel::SetSelf(TrecPointer<ArenaModel> s)
+{
+	if (this != s.Get())
+		throw L"Error! Expected Self TrecPointer to point at 'this'";
+	self = TrecPointerKey::GetSoftPointerFromTrec<ArenaModel>(s);
+}
+
 /*
 * Method: ArenaModel - GetTexture
 * Purpose: Retrieves the Texture resources of a given image
@@ -764,13 +768,14 @@ TextureResources ArenaModel::GetTexture(TString & fileName)
 	DirectX::TexMetadata imageData;
 	DirectX::ScratchImage* scratchy = new DirectX::ScratchImage();
 
-	HRESULT res = LoadFromDDSFile(fileName.GetBuffer(), DirectX::DDS_FLAGS_NONE, &imageData, *scratchy);
+	WCHAR* fileBuffer = fileName.GetBufferCopy();
+	HRESULT res = LoadFromDDSFile(fileBuffer, DirectX::DDS_FLAGS_NONE, &imageData, *scratchy);
 
-	fileName.ReleaseBuffer();
+	delete[] fileBuffer;
 
 	TextureResources ret;
-	ret.colorMap = nullptr;
-	ret.sampleState = nullptr;
+	ret.colorMap.Nullify();
+	ret.sampleState.Nullify();
 
 	if (FAILED(res))
 	{
@@ -780,9 +785,9 @@ TextureResources ArenaModel::GetTexture(TString & fileName)
 		return ret;
 	}
 
-	ID3D11ShaderResourceView* rv = nullptr;
-	ID3D11SamplerState* ss = nullptr;
-	res = CreateShaderResourceView(device.get(), scratchy->GetImages(), scratchy->GetImageCount(), imageData, &rv);
+	TrecComPointer<ID3D11ShaderResourceView>::TrecComHolder rv;
+	TrecComPointer<ID3D11SamplerState>::TrecComHolder ss;
+	res = CreateShaderResourceView(device.Get(), scratchy->GetImages(), scratchy->GetImageCount(), imageData, rv.GetPointerAddress());
 	if (scratchy)
 		delete scratchy;
 	scratchy = nullptr;
@@ -797,9 +802,25 @@ TextureResources ArenaModel::GetTexture(TString & fileName)
 	colorMapDes.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	colorMapDes.MaxLOD = D3D11_FLOAT32_MAX;
 
-	res = device->CreateSamplerState(&colorMapDes, &ss);
-	ret.colorMap = rv;
-	ret.sampleState = ss;
+	res = device->CreateSamplerState(&colorMapDes, ss.GetPointerAddress());
+	ret.colorMap = rv.Extract();
+	ret.sampleState = ss.Extract();
 
 	return ret;
+}
+
+TextureResources::TextureResources()
+{
+}
+
+TextureResources::TextureResources(const TextureResources& copy)
+{
+	colorMap = copy.colorMap;
+	sampleState = copy.sampleState;
+}
+
+void TextureResources::operator=(TextureResources& copy)
+{
+	colorMap = copy.colorMap;
+	sampleState = copy.sampleState;
 }

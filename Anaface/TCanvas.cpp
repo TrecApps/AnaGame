@@ -1,8 +1,8 @@
-#include "stdafx.h"
+
 #include "TCanvas.h"
 
 
-TCanvas::TCanvas(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<styleTable>> ta):TControl(rt,ta)
+TCanvas::TCanvas(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta):TControl(rt,ta)
 {
 }
 
@@ -11,7 +11,7 @@ TCanvas::~TCanvas()
 {
 }
 
-bool TCanvas::onCreate(RECT r)
+bool TCanvas::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
 	for (int c = 0; c < geometry.Count();c++)
 		geometry.ElementAt(c)->onCreate(r);
@@ -20,7 +20,7 @@ bool TCanvas::onCreate(RECT r)
 
 void TCanvas::addGeoGroup(TrecPointer<GeoGroup> gg)
 {
-	if (gg.get())
+	if (gg.Get())
 		geometry.Add(gg);
 }
 

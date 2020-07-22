@@ -1,5 +1,4 @@
 #pragma once
-#include "stdafx.h"
 #include <TString.h>
 #include "AnafaceUI.h"
 
@@ -10,7 +9,7 @@
 class CSSGenerator : public TObject
 {
 public:
-	CSSGenerator(CArchive&);
+	CSSGenerator(TFile&);
 	CSSGenerator(TString);
 	~CSSGenerator();
 
@@ -24,7 +23,7 @@ public:
 	virtual UCHAR* GetAnaGameType()override;
 
 private:
-	CArchive* Arch;
+	TFile* Arch;
 	TString parsable;
 	TString piece;
 	TrecPointer<TArray<styleTable>> styleList;

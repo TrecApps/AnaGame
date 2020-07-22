@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <Windows.h>
 #include "AnagameAsm.h"
 
 UCHAR* Code = nullptr;

@@ -1,28 +1,27 @@
-#include "stdafx.h"
+
 #include "TGadgetControl.h"
 
 /*
-* Method: TGadgetControl) (Constructor) 
-* Purpose: Sets up a TGadet Control
-* Parameters: TrecComPointer<ID2D1RenderTarget> rt - the Render Target to use
+* Method: TGadgetControl::TGadgetControl 
+* Purpose: Constructor
+* Parameters: TrecPointer<DrawingBoard> rt - the Render Target to use
 *				TrecPointer<TArray<styleTable>> ta - List of Styles for the TControl
 *				bool isGadgetBase - the gadget base
-* Return: void
+* Return: new Gadget Control object
 */
-TGadgetControl::TGadgetControl(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<styleTable>> ta, bool isGadgetBase):TControl(rt, ta, false)
+TGadgetControl::TGadgetControl(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta, bool isGadgetBase):TControl(rt, ta, false)
 {
 	isGadBase = isGadgetBase;
 	if (isGadBase)
 		isTextControl = false;
 	bSize = 30;
 	checker = RECT{ 0,0,0,0 };
-	brush = nullptr;
 	thickness = 1.0;
 }
 
 /*
-* Method: (TGadgetControl) (Destructor)
-* Purpose: Cleans up Gadget Control
+* Method: TGadgetControl::~TGadgetControl
+* Purpose: Destructor
 * Parameters: void
 * Return: void
 */
@@ -33,40 +32,31 @@ TGadgetControl::~TGadgetControl()
 	
 }
 
-/*
-* Method: TGadgetControl - storeInTML
-* Purpose: Saves the Gadget Control to a TML file
-* Parameters: CArchive * ar - the File to use
-*				int childLevel - the level control is in the tree
-*				bool ov - UNUSED
-* Return: void
-*/
-void TGadgetControl::storeInTML(CArchive * ar, int childLevel, bool ov)
+void TGadgetControl::storeInTML(TFile* ar, int childLevel, bool ov)
 {
-	//_Unreferenced_parameter_(ov);
-
 	TString appendable;
 	resetAttributeString(&appendable, childLevel + 1);
 
 	appendable.Append(L"|BoxSize:");
-	appendable.AppendFormat(_T("%d"), bSize);
+	appendable.AppendFormat(L"%d", bSize);
 	_WRITE_THE_STRING;
 
-	TControl::storeInTML(ar, childLevel,ov);
-
+	TControl::storeInTML(ar, childLevel, ov);
 }
 
+
+
 /*
-* Method: TGadgetControl - onCreate
+* Method: TGadgetControl::onCreate
 * Purpose: To set up the Gadget Control
-* Parameters: RECT r - the location control will be
+* Parameters: D2D1_RECT_F r - the location control will be
 * Return: bool - false, ignore for now
 */
-bool TGadgetControl::onCreate(RECT r)
+bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
 	marginPriority = false;
 
-	TControl::onCreate(r);
+	TControl::onCreate(r,d3d);
 
 	bSize = location.bottom-location.top;
 	int height = bSize;
@@ -77,20 +67,20 @@ bool TGadgetControl::onCreate(RECT r)
 	if (bSize > 30)
 		bSize = 30;
 
-	if (!content1.get())
+	if (!content1.Get())
 	{
-		content1 = new TContent(renderTarget, this);
-		content1->color = D2D1::ColorF(D2D1::ColorF::White);
-		content1->onCreate(location,snip);                         // this this isn't covered by the TControl
+		content1 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, this);
+		content1->stopCollection.AddGradient(TGradientStop(TColor(D2D1::ColorF(D2D1::ColorF::White)), 0.0f));
+		content1->onCreate(location);                         // this this isn't covered by the TControl
 															// as it didn't exist yet
 	}
 
 
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|BoxSize"));
-	if(valpoint.get())
+	if(valpoint.Get())
 	{
 		int tSize = bSize;
-		if (!valpoint->ConvertToInt(&bSize))
+		if (!valpoint->ConvertToInt(bSize))
 		{
 			bSize = tSize;
 			
@@ -109,18 +99,17 @@ bool TGadgetControl::onCreate(RECT r)
 	DxLocation.right = checker.right;
 	DxLocation.top = checker.top;
 
-	if (renderTarget.get())
+	if (drawingBoard.Get())
 	{
-		ID2D1SolidColorBrush* brushRaw;
-		renderTarget->CreateSolidColorBrush(color, &brushRaw);
-		brush = brushRaw;
+		
+		brush = drawingBoard->GetBrush(TColor(color));
 	}
 
 	return false;
 }
 
 /*
-* Method: TGadgetControl - GetAnaGameType
+* Method: TGadgetControl::GetAnaGameType
 * Purpose: Returns the AnaGame format of the classes type
 * Parameters: void
 * Return: UCHAR* reference to the AnaGame type
@@ -130,7 +119,14 @@ UCHAR * TGadgetControl::GetAnaGameType()
 	return nullptr;
 }
 
-void TGadgetControl::Resize(RECT r)
+
+/*
+ * Method: TGadgetControl::Resize
+ * Purpose: Resizes the control upon the window being resized, applies to the box inside the control
+ * Parameters: D2D1_RECT_F& r - the new location for the control
+ * Returns: void
+ */
+void TGadgetControl::Resize(D2D1_RECT_F& r)
 {
 	TControl::Resize(r);
 	int height = location.bottom - location.top;

@@ -4,7 +4,8 @@
 #include <d2d1.h>
 #include "GeoGroup.h"
 #include <TMap.h>
-#include <TPlayer.h>/*
+//#include <TPlayer.h>
+/*
 class TControl;
 class TFlyout;
 class TContextMenu;

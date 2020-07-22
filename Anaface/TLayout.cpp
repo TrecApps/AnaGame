@@ -1,21 +1,21 @@
-#include "stdafx.h"
+
 #include "TLayout.h"
 
 /*
-* Method:
-* Purpose:
-* Parameters:
-* Returns:
-*/
+ * Method:
+ * Purpose:
+ * Parameters:
+ * Returns:
+ */
 
 /*
-* Method: (TLayout) (Constructor)
-* Purpose: Sets up a TLayout Object that extends the Basic TControl
-* Parameters: TrecComPointer<ID2D1RenderTarget> rt -  the Render target to draw to (TControl handles it)
+* Method: TLayout::TLayout
+* Purpose: Constructor
+* Parameters: TrecPointer<DrawingBoard> rt -  the Render target to draw to (TControl handles it)
 *				TrecPointer<TArray<styleTable>> ta - the Class Style list (TControl handles this)
-* Returns: void
+* Returns: New TLayout
 */
-TLayout::TLayout(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<styleTable>> ta):TControl(rt,ta, false)
+TLayout::TLayout(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta):TControl(rt,ta, false)
 {
 	organization = orgLayout::VBuff;
 	specialFunction = specialLayout::Basic;
@@ -27,7 +27,6 @@ TLayout::TLayout(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<styleT
 	updateRow = true;
 	isLayout = true;
 	main = NULL;
-	internalBrush = nullptr;
 
 	internalColor = D2D1::ColorF(D2D1::ColorF::Black);
 	thickness = 1.0f;
@@ -35,8 +34,8 @@ TLayout::TLayout(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<styleT
 }
 
 /*
-* Method: (TLayout) (Destructor)
-* Purpose: Cleans up the TLayout
+* Method: TLayout::~TLayout
+* Purpose: Destructor
 * Parameters: void
 * Returns: void
 * Note: Currently, the destructor is more ceremonial than functional
@@ -46,7 +45,7 @@ TLayout::~TLayout()
 }
 
 /*
-* Method: TLayout - setLayout
+* Method: TLayout::setLayout
 * Purpose:Sets the layout mode of the TLayout
 * Parameters: orgLayout ol - the layout mode to use
 * Returns: bool - success, true if no children are present, false if a child has been added
@@ -61,7 +60,7 @@ bool TLayout::setLayout(orgLayout ol)
 }
 
 /*
-* Method: TLayout - setConflictResolutionMode
+* Method: TLayout::setConflictResolutionMode
 * Purpose: Sets the Layouts mechanism for handling layouting conflict amongst its controls
 * Parameters: conflictRes cr - the mode for resolving conflict
 * Returns: bool - success, true if no children are present, false if a child has been added
@@ -76,7 +75,7 @@ bool TLayout::setConflictResolutionMode(conflictRes cr)
 }
 
 /*
-* Method: TLayout - setSpecialFunction
+* Method: TLayout::setSpecialFunction
 * Purpose: Sets the Basic mechanism for what this layout will do
 * Parameters: specialLayout sl - sets the special mode that the Layout will perform
 * Returns: bool - success, true if no children are present, false if a child has been added
@@ -92,7 +91,7 @@ bool TLayout::setSpecialFunction(specialLayout sl)
 
 
 /*
-* Method: TLayout - addColunm
+* Method: TLayout::addColunm
 * Purpose: Adds a column to the Layout, as long as it is not a vertical stack
 * Parameters: int x - the size of the new column
 *				bool markDetected - whether the size is absolut or relative compared to available space
@@ -100,20 +99,20 @@ bool TLayout::setSpecialFunction(specialLayout sl)
 */
 bool TLayout::addColunm(int x, bool markDetected)
 {
-	RECT tempRect = RECT{ 0,0,0,0 };
+	D2D1_RECT_F tempRect = D2D1_RECT_F{ 0,0,0,0 };
 
 	bool AcceptMark = true;
 
 	switch (organization)
 	{
-	case HStack:
+	case orgLayout::HStack:
 		AcceptMark = false;
 		break;
-	case HBuff:
+	case orgLayout::HBuff:
 		AcceptMark = true;
 		break;
-	case HMix:
-	case grid:
+	case orgLayout::HMix:
+	case orgLayout::grid:
 		AcceptMark = markDetected;
 	}
 
@@ -131,7 +130,7 @@ bool TLayout::addColunm(int x, bool markDetected)
 			rows++;
 			updateRow = false;
 		}
-		RECT tempRect2 = RECT{ 0,0,0,0 };
+		D2D1_RECT_F tempRect2 = D2D1_RECT_F{ 0,0,0,0 };
 		tempRect.left = returnMinX(true);
 		tempRect.right = tempRect.left + x;
 		for (int c = 0; c < rows;c++)
@@ -139,10 +138,10 @@ bool TLayout::addColunm(int x, bool markDetected)
 			tempRect2 = returnRectY(c);
 			tempRect.top = tempRect2.top;
 			tempRect.bottom = tempRect2.bottom;
-			tempContC = new containerControl();
+			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
 			tempContC->x = colunms;
 			tempContC->y = c;
-			tempContC->contain = new TControl(renderTarget, styles);
+			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
 			
 			tempContC->contain->setLocation(tempRect);
 
@@ -164,10 +163,10 @@ bool TLayout::addColunm(int x, bool markDetected)
 		tempRect.right = tempRect.left + x;
 		tempRect.bottom = location.bottom;
 		tempRect.top = location.top;
-		tempContC = new containerControl();
+		tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
 		tempContC->x = colunms++;
 		tempContC->y = 0;
-		tempContC->contain = new TControl(renderTarget, styles);
+		tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
 
 		tempContC->contain->setLocation(tempRect);
 
@@ -180,7 +179,7 @@ bool TLayout::addColunm(int x, bool markDetected)
 }
 
 /*
-* Method: TLayout - addRow
+* Method: TLayout::addRow
 * Purpose: Adds a new row to the Layout, as long as the layout is not a vertical gallery
 * Parameters: int y - the size of the new row
 *				bool markDetected - whether or not the new size is relative to available space or absolute
@@ -188,20 +187,20 @@ bool TLayout::addColunm(int x, bool markDetected)
 */
 bool TLayout::addRow(int y, bool markDetected)
 {	
-	RECT tempRect = RECT{ 0,0,0,0 };
+	D2D1_RECT_F tempRect = D2D1_RECT_F{ 0,0,0,0 };
 
 	bool AcceptMark = true;
 
 	switch (organization)
 	{
-	case VStack:
+	case orgLayout::VStack:
 		AcceptMark = false;
 		break;
-	case VBuff:
+	case orgLayout::VBuff:
 		AcceptMark = true;
 		break;
-	case VMix:
-	case grid:
+	case orgLayout::VMix:
+	case orgLayout::grid:
 		AcceptMark = markDetected;
 	}
 
@@ -218,7 +217,7 @@ bool TLayout::addRow(int y, bool markDetected)
 			colunms++;
 			updateColumn = false;
 		}
-		RECT tempRect2 = RECT{ 0,0,0,0 };
+		D2D1_RECT_F tempRect2 = D2D1_RECT_F{ 0,0,0,0 };
 		tempRect.top = returnMinY(rows);
 		tempRect.bottom = tempRect.top + y;
 		for (int c = 0; c < colunms;c++)
@@ -226,10 +225,10 @@ bool TLayout::addRow(int y, bool markDetected)
 			tempRect2 = returnRectX(c);
 			tempRect.left = tempRect2.left;
 			tempRect.right = tempRect2.right;
-			tempContC = new containerControl();
+			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
 			tempContC->x = c;
 			tempContC->y = rows;
-			tempContC->contain = new TControl(renderTarget, styles);
+			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
 
 			tempContC->contain->setLocation(tempRect);
 
@@ -251,10 +250,10 @@ bool TLayout::addRow(int y, bool markDetected)
 		tempRect.bottom = tempRect.top + y;
 		tempRect.left = location.left;
 		tempRect.right = location.right;
-		tempContC = new containerControl();
+		tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
 		tempContC->x = 0;
 		tempContC->y = rows++;
-		tempContC->contain = new TControl(renderTarget,styles);
+		tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
 
 		tempContC->contain->setLocation(tempRect);
 
@@ -267,7 +266,7 @@ bool TLayout::addRow(int y, bool markDetected)
 }
 
 /*
-* Method: TLayout - addChild
+* Method: TLayout::addChild
 * Purpose: Adds a new Child Control to the layout at the specified location
 * Parameters: TrecPointer<TControl> tc - the control to add
 *				UINT x - the column to target
@@ -276,20 +275,20 @@ bool TLayout::addRow(int y, bool markDetected)
 */
 int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y)
 {
-	if (!tc.get())
+	if (!tc.Get())
 		return 1;
 	for (int c = 0; c < lChildren.Count();c++)
 	{
 		if (lChildren.ElementAt(c)->x == x && lChildren.ElementAt(c)->y == y)
 		{
-			if (!lChildren.ElementAt(c)->contain.get())
+			if (!lChildren.ElementAt(c)->contain.Get())
 				return 3;
 			lChildren.ElementAt(c)->extend = false;
 			lChildren.ElementAt(c)->contain = tc;
-			lChildren.ElementAt(c)->contain->setParent(TrecPointer<TControl>(this));
+			lChildren.ElementAt(c)->contain->setParent(GetParentReference());
 			/*for (UINT rust = 0; rust < children.Count(); rust++)
 			{
-				if (children.ElementAt(rust).get() == tc.get())
+				if (children.ElementAt(rust).Get() == tc.Get())
 					return 0;
 			}
 			children.Add(tc);*/
@@ -300,7 +299,7 @@ int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y)
 }
 
 /*
-* Method: TLayout - addChild
+* Method: TLayout::addChild
 * Purpose: Adds a new Child Control to the layout at the specified location, and allows for more cells to be covered
 * Parameters: TrecPointer<TControl> tc - the control to add
 *				UINT x - the column to target
@@ -311,13 +310,13 @@ int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y)
 */
 int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y, UINT x_2, UINT y_2)
 {
-	if (!tc.get())
+	if (!tc.Get())
 		return 1;
 	for (int c = 0; c < lChildren.Count(); c++)
 	{
 		if (lChildren.ElementAt(c)->x == x && lChildren.ElementAt(c)->y == y)
 		{
-			if (!lChildren.ElementAt(c)->contain.get())
+			if (!lChildren.ElementAt(c)->contain.Get())
 				return 3;
 			if (x_2 >= x && (x_2 < columnLines.Size() || !columnLines.Size())
 				&& y_2 >= y && (y_2 < rowLines.Size() || !rowLines.Size()))
@@ -329,7 +328,7 @@ int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y, UINT x_2, UINT y
 			else
 				lChildren.ElementAt(c)->extend = false;
 			lChildren.ElementAt(c)->contain = tc;
-			lChildren.ElementAt(c)->contain->setParent(TrecPointer<TControl>(this));
+			lChildren.ElementAt(c)->contain->setParent(GetParentReference());
 			return 0;
 		}
 	}
@@ -337,7 +336,7 @@ int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y, UINT x_2, UINT y
 }
 
 /*
-* Method: TLayout - setGrid
+* Method: TLayout::setGrid
 * Purpose: Sets up a predetermined Grid
 * Parameters: TArray<int>* col - the column layout of the grid
 *				TArray<int>* row - the row layout of the grid
@@ -347,12 +346,12 @@ int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y, UINT x_2, UINT y
 */
 bool TLayout::setGrid(TDataArray<int>& col, TDataArray<int>& row)
 {
-	if(organization != grid)
+	if(organization != orgLayout::grid)
 		return false;
 	if (!col.Size() || !row.Size())
 		return false;
 
-	RECT tempRect;
+	D2D1_RECT_F tempRect;
 	tempRect.top = 0;
 	tempRect.left = 0;
 	tempRect.right = col[0];
@@ -362,10 +361,10 @@ bool TLayout::setGrid(TDataArray<int>& col, TDataArray<int>& row)
 	rowLines.push_back(row[0]);
 
 
-	tempContC = new containerControl();
+	tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
 	tempContC->x = 0;
 	tempContC->y = 0;
-	tempContC->contain = new TControl(renderTarget, styles);
+	tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
 
 	tempContC->contain->setLocation(tempRect);
 
@@ -387,33 +386,33 @@ bool TLayout::setGrid(TDataArray<int>& col, TDataArray<int>& row)
 }
 
 /*
-* Method: TLayout - setStack
+* Method: TLayout::setStack
 * Purpose: Sets either the Column layout or the Row Layout, based off of the Layout mode
 * Parameters: TArray<int>* nums - the layout of the row/column
 * Returns: bool - success (method fails if layout is a grid or if a control has already been added)
 */
 bool TLayout::setStack(TDataArray<int>& nums)
 {
-	if (organization == grid)
+	if (organization == orgLayout::grid)
 		return false;
 
 	switch (organization)
 	{
-	case VStack:
+	case orgLayout::VStack:
 		for (int c = 0; c < nums.Size(); c++)
 			addRow(nums[c], false);
 		break;
-	case VBuff:
-	case VMix:
+	case orgLayout::VBuff:
+	case orgLayout::VMix:
 		for (int c = 0; c < nums.Size(); c++)
 			addRow(nums[c], true);
 		break;
-	case HStack:
+	case orgLayout::HStack:
 		for (int c = 0; c < nums.Size(); c++)
 			addColunm(nums[c], false);
 		break;
-	case HBuff:
-	case HMix:
+	case orgLayout::HBuff:
+	case orgLayout::HMix:
 		for (int c = 0; c < nums.Size();c++)
 			addColunm(nums[c], true);
 	}
@@ -423,26 +422,26 @@ bool TLayout::setStack(TDataArray<int>& nums)
 }
 
 /*
-* Method: TLayout - loadFromHTML
+* Method: TLayout::loadFromHTML
 * Purpose: Allows the TLayout to Extract itself from an HTML File
 * Parameters: CArchive* ar - the file to read from
 * Returns: int - 0
 * Note: DEPRECIATED - HTML reading functionality is to be handled by an HTML parser 
 */
-int TLayout::loadFromHTML(CArchive * ar)
+int TLayout::loadFromHTML(TFile * ar)
 {
 	return 0;
 }
 
 /*
-* Method: TLayout - storeInTML
+* Method: TLayout::storeInTML
 * Purpose: Allows the TLayout to save itself in an Anaface TML file
 * Parameters: CArchive * ar - the file to read from
 *				int childLevel - the generation the Layout is (how many dashes to write
 *				bool ov - not used
 * Returns: void
 */
-void TLayout::storeInTML(CArchive * ar, int childLevel,bool ov)
+void TLayout::storeInTML(TFile * ar, int childLevel,bool ov)
 {
 	//_Unreferenced_parameter_(ov);
 
@@ -450,37 +449,37 @@ void TLayout::storeInTML(CArchive * ar, int childLevel,bool ov)
 	resetAttributeString(&appendable, childLevel + 1);
 	switch (organization)
 	{
-	case grid:
+	case orgLayout::grid:
 		for (int c = 0; c < columnLines.Size();c++)
 		{
 			appendable.Append(L"|ColumnWidth:");
-			appendable.AppendFormat(_T("%d"), columnLines[c]);
+			appendable.AppendFormat(L"%d", columnLines[c]);
 			_WRITE_THE_STRING
 		}
 		for (int c = 0;c < rowLines.Size();c++)
 		{
 			appendable.Append(L"|RowHeight:");
-			appendable.AppendFormat(_T("%d"), rowLines[c]);
+			appendable.AppendFormat(L"%d", rowLines[c]);
 			_WRITE_THE_STRING
 		}
 		break;
-	case VStack:
-	case VMix:
-	case VBuff:
+	case orgLayout::VStack:
+	case orgLayout::VMix:
+	case orgLayout::VBuff:
 		for (int c = 0;c < rowLines.Size();c++)
 		{
 			appendable.Append(L"|RowHeight:");
-			appendable.AppendFormat(_T("%d"), rowLines[c]);
+			appendable.AppendFormat(L"%d", rowLines[c]);
 			_WRITE_THE_STRING
 		}
 		break;
-	case HBuff:
-	case HMix:
-	case HStack:
+	case orgLayout::HBuff:
+	case orgLayout::HMix:
+	case orgLayout::HStack:
 		for (int c = 0; c < columnLines.Size();c++)
 		{
 			appendable.Append(L"|ColumnWidth:");
-			appendable.AppendFormat(_T("%d"), columnLines[c]);
+			appendable.AppendFormat(L"%d", columnLines[c]);
 			_WRITE_THE_STRING
 		}
 	}
@@ -489,22 +488,22 @@ void TLayout::storeInTML(CArchive * ar, int childLevel,bool ov)
 }
 
 /*
-* Method: TLayout - storeInHTML
+* Method: TLayout::storeInHTML
 * Purpose: Allows the layout to save itself as an HTML tag
 * Parameters: CArchive * ar - the file to write to
 * Returns: void
 */
-void TLayout::storeInHTML(CArchive * ar)
+void TLayout::storeInHTML(TFile * ar)
 {
 }
 
 /*
-* Method: TLayout - onCreate
+* Method: TLayout::onCreate
 * Purpose: Sets up the attributes of the TLayout by processing the attributes and playing it out
 * Parameters: RECT margin - the location the layout has to work with
 * Returns: bool - success
 */
-bool TLayout::onCreate(RECT margin)
+bool TLayout::onCreate(D2D1_RECT_F margin, TrecPointer<TWindowEngine> d3d)
 {
 	//TContainer* tempCont = NULL;
 
@@ -513,18 +512,18 @@ bool TLayout::onCreate(RECT margin)
 
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|Margin"));
 	RECT marge = RECT{ 0,0,0,0 };
-	if (valpoint.get())
+	if (valpoint.Get())
 	{
-		marge = convertStringToRECT(valpoint.get());
+		marge = convertStringToRECT(valpoint.Get());
 	}
 
 	valpoint = attributes.retrieveEntry(TString(L"|VerticalScroll"));
-	if (valpoint.get() && !valpoint->Compare(L"True") && !vScroll) // don't make a new one if one already exists
-		vScroll = new TScrollBar(*this, SCROLL_VERTICAL);
+	if (valpoint.Get() && !valpoint->Compare(L"True") && !vScroll.Get()) // don't make a new one if one already exists
+		vScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_vertical);
 
 	valpoint = attributes.retrieveEntry(TString(L"|HorizontalScroll"));
-	if (valpoint.get() && !valpoint->Compare(L"True") && !hScroll)
-		hScroll = new TScrollBar(*this, SCROLL_HORIZONTAL);
+	if (valpoint.Get() && !valpoint->Compare(L"True") && !hScroll.Get())
+		hScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_horizontal);
 	
 	
 	int marginWidth = (margin.right - marge.right) - (margin.left + marge.left);
@@ -535,11 +534,11 @@ bool TLayout::onCreate(RECT margin)
 	int currentHeight = GetTotalFlexRow();
 
 	int newValue = 0;
-	if (!hScroll && flexMarginWidth < 0)
+	if (!hScroll.Get() && flexMarginWidth < 0)
 	{
-		hScroll = new TScrollBar(*this, SCROLL_HORIZONTAL);
+		hScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_horizontal);
 	}
-	else if (!hScroll || (organization != orgLayout::HStack)) // If Layout has a horizontal scroll bar, then no need to resize the columns
+	else if (!hScroll.Get() || (organization != orgLayout::HStack)) // If Layout has a horizontal scroll bar, then no need to resize the columns
 	{
 		
 
@@ -553,11 +552,11 @@ bool TLayout::onCreate(RECT margin)
 		}
 	}
 	 
-	if (!vScroll && flexMarginHeight < 0)
+	if (!vScroll.Get() && flexMarginHeight < 0)
 	{
-		vScroll = new TScrollBar(*this, SCROLL_VERTICAL);
+		vScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_vertical);
 	}
-	if (!vScroll || (organization != orgLayout::VStack)) // Ditto with a vertical Scroll bar and rows
+	if (!vScroll.Get() || (organization != orgLayout::VStack)) // Ditto with a vertical Scroll bar and rows
 	{
 		for (int c = 0; c < rowLines.Size(); c++)
 		{
@@ -570,14 +569,12 @@ bool TLayout::onCreate(RECT margin)
 	}
 
 	// To-Do, adjust TLayout's handling of location in respect to scroll Bars
-	snip.bottom = margin.bottom - marge.bottom;
-	snip.left = margin.left + marge.left;
-	snip.right = margin.right - marge.right;
-	snip.top = margin.top + marge.top;
+	location.bottom = margin.bottom - marge.bottom;
+	location.left = margin.left + marge.left;
+	location.right = margin.right - marge.right;
+	location.top = margin.top + marge.top;
 
-	location.left = snip.left;
-	location.top = snip.top;
-	if (vScroll)
+	if (vScroll.Get())
 	{
 		if (rowLines.Size())
 		{
@@ -585,13 +582,9 @@ bool TLayout::onCreate(RECT margin)
 			for (int c = 0;c < rowLines.Size();c++)
 				location.bottom += rowLines[c];
 		}
-		else
-			location.bottom = snip.bottom;
 	}
-	else
-		location.bottom = snip.bottom;
 
-	if (hScroll)
+	if (hScroll.Get())
 	{
 		if (columnLines.Size())
 		{
@@ -599,25 +592,23 @@ bool TLayout::onCreate(RECT margin)
 			for (int c = 0; c < columnLines.Size();c++)
 				location.right += columnLines[c];
 		}
-		else
-			location.right = snip.right;
 	}
-	else
-		location.right = snip.right;
+
+	children.Clear();
 
 	for (int c = 0; c < lChildren.Count();c++)
 	{
 
-		TrecPointer<TControl> tempCont = lChildren.ElementAt(c)->contain.get();
-		if (!tempCont.get())
+		TrecPointer<TControl> tempCont = lChildren.ElementAt(c)->contain;
+		if (!tempCont.Get())
 			continue;
 		int x = lChildren.ElementAt(c)->x, y = lChildren.ElementAt(c)->y;
 		tempCont->setLocation(getRawSectionLocation(y, x));
 
-		if (isZeroRect(tempCont->getLocation()))
-		{
-			tempCont->setLocation(location);
-		}
+		//if (isSnipZero(tempCont->getLocation()))
+		//{
+		//	tempCont->setLocation(location);
+		//}
 		
 		lChildren.ElementAt(c)->contain->setLocation( tempCont->getLocation());
 
@@ -631,7 +622,7 @@ bool TLayout::onCreate(RECT margin)
 		
 			//tempCont->onCreate(tempCont->getLocation());
 		
-		lChildren.ElementAt(c)->contain->onCreate(tempCont->getLocation());
+		lChildren.ElementAt(c)->contain->onCreate(tempCont->getLocation(), d3d);
 
 	}
 
@@ -643,16 +634,16 @@ bool TLayout::onCreate(RECT margin)
 	//}
 
 	valpoint = attributes.retrieveEntry(TString(L"|InternalBorderColor"));
-	if (valpoint.get())
+	if (valpoint.Get())
 	{
 		internalInit = true;
-		internalColor = convertStringToD2DColor(valpoint.get());
+		internalColor = convertStringToD2DColor(valpoint.Get());
 	}
 
 	valpoint = attributes.retrieveEntry(TString(L"|InternalBorderThickness"));
-	if (valpoint.get())
+	if (valpoint.Get())
 	{
-		valpoint->ConvertToFloat(&thickness);
+		valpoint->ConvertToFloat(thickness);
 	}
 
 	// To-Do: Add support for gradients in future build
@@ -661,18 +652,16 @@ bool TLayout::onCreate(RECT margin)
 
 
 
-	if (internalInit && renderTarget.get())
-	{
-		ID2D1SolidColorBrush* solBrush = nullptr;
-		renderTarget->CreateSolidColorBrush(internalColor, &solBrush);
-		internalBrush = solBrush;
+	if (internalInit && drawingBoard.Get())
+	{		
+		internalBrush = drawingBoard->GetBrush(internalColor);
 	}
 
-	return TControl::onCreate(margin);
+	return TControl::onCreate(margin, d3d);
 }
 
 /*
-* Method: TLayout - onDraw
+* Method: TLayout::onDraw
 * Purpose: Draws out the Layout Generated
 * Parameters: void
 * Returns: void
@@ -685,30 +674,28 @@ void TLayout::onDraw(TObject* obj)
 
 	for (int c = 0; c < lChildren.Count(); c++)
 	{
-		if(lChildren.ElementAt(c)->contain.get())
+		if(lChildren.ElementAt(c)->contain.Get())
 		lChildren.ElementAt(c)->contain->onDraw(obj);
 	}
-	if (internalBrush.get())
+	if (internalBrush.Get())
 	{
 		for (int c = 0; c < rowLines.Size();c++)
 		{
 			int add = rowLines[c];
-			renderTarget->DrawLine(D2D1::Point2F(location.left, location.top + add),
-				D2D1::Point2F(location.right, location.top + add),
-				internalBrush.get(), thickness);
+			internalBrush->DrawLine(D2D1::Point2F(location.left, location.top + add),
+				D2D1::Point2F(location.right, location.top + add), thickness);
 		}
 		for (int c = 0; c < columnLines.Size();c++)
 		{
 			int add = columnLines[c];
-			renderTarget->DrawLine(D2D1::Point2F(location.left + add, location.top),
-				D2D1::Point2F(location.left, location.bottom),
-				internalBrush.get(), thickness);
+			internalBrush->DrawLine(D2D1::Point2F(location.left + add, location.top),
+				D2D1::Point2F(location.left, location.bottom), thickness);
 		}
 	}
 }
 
 /*
-* Method: TLayout - returnMinX
+* Method: TLayout::returnMinX
 * Purpose: Returns the left-x coordinate of the right most column depending on whether a new column is expected
 * Parameters: bool newColumn - whether a new column is expected
 * Returns: int - the minimum x-coordinate the right most column available
@@ -729,7 +716,7 @@ int TLayout::returnMinX(bool newColumn)
 }
 
 /*
-* Method: TLayout - returnMinY
+* Method: TLayout::returnMinY
 * Purpose: Returns the bottom-y coordinate of the bottom row depending on whether a new row is expected
 * Parameters: bool newRow - whether a new row is expected
 * Returns: int - the top coordinate of the bottom row whether it is the current bottom or a new row
@@ -750,39 +737,39 @@ int TLayout::returnMinY(bool newRow)
 }
 
 /*
-* Method: TLayout - returnRectX
+* Method: TLayout::returnRectX
 * Purpose: Returns the location of the given of the column (and first row)
 * Parameters: int x - the column to look at
-* Returns: RECT - the location of that area
+* Returns: D2D1_RECT_F - the location of that area
 */
-RECT TLayout::returnRectX(int x)
+D2D1_RECT_F TLayout::returnRectX(int x)
 {
 	for (int c = 0; c < lChildren.Count(); c++)
 	{
 		if (lChildren.ElementAt(c)->x == x)
 			return lChildren.ElementAt(c)->contain->getLocation();
 	}
-	return RECT();
+	return D2D1_RECT_F();
 }
 
 /*
-* Method: TLayout - returnRectY
+* Method: TLayout::returnRectY
 * Purpose: Returns the location of the given of the row (and first column)
 * Parameters: int y - the row to look st
-* Returns: RECT the location of the area
+* Returns: D2D1_RECT_F the location of the area
 */
-RECT TLayout::returnRectY(int y)
+D2D1_RECT_F TLayout::returnRectY(int y)
 {
 	for (int c = 0; c < lChildren.Count(); c++)
 	{
 		if (lChildren.ElementAt(c)->y == y)
 			return lChildren.ElementAt(c)->contain->getLocation();
 	}
-	return RECT();
+	return D2D1_RECT_F();
 }
 
 /*
-* Method: TLayout - GetColumnFlexAt
+* Method: TLayout::GetColumnFlexAt
 * Purpose: Determines whether a given column is flexible and able to change size
 * Parameters: UINT col - the column to check
 * Returns: bool - whether the column is flexible
@@ -796,7 +783,7 @@ bool TLayout::GetColumnFlexAt(UINT col)
 }
 
 /*
-* Method: TLayout - GetRowFlexAt
+* Method: TLayout::GetRowFlexAt
 * Purpose: Determines whether a given row is flexible and able to change size
 * Parameters: UINT row - the row to check
 * Returns: bool whether the row is flexible
@@ -810,7 +797,7 @@ bool TLayout::GetRowFlexAt(UINT row)
 }
 
 /*
-* Method: TLayout - AddToColFlex
+* Method: TLayout::AddToColFlex
 * Purpose: Adds a new column to the column flexibility array
 * Parameters: bool val - whether the new Column is to be flexible or not
 * Returns: void
@@ -834,7 +821,7 @@ void TLayout::AddToColFlex(bool val)
 }
 
 /*
-* Method: TLayout - AddToRowFlex
+* Method: TLayout::AddToRowFlex
 * Purpose: Adds a new row to the row flexibility array
 * Parameters: bool var - whether the new row is to be flexible or not
 * Returns: void 
@@ -858,7 +845,7 @@ void TLayout::AddToRowFlex(bool val)
 }
 
 /*
-* Method: TLayout - GetTotalFlexRow
+* Method: TLayout::GetTotalFlexRow
 * Purpose: Retrieves the total height of all rows marked as flexible
 * Parameters: void
 * Returns: UINT - current height of all flexible rows
@@ -877,7 +864,7 @@ UINT TLayout::GetTotalFlexRow()
 }
 
 /*
-* Method: TLayout - GetTotalSetRow
+* Method: TLayout::GetTotalSetRow
 * Purpose: Retrieves the total height of all rows marked as static
 * Parameters: void
 * Returns: UINT - current height of all fixed sized rows
@@ -896,7 +883,7 @@ UINT TLayout::GetTotalSetRow()
 }
 
 /*
-* Method: TLayout - GetTotalFlexCol
+* Method: TLayout::GetTotalFlexCol
 * Purpose: Retrieves the total width of all columns marked as flexible
 * Parameters: void 
 * Returns: UINT - current width of all flexible columns
@@ -917,7 +904,7 @@ UINT TLayout::GetTotalFlexCol()
 }
 
 /*
-* Method: TLayout - GetTotalSetCol
+* Method: TLayout::GetTotalSetCol
 * Purpose: Retrieves the total width of all columns marked as static
 * Parameters: void
 * Returns: UINT - current width of all fixed sized columns
@@ -938,8 +925,44 @@ UINT TLayout::GetTotalSetCol()
 	return ret;
 }
 
-void TLayout::Resize(RECT r)
+
+/*
+ * Method: TLayout::Resize
+ * Purpose: resets the Size of the TLayout
+ * Parameters: D2D1_RECT_F& r - the location to set the TLayout to
+ * Returns: void
+ */
+void TLayout::Resize(D2D1_RECT_F& r)
 {
+	if (SetScrollControlOnMinSize(r))
+	{
+		float difHeight = location.top - r.top;
+		location.bottom -= difHeight;
+		location.top -= difHeight;
+		float difWidth = location.left - r.left;
+		location.left -= difWidth;
+		location.right -= difWidth;
+
+		for (UINT Rust = 0; Rust < lChildren.Count(); Rust++)
+		{
+			if (!lChildren.ElementAt(Rust).Get())
+				continue;
+			containerControl cc = *(lChildren.ElementAt(Rust).Get());
+			if (!cc.contain.Get())
+				continue;
+			D2D1_RECT_F loc = getRawSectionLocation(cc.y, cc.x);
+			if (cc.extend)
+			{
+				D2D1_RECT_F loc2 = getRawSectionLocation(cc.y2, cc.x2);
+				loc.right = loc2.right;
+				loc.bottom = loc2.bottom;
+			}
+
+			cc.contain->Resize(loc);
+		}
+
+		return;
+	}
 	UINT h_fix = GetTotalSetRow();
 	UINT w_fix = GetTotalSetCol();
 	UINT h_flex = GetTotalFlexRow();
@@ -949,7 +972,7 @@ void TLayout::Resize(RECT r)
 	UINT curHeight = location.bottom - location.top;
 	UINT newHeight = r.bottom - r.top;
 
-	if (organization == grid)
+	if (organization == orgLayout::grid)
 	{
 		cur_width -= w_fix;
 		new_width -= w_fix;
@@ -972,7 +995,7 @@ void TLayout::Resize(RECT r)
 			}
 		}
 	}
-	else if (organization == HStack || organization == HMix || organization == HBuff)
+	else if (organization == orgLayout::HStack || organization == orgLayout::HMix || organization == orgLayout::HBuff)
 	{
 		cur_width -= w_fix;
 		new_width -= w_fix;
@@ -1009,15 +1032,15 @@ void TLayout::Resize(RECT r)
 
 	for (UINT Rust = 0; Rust < lChildren.Count(); Rust++)
 	{
-		if (!lChildren.ElementAt(Rust).get())
+		if (!lChildren.ElementAt(Rust).Get())
 			continue;
-		containerControl cc = *(lChildren.ElementAt(Rust).get());
-		if (!cc.contain.get())
+		containerControl cc = *(lChildren.ElementAt(Rust).Get());
+		if (!cc.contain.Get())
 			continue;
-		RECT loc = getRawSectionLocation(cc.y, cc.x);
+		D2D1_RECT_F loc = getRawSectionLocation(cc.y, cc.x);
 		if (cc.extend)
 		{
-			RECT loc2 = getRawSectionLocation(cc.y2, cc.x2);
+			D2D1_RECT_F loc2 = getRawSectionLocation(cc.y2, cc.x2);
 			loc.right = loc2.right;
 			loc.bottom = loc2.bottom;
 		}
@@ -1029,7 +1052,7 @@ void TLayout::Resize(RECT r)
 
 
 /*
-* Method: TLayout - returnColumnsWidth
+* Method: TLayout::returnColumnsWidth
 * Purpose: Retrieves the Total Current width of all columns up to a certain column
 * Parameters: int x - the column to stop at
 * Returns: int - The total witdh (-1 if Layout uses only rows)
@@ -1047,7 +1070,7 @@ int TLayout::returnColumnsWidth(int x)
 }
 
 /*
-* Method: TLayout - returnRowsHeight
+* Method: TLayout::returnRowsHeight
 * Purpose: Retrieves the total current height of all rows down to a certain row
 * Parameters: int y - the row to stop at
 * Returns: int - the total height (-1 if Layout uses only columns)
@@ -1065,7 +1088,7 @@ int TLayout::returnRowsHeight(int y)
 }
 
 /*
-* Method: TLayout - getColunmWidth
+* Method: TLayout::getColunmWidth
 * Purpose: Retrieves the Width of a specific column
 * Parameters: int x - the column to inspect
 * Returns: int - the Size of the column (Zero if column does not exist)
@@ -1078,7 +1101,7 @@ int TLayout::getColunmWidth(int x)
 }
 
 /*
-* Method: TLayout - getRowHeight
+* Method: TLayout::getRowHeight
 * Purpose: Retrieves the height of a specific row
 * Parameters: int y - the row to inspect
 * Returns: int - the Size of the Row (0 if row does not exist)
@@ -1092,7 +1115,7 @@ int TLayout::getRowHeight(int y)
 }
 
 /*
-* Method: TLayout - determineMinHeightNeeded
+* Method: TLayout::determineMinHeightNeeded
 * Purpose: Reports the minimum height needed by the Layout and the child controls
 * Parameters: void
 * Returns: UINT - Returns the minimum height needed by the Layout, not the current height
@@ -1104,12 +1127,12 @@ UINT TLayout::determineMinHeightNeeded()
 	UINT maxNeeded = 0;
 	switch (organization)
 	{
-	case VStack:
-	case VBuff:
-	case VMix:
+	case orgLayout::VStack:
+	case orgLayout::VBuff:
+	case orgLayout::VMix:
 		for (UINT c = 0; c < lChildren.Count() && lChildren.ElementAt(c)->y < rowLines.Size(); c++)
 		{
-			if (lChildren.ElementAt(c)->contain.get())
+			if (lChildren.ElementAt(c)->contain.Get())
 			{
 
 				UINT minSize = lChildren.ElementAt(c)->contain->determineMinHeightNeeded();
@@ -1123,13 +1146,13 @@ UINT TLayout::determineMinHeightNeeded()
 			newHeight += rowLines[c];
 		location.bottom = location.top + newHeight;
 		break;
-	case HStack:
-	case HBuff:
-	case HMix:
+	case orgLayout::HStack:
+	case orgLayout::HBuff:
+	case orgLayout::HMix:
 		
 		for (UINT c = 0; c < lChildren.Count() && lChildren.ElementAt(c)->x < columnLines.Size(); c++)
 		{
-			if (lChildren.ElementAt(c)->contain.get())
+			if (lChildren.ElementAt(c)->contain.Get())
 			{
 
 				UINT minSize = lChildren.ElementAt(c)->contain->determineMinHeightNeeded();
@@ -1142,16 +1165,16 @@ UINT TLayout::determineMinHeightNeeded()
 
 
 		break;
-	case grid: // To-Do
+	case orgLayout::grid: // To-Do
 		TDataArray<UINT> rowHieghts;
 		for (UINT c = 0; c < rowLines.Size(); c++)
 			rowHieghts.push_back(0);
 		
 		for (UINT c = 0; c < lChildren.Count(); c++)
 		{
-			if (!lChildren.ElementAt(c).get())
+			if (!lChildren.ElementAt(c).Get())
 				continue;
-			if (!lChildren.ElementAt(c)->contain.get())
+			if (!lChildren.ElementAt(c)->contain.Get())
 				continue;
 			UINT height = lChildren.ElementAt(c)->contain->determineMinHeightNeeded();
 			if (height > rowHieghts[lChildren.ElementAt(c)->y])
@@ -1168,19 +1191,19 @@ UINT TLayout::determineMinHeightNeeded()
 }
 
 /*
-* Method: TLayout - SetNewLocation
+* Method: TLayout::SetNewLocation
 * Purpose: Sets the new location of the Layout and adjusts the child controls accordingly
 * Parameters: RECT& r - the new location to occupy
 * Returns: void
 */
-void TLayout::SetNewLocation(RECT & r)
+void TLayout::SetNewLocation(const D2D1_RECT_F& r)
 {
 	TControl::SetNewLocation(r);
 
 	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
-		containerControl* cc = lChildren.ElementAt(c).get();
-		if (!cc || !cc->contain.get())
+		containerControl* cc = lChildren.ElementAt(c).Get();
+		if (!cc || !cc->contain.Get())
 			continue;
 		//cc->contain->location = r;
 		cc->contain->SetNewLocation(getRawSectionLocation(cc->y, cc->x));
@@ -1189,7 +1212,7 @@ void TLayout::SetNewLocation(RECT & r)
 }
 
 /*
-* Method: TLayout - ShrinkHeight
+* Method: TLayout::ShrinkHeight
 * Purpose: Shrinks the Layout to a minimum (Used by Web-tours to make web-page look closer to real web-pages)
 * Parameters: void
 * Returns: void
@@ -1201,7 +1224,7 @@ void TLayout::ShrinkHeight()
 }
 
 /*
-* Method: TLayout - setNewColunmSize
+* Method: TLayout::setNewColunmSize
 * Purpose: Sets the size of a given column
 * Parameters: int xLoc - the Column to modify
 *				int x - the size to set that column to
@@ -1226,7 +1249,7 @@ void TLayout::setNewColunmSize(int xLoc, int x)
 }
 
 /*
-* Method: TLayout - setNewRowSize
+* Method: TLayout::setNewRowSize
 * Purpose: Sets the size of a given row
 * Parameters: int yLoc - the row to modify
 *				int y - the size to set that column to
@@ -1250,7 +1273,7 @@ void TLayout::setNewRowSize(int yLoc, int y)
 }
 
 /*
-* Method: TLayout - getRowNumber
+* Method: TLayout::getRowNumber
 * Purpose: Retireves the number of rows present
 * Parameters: void
 * Returns: int - the number of rows
@@ -1261,7 +1284,7 @@ int TLayout::getRowNumber()
 }
 
 /*
-* Method: TLayout - getColumnNumber
+* Method: TLayout::getColumnNumber
 * Purpose: Retrieves the number of Columns present
 * Parameters: void
 * Returns: int - the number of columns
@@ -1272,15 +1295,15 @@ int TLayout::getColumnNumber()
 }
 
 /*
-* Method: TLayout - getRawSectionLocation
+* Method: TLayout::getRawSectionLocation
 * Purpose: Gets the Location of the section specified by the coordinates and permitted to any control occupied there
 * Parameters: int r - the row to look at
 *				int c - the column to look at
-* Returns: RECT - the location allocated to the specified location
+* Returns: D2D1_RECT_F - the location allocated to the specified location
 */
-RECT TLayout::getRawSectionLocation(int r, int c)
+D2D1_RECT_F TLayout::getRawSectionLocation(int r, int c)
 {
-	RECT returnable{ 0,0,0,0 };
+	D2D1_RECT_F returnable{ 0,0,0,0 };
 	if (r > rowLines.Size() || c > columnLines.Size())
 		return returnable;
 
@@ -1293,7 +1316,7 @@ RECT TLayout::getRawSectionLocation(int r, int c)
 	for (UINT C = 0; C < lChildren.Count(); C++)
 	{
 		TrecPointer<containerControl> contContTemp = lChildren.ElementAt(C);
-		if (!contContTemp.get())
+		if (!contContTemp.Get())
 			continue;
 		if (contContTemp->x == c && contContTemp->y == r)
 		{
@@ -1319,7 +1342,7 @@ RECT TLayout::getRawSectionLocation(int r, int c)
 		else
 		{
 			returnable.bottom = returnable.top + rowLines[r];
-			if (contCont.get() && contCont->extend)
+			if (contCont.Get() && contCont->extend)
 			{
 				for(UINT C = contCont->y + 1; C <= contCont->y2 && C < rowLines.Size();C++)
 					returnable.bottom += rowLines[C];
@@ -1340,7 +1363,7 @@ RECT TLayout::getRawSectionLocation(int r, int c)
 		else
 		{
 			returnable.right = returnable.left + columnLines[c];
-			if (contCont.get() && contCont->extend)
+			if (contCont.Get() && contCont->extend)
 			{
 				for (UINT C = c + 1; C <= contCont->x2 && C < columnLines.Size(); C++)
 					returnable.right += columnLines[C];
@@ -1351,7 +1374,7 @@ RECT TLayout::getRawSectionLocation(int r, int c)
 }
 
 /*
-* Method: TLayout - GetLayoutChild
+* Method: TLayout::GetLayoutChild
 * Purpose: Retrieves the Child located at the specified coordinates
 * Parameters: int x - the x-coordinate of the child control
 *				int y - the y-coordinate of the child control
@@ -1362,9 +1385,9 @@ TrecPointer<TControl> TLayout::GetLayoutChild(int x, int y)
 	containerControl cc;
 	for (int c = 0; c < lChildren.Count();c++)
 	{
-		if (!lChildren.ElementAt(c).get())
+		if (!lChildren.ElementAt(c).Get())
 			continue;
-		cc = *(lChildren.ElementAt(c).get());
+		cc = *(lChildren.ElementAt(c).Get());
 		if (cc.x == x && cc.y == y)
 			return TrecPointer<TControl>(cc.contain);
 	}
@@ -1373,7 +1396,7 @@ TrecPointer<TControl> TLayout::GetLayoutChild(int x, int y)
 }
 
 /*
-* Method: TLayout - GetOrganization
+* Method: TLayout::GetOrganization
 * Purpose: Retrieves the organization mode of the layout
 * Parameters: void
 * Returns: orgLayout - the organization the layout is configured to
@@ -1386,4 +1409,24 @@ orgLayout TLayout::GetOrganization()
 UCHAR * TLayout::GetAnaGameType()
 {
 	return nullptr;
+}
+
+/*
+ * Method: TLayout::SwitchChildControl
+ * Purpose: Allows a Child Control to be swapped
+ * Parameters: TrecPointerSoft<TControl> curControl - the control making the call
+ *				TrecPointer<TControl> newTControl - the Control to replace it with
+ * Returns: void
+ */
+void TLayout::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPointer<TControl> newControl)
+{
+	for (UINT Rust = 0; Rust < lChildren.Count(); Rust++)
+	{
+		if (lChildren.ElementAt(Rust).Get() && lChildren.ElementAt(Rust)->contain.Get() == curControl.Get())
+		{
+			lChildren.ElementAt(Rust)->contain = newControl;
+			return;
+		}
+	}
+	TControl::SwitchChildControl(curControl, newControl);
 }

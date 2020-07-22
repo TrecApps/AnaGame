@@ -1,25 +1,28 @@
-#include "stdafx.h"
+
 #include "TTextField.h"
+#include <atltrace.h>
 
 // Allows Anaface to keep track of where the caret is
-TDataArray<TTextField*> TextList;
+static TDataArray<TTextField*> TextList;
 
 /*
-* Method:
-* Purpose: 
-* Parameters:
-* Returns:
-*/
+ * Method:
+ * Purpose: 
+ * Parameters:
+ * Returns:
+ */
 
 /*
-* Method: (TTextField) (Constructor)
-* Purpose: Sets up a text field and performs basic initialization
-* Parameters: TrecComPointer<ID2D1RenderTarget> rt - The Render Target to draw to
+* Method: TTextField::TTextField
+* Purpose: Constructor
+* Parameters: TrecPointer<DrawingBoard> rt - The Render Target to draw to
 *				TrecPointer<TArray<styleTable>> ta - The Style Table to draw from
 *				HWND winHand - the handle to the window so Windows Caret Support is possible
-* Returns: void
+* Returns: New TTextField 
 */
-TTextField::TTextField(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<styleTable>> st, HWND winHand) :TGadgetControl(rt,st,false)
+TTextField::TTextField(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> st, HWND winHand) :
+	TGadgetControl(rt,st,false),
+	highlighter(rt)
 {
 	isTextControl = drawNumBoxes = true;
 	bool notFound = true;
@@ -39,15 +42,15 @@ TTextField::TTextField(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<
 	caretLoc = 0;
 	onFocus = false;
 	showPassword = false;
-	circleCenter = CPoint(0, 0);
+	circleCenter = TPoint(0, 0);
 	radius = 0;
 	isNumber = false;
 	offerPasswordPeek = false;
 }
 
 /*
-* Method: (TTextField) (Destructor)
-* Purpose: Cleans up TTextField (cheifly here for ceremonial purposes)
+* Method: TTextField::~TTextField
+* Purpose: Destructor
 * Parameters: void
 * Returns: void
 */
@@ -72,7 +75,7 @@ TTextField::~TTextField()
 }
 
 /*
-* Method: TTextField - InputChar
+* Method: TTextField::InputChar
 * Purpose: Adds key stroke to the appropriate location in the string
 * Parameters: wchar_t cha - the character to input
 *				int times - the number of times to insert it
@@ -82,12 +85,15 @@ void TTextField::InputChar(wchar_t cha, int times)
 {
 	if (!onFocus) // hopefully this is true, but just in case
 		return;
+
+	int curCaretLoc = caretLoc;
+
 	for (int c = 0; c < times; c++)
 	{
 		switch (cha)
 		{
 		case VK_BACK:
-			if (caretLoc > 0 && text.GetLength() > 0)
+			if (caretLoc > 0 && text.GetSize() > 0)
 			{
 
 				text.Delete(caretLoc - 1, 1);
@@ -109,6 +115,14 @@ void TTextField::InputChar(wchar_t cha, int times)
 				goto def;
 			text.Insert(caretLoc++, L'/');
 			break;
+		case VK_DELETE:
+			if (text.GetSize() > 0)
+			{
+
+				text.Delete(caretLoc, 1);
+
+			}
+			break;
 		default:
 		def:
 			text.Insert(caretLoc++, cha);
@@ -118,13 +132,13 @@ void TTextField::InputChar(wchar_t cha, int times)
 }
 
 /*
-* Method: TTextField - onClick
+* Method: TTextField::onClick
 * Purpose: Checks to see if a Point falls within it's area space
 * Parameters: CPoint cp - the point to check
 * Returns: bool - whether the point is present or not
 * Note: Check to see if this Method is used and whether it should be depreciated
 */
-bool TTextField::onClick(CPoint cp)
+bool TTextField::onClick(TPoint cp)
 {
 	if (cp.x > location.left && cp.x < location.right && cp.y > location.top && cp.y < location.bottom)
 	{
@@ -136,26 +150,48 @@ bool TTextField::onClick(CPoint cp)
 }
 
 /*
-* Method: TTextField - loadFromHTML
+ * Method: TTextField::LockText
+ * Purpose: Prevents the User from editing the control
+ * Parameters: void
+ * Returns: void
+ */
+void TTextField::LockText()
+{
+	isEditable = false;
+}
+
+/*
+ * Method: TTextField::UnlockText
+ * Purpose: Allows the User to edit the control
+ * Parameters: void
+ * Returns: void
+ */
+void TTextField::UnlockText()
+{
+	isEditable = true;
+}
+
+/*
+* Method: TTextField::loadFromHTML
 * Purpose: Loads the Text Element from HTML
 * Parameters: CArchive * ar - File to read from
 * Returns: int
 * Note: DEPRECIATED - Functionality should be handled by a compatible Anaface-HTML parser
 */
-int TTextField::loadFromHTML(CArchive * ar)
+int TTextField::loadFromHTML(TFile * ar)
 {
 	return 0;
 }
 
 /*
-* Method: TTextField - storeInTML
+* Method: TTextField::storeInTML
 * Purpose: Stores the control in a TML file
 * Parameters: CArchive* ar - the file to save to
 *				int childLevel - the generation if the TControl
 *				bool overrideChildren - whether to ignore the children to save
 * Returns: void
 */
-void TTextField::storeInTML(CArchive * ar, int childLevel, bool ov)
+void TTextField::storeInTML(TFile * ar, int childLevel, bool ov)
 {
 	//_Unreferenced_parameter_(ov);
 
@@ -201,14 +237,14 @@ void TTextField::storeInTML(CArchive * ar, int childLevel, bool ov)
 		_WRITE_THE_STRING;
 
 		appendable.Append(L"|DefaultIncriment:");
-		if (incriment.type == t_float)
+		if (incriment.type == iControlType::t_float)
 		{
-			appendable.AppendFormat(_T("%f"), incriment.value.f);
+			appendable.AppendFormat(L"%f", incriment.value.f);
 		}
-		else if (incriment.type == t_int)
-			appendable.AppendFormat(_T("%d"), incriment.value.i);
+		else if (incriment.type == iControlType::t_int)
+			appendable.AppendFormat(L"%d", incriment.value.i);
 		else
-			appendable.AppendFormat(_T("%d"), 1);
+			appendable.AppendFormat(L"%d", 1);
 
 		_WRITE_THE_STRING;
 	}
@@ -222,69 +258,69 @@ void TTextField::storeInTML(CArchive * ar, int childLevel, bool ov)
 }
 
 /*
-* Method: TTextField - storeInHTML
+* Method: TTextField::storeInHTML
 * Purpose: Stores the control in an HTML format
 * Parameters: CArchive * ar - the file to write to
 * Returns: void
 */
-void TTextField::storeInHTML(CArchive * ar)
+void TTextField::storeInHTML(TFile * ar)
 {
 }
 
 /*
-* Method: TTextField - onCreate
+* Method: TTextField::onCreate
 * Purpose: Sets up the TTextFeild with Text Specific attributes
 * Parameters: RECT r - the location that the control would work in
 * Returns: bool - success (currently arbitrarily)
 */
-bool TTextField::onCreate(RECT r)
+bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
 
-	TGadgetControl::onCreate(r);
+	TGadgetControl::onCreate(r, d3d);
 
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|IsPassword"));
 	isPassword = false;
 	offerPasswordPeek = false;
-	if (valpoint.get())
+	if (valpoint.Get())
 	{
-		if (*(valpoint.get()) == TString(L"True"))
+		if (!valpoint->Compare(L"True"))
 		{
 			isPassword = true;
 			valpoint = attributes.retrieveEntry(TString(L"|PasswordPeek"));
-			if (valpoint.get() &&   *(valpoint.get()) == TString(L"True"))
+			if (valpoint.Get() &&   !valpoint->Compare(L"True"))
 				offerPasswordPeek = true;
 		}
 
 	}
 	isEditable = true;
 	valpoint = attributes.retrieveEntry(TString(L"|CanEdit"));
-	if (valpoint.get() && *(valpoint.get()) == TString(L"False"))
+	if (valpoint.Get() && !valpoint.Get()->Compare(L"False"))
 		isEditable = false;
 
 	valpoint = attributes.retrieveEntry(TString(L"|IsNumberControl"));
-	if (valpoint.get() && *(valpoint.get()) == TString(L"True"))
+	if (valpoint.Get() && !valpoint->Compare(L"True"))
 	{
 		isNumber = true;
 	}
 
 	valpoint = attributes.retrieveEntry(TString(L"|DrawNumberBoxes"));
-	if (valpoint.get() && !valpoint->Compare(L"False"))
+	if (valpoint.Get() && !valpoint->Compare(L"False"))
 		drawNumBoxes = false;
 
 	valpoint = attributes.retrieveEntry(TString(L"|Minimum"));
 	int value = 0;
 	float f_value = 0.0f;
 	
-	if (valpoint.get() && !valpoint->ConvertToInt(&value))
+	if (valpoint.Get() && !valpoint->ConvertToInt(value))
 	{
 		hasMin = true;
-		minumum.type = t_int;
+		minumum.type = iControlType::t_int;
 		minumum.value.i = value;
 	}
-	else if (valpoint.get() && !valpoint->ConvertToFloat(&f_value))
+	else if (valpoint.Get() && !valpoint->ConvertToFloat(f_value))
 	{
 		hasMin = true;
-		minumum.type = t_float;
+		minumum.type = iControlType::t_float;
 		minumum.value.f = f_value;
 	}
 	else
@@ -294,39 +330,39 @@ bool TTextField::onCreate(RECT r)
 
 	valpoint = attributes.retrieveEntry(TString(L"|Maximum"));
 	
-	if (valpoint.get() && !valpoint->ConvertToInt(&value))
+	if (valpoint.Get() && !valpoint->ConvertToInt(value))
 	{
 		hasMax = true;
-		maximum.type = t_int;
+		maximum.type = iControlType::t_int;
 		maximum.value.i = value;
 	}
-	else if (valpoint.get() && !valpoint->ConvertToFloat(&f_value))
+	else if (valpoint.Get() && !valpoint->ConvertToFloat(f_value))
 	{
 		hasMax = true;
-		maximum.type = t_float;
+		maximum.type = iControlType::t_float;
 		maximum.value.f = f_value;
 	}
 	else
 	{
 		hasMax = false;
 	}
-	incriment.type = t_none;
+	incriment.type = iControlType::t_none;
 
 	if (isNumber)
 	{
 		valpoint = attributes.retrieveEntry(TString(L"|DefaultIncriment"));
-		if (valpoint.get())
+		if (valpoint.Get())
 		{
 			int i = 0;
 			float f = 0.0;
-			if (!valpoint->ConvertToFloat(&f))
+			if (!valpoint->ConvertToFloat(f))
 			{
-				incriment.type = t_float;
+				incriment.type = iControlType::t_float;
 				incriment.value.f = f;
 			}
-			else if (!valpoint->ConvertToInt(&i))
+			else if (!valpoint->ConvertToInt(i))
 			{
-				incriment.type = t_int;
+				incriment.type = iControlType::t_int;
 				incriment.value.i = i;
 			}
 			else
@@ -335,7 +371,7 @@ bool TTextField::onCreate(RECT r)
 		else
 		{
 		otherwise:
-			incriment.type = t_int;
+			incriment.type = iControlType::t_int;
 			incriment.value.i = 1;
 		}
 	}
@@ -345,9 +381,9 @@ bool TTextField::onCreate(RECT r)
 	botBut = DxLocation;
 	botBut.top = botBut.top + (botBut.bottom - botBut.top) / 2;
 
-	if (!text1.get())
+	if (!text1.Get())
 	{
-		text1 = new TText(renderTarget, nullptr);
+		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, nullptr);
 		int res = text1->onCreate(r);
 		res = res;
 	}
@@ -373,15 +409,15 @@ bool TTextField::onCreate(RECT r)
 	}
 	// in this class, text2 and text3 could actually get in the way, so remove
 	// them if normal creation process allocated them.
-	//if (text2.get())
+	//if (text2.Get())
 	//	text2 = null<TText>();
-	//if (text3.get())
+	//if (text3.Get())
 	//	text3 = null<TText>();
 
-	if (!text1.get())
+	if (!text1.Get())
 		return false;
 
-	IDWriteTextLayout* layout = text1->fontLayout.get();
+	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	text = text1->text;
 	if (!layout)
 		return false;
@@ -395,9 +431,9 @@ bool TTextField::onCreate(RECT r)
 }
 
 /*
-* Method: TTextField - onDraw
+* Method: TTextField::onDraw
 * Purpose: Draws the text that it was given
-* Parameters: void
+* Parameters: TObject* obj - object used for databinding (unlikely to be used here)
 * Returns: void
 */
 void TTextField::onDraw(TObject* obj)
@@ -410,26 +446,23 @@ void TTextField::onDraw(TObject* obj)
 	else if (offerPasswordPeek)
 	{
 
-		renderTarget->DrawEllipse(&passwordPeek_outer, brush.get());
+		brush->DrawEllipse(passwordPeek_outer);
 
-
-
-
-		renderTarget->FillEllipse(&passwordPeek_inner, brush.get());
+		brush->FillEllipse(passwordPeek_inner);
 	}
 	else if (isNumber)
 	{
 
-		renderTarget->DrawRectangle(&topBut, brush.get());
-		renderTarget->DrawRectangle(&botBut, brush.get());
+		brush->DrawRectangle(topBut);
+		brush->DrawRectangle(botBut);
 
 		
 	}
 
 	// deal with passwords
-	if (isPassword && !showPassword && text1.get() && text1->text)
+	if (isPassword && !showPassword && text1.Get() && text1->text.GetSize())
 	{
-		int len = text1->text.GetLength();
+		int len = text1->text.GetSize();
 		text1->text.Empty();
 		for (int c = 0; c < len;c++)
 		{
@@ -437,6 +470,7 @@ void TTextField::onDraw(TObject* obj)
 			
 		}
 		text1->reCreateLayout();
+		highlighter.SetLayout(text1->fontLayout);
 	}
 	else if (isPassword && showPassword) 
 	{
@@ -446,7 +480,7 @@ void TTextField::onDraw(TObject* obj)
 }
 
 /*
-* Method: TTextField - determineMinHeightNeeded
+* Method: TTextField::determineMinHeightNeeded
 * Purpose: Determines how high the control HAS to be that it was still functional
 * Parameters: void
 * Returns: UINT - The minimum height control needed
@@ -454,11 +488,11 @@ void TTextField::onDraw(TObject* obj)
 UINT TTextField::determineMinHeightNeeded()
 {
 	UINT height = location.bottom - location.top;
-	if (!text1.get())
+	if (!text1.Get())
 		return height;
 	
 	TrecComPointer<IDWriteTextLayout> fl = text1->fontLayout;
-	if (!fl.get())
+	if (!fl.Get())
 		return height;
 
 	DWRITE_TEXT_METRICS	dtm;
@@ -478,19 +512,19 @@ UINT TTextField::determineMinHeightNeeded()
 }
 
 /*
-* Method: TTextField - SetNewLocation
+* Method: TTextField::SetNewLocation
 * Purpose: Sets a new location for the Control
 * Parameters: RECT& r - the new location
 * Returns: void
 */
-void TTextField::SetNewLocation(RECT & r)
+void TTextField::SetNewLocation(const D2D1_RECT_F& r)
 {
 	TControl::SetNewLocation(r);
 
-	if (!text1.get())
+	if (!text1.Get())
 		return;
 
-	IDWriteTextLayout* layout = text1->fontLayout.get();
+	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
 		return ;
 	for (int c = 0; c < details.Size(); c++)
@@ -501,7 +535,7 @@ void TTextField::SetNewLocation(RECT & r)
 }
 
 /*
-* Method: TTextField - OnLButtonDown
+* Method: TTextField::OnLButtonDown
 * Purpose: Determines if a mouse click occured and where it should put the caret
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				CPoint point - the point on screen where the event occured
@@ -509,30 +543,41 @@ void TTextField::SetNewLocation(RECT & r)
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-afx_msg void TTextField::OnLButtonDown(UINT nFlags, CPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
-	if (!isEditable)
-		goto parentCall;
+	resetArgs();
+	
 	BOOL trailing = false, isInside = false;
 	DWRITE_HIT_TEST_METRICS metrics;
-	text1->fontLayout->HitTestPoint(point.x, point.y, &trailing, &isInside, &metrics);
+	if (!isEditable)
+		goto parentCall;
 
-	if (isInside)
+	text1->fontLayout->HitTestPoint(point.x - location.left, point.y - location.top, &trailing, &isInside, &metrics);
+
+	if (isInside && isContained(&point, &location))
 	{
+		if (onFocus)
+			DestroyCaret();
+
 		CreateCaret(windowHandle, NULL, 1, metrics.height);
+
+
+
 		if (trailing)
 		{
 			caretLoc = metrics.textPosition+ 1;
-			SetCaretPos(metrics.left + metrics.width, metrics.top);
+			SetCaretPos(metrics.left + metrics.width + location.left, metrics.top + location.top);
 		}
 		else
 		{
 			caretLoc = metrics.textPosition;
-			SetCaretPos(metrics.left, metrics.top);
+			SetCaretPos(metrics.left + location.left, metrics.top + location.top);
 		}
 
 		ShowCaret(windowHandle);
-
+		clickedControl.push_back(this);
+		if(highlighter.Reset(caretLoc))
+			highlighter.SetFirstPosition(caretLoc);
 		
 		TTextField* feild = nullptr;
 		for (int c = 0; c < TextList.Size(); c++)
@@ -545,9 +590,51 @@ afx_msg void TTextField::OnLButtonDown(UINT nFlags, CPoint point, messageOutput*
 	}
 	else
 	{
-		if(onFocus)
-		DestroyCaret();
-		onFocus = false;
+		if (onFocus)
+		{
+			DestroyCaret();
+			onFocus = false;
+		}
+		else if (isContained(&point, &location) && !text.GetSize() && text1.Get())
+		{
+			// Here, he need to have the caret but we don't have a string to place it against
+			// Need to make educated guess on where it should go
+			TPoint caretPoint;
+			switch (text1->getHorizontalAlignment())
+			{
+			case DWRITE_TEXT_ALIGNMENT_CENTER:
+				caretPoint.x = (location.left + location.right) / 2.0f;
+				break;
+			case DWRITE_TEXT_ALIGNMENT_JUSTIFIED:
+			case DWRITE_TEXT_ALIGNMENT_LEADING:
+				caretPoint.x = location.left + 1;
+				break;
+			case DWRITE_TEXT_ALIGNMENT_TRAILING:
+				caretPoint.x = location.right - 1;
+			default:
+				break;
+			}
+
+			switch (text1->getVerticalAlignment())
+			{
+			case DWRITE_PARAGRAPH_ALIGNMENT_NEAR:
+				caretPoint.y = location.top;
+				break;
+			case DWRITE_PARAGRAPH_ALIGNMENT_CENTER:
+				caretPoint.y = (location.top + (location.bottom - metrics.height)) / 2.0f;
+				break;
+			case DWRITE_PARAGRAPH_ALIGNMENT_FAR:
+				caretPoint.y = (location.bottom - metrics.height);
+			}
+
+			if (onFocus)
+				DestroyCaret();
+			CreateCaret(windowHandle, nullptr, 1, metrics.height);
+			SetCaretPos(caretPoint.x, caretPoint.y);
+			ShowCaret(windowHandle);
+			clickedControl.push_back(this);
+			// highlighter.SetFirstPosition(caretLoc);
+		}
 	}
 
 parentCall:
@@ -575,52 +662,52 @@ parentCall:
 		if (isNumber && isContained(&point, &topBut))
 		{
 			updateNumber(true);
-			*mOut = positiveContinueUpdate;
-			if (hasEvent(On_Text_Change))
+			*mOut = messageOutput::positiveContinueUpdate;
+			if (hasEvent(R_Message_Type::On_Text_Change))
 			{
 				// Set args
 				resetArgs();
-				args.eventType = On_Text_Change;
+				args.eventType = R_Message_Type::On_Text_Change;
 				args.point = point;
-				args.methodID = getEventID(On_Text_Change);
+				args.methodID = getEventID(R_Message_Type::On_Text_Change);
 				args.isClick = true;
 				args.isLeftClick = false;
 				args.control = this;
 
-				eventAr.push_back(EventID_Cred{ On_Text_Change, this });
+				eventAr.push_back(EventID_Cred( R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 		}
 		else if (isNumber && isContained(&point, &botBut))
 		{
 			updateNumber(false);
-			*mOut = positiveContinueUpdate;
-			if (hasEvent(On_Text_Change))
+			*mOut = messageOutput::positiveContinueUpdate;
+			if (hasEvent(R_Message_Type::On_Text_Change))
 			{
 				// Set args
 				resetArgs();
-				args.eventType = On_Text_Change;
+				args.eventType = R_Message_Type::On_Text_Change;
 				args.point = point;
-				args.methodID = getEventID(On_Text_Change);
+				args.methodID = getEventID(R_Message_Type::On_Text_Change);
 				args.isClick = true;
 				args.isLeftClick = false;
 				args.control = this;
 
-				eventAr.push_back(EventID_Cred{ On_Text_Change, this });
+				eventAr.push_back(EventID_Cred( R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 		}
 
-		*mOut = positiveContinueUpdate;
+		*mOut = messageOutput::positiveContinueUpdate;
 	}
-	TControl::OnLButtonDown(nFlags, point, mOut,eventAr);
+	TControl::OnLButtonDown(nFlags, point, mOut,eventAr, clickedControl);
 
 	if (onFocus)
 	{
-		args.text = text1->getCaption();
+		args.text.Set(text1->getCaption());
 	}
 }
 
 /*
-* Method: TTextField - OnChar
+* Method: TTextField::OnChar
 * Purpose: Adds a character to the String
 * Parameters: bool fromChar - can be called either from on Key Down or OnChar
 *				UINT nChar - The ID of the character that was pressed
@@ -633,7 +720,7 @@ parentCall:
 bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	// To-Do: sort out anomalies with characters
-
+	resetArgs();
 
 	if (onFocus)
 	{
@@ -644,7 +731,7 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 		}
 		else
 		{
-			CPoint caretPoint;
+			POINT caretPoint;
 			for (int c = 0; c < nRepCnt;c++)
 			{
 				switch (nChar)
@@ -658,7 +745,7 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 					}
 					break;
 				case VK_RIGHT:
-					if (caretLoc < text.GetLength())
+					if (caretLoc < text.GetSize())
 						caretLoc++;
 					if (GetCaretPos(&caretPoint))
 					{
@@ -686,27 +773,77 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 				}
 			}
 		}
-		*mOut = positiveOverrideUpdate;
+		*mOut = messageOutput::positiveOverrideUpdate;
 		updateTextString();
 		resetArgs();
-		args.eventType = On_Char;
+		args.eventType = R_Message_Type::On_Char;
 		args.control = this;
-		args.methodID = getEventID(On_Char);
+		args.methodID = getEventID(R_Message_Type::On_Char);
 		args.type = static_cast<WCHAR>(LOWORD(nChar));
 		args.control = this;
-		eventAr.push_back({ On_Text_Change, this });
+		eventAr.push_back({ R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis) });
 
-		if (text1.get() && text1->text)
+		if (text1.Get() && text1->text.GetSize())
 		{
-			args.text = text1->text;
+			args.text.Set(text1->text);
 			text1->reCreateLayout();
+			highlighter.SetLayout(text1->fontLayout);
 		}
 	}
 	return onFocus;
 }
 
 /*
-* Method: TTextField - OnLButtonUp
+* Method: TTextField::OnMouseMove
+* Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it, used by Text field to oversee the selection of text
+* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+*				TPoint point - the point on screen where the event occured
+*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+* Returns: void
+*/
+void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	ATLTRACE(L"TEXT FILED ONMOVEMOUSECALLED\n");
+	TControl::OnMouseMove(nFlags, point, mOut, eventAr);
+
+	if (isContained(&point, &location))
+	{
+		ATLTRACE(L"CHECKING HILIGHTER STATUS\n");
+		if (highlighter.IsActive())
+		{
+			ATLTRACE(L"HILIGHTER STATUS IS GO GO GO!\n");
+			BOOL trailing = false, isInside = false;
+			DWRITE_HIT_TEST_METRICS metrics;
+
+			text1->fontLayout->HitTestPoint(point.x - location.left, point.y - location.top, &trailing, &isInside, &metrics);
+			HideCaret(windowHandle);
+
+			UINT locCarLoc = 0;
+			if (trailing)
+			{
+				locCarLoc = metrics.textPosition + 1;
+				SetCaretPos(metrics.left + metrics.width + location.left, metrics.top + location.top);
+			}
+			else
+			{
+				locCarLoc = metrics.textPosition;
+				SetCaretPos(metrics.left + location.left, metrics.top + location.top);
+			}
+
+			highlighter.SetSecondPosition(caretLoc = locCarLoc);
+
+			ShowCaret(windowHandle);
+			if (*mOut == messageOutput::positiveContinue)
+				*mOut = messageOutput::positiveContinueUpdate;
+			else if (*mOut == messageOutput::positiveOverride)
+				*mOut = messageOutput::positiveOverrideUpdate;
+		}
+	}
+}
+
+/*
+* Method: TTextField::OnLButtonUp
 * Purpose: Responds to mouse clicks ending
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				CPoint point - the point on screen where the event occured
@@ -714,30 +851,49 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-void TTextField::OnLButtonUp(UINT nFlags, CPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
+void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	if (isContained(&point, &location))
 	{
-		*mOut = positiveOverrideUpdate;
+		*mOut = messageOutput::positiveOverrideUpdate;
 	}
 	showPassword = false;
+
+	BOOL trailing = false, isInside = false;
+	DWRITE_HIT_TEST_METRICS metrics;
+
+	text1->fontLayout->HitTestPoint(point.x - location.left, point.y - location.top, &trailing, &isInside, &metrics);
+	
+	UINT locCarLoc = 0;
+	if (trailing)
+	{
+		locCarLoc = metrics.textPosition + 1;
+		
+	}
+	else
+	{
+		locCarLoc = metrics.textPosition;
+		
+	}
+	if (isInside)
+		highlighter.ResetUp(locCarLoc);
 }
 
 /*
-* Method: TTextField - AppendBoldText
+* Method: TTextField::AppendBoldText
 * Purpose: Adds Bold Text at the end of the text
 * Parameters: TString& t - the text to add
 * Returns: void
 */
-void TTextField::AppendBoldText(TString & t)
+void TTextField::AppendBoldText(const TString & t)
 {
-	UINT beginFormatting = text.GetLength();
-	if (!text1.get())
+	UINT beginFormatting = text.GetSize();
+	if (!text1.Get())
 	{
-		text1 = new TText(renderTarget, this);
+		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
 	formattingDetails fd;
-	fd.range = { beginFormatting, static_cast<UINT>(t.GetLength()) };
+	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_NORMAL;
 	fd.weight = DWRITE_FONT_WEIGHT_BOLD;
 	details.push_back(fd);
@@ -747,20 +903,20 @@ void TTextField::AppendBoldText(TString & t)
 }
 
 /*
-* Method: TTextField - AppendItalicText
+* Method: TTextField::AppendItalicText
 * Purpose: Adds Italic text at the end of the text
 * Parameters: TString& t - the text to add
 * Returns: void
 */
-void TTextField::AppendItalicText(TString & t)
+void TTextField::AppendItalicText(const TString & t)
 {
-	UINT beginFormatting = text.GetLength();
-	if (!text1.get())
+	UINT beginFormatting = text.GetSize();
+	if (!text1.Get())
 	{
-		text1 = new TText(renderTarget, this);
+		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
 	formattingDetails fd;
-	fd.range = { beginFormatting, static_cast<UINT>(t.GetLength()) };
+	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_ITALIC;
 	fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
 	details.push_back(fd);
@@ -770,20 +926,20 @@ void TTextField::AppendItalicText(TString & t)
 }
 
 /*
-* Method: TTextField - AppendBoldItalicText
+* Method: TTextField::AppendBoldItalicText
 * Purpose: Adds Italic and Bold Text to the end
 * Parameters: TString& t - the text to add
 * Returns: void
 */
-void TTextField::AppendBoldItalicText(TString & t)
+void TTextField::AppendBoldItalicText(const TString & t)
 {
-	UINT beginFormatting = text.GetLength();
-	if (!text1.get())
+	UINT beginFormatting = text.GetSize();
+	if (!text1.Get())
 	{
-		text1 = new TText(renderTarget, this);
+		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
 	formattingDetails fd;
-	fd.range = { beginFormatting, static_cast<UINT>(t.GetLength()) };
+	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_ITALIC;
 	fd.weight = DWRITE_FONT_WEIGHT_BOLD;
 	details.push_back(fd);
@@ -793,20 +949,20 @@ void TTextField::AppendBoldItalicText(TString & t)
 }
 
 /*
-* Method: TTextField - AppendNormalText
+* Method: TTextField::AppendNormalText
 * Purpose: Adds Normal Text to the end of the current text
 * Parameters: TString& t - the text to add
 * Returns: void
 */
-void TTextField::AppendNormalText(TString & t)
+void TTextField::AppendNormalText(const TString & t)
 {
-	UINT beginFormatting = text.GetLength();
-	if (!text1.get())
+	UINT beginFormatting = text.GetSize();
+	if (!text1.Get())
 	{
-		text1 = new TText(renderTarget, this);
+		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
 	formattingDetails fd;
-	fd.range = { beginFormatting, static_cast<UINT>(t.GetLength()) };
+	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_NORMAL;
 	fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
 	details.push_back(fd);
@@ -816,7 +972,7 @@ void TTextField::AppendNormalText(TString & t)
 }
 
 /*
-* Method: TTextField - isOnFocus
+* Method: TTextField::isOnFocus
 * Purpose: Reports whether focus is on the current control
 * Parameters: void
 * Returns: bool - whether focus is on the control
@@ -827,7 +983,7 @@ bool TTextField::isOnFocus()
 }
 
 /*
-* Method: TTextField - GetText
+* Method: TTextField::GetText
 * Purpose: Retrieves the current text of the control
 * Parameters: void
 * Returns: TString - the current text held by the control
@@ -837,6 +993,12 @@ TString TTextField::GetText()
 	return text;
 }
 
+/*
+* Method: TTextField::SetText
+* Purpose: Sets the current text of the control
+* Parameters: TString t - the string to set the text to
+* Returns: void
+*/
 void TTextField::SetText(TString t )
 {
 	text = t;
@@ -848,7 +1010,13 @@ UCHAR * TTextField::GetAnaGameType()
 	return nullptr;
 }
 
-void TTextField::Resize(RECT r)
+/*
+ * Method: TTextField::Resize
+ * Purpose: resets the Size of the TextField
+ * Parameters: D2D1_RECT_F& r - the location to set the text field to
+ * Returns: void
+ */
+void TTextField::Resize(D2D1_RECT_F& r)
 {
 	TGadgetControl::Resize(r);
 	topBut = DxLocation;
@@ -873,7 +1041,7 @@ void TTextField::Resize(RECT r)
 }
 
 /*
-* Method: TTextField - updateNumber
+* Method: TTextField::updateNumber
 * Purpose: Updates the Number string by a predefined incriment 
 * Parameters: bool pos - whether moving the number up or down
 * Returns: void
@@ -883,17 +1051,17 @@ void TTextField::updateNumber(bool pos)
 	int i = 0;
 	float f = 0.0;
 	short floatResult =0 , intResult = 0;
-	if (text.ConvertToFloat(&f) && text.ConvertToInt(&i))
+	if (text.ConvertToFloat(f) && text.ConvertToInt(i))
 		setToZero();
 
 	
-	intResult = text.ConvertToInt(&i);
-	floatResult = text.ConvertToFloat(&f);
+	intResult = text.ConvertToInt(i);
+	floatResult = text.ConvertToFloat(f);
 	
 	if (pos)
 	{
 		// moving the number up
-		if (incriment.type == t_int)
+		if (incriment.type == iControlType::t_int)
 		{
 			if (!floatResult)
 			{
@@ -906,7 +1074,7 @@ void TTextField::updateNumber(bool pos)
 				setNumericText(i);
 			}
 		}
-		else if(incriment.type == t_float)
+		else if(incriment.type == iControlType::t_float)
 		{
 			if (!floatResult)
 			{
@@ -923,7 +1091,7 @@ void TTextField::updateNumber(bool pos)
 	else
 	{
 		// moving the number up
-		if (incriment.type == t_int)
+		if (incriment.type == iControlType::t_int)
 		{
 			if (!floatResult)
 			{
@@ -936,7 +1104,7 @@ void TTextField::updateNumber(bool pos)
 				setNumericText(i);
 			}
 		}
-		else if (incriment.type == t_float)
+		else if (incriment.type == iControlType::t_float)
 		{
 			if (!floatResult)
 			{
@@ -954,7 +1122,7 @@ void TTextField::updateNumber(bool pos)
 }
 
 /*
-* Method: TTextField - setToZero
+* Method: TTextField::setToZero
 * Purpose: Sets a number oriented TextField to 0
 * Parameters: void
 * Returns: void
@@ -966,7 +1134,7 @@ void TTextField::setToZero()
 }
 
 /*
-* Method: TTextField - setNumericText
+* Method: TTextField::setNumericText
 * Purpose: Sets the TextField to an integer value
 * Parameters: int i - the number to set control to
 * Returns: void
@@ -979,19 +1147,19 @@ void TTextField::setNumericText(int i)
 		return;
 	
 	text.Empty();
-	text.Format(_T("%d"), i);
+	text.Format(L"%d", i);
 
-	if (!text1.get())
+	if (!text1.Get())
 	{
-		text1 = new TText(renderTarget, this);
+		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 		int res = text1->onCreate(location);
 	}
-	if (text1.get())
+	if (text1.Get())
 		text1->setCaption(text);
 }
 
 /*
-* Method: TTextField - setNumericText
+* Method: TTextField::setNumericText
 * Purpose: Sets the TextField to a floating point value
 * Parameters: float f - the number to set control to
 * Returns: void
@@ -1004,23 +1172,32 @@ void TTextField::setNumericText(float f)
 		return;
 
 	text.Empty();
-	text.Format(_T("%f"), f);
+	text.Format(L"%f", f);
 
-	if (!text1.get())
+	if (!text1.Get())
 	{
-		text1 = new TText(renderTarget, this);
+		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 		int res = text1->onCreate(location);
 	}
-	if (text1.get())
+	if (text1.Get())
 		text1->setCaption(text);
 }
 
+
+/*
+ * Method: TTextField::AddColorEffect
+ * Purpose: Adds a color effect to the text presented
+ * Parameters: D2D1_COLOR_F col - the color to set the text
+ *				UINT start - the starting index to apply the color
+ *				UINT length - the number of characters to apply the color to
+ * Returns: void
+ */
 void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 {
-	if (!text1.get() || !renderTarget.get())
+	if (!text1.Get() || !drawingBoard.Get())
 		return;
 
-	IDWriteTextLayout* layout = text1->fontLayout.get();
+	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
 		return;
 
@@ -1035,7 +1212,7 @@ void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 
 	ColorEffect ce{ nullptr, col };
 
-	HRESULT h = renderTarget->CreateSolidColorBrush(col, &ce.colBrush);
+	HRESULT h = drawingBoard->GetRenderer()->CreateSolidColorBrush(col, &ce.colBrush);
 	if (SUCCEEDED(h))
 	{
 		colors.push_back(ce);
@@ -1043,22 +1220,40 @@ void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 	}
 }
 
+
 /*
-* Method: TTextField - updateTextString
+ * Method: TTextField::RemoveFocus
+ * Purpose: Removes the User focus from this control
+ * Parameters: void
+ * Returns: void
+ */
+void TTextField::RemoveFocus()
+{
+	TTextField* feild = nullptr;
+	for (int c = 0; c < TextList.Size(); c++)
+	{
+		feild = TextList[c];
+		if (feild)
+			feild->onFocus = false;
+	}
+}
+
+/*
+* Method: TTextField::updateTextString
 * Purpose: Refreshes the Text string formating
 * Parameters: void
 * Returns: void
 */
 void TTextField::updateTextString()
 {
-	if (!text1.get())
+	if (!text1.Get())
 	{
-		text1 = new TText(renderTarget, this);
+		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 
 	}
 	text1->setCaption(text);
 	text1->reCreateLayout();
-	IDWriteTextLayout* layout = text1->fontLayout.get();
+	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
 		return;
 	for (int c = 0; c < details.Size(); c++)
@@ -1066,15 +1261,17 @@ void TTextField::updateTextString()
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
 	}
+
+	highlighter.SetLayout(text1->fontLayout);
 }
 
 /*
-* Method: TTextField - moveCaretLeft
+* Method: TTextField::moveCaretLeft
 * Purpose: Shifts the caret to the left in the text
 * Parameters: CPoint point - the point to test
 * Returns:void
 */
-void TTextField::moveCaretLeft(CPoint point)
+void TTextField::moveCaretLeft(POINT point)
 {
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
@@ -1090,12 +1287,12 @@ void TTextField::moveCaretLeft(CPoint point)
 }
 
 /*
-* Method: TTextField - moveCaretRight
+* Method: TTextField::moveCaretRight
 * Purpose: Shifts the Caret to the right in the text
 * Parameters: CPoint point - the point to test
 * Returns: void
 */
-void TTextField::moveCaretRight(CPoint point)
+void TTextField::moveCaretRight(POINT point)
 {
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
@@ -1110,12 +1307,12 @@ void TTextField::moveCaretRight(CPoint point)
 }
 
 /*
-* Method: TTextField - moveCaretUp
+* Method: TTextField::moveCaretUp
 * Purpose: Shifts the Caret to the up in the text
 * Parameters: CPoint point - the point to test
 * Returns: void
 */
-void TTextField::moveCaretUp(CPoint point)
+void TTextField::moveCaretUp(POINT point)
 {
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
@@ -1143,12 +1340,12 @@ void TTextField::moveCaretUp(CPoint point)
 }
 
 /*
-* Method: TTextField - moveCaretDown
+* Method: TTextField::moveCaretDown
 * Purpose: Shifts the Caret to the down in the text
 * Parameters: CPoint point - the point to test
 * Returns: void
 */
-void TTextField::moveCaretDown(CPoint point)
+void TTextField::moveCaretDown(POINT point)
 {
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
@@ -1190,19 +1387,19 @@ void TTextField::moveCaretDown(CPoint point)
 */
 bool operator>(incrimentControl& ic1, incrimentControl& ic2)
 {
-	if (ic1.type == t_int)
+	if (ic1.type == iControlType::t_int)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.i > ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.i > ic2.value.f;
 		else return false;
 	}
-	else if(ic1.type == t_float)
+	else if(ic1.type == iControlType::t_float)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.f > ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.f > ic2.value.f;
 		else return false;
 	}
@@ -1219,9 +1416,9 @@ bool operator>(incrimentControl& ic1, incrimentControl& ic2)
 */
 bool operator>(incrimentControl& ic, int i)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i > i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f > i;
 	else return false;
 }
@@ -1235,9 +1432,9 @@ bool operator>(incrimentControl& ic, int i)
 */
 bool operator>(incrimentControl& ic, float f)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i > f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f > f;
 	else return false;
 }
@@ -1251,25 +1448,25 @@ bool operator>(incrimentControl& ic, float f)
 */
 bool operator>(int i, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i < i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f < i;
 	else return false;
 }
 
 /*
 * Function: operator>
-* Purpose:
+* Purpose: Compares an incrimentControl to a float for >
 * Parameters: float f - the float to compare
 *				incrimentControl& ic - the incrimentControl to compare
 * Returns: bool - the results of the comparison
 */
 bool operator>(float f, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i < f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f < f;
 	else return false;
 }
@@ -1284,19 +1481,19 @@ bool operator>(float f, incrimentControl& ic)
 */
 bool operator<(incrimentControl& ic1, incrimentControl& ic2)
 {
-	if (ic1.type == t_int)
+	if (ic1.type == iControlType::t_int)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.i < ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.i < ic2.value.f;
 		else return false;
 	}
-	else if (ic1.type == t_float)
+	else if (ic1.type == iControlType::t_float)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.f < ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.f < ic2.value.f;
 		else return false;
 	}
@@ -1313,9 +1510,9 @@ bool operator<(incrimentControl& ic1, incrimentControl& ic2)
 */
 bool operator<(incrimentControl& ic, int i)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i < i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f < i;
 	else return false;
 }
@@ -1329,9 +1526,9 @@ bool operator<(incrimentControl& ic, int i)
 */
 bool operator<(incrimentControl& ic, float f)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i < f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f < f;
 	else return false;
 }
@@ -1345,9 +1542,9 @@ bool operator<(incrimentControl& ic, float f)
 */
 bool operator<(int i, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i > i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f > i;
 	else return false;
 }
@@ -1361,9 +1558,9 @@ bool operator<(int i, incrimentControl& ic)
 */
 bool operator<(float f, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i > f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f > f;
 	else return false;
 }
@@ -1378,19 +1575,19 @@ bool operator<(float f, incrimentControl& ic)
 */
 bool operator>=(incrimentControl& ic1, incrimentControl& ic2)
 {
-	if (ic1.type == t_int)
+	if (ic1.type == iControlType::t_int)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.i >= ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.i >= ic2.value.f;
 		else return false;
 	}
-	else if (ic1.type == t_float)
+	else if (ic1.type == iControlType::t_float)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.f >= ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.f >= ic2.value.f;
 		else return false;
 	}
@@ -1407,9 +1604,9 @@ bool operator>=(incrimentControl& ic1, incrimentControl& ic2)
 */
 bool operator>=(incrimentControl& ic, int i)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i >= i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f >= i;
 	else return false;
 }
@@ -1423,9 +1620,9 @@ bool operator>=(incrimentControl& ic, int i)
 */
 bool operator>=(incrimentControl& ic, float f)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i >= f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f >= f;
 	else return false;
 }
@@ -1439,9 +1636,9 @@ bool operator>=(incrimentControl& ic, float f)
 */
 bool operator>=(int i, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i <= i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f <= i;
 	else return false;
 }
@@ -1455,9 +1652,9 @@ bool operator>=(int i, incrimentControl& ic)
 */
 bool operator>=(float f, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i <= f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f <= f;
 	else return false;
 }
@@ -1472,19 +1669,19 @@ bool operator>=(float f, incrimentControl& ic)
 */
 bool operator<=(incrimentControl& ic1, incrimentControl& ic2)
 {
-	if (ic1.type == t_int)
+	if (ic1.type == iControlType::t_int)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.i <= ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.i <= ic2.value.f;
 		else return false;
 	}
-	else if (ic1.type == t_float)
+	else if (ic1.type == iControlType::t_float)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.f <= ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.f <= ic2.value.f;
 		else return false;
 	}
@@ -1501,9 +1698,9 @@ bool operator<=(incrimentControl& ic1, incrimentControl& ic2)
 */
 bool operator<=(incrimentControl& ic, int i)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i <= i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f <= i;
 	else return false;
 }
@@ -1517,9 +1714,9 @@ bool operator<=(incrimentControl& ic, int i)
 */
 bool operator<=(incrimentControl& ic, float f)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i <= f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f <= f;
 	else return false;
 }
@@ -1533,9 +1730,9 @@ bool operator<=(incrimentControl& ic, float f)
 */
 bool operator<=(int i, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i >= i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f >= i;
 	else return false;
 }
@@ -1549,9 +1746,9 @@ bool operator<=(int i, incrimentControl& ic)
 */
 bool operator<=(float f, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i >= f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f >= f;
 	else return false;
 }
@@ -1566,19 +1763,19 @@ bool operator<=(float f, incrimentControl& ic)
 */
 bool operator==(incrimentControl& ic1, incrimentControl& ic2)
 {
-	if (ic1.type == t_int)
+	if (ic1.type == iControlType::t_int)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.i == ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.i == ic2.value.f;
 		else return false;
 	}
-	else if (ic1.type == t_float)
+	else if (ic1.type == iControlType::t_float)
 	{
-		if (ic2.type == t_int)
+		if (ic2.type == iControlType::t_int)
 			return ic1.value.f == ic2.value.i;
-		else if (ic2.type == t_float)
+		else if (ic2.type == iControlType::t_float)
 			return ic1.value.f == ic2.value.f;
 		else return false;
 	}
@@ -1595,9 +1792,9 @@ bool operator==(incrimentControl& ic1, incrimentControl& ic2)
 */
 bool operator==(incrimentControl& ic, int i)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i == i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f == i;
 	else return false;
 }
@@ -1611,9 +1808,9 @@ bool operator==(incrimentControl& ic, int i)
 */
 bool operator==(incrimentControl& ic, float f)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i == f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f == f;
 	else return false;
 }
@@ -1627,9 +1824,9 @@ bool operator==(incrimentControl& ic, float f)
 */
 bool operator==(int i, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i == i;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f == i;
 	else return false;
 }
@@ -1643,13 +1840,20 @@ bool operator==(int i, incrimentControl& ic)
 */
 bool operator==(float f, incrimentControl& ic)
 {
-	if (ic.type == t_int)
+	if (ic.type == iControlType::t_int)
 		return ic.value.i == f;
-	else if (ic.type == t_float)
+	else if (ic.type == iControlType::t_float)
 		return ic.value.f == f;
 	else return false;
 }
 
+/*
+* Function: operator==
+* Purpose: Compares two colors
+* Parameters: D2D1_COLOR_F & c1 - the first color to compare
+*				D2D1_COLOR_F & c2 - the second color to compare
+* Returns: bool - whether the values are equal
+*/
 bool operator==(D2D1_COLOR_F & c1, D2D1_COLOR_F & c2)
 {
 	return c1.r == c2.r && c1.g == c2.b 
@@ -1665,9 +1869,9 @@ bool operator==(D2D1_COLOR_F & c1, D2D1_COLOR_F & c2)
 void incrimentControl::operator=(incrimentControl & ic)
 {
 	type = ic.type;
-	if (type == t_int)
+	if (type == iControlType::t_int)
 		value.i = ic.value.i;
-	else if (type == t_float)
+	else if (type == iControlType::t_float)
 		value.f = ic.value.f;
 }
 
@@ -1679,7 +1883,7 @@ void incrimentControl::operator=(incrimentControl & ic)
 */
 void incrimentControl::operator=(int i)
 {
-	type = t_int;
+	type = iControlType::t_int;
 	value.i = i;
 }
 
@@ -1691,6 +1895,144 @@ void incrimentControl::operator=(int i)
 */
 void incrimentControl::operator=(float f)
 {
-	type = t_float;
+	type = iControlType::t_float;
 	value.f = f;
+}
+
+/*
+ * Method: TextHighlighter::TextHighlighter
+ * Purpose: Constructor
+ * Parameters: TrecPointer<DrawingBoard> - the drawing board to draw to
+ * Returns: New Text Highlighter object
+ */
+TextHighlighter::TextHighlighter(TrecPointer<DrawingBoard> rt)
+{
+	if (!rt.Get())
+		throw L"Error! Need Render Target To Be active!";
+
+	renderer = rt;
+	isActive = false;
+
+	
+	brush = renderer->GetBrush(TColor(D2D1::ColorF::Aqua));
+}
+
+/*
+ * Method: TextHighlighter::SetLayout
+ * Purpose: Sets the layout of the text to apply the effect to
+ * Parameters: TrecComPointer<IDWriteTextLayout> l - the layout to apply effects to
+ * Returns: void
+ */
+void TextHighlighter::SetLayout(TrecComPointer<IDWriteTextLayout> l)
+{
+	layout = l;
+	assert(layout.Get());
+}
+
+/*
+ * Method: TextHighlighter::SetFirstPosition
+ * Purpose: ID's the index of the first point and sets the highlighter to active
+ * Parameters: UINT f - the location of the first point in the text
+ * Returns: void
+ */
+void TextHighlighter::SetFirstPosition(UINT f)
+{
+	beginningPosition = f;
+	beginningIsInitial = true;
+	isActive = true;
+	ATLTRACE(L"HIGHLIGHTER PREPARED\n");
+}
+
+/*
+ * Method: TextHighlighter::SetSecondPosition
+ * Purpose: Identifies the second position the user has specified and applies the highlighing effect to the region betweent he two positions
+ * Parameters: UINT s - the location of the second point in the text
+ * Returns: void
+ */
+void TextHighlighter::SetSecondPosition(UINT s)
+{
+	if (isActive && layout.Get())
+	{
+		layout->SetDrawingEffect(nullptr, DWRITE_TEXT_RANGE{ beginningPosition, endingPosition - beginningPosition });
+		isActive = false;
+	}
+
+	if (beginningIsInitial)
+	{
+		if (beginningPosition > s)
+		{
+			beginningIsInitial = false;
+			endingPosition = beginningPosition;
+			beginningPosition = s;
+		}
+		else
+			endingPosition = s;
+		
+	}
+	else
+	{
+		if (endingPosition < s)
+		{
+			beginningIsInitial = true;
+			beginningPosition = endingPosition;
+			endingPosition = s;
+		}
+		else
+			beginningPosition = s;
+	}
+	ATLTRACE(L"HIGHLIGHTER MODIFIED\n");
+	layout->SetDrawingEffect(brush->GetUnderlyingBrush().Get(), DWRITE_TEXT_RANGE{ beginningPosition, endingPosition - beginningPosition });
+	isActive = true;
+}
+
+
+/*
+ * Method: TextHighlighter::Reset
+ * Purpose: Resets the highlighter
+ * Parameters: UINT location - the location where the mouse is unclicked
+ * Returns: bool - whether the highlighter was reset
+ */
+bool TextHighlighter::Reset(UINT cLocation)
+{
+
+	if (cLocation > beginningPosition&& cLocation < endingPosition)
+		return false;
+	if (layout.Get())
+	{
+		layout->SetDrawingEffect(nullptr, DWRITE_TEXT_RANGE{ beginningPosition, endingPosition - beginningPosition });
+		
+	}
+	isActive = false;
+	ATLTRACE(L"HIGHLIGHTER RESET\n");
+	return true;
+}
+
+/*
+ * Method: TextHighlighter::ResetUp
+ * Purpose: Resets the highlighter if necessary
+ * Parameters: UINT location - the location where the mouse is unclicked
+ * Returns: void
+ */
+void TextHighlighter::ResetUp(UINT cLocation)
+{
+	if (cLocation == ((beginningIsInitial) ? beginningPosition : endingPosition))
+	{
+		if (layout.Get())
+		{
+			layout->SetDrawingEffect(nullptr, DWRITE_TEXT_RANGE{ beginningPosition, endingPosition - beginningPosition });
+		}
+		
+	}
+	isActive = false;
+}
+
+/*
+ * Method: TextHighlighter::IsActive
+ * Purpose: Reports whether the highlighter is looking for the second position
+ * Parameters: void
+ * Returns: bool - whether the highlighter is actively looking for the second position
+ */
+bool TextHighlighter::IsActive()
+{
+	return isActive;
 }

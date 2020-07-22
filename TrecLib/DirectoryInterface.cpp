@@ -1,21 +1,41 @@
-#include "stdafx.h"
 #include "DirectoryInterface.h"
+#include <ShlObj.h>
 //#include "TString.h"
 
 
+/**
+ * Marker to tell if the directory entries have been initialized or not
+ */
 static bool initialized = false;
 
-static TString directories[9];
-static TString shadowDirectories[9];
+/**
+ * Collection of default directories
+ */
+static TString directories[16];
 
+/**
+ * Collection of shadow directories (which Anagame can use to hold temporary data
+ */
+static TString shadowDirectories[16];
+
+/**
+ * Function: ForgeDirectory
+ * Purpose: Ensures tht a directory exists in the system (as long as it is a valid name)
+ * Parameters: TString& dir - the directory to forge
+ * Returns: void
+ */
 void ForgeDirectory(TString& dir)
 {
-	TrecPointer<TArray<TString>> pieces = dir.split(TString(L"/\\"));
+	auto pieces = dir.split(TString(L"/\\"));
 	TString bDir;
-	for (UINT rust = 0; rust < pieces->Count(); rust++)
+	for (UINT rust = 0; rust < pieces->Size(); rust++)
 	{
-		bDir += *pieces->ElementAt(rust).get() + L'\\';
-		CreateDirectoryW(bDir, 0);
+		TString adder = pieces->at(rust) + L'\\';
+		bDir.Append(adder);
+
+		WCHAR* dir_raw = bDir.GetBufferCopy();
+		CreateDirectoryW(dir_raw, 0);
+		delete[] dir_raw;
 	}
 }
 
@@ -29,7 +49,7 @@ void InitializeDirectories()
 {
 	WCHAR filepath[300];
 
-	ASSERT(GetModuleFileNameW(nullptr, filepath, 299));
+	GetModuleFileNameW(nullptr, filepath, 299);
 	UINT c = wcslen(filepath) - 1;
 	for (; filepath[c] != L'\\' && filepath[c] != L'/'; c--)
 	{
@@ -71,12 +91,41 @@ void InitializeDirectories()
 	tempString.Set(folderString);
 	directories[7].Set(tempString);
 
-	directories[8].Set(directories[7]);
-	directories[8].Replace(TString(L"\\Downloads"), L"");
+
+	SHGetKnownFolderPath(FOLDERID_Public, 0, NULL, &folderString);
+	tempString.Set(folderString);
+	directories[8].Set(tempString);
+
+	SHGetKnownFolderPath(FOLDERID_PublicDesktop, 0, NULL, &folderString);
+	tempString.Set(folderString);
+	directories[9].Set(tempString);
+
+	SHGetKnownFolderPath(FOLDERID_PublicDocuments, 0, NULL, &folderString);
+	tempString.Set(folderString);
+	directories[10].Set(tempString);
+
+	SHGetKnownFolderPath(FOLDERID_PublicDownloads, 0, NULL, &folderString);
+	tempString.Set(folderString);
+	directories[11].Set(tempString);
+
+	SHGetKnownFolderPath(FOLDERID_PublicMusic, 0, NULL, &folderString);
+	tempString.Set(folderString);
+	directories[12].Set(tempString);
+
+	SHGetKnownFolderPath(FOLDERID_PublicPictures, 0, NULL, &folderString);
+	tempString.Set(folderString);
+	directories[13].Set(tempString);
+
+	SHGetKnownFolderPath(FOLDERID_PublicVideos, 0, NULL, &folderString);
+	tempString.Set(folderString);
+	directories[14].Set(tempString);
+
+	directories[15].Set(directories[7]);
+	directories[15].Replace(TString(L"\\Downloads"), TString(L""));
 
 	initialized = true;
 	
-	TString baseShadow = GetDirectoryWithSlash(cd_AppData) + TString(L"AnaGame\\ShadowFiles");
+	TString baseShadow = GetDirectoryWithSlash(CentralDirectories::cd_AppData) + TString(L"AnaGame\\ShadowFiles");
 	ForgeDirectory(baseShadow);
 
 	initialized = false;
@@ -89,11 +138,23 @@ void InitializeDirectories()
 	shadowDirectories[5].Set(baseShadow + TString(L"\\Pictures"));
 	shadowDirectories[6].Set(baseShadow + TString(L"\\Videos"));
 	shadowDirectories[7].Set(baseShadow + TString(L"\\Downloads"));
-	shadowDirectories[8].Set(baseShadow);
+	// New Public Shadow Directories
+	shadowDirectories[8].Set(baseShadow + TString(L"\\Public"));
+	shadowDirectories[9].Set(baseShadow + TString(L"\\Public\\Desktop"));
+	shadowDirectories[10].Set(baseShadow + TString(L"\\Public\\Documents"));
+	shadowDirectories[11].Set(baseShadow + TString(L"\\Public\\Downloads"));
+	shadowDirectories[12].Set(baseShadow + TString(L"\\Public\\Music"));
+	shadowDirectories[13].Set(baseShadow + TString(L"\\Public\\Pictures"));
+	shadowDirectories[14].Set(baseShadow + TString(L"\\Public\\Videos"));
+
+	// User
+	shadowDirectories[15].Set(baseShadow);
 
 	for (UINT c = 0; c < 9; c++)
 	{
-		CreateDirectoryW(shadowDirectories[c], 0);
+		WCHAR* dirBuff = shadowDirectories[c].GetBufferCopy();
+		CreateDirectoryW(dirBuff, 0);
+		delete[] dirBuff;
 	}
 
 	initialized = true;

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "TMapBase.h"
 UCHAR TMapType[] = { 1, 0b00010000 };
 

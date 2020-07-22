@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "SSGenerator.h"
 
 /*
@@ -7,10 +7,10 @@
 * Parameters: CArchive& a - the file to read
 * Returns: void
 */
-CSSGenerator::CSSGenerator(CArchive& a)
+CSSGenerator::CSSGenerator(TFile& a)
 {
 	Arch = &a;
-	styleList = new TArray<styleTable>();
+	styleList = TrecPointerKey::GetNewTrecPointer<TArray<styleTable>>();
 	charDeduced = false;
 }
 
@@ -24,7 +24,7 @@ CSSGenerator::CSSGenerator(TString t)
 {
 	Arch = nullptr;
 	parsable = t;
-	styleList = new TArray<styleTable>();
+	styleList = TrecPointerKey::GetNewTrecPointer<TArray<styleTable>>();
 	charDeduced = true;
 	usingWide = true;
 }
@@ -185,12 +185,12 @@ bool CSSGenerator::ParseArchive()
 */
 bool CSSGenerator::ParseString()
 {
-	TrecPointer<TArray<TString>> groups = parsable.split(TString(L"}"));
-	if (!groups.get())
+	TrecPointer<TDataArray<TString>> groups = parsable.split(TString(L"}"));
+	if (!groups.Get())
 		return false;
-	for (int c = 0; c < groups->Count(); c++)
+	for (int c = 0; c < groups->Size(); c++)
 	{
-		piece = groups->ElementAt(c).get();
+		piece = groups->at(c);
 		ParseGroup();
 	}
 	return true;
@@ -204,38 +204,38 @@ bool CSSGenerator::ParseString()
 */
 bool CSSGenerator::ParseGroup()
 {
-	styleTable* st = new styleTable;
+	TrecPointer<styleTable> st = TrecPointerKey::GetNewTrecPointer<styleTable>();
 
 	
 
-	TrecPointer<TArray<TString>> class_details = piece.split(TString(L"{"));
-	if(!class_details.get() || class_details->Count() != 2)
+	TrecPointer<TDataArray<TString>> class_details = piece.split(TString(L"{"));
+	if(!class_details.Get() || class_details->Size() != 2)
 		return false;
-	if (!class_details->ElementAt(1).get() || !class_details->ElementAt(0).get())
+	if (!class_details->at(1).GetSize() || !class_details->at(0).GetSize())
 		return false;
-	TrecPointer<TArray<TString>> details = class_details->ElementAt(1)->split(TString(L";"));
-	if (!details.get() || !details->Count())
+	TrecPointer<TDataArray<TString>> details = class_details->at(1).split(TString(L";"));
+	if (!details.Get() || !details->Size())
 		return false;
-	class_details->ElementAt(0)->Trim();
-	st->style = class_details->ElementAt(0).get();
+	class_details->at(0).Trim();
+	st->style = class_details->at(0);
 
-	for (int c = 0; c < details->Count(); c++)
+	for (int c = 0; c < details->Size(); c++)
 	{
-		if (!details->ElementAt(c).get())
+		if (!details->at(c).GetSize())
 			continue;
-		TrecPointer<TArray<TString>> detail = details->ElementAt(c)->split(TString(L":"));
-		if (!detail.get() || detail->Count() != 2)
+		TrecPointer<TDataArray<TString>> detail = details->at(c).split(TString(L":"));
+		if (!detail.Get() || detail->Size() != 2)
 			continue;
-		if (!detail->ElementAt(0).get() || !detail->ElementAt(1).get())
+		if (!detail->at(0).GetSize() || !detail->at(1).GetSize())
 			continue;
-		TString t = detail->ElementAt(0).get();
+		TString t = detail->at(0);
 		t.Trim();
-		detail->ElementAt(1)->Trim();
-		st->names.addEntry(t, detail->ElementAt(1));
+		detail->at(1).Trim();
+		st->names.addEntry(t, TrecPointerKey::GetNewTrecPointer<TString>(detail->at(1)));
 		
 	}
 
-	styleList->Add(TrecPointer<styleTable>(st));
+	styleList->Add(st);
 	return true;
 }
 

@@ -1,86 +1,108 @@
 #pragma once
 #include "Tap_dll.h"
 #include "TObject.h"
-#include "stdafx.h"
 #include <TString.h>
 #include <AnafaceUI.h>
 #include "AnafaceParser.h"
-#include "Page.h"
-#include <TrecPointer.h>
-typedef struct EventLine
-{
-	EventID_Cred eventID;
-	unsigned int responseID;
-}EventLine;
+#include "TWindow.h"
+#include <TrecReference.h>
 
-
-class _TAP_DLL TDialog : public Page
+/**
+ * Enum Class: TDialogMode
+ * Purpose: Specifies how the Dialog handles it's main parent Window
+ */
+typedef enum class TDialogMode
 {
-	friend class TDialog;
+	dialog_mode_free,		// Other widnows could still be interacted with
+	dialog_mode_soft_modal,	// Other Windows will not respond to user interaction, but they could still be moved around
+	dialog_mode_hard_model	// Other Windows will not respond to users
+}TDialogMode;
+
+/**
+ * Class: TDialog
+ * Purpose: Extends the TWIndow class to support Dialogs
+ */
+class _TAP_DLL TDialog : public TWindow
+{
 public:
-	TDialog(int width, int height);
-	~TDialog();
 
-	bool setAnaface(TString& path);       // Sets the Anaface UI that will be targeted
-	bool setName(TString&);             // Sets the name that will appear in the Top of the Window
+	/**
+	 * Method: TDialog::TDialog
+	 * Purpose: Constructor
+	 * Parameters: TString& name - Name to give the Window
+	 *				TString& winClass - Name of the Window Class to send to Windows
+	 *				UINT style - the Style of the Window desired
+	 *				HWND parent - Handle to the Parent Window
+	 *				int commandShow - How to show the Window once created
+	 *				TrecPointer<TInstance> ins - The Anagame Instance associated with thi DIalog
+	 *				TDialogMode mode - How the Dialog should approach its parent
+	 * Returns: New Dialog Object
+	 */
+	TDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode);
 
-	bool InitializeWindow(int& error);
-	bool InitializeAnaface(int& error);
-	bool Initialize2D(int& er);
+	/**
+	 * Method: TDialog::~TDialog
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	virtual ~TDialog();
 
-	virtual int DoModal();          // Creates a New Window, similarly to how DoModal works on a CDialog
-	virtual int Create();          // Creates a New Window, but allows User to continue with previous app
+	/**
+	 * Method: TDialog::PrepareWindow
+	 * Purpose: Sets up the Dialog Window, restricting the Parent Window as called for
+	 * Parameters: void
+	 * Returns: int - error code (o for success)
+	 */
+	int PrepareWindow() override;
+
+	/**
+	 * Method: TDialog::OnDestroy
+	 * Purpose: Prepares the Dialog for destruction, releasing the Parent Window if necessary
+	 * Parameters: void
+	 * Returns: bool - whether the dialog can be destroyed yet
+	 */
+	bool OnDestroy() override;
 
 
-	const HWND getWindowHandle();
+	/**
+	 * Method: TDialog::CompileView
+	 * Purpose: Sets up the Content of the Dialog
+	 * Parameters: TrecComPointer<ID2D1Factory1> fact =  the Factory to Provide the Dialog
+	 * Returns: int - error code (0 for no error)
+	 */
+	virtual int CompileView(TrecComPointer<ID2D1Factory1> fact) = 0;
 
-	void onButtonDown(bool isLeft, LPARAM lp);
-	void onButtonUp(bool isLeft, LPARAM lp);
-	void onMouseMove(LPARAM lp);
-	virtual void onDraw();
-	void onChar(LPARAM lp, WPARAM wp);
 
-	virtual UCHAR* GetAnaGameType()override;
+	/**
+	 * Method: TDialog::Run
+	 * Purpose: Runs a New Loop for intercepting Messages
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void Run();
 
 protected:
-	//ID2D1DCRenderTarget* renderer;  // Direct 2D member that Anaface Uses
-	TString name;                   // Name to attach to Window of Dialog box
-	WNDCLASS windowFeatures;      // Structure to create the Window
-	/*HWND windowHandle;
-	HINSTANCE instance;
-	int width, height;*/
-	//HDC deviceH;
-	bool isReady;
-	bool firstDraw;
-	ATOM at = 0;
-
-	// Anaface Specific resources
-	TrecPointer<TControl> pointer;
-	CFile file;
-	CArchive* archer;
-
-	void ShutdownWindow();
-	/*TrecComPointer<ID2D1Factory1> fact;
-	// Regular Direct2D/Write method
-	TrecComPointer<ID2D1DCRenderTarget> renderTarget;
-	TrecComPointer<ID2D1RenderTarget> regRenderTarget;
-	// Direct2D/Write and Direct3D
-	TrecComPointer<ID2D1Device> device;
-	TrecComPointer<ID2D1DeviceContext> contextDevice;
-	TrecComPointer<ID2D1GdiInteropRenderTarget> gdiRender;*/
-	TrecPointer<ArenaEngine> engine;
-	int location;
-	//RECT area;
-	bool FileOpened;
-
-	TDataArray<eventNameID> idMatch;
-
-protected:
-	unsigned int statusValue;
-	TDataArray<EventID_Cred> EventCred;
-	TDataArray<EventLine> EventLine;
-
-	virtual void MessageHandler();
-	TString filePath;
+	TDialogMode dialogMode;
+	bool breakLoop;
 };
 
+/**
+ * Function: ActivateAlertDialog
+ * Purpose: Runs the Course of an Alert Dialog
+ * Parameters: TrecPointer<TInstance> ins - Instance under which the Dialog is being created
+ *				 HWND parent - Handle to the Parent Window
+ *				 TString& caption - the Text to present to the User
+ * Returns: void
+ */
+_TAP_DLL void ActivateAlertDialog(TrecPointer<TInstance> ins, HWND parent, TString& caption);
+
+/**
+ * Function: ActivateNameDialog
+ * Purpose: Runs the Course of a Name Dialog
+ * Parameters: TrecPointer<TInstance> ins - Instance under which the Dialog is being created
+ *				 HWND parent - Handle to the Parent Window
+ *				 TString& caption - the Text to present to the User
+ * Returns: TString - the Input the User entered
+ */
+_TAP_DLL TString ActivateNameDialog(TrecPointer<TInstance> ins, HWND parent, TString& caption);

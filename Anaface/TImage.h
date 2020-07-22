@@ -15,33 +15,31 @@ typedef struct PixelMark {
 class TImage : public TControl
 {
 public:
-	TImage(TrecComPointer<ID2D1RenderTarget>, TrecPointer<TArray<styleTable>> styles);
+	TImage(TrecPointer<DrawingBoard>, TrecPointer<TArray<styleTable>> styles);
 	TImage(TImage&);
 	TImage();
 	~TImage();
 
-	UINT onFill(CPoint& pixel, D2D1_COLOR_F& color, float tolerance);
+	/*UINT onFill(TPoint& pixel, D2D1_COLOR_F& color, float tolerance);
 	UINT setLinearGradient(TDataArray<D2D1_COLOR_F>& colors);
 	UINT setLinearGradient(TDataArray<D2D1_GRADIENT_STOP>& colors);
 
 	UINT setRadialGradient(TDataArray<D2D1_COLOR_F>& colors);
 	UINT setRadialGradient(TDataArray<D2D1_GRADIENT_STOP>& colors);
 
-	UINT rotate(CPoint& point);
+	UINT rotate(TPoint& point);
 	virtual void onDraw(TObject* obj) override;
 
 	UINT addImage(TFile& file);
 	UINT addImage(TString& fileName);
 
 protected:
-	D2D1_MATRIX_3X2_F rotation;
+	
 	TrecPointer<TContent> cover;
-	TDataArray<TBitmap> images;
+	TDataArray<TBitmap> images;*/
 	UINT currentImage;
+	D2D1_MATRIX_3X2_F rotation;
 };
 
-void MarkPixelsRoot(CPoint& startPoint, UINT idealPixel, float tolerance, TDataArray<TDataArray<PixelMark>>& pixels);
-void MarkPixels(CPoint& startPoint, UINT startPixel, float tolerance, TDataArray<TDataArray<PixelMark>>& pixels);
-
+void MarkPixels(TPoint& startPoint, UINT idealPixel, float tolerance, TDataArray<TDataArray<PixelMark>>& pixels);
 void ConvertD2D1ColorToUIntColor(D2D1_COLOR_F& d2dColor, UINT& uColor);
-bool ColorsMatch(UINT color1, UINT color2, float tolerance);

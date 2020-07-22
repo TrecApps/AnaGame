@@ -1,6 +1,6 @@
 #pragma once
-#include "TGeometry.h"
-class TLineGeometry :public TGeometry
+#include "TDrawGeometry.h"
+class TLineGeometry :public TDrawGeometry
 {
 public:
 	TLineGeometry();

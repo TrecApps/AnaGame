@@ -4,7 +4,7 @@
 class _ANAFACE_DLL HTMLParser :	public Parser_
 {
 public:
-	HTMLParser(TrecComPointer<ID2D1RenderTarget> resources, HWND window, TString location, bool onDrive);
+	HTMLParser(TrecPointer<DrawingBoard> resources, HWND window, TString location, bool onDrive);
 	~HTMLParser();
 
 	// for the initial object type
@@ -30,7 +30,7 @@ private:
 	TrecPointer<TControl> currentObj;
 	TrecPointer<TControl> baseObj;
 
-	TrecComPointer<ID2D1RenderTarget> renderer;
+	TrecPointer<DrawingBoard> renderer;
 	TrecPointer<TArray<styleTable>> classList;
 
 	TTextField* GetTextField();

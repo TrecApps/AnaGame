@@ -1,6 +1,6 @@
 #pragma once
-#include "TGeometry.h"
-class TEllipseGeometry :public TGeometry
+#include "TDrawGeometry.h"
+class TEllipseGeometry :public TDrawGeometry
 {
 public:
 	TEllipseGeometry();

@@ -1,5 +1,5 @@
 #pragma once
-#include "TrecPointer.h"
+#include "TrecReference.h"
 #include "TArrayBase.h"
 
 /*
@@ -10,45 +10,45 @@ template <typename t>class _TREC_LIB_DLL TArray : public TArrayBase
 {
 public:
 	/*
-	* Method: (TArray) (Constructor)
-	* Purpose: default constructor for the TArray
+	* Method: TArray::Tarray
+	* Purpose: Default Constructor
 	* Parameters: void
 	* Returns: void
 	*/
 	TArray() 
 	{
-		extension = nullptr;
+		
 	}
 
 	/*
-	* Method: (TArray) (Destructor)
-	* Purpose: Cleans up TArray
+	* Method: TArray::~TArray
+	* Purpose: Destructor
 	* Parameters: void
 	* Returns: void
 	*/
 	virtual ~TArray()
 	{
-		extension = nullptr;
+		extension.Nullify();
 	}
 
 	/*
-	* Method: TArray - Add
+	* Method: TArray::Add
 	* Purpose: Appends a new Object on the TArray
 	* Parameters: TrecPointer<t> loc - the object to add
 	* Returns: bool - success or failure
 	*/
 	bool Add(TrecPointer<t> loc)
 	{
-		if (loc.get() == NULL)
+		if (loc.Get() == NULL)
 			return false;
 		if (count == 100) // first container is full
 		{
-			extension = new TArray<t>();
+			extension = TrecPointerKey::GetNewTrecPointer<TArray<t>>();
 			extension->Add(loc);
 		}
 		else if (count > 100)
 		{
-			if (!extension.get())
+			if (!extension.Get())
 				return false;
 			extension->Add(loc);
 		}
@@ -60,10 +60,10 @@ public:
 	}
 
 	/*
-	* Method: TArray - ElementAt
+	* Method: TArray::ElementAt
 	* Purpose: Retrieves the Element stored at a specified location
 	* Parameters: UINT at - the element to look at
-	* Returns: TrecPointer<t> loc - the element at the location (call .get() to make sure it's not NULL)
+	* Returns: TrecPointer<t> loc - the element at the location (call .Get() to make sure it's not NULL)
 	*/
 	TrecPointer<t> ElementAt(UINT at)
 	{
@@ -71,7 +71,7 @@ public:
 			return TrecPointer<t>();
 		if (at >= 100)
 		{
-			if (!(extension.get()))
+			if (!(extension.Get()))
 				return TrecPointer<t>();
 			return extension->ElementAt(at - 100);
 		}
@@ -82,7 +82,7 @@ public:
 	{
 		try
 		{
-			return dynamic_cast<TObject*>(ElementAt(loc).get());
+			return dynamic_cast<TObject*>(ElementAt(loc).Get());
 		}
 		catch (...)
 		{
@@ -91,7 +91,7 @@ public:
 	}
 
 	/*
-	* Method: TArray - RemoveAt
+	* Method: TArray::RemoveAt
 	* Purpose: Removes an element at a certain location
 	* Parameters: UINT loc - the Index of the element to remove
 	* Returns: bool - success result
@@ -99,26 +99,26 @@ public:
 	TrecPointer<t> RemoveAt(UINT loc)
 	{
 		if (loc > count)
-			return nullptr;
+			return TrecPointer<t>();
 		count--;
 		if (loc > 99)
 		{
-			if (!extension.get())
-				return NULL;
+			if (!extension.Get())
+				return TrecPointer<t>();
 			return extension->RemoveAt(loc - 100);
 		}
 		else
 		{
 			TrecPointer<t> point;
 			point = data[loc / 10][loc % 10];
-			data[loc / 10][loc % 10] = NULL;
+			data[loc / 10][loc % 10] = TrecPointer<t>();
 			clearNull();
 			return point;
 		}
 	}
 
 	/*
-	* Method: TArray - DeleteAt
+	* Method: TArray::DeleteAt
 	* Purpose: Deletes an element at a certain location
 	* Parameters: UINT loc - the Index of the element to delete
 	* Returns: bool - success result
@@ -137,25 +137,25 @@ public:
 		else
 		{
 			data[loc / 10][loc % 10].Delete();
-			data[loc / 10][loc % 10] = NULL;
+			data[loc / 10][loc % 10].Nullify();
 			clearNull();
 			return true;
 		}
 	}
 
 	/*
-	* Method: TArray - Clear
+	* Method: TArray::Clear
 	* Purpose: Sets all elements to null
 	* Parameters: void
 	* Returns: void
 	*/
 	void Clear()
 	{
-		if (extension.get())
+		if (extension.Get())
 		{
 			extension->Clear();
 			//delete extension;
-			extension = null<TArray<t>>();
+			extension.Nullify();
 		}
 		else
 		{
@@ -163,7 +163,7 @@ public:
 			{
 				for (int d = 0; d < 10; d++)
 				{
-					data[c][d] = nullptr;
+					data[c][d].Nullify();
 				}
 			}
 		}
@@ -171,7 +171,7 @@ public:
 	}
 
 	/*
-	* Method: TArray - setAt
+	* Method: TArray::setAt
 	* Purpose: Sets an exising element to a new element
 	* Parameters: UINT loc - the index to reset
 	*			TrecPointer<t> newV - the new value to use
@@ -194,7 +194,7 @@ public:
 	}
 
 	/*
-	* Method: TArray - operator=
+	* Method: TArray::operator=
 	* Purpose: Copies an existing TArray
 	* Parameters: TArray<t>& cop - the array to copy
 	* Returns: void
@@ -208,11 +208,17 @@ public:
 	}
 
 private:
+	/**
+	 * Holds the data
+	 */
 	TrecPointer<t> data[10][10];
+	/**
+	 * Allows Array to be extended
+	 */
 	TrecPointer<TArray<t>> extension;
 
 	/*
-	* Method: TArray - clearNull
+	* Method: TArray::clearNull
 	* Purpose: Removes Null elements in between non-null elements
 	* Parameters: bool isExt - whehter or not the TArray is part of the extension of an original array
 	* Returns: void
@@ -221,15 +227,15 @@ private:
 	{
 		bool foundNull = false;
 		if (isExt)
-			data[0][0] = nullptr;
+			data[0][0].Nullify();
 		for (UINT c = 0; c < count + 1 && c < 100; c++)
 		{
-			if (ElementAt(c).get() == nullptr)
+			if (ElementAt(c).Get() == nullptr)
 				foundNull = true;
 			if (foundNull)
 				data[c/10][c%10] = data[(c+1)/10][(c+1)%10];
 		}
-		if (extension.get())
+		if (extension.Get())
 		{
 			data[99/10][99%10] = extension->ElementAt(0);
 			extension->clearNull(true);

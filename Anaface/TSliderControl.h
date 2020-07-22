@@ -3,7 +3,7 @@
 class TSliderControl :	public TControl
 {
 public:
-	TSliderControl(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<styleTable>> styles);
+	TSliderControl(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> styles);
 	~TSliderControl();
 
 	virtual UCHAR* GetAnaGameType()override;

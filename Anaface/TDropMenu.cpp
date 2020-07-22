@@ -4,11 +4,11 @@
 /*
 * Method: (TDropMenu) (Constructor)
 * Purpose: Sets up the Control
-* Parameters:  TrecComPointer<ID2D1RenderTarget> rt - the render target to draw to
+* Parameters:  TrecPointer<DrawingBoard> rt - the render target to draw to
 *				TrecPointer<TArray<styleTable>> ta - the style list for Anaface
 * Returns: void
 */
-TDropMenu::TDropMenu(TrecComPointer<ID2D1RenderTarget> rt, TrecPointer<TArray<styleTable>> styles) :TControl(rt,styles,false)
+TDropMenu::TDropMenu(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> styles) :TControl(rt,styles,false)
 {
 }
 
@@ -25,14 +25,14 @@ TDropMenu::~TDropMenu()
 /*
 * Method: TDropMenu - onCreate
 * Purpose: Sets up the brush used to draw the nodes
-* Parameters: RECT l - the location on the menu
-* Returns: bool - true if renderTarget is set
+* Parameters: D2D1_RECT_F l - the location on the menu
+* Returns: bool - true if drawingBoard is set
 */
-bool TDropMenu::onCreate(RECT l)
+bool TDropMenu::onCreate(D2D1_RECT_F l, TrecPointer<TWindowEngine> d3d)
 {
-	if (!renderTarget.get())
+	if (!drawingBoard.Get())
 		return false;
-	renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &dotBrush);
+	dotBrush = drawingBoard->GetBrush(TColor(D2D1::ColorF(D2D1::ColorF::Black)));
 	return true;
 }
 
@@ -46,11 +46,12 @@ void TDropMenu::onDraw(TObject* obj)
 {
 	TControl::onDraw(obj);
 	TrecPointer<DropMenuNode> currentNode = rootNode;
-	if (!currentNode.get())
+	if (!currentNode.Get())
 		return;
 	
-	DrawNode(snip.top, currentNode);
+	DrawNode(location.top, currentNode);
 }
+
 
 /*
 * Method: TDropMenu - SetFolderAsRoot
@@ -60,7 +61,7 @@ void TDropMenu::onDraw(TObject* obj)
 */
 bool TDropMenu::SetFolderAsRoot(TString & folder)
 {
-	DWORD dwAttrib = GetFileAttributes(folder);
+	DWORD dwAttrib = GetFileAttributes(folder.GetConstantBuffer());
 
 	if (!(dwAttrib != INVALID_FILE_ATTRIBUTES &&
 		(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)))
@@ -85,15 +86,15 @@ UCHAR * TDropMenu::GetAnaGameType()
 /*
 * Method: TDropMenu - DrawNode
 * Purpose: Draws the node and any shown children it has
-* Parameters: long & top - the top of the node 
+* Parameters: float & top - the top of the node 
 *				TrecPointer<DropMenuNode> node - the Node to begin drawing
 * Returns: void
 */
-void TDropMenu::DrawNode(long & top, TrecPointer<DropMenuNode> node)
+void TDropMenu::DrawNode(float & top, TrecPointer<DropMenuNode> node)
 {
-	if (!node.get() || !text1.get() || !dotBrush)
+	if (!node.Get() || !text1.Get() || !dotBrush.Get())
 		return;
-	RECT curLoc = snip;
+	D2D1_RECT_F curLoc = location;
 	curLoc.top = top;
 	curLoc.bottom = top + nodeHeight;
 	curLoc.left + 10;
@@ -101,7 +102,7 @@ void TDropMenu::DrawNode(long & top, TrecPointer<DropMenuNode> node)
 
 	text1->setCaption(node->caption);
 	//text1->setNewLocation(curLoc);
-	text1->onDraw(location, snip);
+	text1->onDraw(location);
 
 	if (node->hasChildren)
 	{
@@ -113,7 +114,7 @@ void TDropMenu::DrawNode(long & top, TrecPointer<DropMenuNode> node)
 		if (node->childrenActive)
 		{
 			dotBrush->SetColor(D2D1::ColorF(D2D1::ColorF::Red));
-			renderTarget->FillEllipse(ellipse, dotBrush);
+			dotBrush->FillEllipse(ellipse);
 			for (UINT c = 0; c < node->children.Count(); c++)
 			{
 				DrawNode(top, node->children.ElementAt(c));
@@ -122,7 +123,7 @@ void TDropMenu::DrawNode(long & top, TrecPointer<DropMenuNode> node)
 		else
 		{
 			dotBrush->SetColor(D2D1::ColorF(D2D1::ColorF::Black));
-			renderTarget->FillEllipse(ellipse, dotBrush);
+			dotBrush->FillEllipse(ellipse);
 		}
 	}
 }

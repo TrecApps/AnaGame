@@ -1,7 +1,7 @@
 #pragma once
-#include "TGeometry.h"
+#include "TDrawGeometry.h"
 class TCurveGeometry :
-	public TGeometry
+	public TDrawGeometry
 {
 public:
 	TCurveGeometry();

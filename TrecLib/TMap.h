@@ -1,20 +1,31 @@
 #pragma once
-#include "stdafx.h"
 #include "TArray.h"
 #include "TString.h"
 #include "TMapBase.h"
 /*
-* class tEntry
-* Holds the entry to the TMap
+* Class: tEntry
+* Purpose: Holds the entry to the TMap
 */
 template<class t2>  class _TREC_LIB_DLL tEntry : TObject
 {
 public:
+	/**
+	 * Method:: tEntry::tEntry
+	 * Purpose: Default Constructor
+	 * Parameters: void
+	 * Returns: new TEntry
+	 */
 	tEntry()
 	{
 		
 	}
+	/**
+	 * The object to hold
+	 */
 	TrecPointer<t2> object;
+	/**
+	 * the key to the object
+	 */
 	TString key;
 };
 
@@ -29,7 +40,7 @@ template<class t2>class _TREC_LIB_DLL TMap : public TMapBase
 
 public:
 	/*
-	* Method: (TMap) (Constructor)
+	* Method: TMap::TMap
 	* Purpose: Default Constructor
 	* Parameters:
 	* Returns:
@@ -37,23 +48,23 @@ public:
 	TMap() {}
 
 	/*
-	* Method: (TMap) (Destructor)
-	* Purpose: Cleans up the TMap
+	* Method: TMap::~TMap
+	* Purpose: Destructor
 	* Parameters: void
 	* Returns: void
 	*/
 	virtual ~TMap() { map.Clear(); }
 
 	/*
-	* Method: TMap - addEntry
+	* Method: TMap::addEntry
 	* Purpose: Adds an entry to the TMap
 	* Parameters: TString& str - the key
 	*			TrecPointer<t2> obj - the object itself
 	* Returns: void
 	*/
-	void addEntry(TString& str, TrecPointer<t2> obj)
+	void addEntry(const TString& str, TrecPointer<t2> obj)
 	{
-		TrecPointer<tEntry<t2>> ent = new tEntry<t2>();
+		TrecPointer<tEntry<t2>> ent = TrecPointerKey::GetNewTrecPointer<tEntry<t2>>();
 
 		ent->key = str;
 		ent->object = obj;
@@ -61,7 +72,7 @@ public:
 	}
 
 	/*
-	* Method: TMap - GetEntryAt
+	* Method: TMap::GetEntryAt
 	* Purpose: Retrieves an entry at a specific index
 	* Parameters: UINT c - the index to target
 	* Returns: TrecPointer<tEntry<t2>> - the entry to return
@@ -74,38 +85,38 @@ public:
 	}
 
 	/*
-	* Method: TMap - retrieveEntry
+	* Method: TMap::retrieveEntry
 	* Purpose: Retrieves an entry based on a given key
 	* Parameters: TString& str - the key
 	* Returns: TrecPointer<t2> - the entry (call .get() to check it's null status)
 	*/
-	TrecPointer<t2> retrieveEntry(TString& str)
+	TrecPointer<t2> retrieveEntry(const TString& str)
 	{
 		for (int c = 0; c < map.Count(); c++)
 		{
 			TrecPointer<tEntry<t2>> point = map.ElementAt(c);
 
-			if (str == point->key)
+			if (!str.Compare(point->key))
 				return (point->object);
 		}
 		return TrecPointer<t2>();
 	}
 
 	/*
-	* Method: TMap - retrieveEntry
+	* Method: TMap::retrieveEntry
 	* Purpose: Retrieves an entry based on a given key
 	* Parameters: TString& str - the key
 	*			int occurance - the number of successes to skip
 	* Returns: TrecPointer<t2> - the entry (call .get() to check it's null status)
 	*/
-	TrecPointer<t2> retrieveEntry(TString& str, int occurance)
+	TrecPointer<t2> retrieveEntry(const TString& str, int occurance)
 	{
 		int occ = 0;
 		for (int c = 0; c < map.Count(); c++)
 		{
 			TrecPointer<tEntry<t2>> point = map.ElementAt(c);
 			
-			if (point->key == str)
+			if (!point->key.Compare(str))
 			{
 				if (occ == occurance)
 					return (point->object);
@@ -117,7 +128,7 @@ public:
 	}
 
 	/*
-	* Method: TMap - removeEntry
+	* Method: TMap::removeEntry
 	* Purpose: Removes an entry from the map
 	* Parameters: TString& str - the key
 	* Returns: TrecPointer<t2> - the entry found
@@ -136,7 +147,7 @@ public:
 	}
 	
 	/*
-	* Method: TMap - clear
+	* Method: TMap::clear
 	* Purpose: clears the map of all entries
 	* Parameters: void
 	* Returns: void
@@ -144,7 +155,7 @@ public:
 	void clear() { map.Clear(); }
 	
 	/*
-	* Method: TMap - 
+	* Method: TMap::
 	* Purpose: Retrieves the number of entries added to the TMap
 	* Parameters: void
 	* Returns: int - the count of entries in the TMap
@@ -152,7 +163,7 @@ public:
 	int count() { return map.Count(); }
 
 	/*
-	* Method: TMap - operator=
+	* Method: TMap::operator=
 	* Purpose: copies an existing TMap into this one
 	* Parameters: TMap<t2>& cop - TMap to copy from
 	* Returns: void
@@ -166,7 +177,7 @@ public:
 	}
 
 	/*
-	* Method: TMap - GetAnaGameType
+	* Method: TMap::GetAnaGameType
 	* Purpose: Retrieves the AnaGame representation of the TMap type
 	* Parameters: void
 	* Returns: UCHAR* - the array representing the TMap type

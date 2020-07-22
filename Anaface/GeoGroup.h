@@ -18,23 +18,28 @@ public:
 	GeoGroup(ID2D1RenderTarget* rt);
 	virtual ~GeoGroup();
 
-	bool onCreate(RECT);
+	bool onCreate(D2D1_RECT_F);
 	void onDraw();
 	bool addAttribute(WCHAR* attr, TrecPointer<TString> value);
 
-	void addGeometry(TGeometry*);
+	void SetNewRenderTarget(TrecComPointer<ID2D1RenderTarget> rt);
+
+	void addGeometry(TrecPointer<TDrawGeometry>);
 
 private:
-	TrecComPointer<ID2D1DCRenderTarget> renderTarget;
+	TrecComPointer<ID2D1RenderTarget> renderTarget;
 	D2D1_COLOR_F color1, color2;
 
+	void ResetBrush();
+
 	TMap<TString> attributes;
-	TArray<TGeometry> children;
+	TArray<TDrawGeometry> children;
 	TrecComPointer<ID2D1Brush> brush;
 	bool secondColor;
 	D2D1_GRADIENT_STOP gradients[2];
 	bool useRadial;
 	TrecComPointer<ID2D1GradientStopCollection> stopColl;
 	bool crunch;
+	D2D1_RECT_F loc;
 };
 
