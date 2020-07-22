@@ -1,6 +1,7 @@
 #pragma once
-#include <WinBase.h>
-#include <Windows.h>
+//#include <WinBase.h>
+//#include <Windows.h>
+#include "TObject.h"
 
 /**
  * File: TrecReference.h
@@ -24,33 +25,147 @@
  *			because these types are created by a Factory method/function and deleting them requires calling the Release() method rather than
  *			manually deleting them.
  *
+ *		TrecObjectPointer - A new Pointer type that holds a counter to any type that can call itself a TObject. Written with Anagame 
+ *			Interpretors in mind
  *
  *		The Other class you will use extensively is the TrecPointerKey class. This is a utility class necessary to operate on the TrecPointers
  *			This is because the TrecPointers restrict what you can do with them. 
  */
 
+/**
+ * class TrecBoxPointerBase
+ * Purpose: Holds the counter and base for the 
+ */
+class TrecBoxPointerBase
+{
+	friend class TrecPointerKey;
+	friend class TrecObjectPointer;
+protected:
+	/**
+	 * The raw pointer to the actual object being used
+	 */
+	void* rawPointer;
+
+	/**
+	 * tracks the number of TrecPointers referencing the object
+	 */
+	UINT counter;
+	/**
+	 * Keep Track of Soft pointers so they don't become dangling pointers
+	 */
+	USHORT softCounter;
+};
+
+
+/**
+ * Class: TrecObjectPointer
+ * Purpose: Holds a reference to an Object as if it was just a TObject
+ */
+class TrecObjectPointer
+{
+	friend class TrecPointerKey;
+protected:
+	/**
+	 * TrecBoxPointerBase that holds the raw reference
+	 */
+	TrecBoxPointerBase* basePointer;
+
+	/**
+	 * Method: TrecObjectPointer::TrecObjectPointer
+	 * Purpose: Constructor
+	 * Parameters: TrecBoxPointerBase* - the pointer to the object
+	 * Returns: New TObject pointer
+	 */
+	TrecObjectPointer(TrecBoxPointerBase* base);
+
+	/**
+	 * Method: TrecObjectPointer::Copy
+	 * Purpose: Allows refactoring of the copy logic
+	 * Parameters: TrecObjectPointer& copy - the Pointer to copy
+	 * Returns: void
+	 */
+	void Copy(TrecObjectPointer& copy);
+
+	/**
+	 * Method: TrecObjectPointer::DoDecrement
+	 * Purpose: Allows refactoring of the Decrement counter logic
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void DoDecrement();
+
+public:
+
+	/**
+	 * Method: TrecObjectPointer::~TrecObjectPointer
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	~TrecObjectPointer();
+
+	/**
+	 * Method: TrecObjectPointer::Get
+	 * Purpose: Useful for a NULL check
+	 * Parameters: void
+	 * Returns: TObject* - the Object being held
+	 */
+	TObject* Get();
+
+	/**
+	 * Method: TrecObjectPointer::operator->
+	 * Purpose: Used for directly calling methods on a TObject
+	 * Parameters: void
+	 * Returns: TObject* - the Object being held
+	 */
+	TObject* operator->();
+
+	/**
+	 * Method: TrecObjectPointer::operator=
+	 * Purpose: Allows Equality operators to be assigned
+	 * Parameters: TrecObjectPointer& obj -  the Pointer to copy
+	 * Returns: void
+	 */
+	void operator=(TrecObjectPointer& obj);
+
+	/**
+	 * Method: TrecObjectPointer::TrecObjectPointer
+	 * Purpose: Copy Constructor
+	 * Parameters: TrecObjectPointer& obj - the Pointer to copy
+	 * Returns: New TObject Pointer
+	 */
+	TrecObjectPointer(TrecObjectPointer& copy);
+
+	/**
+	 * Method: TrecObjectPointer::TrecObjectPointer
+	 * Purpose: Default Constructor
+	 * Parameters: void
+	 * Returns: New (null) TObject Pointer
+	 */
+	TrecObjectPointer();
+
+	/**
+	 * Method: TrecObjectPointer::Nullify
+	 * Purpose: Sets the Pointer to Null
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void Nullify();
+};
 
 
 /**
  * class TrecBoxPointer
  * Purpose: holds the raw pointer and a counter to the object referenced by the various TrecPointers
  */
-template<class T> class TrecBoxPointer
+template<class T> class TrecBoxPointer: public TrecBoxPointerBase
 {
 	/**
 	 * Need to allow the utility class TrecPointerKey access for it to perform it's job properly
 	 */
 	friend class TrecPointerKey;
 private:
-	/**
-	 * The raw pointer to the actual object being used
-	 */
-	T* rawPointer;
 
-	/**
-	 * tracks the number of TrecPointers referencing the object
-	 */
-	UINT counter;
 public:
 
 	/**
@@ -62,7 +177,8 @@ public:
 	TrecBoxPointer(T* t)
 	{
 		counter = (t)? 1 : 0;
-		rawPointer = t;
+		rawPointer = (void*)t;
+		softCounter = 0;
 	}
 
 	/**
@@ -74,7 +190,7 @@ public:
 	~TrecBoxPointer()
 	{
 		if (rawPointer)
-			delete rawPointer;
+			delete reinterpret_cast<T*>(rawPointer);
 	}
 
 	/**
@@ -89,6 +205,17 @@ public:
 	}
 
 	/**
+	 * Method: TrecBoxPointer::IncrementSoft
+	 * Purpose: Increases the counter by one, intended to be called by all Soft TrecPointers so they don't become dangling pointers
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void IncrementSoft()
+	{
+		softCounter++;
+	}
+
+	/**
 	 * Method: TrecBoxPointer::Decrement
 	 * Purpose: Reduces the counter. If the counter reaches zero, go ahead an commence clean up
 	 * Parameters: void
@@ -97,8 +224,31 @@ public:
 	void Decrement()
 	{
 		counter--;
-		if (!counter) // if counter is zero, then there is no reference to the object and it is time to delete it.
+		if (!counter && !softCounter) // if counter is zero, then there is no reference to the object and it is time to delete it.
 			delete this;
+		else if (!counter)
+		{							// Main pointers are gone but soft pointers remain. Delete the object but don't yet delete the counter
+			delete rawPointer;
+			rawPointer = nullptr;
+		}
+	}
+
+	/**
+	 * Method: TrecBoxPointer::DecrementSoft
+	 * Purpose: Reduces the counter. If the counter reaches zero, go ahead an commence clean up
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void DecrementSoft()
+	{
+		softCounter--;
+		if (!counter && !softCounter) // if counter is zero, then there is no reference to the object and it is time to delete it.
+			delete this;
+		else if (!counter)
+		{							// Main pointers are gone but soft pointers remain. Delete the object but don't yet delete the counter
+			delete rawPointer;
+			rawPointer = nullptr;
+		}
 	}
 
 	/**
@@ -109,7 +259,7 @@ public:
 	 */
 	T* Get()
 	{
-		return rawPointer;
+		return reinterpret_cast<T*>(rawPointer);
 	}
 
 	/**
@@ -246,6 +396,8 @@ private:
 		if(!pointer)
 			throw L"Error! TrecPointers must be initialized with a pointer, not NULL!";
 		this->pointer = pointer;
+		if (this->pointer)
+			this->pointer->IncrementSoft();
 	}
 
 public:
@@ -258,6 +410,18 @@ public:
 	TrecPointerSoft()
 	{
 		pointer = nullptr;
+	}
+
+	/**
+	 * Method: TrecPointerSoft::~TrecPointerSoft
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	~TrecPointerSoft()
+	{
+		if(pointer)
+			pointer->DecrementSoft();
 	}
 
 	/**
@@ -286,7 +450,13 @@ public:
 		if (other.pointer == pointer)
 			return;
 
+		// If we are currently holding on to an existing pointer, decriment it's soft pointer
+		if (pointer)
+			pointer->DecrementSoft();
+
 		pointer = other.pointer;
+		if (pointer)
+			pointer->IncrementSoft();
 	}
 };
 
@@ -314,6 +484,9 @@ private:
 		if (!pointer)
 			throw L"Error! TrecPointers must be initialized with a pointer, not NULL!";
 		this->pointer = pointer;
+
+		if (this->pointer)
+			this->pointer->IncrementSoft();
 	}
 
 public:
@@ -326,6 +499,18 @@ public:
 	TrecSubPointerSoft()
 	{
 		pointer = nullptr;
+	}
+
+	/**
+	 * Method: TrecSubPointerSoft::~TrecSubPointerSoft
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: New TrecSubPointerSoft Object
+	 */
+	~TrecSubPointerSoft()
+	{
+		if (pointer)
+			pointer->DecrementSoft();
 	}
 
 	/**
@@ -353,6 +538,9 @@ public:
 		// If it is, we don't want to decrement the reference lest it become 0 (and self-destructs)
 		if (other.pointer == pointer)
 			return;
+
+		if (pointer)
+			pointer->DecrementSoft();
 
 		pointer = other.pointer;
 	}
@@ -1159,5 +1347,23 @@ public:
 		if(trec.pointer)
 			return TrecSubPointerSoft<T, U>(trec.pointer);
 		return TrecSubPointerSoft<T, U>();
+	}
+
+	/**
+	 * Method: static TrecPointerKey::GetTrecObjectPointer<T>
+	 * Purpose: Retrieves a TrecObjectPointer that just sees a TObject
+	 * Parameters: TrecPointer<T> - the TrecPointer to convert
+	 * Returns: TrecObjectPointer - Smart Pointer that holds the object as a TObject, without regard for the specifc type held
+	 * 
+	 * Note: this can be useful for Interpretors that don't need to track multiple Anagame Object types but just care about whether they are a TObject or not
+	 */
+	template <class T> static TrecObjectPointer GetTrecObjectPointer(TrecPointer<T> obj)
+	{
+		T* temp = obj.Get();
+		if (dynamic_cast<TObject*>(temp))
+		{
+			return TrecObjectPointer(obj.pointer);
+		}
+		return TrecObjectPointer();
 	}
 };

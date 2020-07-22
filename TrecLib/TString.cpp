@@ -151,13 +151,13 @@ TString::TString(WCHAR c)
 * Parameters: int* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToInt(int* value)
+short TString::ConvertToInt(int& value)
 {
 	if (!size)
 		return NOT_NUMB;
-	int temp = *value;
+	int temp = value;
 
-	*value = 0;
+	value = 0;
 	int hold;
 	bool positive = true;
 
@@ -165,7 +165,7 @@ short TString::ConvertToInt(int* value)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
-			*value = (*value * 10) + hold;
+			value = (value * 10) + hold;
 		}
 		else if (!c && this->GetAt(c) == L'-')
 		{
@@ -173,14 +173,53 @@ short TString::ConvertToInt(int* value)
 		}
 		else
 		{
-			*value = temp;
+			value = temp;
 			return NOT_NUMB;
 		}
 	}
 	if (positive)
-		*value = abs(*value);
+		value = abs(value);
 	else
-		*value = -(abs(*value));
+		value = -(abs(value));
+	return T_NO_ERROR;
+}
+
+/*
+* Method: TString::ConvertToInt
+* Purpose: Converts a Compliant TString into an integer
+* Parameters: long* value - the value to store
+* Returns: short - 0 if successful, error code otherwise
+*/
+short TString::ConvertToInt(long& value)
+{
+	if (!size)
+		return NOT_NUMB;
+	int temp = value;
+
+	value = 0;
+	int hold;
+	bool positive = true;
+
+	for (int c = 0; c < size; c++)
+	{
+		if (convertToNumber(this->GetAt(c), &hold))
+		{
+			value = (value * 10) + hold;
+		}
+		else if (!c && this->GetAt(c) == L'-')
+		{
+			positive = false;
+		}
+		else
+		{
+			value = temp;
+			return NOT_NUMB;
+		}
+	}
+	if (positive)
+		value = abs(value);
+	else
+		value = -(abs(value));
 	return T_NO_ERROR;
 }
 
@@ -190,13 +229,13 @@ short TString::ConvertToInt(int* value)
 * Parameters: long* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToLong(long long* value)
+short TString::ConvertToLong(long long& value)
 {
 	if (!size)
 		return NOT_NUMB;
-	long long temp = *value;
+	long long temp = value;
 
-	*value = 0;
+	value = 0;
 	int hold;
 
 	bool positive = true;
@@ -205,7 +244,7 @@ short TString::ConvertToLong(long long* value)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
-			*value = (*value * 10) + hold;
+			value = (value * 10) + hold;
 		}
 		else if (!c && this->GetAt(c) == L'-')
 		{
@@ -213,14 +252,14 @@ short TString::ConvertToLong(long long* value)
 		}
 		else
 		{
-			*value = temp;
+			value = temp;
 			return NOT_NUMB;
 		}
 	}
 	if (positive)
-		*value = abs(*value);
+		value = abs(value);
 	else
-		*value = -(abs(*value));
+		value = -(abs(value));
 	return T_NO_ERROR;
 
 }
@@ -231,13 +270,13 @@ short TString::ConvertToLong(long long* value)
 * Parameters: double* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToDouble(double* value)
+short TString::ConvertToDouble(double& value)
 {
 	if (!size)
 		return NOT_NUMB;
-	double temp = *value;
+	double temp = value;
 
-	*value = 0;
+	value = 0;
 	double dec = 0.1;
 	bool fullInt = true;
 	int hold;
@@ -248,11 +287,11 @@ short TString::ConvertToDouble(double* value)
 	{
 		if (fullInt && convertToNumber(this->GetAt(c), &hold))
 		{
-			*value = (*value * 10) + hold;
+			value = (value * 10) + hold;
 		}
 		else if (convertToNumber(this->GetAt(c), &hold)) // moved to decimal portion
 		{
-			*value = *value + (double)hold * dec;
+			value = value + (double)hold * dec;
 			dec = dec / 10;
 		}
 		else if (this->GetAt(c) == L'.')
@@ -265,15 +304,15 @@ short TString::ConvertToDouble(double* value)
 		}
 		else
 		{
-			*value = temp;
+			value = temp;
 			return NOT_NUMB;
 		}
 
 	}
 	if (positive)
-		*value = abs(*value);
+		value = abs(value);
 	else
-		*value = -(abs(*value));
+		value = -(abs(value));
 
 	return T_NO_ERROR;
 }
@@ -284,13 +323,13 @@ short TString::ConvertToDouble(double* value)
 * Parameters: float* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToFloat(float* value)
+short TString::ConvertToFloat(float& value)
 {
 	if (!size)
 		return NOT_NUMB;
-	float temp = *value;
+	float temp = value;
 
-	*value = 0;
+	value = 0;
 	float dec = 0.1f;
 	bool fullInt = true;
 	int hold;
@@ -300,11 +339,11 @@ short TString::ConvertToFloat(float* value)
 	{
 		if (fullInt && convertToNumber(this->GetAt(c), &hold))
 		{
-			*value = (*value * 10) + hold;
+			value = (value * 10) + hold;
 		}
 		else if (convertToNumber(this->GetAt(c), &hold)) // moved to decimal portion
 		{
-			*value = *value + (float)hold * dec;
+			value = value + (float)hold * dec;
 			dec = dec / 10;
 		}
 		else if (this->GetAt(c) == L'.')
@@ -317,16 +356,16 @@ short TString::ConvertToFloat(float* value)
 		}
 		else
 		{
-			*value = temp;
+			value = temp;
 			return NOT_NUMB;
 		}
 
 	}
 
 	if (positive)
-		*value = abs(*value);
+		value = abs(value);
 	else
-		*value = -(abs(*value));
+		value = -(abs(value));
 
 	return T_NO_ERROR;
 }
@@ -628,18 +667,18 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 	{
 		bool works = true;
 		D2D1_COLOR_F tempColor = { 0.0f,0.0f,0.0f,0.0f };
-		if (!works || !values->at(0).GetSize() || values->at(0).ConvertToFloat(&tempColor.r))
+		if (!works || !values->at(0).GetSize() || values->at(0).ConvertToFloat(tempColor.r))
 			works = false;
 
-		if (!works || !values->at(1).GetSize() || values->at(1).ConvertToFloat(&tempColor.g))
+		if (!works || !values->at(1).GetSize() || values->at(1).ConvertToFloat(tempColor.g))
 			works = false;
 
-		if (!works || !values->at(2).GetSize() || values->at(2).ConvertToFloat(&tempColor.b))
+		if (!works || !values->at(2).GetSize() || values->at(2).ConvertToFloat(tempColor.b))
 			works = false;
 
 		if (works && values->Size() > 3)
 		{
-			if (!values->at(3).GetSize() || values->at(3).ConvertToFloat(&tempColor.a))
+			if (!values->at(3).GetSize() || values->at(3).ConvertToFloat(tempColor.a))
 				works = false;
 			else
 				cf = ColorFormat::cform_ana_a;
@@ -673,9 +712,9 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 
 		//D2D1_COLOR_F tempColor = { 0.0f,0.0f,0.0f,0.0f };
 		int tempColor[4];
-		if (values->at(1).ConvertToInt(&tempColor[0]) ||
-			values->at(2).ConvertToInt(&tempColor[1]) ||
-			values->at(3).ConvertToInt(&tempColor[2]))
+		if (values->at(1).ConvertToInt(tempColor[0]) ||
+			values->at(2).ConvertToInt(tempColor[1]) ||
+			values->at(3).ConvertToInt(tempColor[2]))
 			return false;
 
 		// Okay, we have legitimate values now, time to convert
@@ -684,7 +723,7 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 		color.b = static_cast<float>(tempColor[2]) / 255.0f;
 
 		// Try to see if alpha is available
-		if (values->Size() > 4 && values->at(4).GetSize() && !values->at(4).ConvertToFloat(&color.a))
+		if (values->Size() > 4 && values->at(4).GetSize() && !values->at(4).ConvertToFloat(color.a))
 		{
 			cf = ColorFormat::cform_rgba;
 			return true;
@@ -703,7 +742,7 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 
 		// Try getting the hue
 		int h = 0;
-		if (values->at(1).ConvertToInt(&h))
+		if (values->at(1).ConvertToInt(h))
 			return false;
 		
 		h = abs(h) % 360;
@@ -713,7 +752,7 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 		values->at(3).Remove(L'%');
 
 		float s, l;
-		if (values->at(2).ConvertToFloat(&s) || values->at(2).ConvertToFloat(&l))
+		if (values->at(2).ConvertToFloat(s) || values->at(2).ConvertToFloat(l))
 			return false;
 		if (s > 100.0f || l > 100.0f)
 			return false;
@@ -746,7 +785,7 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 		}
 
 		// Try to see if alpha is available
-		if (values->Size() > 4 && !values->at(4).ConvertToFloat(&color.a))
+		if (values->Size() > 4 && !values->at(4).ConvertToFloat(color.a))
 		{
 			cf = ColorFormat::cform_hsla;
 			return true;

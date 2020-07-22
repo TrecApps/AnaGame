@@ -107,7 +107,7 @@ void TScrollerControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.isClick = args.isLeftClick = true;
 		args.control = nullptr;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Select_Scroller, this, vScroll));
+		eventAr.push_back(EventID_Cred(R_Message_Type::On_Select_Scroller, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), vScroll));
 		return;
 	}
 
@@ -121,7 +121,7 @@ void TScrollerControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.isClick = args.isLeftClick = true;
 		args.control = nullptr;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Select_Scroller, this, hScroll));
+		eventAr.push_back(EventID_Cred(R_Message_Type::On_Select_Scroller, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), hScroll));
 		return;
 	}
 

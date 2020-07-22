@@ -137,17 +137,17 @@ TrecPointer<Animation> AnimationBuilder::Build()
 			// Value could be anything, all this does is set animation to radian mode (default is degrees)
 			ret->SetAnimationValue(0.0f, animation_value_type::animation_value_type_radian);
 		}
-		else if (!entry->key.Compare(L"|BeginRotate") && !entry->object->ConvertToFloat(&value))
+		else if (!entry->key.Compare(L"|BeginRotate") && !entry->object->ConvertToFloat(value))
 		{
 			ret->SetAnimationValue(value, animation_value_type::animation_value_type_rotate_start);
 		}
-		else if (!entry->key.Compare(L"|EndRotate") && !entry->object->ConvertToFloat(&value))
+		else if (!entry->key.Compare(L"|EndRotate") && !entry->object->ConvertToFloat(value))
 		{
 			ret->SetAnimationValue(value, animation_value_type::animation_value_type_rotate_end);
 		}
 		else if (!entry->key.Compare(L"|RotateDirection"))
 		{
-			entry->object->ConvertToFloat(&value);
+			entry->object->ConvertToFloat(value);
 			ret->SetAnimationValue(value, animation_value_type::animation_value_type_direction);
 		}
 		else if (!entry->key.Compare(L"|Location"))
@@ -162,13 +162,13 @@ TrecPointer<Animation> AnimationBuilder::Build()
 		else if (!entry->key.Compare(L"|Length"))
 		{
 			int length = 0;
-			if (!entry->object->ConvertToInt(&length))
+			if (!entry->object->ConvertToInt(length))
 				ret->SetMillisecondLength(length);
 		}
 		else if (!entry->key.Compare(L"|RefreshRate"))
 		{
 			int length = 0;
-			if (!entry->object->ConvertToInt(&length))
+			if (!entry->object->ConvertToInt(length))
 				ret->SetMillisecondRefresh(length);
 		}
 

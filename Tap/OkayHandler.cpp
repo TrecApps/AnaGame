@@ -53,8 +53,8 @@ void OkayHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 	bool markDestroy = false; EventArgs ea;
 	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
 	{
-		TControl* cont = eventAr[Rust].control;
-		if (!cont) continue;
+		auto cont = eventAr[Rust].control;
+		if (!cont.Get()) continue;
 
 		ea = cont->getEventArgs();
 

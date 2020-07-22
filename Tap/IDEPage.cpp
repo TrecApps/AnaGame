@@ -154,6 +154,21 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, Trec
 		focusPage->curPoint = point;
 	}
 
+	if (isContained(point, area))
+	{
+		if (focusPage.Get())
+		{
+			auto targetPage = focusPage->GetPage();
+
+			auto hand = targetPage->GetHandler();
+
+			if (hand.Get())
+				hand->OnFocus();
+		}
+		else if (handler.Get())
+			handler->OnFocus();
+	}
+
 	if (currentPage.Get())
 		currentPage->OnLButtonDown(nFlags, point, mOut, fly);
 	else

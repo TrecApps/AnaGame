@@ -5,7 +5,7 @@
 //using namespace ControlTypeSafety;
 
 /*
-* Method: AnafaceParser - 
+* Method: AnafaceParser::
 * Purpose:
 * Parameters:
 * Returns:
@@ -17,7 +17,7 @@ bool isLayout(TrecPointer<TControl> cont);
 
 
 /*
-* Method: (AnafaceParser) (Constructor)
+* Method: AnafaceParser::AnafaceParser
 * Purpose: Sets up the Anaface Parser
 * Parameters: TrecPointer<DrawingBoard> rt - the render target the controls will be using 
 *				HWND hWin - the Window Handle the control would be using
@@ -37,8 +37,8 @@ AnafaceParser::AnafaceParser(TrecPointer<DrawingBoard> rt, HWND hWin,TString dir
 }
 
 /*
-* Method: (AnafaceParser) (Destructor)
-* Purpose: Cleans up the parser
+* Method: AnafaceParser::AnafaceParser
+* Purpose: Destructor
 * Parameters: void
 * Returns: void
 */
@@ -47,7 +47,7 @@ AnafaceParser::~AnafaceParser()
 
 }
 /*
-* Method: AnafaceParser - setEventSystem
+* Method: AnafaceParser::setEventSystem
 * Purpose: Sets up the event system being used
 * Parameters: TDataArray<eventNameID>& e - The list of events to use
 * Returns: void
@@ -58,7 +58,7 @@ void AnafaceParser::setEventSystem(TDataArray<eventNameID>& e)
 }
 
 /*
-* Method: AnafaceParser - Obj
+* Method: AnafaceParser::Obj
 * Purpose: Creates a new Control to parse
 * Parameters: TString* va -  the object type
 * Returns: bool - whether a valid string was provided
@@ -110,8 +110,8 @@ bool AnafaceParser::Obj(TString* va)
 
 				
 
-				firstNum = numbers->at(0).ConvertToInt(&xValue);
-				secondNum = numbers->at(1).ConvertToInt(&yValue);
+				firstNum = numbers->at(0).ConvertToInt(xValue);
+				secondNum = numbers->at(1).ConvertToInt(yValue);
 				if (firstNum == 0 && secondNum == 0) // YES! we now know where to place this object
 				{
 					positionSet = true;
@@ -122,8 +122,8 @@ bool AnafaceParser::Obj(TString* va)
 				// Now Check for the next two numbers
 				if (numbers->Size() > 3)
 				{
-					firstNum = numbers->at(2).ConvertToInt(&xValue);
-					secondNum = numbers->at(3).ConvertToInt(&yValue);
+					firstNum = numbers->at(2).ConvertToInt(xValue);
+					secondNum = numbers->at(3).ConvertToInt(yValue);
 					if (firstNum == 0 && secondNum == 0) // YES! we now know where to place this object
 					{
 						extendPos = true;
@@ -305,7 +305,7 @@ bool AnafaceParser::Obj(TString* va)
 }
 
 /*
-* Method: AnafaceParser - Attribute
+* Method: AnafaceParser::Attribute
 * Purpose: Sets the attributes of the current Object
 * Parameters: TrecPointer<TString> v - the value of the attribute
 *				TString& e - the name of the attribute
@@ -366,7 +366,7 @@ bool AnafaceParser::Attribute(TrecPointer<TString> v, TString& e)
 		{
 			bool flex = v->Find(L"*") != -1;
 			v->Remove(L'*');
-			if (v.Get()->ConvertToInt(&value))
+			if (v.Get()->ConvertToInt(value))
 				return false;
 			else
 			{
@@ -383,7 +383,7 @@ bool AnafaceParser::Attribute(TrecPointer<TString> v, TString& e)
 		{
 			bool flex = v->Find(L"*") != -1;
 			v->Remove(L'*');
-			if (v.Get()->ConvertToInt(&value))
+			if (v.Get()->ConvertToInt(value))
 				return false;
 			else
 			{
@@ -410,7 +410,7 @@ bool AnafaceParser::Attribute(TrecPointer<TString> v, TString& e)
 }
 
 /*
-* Method: AnafaceParser - submitType
+* Method: AnafaceParser::submitType
 * Purpose: Whether the TML file is written for this parser
 * Parameters: TString v - the Parser type being checked
 * Returns: bool - whether the TML type is compatible
@@ -423,7 +423,7 @@ bool AnafaceParser::submitType(TString v)
 }
 
 /*
-* Method: AnafaceParser - submitEdition
+* Method: AnafaceParser::submitEdition
 * Purpose: Returns version compatibility
 * Parameters: TString - the version string
 * Returns: bool - whether the version is compatible
@@ -434,7 +434,7 @@ bool AnafaceParser::submitEdition(TString v)
 }
 
 /*
-* Method: AnafaceParser - goChild
+* Method: AnafaceParser::goChild
 * Purpose: Puts focus of the parser onto a child control
 * Parameters: void
 * Returns: bool - true
@@ -447,7 +447,7 @@ bool AnafaceParser::goChild()
 }
 
 /*
-* Method: AnafaceParser - goParent
+* Method: AnafaceParser::goParent
 * Purpose: Returns parsing focus to the parent control
 * Parameters: void
 * Returns: void
@@ -461,7 +461,7 @@ void AnafaceParser::goParent()
 }
 
 /*
-* Method: AnafaceParser - getRootControl
+* Method: AnafaceParser::getRootControl
 * Purpose: Retrieves the root control of the 
 * Parameters: void
 * Returns: TrecPointer<TControl> - the root control
@@ -472,7 +472,7 @@ TrecPointer<TControl> AnafaceParser::getRootControl()
 }
 
 /*
-* Method: AnafaceParser - GetAnaGameType
+* Method: AnafaceParser::GetAnaGameType
 * Purpose: Retrieves the Object type as represented in AnaGame
 * Parameters: void
 * Returns: UCHAR* - the type of object in AnaGame form
@@ -532,7 +532,7 @@ TDataArray<TString> AnafaceParser::GetPersistentStoryBoards()
 }
 
 /*
-* Method: AnafaceParser - setLayoutParam
+* Method: AnafaceParser::setLayoutParam
 * Purpose: Sets the rows and columns of a Layout control
 * Parameters: void
 * Returns: void
@@ -611,7 +611,7 @@ bool isLayout(TrecPointer<TControl> cont)
 }
 
 /*
-* Method: AnafaceParser - addToTree
+* Method: AnafaceParser::addToTree
 * Purpose: Adds the curren control to the tree of controls for the Anaface UI
 * Parameters: TrecPointer<TControl> tc - the control to add
 * Returns: void
@@ -646,7 +646,7 @@ void AnafaceParser::addToTree(TrecPointer<TControl> tc)
 }
 
 /*
-* Method: AnafaceParser - AddToEventList
+* Method: AnafaceParser::AddToEventList
 * Purpose: Adds the event handler to the Control
 * Parameters: R_Message_Type rmt - the message type
 *				int id - the Event handler to repond to
@@ -659,7 +659,7 @@ void AnafaceParser::AddToEventList(R_Message_Type rmt, int id)
 }
 
 /*
-* Method: AnafaceParser - handleEventAttribute
+* Method: AnafaceParser::handleEventAttribute
 * Purpose: Sets up a Controls reaction to an event
 * Parameters: TrecPointer<TString>& v - Id of the event handler
 *			TString& e - event type

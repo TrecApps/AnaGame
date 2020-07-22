@@ -108,13 +108,7 @@
     <ClInclude Include="TTypeMetadata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TAttribute.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Animation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TControlComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TTrecSoftPointerArray.h">
@@ -240,6 +234,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TClientSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TrecReference.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

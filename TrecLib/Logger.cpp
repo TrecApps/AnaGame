@@ -4,11 +4,31 @@
 #include "TFile.h"
 #include "DirectoryInterface.h"
 
+/**
+ * Used for memory logging 
+ */
 TFile memLogger;
+/**
+ * Used for code logging
+ */
 TFile lanLogger;
+
+/**
+ * Used for pointer
+ */
 TFile pntLogger;
+/**
+ * Used for BNF loging
+ */
 TFile bnfLogger;
 
+
+/**
+ * Function: openLog
+ * Purpose: Opens a specific logging file
+ * Parameters: LogType lt - The type of log to open
+ * Returns: whether the file is open or not
+ */
 bool openLog(LogType lt) {
 	if(lt != LogType::lt_bnf) return false;
 	TString fileName(GetDirectoryWithSlash(CentralDirectories::cd_AppData));
@@ -53,6 +73,13 @@ bool openLog(LogType lt) {
 }
 
 
+/**
+ * Function: Log
+ * Purpose: Applies logging to a specific logging file
+ * Parameters: LogType lt - The type of log to document
+ *				 TString& logMessage - The message to write to the file
+ * Returns: void
+ */
 void _TREC_LIB_DLL Log(LogType lt, TString& logMessage)
 {
 	if (!openLog(lt)) return;
@@ -80,6 +107,12 @@ void _TREC_LIB_DLL Log(LogType lt, TString& logMessage)
 	}
 }
 
+/**
+ * Function: CloseLog
+ * Purpose: Closes the Logging Module (called by DLL Main on shutdown)
+ * Parameters: void
+ * Returns: void
+ */
 void CloseLog()
 {
 	if (memLogger.IsOpen()) memLogger.Close();

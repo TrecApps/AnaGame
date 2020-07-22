@@ -5,7 +5,7 @@
 
 class MainLayoutHandler;
 
-typedef void (MainLayoutHandler::* LayoutCall)(TControl* tc, EventArgs ea);
+typedef void (MainLayoutHandler::* LayoutCall)(TrecPointer<TControl> tc, EventArgs ea);
 
 class MainLayoutHandler : public EventHandler
 {
@@ -25,7 +25,7 @@ public:
 	void HandleEvents(TDataArray<EventID_Cred>& eventAr);
 
 	void Draw();
-	void OnSwitchTab(TControl* tc, EventArgs ea);
+	void OnSwitchTab(TrecPointer<TControl> tc, EventArgs ea);
 
 
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message)override;
@@ -58,22 +58,22 @@ protected:
 	//TrecPointer<BuilderApp> currentDocument;
 
 	// Found on the Home Tab
-	void OnLoadNewSolution(TControl* tc, EventArgs ea);
-	void OnSaveFile(TControl* tc, EventArgs ea);
-	void OnSaveAllFiles(TControl* tc, EventArgs ea);
-	void OnNewFile(TControl* tc, EventArgs ea);
-	void OnImportFile(TControl* tc, EventArgs ea);
-	void OnPrint(TControl* tc, EventArgs ea);
+	void OnLoadNewSolution(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSaveFile(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSaveAllFiles(TrecPointer<TControl> tc, EventArgs ea);
+	void OnNewFile(TrecPointer<TControl> tc, EventArgs ea);
+	void OnImportFile(TrecPointer<TControl> tc, EventArgs ea);
+	void OnPrint(TrecPointer<TControl> tc, EventArgs ea);
 
 	// Found on the Arena Tab
-	void OnNewArena(TControl* tc, EventArgs ea);
-	void OnUpdateClearColor(TControl* tc, EventArgs ea);
-	void OnNewModel(TControl* tc, EventArgs ea);
+	void OnNewArena(TrecPointer<TControl> tc, EventArgs ea);
+	void OnUpdateClearColor(TrecPointer<TControl> tc, EventArgs ea);
+	void OnNewModel(TrecPointer<TControl> tc, EventArgs ea);
 
 	// Found on the Document (Source Code) Tab
-	void OnNewCodeFile(TControl* tc, EventArgs ea);
-	void OnImportCode(TControl* tc, EventArgs ea);
-	void OnProcessCode(TControl* tc, EventArgs ea);
+	void OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea);
+	void OnImportCode(TrecPointer<TControl> tc, EventArgs ea);
+	void OnProcessCode(TrecPointer<TControl> tc, EventArgs ea);
 
 
 	/// Now to host the various mini apps that the user g=could launch on the builder

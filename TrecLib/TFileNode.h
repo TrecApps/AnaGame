@@ -11,52 +11,52 @@ class _TREC_LIB_DLL TFileNode :
 {
 public:
 	/*
-* Method: TDirectory::Constructor
-* Purpose: Constructs the TFileNode
-* Parameters: UINT l - level of the node (used by the TObjectNode class)
-* Returns: void
-*/
+	* Method: TDirectory::Constructor
+	* Purpose: Constructs the TFileNode
+	* Parameters: UINT l - level of the node (used by the TObjectNode class)
+	* Returns: void
+	*/
 	TFileNode(UINT l);
 
 	/*
- * Method: TDirectory::GetContent
- * Purpose: Retrieves the Content to present about this object
- * Parameters: void
- * Returns: TString - the name of the File/directory this node references
- */
+	 * Method: TDirectory::GetContent
+	 * Purpose: Retrieves the Content to present about this object
+	 * Parameters: void
+	 * Returns: TString - the name of the File/directory this node references
+	 */
 	TString GetContent() override;
 
 	/*
-* Method: TDirectory::IsExtendable
-* Purpose: Reports whether this node is extendable - in this case, whether the file is a directory or not
-* Parameters: void
-* Returns: bool - whether the node is extendable (i.e. references a directory)
-*/
+	* Method: TDirectory::IsExtendable
+	* Purpose: Reports whether this node is extendable - in this case, whether the file is a directory or not
+	* Parameters: void
+	* Returns: bool - whether the node is extendable (i.e. references a directory)
+	*/
 	bool IsExtendable() override;
 
 	/*
-* Method: TDirectory::IsExtended
-* Purpose: Reports whether this node is currently extended
-* Parameters: void
-* Returns: bool - whether the node is extended
-*/
+	* Method: TDirectory::IsExtended
+	* Purpose: Reports whether this node is currently extended
+	* Parameters: void
+	* Returns: bool - whether the node is extended
+	*/
 	virtual bool IsExtended();
 
 	/*
-* Method: TDirectory::GetNodeAt
-* Purpose: Return a specific node, with an assumption on where "this" node is in the heirarchy
-* Parameters: UINT target - the desired node
-*				UINT current - the node that this node should assume to be
-* Returns: TrecPointer<TObjectNode> - the desired node (null if the node is not in this nodes reach)
-*/
+	* Method: TDirectory::GetNodeAt
+	* Purpose: Return a specific node, with an assumption on where "this" node is in the heirarchy
+	* Parameters: UINT target - the desired node
+	*				UINT current - the node that this node should assume to be
+	* Returns: TrecPointer<TObjectNode> - the desired node (null if the node is not in this nodes reach)
+	*/
 	virtual TrecPointer<TObjectNode> GetNodeAt(UINT target, UINT current);
 
 	/*
-* Method: TDirectory::TotalChildren
-* Purpose: Reports Reports the total number of children, grand children, and so on held by this node
-* Parameters: void
-* Returns: UINT - number of nodes for which this node is an ancestor
-*/
+	* Method: TDirectory::TotalChildren
+	* Purpose: Reports Reports the total number of children, grand children, and so on held by this node
+	* Parameters: void
+	* Returns: UINT - number of nodes for which this node is an ancestor
+	*/
 	virtual UINT TotalChildren();
 
 	/*

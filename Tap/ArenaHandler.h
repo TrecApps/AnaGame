@@ -2,7 +2,7 @@
 #include "EventHandler.h"
 
 class ArenaHandler;
-typedef void (ArenaHandler::* ArenaHandlerEvents)(TControl* tc, EventArgs ea);
+typedef void (ArenaHandler::* ArenaHandlerEvents)(TrecPointer<TControl> tc, EventArgs ea);
 
 /**
  * Class: ArenaHandler

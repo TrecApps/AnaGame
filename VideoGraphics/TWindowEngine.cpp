@@ -405,7 +405,7 @@ int TWindowEngine::InitializeDefaultShaders()
 
 	tDirectory.Append(L"\\Resources\\DefaultShaders");
 
-	TFile* file = nullptr;
+	TrecPointer<TFile> file;
 
 	TML_Reader_* read = nullptr;
 
@@ -416,12 +416,12 @@ int TWindowEngine::InitializeDefaultShaders()
 
 	tempDir.Set(tDirectory);
 	tempDir.Append(L"\\SingleColor");
-	TShaderParser* parse = new TShaderParser(this, tempDir, graphicsDevice);
+	TrecPointer<Parser_> parse = TrecPointerKey::GetNewTrecPointerAlt<Parser_, TShaderParser>(this, tempDir, graphicsDevice);
 	tempDir.Append(L"\\SingleColor.tml");
 
 
 	try {
-		file = new TFile(tempDir, TFile::t_file_read);
+		file = TrecPointerKey::GetNewTrecPointer<TFile>(tempDir, TFile::t_file_read);
 
 		TML_Reader_* read = new TML_Reader_(file, parse);
 		int error = 0;
@@ -429,9 +429,7 @@ int TWindowEngine::InitializeDefaultShaders()
 		{
 
 			file->Close();
-			delete file;
 			delete read;
-			delete parse;
 			return -2;
 		}
 	}
@@ -444,33 +442,29 @@ int TWindowEngine::InitializeDefaultShaders()
 
 	file->Close();
 
-	delete file;
 	delete read;
-	delete parse;
 
-	file = nullptr;
+	file.Nullify();
 	read = nullptr;
-	parse = nullptr;
+	parse.Nullify();
 
 	// Prepare to read the 3D Color Vertex Shader
 
 
 	tempDir.Set(tDirectory);
 	tempDir.Append(L"\\3DColor");
-	parse = new TShaderParser(this, tempDir, graphicsDevice);
+	parse = TrecPointerKey::GetNewTrecPointerAlt<Parser_, TShaderParser>(this, tempDir, graphicsDevice);
 	tempDir.Append(L"\\3DColor.tml");
 
 
 	try {
-		file = new TFile(tempDir, TFile::t_file_read);
+		file = TrecPointerKey::GetNewTrecPointer<TFile>(tempDir, TFile::t_file_read);
 		TML_Reader_* read = new TML_Reader_(file, parse);
 		int error = 0;
 		if (!read->read(&error))
 		{
 			file->Close();
-			delete file;
 			delete read;
-			delete parse;
 			return -3;
 		}
 	}
@@ -480,32 +474,28 @@ int TWindowEngine::InitializeDefaultShaders()
 		return 3;
 	}
 	file->Close();
-	delete file;
 	delete read;
-	delete parse;
-	file = nullptr;
+	file.Nullify();
 	read = nullptr;
-	parse = nullptr;
+	parse.Nullify();
 
 	// Prepare to Read the 4D Color Shader
 
 
 	tempDir.Set(tDirectory);
 	tempDir.Append(L"\\4DColor");
-	parse = new TShaderParser(this, tempDir, graphicsDevice);
+	parse = TrecPointerKey::GetNewTrecPointerAlt<Parser_, TShaderParser>(this, tempDir, graphicsDevice);
 	tempDir.Append(L"\\4DColor.tml");
 
 
 	try {
-		file = new TFile(tempDir, TFile::t_file_read);
+		file = TrecPointerKey::GetNewTrecPointer<TFile>(tempDir, TFile::t_file_read);
 		TML_Reader_* read = new TML_Reader_(file, parse);
 		int error = 0;
 		if (!read->read(&error))
 		{
 			file->Close();
-			delete file;
 			delete read;
-			delete parse;
 			return -4;
 		}
 	}
@@ -515,31 +505,27 @@ int TWindowEngine::InitializeDefaultShaders()
 		return 4;
 	}
 	file->Close();
-	delete file;
 	delete read;
-	delete parse;
-	file = nullptr;
+	file.Nullify();
 	read = nullptr;
-	parse = nullptr;
+	parse.Nullify();
 
 	// Prepare to read the one Texture Shader
 
 	tempDir.Set(tDirectory);
 	tempDir.Append(L"\\Texture1");
-	parse = new TShaderParser(this, tempDir, graphicsDevice);
+	parse = TrecPointerKey::GetNewTrecPointerAlt<Parser_, TShaderParser>(this, tempDir, graphicsDevice);
 	tempDir.Append(L"\\Texture1.tml");
 
 
 	try {
-		file = new TFile(tempDir, TFile::t_file_read);
+		file = TrecPointerKey::GetNewTrecPointer<TFile>(tempDir, TFile::t_file_read);
 		TML_Reader_* read = new TML_Reader_(file, parse);
 		int error = 0;
 		if (!read->read(&error))
 		{
 			file->Close();
-			delete file;
 			delete read;
-			delete parse;
 			return -5;
 		}
 	}
@@ -549,30 +535,26 @@ int TWindowEngine::InitializeDefaultShaders()
 		return 5;
 	}
 	file->Close();
-	delete file;
 	delete read;
-	delete parse;
-	file = nullptr;
+	file.Nullify();
 	read = nullptr;
-	parse = nullptr;
+	parse.Nullify();
 
 	// Prepare the Double Texture Shader
 	tempDir.Set(tDirectory);
 	tempDir.Append(L"\\Texture2");
-	parse = new TShaderParser(this, tempDir, graphicsDevice);
+	parse = TrecPointerKey::GetNewTrecPointerAlt<Parser_, TShaderParser>(this, tempDir, graphicsDevice);
 	tempDir.Append(L"\\Texture2.tml");
 
 
 	try {
-		file = new TFile(tempDir, TFile::t_file_read);
+		file = TrecPointerKey::GetNewTrecPointer<TFile>(tempDir, TFile::t_file_read);
 		TML_Reader_* read = new TML_Reader_(file, parse);
 		int error = 0;
 		if (!read->read(&error))
 		{
 			file->Close();
-			delete file;
 			delete read;
-			delete parse;
 			return -6;
 		}
 	}
@@ -582,12 +564,10 @@ int TWindowEngine::InitializeDefaultShaders()
 		return 6;
 	}
 	file->Close();
-	delete file;
 	delete read;
-	delete parse;
-	file = nullptr;
+	file.Nullify();
 	read = nullptr;
-	parse = nullptr;
+	parse.Nullify();
 
 
 	defaultShadersSet = true;

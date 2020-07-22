@@ -112,8 +112,8 @@ void SwitchHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 {
 	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
 	{
-		TControl* cont = eventAr[Rust].control;
-		if (!cont) continue;
+		auto cont = eventAr[Rust].control;
+		if (!cont.Get()) continue;
 
 		EventArgs ea = cont->getEventArgs();
 		
@@ -133,14 +133,14 @@ void SwitchHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
 }
 
-void SwitchHandler::OnSelect1(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelect1(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 
 	// changeControl.Delete();
 
 	changeControl = TrecPointerKey::GetNewSelfTrecPointer<TControl>(rtb, TrecPointer<TArray<styleTable>>());
-	//TControl* tcchangeControl = changeControl.Get();
+	//TrecPointer<TControl> tcchangeControl = changeControl.Get();
 	TrecPointer<TString> value = TrecPointerKey::GetNewTrecPointer<TString>("10,10,30,30");
 	changeControl->addAttribute(TString(L"|Margin"), value);
 	TrecPointer<TString> value2 = TrecPointerKey::GetNewTrecPointer<TString>("2.0");
@@ -192,12 +192,12 @@ void SwitchHandler::OnSelect1(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelect2(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelect2(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 	// changeControl.Delete();
 	changeControl = TrecPointerKey::GetNewSelfTrecPointer<TControl>(rtb,TrecPointer<TArray<styleTable>>());
-	//TControl* tcchangeControl = changeControl.Get();
+	//TrecPointer<TControl> tcchangeControl = changeControl.Get();
 
 	TrecPointer<TString> value = TrecPointerKey::GetNewTrecPointer<TString>("50,50,80,80");
 	changeControl->addAttribute(TString(L"|Margin"), value);
@@ -236,7 +236,7 @@ void SwitchHandler::OnSelect2(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelect3(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelect3(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 	// changeControl.Delete();
@@ -297,7 +297,7 @@ void SwitchHandler::OnSelect3(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelectRows(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelectRows(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 	// changeControl.Delete();
@@ -361,7 +361,7 @@ void SwitchHandler::OnSelectRows(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelectColumns(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelectColumns(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 	// changeControl.Delete();
@@ -421,7 +421,7 @@ void SwitchHandler::OnSelectColumns(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelectGrid(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelectGrid(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 	// changeControl.Delete();
@@ -516,7 +516,7 @@ void SwitchHandler::OnSelectGrid(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelectLayers(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelectLayers(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 	// changeControl.Delete();
@@ -647,7 +647,7 @@ void SwitchHandler::OnSelectLayers(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelectGadget(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelectGadget(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 
@@ -753,7 +753,7 @@ void SwitchHandler::OnSelectGadget(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelectText(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelectText(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 	// changeControl.Delete();
@@ -832,13 +832,13 @@ void SwitchHandler::OnSelectText(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelectCombo(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelectCombo(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 	// changeControl.Delete();
 	// TODO: Add your command handler code here
 	changeControl = TrecPointerKey::GetNewSelfTrecPointer<TControl>(rtb,TrecPointer<TArray<styleTable>>());
-	//TControl* tcchangeControl = changeControl.Get();
+	//TrecPointer<TControl> tcchangeControl = changeControl.Get();
 
 
 	TrecPointer<TString> value = TrecPointerKey::GetNewTrecPointer<TString>("20,20,30,30");
@@ -872,7 +872,7 @@ void SwitchHandler::OnSelectCombo(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelectScroll(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelectScroll(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TrecPointer<DrawingBoard> rtb = page->GetWindowHandle()->GetDrawingBoard();
 	// changeControl.Delete();
@@ -936,7 +936,7 @@ void SwitchHandler::OnSelectScroll(TControl* tc, EventArgs ea)
 	page->CreateLayout();
 }
 
-void SwitchHandler::OnSelectGif(TControl* tc, EventArgs ea)
+void SwitchHandler::OnSelectGif(TrecPointer<TControl> tc, EventArgs ea)
 {
 	auto window = page->GetWindowHandle();
 	TrecPointer<DrawingBoard> rtb = window->GetDrawingBoard();

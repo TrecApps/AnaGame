@@ -5,8 +5,8 @@
 UCHAR TFileType[] = { 2, 0b10000000, 2 };
 
 /*
-* Method: (TFile) (Constructor) 
-* Purpose: Default constrictor for the TFile class
+* Method: TFile::TFile 
+* Purpose: Default Constrictor
 * Parameters: void
 * Returns: void
 */
@@ -18,8 +18,8 @@ TFile::TFile()
 }
 
 /*
-* Method: (TFile) (Constructor)
-* Purpose: Creates a file that presumably will be opened
+* Method: TFile::TFile
+* Purpose: Constructor
 * Parameters: LPCTSTR lpszFileName - the File name to open
 *			UINT nOpenFlags - flags that specify the open status of the file
 * Returns: void
@@ -31,8 +31,8 @@ TFile::TFile(const TString& lpszFileName, UINT nOpenFlags)
 
 
 /*
-* Method: (TFile) (Destructor) 
-* Purpose: Cleans up TFile resources
+* Method: TFile::~TFile
+* Purpose: Destructor
 * Parameters: void
 * Returns: void
 */
@@ -42,12 +42,11 @@ TFile::~TFile()
 }
 
 /*
-* Method: TFile - Open
+* Method: TFile::Open
 * Purpose: Opens the File
 * Parameters: LPCTSTR lpszFileName - The File to open
 *			UINT nOpenFlags - Flags to open the file
-*			CFileException * pError - Error information
-* Returns: BOOL - success or failure to open file
+* Returns: bool - success or failure to open file
 */
 bool TFile::Open(const TString& lpszFileName, UINT nOpenFlags)
 {
@@ -80,12 +79,12 @@ bool TFile::Open(const TString& lpszFileName, UINT nOpenFlags)
 
 
 
-/*
-* Method: TFile - ReadString
-* Purpose: Reads a line in a file into a String, taking into account the file encoding
-* Parameters: CString& rString - the String to read into
-* Returns: BOOL - success of reading
-*/
+/**
+ * Method: TFile::ReadString
+ * Purpose: Reads a line in a file into a String, taking into account the file encoding, stopping at the next line
+ * Parameters: TString& rString - the String to read into
+ * Returns: bool - success of reading
+ */
 BOOL TFile::ReadString(TString & rString)
 {
 	bool success = false;
@@ -137,6 +136,15 @@ BOOL TFile::ReadString(TString & rString)
 	return success;
 }
 
+
+/**
+ * Method: TFile::ReadString
+ * Purpose: Reads a line in a file into a String, taking into account the file encoding, stopping at the next line 
+ *			Or when the specificed number of characters are read
+ * Parameters: TString& rString - the String to read into
+ *				UINT nMax - max number of characters to read
+ * Returns: bool - success of reading
+ */
 UINT TFile::ReadString(TString & rString, UINT nMax)
 {
 	rString.Empty();
@@ -183,6 +191,13 @@ UINT TFile::ReadString(TString & rString, UINT nMax)
 }
 
 
+/**
+ * Method: TFile::ReadString
+ * Purpose: Reads a line in a file into a String, taking into account the file encoding, stopping at the specified chara
+ * Parameters: TString& rString - the String to read into
+ *				WCHAR chara - the character to stop at
+ * Returns: bool - success of reading
+ */
 UINT TFile::ReadString(TString & rString, WCHAR chara)
 {
 	bool success = false;
@@ -231,7 +246,7 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
 }
 
 /*
-* Method: TFile - WriteString
+* Method: TFile::WriteString
 * Purpose: Wrties a string to the file
 * Parameters: LPCTSTR lpsz - the Stringt to write
 * Returns: void
@@ -282,7 +297,7 @@ void TFile::WriteString(const TString& lpsz)
 }
 
 /*
-* Method: TFile - IsOpen
+* Method: TFile::IsOpen
 * Purpose: Reports whether the File is open or not
 * Parameters: void
 * Returns: bool - is the file open
@@ -293,7 +308,7 @@ bool TFile::IsOpen()
 }
 
 /*
-* Method: TFile - SetEncoding
+* Method: TFile::SetEncoding
 * Purpose: Sets the encoding of the File (if not already set)
 * Parameters: FileEncodingType fet - the Encoding type to do
 * Returns: bool - whether the file encoding was set
@@ -309,7 +324,7 @@ bool TFile::SetEncoding(FileEncodingType fet)
 }
 
 /*
-* Method: TFile - GetFileDirectory
+* Method: TFile::GetFileDirectory
 * Purpose: Retrieves the directory of the file
 * Parameters: void
 * Returns: TString - the directory path of the file
@@ -326,16 +341,25 @@ TString TFile::GetFileDirectory()
 }
 
 /*
-* Method: TFile - GetAnaGameType
+* Method: TFile::GetAnaGameType
 * Purpose: Retrieves the AnaGame type
 * Parameters: void
 * Returns: UCHAR* - the AnaGame type 
+* 
+* Note: DEPRICATED
 */
 UCHAR * TFile::GetAnaGameType()
 {
 	return TFileType;
 }
 
+
+/**
+ * Method: TFile::GetFileExtension
+ * Purpose: Retrievs the extension of the file
+ * Parameters: voif
+ * Returns: TString - the file extension detected
+ */
 TString TFile::GetFileExtension()
 {
 	TString ext = GetFileName();
@@ -350,21 +374,37 @@ TString TFile::GetFileExtension()
 	}
 	return ext;
 }
-
+/**
+ * Method: TFile::Close
+ * Purpose: Closes the file
+ * Parameters: void
+ * Returns: void
+ */
 void TFile::Close()
 {
 	if (fileHandle)
 		CloseHandle((HANDLE)fileHandle);
 	fileHandle = 0;
 }
-
+/**
+ * Method: TFile::Flush
+ * Purpose: Flushes the file's internal buffer
+ * Parameters: void
+ * Returns: void
+ */
 void TFile::Flush()
 {
 	if (!fileHandle)
 		return;
 	FlushFileBuffers((HANDLE)fileHandle);
 }
-
+/**
+ * Method: TFile::Write
+ * Purpose: Writes a set of bytes to the file
+ * Parameters: const void* buffer - pointer to bytes
+ *				UINT count - the number of bytes to write
+ * Returns: void
+ */
 void TFile::Write(const void* buffer, UINT count)
 {
 	if (!fileHandle)
@@ -385,14 +425,19 @@ void TFile::Write(const void* buffer, UINT count)
 	delete resCount2;
 	delete lap2;
 }
-
+/**
+ * Method: TFile::GetEncodingType
+ * Purpose: Retriev the file encoding mode
+ * Parameters: void
+ * Returns: FileEncodingType - the type of encoding the file is set to use
+ */
 FileEncodingType TFile::GetEncodingType()
 {
 	return fileEncode;
 }
 
 /*
-* Method: TFile - DeduceEncodingType
+* Method: TFile::DeduceEncodingType
 * Purpose: Attempts to determine the encoding type of the file if possible
 * Parameters: void
 * Returns: FileEncodingType - the File Encoding type deduced
@@ -478,7 +523,15 @@ FileEncodingType TFile::DeduceEncodingType()
 	}
 	return FileEncodingType::fet_unknown;
 }
-
+/**
+ * Method: TFile::ConvertFlags
+ * Purpose: Used internally by the class to convert TFile:: flags into Windows Crreate flags
+ * Parameters: UINT& input - the flags to convert
+ *				 UINT& open - basic open flags to send to Windows
+ *				 UINT& security - share attributes to send to windows
+ *				 UINT& creation - create instruction flags for Windows
+ * Returns: void 
+ */
 void TFile::ConvertFlags(UINT& input, UINT& open, UINT& security, UINT& creation)
 {
 	open = input & 0xff000000;
@@ -486,7 +539,12 @@ void TFile::ConvertFlags(UINT& input, UINT& open, UINT& security, UINT& creation
 	security = (input >> 8) & 0x000000ff;
 	creation = (input >> 16) & 0x000000ff;
 }
-
+/**
+ * Method: TFile::GetFileName
+ * Purpose: Gets the name of the file
+ * Parameters: void
+ * Returns: TString - the name of the file (minus the path)
+ */
 TString TFile::GetFileName()
 {
 	TString sep(L"/\\");
@@ -497,12 +555,22 @@ TString TFile::GetFileName()
 
 	return filePath.SubString(seperate + 1);
 }
-
+/**
+ * Method: TFile::GetFilePath
+ * Purpose: Retrievs the fill path of the file
+ * Parameters: void
+ * Returns: TString - the path of the file
+ */
 TString TFile::GetFilePath()
 {
 	return filePath;
 }
-
+/**
+ * Method: TFile::GetFileTitle
+ * Purpose: Retirevs the "title" of the file
+ * Parameters: void
+ * Returns: TString - the title of the file
+ */
 TString TFile::GetFileTitle()
 {
 	UINT length = filePath.GetSize();
@@ -520,7 +588,12 @@ TString TFile::GetFileTitle()
 	delete[] pathBuffer;
 	return ret;
 }
-
+/**
+ * Method: TFile::GetLength
+ * Purpose: Retirevs the current size of the file
+ * Parameters: void
+ * Returns: ULONGLONG - length of the file
+ */
 ULONGLONG TFile::GetLength()
 {
 	LARGE_INTEGER  len_li;
@@ -528,12 +601,24 @@ ULONGLONG TFile::GetLength()
 	LONGLONG  len_ll = len_li.QuadPart;
 	return len_ll;
 }
-
+/**
+ * Method: TFile::GetPosition
+ * Purpose: Retrievs the current position of the file pointer
+ * Parameters: void 
+ * Returns: ULONGLONG -  the current position of the file pointer
+ */
 ULONGLONG TFile::GetPosition()
 {
 	return position;
 }
 
+/**
+ * Method: TFile::Read
+ * Purpose: Reads a given number of bytes
+ * Parameters: void* buffer - pointer to the buffer 
+ *				UINT count - number of bytes to read
+ * Returns: UINT - number of bytes read
+ */
 UINT TFile::Read(void* buffer, UINT count)
 {
 	if(!fileHandle)
@@ -554,7 +639,13 @@ UINT TFile::Read(void* buffer, UINT count)
 	delete lap2;
 	return stackResCount;
 }
-
+/**
+ * Method: TFile::Seek
+ * Purpose: Sets the file's seek point according to the users specification
+ * Parameters: LONGLONG offset - the offset for the seek point
+ *				 UINT from - ofset from where? (0 for beginning, 1 for current point, 2 for end)
+ * Returns: ULONGLONG -  the position of the file's seek point
+ */
 ULONGLONG TFile::Seek(LONGLONG offset, UINT from)
 {
 	if (!fileHandle) return 0;
@@ -576,7 +667,12 @@ ULONGLONG TFile::Seek(LONGLONG offset, UINT from)
 	delete store;
 	return position;
 }
-
+/**
+ * Method: TFile::SeekToBegin
+ * Purpose: Sets the files seek point to the beginning
+ * Parameters: void
+ * Returns: void
+ */
 void TFile::SeekToBegin()
 {
 	if (!fileHandle) return;
@@ -595,8 +691,16 @@ void TFile::SeekToBegin()
 	}
 
 	delete store;
+
+	//return position;
 }
 
+/**
+ * Method: TFile::SeekToEnd
+ * Purpose: Sets the seek to the end of the file
+ * Parameters: void
+ * Returns: ULONGLONG - the current seek of the file
+ */
 ULONGLONG TFile::SeekToEnd()
 {
 	if (!fileHandle) return 0;
@@ -617,4 +721,6 @@ ULONGLONG TFile::SeekToEnd()
 	}
 
 	delete store;
+
+	return position;
 }

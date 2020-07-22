@@ -51,13 +51,13 @@ bool TSpreadSheet::onCreate(D2D1_RECT_F l, TrecPointer<TWindowEngine> d3d)
 	int h_x = 0, h_y = 1;
 	if (valpoint.Get())
 	{
-		valpoint->ConvertToInt(&h_x);
+		valpoint->ConvertToInt(h_x);
 	}
 
 	valpoint = attributes.retrieveEntry(TString(L"|HeaderHeight"));
 	if (valpoint.Get())
 	{
-		valpoint->ConvertToInt(&h_y);
+		valpoint->ConvertToInt(h_y);
 	}
 
 	valpoint = attributes.retrieveEntry(TString(L"|HeaderCaption"));
@@ -77,14 +77,14 @@ bool TSpreadSheet::onCreate(D2D1_RECT_F l, TrecPointer<TWindowEngine> d3d)
 	valpoint = attributes.retrieveEntry(TString(L"|RowCount"));
 	if (valpoint.Get())
 	{
-		valpoint->ConvertToInt(&rowCount);
+		valpoint->ConvertToInt(rowCount);
 		if (!rowCount)
 			rowCount++;
 	}
 	valpoint = attributes.retrieveEntry(TString(L"|ColumnCount"));
 	if (valpoint.Get())
 	{
-		valpoint->ConvertToInt(&columnCount);
+		valpoint->ConvertToInt(columnCount);
 		if (!columnCount)
 			columnCount++;
 	}

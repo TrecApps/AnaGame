@@ -220,25 +220,25 @@ int Page::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 		return -1;
 	if (!file->IsOpen())
 		return -2;
-	AnafaceParser parser(drawingBoard, windowHandle->GetWindowHandle(), file->GetFileDirectory());
+	TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, AnafaceParser>(drawingBoard, windowHandle->GetWindowHandle(), file->GetFileDirectory());
 
 	if (eh.Get())
-		parser.setEventSystem(eh->GetEventNameList());
+		dynamic_cast<AnafaceParser*>(parser.Get())->setEventSystem(eh->GetEventNameList());
 
-	TML_Reader_ reader(file.Get(), &parser);
+	TML_Reader_ reader(file, parser);
 	int result = 0;
 	if (!reader.read(&result))
 		throw result;
 
-	rootControl = parser.getRootControl();
+	rootControl = dynamic_cast<AnafaceParser*>(parser.Get())->getRootControl();
 	if (rootControl.Get())
 	{
 		rootControl->onCreate(area, windowHandle->GetWindowEngine());
 		rootControl->setParent(selfHolder);
 	}
-	persistentStoryBoards = parser.GetPersistentStoryBoards();
-	basicStoryBoards = parser.GetStoryBoards();
-	animations = parser.GetAnimations();
+	persistentStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetPersistentStoryBoards();
+	basicStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetStoryBoards();
+	animations = dynamic_cast<AnafaceParser*>(parser.Get())->GetAnimations();
 
 	if(handler.Get())
 		handler->Initialize(TrecPointerKey::GetTrecPointerFromSoft<Page>(self));
@@ -261,16 +261,16 @@ int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
 		return -1;
 	if (!file->IsOpen())
 		return -2;
-	AnafaceParser parser(drawingBoard, windowHandle->GetWindowHandle(), file->GetFileDirectory());
+	TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, AnafaceParser>(drawingBoard, windowHandle->GetWindowHandle(), file->GetFileDirectory());
 
-	parser.setEventSystem(id);
+	dynamic_cast<AnafaceParser*>(parser.Get())->setEventSystem(id);
 
-	TML_Reader_ reader(file.Get(), &parser);
+	TML_Reader_ reader(file, parser);
 	int result = 0;
 	if (!reader.read(&result))
 		throw result;
 
-	rootControl = parser.getRootControl();
+	rootControl = dynamic_cast<AnafaceParser*>(parser.Get())->getRootControl();
 	if (rootControl.Get())
 	{
 		rootControl->onCreate(area, windowHandle->GetWindowEngine());
@@ -279,9 +279,9 @@ int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
 	if(handler.Get())
 		handler->Initialize(TrecPointerKey::GetTrecPointerFromSoft<Page>(self));
 
-	persistentStoryBoards = parser.GetPersistentStoryBoards();
-	basicStoryBoards = parser.GetStoryBoards();
-	animations = parser.GetAnimations();
+	persistentStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetPersistentStoryBoards();
+	basicStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetStoryBoards();
+	animations = dynamic_cast<AnafaceParser*>(parser.Get())->GetAnimations();
 
 	return 0;
 }

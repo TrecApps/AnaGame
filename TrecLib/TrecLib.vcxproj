@@ -231,6 +231,7 @@
     <ClCompile Include="TPoint.cpp" />
     <ClCompile Include="TPrimitiveType.cpp" />
     <ClCompile Include="TrecLib.cpp" />
+    <ClCompile Include="TrecReference.cpp" />
     <ClCompile Include="TServerSocket.cpp" />
     <ClCompile Include="TSocket.cpp" />
     <ClCompile Include="TShell.cpp" />

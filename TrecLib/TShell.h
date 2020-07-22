@@ -13,7 +13,7 @@ class _TREC_LIB_DLL TShell :
 public:
 
 	/**
-	 * Method: TShell::TShel
+	 * Method: TShell::TShell
 	 * Purpose: Default Constructor
 	 * Parameters: void
 	 * Returns: New TShell

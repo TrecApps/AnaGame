@@ -80,7 +80,7 @@ bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	if(valpoint.Get())
 	{
 		int tSize = bSize;
-		if (!valpoint->ConvertToInt(&bSize))
+		if (!valpoint->ConvertToInt(bSize))
 		{
 			bSize = tSize;
 			

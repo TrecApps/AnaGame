@@ -172,7 +172,6 @@
     <ClInclude Include="GeoGroup.h" />
     <ClInclude Include="GifAnimation.h" />
     <ClInclude Include="HTMLParser.h" />
-    <ClInclude Include="Parser.h" />
     <ClInclude Include="ParseReader.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RotateAnimation.h" />
@@ -219,7 +218,6 @@
     <ClCompile Include="GeoGroup.cpp" />
     <ClCompile Include="GifAnimation.cpp" />
     <ClCompile Include="HTMLParser.cpp" />
-    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="ParseReader.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

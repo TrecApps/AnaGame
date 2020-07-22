@@ -4,16 +4,14 @@
 UCHAR HTML_ReaderType[] = { 3, 0b10000000, 3, 1 };
 
 /*
-* Method: (HTML_Reader) (Constructor)
-* Purpose: Sets up the parser to use
-* Parameters: CArchive* car - the CArchive to use
-*			Parser_* par - the parser to call upon
+* Method: HTML_Reader::HTML_Reader
+* Purpose: Constructor
+* Parameters: TrecPointer<TFile> tf - the TFile to use
+*			TrecPointer<Parser_> par - the parser to call upon
 * Returns: void
 * Note: Could be depreciated - CArchive is unique to MFC and CArchive could be replaced with TFile
 */
-
-
-HTML_Reader::HTML_Reader(TFile * ta, Parser_ *p):ParseReader_(ta,p)
+HTML_Reader::HTML_Reader(TrecPointer<TFile> ta, TrecPointer<Parser_> p):ParseReader_(ta,p)
 {
 	charDeduced = false;
 	openTaken = false;
@@ -24,17 +22,17 @@ HTML_Reader::HTML_Reader(TFile * ta, Parser_ *p):ParseReader_(ta,p)
 }
 
 /*
-* Method: (HTML_Reader) (Destructor)
-* Purpose: Cleans up the parser
-* Parameters: void
-* Returns: void
-*/
+ * Method: HTML_Reader::~HTML_Reader
+ * Purpose: Cleans up the parser
+ * Parameters: void
+ * Returns: void
+ */
 HTML_Reader::~HTML_Reader()
 {
 }
 
 /*
-* Method: HTML_Reader - read
+* Method: HTML_Reader::read
 * Purpose: Reads the file anticipating the HTML format
 * Parameters: int* - the line number an error occurs
 * Returns: bool - success
@@ -45,7 +43,7 @@ bool HTML_Reader::read(int * i)
 		return false;
 
 	unsigned char char2[2];
-	if (!tReader)
+	if (!tReader.Get())
 		return false;
 	tReader->Read(char2, 2);
 	DeduceCharType(char2);
@@ -136,19 +134,21 @@ bool HTML_Reader::read(int * i)
 	return true;
 }
 
-/*
-* Method: HTML_Reader - GetAnaGameType
-* Purpose: Retieves the AnaGame type
-* Parameters: void
-* Returns: UCHAR* - the AnaGame type ID format
-*/
+/**
+ * Method: HTML_Reader::GetAnaGameType
+ * Purpose: Retieves the AnaGame type
+ * Parameters: void
+ * Returns: UCHAR* - the AnaGame type ID format
+ *
+ * Note: DEPRICATED
+ */
 UCHAR * HTML_Reader::GetAnaGameType()
 {
 	return HTML_ReaderType;
 }
 
 /*
-* Method: HTML_Reader - DeduceCharType
+* Method: HTML_Reader::DeduceCharType
 * Purpose: Uses the first character to decude whether it is reading Unicode or ACSII
 * Parameters: unsigned char* bytes - the bytes to analyze
 * Returns: void
@@ -178,7 +178,7 @@ void HTML_Reader::DeduceCharType(unsigned char * bytes)
 }
 
 /*
-* Method: HTML_Reader - ReturnWCharType
+* Method: HTML_Reader::ReturnWCharType
 * Purpose: Converts a char to a WCHAR
 * Parameters: char c - the char to convert
 * Returns: WCHAR - the wide char version of c
@@ -194,7 +194,7 @@ WCHAR HTML_Reader::ReturnWCharType(char c)
 }
 
 /*
-* Method: HTML_Reader - isWhiteSpace
+* Method: HTML_Reader::isWhiteSpace
 * Purpose: Determines whether a character is white space or not
 * Parameters: WCHAR c - the character to analyze
 * Returns: bool - whether wchar is whitespace
@@ -205,7 +205,7 @@ bool HTML_Reader::isWhiteSpace(WCHAR c)
 }
 
 /*
-* Method: HTML_Reader - DeduceToken
+* Method: HTML_Reader::DeduceToken
 * Purpose: Attempts to determine what type of HTML tokens it was given
 * Parameters: TString& t - the string detected
 * Returns: bool - whether or not the string was processed
@@ -289,7 +289,7 @@ bool HTML_Reader::DeduceToken(TString & t)
 
 
 /*
-* Method: HTML_Reader - SubmitToken
+* Method: HTML_Reader::SubmitToken
 * Purpose: Deduces the token
 * Parameters: TString t - the string to look into
 * Returns: void
@@ -300,7 +300,7 @@ void HTML_Reader::SubmitToken(TString t)
 }
 
 /*
-* Method: HTML_Reader - parseQuoteTokens
+* Method: HTML_Reader::parseQuoteTokens
 * Purpose: Manages tokens placed within Quotation marks
 * Parameters: TrecPointer<TArray<TString>>& tokens - the tokens to parse
 * Returns: bool - success result
@@ -368,7 +368,7 @@ bool HTML_Reader::parseQuoteTokens(TrecPointer<TDataArray<TString>>& tokens)
 }
 
 /*
-* Method: HTML_Reader - endContentMode
+* Method: HTML_Reader::endContentMode
 * Purpose: Signifies that the content between HTML tages is over
 * Parameters: void
 * Returns: void

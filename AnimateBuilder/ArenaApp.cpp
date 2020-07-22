@@ -375,13 +375,12 @@ void ArenaApp::HandleEvents(TDataArray<EventID_Cred>& cred)
 {
 	if (!arena)
 		return;
-	TControl* tc = nullptr;
 	int e_id = -1;
 	EventArgs ea;
 	for (UINT c = 0; c < cred.Size(); c++)
 	{
-		tc = cred.at(c).control;
-		if (!tc)
+		auto tc = cred.at(c).control;
+		if (!tc.Get())
 			continue;
 		ea = tc->getEventArgs();
 		e_id = ea.methodID;
@@ -448,10 +447,10 @@ void ArenaApp::UpdatePosDirText(DirectX::XMFLOAT3& dir, DirectX::XMFLOAT3& loc)
 		l_z->setNumericText(loc.z);
 }
 
-void ArenaApp::TextDirectionX(TControl* tc, EventArgs ea)
+void ArenaApp::TextDirectionX(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
-	if (!ea.text.ConvertToFloat(&f))
+	if (!ea.text.ConvertToFloat(f))
 	{
 		if (!focusOnModel)
 			arena->UpdateDir(f, 0);
@@ -460,57 +459,57 @@ void ArenaApp::TextDirectionX(TControl* tc, EventArgs ea)
 	}
 }
 
-void ArenaApp::TextLocationX(TControl* tc, EventArgs ea)
+void ArenaApp::TextLocationX(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
-	if (!ea.text.ConvertToFloat(&f))
+	if (!ea.text.ConvertToFloat(f))
 	{
 		if (!focusOnModel)
 			arena->UpdatePos(f, 0);
 	}
 }
 
-void ArenaApp::TextDirectionY(TControl* tc, EventArgs ea)
+void ArenaApp::TextDirectionY(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
-	if (!ea.text.ConvertToFloat(&f))
+	if (!ea.text.ConvertToFloat(f))
 	{
 		if (!focusOnModel)
 		arena->UpdateDir(f, 1);
 	}
 }
 
-void ArenaApp::TextLocationY(TControl* tc, EventArgs ea)
+void ArenaApp::TextLocationY(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
-	if (!ea.text.ConvertToFloat(&f))
+	if (!ea.text.ConvertToFloat(f))
 	{
 		if (!focusOnModel)
 		arena->UpdatePos(f, 1);
 	}
 }
 
-void ArenaApp::TextDirectionZ(TControl* tc, EventArgs ea)
+void ArenaApp::TextDirectionZ(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
-	if (!ea.text.ConvertToFloat(&f))
+	if (!ea.text.ConvertToFloat(f))
 	{
 		if (!focusOnModel)
 		arena->UpdateDir(f, 2);
 	}
 }
 
-void ArenaApp::TextLocationZ(TControl* tc, EventArgs ea)
+void ArenaApp::TextLocationZ(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
-	if (!ea.text.ConvertToFloat(&f))
+	if (!ea.text.ConvertToFloat(f))
 	{
 		if (!focusOnModel)
 		arena->UpdatePos(f, 2);
 	}
 }
 
-void ArenaApp::OnUp(TControl* tc, EventArgs ea)
+void ArenaApp::OnUp(TrecPointer<TControl> tc, EventArgs ea)
 {
 	if (rotateMode)
 		arena->Rotate(0.0, 0.1);
@@ -519,7 +518,7 @@ void ArenaApp::OnUp(TControl* tc, EventArgs ea)
 	UpdatePanelText();
 }
 
-void ArenaApp::OnDown(TControl* tc, EventArgs ea)
+void ArenaApp::OnDown(TrecPointer<TControl> tc, EventArgs ea)
 {
 	if (rotateMode)
 		arena->Rotate(0.0, -0.1);
@@ -528,7 +527,7 @@ void ArenaApp::OnDown(TControl* tc, EventArgs ea)
 	UpdatePanelText();
 }
 
-void ArenaApp::OnLeft(TControl* tc, EventArgs ea)
+void ArenaApp::OnLeft(TrecPointer<TControl> tc, EventArgs ea)
 {
 	if (rotateMode)
 		arena->Rotate(0.1, 0.0);
@@ -537,7 +536,7 @@ void ArenaApp::OnLeft(TControl* tc, EventArgs ea)
 	UpdatePanelText();
 }
 
-void ArenaApp::OnRight(TControl* tc, EventArgs ea)
+void ArenaApp::OnRight(TrecPointer<TControl> tc, EventArgs ea)
 {
 	if (rotateMode)
 		arena->Rotate(-0.1, 0.0);
@@ -546,38 +545,38 @@ void ArenaApp::OnRight(TControl* tc, EventArgs ea)
 	UpdatePanelText();
 }
 
-void ArenaApp::OnNear(TControl* tc, EventArgs ea)
+void ArenaApp::OnNear(TrecPointer<TControl> tc, EventArgs ea)
 {
 	if (!rotateMode)
 		arena->Translate(0.1, DirectX::XMFLOAT3(0.0, 0.0, 1.0));
 	UpdatePanelText();
 }
 
-void ArenaApp::OnFar(TControl* tc, EventArgs ea)
+void ArenaApp::OnFar(TrecPointer<TControl> tc, EventArgs ea)
 {
 	if (!rotateMode)
 		arena->Translate(-0.1, DirectX::XMFLOAT3(0.0, 0.0, 1.0));
 	UpdatePanelText();
 }
 
-void ArenaApp::OnSetCameraRotate(TControl* tc, EventArgs ea)
+void ArenaApp::OnSetCameraRotate(TrecPointer<TControl> tc, EventArgs ea)
 {
 	rotateMode = true;
 }
 
-void ArenaApp::OnSetCameraTranslate(TControl* tc, EventArgs ea)
+void ArenaApp::OnSetCameraTranslate(TrecPointer<TControl> tc, EventArgs ea)
 {
 	rotateMode = false;
 }
 
-void ArenaApp::OnSelectObject(TControl* tc, EventArgs ea)
+void ArenaApp::OnSelectObject(TrecPointer<TControl> tc, EventArgs ea)
 {
 	if (!modelCollection.Get()) return;
 
 	currentModel = modelCollection->GetModel(ea.arrayLabel);
 }
 
-void ArenaApp::OnToggleObjectAndCamera(TControl*, EventArgs ea)
+void ArenaApp::OnToggleObjectAndCamera(TrecPointer<TControl> tc, EventArgs ea)
 {
 	focusOnModel = !focusOnModel;
 	
@@ -592,7 +591,7 @@ void ArenaApp::OnToggleObjectAndCamera(TControl*, EventArgs ea)
 	UpdatePanelText();
 }
 
-void ArenaApp::OnGetDefaultObject(TControl* tc, EventArgs ea)
+void ArenaApp::OnGetDefaultObject(TrecPointer<TControl> tc, EventArgs ea)
 {
 	if (ea.arrayLabel >= 0 && ea.arrayLabel < basicModels.Size() && modelCollection.Get() && basicModels[ea.arrayLabel].Get())
 	{

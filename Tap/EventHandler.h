@@ -271,6 +271,7 @@ protected:
 	 */
 	TrecPointer<TFileShell> filePointer;
 
+
 	/**
 	 * Method: EventHandler::SetSaveFile
 	 * Purpose: Sets up the file to save if OnSave is called
