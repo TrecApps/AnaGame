@@ -146,7 +146,7 @@ void TRadioButton::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut
 		{
 			otherSameButtons[c]->isClicked = false;
 		}
-		eventAr.push_back({ R_Message_Type::On_radio_change, this });
+		eventAr.push_back({ R_Message_Type::On_radio_change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis) });
 
 		if (hasEvent(R_Message_Type::On_radio_change))
 		{

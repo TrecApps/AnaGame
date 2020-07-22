@@ -180,7 +180,7 @@ bool TShaderParser::Attribute(TrecPointer<TString> v, TString& e)
 		else if (!TString::Compare(e, L"|ConstantSize"))
 		{
 			int value = 0;
-			if (!v->ConvertToInt(&value))
+			if (!v->ConvertToInt(value))
 			{
 				cbd.size = value;
 			}
@@ -218,7 +218,7 @@ bool TShaderParser::Attribute(TrecPointer<TString> v, TString& e)
 		else if (!TString::Compare(e, L"|ConstantSlot"))
 		{
 			int value = 0;
-			if (!v->ConvertToInt(&value))
+			if (!v->ConvertToInt(value))
 			{
 				if (value >= 0 && value < 16)
 				{
@@ -394,7 +394,7 @@ bool TShaderParser::SetBufferPurpose(TString& t)
 bool TShaderParser::SetInputSlot(TString& v)
 {
 	int value = 0;
-	if (!v.ConvertToInt(&value))
+	if (!v.ConvertToInt(value))
 	{
 		if (value < 0 || value > 15)
 			return false;
@@ -415,7 +415,7 @@ bool TShaderParser::SetInputSlot(TString& v)
 bool TShaderParser::SetDataWidth(TString& v)
 {
 	int value = 0;
-	if (!v.ConvertToInt(&value))
+	if (!v.ConvertToInt(value))
 	{
 		if (value < 0 || value > 4)
 			return false;
@@ -438,7 +438,7 @@ bool TShaderParser::SetDataWidth(TString& v)
 bool TShaderParser::SetDataCount(TString& v)
 {
 	int value = 0;
-	if (!v.ConvertToInt(&value))
+	if (!v.ConvertToInt(value))
 	{
 		if (value < 0 || value > 4)
 			return false;
@@ -460,7 +460,7 @@ bool TShaderParser::SetDataCount(TString& v)
 bool TShaderParser::SetTextureCount(TString& v)
 {
 	int value = 0;
-	if (!v.ConvertToInt(&value))
+	if (!v.ConvertToInt(value))
 	{
 		shaderHost->SetTextureCount(shaderIndex, value);
 		return true;

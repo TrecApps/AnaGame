@@ -112,7 +112,7 @@ bool TComboBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 
 
 	int childHeight;
-	if (valpoint.Get() && !valpoint->ConvertToInt(&childHeight))
+	if (valpoint.Get() && !valpoint->ConvertToInt(childHeight))
 	{
 		extension->childHeight = childHeight;
 	}
@@ -194,7 +194,7 @@ bool TComboBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	// Remaining attributes
 	valpoint = attributes.retrieveEntry(TString(L"|BoxEntry"));
 
-	if (valpoint.Get() && !valpoint->ConvertToInt(&childHeight) && childHeight > -1)
+	if (valpoint.Get() && !valpoint->ConvertToInt(childHeight) && childHeight > -1)
 	{
 		extension->maxHeight = childHeight;
 	}
@@ -429,7 +429,7 @@ void TComboBoxExtension::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* m
 		{
 			combo->UpdateCaption(elements[clickSelection], clickSelection);
 			EventID_Cred cred;
-			cred.control = combo.Get();
+			cred.control = TrecPointerKey::GetTrecPointerFromSub<TControl, TComboBox>(combo);
 			cred.eventType = R_Message_Type::On_sel_change;
 			eventAr.push_back(cred);
 		}

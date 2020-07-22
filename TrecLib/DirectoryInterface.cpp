@@ -3,12 +3,27 @@
 //#include "TString.h"
 
 
-
+/**
+ * Marker to tell if the directory entries have been initialized or not
+ */
 static bool initialized = false;
 
+/**
+ * Collection of default directories
+ */
 static TString directories[16];
+
+/**
+ * Collection of shadow directories (which Anagame can use to hold temporary data
+ */
 static TString shadowDirectories[16];
 
+/**
+ * Function: ForgeDirectory
+ * Purpose: Ensures tht a directory exists in the system (as long as it is a valid name)
+ * Parameters: TString& dir - the directory to forge
+ * Returns: void
+ */
 void ForgeDirectory(TString& dir)
 {
 	auto pieces = dir.split(TString(L"/\\"));

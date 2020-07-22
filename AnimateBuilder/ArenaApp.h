@@ -2,7 +2,7 @@
 #include <MiniHandler.h>
 
 class ArenaApp;
-typedef void (ArenaApp::* ArenaBuilderEvents)(TControl* tc, EventArgs ea);
+typedef void (ArenaApp::* ArenaBuilderEvents)(TrecPointer<TControl> tc, EventArgs ea);
 
 
 class ArenaApp :
@@ -44,24 +44,24 @@ protected:
 	TString arenaName;
 
 
-	void TextDirectionX(TControl* tc, EventArgs ea);
-	void TextLocationX(TControl* tc, EventArgs ea);
-	void TextDirectionY(TControl* tc, EventArgs ea);
-	void TextLocationY(TControl* tc, EventArgs ea);
-	void TextDirectionZ(TControl* tc, EventArgs ea);
-	void TextLocationZ(TControl* tc, EventArgs ea);
-	void OnUp(TControl* tc, EventArgs ea);
-	void OnDown(TControl* tc, EventArgs ea);
-	void OnLeft(TControl* tc, EventArgs ea);
-	void OnRight(TControl* tc, EventArgs ea);
-	void OnNear(TControl* tc, EventArgs ea);
-	void OnFar(TControl* tc, EventArgs ea);
-	void OnSetCameraRotate(TControl* tc, EventArgs ea);
-	void OnSetCameraTranslate(TControl* tc, EventArgs ea);
+	void TextDirectionX(TrecPointer<TControl> tc, EventArgs ea);
+	void TextLocationX(TrecPointer<TControl> tc, EventArgs ea);
+	void TextDirectionY(TrecPointer<TControl> tc, EventArgs ea);
+	void TextLocationY(TrecPointer<TControl> tc, EventArgs ea);
+	void TextDirectionZ(TrecPointer<TControl> tc, EventArgs ea);
+	void TextLocationZ(TrecPointer<TControl> tc, EventArgs ea);
+	void OnUp(TrecPointer<TControl> tc, EventArgs ea);
+	void OnDown(TrecPointer<TControl> tc, EventArgs ea);
+	void OnLeft(TrecPointer<TControl> tc, EventArgs ea);
+	void OnRight(TrecPointer<TControl> tc, EventArgs ea);
+	void OnNear(TrecPointer<TControl> tc, EventArgs ea);
+	void OnFar(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSetCameraRotate(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSetCameraTranslate(TrecPointer<TControl> tc, EventArgs ea);
 
-	void OnSelectObject(TControl* tc, EventArgs ea);
-	void OnToggleObjectAndCamera(TControl*, EventArgs ea);
+	void OnSelectObject(TrecPointer<TControl> tc, EventArgs ea);
+	void OnToggleObjectAndCamera(TrecPointer<TControl> tc, EventArgs ea);
 
-	void OnGetDefaultObject(TControl* tc, EventArgs ea);
+	void OnGetDefaultObject(TrecPointer<TControl> tc, EventArgs ea);
 };
 

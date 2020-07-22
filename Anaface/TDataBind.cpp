@@ -251,7 +251,7 @@ bool TDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	if (valpoint.Get())
 	{
 		int value = 0;
-		if (!valpoint->ConvertToInt(&value))
+		if (!valpoint->ConvertToInt(value))
 		{
 			widthHeight = value;
 			isStack = false;
@@ -269,7 +269,7 @@ bool TDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		r = loc;
 		int value = 0;
-		if (!valpoint->ConvertToInt(&value))
+		if (!valpoint->ConvertToInt(value))
 		{
 			widthHeight = value;
 			isStack = true;
@@ -392,7 +392,7 @@ void TDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 				args.control = this;
 				args.methodID = getEventID(R_Message_Type::On_sel_change);
 				args.point = point;
-				eventAr.push_back({ R_Message_Type::On_sel_change, this });
+				eventAr.push_back({ R_Message_Type::On_sel_change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis) });
 				break;
 
 

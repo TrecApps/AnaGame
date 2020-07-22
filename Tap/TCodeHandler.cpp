@@ -27,6 +27,8 @@ void TCodeHandler::Initialize(TrecPointer<Page> page)
 		return;
 	lines = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(lay->GetLayoutChild(0, 0));
 	code = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(lay->GetLayoutChild(1, 0));
+
+	this->page = page;
 }
 
 void TCodeHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)

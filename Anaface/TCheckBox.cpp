@@ -102,7 +102,7 @@ void TCheckBox::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, T
 		//onClick = true;
 		*mOut = messageOutput::positiveOverrideUpdate;
 		isClicked = !isClicked;
-		eventAr.push_back({ R_Message_Type::On_check,this });
+		eventAr.push_back({ R_Message_Type::On_check,TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis) });
 
 		if (hasEvent(R_Message_Type::On_check))
 		{

@@ -93,21 +93,21 @@ bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 			TString curString = numbers->at(0);
 			if (curString.GetSize())
 			{
-				if (!curString.ConvertToFloat(&numbers3[0]))
+				if (!curString.ConvertToFloat(numbers3[0]))
 					direction_3.x = numbers3[0];
 			}
 			
 			curString = numbers->at(1);
 			if (curString.GetSize())
 			{
-				if (!curString.ConvertToFloat(&numbers3[1]))
+				if (!curString.ConvertToFloat(numbers3[1]))
 					direction_3.y = numbers3[1];
 			}
 
 			curString = numbers->at(2);
 			if (curString.GetSize())
 			{
-				if (!curString.ConvertToFloat(&numbers3[2]))
+				if (!curString.ConvertToFloat(numbers3[2]))
 					direction_3.z = numbers3[2];
 			}
 
@@ -136,20 +136,20 @@ bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 			TString curString = numbers->at(0);
 			if (curString.GetSize())
 			{
-				if (!curString.ConvertToFloat(&numbers3[0]))
+				if (!curString.ConvertToFloat(numbers3[0]))
 					location_3.x = numbers3[0];
 			}
 
 			curString = numbers->at(1);
 			if (curString.GetSize())
 			{
-				if (!curString.ConvertToFloat(&numbers3[1]))
+				if (!curString.ConvertToFloat(numbers3[1]))
 					location_3.y = numbers3[1];
 			}
 			curString = numbers->at(2);
 			if (curString.GetSize())
 			{
-				if (!curString.ConvertToFloat(&numbers3[2]))
+				if (!curString.ConvertToFloat(numbers3[2]))
 					location_3.z = numbers3[2];
 			}
 		}
@@ -161,7 +161,7 @@ bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 		TrecPointer<TDataArray<TString>> numbers = valpoint->split(TString(L","));
 		if (numbers.Get() && numbers->Size() > 2)
 		{
-			float* numbers3[3] = { &up_3.x, &up_3.y,&up_3.z };
+			float numbers3[3] = { up_3.x, up_3.y,up_3.z };
 			for (UINT c = 0; c < 3; c++)
 			{
 				TString curString = numbers->at(c);
@@ -170,9 +170,9 @@ bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 					if (curString.ConvertToFloat(numbers3[c]))
 					{
 						if (c == 1)
-							*numbers3[c] = 1.0f;
+							numbers3[c] = 1.0f;
 						else
-							*numbers3[c] = 0.0f;
+							numbers3[c] = 0.0f;
 					}
 				}
 			}

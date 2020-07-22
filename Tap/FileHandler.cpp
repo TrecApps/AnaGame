@@ -78,13 +78,12 @@ void FileHandler::Initialize(TrecPointer<Page> page)
  */
 void FileHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 {
-	TControl* tc = nullptr;
 	int e_id = -1;
 	EventArgs ea;
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		tc = eventAr.at(c).control;
-		if (!tc)
+		auto tc = eventAr.at(c).control;
+		if (!tc.Get())
 			continue;
 		ea = tc->getEventArgs();
 		e_id = ea.methodID;
@@ -129,11 +128,11 @@ bool FileHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message
 /**
  * Method: FileHandler::OnOpenFile
  * Purpose: Responds to a Double Click from the Control
- * Parameters: TControl* tc - The Control that generated the event
+ * Parameters: TrecPointer<TControl> tc - The Control that generated the event
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void FileHandler::OnOpenFile(TControl* tc, EventArgs ea)
+void FileHandler::OnOpenFile(TrecPointer<TControl> tc, EventArgs ea)
 {
 	if(!ea.object.Get())
 		return;

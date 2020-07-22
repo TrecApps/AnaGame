@@ -27,6 +27,12 @@ typedef enum class CentralDirectories
 	cd_User					// 15
 }CentralDirectories;
 
+/**
+ * Function: ForgeDirectory
+ * Purpose: Ensures tht a directory exists in the system (as long as it is a valid name)
+ * Parameters: TString& dir - the directory to forge
+ * Returns: void
+ */
 void _TREC_LIB_DLL ForgeDirectory(TString& dir);
 
 

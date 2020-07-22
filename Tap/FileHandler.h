@@ -4,7 +4,7 @@
 class FileHandler;
 
 
-typedef void (FileHandler::* FileHandlerEvents)(TControl* tc, EventArgs ea);
+typedef void (FileHandler::* FileHandlerEvents)(TrecPointer<TControl> tc, EventArgs ea);
 
 /**
  * Class: FileHandler
@@ -76,10 +76,10 @@ protected:
 	/**
 	 * Method: FileHandler::OnOpenFile
 	 * Purpose: Responds to a Double Click from the Control
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnOpenFile(TControl* tc, EventArgs ea);
+	void OnOpenFile(TrecPointer<TControl> tc, EventArgs ea);
 };
 

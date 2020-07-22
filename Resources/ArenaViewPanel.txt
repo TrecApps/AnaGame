@@ -86,7 +86,8 @@
 ---|Caption:Rotate
 ---|EventOnClick:OnSetCameraRotate
 --->TControl(1,2)
----|Caption:To-Do
+---|Caption:Camera
+---|EventOnClick:OnToggleObjectAndCamera
 --->TControl(2,2)
 ---|Caption:Shift
 ---|EventOnClick:OnSetCameraTranslate

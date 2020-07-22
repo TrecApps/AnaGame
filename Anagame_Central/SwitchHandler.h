@@ -6,7 +6,7 @@
 
 class SwitchHandler;
 
-typedef void (SwitchHandler::* methodArray)(TControl* tc, EventArgs ea);
+typedef void (SwitchHandler::* methodArray)(TrecPointer<TControl> tc, EventArgs ea);
 
 class SwitchHandler :
 	public EventHandler
@@ -26,18 +26,18 @@ protected:
 
 	TrecPointer<TControl> changeControl;
 
-	void OnSelect1(TControl* tc, EventArgs ea);
-	void OnSelect2(TControl* tc, EventArgs ea);
-	void OnSelect3(TControl* tc, EventArgs ea);
-	void OnSelectRows(TControl* tc, EventArgs ea);
-	void OnSelectColumns(TControl* tc, EventArgs ea);
-	void OnSelectGrid(TControl* tc, EventArgs ea);
-	void OnSelectLayers(TControl* tc, EventArgs ea);
-	void OnSelectGadget(TControl* tc, EventArgs ea);
-	void OnSelectText(TControl* tc, EventArgs ea);
-	void OnSelectCombo(TControl* tc, EventArgs ea);
-	void OnSelectScroll(TControl* tc, EventArgs ea);
-	void OnSelectGif(TControl* tc, EventArgs ea);
+	void OnSelect1(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelect2(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelect3(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectRows(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectColumns(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectGrid(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectLayers(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectGadget(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectText(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectCombo(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectScroll(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectGif(TrecPointer<TControl> tc, EventArgs ea);
 
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 

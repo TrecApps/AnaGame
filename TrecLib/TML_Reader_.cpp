@@ -3,14 +3,21 @@
 
 
 
-TML_Reader_::TML_Reader_(TFile * ta, Parser_ * p) : ParseReader_(ta,p)
+/**
+ * Method: TML_Reader_::TML_Reader_
+ * Purpose: Constructor
+ * Parameters: TrecPointer<TFile> tf - the TFile to use
+ *			TrecPointer<Parser_> par - the parser to call upon
+ * Returns: new TML Reader Object
+ */
+TML_Reader_::TML_Reader_(TrecPointer<TFile> ta, TrecPointer<Parser_> p) : ParseReader_(ta,p)
 {
 
 }
 
 /*
-* Method: (TML_Reader_) (Destructor)
-* Purpose: Cleans up the parser
+* Method: TML_Reader_::~TML_Reader
+* Purpose: Destructor
 * Parameters: void
 * Returns: void
 */
@@ -18,12 +25,12 @@ TML_Reader_::~TML_Reader_()
 {
 }
 
-/*
-* Method: TML_Reader_ - read
-* Purpose: Reads the file anticipating a TML format
-* Parameters: int* - the line number an error occurs
-* Returns: bool - success
-*/
+/**
+ * Method: TML_Reader_::read
+ * Purpose: Reads the file anticipating a TML format
+ * Parameters: int* - the line number an error occurs
+ * Returns: bool - success
+ */
 bool TML_Reader_::read(int *l)
 {
 	// don't bother reading a file format 
@@ -152,6 +159,12 @@ bool TML_Reader_::read(int *l)
 	return true;
 }
 
+/**
+ * Method: TML_Reader_::ReadString
+ * Purpose: Reads a single line in the file
+ * Parameters: TString & line - the line to read
+ * Returns: bool - whether materials are set
+ */
 bool TML_Reader_::ReadString(TString & line)
 {
 	if (!materials)

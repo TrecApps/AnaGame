@@ -55,7 +55,7 @@ bool GeoGroup::onCreate(D2D1_RECT_F r)
 
 	valpoint = attributes.retrieveEntry(TString(L"|Thickness"));
 	float floaty = 0.0;
-	if (valpoint.Get() && !valpoint->ConvertToFloat(&floaty))
+	if (valpoint.Get() && !valpoint->ConvertToFloat(floaty))
 	{
 		for (int c = 0;c < children.Count();c++)
 		{
@@ -64,11 +64,11 @@ bool GeoGroup::onCreate(D2D1_RECT_F r)
 	}
 
 	valpoint = attributes.retrieveEntry(TString(L"|Gradient1"));
-	if (valpoint.Get() && !valpoint->ConvertToFloat(&floaty))
+	if (valpoint.Get() && !valpoint->ConvertToFloat(floaty))
 		gradients[0].position = floaty;
 
 	valpoint = attributes.retrieveEntry(TString(L"|Gradient2"));
-	if (valpoint.Get() && !valpoint->ConvertToFloat(&floaty))
+	if (valpoint.Get() && !valpoint->ConvertToFloat(floaty))
 		gradients[1].position = floaty;
 
 	valpoint = attributes.retrieveEntry(TString(L"|GraientMode"));

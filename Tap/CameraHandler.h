@@ -4,7 +4,7 @@
 class CameraHandler;
 
 
-typedef void (CameraHandler::* CameraHandlerEvents)(TControl* tc, EventArgs ea);
+typedef void (CameraHandler::* CameraHandlerEvents)(TrecPointer<TControl> tc, EventArgs ea);
 
 /**
  * Class: CameraHandler
@@ -139,156 +139,156 @@ protected:
 	/**
 	 * Method: CameraHandler::TextDirectionX
 	 * Purpose: Responds to text changes from the x-direction control
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextDirectionX(TControl* tc, EventArgs ea);
+	void TextDirectionX(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextLocationX
 	 * Purpose: Responds to text changes from the x-location control
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextLocationX(TControl* tc, EventArgs ea);
+	void TextLocationX(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextDirectionY
 	 * Purpose: Responds to text changes from the y-direction control
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextDirectionY(TControl* tc, EventArgs ea);
+	void TextDirectionY(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextLocationY
 	 * Purpose: Responds to text changes from the y-location control
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextLocationY(TControl* tc, EventArgs ea);
+	void TextLocationY(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextDirectionZ
 	 * Purpose: Responds to text changes from the z-direction control
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextDirectionZ(TControl* tc, EventArgs ea);
+	void TextDirectionZ(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextLocationZ
 	 * Purpose: Responds to text changes from the z-location control
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextLocationZ(TControl* tc, EventArgs ea);
+	void TextLocationZ(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnUp
 	 * Purpose: Responds to the Up button, and moves the camera "up", whether location or rotation
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnUp(TControl* tc, EventArgs ea);
+	void OnUp(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnDown
 	 * Purpose: Responds to the Up button, and moves the camera "down", whether location or rotation
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnDown(TControl* tc, EventArgs ea);
+	void OnDown(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnLeft
 	 * Purpose: Responds to the Up button, and moves the camera "left", whether location or rotation
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnLeft(TControl* tc, EventArgs ea);
+	void OnLeft(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnRight
 	 * Purpose: Responds to the Up button, and moves the camera "right", whether location or rotation
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnRight(TControl* tc, EventArgs ea);
+	void OnRight(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnNear
 	 * Purpose: Responds to the Up button, and moves the camera "near", when set to location (rotation is not affected)
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnNear(TControl* tc, EventArgs ea);
+	void OnNear(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnFar
 	 * Purpose: Responds to the Up button, and moves the camera "far", when set to location (rotation is not affected)
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnFar(TControl* tc, EventArgs ea);
+	void OnFar(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnSetCameraRotate
 	 * Purpose: Sets the mode for rotation when buttons are clicked
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnSetCameraRotate(TControl* tc, EventArgs ea);
+	void OnSetCameraRotate(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnSetCameraTranslate
 	 * Purpose: Sets the mode for translation when buttons are clicked
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnSetCameraTranslate(TControl* tc, EventArgs ea);
+	void OnSetCameraTranslate(TrecPointer<TControl> tc, EventArgs ea);
 
 
 	/**
 	 * Method: CameraHandler::OnSelectObject
 	 * Purpose: [TBD - written when using the old architexture]
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnSelectObject(TControl* tc, EventArgs ea);
+	void OnSelectObject(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnToggleObjectAndCamera
 	 * Purpose: [TBD - written when using the old architexture]
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnToggleObjectAndCamera(TControl*, EventArgs ea);
+	void OnToggleObjectAndCamera(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnGetDefaultObject
 	 * Purpose: [TBD - written when using the old architexture]
-	 * Parameters: TControl* tc - The Control that generated the event
+	 * Parameters: TrecPointer<TControl> tc - The Control that generated the event
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnGetDefaultObject(TControl* tc, EventArgs ea);
+	void OnGetDefaultObject(TrecPointer<TControl> tc, EventArgs ea);
 
 };
 

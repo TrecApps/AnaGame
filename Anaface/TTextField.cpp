@@ -311,13 +311,13 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	int value = 0;
 	float f_value = 0.0f;
 	
-	if (valpoint.Get() && !valpoint->ConvertToInt(&value))
+	if (valpoint.Get() && !valpoint->ConvertToInt(value))
 	{
 		hasMin = true;
 		minumum.type = iControlType::t_int;
 		minumum.value.i = value;
 	}
-	else if (valpoint.Get() && !valpoint->ConvertToFloat(&f_value))
+	else if (valpoint.Get() && !valpoint->ConvertToFloat(f_value))
 	{
 		hasMin = true;
 		minumum.type = iControlType::t_float;
@@ -330,13 +330,13 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 
 	valpoint = attributes.retrieveEntry(TString(L"|Maximum"));
 	
-	if (valpoint.Get() && !valpoint->ConvertToInt(&value))
+	if (valpoint.Get() && !valpoint->ConvertToInt(value))
 	{
 		hasMax = true;
 		maximum.type = iControlType::t_int;
 		maximum.value.i = value;
 	}
-	else if (valpoint.Get() && !valpoint->ConvertToFloat(&f_value))
+	else if (valpoint.Get() && !valpoint->ConvertToFloat(f_value))
 	{
 		hasMax = true;
 		maximum.type = iControlType::t_float;
@@ -355,12 +355,12 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 		{
 			int i = 0;
 			float f = 0.0;
-			if (!valpoint->ConvertToFloat(&f))
+			if (!valpoint->ConvertToFloat(f))
 			{
 				incriment.type = iControlType::t_float;
 				incriment.value.f = f;
 			}
-			else if (!valpoint->ConvertToInt(&i))
+			else if (!valpoint->ConvertToInt(i))
 			{
 				incriment.type = iControlType::t_int;
 				incriment.value.i = i;
@@ -674,7 +674,7 @@ parentCall:
 				args.isLeftClick = false;
 				args.control = this;
 
-				eventAr.push_back(EventID_Cred( R_Message_Type::On_Text_Change, this ));
+				eventAr.push_back(EventID_Cred( R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 		}
 		else if (isNumber && isContained(&point, &botBut))
@@ -692,7 +692,7 @@ parentCall:
 				args.isLeftClick = false;
 				args.control = this;
 
-				eventAr.push_back(EventID_Cred( R_Message_Type::On_Text_Change, this ));
+				eventAr.push_back(EventID_Cred( R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 		}
 
@@ -781,7 +781,7 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 		args.methodID = getEventID(R_Message_Type::On_Char);
 		args.type = static_cast<WCHAR>(LOWORD(nChar));
 		args.control = this;
-		eventAr.push_back({ R_Message_Type::On_Text_Change, this });
+		eventAr.push_back({ R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis) });
 
 		if (text1.Get() && text1->text.GetSize())
 		{
@@ -1051,12 +1051,12 @@ void TTextField::updateNumber(bool pos)
 	int i = 0;
 	float f = 0.0;
 	short floatResult =0 , intResult = 0;
-	if (text.ConvertToFloat(&f) && text.ConvertToInt(&i))
+	if (text.ConvertToFloat(f) && text.ConvertToInt(i))
 		setToZero();
 
 	
-	intResult = text.ConvertToInt(&i);
-	floatResult = text.ConvertToFloat(&f);
+	intResult = text.ConvertToInt(i);
+	floatResult = text.ConvertToFloat(f);
 	
 	if (pos)
 	{

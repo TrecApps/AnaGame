@@ -1,8 +1,10 @@
 #include "TPoint.h"
 
 /**
- * x: the x-coordinate
- * y: the y-coordinate
+ * Method: TPoint::TPoint
+ * Purpose: Default constructor
+ * Parameters: void
+ * Returns: New TPoint Object
  */
 TPoint::TPoint()
 {
@@ -11,8 +13,9 @@ TPoint::TPoint()
 
 /**
  * Method: TPoint::TPoint
- * Purpose: Default constructor
- * Parameters: void
+ * Purpose: Value Constructor
+ * Parameters: float x - x-coordinate of the point
+ *				float y - ycoordinae of the point
  * Returns: New TPoint Object
  */
 TPoint::TPoint(float x, float y)
