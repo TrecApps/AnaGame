@@ -181,9 +181,10 @@ void AnafaceUI::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, T
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-void AnafaceUI::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+void AnafaceUI::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
 	if (tabs)
 	{
@@ -196,7 +197,7 @@ void AnafaceUI::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TD
 				continue;
 
 			messageOutput tempOut = messageOutput::negative;
-			tcon->OnRButtonDown(nFlags, point, &tempOut, eventAr);
+			tcon->OnRButtonDown(nFlags, point, &tempOut, eventAr, clickedButtons);
 			if (tempOut != messageOutput::negative && tempOut != messageOutput::negativeUpdate)
 			{
 				if (children.Count() > c && children.ElementAt(c).Get())
@@ -210,7 +211,7 @@ void AnafaceUI::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TD
 	}
 
 	if (currentControl.Get() && proceed)
-		currentControl->OnRButtonDown(nFlags, point, mOut, eventAr);
+		currentControl->OnRButtonDown(nFlags, point, mOut, eventAr, clickedButtons);
 }
 
 /*
@@ -220,9 +221,10 @@ void AnafaceUI::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TD
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-void AnafaceUI::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+void AnafaceUI::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
 	if (tabs)
 	{
@@ -235,7 +237,7 @@ void AnafaceUI::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 				continue;
 
 			messageOutput tempOut = messageOutput::negative;
-			tcon->OnMouseMove(nFlags, point, &tempOut, eventAr);
+			tcon->OnMouseMove(nFlags, point, &tempOut, eventAr, hoverControls);
 			if (tempOut != messageOutput::negative && tempOut != messageOutput::negativeUpdate)
 			{
 				if (children.Count() > c && children.ElementAt(c).Get())
@@ -249,7 +251,7 @@ void AnafaceUI::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 	}
 
 	if (currentControl.Get() && proceed)
-		currentControl->OnMouseMove(nFlags, point, mOut, eventAr);
+		currentControl->OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
 }
 
 /*

@@ -471,7 +471,7 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
 	*/
-	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl);
+	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 	/*
 	* Method: TTextField::OnChar
 	* Purpose: Adds a character to the String
@@ -483,7 +483,7 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
 	*/
-	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 	/*
 	* Method: TTextField::OnMouseMove
 	* Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it, used by Text field to oversee the selection of text
@@ -491,9 +491,10 @@ public:
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
 	*/
-	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)override;
 	/*
 	* Method: TTextField::OnLButtonUp
 	* Purpose: Responds to mouse clicks ending
@@ -503,7 +504,7 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
 	*/
-	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 
 	/*
 	* Method: TTextField::AppendBoldText

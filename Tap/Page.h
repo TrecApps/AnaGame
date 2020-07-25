@@ -605,7 +605,7 @@ protected:
 	/**
 	 * List of Controls tht were clicked
 	 */
-	TDataArray<TControl*> clickedControl;
+	TDataArray<TControl*> clickedControl, rClickedControl, mouseFocusControl;
 
 
 	// Animation Resources

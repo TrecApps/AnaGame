@@ -379,7 +379,9 @@ void Page::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
 		miniHandler->OnRButtonUp(nFlags, point, mOut);
 
 	if( *mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())windowHandle->Draw(); else return;
+		if (windowHandle.Get())windowHandle->Draw();
+
+
 }
 
 /**
@@ -598,6 +600,42 @@ void Page::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArra
 
 	if (rootControl.Get())
 		rootControl->OnRButtonUp(nFlags, point, mOut, eventAr);
+
+
+	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
+	{
+		auto ev = eventAr[Rust];
+		for (UINT C = 0; C < rClickedControl.Size(); C++)
+		{
+			if (rClickedControl[C] == ev.control.Get())
+			{
+				rClickedControl.RemoveAt(C);
+				break;
+			}
+		}
+	}
+
+	UINT curSize = rClickedControl.Size();
+	for (UINT c = 0; c < rClickedControl.Size(); c++)
+	{
+		if (rClickedControl[c])
+			rClickedControl[c]->SetNormalMouseState();
+	}
+	rClickedControl.RemoveAll();
+	if (curSize)
+	{
+		switch (*mOut)
+		{
+		case messageOutput::negative:
+			*mOut = messageOutput::negativeUpdate;
+			break;
+		case messageOutput::positiveContinue:
+			*mOut = messageOutput::positiveContinueUpdate;
+			break;
+		case messageOutput::positiveOverride:
+			*mOut = messageOutput::positiveOverrideUpdate;
+		}
+	}
 }
 
 /**
@@ -644,7 +682,7 @@ void Page::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataAr
 		return;
 
 	if (rootControl.Get())
-		rootControl->OnRButtonDown(nFlags, point, mOut, eventAr);
+		rootControl->OnRButtonDown(nFlags, point, mOut, eventAr, rClickedControl);
 }
 
 /**
@@ -665,13 +703,13 @@ void Page::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArra
 
 	if (fly.Get())
 	{
-		fly->OnMouseMove(nFlags, point, mOut, eventAr);
+		fly->OnMouseMove(nFlags, point, mOut, eventAr, mouseFocusControl);
 		if (*mOut != messageOutput::negative && *mOut != messageOutput::negativeUpdate)
 			return;
 	}
 
 	if (rootControl.Get())
-		rootControl->OnMouseMove(nFlags, point, mOut, eventAr);
+		rootControl->OnMouseMove(nFlags, point, mOut, eventAr, mouseFocusControl);
 }
 
 /**

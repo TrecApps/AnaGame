@@ -694,7 +694,27 @@ bool AnafaceParser::handleEventAttribute(TrecPointer<TString>& v, TString& e)
 	if (eventID == -1)
 		return false;
 
-	if (!TString::Compare(e, L"|EventOnClick"))
+	if (!TString::Compare(e, L"|EventOnLButtonDown"))
+	{
+		AddToEventList(R_Message_Type::On_L_Button_Down, eventID);
+		return true;
+	}
+	if (!TString::Compare(e, L"|EventOnLButtonUp"))
+	{
+		AddToEventList(R_Message_Type::On_L_Button_Up, eventID);
+		return true;
+	}
+	if (!TString::Compare(e, L"|EventOnRButtonDown"))
+	{
+		AddToEventList(R_Message_Type::On_R_Button_Down, eventID);
+		return true;
+	}
+	if (!TString::Compare(e, L"|EventOnRButtonUp"))
+	{
+		AddToEventList(R_Message_Type::On_R_Button_Up, eventID);
+		return true;
+	}
+	else if (!TString::Compare(e, L"|EventOnClick"))
 	{
 		AddToEventList(R_Message_Type::On_Click, eventID);
 		return true;

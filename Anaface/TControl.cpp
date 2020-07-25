@@ -55,6 +55,8 @@ TControl::TControl(TrecPointer<DrawingBoard> db,TrecPointer<TArray<styleTable>> 
 	rightBorder = leftBorder = topBorder = bottomBorder = onFocus = onClickFocus = false;
 
 	controlTransform = D2D1::IdentityMatrix();
+
+	isLClick = isRClick = false;
 	
 
 	TString logMessage;
@@ -71,6 +73,8 @@ TControl::TControl(TrecPointer<DrawingBoard> db,TrecPointer<TArray<styleTable>> 
 */
 TControl::TControl(TControl & rCont)
 {
+	isLClick = isRClick = false;
+
 	arrayID = rCont.arrayID;
 	eventHandler = rCont.eventHandler;
 	isActive = rCont.isActive;
@@ -176,6 +180,7 @@ TControl::TControl(TControl & rCont)
 */
 TControl::TControl()
 {
+	isLClick = isRClick = false;
 	arrayID = -1;
 
 	eventHandler = NULL;
@@ -3237,13 +3242,46 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 
 	for (int c = 0; c < children.Count(); c++)
 	{
-		children.ElementAt(c)->OnLButtonUp(nFlags, point, mOut,eventAr);
+		children.ElementAt(c)->OnRButtonUp(nFlags, point, mOut,eventAr);
 	}
 	if (!isContained(&point, &location))
 	{
 		mState = messageState::normal;
+		isRClick = false;
 		return;
 	}
+
+	if (hasEvent(R_Message_Type::On_R_Button_Up))
+	{
+		// Set args
+		resetArgs();
+		args.eventType = R_Message_Type::On_R_Button_Up;
+		args.point = point;
+		args.methodID = getEventID(R_Message_Type::On_R_Button_Up);
+		args.isClick = true;
+		args.isLeftClick = false;
+		args.control = this;
+
+		eventAr.push_back(EventID_Cred(R_Message_Type::On_R_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+	}
+
+	if (hasEvent(R_Message_Type::On_Right_Click) && isRClick)
+	{
+		// Set args
+		resetArgs();
+		args.eventType = R_Message_Type::On_Right_Click;
+		args.point = point;
+		args.methodID = getEventID(R_Message_Type::On_Right_Click);
+		args.isClick = true;
+		args.isLeftClick = false;
+		args.control = this;
+
+		eventAr.push_back(EventID_Cred(R_Message_Type::On_Right_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+	}
+
+	isRClick = false;
+
+
 	if (*mOut == messageOutput::positiveContinue)
 	{
 		if (mState ==messageState::mouseRClick)
@@ -3274,6 +3312,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
 afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
@@ -3321,6 +3360,8 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		return;
 	}
 
+	isLClick = true;
+
 	for (int c = 0; c < children.Count();c++)
 	{
 		if (children.ElementAt(c).Get())
@@ -3350,49 +3391,20 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 	mState =messageState::mouseLClick;
 	clickedControls.push_back(this);
 	
-	if (hasEvent(R_Message_Type::On_Click))
+	if (hasEvent(R_Message_Type::On_L_Button_Down))
 	{
 		// Set args
 		resetArgs();
-		args.eventType = R_Message_Type::On_Click;
+		args.eventType = R_Message_Type::On_L_Button_Down;
 		args.point = point;
-		args.methodID = getEventID(R_Message_Type::On_Click);
+		args.methodID = getEventID(R_Message_Type::On_L_Button_Down);
 		args.isClick = true;
 		args.isLeftClick = true;
 		args.control = this;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(EventID_Cred(R_Message_Type::On_L_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 
-
-
-	/*
-	if (!isContained(&point, &location))
-	{
-		if (mState != normal)
-		{
-			mState = normal;
-			*mOut = negativeUpdate;
-		}
-		else
-			*mOut = negative;
-		return;
-	}
-	for (int c = 0; c < children.Count();c++)
-	{
-		children.ElementAt(c)->child->OnLButtonDown(nFlags, point, mOut);
-		if (*mOut == negative)
-			continue;
-		if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
-			return;
-	}
-	if (*mOut == messageOutput::positiveContinue)
-	{
-		if (mState !=messageState::mouseLClick)
-			*mOut = messageOutput::positiveContinueUpdate;
-		
-	}
-	mState =messageState::mouseLClick;*/
 }
 
 /*
@@ -3402,9 +3414,10 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
 	if (!isActive)
 		return;
@@ -3419,11 +3432,12 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		}
 		else
 			*mOut = messageOutput::negative;
+
 		return;
 	}
 	for (int c = 0; c < children.Count();c++)
 	{
-		children.ElementAt(c)->OnRButtonDown(nFlags, point, mOut,eventAr);
+		children.ElementAt(c)->OnRButtonDown(nFlags, point, mOut,eventAr, clickedControls);
 		if (*mOut == messageOutput::negative)
 			continue;
 		if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
@@ -3437,19 +3451,19 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 	}
 	mState =messageState::mouseRClick;
 
-	if (hasEvent(R_Message_Type::On_Right_Click))
+	if (hasEvent(R_Message_Type::On_R_Button_Down))
 	{	
 		// Set args
 		resetArgs();
-		args.eventType = R_Message_Type::On_Right_Click;
+		args.eventType = R_Message_Type::On_R_Button_Down;
 		args.point = point;
-		args.methodID = getEventID(R_Message_Type::On_Right_Click);
+		args.methodID = getEventID(R_Message_Type::On_R_Button_Down);
 		args.isClick = true;
 		args.isLeftClick = false;
 		args.control = this;
-		eventAr.push_back(EventID_Cred( R_Message_Type::On_Right_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(EventID_Cred( R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
-
+	isRClick = true;
 }
 
 /*
@@ -3459,9 +3473,10 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
 	if (!isActive)
 		return;
@@ -3474,6 +3489,37 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 		}
 		else
 			*mOut = messageOutput::negative;
+
+		if (isMouseFocus)
+		{
+			isMouseFocus = false;
+
+			if (hasEvent(R_Message_Type::On_Lose_Focus))
+			{
+				// Set args
+				resetArgs();
+				args.eventType = R_Message_Type::On_Lose_Focus;
+				args.point = point;
+				args.methodID = getEventID(R_Message_Type::On_Lose_Focus);
+				args.isClick = false;
+				args.isLeftClick = false;
+				args.control = this;
+				eventAr.push_back(EventID_Cred(R_Message_Type::On_Lose_Focus, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+			}
+
+			for (UINT Rust = 0; Rust < clickedControls.Size(); Rust++)
+			{
+				if (clickedControls[Rust] == this)
+				{
+					clickedControls.RemoveAt(Rust);
+					break;
+				}
+			}
+
+
+		}
+
+
 		return;
 	}
 
@@ -3482,7 +3528,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 	for (int c = 0; c < children.Count();c++)
 	{
 		if (children.ElementAt(c).Get())
-			children.ElementAt(c)->OnMouseMove(nFlags, point, mOut, eventAr);
+			children.ElementAt(c)->OnMouseMove(nFlags, point, mOut, eventAr, clickedControls);
 	}
 
 	if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
@@ -3507,16 +3553,24 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 	if(mState !=messageState::mouseLClick)
 		mState =messageState::mouseHover;
 
-	if (hasEvent(R_Message_Type::On_Hover))
+	if (!isMouseFocus)
 	{
-		// Set args
-		resetArgs();
-		args.eventType = R_Message_Type::On_Hover;
-		args.point = point;
-		args.methodID = getEventID(R_Message_Type::On_Hover);
-		args.control = this;
-		eventAr.push_back(EventID_Cred( R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		isMouseFocus = true;
+
+		if (hasEvent(R_Message_Type::On_Hover))
+		{
+			// Set args
+			resetArgs();
+			args.eventType = R_Message_Type::On_Hover;
+			args.point = point;
+			args.methodID = getEventID(R_Message_Type::On_Hover);
+			args.control = this;
+			eventAr.push_back(EventID_Cred(R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		}
+
+		clickedControls.push_back(this);
 	}
+
 }
 
 /*
@@ -3628,6 +3682,7 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 	{
 		mState = messageState::normal;
 		*mOut = messageOutput::negative;
+		isLClick = false;
 		return;
 	}
 
@@ -3637,18 +3692,32 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 
 	mState =messageState::mouseHover;
 
-	if (hasEvent(R_Message_Type::On_Click_Release))
+	if (hasEvent(R_Message_Type::On_L_Button_Up))
 	{
 		// Set args
 		resetArgs();
-		args.eventType = R_Message_Type::On_Click_Release;
+		args.eventType = R_Message_Type::On_L_Button_Up;
 		args.point = point;
-		args.methodID = getEventID(R_Message_Type::On_Click_Release);
+		args.methodID = getEventID(R_Message_Type::On_L_Button_Up);
 		args.isClick = true;
 		args.isLeftClick = true;
 		args.control = this;
-		eventAr.push_back(EventID_Cred( R_Message_Type::On_Click_Release, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(EventID_Cred( R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
+
+	if (hasEvent(R_Message_Type::On_Click) && isLClick)
+	{
+		// Set args
+		resetArgs();
+		args.eventType = R_Message_Type::On_Click;
+		args.point = point;
+		args.methodID = getEventID(R_Message_Type::On_Click);
+		args.isClick = true;
+		args.isLeftClick = true;
+		args.control = this;
+		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+	}
+	isLClick = false;
 }
 
 /*
