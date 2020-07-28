@@ -568,7 +568,7 @@ protected:
 	/**
 	 * The TInstance underwhich this Page is maintained
 	 */
-	 TrecPointer<TInstance> instance;
+	 TrecPointerSoft<TInstance> instance;
 
 	 /**
 	  * the Adjustment to make to the Drawing Board before sending the Draw command to the Controls
@@ -578,7 +578,7 @@ protected:
 	/**
 	 * the Window attached to the page
 	 */
-	TrecPointer<TWindow> windowHandle;
+	TrecPointerSoft<TWindow> windowHandle;
 
 
 	/**
