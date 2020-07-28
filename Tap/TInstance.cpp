@@ -43,6 +43,16 @@ TInstance::TInstance(TString& name, TString& winClass, UINT style, HWND parent, 
 	dialogAtom = 0;
 }
 
+TInstance::~TInstance()
+{
+	mainWindow.Delete();
+
+	for (UINT Rust = 0; Rust < windowList.Size(); Rust++)
+	{
+		windowList[Rust].Delete();
+	}
+}
+
 /**
  * Method: TInstance::Proc
  * Purpose: Takes in messages from WinProc and sends them to the appropriate window

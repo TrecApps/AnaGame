@@ -31,6 +31,12 @@ TIdeWindow::TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent
 	this->pageBarSpace = pageBarSpace;
 }
 
+TIdeWindow::~TIdeWindow()
+{
+	//body.Delete();
+
+}
+
 /**
  * Method: TIdeWindow::PrepareWindow
  * Purpose: Prepares the Window while also managing the links between the IDE-Pages
@@ -365,7 +371,7 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
 		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.txt", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, TCodeHandler>(windowInstance);
+			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, TCodeHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
 		else
 			pageHandler = handler;
 		break;
@@ -373,7 +379,7 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
 		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\IDEPrompt.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, TerminalHandler>(windowInstance);
+			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
 		else
 			pageHandler = handler;
 		break;
@@ -381,7 +387,7 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
 		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(windowInstance);
+			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
 		else
 			pageHandler = handler;
 		break;
@@ -438,7 +444,7 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
 		targetPage = upperRight;
 	}
 
-	TrecPointer<Page> newPage = targetPage->AddNewPage(windowInstance, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), name, pageHandler);
+	TrecPointer<Page> newPage = targetPage->AddNewPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), name, pageHandler);
 
 	newPage->SetAnaface(uiFile, pageHandler);
 
@@ -465,7 +471,7 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddPage(anagame_page pageType, ide_pag
 	if (!this->windowInstance.Get())
 		return ret;
 
-	auto handler = windowInstance->GetHandler(name, pageType);
+	auto handler = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->GetHandler(name, pageType);
 
 
 
@@ -478,9 +484,9 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddPage(anagame_page pageType, ide_pag
 	switch (pageType)
 	{
 	case anagame_page::anagame_page_command_prompt:
-		return AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, TerminalHandler>(windowInstance));
+		return AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)));
 	case anagame_page::anagame_page_file_node:
-		return AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(windowInstance));
+		return AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)));
 	}
 
 
@@ -505,9 +511,9 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 	if (!aFile.Get() || !aFile->IsOpen())
 		return 1;
 
-	directFactory = windowInstance->GetFactory();
+	directFactory = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->GetFactory();
 
-	mainPage = Page::GetWindowPage(windowInstance, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), eh);
+	mainPage = Page::GetWindowPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), eh);
 
 	D2D1_RECT_F curArea = mainPage->GetArea();
 	curArea.bottom = curArea.top + this->mainViewSpace;
@@ -551,13 +557,13 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 
 	panelbrush = drawingBoard->GetBrush(TColor(D2D1::ColorF::BlueViolet));
 
-	body->SetResources(windowInstance, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
-	upperLeft->SetResources(windowInstance, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
-	upperRight->SetResources(windowInstance, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
-	basicConsole->SetResources(windowInstance, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
-	lowerLeft->SetResources(windowInstance, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
-	lowerRight->SetResources(windowInstance, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
-	deepConsole->SetResources(windowInstance, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
+	body->SetResources(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
+	upperLeft->SetResources(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
+	upperRight->SetResources(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
+	basicConsole->SetResources(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
+	lowerLeft->SetResources(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
+	lowerRight->SetResources(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
+	deepConsole->SetResources(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
 	safeToDraw = 1;
 	Draw();
 

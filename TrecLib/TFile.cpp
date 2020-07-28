@@ -52,14 +52,13 @@ bool TFile::Open(const TString& lpszFileName, UINT nOpenFlags)
 {
 	fileEncode = FileEncodingType::fet_unknown;
 
-	WCHAR* fName = lpszFileName.GetBufferCopy();
 	UINT readWrite = 0, sharing = 0, atts = 0;
 	ConvertFlags(nOpenFlags, readWrite, sharing, atts);
 
 	// If no attribute for opening is specified, use the value most likely to succeed
 	if (!atts)
 		atts = OPEN_ALWAYS;
-	fileHandle = CreateFileW(fName, readWrite, sharing, nullptr, atts, FILE_ATTRIBUTE_NORMAL, nullptr);
+	fileHandle = CreateFileW(lpszFileName.GetConstantBuffer(), readWrite, sharing, nullptr, atts, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 	
 	if (fileHandle == INVALID_HANDLE_VALUE)
@@ -259,7 +258,6 @@ void TFile::WriteString(const TString& lpsz)
 	WCHAR cLetter = L'\0';
 	UCHAR bytes[2];
 	UCHAR temp = 0;
-	WCHAR* bufferString = lpsz.GetBufferCopy();
 	if (fileEncode == FileEncodingType::fet_unknown)
 		fileEncode = FileEncodingType::fet_unicode_little;
 	switch (fileEncode)
@@ -269,7 +267,7 @@ void TFile::WriteString(const TString& lpsz)
 		size = lpsz.GetSize();
 		acsiiText = new CHAR[size * 2 + 1];
 		wBytes = WideCharToMultiByte(CP_ACP,
-			0, bufferString, -1,
+			0, lpsz.GetConstantBuffer(), -1,
 			acsiiText, size * 2, NULL,
 			NULL);
 		Write(acsiiText, wBytes);
@@ -287,13 +285,11 @@ void TFile::WriteString(const TString& lpsz)
 		}
 		break;
 	case FileEncodingType::fet_unicode_little:
-		for (UINT c = 0; lpsz[c] != L'\0'; c++)
-		{
-			Write(&bufferString[c], 2);
-		}
+		
+		Write(lpsz.GetConstantBuffer(), lpsz.GetSize() * sizeof(WCHAR));
+		
 	}
 
-	delete[] bufferString;
 }
 
 /*
@@ -573,19 +569,16 @@ TString TFile::GetFilePath()
  */
 TString TFile::GetFileTitle()
 {
-	UINT length = filePath.GetSize();
-	WCHAR* cTitle = new WCHAR[length + 1];
-	ZeroMemory(cTitle, sizeof(WCHAR) * (length + 1));
-	WCHAR* pathBuffer = filePath.GetBufferCopy();
+	WCHAR* cTitle = new WCHAR[filePath.GetSize() + 1];
+	ZeroMemory(cTitle, sizeof(WCHAR) * (filePath.GetSize() + 1));
 
 	TString ret;
-	if (!::GetFileTitleW(pathBuffer, cTitle, length))
+	if (!::GetFileTitleW(filePath.GetConstantBuffer(), cTitle, filePath.GetSize()))
 	{
 		ret.Set(cTitle);
 	}
 
 	delete[] cTitle;
-	delete[] pathBuffer;
 	return ret;
 }
 /**

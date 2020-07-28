@@ -190,7 +190,12 @@ public:
 	~TrecBoxPointer()
 	{
 		if (rawPointer)
-			delete reinterpret_cast<T*>(rawPointer);
+		{
+			T* tempRawPointer = reinterpret_cast<T*>(rawPointer);
+			rawPointer = nullptr;
+
+			delete tempRawPointer;
+		}
 	}
 
 	/**
@@ -226,10 +231,12 @@ public:
 		counter--;
 		if (!counter && !softCounter) // if counter is zero, then there is no reference to the object and it is time to delete it.
 			delete this;
-		else if (!counter)
+		else if (!counter && rawPointer)
 		{							// Main pointers are gone but soft pointers remain. Delete the object but don't yet delete the counter
-			delete rawPointer;
+			T* tempRawPointer = reinterpret_cast<T*>(rawPointer);
 			rawPointer = nullptr;
+
+			delete tempRawPointer;
 		}
 	}
 
@@ -244,10 +251,12 @@ public:
 		softCounter--;
 		if (!counter && !softCounter) // if counter is zero, then there is no reference to the object and it is time to delete it.
 			delete this;
-		else if (!counter)
+		else if (!counter && rawPointer)
 		{							// Main pointers are gone but soft pointers remain. Delete the object but don't yet delete the counter
-			delete rawPointer;
+			T* tempRawPointer = reinterpret_cast<T*>(rawPointer);
 			rawPointer = nullptr;
+
+			delete tempRawPointer;
 		}
 	}
 
@@ -270,8 +279,14 @@ public:
 	 */
 	void Delete()
 	{
-		if(rawPointer)
-			delete rawPointer;
+		if (rawPointer)
+		{
+			T* tempRawPointer = reinterpret_cast<T*>(rawPointer);
+			rawPointer = nullptr;
+
+			delete tempRawPointer;
+
+		}
 		// now that the object has been deleted, set it to null to avoid a dangling pointer
 		rawPointer = nullptr;
 	}

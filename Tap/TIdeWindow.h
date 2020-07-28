@@ -62,6 +62,10 @@ public:
 	 */
 	TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, UINT mainViewSpace, UINT pageBarSpace);
 
+
+	~TIdeWindow();
+
+
 	/**
 	 * Method: TIdeWindow::PrepareWindow
 	 * Purpose: Prepares the Window while also managing the links between the IDE-Pages

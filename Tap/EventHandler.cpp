@@ -10,7 +10,7 @@
  */
 EventHandler::EventHandler(TrecPointer<TInstance> instance)
 {
-	app = instance;
+	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(instance);
 }
 
 /**
@@ -22,7 +22,7 @@ EventHandler::EventHandler(TrecPointer<TInstance> instance)
  */
 EventHandler::EventHandler(TrecPointer<TInstance> instance, const TString& name)
 {
-	app = instance;
+	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(instance);
 	this->name.Set(name);
 }
 
@@ -214,7 +214,7 @@ void EventHandler::SetSelf(TrecPointer<EventHandler> handleSelf)
 		throw L"Error! Needs to be set to Self";
 	hSelf = TrecPointerKey::GetSoftPointerFromTrec<EventHandler>(handleSelf);
 	if (app.Get())
-		app->RegisterHandler(handleSelf);
+		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->RegisterHandler(handleSelf);
 }
 
 /**

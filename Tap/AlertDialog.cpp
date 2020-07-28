@@ -43,7 +43,7 @@ int AlertDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	file.Append(L"Resources\\TextDialog.tml");
 
-	TrecPointer<EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<EventHandler, OkayHandler>(windowInstance);
+	TrecPointer<EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<EventHandler, OkayHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
 
 	int returnable = TWindow::CompileView(file, eh);
 

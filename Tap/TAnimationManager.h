@@ -187,6 +187,6 @@ protected:
 	/**
 	 * The Window holding the Manager
 	 */
-	TrecPointer<TWindow> window;
+	TrecPointerSoft<TWindow> window;
 };
 

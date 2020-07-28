@@ -371,7 +371,7 @@ protected:
 	/**
 	 * instance managing the window
 	 */
-	TrecPointer<TInstance> windowInstance;
+	TrecPointerSoft<TInstance> windowInstance;
 
 	/**
 	 * command used by Windows

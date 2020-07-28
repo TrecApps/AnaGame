@@ -32,7 +32,7 @@ public:
 	 * Parameters: TString* v - the name of a class
 	 * Returns: bool - false for the base class
 	 */
-	virtual bool Obj(TString *v);
+	virtual bool Obj(TString& v);
 	// for the attribute name
 
 	/*
@@ -42,7 +42,7 @@ public:
 	 *			TString e - the attribute name
 	 * Returns: bool - success result
 	 */
-	virtual bool Attribute(TString* v, TString e);
+	virtual bool Attribute(TString& v, TString e);
 
 
 	/*

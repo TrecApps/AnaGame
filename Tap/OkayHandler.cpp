@@ -39,7 +39,8 @@ void OkayHandler::Initialize(TrecPointer<Page> page)
 {
 	assert(page.Get());
 	this->page = page;
-	app = page->GetInstance();
+	auto tempApp = page->GetInstance();
+	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(tempApp);
 }
 
 /**

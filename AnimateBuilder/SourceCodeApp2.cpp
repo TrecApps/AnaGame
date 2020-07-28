@@ -13,12 +13,12 @@ UINT SourceCodeApp2::Initialize()
 	if (!win.Get() || !instance.Get())
 		return 1;
 
-	codeHandler = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, TCodeHandler>(instance);
+	codeHandler = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, TCodeHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance));
 
 	if (!codeHandler.Get())
 		return 2;
 
-	commandHandler = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, TerminalHandler>(instance);
+	commandHandler = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance));
 	if (!commandHandler.Get())
 		return 3;
 

@@ -297,7 +297,8 @@ void CameraHandler::SendMessageToArena(const TString& target, const TString& att
 	
 	TString messageStr(target + L" " + attribute + L" " + value);
 	TrecPointer<HandlerMessage> newMessage = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name, handler_type::handler_type_arena, 0, message_transmission::message_transmission_name_type, 0, messageStr);
-	app->DispatchAnagameMessage(newMessage);
+	if(app.Get())
+		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->DispatchAnagameMessage(newMessage);
 }
 
 

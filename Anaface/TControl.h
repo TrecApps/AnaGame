@@ -57,16 +57,6 @@ typedef enum class  messageState
 	mouseRClick
 } messageState;
 
-/* Allows individual Controls to communicate with the message engine that called it
-typedef enum messageOutput
-{
-	negative,
-	negativeUpdate,
-	positiveOverride,
-	positiveContinue,
-	positiveOverrideUpdate,
-	positiveContinueUpdate
-}messageOutput;*/
 
 /**
  * Enum Class: R_Message_Type
@@ -74,6 +64,10 @@ typedef enum messageOutput
  */
 typedef enum class R_Message_Type
 {
+	On_L_Button_Down,
+	On_L_Button_Up,
+	On_R_Button_Down,
+	On_R_Button_Up,
 	On_Click,
 	On_Hold_Click,
 	On_Hover,
@@ -94,12 +88,17 @@ typedef enum class R_Message_Type
 }R_Message_Type;
 
 /**
- * Struct: EventArgs
+ * Class: EventArgs
  * Purpose: Event Arguements, used to supply Event Handlers with the necessary information to 
  *		do their job properly
  */
-typedef struct EventArgs
+class _ANAFACE_DLL EventArgs
 {
+public:
+	EventArgs();
+	void Reset();
+	EventArgs(const EventArgs& args);
+
 	TString text;
 	bool positive;
 	TPoint point;
@@ -111,7 +110,7 @@ typedef struct EventArgs
 	int arrayLabel;
 	WCHAR type;
 	TrecPointer<TObjectNode> object;
-} EventArgs;
+} ;
 
 /**
  * Class: EventID_Cred
@@ -133,14 +132,17 @@ public:
 };
 
 /**
- * Struct: EventTypeId
+ * Class: EventTypeId
  * Purpose: Stored by Controls for checking whether or not they actually have a message handler
  */
-typedef struct EventTypeID
+class _ANAFACE_DLL EventTypeID
 {
+public:
+	EventTypeID();
+
 	R_Message_Type eventType;
 	int eventID;
-}EventTypeID;
+};
 
 /**
  * Struct: sizeControl
@@ -1180,6 +1182,7 @@ public:
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
 	*/
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons);
@@ -1191,9 +1194,10 @@ public:
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
 	*/
-	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls);
 
 	/*
 	* Method: TControl::OnMouseMove
@@ -1202,9 +1206,10 @@ public:
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
 	*/
-	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls);
 
 	/*
 	* Method: TControl::OnLButtonDblClk
@@ -1961,6 +1966,16 @@ protected:
 	 * Controls can be disabled, through this bool
 	 */
 	bool isActive;
+
+	/**
+	 * Keeps track of whether the mouse button came down on these controls
+	 */
+	bool isLClick, isRClick;
+
+	/**
+	 * Whether mouse is over the control
+	 */
+	bool isMouseFocus;
 
 
 	/*
