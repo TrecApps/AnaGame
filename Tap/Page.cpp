@@ -73,11 +73,13 @@ void Page::PrepAnimations(TAnimationManager& aManager)
 	TMap<TStoryBoard> storyBoards;
 	TMap<TStoryBoard> persistentStoryBoards;
 
+	assert(windowHandle.Get());
+
 	for (UINT Rust = 0; Rust < basicStoryBoards.Size(); Rust++)
 	{
 		TrecPointer<TStoryBoard> story = TrecPointerKey::GetNewTrecPointer<TStoryBoard>();
 		storyBoards.addEntry(basicStoryBoards[Rust], story);
-		story->SetWindow(windowHandle);
+		story->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle));
 	}
 
 	for (UINT Rust = 0; Rust < this->persistentStoryBoards.Size(); Rust++)
@@ -85,7 +87,7 @@ void Page::PrepAnimations(TAnimationManager& aManager)
 		TrecPointer<TStoryBoard> story = TrecPointerKey::GetNewTrecPointer<TStoryBoard>();
 		persistentStoryBoards.addEntry(this->persistentStoryBoards[Rust], story);
 		story->SetPersistant();
-		story->SetWindow(windowHandle);
+		story->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle));
 	}
 
 	for (UINT Rust = 0; Rust < aData.Size(); Rust++)
@@ -146,7 +148,7 @@ Page::~Page()
 	solidBrush.Delete();
 	if (instance.Get())
 	{
-		instance->UnregisterHandler(handler);
+		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance)->UnregisterHandler(handler);
 	}
 }
 
@@ -171,9 +173,9 @@ TrecPointer<Page> Page::GetWindowPage(TrecPointer<TInstance> in , TrecPointer<TW
 	TrecPointer<Page> ret = TrecPointerKey::GetNewSelfTrecPointer<Page>(window->GetDrawingBoard());
 
 	convertCRectToD2DRect(&area, &ret->area);
-	ret->instance = in;
+	ret->instance = TrecPointerKey::GetSoftPointerFromTrec<TInstance>( in);
 	ret->handler = eh;
-	ret->windowHandle = window;
+	ret->windowHandle = TrecPointerKey::GetSoftPointerFromTrec<TWindow>(window);
 	ret->deviceH = GetWindowDC(window->GetWindowHandle());
 
 	if (ret->handler.Get() && in.Get())
@@ -199,8 +201,8 @@ TrecPointer<Page> Page::GetSmallPage(TrecPointer<TInstance> in, TrecPointer<TWin
 	ret->area = area;
 
 
-	ret->instance = in;
-	ret->windowHandle = window;
+	ret->instance = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(in);
+	ret->windowHandle = TrecPointerKey::GetSoftPointerFromTrec<TWindow>(window);
 	ret->deviceH = GetWindowDC(window->GetWindowHandle());
 	return ret;
 }
@@ -220,7 +222,10 @@ int Page::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 		return -1;
 	if (!file->IsOpen())
 		return -2;
-	TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, AnafaceParser>(drawingBoard, windowHandle->GetWindowHandle(), file->GetFileDirectory());
+
+	assert(windowHandle.Get());
+
+	TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, AnafaceParser>(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowHandle(), file->GetFileDirectory());
 
 	if (eh.Get())
 		dynamic_cast<AnafaceParser*>(parser.Get())->setEventSystem(eh->GetEventNameList());
@@ -233,7 +238,7 @@ int Page::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 	rootControl = dynamic_cast<AnafaceParser*>(parser.Get())->getRootControl();
 	if (rootControl.Get())
 	{
-		rootControl->onCreate(area, windowHandle->GetWindowEngine());
+		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
 		rootControl->setParent(selfHolder);
 	}
 	persistentStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetPersistentStoryBoards();
@@ -261,7 +266,8 @@ int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
 		return -1;
 	if (!file->IsOpen())
 		return -2;
-	TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, AnafaceParser>(drawingBoard, windowHandle->GetWindowHandle(), file->GetFileDirectory());
+	assert(windowHandle.Get());
+	TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, AnafaceParser>(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowHandle(), file->GetFileDirectory());
 
 	dynamic_cast<AnafaceParser*>(parser.Get())->setEventSystem(id);
 
@@ -273,7 +279,7 @@ int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
 	rootControl = dynamic_cast<AnafaceParser*>(parser.Get())->getRootControl();
 	if (rootControl.Get())
 	{
-		rootControl->onCreate(area, windowHandle->GetWindowEngine());
+		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
 		rootControl->setParent(selfHolder);
 	}
 	if(handler.Get())
@@ -332,7 +338,7 @@ TrecPointer<TControl> Page::ExtractRootControl()
  */
 TrecPointer<TWindow> Page::GetWindowHandle()
 {
-	return windowHandle;
+	return TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
 }
 
 /**
@@ -356,7 +362,7 @@ void Page::SetHandler(TrecPointer <EventHandler> eh)
 {
 	handler = eh;
 	if (handler.Get() && instance.Get())
-		instance->RegisterHandler(handler);
+		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance)->RegisterHandler(handler);
 }
 
 /**
@@ -379,9 +385,7 @@ void Page::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
 		miniHandler->OnRButtonUp(nFlags, point, mOut);
 
 	if( *mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())windowHandle->Draw();
-
-
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
 }
 
 /**
@@ -396,12 +400,12 @@ void Page::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoi
 {
 	TDataArray<EventID_Cred> eventAr;
 	OnLButtonDown(nFlags, point, mOut, eventAr, fly);
-
+	assert(windowHandle.Get());
 	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
 	{
 		if (eventAr[Rust].eventType == R_Message_Type::On_Select_Scroller && eventAr[Rust].scroll.Get() && windowHandle.Get())
 		{
-			windowHandle->currentScrollBar = eventAr[Rust].scroll;
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->currentScrollBar = eventAr[Rust].scroll;
 			break;
 		}
 	}
@@ -413,7 +417,7 @@ void Page::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoi
 		miniHandler->OnLButtonDown(nFlags, point, mOut);
 
 	if( *mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())windowHandle->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
 }
 
 /**
@@ -435,7 +439,7 @@ void Page::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
 		{
 			if (eventAr[Rust].scroll.Get())
 			{
-				windowHandle->currentScrollBar = eventAr[Rust].scroll;
+				TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->currentScrollBar = eventAr[Rust].scroll;
 				break;
 			}
 		}
@@ -448,7 +452,7 @@ void Page::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
 	if (miniHandler.Get())
 		miniHandler->OnRButtonDown(nFlags, point, mOut);
 	if (*mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())windowHandle->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
 }
 
 /**
@@ -470,7 +474,7 @@ void Page::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoint
 	if (miniHandler.Get())
 		miniHandler->OnMouseMove(nFlags, point, mOut);
 	if (*mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())windowHandle->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
 }
 
 /**
@@ -493,7 +497,7 @@ void Page::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
 		miniHandler->OnLButtonDblClk(nFlags, point, mOut);
 
 	if( *mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())windowHandle->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
 }
 
 /**
@@ -509,12 +513,14 @@ void Page::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoint
 	TDataArray<EventID_Cred> eventAr;
 	OnLButtonUp(nFlags, point, mOut, eventAr, fly);
 
+	assert(windowHandle.Get());
+
 	// First, check to see if there is a new flyout to display. If there is, send it to the TWindow
 	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
 	{
 		if (eventAr[Rust].eventType == R_Message_Type::On_Flyout && eventAr[Rust].flyout.Get() && windowHandle.Get())
 		{
-			windowHandle->SetFlyout(eventAr[Rust].flyout);
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->SetFlyout(eventAr[Rust].flyout);
 			break;
 		}
 	}
@@ -526,7 +532,7 @@ void Page::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoint
 		miniHandler->OnLButtonUp(nFlags, point, mOut);
 
 	if (*mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())windowHandle->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
 }
 
 /**
@@ -552,7 +558,7 @@ bool Page::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOu
 		returnable = OnChar(fromChar, nChar, nRepCnt, nFlags, mOut, eventAr);
 
 	if (*mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())windowHandle->Draw(); else return false;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return false;
 	return returnable;
 }
 
@@ -852,7 +858,7 @@ void Page::SetSelf(TrecPointer<Page> s)
  */
 TrecPointer<TInstance> Page::GetInstance()
 {
-	return instance;
+	return TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance);
 }
 
 
@@ -870,7 +876,7 @@ void Page::SetMiniHandler(TrecSubPointer<EventHandler, MiniHandler> mh)
 	miniHandler = mh;
 	if (miniHandler.Get() && instance.Get())
 	{
-		instance->RegisterHandler(TrecPointerKey::GetTrecPointerFromSub<EventHandler, MiniHandler>(miniHandler));
+		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance)->RegisterHandler(TrecPointerKey::GetTrecPointerFromSub<EventHandler, MiniHandler>(miniHandler));
 	}
 }
 
@@ -962,7 +968,7 @@ void Page::CreateLayout()
 {
 	if (rootControl.Get() && windowHandle.Get())
 	{
-		rootControl->onCreate(area, windowHandle->GetWindowEngine());
+		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
 	}
 }
 

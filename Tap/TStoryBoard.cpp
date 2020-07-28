@@ -24,7 +24,7 @@ DWORD __stdcall ProcessAnimations(LPVOID param)
 				data->animations[c]->Update(progress);
 
 		if (data->win.Get())
-			data->win->InduceDraw();
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(data->win)->InduceDraw();
 
 		progress += (static_cast<float>(data->shortestInterval) / static_cast<float>(data->longestAni));
 
@@ -101,7 +101,7 @@ bool TStoryBoard::AddAnimation(TrecPointer<Animation> a)
 void TStoryBoard::SetWindow(TrecPointer<TWindow> w)
 {
 	if (w.Get())
-		threadData.win = w;
+		threadData.win = TrecPointerKey::GetSoftPointerFromTrec<TWindow>(w);
 }
 
 /**

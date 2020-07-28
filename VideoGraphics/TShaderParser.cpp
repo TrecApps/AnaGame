@@ -28,17 +28,15 @@ TShaderParser::~TShaderParser()
 {
 }
 
-bool TShaderParser::Obj(TString* v)
+bool TShaderParser::Obj(TString& v)
 {
-	if (!v)
-		return false;
-	if (!v->Compare(L"Buff"))
+	if (!v.Compare(L"Buff"))
 	{
 		bufferDesc.push_back(desc);
 		desc = 0;
 		return true;
 	}
-	else if (!v->Compare(L"Const"))
+	else if (!v.Compare(L"Const"))
 	{
 		TrecComPointer<ID3D11Buffer> buff;
 		if (shaderHost->GetConstantBuffer(cbd.size, buff, device))

@@ -39,7 +39,7 @@ public:
 	~TShaderParser();
 
 	// for the initial object type
-	virtual bool Obj(TString* v) override;
+	virtual bool Obj(TString& v) override;
 	// for the attribute name
 	virtual bool Attribute(TrecPointer<TString> v, TString& e) override;
 	// for the attribute value (here it may be good that TStrings are used)

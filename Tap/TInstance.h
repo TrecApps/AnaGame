@@ -59,7 +59,7 @@ class _TAP_DLL TInstance : public TObject
 public:
 
 	/**
-	 * Method: TInstance::
+	 * Method: TInstance::TInstance
 	 * Purpose:
 	 * Parameters: TString& name - the name of the main window
 	 *				TString& winClass - the class name of the Window (used by Windows)
@@ -71,6 +71,8 @@ public:
 	 * Returns: new TInstance object
 	 */
 	TInstance(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, HINSTANCE ins, WNDPROC wp);
+
+	~TInstance();
 
 	/**
 	 * Method: TInstance::Proc

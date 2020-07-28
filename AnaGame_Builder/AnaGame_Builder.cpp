@@ -85,6 +85,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
+    mainInstance.Nullify();
+
     return (int) msg.wParam;
 }
 

@@ -6640,3 +6640,43 @@ bool TControlParentHolder::IsScroller()
 {
 	return dynamic_cast<TScrollerControl*>(parent.Get()) != nullptr;
 }
+
+EventTypeID::EventTypeID()
+{
+	eventType = R_Message_Type::On_Click;
+	eventID = -1;
+}
+
+EventArgs::EventArgs()
+{
+	Reset();
+	control = nullptr;
+}
+
+void EventArgs::Reset()
+{
+	isClick = false;
+	isLeftClick = false;
+	methodID = -1;
+	point.x = 0.0f;
+	point.y = 0.0f;
+	positive = false;
+	text.Empty();
+	type = L'\0';
+	object.Nullify();
+}
+
+EventArgs::EventArgs(const EventArgs& args)
+{
+	text.Set(args.text);
+	positive = args.positive;
+	point = args.point;
+	isClick = args.isClick;
+	isLeftClick = args.isLeftClick;
+	eventType = args.eventType;
+	control = args.control;
+	methodID = args.methodID;
+	arrayLabel = args.arrayLabel;
+	type = args.type;
+	object = args.object;
+}

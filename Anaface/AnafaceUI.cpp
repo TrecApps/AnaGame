@@ -68,48 +68,7 @@ void AnafaceUI::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoi
 	TControl::SwitchChildControl(curControl, newControl);
 }
 
-/*
-int AnafaceUI::loadFromTML(CArchive * ar)
-{
-	TrecPointer <auiHold> temp;
-	TrecPointer <AnafaceUI> uiTemp;
-	TrecPointer <CString> strTemp;
-	CFile tempFile;
-	CArchive* tempArchive = NULL;
-	int error = 0;
-	for (int c = 0; c < children.Count(); c++)
-	{
-		temp = children.ElementAt(c);
-		for (int d = 0; d < temp->children.Count(); d++)
-		{
-			uiTemp = temp->children.ElementAt(d);
-			if (!uiTemp)
-				return 1;
-			strTemp = temp->source.ElementAt(d);
-			if (!strTemp)
-			{
-				return 2;
-			}
-			if (!tempFile.Open(*strTemp, CFile::modeRead))
-				return 3;
-			tempArchive = new CArchive(&tempFile, CArchive::load, 12000);
-			error = uiTemp->loadFromTML(tempArchive); // get an error message
 
-			// Clode File Resources
-			tempArchive->Close();
-			delete tempArchive; // delete any unecessary memory
-			tempArchive = NULL; // set NULL by convention
-			tempFile.Close(); // Close the File so it could be used again
-			if (error) // if this is 0, no errors. Otherwise, needs to be address
-			{
-				return 10 + error; // let the double (or unlikely triple) digits decide how deep down a given anaface was
-				// use single digits to specify the error
-			}
-		}
-	}
-	TControl::loadFromTML(ar);
-	return 0;
-}*/
 
 
 /*

@@ -30,7 +30,7 @@ public:
 	/**
 	 * the Window to Draw
 	 */
-	TrecPointer<TWindow> win;
+	TrecPointerSoft<TWindow> win;
 	/**
 	 * Handle to the thread
 	 */

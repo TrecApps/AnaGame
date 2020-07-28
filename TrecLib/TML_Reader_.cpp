@@ -105,9 +105,9 @@ bool TML_Reader_::read(int *l)
 			{
 				enterable.Set(enterable.SubString(0, enterable.Find(L"#")));
 			}
-			TString* tEnterable = new TString(&enterable);
+
 			//TrecPointer<TString> holdString = tEnterable;
-			noError = respond->Obj(tEnterable);
+			noError = respond->Obj(enterable);
 			if (noError)
 				continue;
 			else

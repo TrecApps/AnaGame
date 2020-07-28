@@ -88,12 +88,17 @@ typedef enum class R_Message_Type
 }R_Message_Type;
 
 /**
- * Struct: EventArgs
+ * Class: EventArgs
  * Purpose: Event Arguements, used to supply Event Handlers with the necessary information to 
  *		do their job properly
  */
-typedef struct EventArgs
+class _ANAFACE_DLL EventArgs
 {
+public:
+	EventArgs();
+	void Reset();
+	EventArgs(const EventArgs& args);
+
 	TString text;
 	bool positive;
 	TPoint point;
@@ -105,7 +110,7 @@ typedef struct EventArgs
 	int arrayLabel;
 	WCHAR type;
 	TrecPointer<TObjectNode> object;
-} EventArgs;
+} ;
 
 /**
  * Class: EventID_Cred
@@ -127,14 +132,17 @@ public:
 };
 
 /**
- * Struct: EventTypeId
+ * Class: EventTypeId
  * Purpose: Stored by Controls for checking whether or not they actually have a message handler
  */
-typedef struct EventTypeID
+class _ANAFACE_DLL EventTypeID
 {
+public:
+	EventTypeID();
+
 	R_Message_Type eventType;
 	int eventID;
-}EventTypeID;
+};
 
 /**
  * Struct: sizeControl

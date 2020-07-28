@@ -8,9 +8,9 @@ public:
 	~HTMLParser();
 
 	// for the initial object type
-	bool Obj(TString *v) override;
+	bool Obj(TString& v) override;
 	// for the attribute name
-	bool Attribute(TString* v, TString e)override;
+	bool Attribute(TString& v, TString e)override;
 	bool Attribute(TrecPointer<TString> v, TString& e)override;
 	// for the attribute value (here it may be good that TStrings are used)
 

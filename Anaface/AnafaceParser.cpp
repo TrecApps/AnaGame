@@ -63,7 +63,7 @@ void AnafaceParser::setEventSystem(TDataArray<eventNameID>& e)
 * Parameters: TString* va -  the object type
 * Returns: bool - whether a valid string was provided
 */
-bool AnafaceParser::Obj(TString* va)
+bool AnafaceParser::Obj(TString& va)
 {
 	setLayoutParam();
 
@@ -592,13 +592,7 @@ void AnafaceParser::setLayoutParam()
 	columnFlex.RemoveAll();
 	rowFlex.RemoveAll();
 }
-/*/
-void AnafaceParser::setLayoutPointer()
-{
-	layoutObject = new TLayout(renderer, NULL);
-	addToTree(layoutObject);
-}
-*/
+
 
 
 bool isLayout(TrecPointer<TControl> cont)
@@ -638,7 +632,6 @@ void AnafaceParser::addToTree(TrecPointer<TControl> tc)
 	}
 	else
 	{
-		//TrecPointer<TContainer> cont = new TContainer();
 		//cont->setTControl(tc);
 		assert(baseObj.Get()); // It should mean something, if it doesn't, gracefully crash
 		baseObj->addChild(tc);
