@@ -55,7 +55,7 @@ int TDialog::PrepareWindow()
 	{
 		if (windowInstance.Get() && dialogMode == TDialogMode::dialog_mode_soft_modal)
 		{
-			windowInstance->LockWindow(parent);
+			TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->LockWindow(parent);
 		}
 		else if (dialogMode == TDialogMode::dialog_mode_hard_model)
 		{
@@ -78,7 +78,7 @@ bool TDialog::OnDestroy()
 	{
 		if (windowInstance.Get() && dialogMode == TDialogMode::dialog_mode_soft_modal)
 		{
-			windowInstance->UnlockWindow(parent);
+			TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->UnlockWindow(parent);
 		}
 		else if (dialogMode == TDialogMode::dialog_mode_hard_model)
 		{

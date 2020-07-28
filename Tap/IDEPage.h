@@ -42,6 +42,16 @@ public:
 	 */
 	IDEPageHolder(TString name, TrecPointer<DrawingBoard> rt, UINT barSpace, TrecPointer<EventHandler> handler, TrecPointer<TWindow> win, D2D1_RECT_F initLoc);
 
+
+	/**
+	 * Method: IDEPageHolder::~IDEPageHolder
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	virtual ~IDEPageHolder();
+
+
 	/**
 	 * Method: IDEPageHolder::GetBasePage
 	 * Purpose: Retrieves the Base Reference to the Page it is holding
@@ -154,6 +164,15 @@ protected:
 	 * Returns: New IDEPage object
 	 */
 	IDEPage(ide_page_type type, UINT barSpace, TrecPointer<DrawingBoard> board);
+
+
+	/**
+	 * Method: IDEPage::~IDEPage
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	virtual ~IDEPage();
 
 	/**
 	 * Method: IDEPage::SetResources

@@ -26,7 +26,7 @@ void DocumentHandler::OnSave()
 
 		fileInfo.lStructSize = sizeof(OPENFILENAMEW);
 		fileInfo.hwndOwner = win->GetWindowHandle();
-		fileInfo.hInstance = app->GetInstanceHandle();
+		fileInfo.hInstance = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->GetInstanceHandle();
 		fileInfo.lpstrFilter = nullptr;
 		fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer();
 		fileInfo.lpstrFile = new WCHAR[255];

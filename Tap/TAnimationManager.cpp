@@ -31,7 +31,7 @@ TAnimationManager::~TAnimationManager()
  */
 void TAnimationManager::SetWindow(TrecPointer<TWindow> win)
 {
-	window = win;
+	window = TrecPointerKey::GetSoftPointerFromTrec<TWindow>(win);
 	begin.SetWindow(win);
 	end.SetWindow(win);
 }

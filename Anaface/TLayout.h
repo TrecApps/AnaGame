@@ -39,6 +39,9 @@ typedef enum class specialLayout
 class containerControl : public TObject
 {
 public:
+	containerControl();
+
+
 	/**
 	 * the column and row the control starts in
 	 */

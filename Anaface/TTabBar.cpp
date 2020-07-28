@@ -101,7 +101,7 @@ void TTabBar::onDraw(TObject* obj)
 		rightTab.Draw();
 }
 
-void TTabBar::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+void TTabBar::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
 	if (!isContained(point, location))
 		return;

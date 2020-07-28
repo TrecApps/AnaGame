@@ -75,7 +75,7 @@ protected:
 	/**
 	 * The TInstance underwhich this miniApp is created
 	 */
-	TrecPointer<TInstance> instance;
+	TrecPointerSoft<TInstance> instance;
 	
 	/**
 	 * The Self reference that allows the MiniApp to provide references to itself

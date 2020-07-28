@@ -800,19 +800,17 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
-	ATLTRACE(L"TEXT FILED ONMOVEMOUSECALLED\n");
-	TControl::OnMouseMove(nFlags, point, mOut, eventAr);
+	TControl::OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
 
 	if (isContained(&point, &location))
 	{
-		ATLTRACE(L"CHECKING HILIGHTER STATUS\n");
 		if (highlighter.IsActive())
 		{
-			ATLTRACE(L"HILIGHTER STATUS IS GO GO GO!\n");
 			BOOL trailing = false, isInside = false;
 			DWRITE_HIT_TEST_METRICS metrics;
 

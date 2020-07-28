@@ -64,7 +64,7 @@ public:
 	 * Parameters: TString* va -  the object type
 	 * Returns: bool - whether a valid string was provided
 	 */
-	virtual bool Obj(TString* v) override;
+	virtual bool Obj(TString& v) override;
 
 	/*
 	* Method: AnafaceParser::Attribute

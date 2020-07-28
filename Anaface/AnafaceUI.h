@@ -64,7 +64,7 @@ public:
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
 	 */
-	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 	/*
 	 * Method: AnafaceUI::OnLButtonDown
 	 * Purpose: Allows the AnafaceUI to catch when a tab is
@@ -75,7 +75,7 @@ public:
 	 *			TDataArray<TControl*>& clickedControl - allows the control to report that this is a contestant for clicks
 	 * Returns: void
 	 */	
-	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl);
+	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 
 	/*
 	* Method: AnafaceUI::OnRButtonDown
@@ -84,9 +84,10 @@ public:
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
 	*/
-	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)override;
 	/*
 	* Method: AnafaceUI::OnMouseMove
 	* Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
@@ -94,9 +95,10 @@ public:
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
 	*/
-	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)override;
 
 	/*
 	* Method: AnafaceUI::OnLButtonDblClk
@@ -107,7 +109,7 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
 	*/
-	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 	/*
 	* Method: AnafaceUI::OnLButtonUp
 	* Purpose: Allows control to catch the Left Button Up event and act accordingly
@@ -117,7 +119,7 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
 	*/
-	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 	/*
 	* Method: AnafaceUI::OnChar
 	* Purpose: Allows Controls to repond to character input
@@ -129,7 +131,7 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
 	*/
-	afx_msg virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 
 
 	/*

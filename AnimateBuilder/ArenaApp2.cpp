@@ -14,12 +14,12 @@ UINT ArenaApp2::Initialize()
 	if (!win.Get() || !instance.Get())
 		return 1;
 
-	cameraControls = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, CameraHandler>(instance, name);
+	cameraControls = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, CameraHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance), name);
 
 	if (!cameraControls.Get())
 		return 2;
 
-	arena = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, ArenaHandler>(instance, name);
+	arena = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, ArenaHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance), name);
 
 	if (!arena.Get())
 		return 3;

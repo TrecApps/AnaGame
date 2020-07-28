@@ -85,12 +85,13 @@ void TFlyout::SwitchChildControl(TrecPointerSoft<TControl> c1, TrecPointer<TCont
  *				TPoint point - the point on screen where the event occured
  *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
  *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+ *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
  * Returns: void
  */
-void TFlyout::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+void TFlyout::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
     if (control.Get())
-        control->OnMouseMove(nFlags, point, mOut, eventAr);
+        control->OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
 }
 
 /*

@@ -311,7 +311,7 @@ bool HTML_Reader::parseQuoteTokens(TrecPointer<TDataArray<TString>>& tokens)
 		return false;
 
 	auto tokens2 = tokens->at(0).split(L" \n\t\r\v\f");
-	respond->Obj(&tokens2->at(0));
+	respond->Obj(tokens2->at(0));
 	
 
 
@@ -325,7 +325,7 @@ bool HTML_Reader::parseQuoteTokens(TrecPointer<TDataArray<TString>>& tokens)
 			auto tokens3 = tokens2->at(1).split(L"=");
 			if (tokens3->Size() > 1)
 			{
-				respond->Attribute(&tokens3->at(1), tokens3->at(0));
+				respond->Attribute(tokens3->at(1), tokens3->at(0));
 				//tokens3->at(1)->ReleaseBuffer();
 			}
 
@@ -337,12 +337,12 @@ bool HTML_Reader::parseQuoteTokens(TrecPointer<TDataArray<TString>>& tokens)
 				tokens3 = tokens2->at(0).split(L"=");
 				if (tokens3->Size() > 1)
 				{
-					respond->Attribute(&tokens3->at(1), tokens3->at(0));
+					respond->Attribute(tokens3->at(1), tokens3->at(0));
 					//tokens3->at(1)->ReleaseBuffer();
 				}
 				else if (tokens3->Size() == 1)
 				{
-					respond->Obj(&tokens3->at(0));
+					respond->Obj(tokens3->at(0));
 				}
 			}
 		}
@@ -353,12 +353,12 @@ bool HTML_Reader::parseQuoteTokens(TrecPointer<TDataArray<TString>>& tokens)
 				auto tokens3 = tokens2->at(c).split(L"=");
 				if (tokens3->Size() > 1)
 				{
-					respond->Attribute(&tokens3->at(0), tokens3->at(1));
+					respond->Attribute(tokens3->at(0), tokens3->at(1));
 					//tokens3->at(1)->ReleaseBuffer();
 				}
 				else if (tokens3->Size() == 1)
 				{
-					respond->Obj(&tokens3->at(0));
+					respond->Obj(tokens3->at(0));
 				}
 			}
 		}

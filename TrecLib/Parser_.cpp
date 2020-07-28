@@ -29,7 +29,7 @@ Parser_::~Parser_()
 * Parameters: TString* v - the name of a class
 * Returns: bool - false for the base class
 */
-bool Parser_::Obj(TString* v)
+bool Parser_::Obj(TString& v)
 {
 	return false;
 }
@@ -41,7 +41,7 @@ bool Parser_::Obj(TString* v)
 *			TString e - the attribute name
 * Returns: bool - success result
 */
-bool Parser_::Attribute(TString* v, TString e)
+bool Parser_::Attribute(TString& v, TString e)
 {
 	return false;
 }

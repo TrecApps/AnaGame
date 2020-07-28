@@ -149,8 +149,8 @@ void MainLayoutHandler::Initialize(TrecPointer<Page> page)
 		throw L"Error! Expected an actual Page Pointer to be provided!";
 
 	this->page = page;
-
-	app = page->GetInstance();
+	auto tempApp = page->GetInstance();
+	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(tempApp);
 
 	rootControl = page->GetRootControl();
 
@@ -272,7 +272,7 @@ void MainLayoutHandler::OnPrint(TrecPointer<TControl> tc, EventArgs ea)
 void MainLayoutHandler::OnNewArena(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TString dialog(L"Enter a name for your Arena!");
-	TString arenaName(ActivateNameDialog(app, page->GetWindowHandle()->GetWindowHandle(), dialog));
+	TString arenaName(ActivateNameDialog(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app), page->GetWindowHandle()->GetWindowHandle(), dialog));
 
 	if (!arenaName.GetSize())
 		return;
@@ -281,7 +281,7 @@ void MainLayoutHandler::OnNewArena(TrecPointer<TControl> tc, EventArgs ea)
 	if (!window->SetUp3D())
 	{
 		TString errorMessage(L"Error! Failed to Initialize Window for 3D!");
-		ActivateAlertDialog(app, page->GetWindowHandle()->GetWindowHandle(), errorMessage);
+		ActivateAlertDialog(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app), page->GetWindowHandle()->GetWindowHandle(), errorMessage);
 		return;
 	}
 

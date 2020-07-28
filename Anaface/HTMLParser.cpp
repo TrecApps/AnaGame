@@ -42,14 +42,11 @@ HTMLParser::~HTMLParser()
 * Parameters: TString* v - the string with the tag
 * Returns: bool - whether the tag submission was valid
 */
-bool HTMLParser::Obj(TString * v)
+bool HTMLParser::Obj(TString& v)
 {
-	if(!v)
-		return false;
-
 	linkMode = 0;
 	
-	if (!v->Compare(L"body")) // This should be the Root Control
+	if (!v.Compare(L"body")) // This should be the Root Control
 	{
 		rootObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TLayout>(renderer, classList);
 		rootObj->AddClass(TString(L"body"));
@@ -57,15 +54,15 @@ bool HTMLParser::Obj(TString * v)
 		tableMode = tableMode | 0b00001000;
 		AddToTree();
 	}
-	else if (!v->Compare(L"title"))
+	else if (!v.Compare(L"title"))
 	{
 		mode = mode | 0b01000000;
 	}
-	else if (!v->Compare(L"/title") || !v->Compare(L"title/"))
+	else if (!v.Compare(L"/title") || !v.Compare(L"title/"))
 	{
 		mode = mode & 0b10111111;
 	}
-	else if (!v->Compare(L"p"))
+	else if (!v.Compare(L"p"))
 	{
 		currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(renderer, classList, windowHandle);
 		AppendAppropriateClasses();
@@ -73,16 +70,16 @@ bool HTMLParser::Obj(TString * v)
 		mode = mode | 0b00000100;
 		AddToTree();
 	}
-	else if (!v->Compare(L"/p") || !v->Compare(L"p/"))
+	else if (!v.Compare(L"/p") || !v.Compare(L"p/"))
 	{
 		goParent();
 		mode = mode & 0b11111000;
 	}
-	else if (!v->Compare(L"hr"))
+	else if (!v.Compare(L"hr"))
 	{
 
 	}
-	else if (!v->Compare(L"ul"))
+	else if (!v.Compare(L"ul"))
 	{
 		
 
@@ -93,7 +90,7 @@ bool HTMLParser::Obj(TString * v)
 		mode = mode & 0b11110111;
 		//AddToTree();
 	}
-	else if (!v->Compare(L"ol"))
+	else if (!v.Compare(L"ol"))
 	{
 
 		listClass = L"ol";
@@ -103,7 +100,7 @@ bool HTMLParser::Obj(TString * v)
 		mode = mode & 0b11101111;
 		//AddToTree();
 	}
-	else if (!v->Compare(L"li"))
+	else if (!v.Compare(L"li"))
 	{
 		//tl->setLayout(VStack);
 		currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(renderer, classList,windowHandle);
@@ -116,26 +113,26 @@ bool HTMLParser::Obj(TString * v)
 		mode = mode | 0b10000000;
 		listCount++;
 	}
-	else if (!v->Compare(L"/li") || !v->Compare(L"li/"))
+	else if (!v.Compare(L"/li") || !v.Compare(L"li/"))
 	{
 		mode = mode & 0b01111111;
 		goParent();
 	}
-	else if (!v->Compare(L"b") || !v->Compare(L"strong"))
+	else if (!v.Compare(L"b") || !v.Compare(L"strong"))
 	{
 		// To Do, set Text
 
 		// Set Bold Mode to true
 		mode = mode | 0b00000001;
 	}
-	else if (!v->Compare(L"i") || !v->Compare(L"em"))
+	else if (!v.Compare(L"i") || !v.Compare(L"em"))
 	{
 		// To Do, set Text
 
 		// Set Bold Mode to true
 		mode = mode | 0b00000010;
 	}
-	else if (!v->Compare(L"br"))
+	else if (!v.Compare(L"br"))
 	{
 		TTextField* textObj = GetTextField();
 		if (textObj)
@@ -143,20 +140,20 @@ bool HTMLParser::Obj(TString * v)
 			textObj->AppendNormalText(TString(L"\n"));
 		}
 	}
-	else if (!v->Compare(L"img"))
+	else if (!v.Compare(L"img"))
 	{
 		currentObj = TrecPointerKey::GetNewSelfTrecPointer<TControl>(renderer, classList);
 		AddToTree();
 	}
-	else if (!v->Compare(L"a") || !v->Compare(L"<a>")|| !v->Compare(L"<a"))
+	else if (!v.Compare(L"a") || !v.Compare(L"<a>")|| !v.Compare(L"<a"))
 	{
 
 	}
-	else if (!v->Compare(L"blockquote") || !v->Compare(L"<blockquote>")|| !v->Compare(L"<blockquote"))
+	else if (!v.Compare(L"blockquote") || !v.Compare(L"<blockquote>")|| !v.Compare(L"<blockquote"))
 	{
 
 	}
-	else if (!v->Compare(L"table") || !v->Compare(L"<table>") || !v->Compare(L"<table"))
+	else if (!v.Compare(L"table") || !v.Compare(L"<table>") || !v.Compare(L"<table"))
 	{
 		currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TLayout>(renderer, classList);
 		TLayout* tl = dynamic_cast<TLayout*>(currentObj.Get());
@@ -168,11 +165,11 @@ bool HTMLParser::Obj(TString * v)
 		tableMode = tableMode | 1;
 		baseObj = currentObj;
 	}
-	else if (!v->Compare(L"/table") || !v->Compare(L"table/"))
+	else if (!v.Compare(L"/table") || !v.Compare(L"table/"))
 	{
 		goParent();
 	}
-	else if (!v->Compare(L"tr") || !v->Compare(L"<tr>") || !v->Compare(L"<tr"))
+	else if (!v.Compare(L"tr") || !v.Compare(L"<tr>") || !v.Compare(L"<tr"))
 	{
 		try
 		{
@@ -188,11 +185,11 @@ bool HTMLParser::Obj(TString * v)
 		}
 		currentColunm = 0;
 	}
-	else if (!v->Compare(L"/tr") || !v->Compare(L"tr/"))
+	else if (!v.Compare(L"/tr") || !v.Compare(L"tr/"))
 	{
 		//goParent();
 	}
-	else if (!v->Compare(L"th") || !v->Compare(L"<th>")||!v->Compare(L"<th"))
+	else if (!v.Compare(L"th") || !v.Compare(L"<th>")||!v.Compare(L"<th"))
 	{
 		try
 		{
@@ -214,59 +211,59 @@ bool HTMLParser::Obj(TString * v)
 		
 
 	}
-	else if (!v->Compare(L"/th") || !v->Compare(L"th/"))
+	else if (!v.Compare(L"/th") || !v.Compare(L"th/"))
 	{
 		if (!(tableMode & 0b00010000))
 			goParent();
 		tableMode = tableMode & 0b11101111; // Set it to table cell AND table Header
 		mode = mode & 0b11111110;
 	}
-	else if (!v->Compare(L"td") || !v->Compare(L"<td>") || !v->Compare(L"<td"))
+	else if (!v.Compare(L"td") || !v.Compare(L"<td>") || !v.Compare(L"<td"))
 	{
 		if (currentColunm < maxColunm)
 			currentColunm++;
 		tableMode = tableMode | 0b00010000; // Set it to a table cell
 		tableMode = tableMode & 0b11011111; // Not using a tabl header
 	}
-	else if (!v->Compare(L"/td") || !v->Compare(L"td/"))
+	else if (!v.Compare(L"/td") || !v.Compare(L"td/"))
 	{
 		if(!(tableMode & 0b00010000))
 			goParent();
 		tableMode = tableMode & 0b11101111;
 		//
 	}
-	else if (!v->Compare(L"i/") || !v->Compare(L"/i") || !v->Compare(L"/em") || !v->Compare(L"em/"))
+	else if (!v.Compare(L"i/") || !v.Compare(L"/i") || !v.Compare(L"/em") || !v.Compare(L"em/"))
 	{
 		mode = mode & 0b11111101;
 	}
-	else if (!v->Compare(L"b/") || !v->Compare(L"/b") || !v->Compare(L"/strong") || !v->Compare(L"strong/"))
+	else if (!v.Compare(L"b/") || !v.Compare(L"/b") || !v.Compare(L"/strong") || !v.Compare(L"strong/"))
 	{
 		mode = mode & 0b11111110;
 	}
-	else if (!v->Compare(L"style") || !v->Compare(L"<style>"))
+	else if (!v.Compare(L"style") || !v.Compare(L"<style>"))
 	{
 		linkMode = linkMode | 0b00000001;
 	}
-	else if (!v->Compare(L"/style") || !v->Compare(L"style/"))
+	else if (!v.Compare(L"/style") || !v.Compare(L"style/"))
 	{
 		linkMode = linkMode & 0b11111110;
 	}
-	else if (!v->Compare(L"/ol") || !v->Compare(L"ol/") || !v->Compare(L"/ul") || !v->Compare(L"ul/"))
+	else if (!v.Compare(L"/ol") || !v.Compare(L"ol/") || !v.Compare(L"/ul") || !v.Compare(L"ul/"))
 	{
 		// Go ahead an end all modes regarding lists
 		listClass.Empty();
 		mode = mode & 0b01100111;
 		listCount = 0;
 	}
-	else if (!v->Compare(L"link"))
+	else if (!v.Compare(L"link"))
 	{
 		linkMode = linkMode | 1;
 	}
-	else if (!v->Compare(L"link/") || !v->Compare(L"/link"))
+	else if (!v.Compare(L"link/") || !v.Compare(L"/link"))
 	{
 		linkMode = 0;
 	}
-	/*else if (!v->Compare(L""))
+	/*else if (!v.Compare(L""))
 	{
 
 	}*/
@@ -280,7 +277,7 @@ bool HTMLParser::Obj(TString * v)
 * Returns: bool - false
 * NOTE: DEPRECIATED - not used
 */
-bool HTMLParser::Attribute(TString * v, TString e)
+bool HTMLParser::Attribute(TString& v, TString e)
 {
 	return false;
 }

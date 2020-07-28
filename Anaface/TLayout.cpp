@@ -1429,3 +1429,9 @@ void TLayout::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoint
 	}
 	TControl::SwitchChildControl(curControl, newControl);
 }
+
+containerControl::containerControl()
+{
+	x = x2 = y = y2 = 0;
+	extend = false;
+}

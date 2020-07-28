@@ -247,7 +247,7 @@ protected:
 	/**
 	 * The instance associated with the Handler
 	 */
-	TrecPointer<TInstance> app;
+	TrecPointerSoft<TInstance> app;
 
 	/**
 	 * list of Events organized by Name and id

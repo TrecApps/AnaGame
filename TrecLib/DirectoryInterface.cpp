@@ -33,9 +33,7 @@ void ForgeDirectory(TString& dir)
 		TString adder = pieces->at(rust) + L'\\';
 		bDir.Append(adder);
 
-		WCHAR* dir_raw = bDir.GetBufferCopy();
-		CreateDirectoryW(dir_raw, 0);
-		delete[] dir_raw;
+		CreateDirectoryW(bDir.GetConstantBuffer(), 0);
 	}
 }
 
@@ -152,9 +150,7 @@ void InitializeDirectories()
 
 	for (UINT c = 0; c < 9; c++)
 	{
-		WCHAR* dirBuff = shadowDirectories[c].GetBufferCopy();
-		CreateDirectoryW(dirBuff, 0);
-		delete[] dirBuff;
+		CreateDirectoryW(shadowDirectories[c].GetConstantBuffer(), 0);
 	}
 
 	initialized = true;
