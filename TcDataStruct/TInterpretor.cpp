@@ -139,6 +139,49 @@ void TInterpretor::SetSelf(TrecPointer<TVariable> self)
 }
 
 /**
+ * Method: TVariable::CheckVarName
+ * Purpose: Method Interpreters can use to inspect the variable name to make sure it is valid
+ * Parameters: TString& varname - the variable name to check
+ *              ReportObject& ro - the Object to modify based off of the findings
+ * Returns: void
+ */
+void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
+{
+	int badChar = varname.FindOneOf(L"!@#$%^&*(){}[]-=+/,;:'\"\\`~");
+	if (badChar != -1)
+	{
+		ro.returnCode = ReportObject::invalid_name;
+		TString chara(varname.SubString(badChar, badChar + 1));
+		ro.errorMessage.Format(L"Error! Found invalid character '%ws' in variable name!", chara.GetConstantBuffer());
+
+		TString stack;
+		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+		ro.stackTrace.push_back(stack);
+
+
+		return;
+	}
+
+	WCHAR firstChar = varname[0];
+
+	if (!((firstChar >= L'a' && firstChar <= 'z') || (firstChar >= L'A' && firstChar <= 'Z') || firstChar == L'_'))
+	{
+		ro.returnCode = ReportObject::invalid_name;
+		TString chara(firstChar);
+		ro.errorMessage.Format(L"Error! Found invalid character '%ws' as First character in Variable name. Need to be 'a-z', 'A-Z', or '_'!", chara.GetConstantBuffer());
+
+		TString stack;
+		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+		ro.stackTrace.push_back(stack);
+
+
+		return;
+	}
+
+	ro.returnCode = 0;
+}
+
+/**
  * Method: TInterpretor::TInterpretor
  * Purpose: Constructor
  * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)

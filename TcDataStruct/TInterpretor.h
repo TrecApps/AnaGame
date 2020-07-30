@@ -60,6 +60,9 @@ public:
     const static UINT broken_reference = 1;
     const static UINT not_number = 2;
     const static UINT too_few_params = 3;
+    const static UINT incomplete_statement = 4;
+    const static UINT invalid_name = 5;
+    const static UINT existing_var = 6;
 };
 
 /**
@@ -214,6 +217,15 @@ public:
      * Returns: void
      */
     virtual void SetSelf(TrecPointer<TVariable>) override;
+
+    /**
+     * Method: TInterpretor::CheckVarName
+     * Purpose: Method Interpreters can use to inspect the variable name to make sure it is valid
+     * Parameters: TString& varname - the variable name to check
+     *              ReportObject& ro - the Object to modify based off of the findings
+     * Returns: void
+     */
+    void CheckVarName(TString& varname, ReportObject& ro, UINT line);
 
 protected:
     /**

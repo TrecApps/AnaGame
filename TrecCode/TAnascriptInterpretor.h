@@ -45,5 +45,28 @@ public:
      * Note: this method is intended to be called in interpretors that represent specific methods or functions
      */
     virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) override;
+
+
+    // Methods specific to the Anascript Interpreter
+
+    /**
+     * Method: TAnascriptInterpretor::ProcessLet
+     * Purpose: Processes the let command
+     * Parameters: TString& let - the 'let' statement to inspect and process
+     *              UINT line - the line number being called upon,
+     * Returns: ReportObject - objct indicating the success of the program or falure information
+     */
+    ReportObject ProcessLet(TString& let, UINT line);
+
+
+    /**
+     * Method: TAnascriptInterpretor::ProcessExpression
+     * Purpose: Processes the let command
+     * Parameters: TString& exp - the 'let' statement to inspect and process
+     *              UINT line - the line number being called upon,
+     *              ReportObject ro - objct indicating the success of the program or falure information
+     * Returns: void
+     */
+    void ProcessExpression(TString& exp, UINT line, ReportObject& ro);
 };
 
