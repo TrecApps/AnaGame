@@ -63,6 +63,8 @@ public:
     const static UINT incomplete_statement = 4;
     const static UINT invalid_name = 5;
     const static UINT existing_var = 6;
+    const static UINT incomplete_block = 7;
+    const static UINT improper_type = 8;
 };
 
 /**

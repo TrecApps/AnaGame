@@ -60,6 +60,17 @@ public:
 
 
     /**
+     * Method: TAnascriptInterpretor::ProcessLoop
+     * Purpose: Processes the loop block
+     * Parameters: TString& let - the 'let' statement to inspect and process
+     *              UINT line - the line number being called upon,
+     * Returns: ReportObject - objct indicating the success of the program or falure information
+     */
+    ReportObject ProcessLoop(TString& let, UINT line);
+
+
+
+    /**
      * Method: TAnascriptInterpretor::ProcessExpression
      * Purpose: Processes the let command
      * Parameters: TString& exp - the 'let' statement to inspect and process

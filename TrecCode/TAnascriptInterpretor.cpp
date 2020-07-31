@@ -1,5 +1,6 @@
 #include "TAnascriptInterpretor.h"
 #include <DirectoryInterface.h>
+#include <TContainerVariable.h>
 
 /**
  * Method: TAnascriptInterpretor::TAnascriptInterpretor
@@ -364,6 +365,203 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line)
 
     if (!ret.returnCode)
         variables.addEntry(varname, ret.errorObject);
+
+    return ret;
+}
+
+/**
+ * Method: TAnascriptInterpretor::ProcessLoop
+ * Purpose: Processes the loop block
+ * Parameters: TString& let - the 'let' statement to inspect and process
+ *              UINT line - the line number being called upon,
+ * Returns: ReportObject - objct indicating the success of the program or falure information
+ */
+ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
+{
+    // Get the starting location for the child interpreter
+    ULONGLONG startNext = file->GetPosition();
+
+    ULONGLONG blockEnd = startNext;
+
+    UINT blockStack = 1;
+
+    TString lineStr;
+
+    while (blockStack && file->ReadString(lineStr))
+    {
+        lineStr.SetLower();
+        auto tokens = lineStr.split(L" ");
+
+        if (tokens->Size())
+        {
+            TString tok(tokens->at(0));
+
+            if (!tok.Compare(L"end"))
+                blockStack--;
+            else if (!tok.Compare(L"in") || !tok.Compare(L"if") || !tok.Compare(L"loop"))
+                blockStack++;
+        }
+
+        if (!blockStack)
+            break;
+        blockEnd = file->GetPosition();
+    }
+
+    ULONGLONG setFilePosition = file->GetPosition();
+
+    // Make sure loop is complete
+    ReportObject ret;
+    if (blockStack)
+    {
+        ret.returnCode = ReportObject::incomplete_block;
+        ret.errorMessage.Set(L"Incomplete Loop Block Detected!");
+
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ret.stackTrace.push_back(stack);
+
+        return ret;
+    }
+
+    // Extra Parameter indicates that we don't want to split up any string literals if they are detected
+    auto loopTokens = loop.split(L" ", 0b00000010);
+
+    int keyThrough = -1;
+    int keyWith = -1;
+    int keyElement = -1;
+    int keyName = -1;
+    
+    for (UINT Rust = 0; loopTokens->Size(); Rust++)
+    {
+        if (loopTokens->at(Rust).CompareNoCase(L"through"))
+            keyThrough = Rust;
+        else if (loopTokens->at(Rust).CompareNoCase(L"with"))
+            keyWith = Rust;
+        else if (loopTokens->at(Rust).CompareNoCase(L"element"))
+            keyElement = Rust;
+        else if (loopTokens->at(Rust).CompareNoCase(L"name"))
+            keyName = Rust;
+    }
+
+    if(keyThrough != 1)
+    {
+        ret.returnCode = ReportObject::incomplete_block;
+        ret.errorMessage.Set(L"Expected keyword 'through' in loop declaration!");
+
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ret.stackTrace.push_back(stack);
+
+        return ret;
+    }
+
+    if (keyWith > 2 && (((keyElement == keyWith + 1) && (keyName == keyElement + 1)) || (keyName == keyWith + 1)))
+    {
+        TString exp(loopTokens->at(2));
+
+        for (UINT Rust = 3; Rust < keyWith; Rust++)
+        {
+            exp.AppendFormat(L" %ws", loopTokens->at(Rust));
+        }
+
+        TrecPointer<TVariable> variable = variables.retrieveEntry(exp);
+
+        if (!variable.Get())
+        {
+            // Okay, try getting it through an expression
+            ProcessExpression(exp, line, ret);
+
+            if (ret.returnCode)
+                return ret;
+
+            variable = ret.errorObject;
+        }
+
+        if (!variable.Get())
+        {
+            ret.returnCode = ReportObject::broken_reference;
+            ret.errorMessage.Set(L"Failed to retrieve Variable for processing through a loop!");
+
+            TString stack;
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            ret.stackTrace.push_back(stack);
+
+            return ret;
+        }
+
+        if (variable->GetVarType() != var_type::collection)
+        {
+            ret.returnCode = ReportObject::improper_type;
+            ret.errorMessage.Set(L"Variable for the loop needs to be a collection!");
+
+            TString stack;
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            ret.stackTrace.push_back(stack);
+
+            return ret;
+        }
+
+        // Okay, we have a valid collection, now prepare to go through it.
+
+        if (loopTokens->Size() != 2 + keyName)
+        {
+            ret.returnCode = ReportObject::too_few_params;
+            ret.errorMessage.Set(L"Needed Variable name for Loop!");
+
+            TString stack;
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            ret.stackTrace.push_back(stack);
+
+            return ret;
+        }
+
+        TString varName(loopTokens->at(loopTokens->Size() - 1));
+
+        CheckVarName(varName, ret, line);
+
+        if (ret.returnCode)
+            return ret;
+
+        // Retrievs our collection to parse through
+        auto collVar = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(variable);
+
+
+        // We have determined that the loop line checks out, now to create an interpretor to process the block itself
+        TrecSubPointer<TVariable, TAnascriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+
+        // Before configuring new interpretor, set up the param name
+        TDataArray<TString> paramNames;
+        paramNames.push_back(varName);
+
+        
+        // Now Configure the interpreter
+        block->SetParamNames(paramNames);
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, startNext, blockEnd);
+
+
+        TDataArray<TrecPointer<TVariable>> params;
+        for (UINT Rust = 0; Rust < collVar->GetSize(); Rust++)
+        {
+            params.RemoveAll();
+            params.push_back(collVar->GetValueAt(Rust));
+
+            ret = block->Run(params);
+
+            if (ret.returnCode)
+                return ret;
+        }
+
+        // We have completed the loop --> Now set the file and return to caller
+        file->Seek(setFilePosition, 0);
+        return ret;
+    }
+
+    ret.returnCode = ReportObject::incomplete_block;
+    ret.errorMessage.Set(L"Loop needs to be of format 'loop through [collection-exp] with element name [name]' or 'loop through [collection-exp] with element name [name]'!");
+    TString stack;
+    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+    ret.stackTrace.push_back(stack);
 
     return ret;
 }

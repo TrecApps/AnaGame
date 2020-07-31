@@ -170,6 +170,15 @@ public:
      */
     virtual UINT GetType()override;
 
+
+    /**
+     * Method: TContainerVariable::GetValueAt
+     * Purpose: Retrieves Variables by index
+     * Parameters: UINT index - the index to check
+     * Returns: TrecPointer<TVariable> - the variable stored at the index (null if not available)
+     */
+    TrecPointer<TVariable> GetValueAt(UINT index);
+
  private:
     /**
      * The map holding the values

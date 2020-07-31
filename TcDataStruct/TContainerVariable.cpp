@@ -66,7 +66,7 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
         {
             // First check to see if there is a number key at the given index. If there is and it does not align with the index requested, then assume that index is not actually set
             int testIndex = 0;
-            if (!entry->key.ConvertToInt(&testIndex) && testIndex != index)
+            if (!entry->key.ConvertToInt(testIndex) && testIndex != index)
                 return TrecPointer<TVariable>();
 
             // here we got our value so return that
@@ -122,7 +122,7 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
         if (entry.Get())
         {
             int testIndex = 0;
-            if (!entry->key.ConvertToInt(&testIndex) && testIndex != index)
+            if (!entry->key.ConvertToInt(testIndex) && testIndex != index)
             {
                 // Add the entry at the end
                 values.addEntry(entry->key, entry->object);
@@ -278,4 +278,15 @@ UINT TContainerVariable::GetSize()
 UINT TContainerVariable::GetType()
 {
     return 0;
+}
+
+/**
+ * Method: TContainerVariable::GetValueAt
+ * Purpose: Retrieves Variables by index
+ * Parameters: UINT index - the index to check
+ * Returns: TrecPointer<TVariable> - the variable stored at the index (null if not available)
+ */
+TrecPointer<TVariable> TContainerVariable::GetValueAt(UINT index)
+{
+    values.GetEntryAt(index);
 }
