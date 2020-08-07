@@ -764,7 +764,7 @@ TrecPointer<styleTable> classy;
 
 			animateData.push_back(animate);
 		}
-
+	}
 	///* Check the status of the scroll bars. By default, they are off.
 	// * If the default holds, then the location of the TControl will have
 	// * to be contained. However, if scrollBars are present, then the
@@ -3027,7 +3027,7 @@ bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
 	auto valpoint = attributes.retrieveEntry(TString(L"|ArrayID"));
 	if (valpoint.Get())
 	{
-		valpoint->ConvertToInt(&arrayID);
+		valpoint->ConvertToInt(arrayID);
 	}
 
 	valpoint = attributes.retrieveEntry(TString(L"|Shape"));
@@ -3048,12 +3048,12 @@ bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
 			valpoint = attributes.retrieveEntry(TString(L"|RoundedRectX"));
 			if (valpoint.Get())
 			{
-				valpoint->ConvertToFloat(&xRound);
+				valpoint->ConvertToFloat(xRound);
 			}
 			valpoint = attributes.retrieveEntry(TString(L"|RoundedRectY"));
 			if (valpoint.Get())
 			{
-				valpoint->ConvertToFloat(&yRound);
+				valpoint->ConvertToFloat(yRound);
 			}
 			roundedRect.rect = location;
 			roundedRect.radiusX = xRound;
