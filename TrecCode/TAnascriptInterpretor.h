@@ -54,7 +54,7 @@ public:
      * Purpose: Processes the let command
      * Parameters: TString& let - the 'let' statement to inspect and process
      *              UINT line - the line number being called upon,
-     * Returns: ReportObject - objct indicating the success of the program or falure information
+     * Returns: ReportObject - objct indicating the success of the program or failure information
      */
     ReportObject ProcessLet(TString& let, UINT line);
 
@@ -64,11 +64,28 @@ public:
      * Purpose: Processes the loop block
      * Parameters: TString& let - the 'let' statement to inspect and process
      *              UINT line - the line number being called upon,
-     * Returns: ReportObject - objct indicating the success of the program or falure information
+     * Returns: ReportObject - objct indicating the success of the program or failure information
      */
     ReportObject ProcessLoop(TString& let, UINT line);
 
+    /**
+     * Method: TAnascriptInterpretor::ProcessIf
+     * Purpose: Processes the if block
+     * Parameters: TString& _if - the 'let' statement to inspect and process
+     *              UINT line - the line number being called upon,
+     * Returns: ReportObject - objct indicating the success of the program or failure information
+     */
+    ReportObject ProcessIf(TString& _if, UINT line);
 
+
+    /**
+     * Method: TAnascriptInterpretor::ProcessWhile
+     * Purpose: Processes the while block
+     * Parameters: TString& let - the 'let' statement to inspect and process
+     *              UINT line - the line number being called upon,
+     * Returns: ReportObject - objct indicating the success of the program or failure information
+     */
+    ReportObject ProcessWhile(TString& let, UINT line);
 
     /**
      * Method: TAnascriptInterpretor::ProcessExpression
@@ -79,5 +96,14 @@ public:
      * Returns: void
      */
     void ProcessExpression(TString& exp, UINT line, ReportObject& ro);
+
+
+    /**
+     * Method: TAnascriptInterpretor::IsTruthful
+     * Purpose: Determines whether an expression is truthful or not
+     * Parameters: TrecPointer<TVariable> var - the variable to analyze. 
+     * Returns: bool
+     */
+    bool IsTruthful(TrecPointer<TVariable> var);
 };
 

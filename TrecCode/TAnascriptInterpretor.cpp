@@ -398,7 +398,7 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
 
             if (!tok.Compare(L"end"))
                 blockStack--;
-            else if (!tok.Compare(L"in") || !tok.Compare(L"if") || !tok.Compare(L"loop"))
+            else if (!tok.Compare(L"in") || !tok.Compare(L"if") || !tok.Compare(L"loop") || !tok.Compare(L"while"))
                 blockStack++;
         }
 
@@ -566,6 +566,231 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
     return ret;
 }
 
+/**
+ * Method: TAnascriptInterpretor::ProcessIf
+ * Purpose: Processes the if block
+ * Parameters: TString& _if - the 'let' statement to inspect and process
+ *              UINT line - the line number being called upon,
+ * Returns: ReportObject - objct indicating the success of the program or failure information
+ */
+ReportObject TAnascriptInterpretor::ProcessIf(TString& _if, UINT line)
+{
+    // Get the starting location for the child interpreter
+    ULONGLONG startNext = file->GetPosition();
+
+    ULONGLONG blockEnd = startNext;
+
+    UINT blockStack = 1;
+
+    TString lineStr;
+
+    bool ended = false;
+    TrecPointer<TDataArray<TString>> elseTokens;
+    TString elseString;
+
+    UINT newLine = line;
+
+    while (blockStack && file->ReadString(lineStr))
+    {
+        newLine++;
+        TString lineStringLower = lineStr.GetLower();
+        auto tokens = lineStringLower.split(L" ");
+
+        if (tokens->Size())
+        {
+            TString tok(tokens->at(0));
+
+            if (!tok.Compare(L"end"))
+            {
+                blockStack--;
+                ended = true;
+            }
+            else if (!tok.Compare(L"else") && !(blockStack - 1))
+            {
+                blockStack--;
+                ended = false;
+
+                elseTokens = tokens;
+                elseString.Set(lineStr);
+            }
+            else if (!tok.Compare(L"in") || !tok.Compare(L"if") || !tok.Compare(L"loop") || !tok.Compare(L"while"))
+                blockStack++;
+        }
+
+        if (!blockStack)
+            break;
+        blockEnd = file->GetPosition();
+    }
+
+    ULONGLONG setFilePosition = file->GetPosition();
+
+    // Make sure loop is complete
+    ReportObject ret;
+    if (blockStack)
+    {
+        ret.returnCode = ReportObject::incomplete_block;
+        ret.errorMessage.Set(L"Incomplete Loop Block Detected!");
+
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ret.stackTrace.push_back(stack);
+
+        return ret;
+    }
+    TString expression;
+    if (!_if.GetLower().Find(L"if "))
+        expression.Set(_if.SubString(3));
+    else
+        expression.Set(_if);
+
+    ProcessExpression(expression, line, ret);
+
+    if (ret.returnCode)
+    {
+        return ret;
+    }
+
+    if (IsTruthful(ret.errorObject))
+    {
+        // We have determined that the loop line checks out, now to create an interpretor to process the block itself
+        TrecSubPointer<TVariable, TAnascriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, startNext, blockEnd);
+
+
+        TDataArray<TrecPointer<TVariable>> params;
+        ret = block->Run(params);
+
+        return ret;
+    }
+    else if (!ended)
+    {
+        if (elseTokens->Size() > 1)
+        {
+            elseString.Delete(0, 5);
+            return ProcessIf(elseString, newLine);
+        }
+    }
+    ret.returnCode = 0;
+    
+
+    file->Seek(setFilePosition, 0);
+    return ret;
+}
+
+/**
+ * Method: TAnascriptInterpretor::ProcessWhile
+ * Purpose: Processes the While block
+ * Parameters: TString& let - the 'let' statement to inspect and process
+ *              UINT line - the line number being called upon,
+ * Returns: ReportObject - objct indicating the success of the program or failure information
+ */
+ReportObject TAnascriptInterpretor::ProcessWhile(TString& _while, UINT line)
+{
+    // Get the starting location for the child interpreter
+    ULONGLONG startNext = file->GetPosition();
+
+    ULONGLONG blockEnd = startNext;
+
+    UINT blockStack = 1;
+
+    TString lineStr;
+
+
+    UINT newLine = line;
+
+    while (blockStack && file->ReadString(lineStr))
+    {
+        newLine++;
+        TString lineStringLower = lineStr.GetLower();
+        auto tokens = lineStringLower.split(L" ");
+
+        if (tokens->Size())
+        {
+            TString tok(tokens->at(0));
+
+            if (!tok.Compare(L"end"))
+            {
+                blockStack--;
+            }
+
+            else if (!tok.Compare(L"in") || !tok.Compare(L"if") || !tok.Compare(L"loop") || !tok.Compare(L"while"))
+                blockStack++;
+        }
+
+        if (!blockStack)
+            break;
+        blockEnd = file->GetPosition();
+    }
+
+    ULONGLONG setFilePosition = file->GetPosition();
+
+    // Make sure loop is complete
+    ReportObject ret;
+    if (blockStack)
+    {
+        ret.returnCode = ReportObject::incomplete_block;
+        ret.errorMessage.Set(L"Incomplete Loop Block Detected!");
+
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ret.stackTrace.push_back(stack);
+
+        return ret;
+    }
+    TString expression;
+    if (!_while.GetLower().Find(L"while "))
+        expression.Set(_while.SubString(6));
+    else
+        expression.Set(_while);
+
+
+    ProcessExpression(expression, line, ret);
+
+    // We have determined that the loop line checks out, now to create an interpretor to process the block itself
+    TrecSubPointer<TVariable, TAnascriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(
+        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+
+    dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, startNext, blockEnd);
+
+
+    TDataArray<TrecPointer<TVariable>> params;
+    
+
+    while (!ret.returnCode && ret.errorObject.Get() && IsTruthful(ret.errorObject))
+    {
+        ret = block->Run(params);
+
+        if (ret.returnCode)
+            return ret;
+
+        ProcessExpression(expression, line, ret);
+    }
+
+    file->Seek(setFilePosition, 0);
+
+    return ret;
+}
+
+/**
+ * Method: TAnascriptInterpretor::ProcessExpression
+ * Purpose: Processes the let command
+ * Parameters: TString& exp - the 'let' statement to inspect and process
+ *              UINT line - the line number being called upon,
+ *              ReportObject ro - objct indicating the success of the program or falure information
+ * Returns: void
+ */
 void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObject& ro)
+{
+}
+
+/**
+ * Method: TAnascriptInterpretor::IsTruthful
+ * Purpose: Determines whether an expression is truthful or not
+ * Parameters: TrecPointer<TVariable> var - the variable to analyze.
+ * Returns: bool
+ */
+bool TAnascriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
 {
 }
