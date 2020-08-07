@@ -507,92 +507,8 @@ bool TLayout::onCreate(D2D1_RECT_F margin, TrecPointer<TWindowEngine> d3d)
 {
 	//TContainer* tempCont = NULL;
 
-	// This will be updated later, but for now, set so the Flexible testing methods can use it
-	location = margin;
+	Resize(margin);
 
-	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|Margin"));
-	RECT marge = RECT{ 0,0,0,0 };
-	if (valpoint.Get())
-	{
-		marge = convertStringToRECT(valpoint.Get());
-	}
-
-	valpoint = attributes.retrieveEntry(TString(L"|VerticalScroll"));
-	if (valpoint.Get() && !valpoint->Compare(L"True") && !vScroll.Get()) // don't make a new one if one already exists
-		vScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_vertical);
-
-	valpoint = attributes.retrieveEntry(TString(L"|HorizontalScroll"));
-	if (valpoint.Get() && !valpoint->Compare(L"True") && !hScroll.Get())
-		hScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_horizontal);
-	
-	
-	int marginWidth = (margin.right - marge.right) - (margin.left + marge.left);
-	int flexMarginWidth = marginWidth - GetTotalSetCol();
-	int marginHeight = (margin.bottom - marge.bottom) - (margin.top + marge.top);
-	int flexMarginHeight = marginHeight - GetTotalSetRow();
-	int currentWidth = GetTotalFlexCol();
-	int currentHeight = GetTotalFlexRow();
-
-	int newValue = 0;
-	if (!hScroll.Get() && flexMarginWidth < 0)
-	{
-		hScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_horizontal);
-	}
-	else if (!hScroll.Get() || (organization != orgLayout::HStack)) // If Layout has a horizontal scroll bar, then no need to resize the columns
-	{
-		
-
-		for (int c = 0; c < columnLines.Size(); c++)
-		{
-			if (GetColumnFlexAt(c))
-			{
-				newValue = static_cast<int>(static_cast<float>(columnLines[c]) * static_cast<float>(static_cast<float>(flexMarginWidth) / static_cast<float>(currentWidth)));
-				columnLines[c] = newValue;
-			}
-		}
-	}
-	 
-	if (!vScroll.Get() && flexMarginHeight < 0)
-	{
-		vScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_vertical);
-	}
-	if (!vScroll.Get() || (organization != orgLayout::VStack)) // Ditto with a vertical Scroll bar and rows
-	{
-		for (int c = 0; c < rowLines.Size(); c++)
-		{
-			if (GetRowFlexAt(c))
-			{
-				newValue = static_cast<int>(static_cast<float>(rowLines[c]) * static_cast<float>(static_cast<float>(flexMarginHeight) / static_cast<float>(currentHeight)));
-				rowLines[c] = newValue;
-			}
-		}
-	}
-
-	// To-Do, adjust TLayout's handling of location in respect to scroll Bars
-	location.bottom = margin.bottom - marge.bottom;
-	location.left = margin.left + marge.left;
-	location.right = margin.right - marge.right;
-	location.top = margin.top + marge.top;
-
-	if (vScroll.Get())
-	{
-		if (rowLines.Size())
-		{
-			location.bottom = location.top;
-			for (int c = 0;c < rowLines.Size();c++)
-				location.bottom += rowLines[c];
-		}
-	}
-
-	if (hScroll.Get())
-	{
-		if (columnLines.Size())
-		{
-			location.right = location.left;
-			for (int c = 0; c < columnLines.Size();c++)
-				location.right += columnLines[c];
-		}
-	}
 
 	children.Clear();
 
@@ -626,14 +542,12 @@ bool TLayout::onCreate(D2D1_RECT_F margin, TrecPointer<TWindowEngine> d3d)
 
 	}
 
-	TLayout* childLayout = NULL;
-	TControl* childControl= NULL;
 //	for (int c = 0; c < lChildren.Count();c++)
 	//{
 	//
 	//}
 
-	valpoint = attributes.retrieveEntry(TString(L"|InternalBorderColor"));
+	auto valpoint = attributes.retrieveEntry(TString(L"|InternalBorderColor"));
 	if (valpoint.Get())
 	{
 		internalInit = true;
@@ -934,120 +848,92 @@ UINT TLayout::GetTotalSetCol()
  */
 void TLayout::Resize(D2D1_RECT_F& r)
 {
-	if (SetScrollControlOnMinSize(r))
+	TControl::Resize(r);
+
+	int rWidth = (r.right - margin.right) - (r.left + margin.left);
+	int flexrWidth = rWidth - GetTotalSetCol();
+	int rHeight = (r.bottom - margin.bottom) - (r.top + margin.top);
+	int flexrHeight = rHeight - GetTotalSetRow();
+	int currentWidth = GetTotalFlexCol();
+	int currentHeight = GetTotalFlexRow();
+
+	int newValue = 0;
+	if (!hScroll.Get() && flexrWidth < 0)
 	{
-		float difHeight = location.top - r.top;
-		location.bottom -= difHeight;
-		location.top -= difHeight;
-		float difWidth = location.left - r.left;
-		location.left -= difWidth;
-		location.right -= difWidth;
-
-		for (UINT Rust = 0; Rust < lChildren.Count(); Rust++)
-		{
-			if (!lChildren.ElementAt(Rust).Get())
-				continue;
-			containerControl cc = *(lChildren.ElementAt(Rust).Get());
-			if (!cc.contain.Get())
-				continue;
-			D2D1_RECT_F loc = getRawSectionLocation(cc.y, cc.x);
-			if (cc.extend)
-			{
-				D2D1_RECT_F loc2 = getRawSectionLocation(cc.y2, cc.x2);
-				loc.right = loc2.right;
-				loc.bottom = loc2.bottom;
-			}
-
-			cc.contain->Resize(loc);
-		}
-
-		return;
+		hScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_horizontal);
 	}
-	UINT h_fix = GetTotalSetRow();
-	UINT w_fix = GetTotalSetCol();
-	UINT h_flex = GetTotalFlexRow();
-	UINT w_flex = GetTotalFlexCol();
-	UINT cur_width = location.right - location.left;
-	UINT new_width = r.right - r.left;
-	UINT curHeight = location.bottom - location.top;
-	UINT newHeight = r.bottom - r.top;
-
-	if (organization == orgLayout::grid)
+	else if (!hScroll.Get() || (organization != orgLayout::HStack)) // If Layout has a horizontal scroll bar, then no need to resize the columns
 	{
-		cur_width -= w_fix;
-		new_width -= w_fix;
-		float widthRatio = static_cast<float>(new_width) / static_cast<float>(cur_width);
-		curHeight -= h_fix;
-		newHeight -= h_fix;
-		float heightRatio = static_cast<float>(newHeight) / static_cast<float>(curHeight);
 
-		for (UINT rust = 0; rust < columnLines.Size(); rust++)
-		{
-			if (GetColumnFlexAt(rust))
-				columnLines[rust] *= widthRatio;
-		}
 
-		for (UINT rust = 0; rust < rowLines.Size(); rust++)
+		for (int c = 0; c < columnLines.Size(); c++)
 		{
-			if (GetRowFlexAt(rust))
+			if (GetColumnFlexAt(c))
 			{
-				rowLines[rust] *= heightRatio;
+				newValue = static_cast<int>(static_cast<float>(columnLines[c]) * static_cast<float>(static_cast<float>(flexrWidth) / static_cast<float>(currentWidth)));
+				columnLines[c] = newValue;
 			}
 		}
 	}
-	else if (organization == orgLayout::HStack || organization == orgLayout::HMix || organization == orgLayout::HBuff)
+
+	if (!vScroll.Get() && flexrHeight < 0)
 	{
-		cur_width -= w_fix;
-		new_width -= w_fix;
-		float widthRatio;
-		if (cur_width)
-			widthRatio = static_cast<float>(new_width) / static_cast<float>(cur_width);
-		else
-			widthRatio = new_width;
-		for (UINT rust = 0; rust < columnLines.Size(); rust++)
+		vScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this, ScrollOrient::so_vertical);
+	}
+	if (!vScroll.Get() || (organization != orgLayout::VStack)) // Ditto with a vertical Scroll bar and rows
+	{
+		for (int c = 0; c < rowLines.Size(); c++)
 		{
-			if (GetColumnFlexAt(rust))
+			if (GetRowFlexAt(c))
 			{
-				columnLines[rust] *= widthRatio;
+				newValue = static_cast<int>(static_cast<float>(rowLines[c]) * static_cast<float>(static_cast<float>(flexrHeight) / static_cast<float>(currentHeight)));
+				rowLines[c] = newValue;
 			}
 		}
 	}
-	else
+
+	// To-Do, adjust TLayout's handling of location in respect to scroll Bars
+	location.bottom = r.bottom - margin.bottom;
+	location.left = r.left + margin.left;
+	location.right = r.right - margin.right;
+	location.top = r.top + margin.top;
+
+	if (vScroll.Get())
 	{
-		curHeight -= h_fix;
-		newHeight -= h_fix;
-		float heightRatio;
-		if (curHeight)
-			heightRatio = static_cast<float>(newHeight) / static_cast<float>(curHeight);
-		else
-			heightRatio = newHeight;
-		for (UINT rust = 0; rust < rowLines.Size(); rust++)
+		if (rowLines.Size())
 		{
-			if (GetRowFlexAt(rust))
-				rowLines[rust] *= heightRatio;
+			location.bottom = location.top;
+			for (int c = 0; c < rowLines.Size(); c++)
+				location.bottom += rowLines[c];
 		}
 	}
 
-	location = r;
+	if (hScroll.Get())
+	{
+		if (columnLines.Size())
+		{
+			location.right = location.left;
+			for (int c = 0; c < columnLines.Size(); c++)
+				location.right += columnLines[c];
+		}
+	}
+
+
 
 	for (UINT Rust = 0; Rust < lChildren.Count(); Rust++)
 	{
-		if (!lChildren.ElementAt(Rust).Get())
+		auto lChild = lChildren.ElementAt(Rust);
+		if (!lChild.Get())
 			continue;
-		containerControl cc = *(lChildren.ElementAt(Rust).Get());
-		if (!cc.contain.Get())
-			continue;
-		D2D1_RECT_F loc = getRawSectionLocation(cc.y, cc.x);
-		if (cc.extend)
-		{
-			D2D1_RECT_F loc2 = getRawSectionLocation(cc.y2, cc.x2);
-			loc.right = loc2.right;
-			loc.bottom = loc2.bottom;
-		}
 
-		cc.contain->Resize(loc);
+		auto child = lChild->contain;
+		if (!child.Get())
+			continue;
+		auto loc = getRawSectionLocation(lChild->y, lChild->x);
+		child->Resize(loc);
 	}
-	updateComponentLocation();
+
+	
 }
 
 

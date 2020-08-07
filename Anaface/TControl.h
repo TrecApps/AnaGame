@@ -1629,7 +1629,7 @@ public:
 	 *		However, the contents might include child locations so their snips might have to be
 	 *		updated
 	 */
-	virtual bool onScroll(int x, int y);
+	virtual bool onScroll(float x, float y);
 
 	/*
 	* Method: TControl::onBeingScrolled
@@ -1639,7 +1639,7 @@ public:
 	*				const RECT& p_snip - the area of the parent control
 	* Returns: bool - success
 	*/
-	bool onBeingScrolled(int x, int y);
+	bool onBeingScrolled(float x, float y);
 
 	/*
 	* Method: TControl::scroll
@@ -1842,6 +1842,7 @@ protected:
 	*/
 	bool onCreate3(TMap<TString>*, D2D1_RECT_F);
 
+	bool onCreateClassAndId(D2D1_RECT_F& contain);
 
 	/*
 	* Method: TControl::updateComponentLocation

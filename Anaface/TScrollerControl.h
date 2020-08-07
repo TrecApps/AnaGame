@@ -91,7 +91,7 @@ public:
 	 *		However, the contents might include child locations so their snips might have to be
 	 *		updated
 	 */
-	virtual bool onScroll(int x, int y)override;
+	virtual bool onScroll(float x, float y)override;
 
 protected:
 	/**

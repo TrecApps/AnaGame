@@ -233,17 +233,14 @@ int TWindowEngine::Initialize()
 	return NO_ERROR;
 }
 
-void TWindowEngine::Resize()
+void TWindowEngine::Resize(UINT x, UINT y)
 {
 	if (!swapper.Get() || !surface.Get() || !contextDevice.Get())
 		return;
-	RECT oldRect = Location;
-	if (!GetClientRect(window, &Location))
-		return;
 
 	UINT buffCount = 2;
-	UINT width = Location.right - Location.left;
-	UINT height = Location.bottom - Location.top;
+	UINT width = x;
+	UINT height = y;
 
 	DXGI_FORMAT NewFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
 	UINT flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
@@ -391,6 +388,11 @@ void TWindowEngine::ReportLiveObjects()
 	graphicsDevice->QueryInterface(__uuidof(ID3D11Debug), (void**)&debugger);
 	if (debugger)
 		debugger->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+}
+
+HWND TWindowEngine::GetWindowHandle()
+{
+	return window;
 }
 
 

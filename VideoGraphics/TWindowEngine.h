@@ -34,7 +34,7 @@ public:
 	~TWindowEngine();
 	int Initialize();
 
-	void Resize();
+	void Resize(UINT x, UINT y);
 
 	// Direct3D Get Methods
 	TrecComPointer<ID3D11DeviceContext> getDevice();
@@ -48,6 +48,8 @@ public:
 	void FinalizeScene();
 
 	void ReportLiveObjects();
+
+	HWND GetWindowHandle();
 
 protected:
 	

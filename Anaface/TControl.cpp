@@ -472,102 +472,8 @@ void TControl::storeInHTML(TFile * ar)
 */
 bool TControl::onCreate(D2D1_RECT_F contain, TrecPointer<TWindowEngine> d3d)
 {
-	/* Check the status of the scroll bars. By default, they are off.
-	 * If the default holds, then the location of the TControl will have
-	 * to be contained. However, if scrollBars are present, then the
-	 * actual size of the TControl, represented by it's location, could theoretically
-	 * be as large as the developer desires. The Snip will serve as the location to draw */
-	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|VerticalScroll"));
-	if (valpoint.Get() && !valpoint->Compare(L"True") && !vScroll.Get()) // don't make a new one if one already exists
-		vScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this,ScrollOrient::so_vertical);
 
-	valpoint = attributes.retrieveEntry(TString(L"|HorizontalScroll"));
-	if(valpoint.Get() && !valpoint->Compare(L"True") && !hScroll.Get())
-		hScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this,ScrollOrient::so_horizontal);
-
-	checkMargin(contain);
-	checkHeightWidth(contain);
-
-	if (!marginPriority && dimensions && !vScroll.Get() && !hScroll.Get())
-	{
-		int heightOffset = 0;
-		int widthOffset =0;
-		if (dimensions->height == 0 && location.bottom == 0)
-			heightOffset = 0;
-		else
-			heightOffset = ((contain.bottom - contain.top) - dimensions->height) / 2;
-
-		if (dimensions->width == 0 && location.right == 0)
-			widthOffset = 0;
-		else
-			widthOffset = ((contain.right - contain.left) - dimensions->width) / 2;
-		location.top = contain.top + heightOffset;
-		location.bottom = contain.bottom - heightOffset;
-		location.left = contain.left + widthOffset;
-		location.right = contain.right - widthOffset;
-	}
-	else
-	{
-		if (!dimensions || !dimensions->height) // Use Margin regardless, nothing to override it
-		{
-			location.bottom = contain.bottom - margin.bottom;
-			location.top = contain.top + margin.top;
-		}
-		if (!dimensions || !dimensions->width)
-		{
-			location.left = contain.left + margin.left;
-			location.right = contain.right - margin.right;
-		}
-	}
-
-	if (vScroll.Get())
-	{
-		if (dimensions && dimensions->height)
-		{
-			location.top = contain.top + margin.top;
-			location.bottom = location.top + dimensions->height;
-			if ((contain.bottom - contain.top) > (location.bottom - location.top))
-				location.bottom = contain.bottom - margin.bottom;
-		}
-		else
-			location = contain; // if conlfict with hScroll, next code will resolve
-
-
-	}
-	else if (marginPriority)
-	{
-		location.top = contain.top + margin.top;
-		location.bottom = contain.bottom - margin.bottom;
-		if (dimensions && dimensions->height)
-			dimensions->height = location.bottom - location.top;
-	}
-
-	if (hScroll.Get())
-	{
-		if (dimensions && dimensions->width)
-		{
-			location.left = contain.left + margin.left;
-			location.right = location.left + dimensions->width;
-			if ((contain.right - contain.left) > (location.right - location.left))
-				location.right = contain.right - margin.right;
-		}
-		else
-		{
-			location.left = contain.left + margin.left;
-			location.right = contain.right - margin.right;
-		}
-
-
-	}
-	else if (marginPriority)
-	{
-		location.left = contain.left + margin.left;
-		location.right = contain.right - margin.right;
-		if (dimensions && dimensions->width)
-			dimensions->width = location.right - location.left;
-	}
-
-	valpoint = attributes.retrieveEntry(TString(L"|FixedHeight"));
+	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|FixedHeight"));
 	if (valpoint.Get())
 	{
 		if (!valpoint->Compare(L"true"))
@@ -859,129 +765,34 @@ TrecPointer<styleTable> classy;
 			animateData.push_back(animate);
 		}
 
-	}
-	if (text2.Get())
-	{
-		text2->onCreate(location);
+	///* Check the status of the scroll bars. By default, they are off.
+	// * If the default holds, then the location of the TControl will have
+	// * to be contained. However, if scrollBars are present, then the
+	// * actual size of the TControl, represented by it's location, could theoretically
+	// * be as large as the developer desires. The Snip will serve as the location to draw */
+	//valpoint = attributes.retrieveEntry(TString(L"|VerticalScroll"));
+	//if (valpoint.Get() && !valpoint->Compare(L"True") && !vScroll.Get()) // don't make a new one if one already exists
+	//	vScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this,ScrollOrient::so_vertical);
 
-		TDataArray<TString> animators = GetMultiData(TString(L"|HoverTextAnimation"));
-		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
-		{
-			TString name = animators[Rust];
-			auto names = name.split(TString(L";"));
-			if (!names->Size())
-				continue;
-			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
-			animate->control = tThis;
-			animate->name = names->at(0);
-			if (names->Size() > 1)
-				animate->storyName = names->at(1);
-			animate->brush = text2->GetBrush();
+	//valpoint = attributes.retrieveEntry(TString(L"|HorizontalScroll"));
+	//if(valpoint.Get() && !valpoint->Compare(L"True") && !hScroll.Get())
+	//	hScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this,ScrollOrient::so_horizontal);
 
-			animateData.push_back(animate);
-		}
-	}
-	if (border3.Get())
-	{
-		switch (shape)
-		{
-		case TShape::T_Rect:
-			border3->onCreate(location);
-			break;
-		case TShape::T_Rounded_Rect:
-			border3->onCreate(roundedRect);
-			break;
-		case TShape::T_Ellipse:
-			border3->onCreate(ellipse);
-			break;
-		case TShape::T_Custom_shape:
-			break;
-		}
+	Resize(contain);
 
-		TDataArray<TString> animators = GetMultiData(TString(L"|ClickBorderAnimation"));
-		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
-		{
-			TString name = animators[Rust];
-			auto names = name.split(TString(L";"));
-			if (!names->Size())
-				continue;
-			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
-			animate->control = tThis;
-			animate->name = names->at(0);
-			if (names->Size() > 1)
-				animate->storyName = names->at(1);
-			animate->brush = border3->GetBrush();
 
-			animateData.push_back(animate);
-		}
-	}
-	if (content3.Get())
-	{
-		switch (shape)
-		{
-		case TShape::T_Rect:
-			content3->onCreate(location);
-			break;
-		case TShape::T_Rounded_Rect:
-			content3->onCreate(roundedRect);
-			break;
-		case TShape::T_Ellipse:
-			content3->onCreate(ellipse);
-			break;
-		case TShape::T_Custom_shape:
-			break;
-		}
 
-		TDataArray<TString> animators = GetMultiData(TString(L"|ClickContentAnimation"));
-		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
-		{
-			TString name = animators[Rust];
-			auto names = name.split(TString(L";"));
-			if (!names->Size())
-				continue;
-			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
-			animate->control = tThis;
-			animate->name = names->at(0);
-			if (names->Size() > 1)
-				animate->storyName = names->at(1);
-			animate->brush = content3->GetBrush();
+	onCreateClassAndId(contain);
 
-			animateData.push_back(animate);
-		}
+	onCreate(&attributes,contain); // then derive appearence based off of the individual control's spec. If there are any conflicts between
+	                       // a style attribute from a style spec and that of the controls' spec, the latter is used 
+	onCreate2(&attributes, contain);
+	onCreate3(&attributes, contain);
 
-	}
-	if (text3.Get())
-	{
-		text3->onCreate(location);
 
-		TDataArray<TString> animators = GetMultiData(TString(L"|ClickTextAnimation"));
-		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
-		{
-			TString name = animators[Rust];
-			auto names = name.split(TString(L";"));
-			if (!names->Size())
-				continue;
-			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
-			animate->control = tThis;
-			animate->name = names->at(0);
-			if (names->Size() > 1)
-				animate->storyName = names->at(1);
-			animate->brush = text3->GetBrush();
 
-			animateData.push_back(animate);
-		}
-	}
 
-	if (callOnGif)
-	{
-		TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
-		animate->control = tThis;
-		animate->brush = TrecPointerKey::GetTrecPointerFromSub<TBrush, TBitmapBrush>(content1->image);
-		animate->name.Set(L"Gif");
-		animate->storyName.Set(L"GifRunner");
 
-		animateData.push_back(animate);
-	}
 
 	int occ = 0;
 	valpoint = attributes.retrieveEntry(TString(L"|ContainerLoc"), occ);
@@ -1046,7 +857,8 @@ TrecPointer<styleTable> classy;
  */
 void TControl::Resize(D2D1_RECT_F& rr)
 {
-	D2D1_RECT_F r = rr;
+	// Updated Code
+
 
 	if (SetScrollControlOnMinSize(rr))
 	{
@@ -1056,43 +868,104 @@ void TControl::Resize(D2D1_RECT_F& rr)
 		float difWidth = location.left - rr.left;
 		location.left -= difWidth;
 		location.right -= difWidth;
-		
+
 		return;
 	}
-	
-	if (children.Count())
+
+	if (isSnipZero(location) || ((location.bottom - location.top) != (rr.bottom - rr.top))
+		|| (location.right - location.left != rr.right - rr.left))
 	{
-		float w_ratio = (r.right - r.left) / (location.right - location.left);
-		float h_ratio = (r.bottom - r.top) / (location.bottom - location.top);
 
-		float t_ratio;
-		if (location.top)
-			t_ratio = r.top / location.top;
-		else
-			t_ratio = r.top;
-		float l_ratio;
-		if (location.left)
-			l_ratio = r.left / location.left;
-		else
-			l_ratio = r.left;
+		checkMargin(rr);
+		checkHeightWidth(rr);
 
-		for (UINT rust = 0; rust < children.Count(); rust++)
+		if (!marginPriority && dimensions && !vScroll.Get() && !hScroll.Get())
 		{
-			if (!children.ElementAt(rust).Get())
-				continue;
-			D2D1_RECT_F curLoc = children.ElementAt(rust)->getLocation();
-			TPoint curPoint = TPoint(curLoc.left - location.left, curLoc.top - location.top);
-			TPoint curSize = TPoint(curLoc.right - curLoc.left, curLoc.bottom - curLoc.top);
-			curLoc.top = curLoc.top - curPoint.y + curPoint.y * t_ratio;
-			curLoc.left = curLoc.left - curPoint.x + curPoint.x * l_ratio;
-			curLoc.bottom = curLoc.bottom - curSize.y + curSize.y * h_ratio;
-			curLoc.right = curLoc.right - curSize.x + curSize.x * w_ratio;
-			children.ElementAt(rust)->setLocation(curLoc);
+			int heightOffset = 0;
+			int widthOffset = 0;
+			if (dimensions->height == 0 && location.bottom == 0)
+				heightOffset = 0;
+			else
+				heightOffset = ((rr.bottom - rr.top) - dimensions->height) / 2;
+
+			if (dimensions->width == 0 && location.right == 0)
+				widthOffset = 0;
+			else
+				widthOffset = ((rr.right - rr.left) - dimensions->width) / 2;
+			location.top = rr.top + heightOffset;
+			location.bottom = rr.bottom - heightOffset;
+			location.left = rr.left + widthOffset;
+			location.right = rr.right - widthOffset;
+		}
+		else
+		{
+			if (!dimensions || !dimensions->height) // Use Margin regardless, nothing to override it
+			{
+				location.bottom = rr.bottom - margin.bottom;
+				location.top = rr.top + margin.top;
+			}
+			if (!dimensions || !dimensions->width)
+			{
+				location.left = rr.left + margin.left;
+				location.right = rr.right - margin.right;
+			}
+		}
+
+		if (vScroll.Get())
+		{
+			if (dimensions && dimensions->height)
+			{
+				location.top = rr.top + margin.top;
+				location.bottom = location.top + dimensions->height;
+				if ((rr.bottom - rr.top) > (location.bottom - location.top))
+					location.bottom = rr.bottom - margin.bottom;
+			}
+			else
+				location = rr; // if conlfict with hScroll, next code will resolve
+
+
+		}
+		else if (marginPriority)
+		{
+			location.top = rr.top + margin.top;
+			location.bottom = rr.bottom - margin.bottom;
+			if (dimensions && dimensions->height)
+				dimensions->height = location.bottom - location.top;
+		}
+
+		if (hScroll.Get())
+		{
+			if (dimensions && dimensions->width)
+			{
+				location.left = rr.left + margin.left;
+				location.right = location.left + dimensions->width;
+				if ((rr.right - rr.left) > (location.right - location.left))
+					location.right = rr.right - margin.right;
+			}
+			else
+			{
+				location.left = rr.left + margin.left;
+				location.right = rr.right - margin.right;
+			}
+
+
+		}
+		else if (marginPriority)
+		{
+			location.left = rr.left + margin.left;
+			location.right = rr.right - margin.right;
+			if (dimensions && dimensions->width)
+				dimensions->width = location.right - location.left;
 		}
 	}
-	location = r;
-	updateComponentLocation();
-	CheckScroll();
+	else
+	{
+		// Already initialized and Size is not changing, we're just shifting the controls
+		float x = rr.left - location.left;
+		float y = rr.top - location.top;
+
+		onScroll(x, y);
+	}
 }
 
 /*
@@ -1135,7 +1008,7 @@ void TControl::updateArrayID(int aid)
  *		However, the contents might include child locations so their snips might have to be 
  *		updated
  */
-bool TControl::onScroll(int x, int y)
+bool TControl::onScroll(float x, float y)
 {
 	location.left += x;
 	location.right += x;
@@ -1143,14 +1016,14 @@ bool TControl::onScroll(int x, int y)
 	location.top += y;
 	for (int c = 0; c < children.Count(); c++)
 	{
-		TControl* cont = children.ElementAt(c).Get();
-		if (!cont)    // don't work with a null pointer
+		auto cont = children.ElementAt(c);
+		if (!cont.Get())    // don't work with a null pointer
 			continue;
 		cont->onBeingScrolled(x, y);
 	}
 
 	updateComponentLocation();
-	CheckScroll();
+	// CheckScroll();
 	return false;
 }
 
@@ -1162,7 +1035,7 @@ bool TControl::onScroll(int x, int y)
 *				const RECT& p_snip - the area of the parent control
 * Returns: bool - success
 */
-bool TControl::onBeingScrolled(int x, int y)
+bool TControl::onBeingScrolled(float x, float y)
 {
 	// Update real location of TControl
 	location.left += x;
@@ -1173,8 +1046,8 @@ bool TControl::onBeingScrolled(int x, int y)
 
 	for (int c = 0; c < children.Count(); c++)
 	{
-		TControl* cont = children.ElementAt(c).Get();
-		if (!cont)    // don't work with a null pointer
+		auto cont = children.ElementAt(c);
+		if (!cont.Get())    // don't work with a null pointer
 			continue;
 		cont->onBeingScrolled(x, y);
 	}
@@ -2277,6 +2150,111 @@ bool TControl::onCreate(TMap<TString>* att, D2D1_RECT_F loc)
 		int res = generateImage(content1, valpoint, loc);
 	}
 
+	if (border1.Get())
+	{
+		switch (shape)
+		{
+		case TShape::T_Rect:
+			border1->onCreate(location);
+			break;
+		case TShape::T_Rounded_Rect:
+			border1->onCreate(roundedRect);
+			break;
+		case TShape::T_Ellipse:
+			border1->onCreate(ellipse);
+			break;
+		case TShape::T_Custom_shape:
+			break;
+		}
+
+		TDataArray<TString> animators = GetMultiData(TString(L"|BorderAnimation"));
+		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
+		{
+			TString name = animators[Rust];
+			auto names = name.split(TString(L";"));
+			if (!names->Size())
+				continue;
+			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+			animate->control = tThis;
+			animate->name = names->at(0);
+			if (names->Size() > 1)
+				animate->storyName = names->at(1);
+			animate->brush = border1->GetBrush();
+
+			animateData.push_back(animate);
+		}
+	}
+
+	bool callOnGif = false;
+
+	if (content1.Get())
+	{
+		switch (shape)
+		{
+		case TShape::T_Rect:
+			content1->onCreate(location);
+			break;
+		case TShape::T_Rounded_Rect:
+			content1->onCreate(roundedRect);
+			break;
+		case TShape::T_Ellipse:
+			content1->onCreate(ellipse);
+			break;
+		case TShape::T_Custom_shape:
+			break;
+		}
+
+		TDataArray<TString> animators = GetMultiData(TString(L"|ContentAnimation"));
+		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
+		{
+			TString name = animators[Rust];
+			auto names = name.split(TString(L";"));
+			if (!names->Size())
+				continue;
+			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+			animate->control = tThis;
+			animate->name = names->at(0);
+			if (names->Size() > 1)
+				animate->storyName = names->at(1);
+			animate->brush = content1->GetBrush();
+
+			animateData.push_back(animate);
+		}
+
+		if (content1->GetImageCount() > 1)
+			callOnGif = true;
+	}
+	if (text1.Get())
+	{
+		text1->onCreate(location);
+
+		TDataArray<TString> animators = GetMultiData(TString(L"|TextAnimation"));
+		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
+		{
+			TString name = animators[Rust];
+			auto names = name.split(TString(L";"));
+			if (!names->Size())
+				continue;
+			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+			animate->control = tThis;
+			animate->name = names->at(0);
+			if (names->Size() > 1)
+				animate->storyName = names->at(1);
+			animate->brush = text1->GetBrush();
+
+			animateData.push_back(animate);
+		}
+	}
+	if (callOnGif)
+	{
+		TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+		animate->control = tThis;
+		animate->brush = TrecPointerKey::GetTrecPointerFromSub<TBrush, TBitmapBrush>(content1->image);
+		animate->name.Set(L"Gif");
+		animate->storyName.Set(L"GifRunner");
+
+		animateData.push_back(animate);
+	}
 
 	return false;
 }
@@ -2571,6 +2549,102 @@ bool TControl::onCreate2(TMap<TString>* att, D2D1_RECT_F loc)
 		}
 		generateImage(content2, valpoint, loc);
 	}
+
+	if (border2.Get())
+	{
+		switch (shape)
+		{
+		case TShape::T_Rect:
+			border2->onCreate(location);
+			break;
+		case TShape::T_Rounded_Rect:
+			border2->onCreate(roundedRect);
+			break;
+		case TShape::T_Ellipse:
+			border2->onCreate(ellipse);
+			break;
+		case TShape::T_Custom_shape:
+			break;
+		}
+
+		TDataArray<TString> animators = GetMultiData(TString(L"|HoverBorderAnimation"));
+		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
+		{
+			TString name = animators[Rust];
+			auto names = name.split(TString(L";"));
+			if (!names->Size())
+				continue;
+			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+			animate->control = tThis;
+			animate->name = names->at(0);
+			if (names->Size() > 1)
+				animate->storyName = names->at(1);
+			animate->brush = border2->GetBrush();
+
+			animateData.push_back(animate);
+		}
+	}
+	if (content2.Get())
+	{
+		switch (shape)
+		{
+		case TShape::T_Rect:
+			content2->onCreate(location);
+			break;
+		case TShape::T_Rounded_Rect:
+			content2->onCreate(roundedRect);
+			break;
+		case TShape::T_Ellipse:
+			content2->onCreate(ellipse);
+			break;
+		case TShape::T_Custom_shape:
+
+			break;
+		}
+
+		TDataArray<TString> animators = GetMultiData(TString(L"|HoverContentAnimation"));
+		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
+		{
+			TString name = animators[Rust];
+			auto names = name.split(TString(L";"));
+			if (!names->Size())
+				continue;
+			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+			animate->control = tThis;
+			animate->name = names->at(0);
+			if (names->Size() > 1)
+				animate->storyName = names->at(1);
+			animate->brush = content2->GetBrush();
+
+			animateData.push_back(animate);
+		}
+
+	}
+	if (text2.Get())
+	{
+		text2->onCreate(location);
+
+		TDataArray<TString> animators = GetMultiData(TString(L"|HoverTextAnimation"));
+		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
+		{
+			TString name = animators[Rust];
+			auto names = name.split(TString(L";"));
+			if (!names->Size())
+				continue;
+			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+			animate->control = tThis;
+			animate->name = names->at(0);
+			if (names->Size() > 1)
+				animate->storyName = names->at(1);
+			animate->brush = text2->GetBrush();
+
+			animateData.push_back(animate);
+		}
+	}
+
+
+
+
 	return false;
 
 }
@@ -2850,8 +2924,216 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 		generateImage(content3, valpoint,loc);
 	}
 
+
+
+	if (border3.Get())
+	{
+		switch (shape)
+		{
+		case TShape::T_Rect:
+			border3->onCreate(location);
+			break;
+		case TShape::T_Rounded_Rect:
+			border3->onCreate(roundedRect);
+			break;
+		case TShape::T_Ellipse:
+			border3->onCreate(ellipse);
+			break;
+		case TShape::T_Custom_shape:
+			break;
+		}
+
+		TDataArray<TString> animators = GetMultiData(TString(L"|ClickBorderAnimation"));
+		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
+		{
+			TString name = animators[Rust];
+			auto names = name.split(TString(L";"));
+			if (!names->Size())
+				continue;
+			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+			animate->control = tThis;
+			animate->name = names->at(0);
+			if (names->Size() > 1)
+				animate->storyName = names->at(1);
+			animate->brush = border3->GetBrush();
+
+			animateData.push_back(animate);
+		}
+	}
+	if (content3.Get())
+	{
+		switch (shape)
+		{
+		case TShape::T_Rect:
+			content3->onCreate(location);
+			break;
+		case TShape::T_Rounded_Rect:
+			content3->onCreate(roundedRect);
+			break;
+		case TShape::T_Ellipse:
+			content3->onCreate(ellipse);
+			break;
+		case TShape::T_Custom_shape:
+			break;
+		}
+
+		TDataArray<TString> animators = GetMultiData(TString(L"|ClickContentAnimation"));
+		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
+		{
+			TString name = animators[Rust];
+			auto names = name.split(TString(L";"));
+			if (!names->Size())
+				continue;
+			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+			animate->control = tThis;
+			animate->name = names->at(0);
+			if (names->Size() > 1)
+				animate->storyName = names->at(1);
+			animate->brush = content3->GetBrush();
+
+			animateData.push_back(animate);
+		}
+
+	}
+	if (text3.Get())
+	{
+		text3->onCreate(location);
+
+		TDataArray<TString> animators = GetMultiData(TString(L"|ClickTextAnimation"));
+		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
+		{
+			TString name = animators[Rust];
+			auto names = name.split(TString(L";"));
+			if (!names->Size())
+				continue;
+			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
+			animate->control = tThis;
+			animate->name = names->at(0);
+			if (names->Size() > 1)
+				animate->storyName = names->at(1);
+			animate->brush = text3->GetBrush();
+
+			animateData.push_back(animate);
+		}
+	}
+
+
 	return false;
 
+}
+
+bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
+{
+	auto valpoint = attributes.retrieveEntry(TString(L"|ArrayID"));
+	if (valpoint.Get())
+	{
+		valpoint->ConvertToInt(&arrayID);
+	}
+
+	valpoint = attributes.retrieveEntry(TString(L"|Shape"));
+	if (valpoint.Get())
+	{
+		if (valpoint->Compare(L"Ellipse"))
+		{
+			shape = TShape::T_Ellipse;
+			ellipse.point = D2D1::Point2F((location.right + location.left) / 2, (location.top + location.bottom) / 2);
+			ellipse.radiusX = (location.right - location.left) / 2;
+			ellipse.radiusY = (location.bottom - location.top) / 2;
+		}
+		else if (valpoint->Compare(L"RoundedRectangle"))
+		{
+			shape = TShape::T_Rounded_Rect;
+			float xRound = (location.left - location.right) / 10;
+			float yRound = (location.bottom - location.top) / 10;
+			valpoint = attributes.retrieveEntry(TString(L"|RoundedRectX"));
+			if (valpoint.Get())
+			{
+				valpoint->ConvertToFloat(&xRound);
+			}
+			valpoint = attributes.retrieveEntry(TString(L"|RoundedRectY"));
+			if (valpoint.Get())
+			{
+				valpoint->ConvertToFloat(&yRound);
+			}
+			roundedRect.rect = location;
+			roundedRect.radiusX = xRound;
+			roundedRect.radiusY = yRound;
+		}
+		else if (valpoint->Compare(L"Custom"))
+		{
+
+		}
+	}
+
+
+	int occ1 = 0;
+	valpoint = attributes.retrieveEntry(TString(L"|Class"), occ1++);
+	while (valpoint.Get())
+	{
+		className += *valpoint.Get();
+		className.Trim();
+		className += L";";
+		valpoint = attributes.retrieveEntry(TString(L"|Class"), occ1++);
+	}
+	TrecPointer<styleTable> classy;
+
+	TrecPointer<TDataArray<TString>> classes = className.split(L";");
+
+	for (int c = 0; c < classes->Size(); c++)
+	{
+		if (classes->at(c).GetSize())
+		{
+			if (styles.Get())
+			{
+
+				for (int c = 0; c < styles->Count(); c++)
+				{
+					if (styles->ElementAt(c)->style == classes->at(c))
+					{
+						classy = styles->ElementAt(c);
+						if (classy.Get())
+							onCreate(&classy->names, contain);
+						//break;
+					}
+				}
+			}
+		}
+	}
+
+	/*
+	valpoint = attributes.retrieveEntry(TString(L"|Class"));
+
+	if (valpoint.Get())
+	{
+		className = *valpoint.Get();
+		if (styles.Get())
+		{
+
+			for (int c = 0; c < styles->Size(); c++)
+			{
+				if (styles->at(c)->style == className)
+				{
+					classy = styles->at(c);
+					break;
+				}
+			}
+		}
+	}
+	*/
+	valpoint = attributes.retrieveEntry(TString(L"|id"));
+	if (valpoint.Get())
+	{
+		ID = *valpoint.Get();
+	}
+	else
+	{
+		valpoint = attributes.retrieveEntry(TString(L"|ID"));
+		if (valpoint.Get())
+		{
+			ID = *valpoint.Get();
+		}
+	}
+	return false;
 }
 
 /*

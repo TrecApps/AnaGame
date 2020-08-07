@@ -49,6 +49,9 @@ public:
 	 */
 	void Set3D(TrecPointer<TWindowEngine> engine);
 
+
+
+
 	/**
 	 * Method: DrawingBoard::Resize
 	 * Purpose: Resets the Underlying Rendertarget should the window size be changed
@@ -266,6 +269,11 @@ private:
 	bool is3D;
 
 	/**
+	 * Handle to the window operating on
+	 */
+	HWND window;
+
+	/**
 	 * Used to enable 3D
 	 */
 	TrecComPointer<ID2D1Device> device;
@@ -298,5 +306,16 @@ private:
 	 * Keeps track of the Geometries that exist
 	 */
 	TDataArray<TrecPointer<TGeometry>> geometries;
+
+	/**
+	 * Method: DrawingBoard::Set3D
+	 * Purpose: Enables the Drawing Board to switch from only 2D support to 3D support
+	 * Parameters: TrecPointer<TWindowEngine> engine - the set of resources needed to jump from 2D to 3D
+	 *				
+	 * Returns: void
+	 *
+	 * Note: this method effectively does noting if the DrawingBoard is already set to 3D
+	 */
+	void Set3D(TrecPointer<TWindowEngine> engine, ID2D1Factory1* fact);
 };
 

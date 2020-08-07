@@ -51,6 +51,7 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 
 	renderer = TrecPointerKey::GetComPointer<ID2D1RenderTarget, ID2D1HwndRenderTarget>(renderHw);
 	layersPushed = 0;
+	this->window = window;
 }
 
 /**
@@ -117,6 +118,7 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, TrecPointer<TWind
 	this->engine = engine;
 
 	layersPushed = 0;
+	this->window = engine->GetWindowHandle();
 }
 
 
@@ -136,7 +138,7 @@ void DrawingBoard::Set3D(TrecPointer<TWindowEngine> engine)
 
 	if (!renderer.Get())
 		return;
-	HWND win = reinterpret_cast<ID2D1HwndRenderTarget*>(renderer.Get())->GetHwnd();
+	
 
 	ID2D1Factory1* tempFact = nullptr;
 	ID2D1Factory* tempBaseFact = nullptr;
@@ -144,57 +146,12 @@ void DrawingBoard::Set3D(TrecPointer<TWindowEngine> engine)
 	tempFact = reinterpret_cast<ID2D1Factory1*>(tempBaseFact);
 
 	
-	TrecComPointer<IDXGISurface1> surf = engine->GetSurface();
-	if (!surf.Get())
-		throw L"Error! Provided 3D Engine does not have a Surface to create a 2D Render Target with!";
-
-	TrecComPointer<IDXGIDevice> dev = engine->getDeviceD_U();
-
-	TrecComPointer<ID2D1Device>::TrecComHolder d2dDevHolder;
-
-	HRESULT res = tempFact->CreateDevice(dev.Get(), d2dDevHolder.GetPointerAddress());
-	if (FAILED(res))
-		throw L"Error! 2D Device Creation failed!";
-	TrecComPointer<ID2D1Device> d2dDev = d2dDevHolder.Extract();
-
-	TrecComPointer<ID2D1DeviceContext>::TrecComHolder contextRenderHolder;
-	res = d2dDev->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, contextRenderHolder.GetPointerAddress());
-
-	if (FAILED(res))
-		throw L"ERROR! Failed to Generate 3D Compatiblie Render Target!";
-
-	D2D1_BITMAP_PROPERTIES1 bmp1;
-	bmp1.colorContext = nullptr;
-	bmp1.dpiX = bmp1.dpiY = 0;
-	bmp1.pixelFormat = D2D1::PixelFormat(
-		DXGI_FORMAT_B8G8R8A8_UNORM,
-		D2D1_ALPHA_MODE_IGNORE
-	);
-	bmp1.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_GDI_COMPATIBLE
-		| D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
-	renderer.Delete();
-	renderer = TrecPointerKey::GetComPointer<ID2D1RenderTarget, ID2D1DeviceContext>(contextRenderHolder);
-
-	TrecComPointer<ID2D1Bitmap1>::TrecComHolder bitHolder;
-	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->CreateBitmapFromDxgiSurface(surf.Get(), bmp1, bitHolder.GetPointerAddress());
-
-	if (FAILED(res))
-		throw L"ERROR! Could Not retrieve Bitmap from Device Context!";
-
-	bit = bitHolder.Extract();
-	reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->SetTarget(bit.Get());
-	TrecComPointer< ID2D1GdiInteropRenderTarget>::TrecComHolder gdiRenderHolder;
-	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->QueryInterface(__uuidof(ID2D1GdiInteropRenderTarget), (void**)gdiRenderHolder.GetPointerAddress());
-	gdiRender = gdiRenderHolder.Extract();
-	is3D = true;
-	this->engine = engine;
-
-
+	Set3D(engine, tempFact);
 
 
 
 	tempFact->Release();
-	is3D = true;
+
 }
 
 
@@ -206,15 +163,50 @@ void DrawingBoard::Set3D(TrecPointer<TWindowEngine> engine)
  */
 void DrawingBoard::Resize(HWND window)
 {
+	RECT area;
+	GetClientRect(window, &area);
 	if (is3D)
 	{
-		is3D = false;
-		Set3D(engine);
+
+		this->bit.Delete();
+		this->gdiRender.Delete();
+
+	
+
+
+		reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->SetTarget(nullptr);
+	this->engine->Resize(area.right - area.left,
+			area.bottom - area.top);
+		
+	auto surf = engine->GetSurface();
+	TrecComPointer<ID2D1Bitmap1>::TrecComHolder bitHolder;
+
+	D2D1_BITMAP_PROPERTIES1 bmp1;
+	bmp1.colorContext = nullptr;
+	bmp1.dpiX = bmp1.dpiY = 0;
+	bmp1.pixelFormat = D2D1::PixelFormat(
+		DXGI_FORMAT_B8G8R8A8_UNORM,
+		D2D1_ALPHA_MODE_IGNORE
+	);
+	bmp1.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_GDI_COMPATIBLE
+		| D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
+
+	auto res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->CreateBitmapFromDxgiSurface(surf.Get(), bmp1, bitHolder.GetPointerAddress());
+
+	if (FAILED(res))
+		throw L"ERROR! Could Not retrieve Bitmap from Device Context!";
+
+	bit = bitHolder.Extract();
+	reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->SetTarget(bit.Get());
+	TrecComPointer< ID2D1GdiInteropRenderTarget>::TrecComHolder gdiRenderHolder;
+	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->QueryInterface(__uuidof(ID2D1GdiInteropRenderTarget), (void**)gdiRenderHolder.GetPointerAddress());
+	gdiRender = gdiRenderHolder.Extract();
+
+
 	}
 	else if(renderer.Get())
 	{
-		RECT area;
-		GetClientRect(window, &area);
+		
 		reinterpret_cast<ID2D1HwndRenderTarget*>(renderer.Get())->Resize(D2D1::SizeU(area.right - area.left,
 			area.bottom - area.top));
 	}
@@ -558,4 +550,54 @@ TrecPointer<TGeometry> DrawingBoard::GetGeometry(const TDataArray<POINT_2D>& poi
 UINT DrawingBoard::GetLayerCount()
 {
 	return layers.Size();
+}
+
+void DrawingBoard::Set3D(TrecPointer<TWindowEngine> engine, ID2D1Factory1* fact)
+{
+	TrecComPointer<IDXGISurface1> surf = engine->GetSurface();
+	if (!surf.Get())
+		throw L"Error! Provided 3D Engine does not have a Surface to create a 2D Render Target with!";
+
+	TrecComPointer<IDXGIDevice> dev = engine->getDeviceD_U();
+
+	TrecComPointer<ID2D1Device>::TrecComHolder d2dDevHolder;
+
+	HRESULT res = fact->CreateDevice(dev.Get(), d2dDevHolder.GetPointerAddress());
+	if (FAILED(res))
+		throw L"Error! 2D Device Creation failed!";
+	TrecComPointer<ID2D1Device> d2dDev = d2dDevHolder.Extract();
+
+	TrecComPointer<ID2D1DeviceContext>::TrecComHolder contextRenderHolder;
+	res = d2dDev->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, contextRenderHolder.GetPointerAddress());
+
+	if (FAILED(res))
+		throw L"ERROR! Failed to Generate 3D Compatiblie Render Target!";
+
+	D2D1_BITMAP_PROPERTIES1 bmp1;
+	bmp1.colorContext = nullptr;
+	bmp1.dpiX = bmp1.dpiY = 0;
+	bmp1.pixelFormat = D2D1::PixelFormat(
+		DXGI_FORMAT_B8G8R8A8_UNORM,
+		D2D1_ALPHA_MODE_IGNORE
+	);
+	bmp1.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_GDI_COMPATIBLE
+		| D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
+	renderer.Delete();
+	renderer = TrecPointerKey::GetComPointer<ID2D1RenderTarget, ID2D1DeviceContext>(contextRenderHolder);
+
+	TrecComPointer<ID2D1Bitmap1>::TrecComHolder bitHolder;
+	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->CreateBitmapFromDxgiSurface(surf.Get(), bmp1, bitHolder.GetPointerAddress());
+
+	if (FAILED(res))
+		throw L"ERROR! Could Not retrieve Bitmap from Device Context!";
+
+	bit = bitHolder.Extract();
+	reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->SetTarget(bit.Get());
+	TrecComPointer< ID2D1GdiInteropRenderTarget>::TrecComHolder gdiRenderHolder;
+	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->QueryInterface(__uuidof(ID2D1GdiInteropRenderTarget), (void**)gdiRenderHolder.GetPointerAddress());
+	gdiRender = gdiRenderHolder.Extract();
+	is3D = true;
+	this->engine = engine;
+
+	is3D = true;
 }
