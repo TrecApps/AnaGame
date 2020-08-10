@@ -774,6 +774,169 @@ ReportObject TAnascriptInterpretor::ProcessWhile(TString& _while, UINT line)
 }
 
 /**
+ * Method: TAnascriptInterpretor::ProcessFunction
+ * Purpose: Processes the creation of an Anascript function
+ * Parameters: TString& fun - the start of the function declaration to inspect and process
+ *              UINT line - the line number being called upon,
+ * Returns: ReportObject - objct indicating the success of the program or failure information
+ */
+ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
+{
+    // Get the starting location for the child interpreter
+    ULONGLONG startNext = file->GetPosition();
+
+    ULONGLONG blockEnd = startNext;
+
+    UINT blockStack = 1;
+
+    TString lineStr;
+
+    bool ended = false;
+    TrecPointer<TDataArray<TString>> elseTokens;
+    TString elseString;
+
+    UINT newLine = line;
+
+    while (blockStack && file->ReadString(lineStr))
+    {
+        newLine++;
+        TString lineStringLower = lineStr.GetLower();
+        auto tokens = lineStringLower.split(L" ");
+
+        if (tokens->Size())
+        {
+            TString tok(tokens->at(0));
+
+            if (!tok.Compare(L"end"))
+            {
+                blockStack--;
+                ended = true;
+            }
+            else if (!tok.Compare(L"else") && !(blockStack - 1))
+            {
+                blockStack--;
+                ended = false;
+
+                elseTokens = tokens;
+                elseString.Set(lineStr);
+            }
+            else if (!tok.Compare(L"in") || !tok.Compare(L"if") || !tok.Compare(L"loop") || !tok.Compare(L"while"))
+                blockStack++;
+        }
+
+        if (!blockStack)
+            break;
+        blockEnd = file->GetPosition();
+    }
+
+    ULONGLONG setFilePosition = file->GetPosition();
+
+    // Make sure loop is complete
+    ReportObject ret;
+    if (blockStack)
+    {
+        ret.returnCode = ReportObject::incomplete_block;
+        ret.errorMessage.Set(L"Incomplete Loop Block Detected!");
+
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ret.stackTrace.push_back(stack);
+
+        return ret;
+    }
+
+    auto tokens = fun.split(L" ", 0b00000010);
+
+    if (tokens->Size() < 4)
+    {
+        ret.returnCode = ReportObject::incomplete_statement;
+        ret.errorMessage.Set(L"Incomplete function declaration!");
+
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ret.stackTrace.push_back(stack);
+
+        return ret;
+    }
+
+    TString functionName(tokens->at(1));
+
+    CheckVarName(functionName, ret, line);
+    if (ret.returnCode)
+        return ret;
+
+    if (tokens->at(2).CompareNoCase(L"takes"))
+    {
+        ret.returnCode = ReportObject::invalid_name;
+        ret.errorMessage.Set(L"Expected keyword 'takes' at Function Declaration!");
+
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ret.stackTrace.push_back(stack);
+
+        return ret;
+    }
+
+    if (tokens->at(3).Find(L'['))
+    {
+        ret.returnCode = ReportObject::invalid_name;
+        ret.errorMessage.Set(L"Expected token '[' in front of the parameter list!");
+
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ret.stackTrace.push_back(stack);
+
+        return ret;
+    }
+
+    tokens->at(3).Remove(L'[');
+
+    if (tokens->at(tokens->Size() - 1).Find(L']'))
+    {
+        ret.returnCode = ReportObject::invalid_name;
+        ret.errorMessage.Set(L"Expected token ']' at the end of the parameter list!");
+
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ret.stackTrace.push_back(stack);
+
+        return ret;
+    }
+
+    tokens->at(tokens->Size() - 1).Remove(L']');
+
+    TDataArray<TString> names;
+
+    for (UINT Rust = 3; Rust < tokens->Size(); Rust++)
+    {
+        auto commaSplit = tokens->at(Rust).split(L",");
+
+        for (UINT C = 0; C < commaSplit->Size(); C++)
+        {
+            TString newName(commaSplit->at(C));
+            CheckVarName(newName, ret, line);
+
+            if (ret.returnCode)
+                return ret;
+            names.push_back(newName);
+        }
+    }
+
+    // Create the interpretor
+    TrecSubPointer<TVariable, TAnascriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(
+        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+
+    dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, startNext, blockEnd);
+
+    block->SetParamNames(names);
+
+    variables.addEntry(functionName, TrecPointerKey::GetTrecPointerFromSub<TVariable, TAnascriptInterpretor>(block));
+
+    ret.returnCode = 0;
+    return ret;
+}
+
+/**
  * Method: TAnascriptInterpretor::ProcessExpression
  * Purpose: Processes the let command
  * Parameters: TString& exp - the 'let' statement to inspect and process

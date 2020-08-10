@@ -144,13 +144,17 @@ public:
 	*/
 	short ConvertToFloat(float&);
 
-
 	/*
 	* Method: TString::split
 	* Purpose: Splits a String by the provided deliniators
 	* Parameters: TString str - the TString holding deliniators
-				bool checkBackSlash - if true, then the method will ignore characters if a single backslash preceeds it
+	*			UCHAR flags - flags to use to control the behavior of this method
+				WCHAR exitQuote - quote to look for if String is believed to begin in quotes
 	* Returns: TrecPointer<TArray<TString>> - Array of TStrings holding tokens
+	*
+	* flags: 0b00000001 - t_file_check_back_slash - ignore a hit if odd number of backslashes are present
+	*		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
+	*		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
 	*/
 	TrecPointer<TDataArray<TString>> split(TString, UCHAR flags = 0, WCHAR exitQuote = L'\"');
 

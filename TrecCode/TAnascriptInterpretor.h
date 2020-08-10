@@ -87,6 +87,16 @@ public:
      */
     ReportObject ProcessWhile(TString& let, UINT line);
 
+
+    /**
+     * Method: TAnascriptInterpretor::ProcessFunction
+     * Purpose: Processes the creation of an Anascript function
+     * Parameters: TString& fun - the start of the function declaration to inspect and process
+     *              UINT line - the line number being called upon,
+     * Returns: ReportObject - objct indicating the success of the program or failure information
+     */
+    ReportObject ProcessFunction(TString& fun, UINT line);
+
     /**
      * Method: TAnascriptInterpretor::ProcessExpression
      * Purpose: Processes the let command
