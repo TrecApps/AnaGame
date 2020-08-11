@@ -346,9 +346,9 @@ void TPrimitiveVariable::Set(bool value)
  *
  * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
  */
-TrecPointer<TObject> TPrimitiveVariable::GetObject()
+TrecObjectPointer TPrimitiveVariable::GetObject()
 {
-    return TrecPointer<TObject>();
+    return TrecObjectPointer();
 }
 
 /**

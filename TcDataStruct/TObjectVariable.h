@@ -13,7 +13,7 @@ class TC_DATA_STRUCT TObjectVariable :
      * Parameters: TrecPointer<TObject> obj - the object to hold
      * Returns: New TObject Variable
      */
-    TObjectVariable(TrecPointer<TObject> obj);
+    TObjectVariable(TrecObjectPointer obj);
 
     /**
      * Method: TObjectVariable::GetVarType
@@ -29,17 +29,17 @@ class TC_DATA_STRUCT TObjectVariable :
      * Parameters: TrecPointer<TObject> obj - the object to hold
      * Returns: void
      */
-    void Set(TrecPointer<TObject> obj);
+    void Set(TrecObjectPointer obj);
 
     /**
      * Method: TObjectVariable::GetObject
      * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
      * Parameters: void
-     * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+     * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
      *
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
      */
-    virtual TrecPointer<TObject> GetObject()override;
+    virtual TrecObjectPointer GetObject()override;
 
     /**
      * Method: TObjectVariable::GetObject
@@ -90,6 +90,6 @@ private:
     /**
      * The Object held
      */
-    TrecPointer<TObject> object;
+    TrecObjectPointer object;
 };
 

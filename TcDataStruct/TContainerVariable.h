@@ -117,11 +117,11 @@ public:
      * Method: TContainerVariable::GetObject
      * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
      * Parameters: void
-     * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+     * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
      *
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
      */
-    virtual TrecPointer<TObject> GetObject()override;
+    virtual TrecObjectPointer GetObject()override;
 
 
     /**

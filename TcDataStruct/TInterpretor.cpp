@@ -1,5 +1,9 @@
 #include "pch.h"
 #include "TInterpretor.h"
+#include "TPrimitiveVariable.h"
+#include "TStringVariable.h"
+
+#include <cmath>
 
 /**
  * Method: ReportObject::ReportObject
@@ -63,13 +67,13 @@ void TInterpretor::SetParamNames(TDataArray<TString>& names)
  * Method: TInterpretor::GetObject
  * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
  * Parameters: void
- * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+ * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
  *
  * Note: Call "GetVarType" first and make sure that it returns "var_type::native_object" first
  */
-TrecPointer<TObject> TInterpretor::GetObject()
+TrecObjectPointer TInterpretor::GetObject()
 {
-	return TrecPointer<TObject>();
+	return TrecObjectPointer();
 }
 
 /**
@@ -227,4 +231,637 @@ UINT TInterpretor::SetCode(TrecPointer<TFile> file, ULONG64 start, ULONG64 end)
 	this->end = end;
 
 	return 0;
+}
+
+
+ReportObject TInterpretor::ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
+{
+	if (!var1.Get() || !var2.Get())
+	{
+		ReportObject ro;
+		ro.returnCode = ro.broken_reference;
+		ro.errorMessage.Set(L"Addition Requires variables that are not null or undefined!");
+		return ro;
+	}
+
+	if (var1->GetVarType() == var_type::primitive && var2->GetVarType() == var_type::primitive)
+	{
+		auto retValue = Add(GetValueFromPrimitive(var1), GetValueFromPrimitive(var2));
+
+		ReportObject ro;
+		ro.returnCode = 0;
+
+
+		switch (retValue.type)
+		{
+		case double_long::dl_double:
+			ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.d);
+			break;
+		case double_long::dl_unsign:
+			ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.u);
+			break;
+		case double_long::dl_sign:
+			ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.s);
+		}
+		return ro;
+	}
+
+	if (var1->GetVarType() == var_type::primitive &&
+		(var2->GetVarType() == var_type::string || var2->GetVarType() == var_type::native_object))
+	{
+		TString strValue(GetStringFromPrimitive(var1) + var2->GetString());
+		ReportObject ro;
+		ro.returnCode = 0;
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(strValue);
+		return ro;
+	}
+
+	if ((var1->GetVarType() == var_type::string || var1->GetVarType() == var_type::native_object) &&
+		(var2->GetVarType() == var_type::string || var2->GetVarType() == var_type::native_object))
+	{
+
+		TString strValue(var1->GetString() + var2->GetString());
+		ReportObject ro;
+		ro.returnCode = 0;
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(strValue);
+		return ro;
+	}
+
+	if ((var1->GetVarType() == var_type::string || var1->GetVarType() == var_type::native_object)
+		&& var2->GetVarType() == var_type::primitive)
+	{
+		TString strValue(var1->GetString() + GetStringFromPrimitive(var2));
+		ReportObject ro;
+		ro.returnCode = 0;
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(strValue);
+		return ro;
+	}
+
+	ReportObject ro;
+	ro.returnCode = ReportObject::improper_type;
+	ro.errorMessage.Set(L"Addition operator does not support the types provided!");
+	return ro;
+}
+
+ReportObject TInterpretor::ProcessSubtraction(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
+{
+	if (!var1.Get() || !var2.Get())
+	{
+		ReportObject ro;
+		ro.returnCode = ro.broken_reference;
+		ro.errorMessage.Set(L"Subtraction Requires variables that are not null or undefined!");
+		return ro;
+	}
+
+	if (var1->GetVarType() != var_type::primitive || var2->GetVarType() != var_type::primitive)
+	{
+		ReportObject ro;
+		ro.returnCode = ro.improper_type;
+		ro.errorMessage.Set(L"Subtraction Requires variables to be primitive types!");
+		return ro;
+	}
+
+	ReportObject ro;
+
+	auto retValue = Subtract(GetValueFromPrimitive(var1), GetValueFromPrimitive(var2));
+	ro.returnCode = 0;
+
+
+	switch (retValue.type)
+	{
+	case double_long::dl_double:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.d);
+		break;
+	case double_long::dl_unsign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.u);
+		break;
+	case double_long::dl_sign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.s);
+	}
+	return ro;
+}
+
+ReportObject TInterpretor::ProcessMultiplication(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
+{
+	if (!var1.Get() || !var2.Get())
+	{
+		ReportObject ro;
+		ro.returnCode = ro.broken_reference;
+		ro.errorMessage.Set(L"Multiplication Requires variables that are not null or undefined!");
+		return ro;
+	}
+
+	if (var1->GetVarType() != var_type::primitive || var2->GetVarType() != var_type::primitive)
+	{
+		ReportObject ro;
+		ro.returnCode = ro.improper_type;
+		ro.errorMessage.Set(L"Multiplication Requires variables to be primitive types!");
+		return ro;
+	}
+
+	ReportObject ro;
+
+	auto retValue = Multiply(GetValueFromPrimitive(var1), GetValueFromPrimitive(var2));
+	ro.returnCode = 0;
+
+
+	switch (retValue.type)
+	{
+	case double_long::dl_double:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.d);
+		break;
+	case double_long::dl_unsign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.u);
+		break;
+	case double_long::dl_sign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.s);
+	}
+	return ro;
+}
+
+ReportObject TInterpretor::ProcessDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
+{
+	if (!var1.Get() || !var2.Get())
+	{
+		ReportObject ro;
+		ro.returnCode = ro.broken_reference;
+		ro.errorMessage.Set(L"Division Requires variables that are not null or undefined!");
+		return ro;
+	}
+
+	if (var1->GetVarType() != var_type::primitive || var2->GetVarType() != var_type::primitive)
+	{
+		ReportObject ro;
+		ro.returnCode = ro.improper_type;
+		ro.errorMessage.Set(L"Division Requires variables to be primitive types!");
+		return ro;
+	}
+
+	ReportObject ro;
+
+	auto retValue = Divide(GetValueFromPrimitive(var1), GetValueFromPrimitive(var2));
+	ro.returnCode = 0;
+
+
+	switch (retValue.type)
+	{
+	case double_long::dl_double:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.d);
+		break;
+	case double_long::dl_unsign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.u);
+		break;
+	case double_long::dl_sign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.s);
+	}
+	return ro;
+}
+
+ReportObject TInterpretor::ProcessModDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
+{
+	if (!var1.Get() || !var2.Get())
+	{
+		ReportObject ro;
+		ro.returnCode = ro.broken_reference;
+		ro.errorMessage.Set(L"Mod Division Requires variables that are not null or undefined!");
+		return ro;
+	}
+
+	if (var1->GetVarType() != var_type::primitive || var2->GetVarType() != var_type::primitive)
+	{
+		ReportObject ro;
+		ro.returnCode = ro.improper_type;
+		ro.errorMessage.Set(L"Mod Division Requires variables to be primitive types!");
+		return ro;
+	}
+
+	ReportObject ro;
+
+	auto retValue = ModDivide(GetValueFromPrimitive(var1), GetValueFromPrimitive(var2));
+	ro.returnCode = 0;
+
+
+	switch (retValue.type)
+	{
+	case double_long::dl_double:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.d);
+		break;
+	case double_long::dl_unsign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.u);
+		break;
+	case double_long::dl_sign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.s);
+	}
+	return ro;
+}
+
+ReportObject TInterpretor::ProcessExponent(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
+{
+	if (!var1.Get() || !var2.Get())
+	{
+		ReportObject ro;
+		ro.returnCode = ro.broken_reference;
+		ro.errorMessage.Set(L"Exponent analysis Requires variables that are not null or undefined!");
+		return ro;
+	}
+
+	if (var1->GetVarType() != var_type::primitive || var2->GetVarType() != var_type::primitive)
+	{
+		ReportObject ro;
+		ro.returnCode = ro.improper_type;
+		ro.errorMessage.Set(L"Exponent analysis Requires variables to be primitive types!");
+		return ro;
+	}
+
+	ReportObject ro;
+
+	auto retValue = Exponent(GetValueFromPrimitive(var1), GetValueFromPrimitive(var2));
+	ro.returnCode = 0;
+
+
+	switch (retValue.type)
+	{
+	case double_long::dl_double:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.d);
+		break;
+	case double_long::dl_unsign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.u);
+		break;
+	case double_long::dl_sign:
+		ro.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(retValue.value.s);
+	}
+	return ro;
+}
+
+DoubleLong TInterpretor::Add(const DoubleLong& v1, const DoubleLong& v2)
+{
+	if (v1.type == double_long::dl_double)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ v1.value.d + v2.value.d , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.d + v2.value.s) , double_long::dl_double };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<double>(v1.value.d + v2.value.u) , double_long::dl_double };
+		}
+	}
+	else if (v1.type == double_long::dl_sign)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.s + v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ (v1.value.s + v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.s + v2.value.u), double_long::dl_sign };
+		}
+	}
+	else
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.u + v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.u + v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ (v1.value.u + v2.value.u) , double_long::dl_unsign };
+		}
+	}
+}
+
+DoubleLong TInterpretor::Subtract(const DoubleLong& v1, const DoubleLong& v2)
+{
+	if (v1.type == double_long::dl_double)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ v1.value.d - v2.value.d , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.d - v2.value.s) , double_long::dl_double };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<double>(v1.value.d - v2.value.u) , double_long::dl_double };
+		}
+	}
+	else if (v1.type == double_long::dl_sign)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ static_cast<double>(static_cast<double>(v1.value.s) - v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ (v1.value.s - v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.s - v2.value.u), double_long::dl_sign };
+		}
+	}
+	else
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.u - v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.u - v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ (v1.value.u - v2.value.u) , double_long::dl_unsign };
+		}
+	}
+}
+
+DoubleLong TInterpretor::Multiply(const DoubleLong& v1, const DoubleLong& v2)
+{
+	if (v1.type == double_long::dl_double)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ v1.value.d * v2.value.d , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.d * v2.value.s) , double_long::dl_double };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<double>(v1.value.d * v2.value.u) , double_long::dl_double };
+		}
+	}
+	else if (v1.type == double_long::dl_sign)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.s * v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ (v1.value.s * v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.s * v2.value.u), double_long::dl_sign };
+		}
+	}
+	else
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.u * v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.u * v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ (v1.value.u * v2.value.u) , double_long::dl_unsign };
+		}
+	}
+}
+
+DoubleLong TInterpretor::Divide(const DoubleLong& v1, const DoubleLong& v2)
+{
+	if (v1.type == double_long::dl_double)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ v1.value.d / v2.value.d , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.d / v2.value.s) , double_long::dl_double };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<double>(v1.value.d / v2.value.u) , double_long::dl_double };
+		}
+	}
+	else if (v1.type == double_long::dl_sign)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.s / v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ (v1.value.s / v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.s / v2.value.u), double_long::dl_sign };
+		}
+	}
+	else
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ static_cast<double>(v1.value.u / v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.u / v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ (v1.value.u / v2.value.u) , double_long::dl_unsign };
+		}
+	}
+}
+
+DoubleLong TInterpretor::ModDivide(const DoubleLong& v1, const DoubleLong& v2)
+{
+	if (v1.type == double_long::dl_double)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ fmod( v1.value.d, v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ fmod(v1.value.d, v2.value.s) , double_long::dl_double };
+		}
+		else
+		{
+			return DoubleLong{ fmod(v1.value.d, v2.value.s) , double_long::dl_double };
+		}
+	}
+	else if (v1.type == double_long::dl_sign)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ fmod(v1.value.d, v2.value.s) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ (v1.value.s % v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.s % v2.value.u), double_long::dl_sign };
+		}
+	}
+	else
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ fmod(v1.value.d, v2.value.s) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ static_cast<LONG64>(v1.value.u % v2.value.s) , double_long::dl_sign };
+		}
+		else
+		{
+			return DoubleLong{ static_cast<ULONG64>(v1.value.u % v2.value.u) , double_long::dl_unsign };
+		}
+	}
+}
+
+DoubleLong TInterpretor::Exponent(const DoubleLong& v1, const DoubleLong& v2)
+{
+	if (v1.type == double_long::dl_double)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ pow(v1.value.d, v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ pow(v1.value.d, v2.value.s) , double_long::dl_double };
+		}
+		else
+		{
+			return DoubleLong{ pow(v1.value.d, v2.value.u) , double_long::dl_double };
+		}
+	}
+	else if (v1.type == double_long::dl_sign)
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ pow(v1.value.s, v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ pow(v1.value.s, v2.value.s) , double_long::dl_double };
+		}
+		else
+		{
+			return DoubleLong{ pow(v1.value.s, v2.value.u), double_long::dl_double };
+		}
+	}
+	else
+	{
+		if (v2.type == double_long::dl_double)
+		{
+			return DoubleLong{ pow(v1.value.u, v2.value.d) , double_long::dl_double };
+		}
+		else if (v2.type == double_long::dl_sign)
+		{
+			return DoubleLong{ pow(v1.value.u, v2.value.s) , double_long::dl_double };
+		}
+		else
+		{
+			return DoubleLong{ pow(v1.value.u, v2.value.u) , double_long::dl_double };
+		}
+	}
+}
+
+DoubleLong TInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
+{
+	if(!var.Get() || var->GetVarType() != var_type::primitive)
+		return DoubleLong();
+
+	double f_value = 0.0;
+	ULONG64 u_value = 0ULL;
+	LONG64 s_value = 0LL;
+
+	switch (var->GetType())
+	{
+	case (TPrimitiveVariable::type_bool):
+		return DoubleLong{ 1ULL, double_long::dl_unsign };
+
+	case (0b00110010):						// Indicates a four-byte float
+		u_value = var->Get4Value();
+		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
+		return DoubleLong{ f_value, double_long::dl_double };
+
+	case (0b01000010):						// Indicates an eight-byte float
+		u_value = var->Get8Value();
+		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
+		return DoubleLong{ f_value, double_long::dl_double };
+
+	case (0b00010000):						// Indicates a 1-byte int
+	case (0b00100000):						// Indicates a 2-byte int
+	case (0b00110000):						// Indicates a 4-byte int
+	case (0b01000000):						// Indicates an 8-byte int
+		u_value = var->Get8Value();
+		memcpy_s(&s_value, sizeof(s_value), &u_value, sizeof(u_value));
+		return DoubleLong{ s_value, double_long::dl_sign };
+
+	case (0b00011000):						// Indicates a 1-byte uint
+	case (0b00101000):						// Indicates a 2-byte uint
+	case (0b00111000):						// Indicates a 4-byte uint
+	case (0b01001000):						// Indicates an 8-byte uint
+		return DoubleLong{ u_value, double_long::dl_unsign };
+
+
+	}
+	return DoubleLong();
+}
+
+TString TInterpretor::GetStringFromPrimitive(TrecPointer<TVariable> var)
+{
+	if (!var.Get() || var->GetVarType() != var_type::primitive)
+		return TString();
+	TString strValue;
+	auto v1Type = var->GetType();
+
+	if (v1Type == (TPrimitiveVariable::type_char & TPrimitiveVariable::type_one))
+		strValue.Set(static_cast<char>(var->Get4Value()));
+	else if (v1Type == (TPrimitiveVariable::type_char & TPrimitiveVariable::type_two))
+		strValue.Set(static_cast<WCHAR>(var->Get4Value()));
+	else if (v1Type == TPrimitiveVariable::type_bool)
+	{
+		if (var->Get8Value())
+			strValue.Set(L"true");
+		else
+			strValue.Set(L"false");
+	}
+	else
+	{
+		auto value = GetValueFromPrimitive(var);
+		switch (value.type)
+		{
+		case double_long::dl_double:
+			strValue.Format(L"%f", value.value.d);
+			break;
+		case double_long::dl_sign:
+			strValue.Format(L"%d", value.value.s);
+			break;
+		case double_long::dl_unsign:
+			strValue.Format(L"%u", value.value.u);
+		}
+	}
+	return strValue;
 }

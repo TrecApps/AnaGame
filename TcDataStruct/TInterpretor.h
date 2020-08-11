@@ -10,6 +10,26 @@
      * Returns: 
      */
 
+union doubleLong
+{
+    LONG64 s;
+    ULONG64 u;
+    double d;
+};
+
+enum class double_long
+{
+    dl_sign,
+    dl_unsign,
+    dl_double
+};
+
+struct DoubleLong
+{
+    doubleLong value;
+    double_long type;
+};
+
 /**
  * Class ReportObject
  * Purpose: allows the Interpretors to report the results of a run 
@@ -156,11 +176,11 @@ public:
      * Method: TInterpretor::GetObject
      * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
      * Parameters: void
-     * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+     * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
      *
      * Note: Call "GetVarType" first and make sure that it returns "var_type::native_object" first
      */
-    virtual TrecPointer<TObject> GetObject() override;
+    virtual TrecObjectPointer GetObject() override;
 
 
     /**
@@ -259,5 +279,27 @@ protected:
      * The Starting and ending points for our file
      */
     ULONG64 start, end;
+
+
+    // Methods for easy arithmetic implementation
+
+    virtual ReportObject ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+
+    virtual ReportObject ProcessSubtraction(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+    virtual ReportObject ProcessMultiplication(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+    virtual ReportObject ProcessDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+    virtual ReportObject ProcessModDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+    virtual ReportObject ProcessExponent(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+
+    DoubleLong Add(const DoubleLong& v1, const DoubleLong& v2);
+    DoubleLong Subtract(const DoubleLong& v1, const DoubleLong& v2);
+    DoubleLong Multiply(const DoubleLong& v1, const DoubleLong& v2);
+    DoubleLong Divide(const DoubleLong& v1, const DoubleLong& v2);
+    DoubleLong ModDivide(const DoubleLong& v1, const DoubleLong& v2);
+    DoubleLong Exponent(const DoubleLong& v1, const DoubleLong& v2);
+
+    DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var);
+    TString GetStringFromPrimitive(TrecPointer<TVariable> var);
+
 };
 

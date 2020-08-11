@@ -84,7 +84,7 @@ protected:
 	 * Parameters: TrecObjectPointer& copy - the Pointer to copy
 	 * Returns: void
 	 */
-	void Copy(TrecObjectPointer& copy);
+	void Copy(const TrecObjectPointer& copy);
 
 	/**
 	 * Method: TrecObjectPointer::DoDecrement
@@ -134,7 +134,7 @@ public:
 	 * Parameters: TrecObjectPointer& obj - the Pointer to copy
 	 * Returns: New TObject Pointer
 	 */
-	TrecObjectPointer(TrecObjectPointer& copy);
+	TrecObjectPointer(const TrecObjectPointer& copy);
 
 	/**
 	 * Method: TrecObjectPointer::TrecObjectPointer

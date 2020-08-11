@@ -18,7 +18,7 @@ public:
      *
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
      */
-    virtual TrecPointer<TObject> GetObject()override;
+    virtual TrecObjectPointer GetObject()override;
 
     /**
      * Method: TPrimitiveVariable::GetVarType
@@ -315,6 +315,10 @@ private:
      */
     UCHAR type;
 
+
+
+
+    public:
     /**
      * indicates this is a boolean variable
      */

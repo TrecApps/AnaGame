@@ -34,11 +34,11 @@ public:
      * Method: TVariable::GetObject
      * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
      * Parameters: void
-     * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+     * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
      *
      * Note: Call "GetVarType" first and make sure that it returns "var_type::native_object" first
      */
-    virtual TrecPointer<TObject> GetObject() = 0;
+    virtual TrecObjectPointer GetObject() = 0;
 
 
     /**
