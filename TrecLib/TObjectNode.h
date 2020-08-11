@@ -3,7 +3,7 @@
 #include "TrecReference.h"
 
 /*
- * class TObjectNode
+ * Class: TObjectNode
  * Purpose: Provides an Interface for which Trees of ny type of Object can be formed
  */
 class _TREC_LIB_DLL TObjectNode :

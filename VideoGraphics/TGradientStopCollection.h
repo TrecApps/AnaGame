@@ -5,7 +5,7 @@
 
 
 /**
- * class TGradientStopCollection
+ * Class: TGradientStopCollection
  * Purpose: Holds a collection of gradientStops for use in creating non-solid TBrush's
  */
 class _VIDEO_GRAPHICS TGradientStopCollection :	public TObject

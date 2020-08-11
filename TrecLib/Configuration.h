@@ -49,7 +49,7 @@ TString _TREC_LIB_DLL GetAnagameVariable(TString& property, config_source source
 bool _TREC_LIB_DLL SetAnagameVariable(TString& property, TString& value, config_source source = config_source::config_source_user);
 
 /**
- * class AnagamePropertySource
+ * Class: AnagamePropertySource
  * Purpose: Provide a means to oversee Property sources
  *
  * Note: this class will be internal to the TrecLib library as it's not needed outside of it. Property manipulation

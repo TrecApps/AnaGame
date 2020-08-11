@@ -10,7 +10,7 @@
 #define PT_UNICODE		5
 
 /**
- * class TPrimitiveType
+ * Class: TPrimitiveType
  * Purpose: Provide data on a given type, focus is on Primitive type
  */
 class TPrimitiveType :	public TType

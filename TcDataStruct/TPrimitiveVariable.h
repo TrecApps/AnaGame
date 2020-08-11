@@ -2,7 +2,7 @@
 #include "TVariable.h"
 
 /**
- * Class TPrimitiveVariable
+ * Class: TPrimitiveVariable
  * Purpose: Represents a primitive variable, such as a number or a character
  */
 class TPrimitiveVariable :

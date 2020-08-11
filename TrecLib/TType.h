@@ -20,7 +20,7 @@ typedef enum class code_type_cat
 }code_type_cat;
 
 /**
- * class TType
+ * Class: TType
  * Purpose: meant to hold information about a data-type - intended to be used by Anagame-based
  * compilers and interpretors keeping track of types provided by a langauge or a code file
  */

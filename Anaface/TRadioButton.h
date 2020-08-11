@@ -2,7 +2,7 @@
 #include "TGadgetControl.h"
 
 /*
-* Class TRadioButton
+* Class: TRadioButton
 * Purpose: Implements Anaface's version of the radio buttom
 */
 class _ANAFACE_DLL TRadioButton :
@@ -107,7 +107,7 @@ private:
 	 */
 	D2D1_ELLIPSE ellBut;
 	/**
-	 * Class of the Radio button
+	 * Class: of the Radio button
 	 */
 	TString* buttonClass;
 	/*

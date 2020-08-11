@@ -20,7 +20,7 @@ typedef enum class brush_type
 }brush_type;
 
 /**
- * class TBrush
+ * Class: TBrush
  * Purpose: Applies rendering operations to the Drawing Board depending on the color settings applied to it
  *
  * Note: The base class only supports solid colors, linear gradients, and radial gradients. For bitmap support, use the TBitmapClass

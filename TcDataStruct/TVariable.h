@@ -4,7 +4,7 @@
 #include <TrecReference.h>
 #include <TString.h>
 /**
- * Class TVariable
+ * Class: TVariable
  * Purpose: Represents a given variable in the system, abstract to support both Objects and raw data types
  */
 class TVariable

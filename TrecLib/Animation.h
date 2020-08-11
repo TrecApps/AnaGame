@@ -62,7 +62,7 @@ class TBrush;
 class TControl;
 
 /**
- * class Animation (abstract)
+ * Class: Animation (abstract)
  * Purpose: Provide the bare-bones essential information on what any Animation object would need to 
  *	function properly.
  *

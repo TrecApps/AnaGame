@@ -204,7 +204,7 @@ public:
 
 
 /*
- * Class TBorder
+ * Class: TBorder
  * Purpose: Draws the Border of a Given TControl
  */
 class _ANAFACE_DLL TBorder : public TControlComponent
@@ -448,7 +448,7 @@ private:
 };
 
 /*
- * Class TText
+ * Class: TText
  * Purpose: Handles the Text in a TControl. Note, Normally the text would be static, but extensions of the 
  *	TControl Class might add additional dynamic functionality using this structure
  */

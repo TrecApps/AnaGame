@@ -2,7 +2,7 @@
 #include "TObject.h"
 
 /**
- * class TArrayBase
+ * Class: TArrayBase
  * Purpose: holds the bare essentials for all TArray's
  */
 class _TREC_LIB_DLL TArrayBase :

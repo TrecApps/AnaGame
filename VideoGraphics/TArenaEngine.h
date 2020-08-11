@@ -5,7 +5,7 @@
 class ArenaModel;
 
 /*
- * class TArenaEngine
+ * Class: TArenaEngine
  * Purpose: Holds a list of models as well as 3rd party shaders.  
  */
 class _VIDEO_GRAPHICS TArenaEngine :

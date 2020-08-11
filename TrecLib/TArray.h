@@ -3,7 +3,7 @@
 #include "TArrayBase.h"
 
 /*
-* Class TArray
+* Class: TArray
 * Holds references to objects (Not meant to store straight foward data in a row)
 */
 template <typename t>class _TREC_LIB_DLL TArray : public TArrayBase

@@ -1,7 +1,7 @@
 #pragma once
 #include "TVariable.h"
 /**
- * Class TObjectVariable
+ * Class: TObjectVariable
  * Purpose: Represents an Object variable, refering to an actual Native Anagame Object
  */
 class TObjectVariable :

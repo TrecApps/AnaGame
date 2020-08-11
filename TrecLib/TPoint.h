@@ -3,7 +3,7 @@
 #include "TrecLib.h"
 
 /**
- * class TPoint
+ * Class: TPoint
  * Basic class holding information about a 2D point
  */
 class _TREC_LIB_DLL TPoint :

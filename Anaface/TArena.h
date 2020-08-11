@@ -11,7 +11,7 @@
 #define IF_IS_LOOK_AT(camType)   if(!camType)
 
 /*
-* class TArena
+* Class: TArena
 * Purpose: Holds the Camera for view into a 3D Arena
 */
 class _ANAFACE_DLL TArena : public TControl, public TCamera

@@ -8,7 +8,7 @@
 
 
 /*
-* Class TDataArray (Regular Type version)
+* Class: TDataArray (Regular Type version)
 * AnaGame array designed to hold raw data
 */
 template<typename T> class  TDataArray : public TDataArrayBase
@@ -213,7 +213,7 @@ public:
 };
 
 /*
-* Class TDataArray (Pointer Type Version)
+* Class: TDataArray (Pointer Type Version)
 * AnaGame Array designed to hold raw pointers to data 
 */
 template<typename T> 

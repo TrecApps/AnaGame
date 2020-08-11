@@ -3,7 +3,7 @@
 #include "TFileShell.h"
 
 /*
- * class TFileNode
+ * Class: TFileNode
  * Purpose: Implements the TObjectNode interface for Files found on the local hard drive
  */
 class _TREC_LIB_DLL TFileNode :

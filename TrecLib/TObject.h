@@ -14,7 +14,7 @@ extern UCHAR TMapType[];
 class TString;
 
 /*
-* Class TObject
+* Class: TObject
 * Serves as the base object for the AnaGame platform
 */
 class _TREC_LIB_DLL TObject 

@@ -4,7 +4,7 @@
 class TAssembler;
 
 /*
- * class TByteVirtualMachine
+ * Class: TByteVirtualMachine
  * Purpose: Provide a base for Byte Based (as opposed to Object-Based) Virtual Machines, both of which can 
  * serve as an Intermediary between Source-Code and a non-AnaGame final form, whether it is JVM or actual hard-ware
  * like x86 or ARM. These machines will be used to 

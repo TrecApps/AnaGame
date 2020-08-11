@@ -3,7 +3,7 @@
 #include <TObjectNode.h>
 
 /*
- * class TTreeDataBind
+ * Class: TTreeDataBind
  * Purpose: Support for depicting a tree-based system on Anaface
  */
 class _ANAFACE_DLL TTreeDataBind :

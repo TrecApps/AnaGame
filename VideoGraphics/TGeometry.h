@@ -17,7 +17,7 @@ typedef enum class geo_type
 }geo_type;
 
 /**
- * class TGeometry
+ * Class: TGeometry
  * Purpose: Helps simplifiy the management of geometries in 2D drawing
  */
 class _VIDEO_GRAPHICS TGeometry :

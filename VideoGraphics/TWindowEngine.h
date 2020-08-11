@@ -19,7 +19,7 @@
 
 
 /* 
- * class TWindowEngine
+ * Class: TWindowEngine
  * Purpose: Hold 3D Resources that can be shared within a Window such as the Context Device,
  *		renderTargets, SwapChains, and AnaGame native shaders.
  * Note: Ideally, there should be one instance of this class per Window and is intended to be 

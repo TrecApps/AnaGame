@@ -3,7 +3,7 @@
 
 
 /*
-* Class TGadgetControl
+* Class: TGadgetControl
 * Purpose: To support controls with a button within them
 */
 class _ANAFACE_DLL TGadgetControl :

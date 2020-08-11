@@ -11,7 +11,7 @@
      */
 
 /**
- * Class ReportObject
+ * Class: ReportObject
  * Purpose: allows the Interpretors to report the results of a run 
  */
 class ReportObject
