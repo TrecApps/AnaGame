@@ -941,11 +941,158 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
  * Purpose: Processes the let command
  * Parameters: TString& exp - the 'let' statement to inspect and process
  *              UINT line - the line number being called upon,
- *              ReportObject ro - objct indicating the success of the program or falure information
+ *              ReportObject& ro - objct indicating the success of the program or falure information
  * Returns: void
  */
 void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObject& ro)
 {
+}
+
+/**
+ * Method: TAnascriptInterpretor::ProcessProcedureCall
+ * Purpose: Processes the Call to a function or method
+ * Parameters: TString& exp - the expression to analyze statement to inspect and process
+ *              UINT line - the line number being called upon,
+ *              ReportObject& ro - objct indicating the success of the program or falure information
+ * Returns: void
+ */
+void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, ReportObject& ro)
+{
+    int openPar = exp.Find(L'(');
+    if (openPar == -1)
+    {
+        ro.returnCode = ReportObject::broken_reference;
+        ro.errorMessage.Set("Procedure string exprected a '(' to signify call!");
+
+        return;
+    }
+
+    TString start(exp.SubString(0, openPar));
+
+    UINT indexDotStart = 0;
+    UINT indexDot;
+
+    TString var;
+    TrecPointer<TVariable> object;
+    TrecPointer<TVariable> call;
+
+    while ((indexDot = start.Find(L".", indexDotStart)) != -1)
+    {
+        var.Set(start.SubString(indexDotStart, indexDot));
+        var.Trim();
+
+        if (object.Get())
+        {
+            if (object->GetVarType() == var_type::collection)
+            {
+                bool pres;
+                object = dynamic_cast<TContainerVariable*>(object.Get())->GetValue(var, pres);
+
+                if (!object.Get())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    if (pres)
+                        ro.errorMessage.Format(L"Encountered Null object %ws during attempted method call!", var.GetConstantBuffer());
+                    else 
+                        ro.errorMessage.Format(L"Encountered undefined object %ws during attempted method call!", var.GetConstantBuffer());
+                    return;
+                }
+            }
+            else
+            {
+                ro.returnCode = ro.broken_reference;
+                
+                ro.errorMessage.Format(L"Encountered non-extendable variable %ws in an attempt to get to final Object!", var.GetConstantBuffer());
+                return;
+            }
+        }
+        else
+        {
+            object = variables.retrieveEntry(var);
+            if (!object.Get())
+            {
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Format(L"Encountered Null or undefined variable %ws while preparing method call!", var.GetConstantBuffer());
+                return;
+            }
+        }
+
+        indexDotStart = indexDot + 1;
+    }
+
+    TString procedureName(start.SubString(indexDotStart).GetTrim());
+    bool pres = true;
+    call = (object.Get() && object->GetVarType() == var_type::collection) ? dynamic_cast<TContainerVariable*>(object.Get())->GetValue(procedureName, pres) :
+        variables.retrieveEntry(procedureName);
+
+    if (!call.Get())
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Format(L"%ws call %ws was found to be %ws!",
+            (object.Get()) ? L"Method" : L"Function",
+            procedureName.GetConstantBuffer(),
+            (pres) ? L"null": L"undefined");
+        return;
+    }
+
+    // To-Do: When Get Type is added to TObject, add code to adjust the attempts to get code
+
+    if (call->GetVarType() != var_type::interpretor)
+    {
+        ro.returnCode = ro.improper_type;
+        ro.errorMessage.Format(L"Varible type %ws needs to be of type Interpretor so that Anascript can call it!", procedureName.GetConstantBuffer());
+        return;
+    }
+
+
+    TString params(exp.SubString(openPar + 1));
+    ProcessProcedureCall(object, call, params,line, ro);
+}
+
+void TAnascriptInterpretor::ProcessProcedureCall(TrecPointer<TVariable> object, TrecPointer<TVariable> call, TString& exp, UINT line, ReportObject& ro)
+{
+    if (!call.Get())
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"Ended up with broken reference to Procedure call!");
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ro.stackTrace.push_back(stack);
+        return;
+    }
+    if (call->GetVarType() != var_type::interpretor)
+    {
+        ro.returnCode = ro.improper_type;
+        ro.errorMessage.Set(L"Expected Procedure call to be of type 'interpretor'!");
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ro.stackTrace.push_back(stack);
+        return;
+    }
+
+    auto params = exp.split(L",", 2);
+
+    TDataArray<TrecPointer<TVariable>> parameters;
+    if (object.Get())
+        parameters.push_back(object);
+
+    for (UINT c = 0; c < params->Size(); c++)
+    {
+        TString param(params->at(c).GetTrim());
+        
+        ProcessExpression(param, line, ro);
+        if (ro.returnCode)
+        {
+            ro.errorMessage.AppendFormat(L" during %ws Call!", (object.Get()) ? L"Method" : L"Function");
+            return;
+        }
+
+        parameters.push_back(ro.errorObject);
+    }
+
+    ro = dynamic_cast<TInterpretor*>(call.Get())->Run(parameters);
+
+
 }
 
 /**
