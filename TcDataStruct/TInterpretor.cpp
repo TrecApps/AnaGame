@@ -234,6 +234,13 @@ UINT TInterpretor::SetCode(TrecPointer<TFile> file, ULONG64 start, ULONG64 end)
 }
 
 
+/**
+ * Method: TInterpretor::ProcessAddition
+ * Purpose: Filters variables in preparation for performing an addition operation
+ * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the first addend
+ *              TrecPointer<TVariable> var2 - the second variable, representing the second addend
+ * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+ */
 ReportObject TInterpretor::ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
 {
 	if (!var1.Get() || !var2.Get())
@@ -303,6 +310,13 @@ ReportObject TInterpretor::ProcessAddition(TrecPointer<TVariable> var1, TrecPoin
 	return ro;
 }
 
+/**
+ * Method: TInterpretor::ProcessSubtraction
+ * Purpose: Filters variables in preparation for performing a subtraction operation
+ * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the minuend
+ *              TrecPointer<TVariable> var2 - the second variable, representing the subtrahend
+ * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+ */
 ReportObject TInterpretor::ProcessSubtraction(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
 {
 	if (!var1.Get() || !var2.Get())
@@ -341,6 +355,13 @@ ReportObject TInterpretor::ProcessSubtraction(TrecPointer<TVariable> var1, TrecP
 	return ro;
 }
 
+/**
+ * Method: TInterpretor::ProcessMultiplication
+ * Purpose: Filters variables in preparation for performing a multiplication operation
+ * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the first factor
+ *              TrecPointer<TVariable> var2 - the second variable, representing the second factor
+ * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+ */
 ReportObject TInterpretor::ProcessMultiplication(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
 {
 	if (!var1.Get() || !var2.Get())
@@ -379,6 +400,13 @@ ReportObject TInterpretor::ProcessMultiplication(TrecPointer<TVariable> var1, Tr
 	return ro;
 }
 
+/**
+ * Method: TInterpretor::ProcessDivision
+ * Purpose: Filters variables in preparation for performing a division operation
+ * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the dividend
+ *              TrecPointer<TVariable> var2 - the second variable, representing the divisor
+ * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+ */
 ReportObject TInterpretor::ProcessDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
 {
 	if (!var1.Get() || !var2.Get())
@@ -417,6 +445,13 @@ ReportObject TInterpretor::ProcessDivision(TrecPointer<TVariable> var1, TrecPoin
 	return ro;
 }
 
+/**
+ * Method: TInterpretor::ProcessModDivision
+ * Purpose: Filters variables in preparation for performing a mod division operation
+ * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the dividend
+ *              TrecPointer<TVariable> var2 - the second variable, representing the divisor
+ * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+ */
 ReportObject TInterpretor::ProcessModDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
 {
 	if (!var1.Get() || !var2.Get())
@@ -455,6 +490,13 @@ ReportObject TInterpretor::ProcessModDivision(TrecPointer<TVariable> var1, TrecP
 	return ro;
 }
 
+/**
+ * Method: TInterpretor::ProcessExponent
+ * Purpose: Filters variables in preparation for performing an exponent operation
+ * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the base
+ *              TrecPointer<TVariable> var2 - the second variable, representing the power
+ * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+ */
 ReportObject TInterpretor::ProcessExponent(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
 {
 	if (!var1.Get() || !var2.Get())
@@ -493,6 +535,15 @@ ReportObject TInterpretor::ProcessExponent(TrecPointer<TVariable> var1, TrecPoin
 	return ro;
 }
 
+
+
+/**
+ * Method: TInterpretor::Add
+ * Purpose: Helper method for the ProcessAddition method, performing the actual operation
+ * Parameters: const DoubleLong& v1 - the first addend for the operation
+ *              const DoubleLong& v2 - the second addend for the operation
+ * Returns: DoubleLong - the result of the Addition operation
+ */
 DoubleLong TInterpretor::Add(const DoubleLong& v1, const DoubleLong& v2)
 {
 	if (v1.type == double_long::dl_double)
@@ -542,6 +593,13 @@ DoubleLong TInterpretor::Add(const DoubleLong& v1, const DoubleLong& v2)
 	}
 }
 
+/**
+ * Method: TInterpretor::Subtract
+ * Purpose: Helper method for the ProcessSubtraction method, performing the actual operation
+ * Parameters: const DoubleLong& v1 - the minuend for the operation
+ *              const DoubleLong& v2 - the subtrahend for the operation
+ * Returns: DoubleLong - the result of the Subtraction operation
+ */
 DoubleLong TInterpretor::Subtract(const DoubleLong& v1, const DoubleLong& v2)
 {
 	if (v1.type == double_long::dl_double)
@@ -591,6 +649,13 @@ DoubleLong TInterpretor::Subtract(const DoubleLong& v1, const DoubleLong& v2)
 	}
 }
 
+/**
+ * Method: TInterpretor::Multiply
+ * Purpose: Helper method for the ProcessMultiplication method, performing the actual operation
+ * Parameters: const DoubleLong& v1 - the first factor for the operation
+ *              const DoubleLong& v2 - the second factor for the operation
+ * Returns: DoubleLong - the result of the Multiply operation
+ */
 DoubleLong TInterpretor::Multiply(const DoubleLong& v1, const DoubleLong& v2)
 {
 	if (v1.type == double_long::dl_double)
@@ -640,6 +705,13 @@ DoubleLong TInterpretor::Multiply(const DoubleLong& v1, const DoubleLong& v2)
 	}
 }
 
+/**
+ * Method: TInterpretor::Divide
+ * Purpose: Helper method for the ProcessDivision method, performing the actual operation
+ * Parameters: const DoubleLong& v1 - the dividend for the operation
+ *              const DoubleLong& v2 - the divisor for the operation
+ * Returns: DoubleLong - the result of the Division operation
+ */
 DoubleLong TInterpretor::Divide(const DoubleLong& v1, const DoubleLong& v2)
 {
 	if (v1.type == double_long::dl_double)
@@ -689,6 +761,13 @@ DoubleLong TInterpretor::Divide(const DoubleLong& v1, const DoubleLong& v2)
 	}
 }
 
+/**
+ * Method: TInterpretor::ModDivide
+ * Purpose: Helper method for the ProcessModDivision method, performing the actual operation
+ * Parameters: const DoubleLong& v1 - the dividend for the operation
+ *              const DoubleLong& v2 - the divisor for the operation
+ * Returns: DoubleLong - the result of the Mod Division operation
+ */
 DoubleLong TInterpretor::ModDivide(const DoubleLong& v1, const DoubleLong& v2)
 {
 	if (v1.type == double_long::dl_double)
@@ -738,6 +817,13 @@ DoubleLong TInterpretor::ModDivide(const DoubleLong& v1, const DoubleLong& v2)
 	}
 }
 
+/**
+ * Method: TInterpretor::Exponent
+ * Purpose: Helper method for the ProcessExponent method, performing the actual operation
+ * Parameters: const DoubleLong& v1 - the base value for the operation
+ *              const DoubleLong& v2 - the power value for the operation
+ * Returns: DoubleLong - the result of the Exponent operation
+ */
 DoubleLong TInterpretor::Exponent(const DoubleLong& v1, const DoubleLong& v2)
 {
 	if (v1.type == double_long::dl_double)
@@ -787,6 +873,12 @@ DoubleLong TInterpretor::Exponent(const DoubleLong& v1, const DoubleLong& v2)
 	}
 }
 
+/**
+ * Method: TInterpretor::GetValueFromPrimitive
+ * Purpose: Helper method for interpreting arithmetic operations by extracting the value from the variable
+ * Parameters: TrecPointer<TVariable> var - the variable believed holding the primitive value
+ * Returns: DoubleLong - the value held by the variable
+ */
 DoubleLong TInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
 {
 	if(!var.Get() || var->GetVarType() != var_type::primitive)
@@ -830,6 +922,12 @@ DoubleLong TInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
 	return DoubleLong();
 }
 
+/**
+ * Method: TInterpretor::GetStringFromPrimitive
+ * Purpose:
+ * Parameters: TrecPointer<TVariable> var - the variable believed to be capable of producing some string value
+ * Returns: TString - string representation of the primitive variable
+ */
 TString TInterpretor::GetStringFromPrimitive(TrecPointer<TVariable> var)
 {
 	if (!var.Get() || var->GetVarType() != var_type::primitive)

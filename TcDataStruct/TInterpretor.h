@@ -10,6 +10,10 @@
      * Returns: 
      */
 
+/**
+ * Union: doubleLong
+ * Purpose: Holds either a double, unsigned or signed integer, all 8 bytes
+ */
 union doubleLong
 {
     LONG64 s;
@@ -17,6 +21,10 @@ union doubleLong
     double d;
 };
 
+/**
+ * enum class: double_long
+ * Purpose: used to keep track of the status of the doubleLong union
+ */
 enum class double_long
 {
     dl_sign,
@@ -24,6 +32,10 @@ enum class double_long
     dl_double
 };
 
+/**
+ * struct: DoubleLong
+ * Purpose: Aids interpretors in basic arithmetic byt hold values and keeping track of their types
+ */
 struct DoubleLong
 {
     doubleLong value;
@@ -283,22 +295,119 @@ protected:
 
     // Methods for easy arithmetic implementation
 
+
+    /**
+     * Method: TInterpretor::ProcessAddition
+     * Purpose: Filters variables in preparation for performing an addition operation
+     * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the first addend
+     *              TrecPointer<TVariable> var2 - the second variable, representing the second addend
+     * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     */
     virtual ReportObject ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
 
+    /**
+     * Method: TInterpretor::ProcessSubtraction
+     * Purpose: Filters variables in preparation for performing a subtraction operation
+     * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the minuend
+     *              TrecPointer<TVariable> var2 - the second variable, representing the subtrahend
+     * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     */
     virtual ReportObject ProcessSubtraction(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+    /**
+     * Method: TInterpretor::ProcessMultiplication
+     * Purpose: Filters variables in preparation for performing a multiplication operation
+     * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the first factor
+     *              TrecPointer<TVariable> var2 - the second variable, representing the second factor
+     * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     */
     virtual ReportObject ProcessMultiplication(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+    /**
+     * Method: TInterpretor::ProcessDivision
+     * Purpose: Filters variables in preparation for performing a division operation
+     * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the dividend
+     *              TrecPointer<TVariable> var2 - the second variable, representing the divisor
+     * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     */
     virtual ReportObject ProcessDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+    /**
+     * Method: TInterpretor::ProcessModDivision
+     * Purpose: Filters variables in preparation for performing a mod division operation
+     * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the dividend
+     *              TrecPointer<TVariable> var2 - the second variable, representing the divisor
+     * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     */
     virtual ReportObject ProcessModDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
+    /**
+     * Method: TInterpretor::ProcessExponent
+     * Purpose: Filters variables in preparation for performing an exponent operation
+     * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the base
+     *              TrecPointer<TVariable> var2 - the second variable, representing the power
+     * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     */
     virtual ReportObject ProcessExponent(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
 
-    DoubleLong Add(const DoubleLong& v1, const DoubleLong& v2);
-    DoubleLong Subtract(const DoubleLong& v1, const DoubleLong& v2);
-    DoubleLong Multiply(const DoubleLong& v1, const DoubleLong& v2);
-    DoubleLong Divide(const DoubleLong& v1, const DoubleLong& v2);
-    DoubleLong ModDivide(const DoubleLong& v1, const DoubleLong& v2);
-    DoubleLong Exponent(const DoubleLong& v1, const DoubleLong& v2);
+    /**
+     * Method: TInterpretor::Add
+     * Purpose: Helper method for the ProcessAddition method, performing the actual operation
+     * Parameters: const DoubleLong& v1 - the first addend for the operation
+     *              const DoubleLong& v2 - the second addend for the operation
+     * Returns: DoubleLong - the result of the Addition operation
+     */
+    virtual DoubleLong Add(const DoubleLong& v1, const DoubleLong& v2);
+    /**
+     * Method: TInterpretor::Subtract
+     * Purpose: Helper method for the ProcessSubtraction method, performing the actual operation
+     * Parameters: const DoubleLong& v1 - the minuend for the operation
+     *              const DoubleLong& v2 - the subtrahend for the operation
+     * Returns: DoubleLong - the result of the Subtraction operation
+     */
+    virtual DoubleLong Subtract(const DoubleLong& v1, const DoubleLong& v2);
+    /**
+     * Method: TInterpretor::Multiply
+     * Purpose: Helper method for the ProcessMultiplication method, performing the actual operation
+     * Parameters: const DoubleLong& v1 - the first factor for the operation
+     *              const DoubleLong& v2 - the second factor for the operation
+     * Returns: DoubleLong - the result of the Multiply operation
+     */
+    virtual DoubleLong Multiply(const DoubleLong& v1, const DoubleLong& v2);
+    /**
+     * Method: TInterpretor::Divide
+     * Purpose: Helper method for the ProcessDivision method, performing the actual operation
+     * Parameters: const DoubleLong& v1 - the dividend for the operation
+     *              const DoubleLong& v2 - the divisor for the operation
+     * Returns: DoubleLong - the result of the Division operation
+     */
+    virtual DoubleLong Divide(const DoubleLong& v1, const DoubleLong& v2);
+    /**
+     * Method: TInterpretor::ModDivide
+     * Purpose: Helper method for the ProcessModDivision method, performing the actual operation
+     * Parameters: const DoubleLong& v1 - the dividend for the operation
+     *              const DoubleLong& v2 - the divisor for the operation
+     * Returns: DoubleLong - the result of the Mod Division operation
+     */
+    virtual DoubleLong ModDivide(const DoubleLong& v1, const DoubleLong& v2);
+    /**
+     * Method: TInterpretor::Exponent
+     * Purpose: Helper method for the ProcessExponent method, performing the actual operation
+     * Parameters: const DoubleLong& v1 - the base value for the operation
+     *              const DoubleLong& v2 - the power value for the operation
+     * Returns: DoubleLong - the result of the Exponent operation
+     */
+    virtual DoubleLong Exponent(const DoubleLong& v1, const DoubleLong& v2);
 
+    /**
+     * Method: TInterpretor::GetValueFromPrimitive
+     * Purpose: Helper method for interpreting arithmetic operations by extracting the value from the variable
+     * Parameters: TrecPointer<TVariable> var - the variable believed holding the primitive value
+     * Returns: DoubleLong - the value held by the variable
+     */
     DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var);
+    /**
+     * Method: TInterpretor::GetStringFromPrimitive
+     * Purpose:
+     * Parameters: TrecPointer<TVariable> var - the variable believed to be capable of producing some string value
+     * Returns: TString - string representation of the primitive variable
+     */
     TString GetStringFromPrimitive(TrecPointer<TVariable> var);
 
 };
