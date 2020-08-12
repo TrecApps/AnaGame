@@ -550,45 +550,45 @@ DoubleLong TInterpretor::Add(const DoubleLong& v1, const DoubleLong& v2)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ v1.value.d + v2.value.d , double_long::dl_double };
+			return DoubleLong( v1.value.d + v2.value.d );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.d + v2.value.s) , double_long::dl_double };
+			return DoubleLong(static_cast<double>(v1.value.d + v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<double>(v1.value.d + v2.value.u) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.d + v2.value.u) );
 		}
 	}
 	else if (v1.type == double_long::dl_sign)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.s + v2.value.d) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.s + v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ (v1.value.s + v2.value.s) , double_long::dl_sign };
+			return DoubleLong( (v1.value.s + v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.s + v2.value.u), double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.s + v2.value.u));
 		}
 	}
 	else
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.u + v2.value.d) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.u + v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.u + v2.value.s) , double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.u + v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ (v1.value.u + v2.value.u) , double_long::dl_unsign };
+			return DoubleLong( static_cast<ULONG64>(v1.value.u + v2.value.u) );
 		}
 	}
 }
@@ -606,45 +606,45 @@ DoubleLong TInterpretor::Subtract(const DoubleLong& v1, const DoubleLong& v2)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ v1.value.d - v2.value.d , double_long::dl_double };
+			return DoubleLong( v1.value.d - v2.value.d );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.d - v2.value.s) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.d - v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<double>(v1.value.d - v2.value.u) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.d - v2.value.u) );
 		}
 	}
 	else if (v1.type == double_long::dl_sign)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ static_cast<double>(static_cast<double>(v1.value.s) - v2.value.d) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(static_cast<double>(v1.value.s) - v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ (v1.value.s - v2.value.s) , double_long::dl_sign };
+			return DoubleLong( (v1.value.s - v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.s - v2.value.u), double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.s - v2.value.u));
 		}
 	}
 	else
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.u - v2.value.d) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.u - v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.u - v2.value.s) , double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.u - v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ (v1.value.u - v2.value.u) , double_long::dl_unsign };
+			return DoubleLong( static_cast<ULONG64>(v1.value.u - v2.value.u) );
 		}
 	}
 }
@@ -662,45 +662,45 @@ DoubleLong TInterpretor::Multiply(const DoubleLong& v1, const DoubleLong& v2)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ v1.value.d * v2.value.d , double_long::dl_double };
+			return DoubleLong( v1.value.d * v2.value.d );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.d * v2.value.s) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.d * v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<double>(v1.value.d * v2.value.u) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.d * v2.value.u) );
 		}
 	}
 	else if (v1.type == double_long::dl_sign)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.s * v2.value.d) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.s * v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ (v1.value.s * v2.value.s) , double_long::dl_sign };
+			return DoubleLong( (v1.value.s * v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.s * v2.value.u), double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.s * v2.value.u));
 		}
 	}
 	else
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.u * v2.value.d) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.u * v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.u * v2.value.s) , double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.u * v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ (v1.value.u * v2.value.u) , double_long::dl_unsign };
+			return DoubleLong( static_cast<ULONG64>(v1.value.u * v2.value.u) );
 		}
 	}
 }
@@ -718,45 +718,45 @@ DoubleLong TInterpretor::Divide(const DoubleLong& v1, const DoubleLong& v2)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ v1.value.d / v2.value.d , double_long::dl_double };
+			return DoubleLong( v1.value.d / v2.value.d );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.d / v2.value.s) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.d / v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<double>(v1.value.d / v2.value.u) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.d / v2.value.u) );
 		}
 	}
 	else if (v1.type == double_long::dl_sign)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.s / v2.value.d) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.s / v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ (v1.value.s / v2.value.s) , double_long::dl_sign };
+			return DoubleLong( (v1.value.s / v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.s / v2.value.u), double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.s / v2.value.u));
 		}
 	}
 	else
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ static_cast<double>(v1.value.u / v2.value.d) , double_long::dl_double };
+			return DoubleLong( static_cast<double>(v1.value.u / v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.u / v2.value.s) , double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.u / v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ (v1.value.u / v2.value.u) , double_long::dl_unsign };
+			return DoubleLong( static_cast<ULONG64>(v1.value.u / v2.value.u) );
 		}
 	}
 }
@@ -774,45 +774,45 @@ DoubleLong TInterpretor::ModDivide(const DoubleLong& v1, const DoubleLong& v2)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ fmod( v1.value.d, v2.value.d) , double_long::dl_double };
+			return DoubleLong( fmod( v1.value.d, v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ fmod(v1.value.d, v2.value.s) , double_long::dl_double };
+			return DoubleLong( fmod(v1.value.d, v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ fmod(v1.value.d, v2.value.s) , double_long::dl_double };
+			return DoubleLong( fmod(v1.value.d, v2.value.s) );
 		}
 	}
 	else if (v1.type == double_long::dl_sign)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ fmod(v1.value.d, v2.value.s) , double_long::dl_double };
+			return DoubleLong( fmod(v1.value.d, v2.value.s) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ (v1.value.s % v2.value.s) , double_long::dl_sign };
+			return DoubleLong( (v1.value.s % v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.s % v2.value.u), double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.s % v2.value.u));
 		}
 	}
 	else
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ fmod(v1.value.d, v2.value.s) , double_long::dl_double };
+			return DoubleLong( fmod(v1.value.d, v2.value.s) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ static_cast<LONG64>(v1.value.u % v2.value.s) , double_long::dl_sign };
+			return DoubleLong( static_cast<LONG64>(v1.value.u % v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ static_cast<ULONG64>(v1.value.u % v2.value.u) , double_long::dl_unsign };
+			return DoubleLong( static_cast<ULONG64>(v1.value.u % v2.value.u) );
 		}
 	}
 }
@@ -830,45 +830,45 @@ DoubleLong TInterpretor::Exponent(const DoubleLong& v1, const DoubleLong& v2)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ pow(v1.value.d, v2.value.d) , double_long::dl_double };
+			return DoubleLong( pow(v1.value.d, v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ pow(v1.value.d, v2.value.s) , double_long::dl_double };
+			return DoubleLong( pow(v1.value.d, v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ pow(v1.value.d, v2.value.u) , double_long::dl_double };
+			return DoubleLong( pow(v1.value.d, v2.value.u) );
 		}
 	}
 	else if (v1.type == double_long::dl_sign)
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ pow(v1.value.s, v2.value.d) , double_long::dl_double };
+			return DoubleLong( pow(v1.value.s, v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ pow(v1.value.s, v2.value.s) , double_long::dl_double };
+			return DoubleLong( pow(v1.value.s, v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ pow(v1.value.s, v2.value.u), double_long::dl_double };
+			return DoubleLong( pow(v1.value.s, v2.value.u));
 		}
 	}
 	else
 	{
 		if (v2.type == double_long::dl_double)
 		{
-			return DoubleLong{ pow(v1.value.u, v2.value.d) , double_long::dl_double };
+			return DoubleLong( pow(v1.value.u, v2.value.d) );
 		}
 		else if (v2.type == double_long::dl_sign)
 		{
-			return DoubleLong{ pow(v1.value.u, v2.value.s) , double_long::dl_double };
+			return DoubleLong( pow(v1.value.u, v2.value.s) );
 		}
 		else
 		{
-			return DoubleLong{ pow(v1.value.u, v2.value.u) , double_long::dl_double };
+			return DoubleLong( pow(v1.value.u, v2.value.u) );
 		}
 	}
 }
@@ -891,17 +891,17 @@ DoubleLong TInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
 	switch (var->GetType())
 	{
 	case (TPrimitiveVariable::type_bool):
-		return DoubleLong{ 1ULL, double_long::dl_unsign };
+		return DoubleLong( 1ULL);
 
 	case (0b00110010):						// Indicates a four-byte float
 		u_value = var->Get4Value();
 		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
-		return DoubleLong{ f_value, double_long::dl_double };
+		return DoubleLong( f_value);
 
 	case (0b01000010):						// Indicates an eight-byte float
 		u_value = var->Get8Value();
 		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
-		return DoubleLong{ f_value, double_long::dl_double };
+		return DoubleLong( f_value);
 
 	case (0b00010000):						// Indicates a 1-byte int
 	case (0b00100000):						// Indicates a 2-byte int
@@ -909,13 +909,13 @@ DoubleLong TInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
 	case (0b01000000):						// Indicates an 8-byte int
 		u_value = var->Get8Value();
 		memcpy_s(&s_value, sizeof(s_value), &u_value, sizeof(u_value));
-		return DoubleLong{ s_value, double_long::dl_sign };
+		return DoubleLong( s_value);
 
 	case (0b00011000):						// Indicates a 1-byte uint
 	case (0b00101000):						// Indicates a 2-byte uint
 	case (0b00111000):						// Indicates a 4-byte uint
 	case (0b01001000):						// Indicates an 8-byte uint
-		return DoubleLong{ u_value, double_long::dl_unsign };
+		return DoubleLong( static_cast<ULONG64>(u_value));
 
 
 	}
@@ -962,4 +962,27 @@ TString TInterpretor::GetStringFromPrimitive(TrecPointer<TVariable> var)
 		}
 	}
 	return strValue;
+}
+
+DoubleLong::DoubleLong(ULONG64 val)
+{
+	value.u = val;
+	type = double_long::dl_unsign;
+}
+
+DoubleLong::DoubleLong(LONG64 val)
+{
+	value.s = val;
+	type = double_long::dl_sign;
+}
+
+DoubleLong::DoubleLong(double val)
+{
+	value.d = val;
+	type = double_long::dl_double;
+}
+
+DoubleLong::DoubleLong()
+{
+	type = double_long::dl_invalid;
 }

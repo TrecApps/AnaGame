@@ -288,5 +288,9 @@ UINT TContainerVariable::GetType()
  */
 TrecPointer<TVariable> TContainerVariable::GetValueAt(UINT index)
 {
-    values.GetEntryAt(index);
+    auto entry = values.GetEntryAt(index);
+
+    if (!entry.Get())
+        return TrecPointer<TVariable>();
+    return entry->object;
 }

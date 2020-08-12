@@ -108,9 +108,6 @@
     <ClInclude Include="CameraHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TEnvironment.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FileHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -201,9 +198,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CameraHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TEnvironment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileHandler.cpp">

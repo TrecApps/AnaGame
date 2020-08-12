@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TEnvironment.h"
-#include <TMap.h>
-#include <DirectoryInterface.h>
+#include "TMap.h"
+#include "DirectoryInterface.h"
 
 static bool languagesMapped = false;
 

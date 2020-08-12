@@ -1,14 +1,13 @@
 #pragma once
-#include <TObject.h>
-#include <TFile.h>
-#include <TMap.h>
-#include "Tap_dll.h"
-#include <TType.h>
-#include <TDirectory.h>
-#include <TCanvas.h>
-#include <TPromptControl.h>
+#include "TObject.h"
+#include "TFile.h"
+#include "TMap.h"
+#include "TrecLib.h"
+#include "TType.h"
+#include "TDirectory.h"
 
-
+class TControl;
+class TPromptControl;
 
 
 void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataArray<TString>& environmentType);
@@ -16,7 +15,7 @@ void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataA
 /** struct LangNames
  * Purpose: holds the name of a Programming language and the file extensions associated with them
  */
-class _TAP_DLL LangNames : public TObject
+class _TREC_LIB_DLL LangNames : public TObject
 {
 public:
 	TString language;
@@ -30,7 +29,7 @@ public:
  * Note: This class was originally in the TrecCode Library. However, it was moved to the Tap library as a means to 
  *  provide the Ide Window with a means of knowing what directory it is focusing on
  */
-class _TAP_DLL TEnvironment :
+class _TREC_LIB_DLL TEnvironment :
 	public TObject
 {
 public:

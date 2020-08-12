@@ -76,7 +76,7 @@ void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, Repo
     {
         auto str = var->GetString();
         float f = 0.0f;
-        if (!str.ConvertToFloat(&f))
+        if (!str.ConvertToFloat(f))
         {
             ret.returnCode = 0;
             ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(f);
@@ -84,7 +84,7 @@ void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, Repo
         }
 
         double d = 0.0;
-        if (!str.ConvertToDouble(&d))
+        if (!str.ConvertToDouble(d))
         {
             ret.returnCode = 0;
             ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
@@ -127,7 +127,7 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, Report
     {
         auto str = var->GetString();
         float f = 0.0f;
-        if (!str.ConvertToFloat(&f))
+        if (!str.ConvertToFloat(f))
         {
             ret.returnCode = 0;
             ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<int>(f));
@@ -135,7 +135,7 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, Report
         }
 
         double d = 0.0;
-        if (!str.ConvertToDouble(&d))
+        if (!str.ConvertToDouble(d))
         {
             ret.returnCode = 0;
             ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<LONG64>(d));
@@ -143,7 +143,7 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, Report
         }
 
         int i = 0;
-        if (!str.ConvertToInt(&i))
+        if (!str.ConvertToInt(i))
         {
             ret.returnCode = 0;
             ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(i);
@@ -151,7 +151,7 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, Report
         }
 
         long long l = 0l;
-        if (!str.ConvertToLong(&l))
+        if (!str.ConvertToLong(l))
         {
             ret.returnCode = 0;
             ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(l);

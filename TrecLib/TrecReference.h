@@ -61,7 +61,7 @@ protected:
  * Class: TrecObjectPointer
  * Purpose: Holds a reference to an Object as if it was just a TObject
  */
-class TrecObjectPointer
+class _TREC_LIB_DLL TrecObjectPointer
 {
 	friend class TrecPointerKey;
 protected:

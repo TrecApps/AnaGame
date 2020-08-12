@@ -1103,4 +1103,22 @@ void TAnascriptInterpretor::ProcessProcedureCall(TrecPointer<TVariable> object, 
  */
 bool TAnascriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
 {
+    if (!var.Get())
+        return false;
+
+    switch (var->GetVarType())
+    {
+    case var_type::collection:
+        return var->GetSize();
+    case var_type::primitive:
+        return var->Get8Value();
+    case var_type::string:
+        return var->GetString().GetSize() && var->GetString().GetTrim().Compare(L"false");
+    }
+
+
+
+
+
+    return true;
 }

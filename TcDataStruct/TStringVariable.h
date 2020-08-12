@@ -7,6 +7,7 @@
 class TC_DATA_STRUCT TStringVariable :
     public TVariable
 {
+public:
     /**
      * Method: TStringVariable::TStringVariable
      * Purpose: Constructor

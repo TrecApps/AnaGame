@@ -29,15 +29,21 @@ enum class double_long
 {
     dl_sign,
     dl_unsign,
-    dl_double
+    dl_double,
+    dl_invalid
 };
 
 /**
- * struct: DoubleLong
+ * Class: DoubleLong
  * Purpose: Aids interpretors in basic arithmetic byt hold values and keeping track of their types
  */
-struct DoubleLong
+class DoubleLong
 {
+public:
+    DoubleLong(ULONG64 val);
+    DoubleLong(LONG64 val);
+    DoubleLong(double val);
+    DoubleLong();
     doubleLong value;
     double_long type;
 };
