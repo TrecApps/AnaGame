@@ -8,7 +8,7 @@
  * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
  * Returns: New TAnascriptInterpretor Object
  */
-TAnascriptInterpretor::TAnascriptInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor): TInterpretor(parentInterpretor)
+TAnascriptInterpretor::TAnascriptInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor, TrecPointer<TEnvironment> env): TInterpretor(parentInterpretor, env)
 {
 }
 
@@ -528,7 +528,7 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
 
         // We have determined that the loop line checks out, now to create an interpretor to process the block itself
         TrecSubPointer<TVariable, TAnascriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(
-            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
 
         // Before configuring new interpretor, set up the param name
         TDataArray<TString> paramNames;
@@ -654,7 +654,7 @@ ReportObject TAnascriptInterpretor::ProcessIf(TString& _if, UINT line)
     {
         // We have determined that the loop line checks out, now to create an interpretor to process the block itself
         TrecSubPointer<TVariable, TAnascriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(
-            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
 
         dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, startNext, blockEnd);
 
@@ -750,7 +750,7 @@ ReportObject TAnascriptInterpretor::ProcessWhile(TString& _while, UINT line)
 
     // We have determined that the loop line checks out, now to create an interpretor to process the block itself
     TrecSubPointer<TVariable, TAnascriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(
-        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
 
     dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, startNext, blockEnd);
 
@@ -924,7 +924,7 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
 
     // Create the interpretor
     TrecSubPointer<TVariable, TAnascriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(
-        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
 
     dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, startNext, blockEnd);
 

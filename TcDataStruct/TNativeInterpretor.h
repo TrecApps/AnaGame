@@ -2,7 +2,7 @@
 #include "TInterpretor.h"
 
 
-typedef void (*NativeFunction)(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
+typedef void (*NativeFunction)(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env,ReportObject& ret);
 
 
 /**
@@ -18,9 +18,10 @@ public:
      * Purpose: Constructor
      * Parameters: NativeFunction function - the function to call
      *              TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
+     *				TrecPointer<TEnvironment> env - the environment underwhich this function is operating
      * Returns: New TInterpretor Object
      */
-    TNativeInterpretor(NativeFunction function, TrecSubPointer<TVariable, TInterpretor> parent);
+    TNativeInterpretor(NativeFunction function, TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env);
 
 
     /**

@@ -3,6 +3,9 @@
 #include "TVariable.h"
 #include <TMap.h>
 #include <TFile.h>
+#include <TEnvironment.h>
+
+
     /**
      * Method: TInterpretor::
      * Purpose:
@@ -119,7 +122,7 @@ public:
      * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
      * Returns: New TInterpretor Object
      */
-    TInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor);
+    TInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor, TrecPointer<TEnvironment> env);
 
 
     /**
@@ -177,9 +180,10 @@ public:
      * Method: TInterpretor::GetVariable
      * Purpose: Retrieves the variable specified
      * Parameters: TString& varName - the name of the variable requested
+	 *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
      * Returns: TrecPointer<TVariable> - the variable requested (null if not found)
      */
-    TrecPointer<TVariable> GetVariable(TString& varName);
+    TrecPointer<TVariable> GetVariable(TString& varName, bool& present);
 
     /**
      * Method: TInterretor::SetParamNames
@@ -297,6 +301,11 @@ protected:
      * The Starting and ending points for our file
      */
     ULONG64 start, end;
+
+    /**
+     *
+     */
+    TrecPointer<TEnvironment> environment;
 
 
     // Methods for easy arithmetic implementation

@@ -6,16 +6,16 @@ TMap<TNativeInterpretor> GetJavaScriptFunctions()
 {
     TMap<TNativeInterpretor> jsFunctions;
 
-    jsFunctions.addEntry(L"isFinite", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isFinite, TrecSubPointer<TVariable, TInterpretor>()));
-    jsFunctions.addEntry(L"isNan", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isNan, TrecSubPointer<TVariable, TInterpretor>()));
-    jsFunctions.addEntry(L"parseFloat", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseFloat, TrecSubPointer<TVariable, TInterpretor>()));
-    jsFunctions.addEntry(L"parseInt", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseInt, TrecSubPointer<TVariable, TInterpretor>()));
+    jsFunctions.addEntry(L"isFinite", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isFinite, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"isNan", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isNan, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"parseFloat", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseFloat, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"parseInt", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseInt, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
 
 
     return jsFunctions;
 }
 
-void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret)
+void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
 {
     if (!params.Size())
     {
@@ -27,7 +27,7 @@ void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, Report
     auto var = params[0];
     if (var->GetVarType() == var_type::string)
     {
-        parseFloat(params, ret);
+        parseFloat(params, env, ret);
     }
     if (ret.returnCode == ReportObject::not_number)
     {
@@ -40,11 +40,11 @@ void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, Report
     }
 }
 
-void JavaScriptFunc::isNan(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret)
+void JavaScriptFunc::isNan(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
 {
     ReportObject r1, r2;
 
-    parseFloat(params, r1);
+    parseFloat(params, env, r1);
     
     if (r1.returnCode == ReportObject::not_number  || r1.returnCode == ReportObject::too_few_params)
     {
@@ -54,7 +54,7 @@ void JavaScriptFunc::isNan(TDataArray<TrecPointer<TVariable>>& params, ReportObj
         ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(false);
 }
 
-void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret)
+void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
 {
     if (!params.Size())
     {
@@ -105,7 +105,7 @@ void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, Repo
     ret.returnCode = ReportObject::not_number;
 }
 
-void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret)
+void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
 {
     if (!params.Size())
     {

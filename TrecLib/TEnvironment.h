@@ -8,6 +8,7 @@
 
 class TControl;
 class TPromptControl;
+class TVariable;
 
 
 void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataArray<TString>& environmentType);
@@ -129,6 +130,15 @@ public:
 	 */
 	TrecPointer<TFileShell> GetRootDirectory();
 
+	/**
+	 * Method: TEnvironment::GetVariable
+	 * Purpose: Retrieves the variable requested by the interpretor
+	 * Parameters: TString& var - the name of the variable requested
+	 *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
+	 * Returns: TrecPointer<TVariable> - the variable requested
+	 */
+	TrecPointer<TVariable> GetVariable(TString& var, bool& present);
+
 protected:
 
 	/**
@@ -153,5 +163,10 @@ protected:
 	 * The Command Prompt to work with (send shell commands to)
 	 */
 	TrecSubPointer<TControl, TPromptControl> shellRunner;
+
+	/**
+	 * Holds a collection of variables so that interpretors underneath them could have access to them
+	 */
+	TMap<TrecPointer<TVariable>> envVariables;
 };
 

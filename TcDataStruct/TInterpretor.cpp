@@ -34,17 +34,24 @@ ReportObject::ReportObject(const ReportObject& obj)
  * Method: TInterpretor::GetVariable
  * Purpose: Retrieves the variable specified
  * Parameters: TString& varName - the name of the variable requested
+ *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
  * Returns: TrecPointer<TVariable> - the variable requested (null if not found)
  */
-TrecPointer<TVariable> TInterpretor::GetVariable(TString& varName)
+TrecPointer<TVariable> TInterpretor::GetVariable(TString& varName, bool& present)
 {
 	for (int C = variables.count() - 1; C >= 0; C--)
 	{
 		if (variables.GetEntryAt(C).Get() && !variables.GetEntryAt(C)->key.Compare(varName))
+		{
+			present = true;
 			return variables.GetEntryAt(C)->object;
+		}
 	}
 	if (parent.Get())
-		return parent->GetVariable(varName);
+		return parent->GetVariable(varName, present);
+	if (environment.Get())
+		return environment->GetVariable(varName, present);
+	present = false;
 	return TrecPointer<TVariable>();
 }
 
@@ -191,9 +198,10 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
  * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
  * Returns: New TInterpretor Object
  */
-TInterpretor::TInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor)
+TInterpretor::TInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor, TrecPointer<TEnvironment> env)
 {
 	parent = parentInterpretor;
+	environment = env;
 }
 
 /**

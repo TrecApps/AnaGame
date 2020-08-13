@@ -21,6 +21,43 @@ TrecPointer<TFileShell> TEnvironment::GetRootDirectory()
 }
 
 /**
+ * Method: TEnvironment::GetVariable
+ * Purpose: Retrieves the variable requested by the interpretor
+ * Parameters: TString& var - the name of the variable requested
+ *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
+ * Returns: TrecPointer<TVariable> - the variable requested
+ */
+TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present)
+{
+	for (UINT Rust = 0; Rust < envVariables.count(); Rust++)
+	{
+		auto entry = envVariables.GetEntryAt(Rust);
+		if (!entry.Get())
+		{
+			present = false;
+			return TrecPointer<TVariable>();
+		}
+
+		if (!entry->key.Compare(var))
+		{
+
+			if (present = entry->object.Get())
+			{
+				return *entry->object.Get();
+			}
+			else
+			{
+				return TrecPointer<TVariable>();
+			}
+
+			
+		}
+	}
+	present = false;
+	return TrecPointer<TVariable>();
+}
+
+/**
  * Method: TEnvironment::SetUpLanguageExtensionMapping
  * Purpose: Sets up mapping to langugaes by extension
  * Parameters: void

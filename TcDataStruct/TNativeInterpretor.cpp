@@ -6,9 +6,10 @@
  * Purpose: Constructor
  * Parameters: NativeFunction function - the function to call
  *              TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
+ *				TrecPointer<TEnvironment> env - the environment underwhich this function is operating
  * Returns: New TInterpretor Object
  */
-TNativeInterpretor::TNativeInterpretor(NativeFunction function, TrecSubPointer<TVariable, TInterpretor> parent): TInterpretor(parent)
+TNativeInterpretor::TNativeInterpretor(NativeFunction function, TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env): TInterpretor(parent, env)
 {
 	nativeFunction = function;
 }
@@ -57,6 +58,6 @@ ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params)
 		result.errorMessage.Set(L"Null Reference to Native Function!\n");
 	}
 	else
-		nativeFunction(params, result);
+		nativeFunction(params, environment, result);
 	return result;
 }

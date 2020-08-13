@@ -11,7 +11,7 @@ public:
      * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
      * Returns: New TAnascriptInterpretor Object
      */
-    TAnascriptInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor);
+    TAnascriptInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpretor, TrecPointer<TEnvironment> env);
 
 
     /**
