@@ -102,10 +102,21 @@ public:
      * Purpose: Processes the let command
      * Parameters: TString& exp - the 'let' statement to inspect and process
      *              UINT line - the line number being called upon,
-     *              ReportObject& ro - objct indicating the success of the program or falure information
+     *              ReportObject& ro - objct indicating the success of the program or failure information
      * Returns: void
      */
     void ProcessExpression(TString& exp, UINT line, ReportObject& ro);
+
+
+    /**
+     * Method: TAnascriptInterpretor::ProcessArrayExpression
+     * Purpose: Processes the Array expression
+     * Parameters: TString& exp - the 'let' statement to inspect and process
+     *              UINT line - the line number being called upon,
+     *              ReportObject& ro - objct indicating the success of the program or failure information
+     * Returns: void
+     */
+    void ProcessArrayExpression(TString& exp, UINT line, ReportObject& ro);
 
 
     /**

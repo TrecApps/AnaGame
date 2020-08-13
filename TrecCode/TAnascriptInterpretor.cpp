@@ -948,6 +948,41 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
 {
 }
 
+
+/**
+ * Method: TAnascriptInterpretor::ProcessExpression
+ * Purpose: Processes the let command
+ * Parameters: TString& exp - the 'let' statement to inspect and process
+ *              UINT line - the line number being called upon,
+ *              ReportObject& ro - objct indicating the success of the program or failure information
+ * Returns: void
+ */
+void TAnascriptInterpretor::ProcessArrayExpression(TString& exp, UINT line, ReportObject& ro)
+{
+    auto pieces = exp.split(L",", 0b00000010);
+
+    TrecSubPointer<TVariable, TContainerVariable> array_ = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
+
+    
+
+    for (UINT Rust = 0; Rust < pieces->Size(); Rust++)
+    {
+        TString piece(pieces->at(Rust));
+
+        ProcessExpression(piece, line, ro);
+
+        if (ro.returnCode)
+        {
+            return;
+        }
+
+        array_->AppendValue(ro.errorObject);
+    }
+
+    ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(array_);
+
+}
+
 /**
  * Method: TAnascriptInterpretor::ProcessProcedureCall
  * Purpose: Processes the Call to a function or method
