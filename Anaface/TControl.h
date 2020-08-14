@@ -222,7 +222,7 @@ public:
 	*/
 	TBorder(TrecPointer<DrawingBoard>,TControl*);
 	/*
-	* Method: TBorder:TBorder
+	* Method: TBorder::TBorder
 	* Purpose: Constructor
 	* Parameters: TrecPointer<TBorder> & rBord - Reference to the Border to copy
 	*				TControl* tc_holder - the Control to work for

@@ -107,7 +107,7 @@ private:
 	 */
 	D2D1_ELLIPSE ellBut;
 	/**
-	 * Class: of the Radio button
+	 * Class of the Radio button
 	 */
 	TString* buttonClass;
 	/*

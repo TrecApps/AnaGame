@@ -75,18 +75,18 @@ protected:
 
 
 	/**
-	 * Method: TCodeHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
+	 * Method: TCodeHandler::OnSave
+	 * Purpose: Writes the contents of the code file to the file
+	 * Parameters: TFile& file - the file to write to
+	 * Returns: void
 	 */
 	void OnSave(TFile& file)override;
 
 	/**
-	 * Method: TCodeHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
+	 * Method: TCodeHandler::OnLoad
+	 * Purpose: Intended to read from a provided file
+	 * Parameters: TFile& the file to read from
+	 * Returns: void
 	 */
 	virtual void OnLoad(TFile&)override;
 };

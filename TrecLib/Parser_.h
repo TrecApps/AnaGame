@@ -3,7 +3,7 @@
 
 
 /*
-* Class: Parser
+* Class: Parser_
 * Base class for parsing data into actuall objects
 */
 class _TREC_LIB_DLL Parser_ : public TObject

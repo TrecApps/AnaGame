@@ -11,8 +11,8 @@ class ColorAnimation : public Animation
 {
 public:
 	/**
-	 * Method: ColorAnimation::Animation (Constructor)
-	 * Purpose: Creates the ColorAnimation with the specified animation-phase setting
+	 * Method: ColorAnimation::ColorAnimation
+	 * Purpose: Constructor
 	 * Parameters: animation_phase ap - the animation_phase this Animation is set to
 	 * Returns: ColorAnimation
 	 */

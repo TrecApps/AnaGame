@@ -2,7 +2,7 @@
 #include "EventHandler.h"
 
 /**
- * Class: TerminalHander
+ * Class: TerminalHandler
  * Purpose: Extends the EventHandler class to manage Terminal Pages
  */
 class _TAP_DLL TerminalHandler :
