@@ -66,7 +66,27 @@ public:
 	 *				TrecPointer<TEnvironmentBuilder> builder - the builder to supply
 	 * Returns: Whether the key was submitted or not
 	 */
-
 	static bool SubmitBuilder(const TString& builderKey, TrecPointer<TEnvironmentBuilder> builder);
+
+	/**
+	 * Method: TEnvironmentBuilder::GetAvailableEnvironments
+	 * Purpose: Allows Anagame to know what environment types are available to it
+	 * Parameters: TMap<TString>& env - holds list of available environments by Provider and Environemnt Type
+	 *				TrecPointer<TFileShell> dir - the directory to fish out
+	 * Returns: void
+	 * 
+	 * Note: the 'dir' parameter MUST be initialized with a directory. Otherwise, the env parameter will be empty. 
+	 *		In order to get data without a directory, call the version of this method tht only takes in the 'env' parameter
+	 */
+	static void GetAvailableEnvironments(TMap<TString>& env, TrecPointer<TFileShell> dir);
+
+
+	/**
+	 * Method: TEnvironmentBuilder::GetAvailableEnvironments
+	 * Purpose: Allows Anagame to know what environment types are available to it
+	 * Parameters: TMap<TString>& env - holds list of available environments by Provider and Environemnt Type
+	 * Returns: void
+	 */
+	static void GetAvailableEnvironments(TMap<TString>& env);
 };
 
