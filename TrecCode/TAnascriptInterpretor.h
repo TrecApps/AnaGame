@@ -151,5 +151,132 @@ public:
      * Returns: bool
      */
     bool IsTruthful(TrecPointer<TVariable> var);
+
+    /**
+     * Method: TAnascriptInterpretor::InspectNumber
+     * Purpose: Retrieves a number if valid input is provided
+     * Parameters: TString& exp - the expression to analyze statement to inspect and process
+     *              UINT line - the line number being called upon,
+     *              ReportObject& ro - objct indicating the success of the program or falure information
+     * Returns: void
+     */
+    void InspectNumber(TString& exp, UINT line, ReportObject& ro);
+
+    /**
+     * Method: TAnascriptInterpretor::InspectVariable
+     * Purpose: Retrieves a variable if valid
+     * Parameters: TString& exp - the expression to analyze statement to inspect and process
+     *              UINT line - the line number being called upon,
+     *              ReportObject& ro - objct indicating the success of the program or falure information
+     * Returns: void
+     */
+    void InspectVariable(TString& exp, UINT line, ReportObject& ro);
+
+
+
+
+    /// Handling Operators
+    
+    /**
+     * Method: TAnascriptInterpretor::HandleMultDiv
+     * Purpose: Checks list of expressions and operators and sees if multiplication, division, or mod division needs to be done
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleMultDiv(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+
+    /**
+     * Method: TAnascriptInterpretor::HandleAddSub
+     * Purpose: Checks list of expressions and operators and sees if addition or subtraction needs to be done
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleAddSub(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+
+    /**
+     * Method: TAnascriptInterpretor::HandleCompare
+     * Purpose: Checks list of expressions and operators and sees if >/>=/</<= needs to be done
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleCompare(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+
+    /**
+     * Method: TAnascriptInterpretor::HandleEquality
+     * Purpose: Checks list of expressions and operators and sees if equality needs to be analyzed
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleEquality(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+
+
+    /**
+     * Method: TAnascriptInterpretor::HandleBitAnd
+     * Purpose: Checks list of expressions and operators and sees if bitwise AND needs to be done
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleBitAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+
+    /**
+     * Method: TAnascriptInterpretor::HandleBitXorNxor
+     * Purpose: Checks list of expressions and operators and sees if Bitwise XOR, NXOR needs to be done
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleBitXorNxor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+
+    /**
+     * Method: TAnascriptInterpretor::HandleBitOrNor
+     * Purpose: Checks list of expressions and operators and sees if bitwise OR or NOR needs to be done
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleBitOrNor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+    
+    /**
+     * Method: TAnascriptInterpretor::HandleAnd
+     * Purpose: Checks list of expressions and operators and sees if Logical AND needs to be done
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+
+    /**
+     * Method: TAnascriptInterpretor::HandleOr
+     * Purpose: Checks list of expressions and operators and sees if bitwise OR or NOR needs to be done
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleOr(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+
+    /**
+     * Method: TAnascriptInterpretor::HandleAssign
+     * Purpose: Checks list of expressions and operators and sees if an assignment needs to be done
+     * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+     *              TDataArray<TString>& ops - list of operators
+     *              ReportObject& errorMessage - lets caller know if there was an error detected
+     * Returns: void
+     */
+    void HandleAssign(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage);
+
 };
 

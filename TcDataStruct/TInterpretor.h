@@ -106,6 +106,7 @@ public:
     const static UINT existing_var = 6;
     const static UINT incomplete_block = 7;
     const static UINT improper_type = 8;
+    const static UINT mismatched_parehtnesis = 9;
 };
 
 /**

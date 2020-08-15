@@ -1,6 +1,7 @@
 #include "TAnascriptInterpretor.h"
 #include <DirectoryInterface.h>
 #include <TContainerVariable.h>
+#include <TStringVariable.h>
 
 /**
  * Method: TAnascriptInterpretor::TAnascriptInterpretor
@@ -946,6 +947,224 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
  */
 void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObject& ro)
 {
+    TString exp(let.GetTrim());
+
+
+    if (!exp.GetSize())
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"Expression amounted to a blank!");
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ro.stackTrace.push_back(stack);
+
+        return;
+    }
+
+    TDataArray<TrecPointer<TVariable>> expresions;
+
+    TDataArray<TString> operators;
+
+    while (exp.GetSize())
+    {
+        if (exp[0] == L'(')
+        {
+            UINT stack = 1;
+
+            UINT end;
+
+            for (end = 1; end < exp.GetSize() && stack; end++)
+            {
+                if (exp[end] == L'(')
+                    stack++;
+                else if (exp[end] == L')')
+                    stack--;
+            }
+
+            if (stack)
+            {
+                ro.returnCode = ro.mismatched_parehtnesis;
+                ro.errorMessage.Format(L"Mismatched Parenthesis, needed {} more to close it!", stack);
+                TString stack;
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                ro.stackTrace.push_back(stack);
+
+                return;
+            }
+
+            TString smallExp(exp.SubString(1, end));
+
+            ProcessExpression(smallExp, line, ro);
+
+            if (ro.returnCode)
+            {
+                return;
+            }
+
+            expresions.push_back(ro.errorObject);
+
+            exp.Set(exp.SubString(end + 1).GetTrim());
+        }
+        else if (exp[0] == L'[')
+        {
+            UINT stack = 1;
+
+            UINT end;
+
+            for (end = 1; end < exp.GetSize() && stack; end++)
+            {
+                if (exp[end] == L'[')
+                    stack++;
+                else if (exp[end] == L']')
+                    stack--;
+            }
+
+            if (stack)
+            {
+                ro.returnCode = ro.mismatched_parehtnesis;
+                ro.errorMessage.Format(L"Mismatched Square Brackets, needed {} more to close it!", stack);
+                TString stack;
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                ro.stackTrace.push_back(stack);
+
+                return;
+            }
+
+            TString smallExp(exp.SubString(1, end));
+
+            ProcessArrayExpression(smallExp, line, ro);
+
+            if (ro.returnCode)
+            {
+                return;
+            }
+
+            expresions.push_back(ro.errorObject);
+
+            exp.Set(exp.SubString(end + 1).GetTrim());
+        }
+        else if (exp[0] >= L'0' && exp[0] <= L'9')
+        {
+            InspectNumber(exp, line, ro);
+            if (ro.returnCode)
+                return;
+            expresions.push_back(ro.errorObject);
+        }
+        else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
+        {
+            InspectVariable(exp, line, ro);
+            InspectNumber(exp, line, ro);
+            if (ro.returnCode)
+                return;
+            expresions.push_back(ro.errorObject);
+        }
+        else if (exp[0] == L'\'' || exp[0] == L'\"')
+        {
+            int loc = exp.Find(exp[0], 0, false);
+
+            if (loc == -1)
+            {
+                ro.returnCode = ro.incomplete_statement;
+                ro.errorMessage.Set(L"Unfinished String Expression!");
+
+                TString stack;
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                ro.stackTrace.push_back(stack);
+
+                return;
+            }
+
+            expresions.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(exp.SubString(1, loc)));
+
+            exp.Set(exp.SubString(loc + 1));
+        }
+
+        // Now Check for an operator
+
+        if (exp.StartsWith(L"equals ", true))
+        {
+            operators.push_back(exp.SubString(0, 7));
+            exp.Delete(0, 7);
+        }
+        else if (exp.StartsWith(L"nand ", true) || exp.StartsWith(L"xnor ", true))
+        {
+            operators.push_back(exp.SubString(0, 5));
+            exp.Delete(0, 5);
+        }
+        else if (exp.StartsWith(L"and ", true) || exp.StartsWith(L"xor ", true) || exp.StartsWith(L"nor ", true))
+        {
+            operators.push_back(exp.SubString(0, 4));
+            exp.Delete(0, 4);
+        }
+        else if (exp.StartsWith(L"or ", true))
+        {
+            operators.push_back(exp.SubString(0, 3));
+            exp.Delete(0, 3);
+        }
+        else if (exp.StartsWith(L"&&") || exp.StartsWith(L"||") || exp.StartsWith(L"==") || exp.StartsWith(L"!="))
+        {
+            operators.push_back(exp.SubString(0, 2));
+            exp.Delete(0, 2);
+        }
+        else if (!exp.FindOneOf(L"+-*/%^&|"))
+        {
+            operators.push_back(TString(exp[0]));
+            exp.Delete(0, 1);
+        }
+
+        // Trim so that if we have only whitespace, we can break out of the loop
+        exp.Trim();
+
+    }
+
+    if (operators.Size() != expresions.Size() + 1)
+    {
+        ro.returnCode = ro.incomplete_statement;
+        ro.errorMessage.Set(L"Expression should have one more subexpressions");
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ro.stackTrace.push_back(stack);
+
+        return;
+    }
+
+    HandleMultDiv(expresions, operators, ro);
+    if (ro.returnCode)return;
+
+    HandleAddSub(expresions, operators, ro);
+    if (ro.returnCode)return;
+
+    HandleCompare(expresions, operators, ro);
+    if (ro.returnCode)return;
+
+    HandleEquality(expresions, operators, ro);
+    if (ro.returnCode)return;
+
+    HandleBitAnd(expresions, operators, ro);
+    if (ro.returnCode)return;
+
+    HandleBitXorNxor(expresions, operators, ro);
+    if (ro.returnCode)return;
+
+    HandleBitOrNor(expresions, operators, ro);
+    if (ro.returnCode)return;
+
+    HandleAnd(expresions, operators, ro);
+    if (ro.returnCode)return;
+
+    HandleOr(expresions, operators, ro);
+    if (ro.returnCode)return;
+
+    HandleAssign(expresions, operators, ro);
+    
+
+
+    if (ro.returnCode)return;
+
+    if (expresions.Size())
+        ro.errorObject = expresions.at(0);
+    else
+        ro.errorObject = TrecPointer<TVariable>();
 }
 
 
@@ -1157,3 +1376,60 @@ bool TAnascriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
 
     return true;
 }
+
+void TAnascriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject& ro)
+{
+}
+
+void TAnascriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObject& ro)
+{
+}
+
+/**
+ * Method: TAnascriptInterpretor::HandleMultDiv
+ * Purpose: Checks list of expressions and operators and sees if multiplication, division, or mod division needs to be done
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
+void TAnascriptInterpretor::HandleMultDiv(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+
+void TAnascriptInterpretor::HandleAddSub(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+
+void TAnascriptInterpretor::HandleCompare(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+
+void TAnascriptInterpretor::HandleEquality(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+
+void TAnascriptInterpretor::HandleBitAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+
+void TAnascriptInterpretor::HandleBitXorNxor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+
+void TAnascriptInterpretor::HandleBitOrNor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+
+void TAnascriptInterpretor::HandleAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+
+void TAnascriptInterpretor::HandleOr(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+
+void TAnascriptInterpretor::HandleAssign(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+{
+}
+

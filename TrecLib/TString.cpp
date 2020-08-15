@@ -1746,6 +1746,41 @@ TString TString::GetDelete(int& ret, int index, int count)
 }
 
 /**
+ * Method: TString::StartsWith
+ * Purpose: deduces whether the String starts with a given sequence
+ * Parameters: const TString& seq - the sequence to check
+ *				bool ignoreCase - whether to ignore case when doing the analysis
+ * Returns: bool
+ *
+ * Note: Will return false if seq is longer than 'this' string
+ */
+bool TString::StartsWith(const TString& seq, bool ignoreCase)
+{
+	if (seq.GetSize() > size)
+		return false;
+
+	if (ignoreCase)
+	{
+		TString lSeq(seq.GetLower());
+		TString lThis(this->GetLower());
+
+		for (UINT Rust = 0; Rust < lSeq.GetSize(); Rust++)
+		{
+			if (lThis[Rust] != lSeq[Rust]) return false;
+		}
+	}
+	else
+	{
+		for (UINT Rust = 0; Rust < seq.GetSize(); Rust++)
+		{
+			if (string[Rust] != seq[Rust]) return false;
+		}
+	}
+
+	return true;
+}
+
+/**
  * Method: TString::Find
  * Purpose: Finds the last instance of the specified string
  * Parameters: const TString& sub - the string to search for
@@ -1804,7 +1839,15 @@ int TString::Find(WCHAR sub, int start, bool ignoreEscape) const
 	{
 		if (string[c] == sub)
 		{
+			bool cont = false;
 			if (!ignoreEscape && c > 0 && string[c - 1] == L'\\')
+			{
+				UINT slashCount = 1;
+				for (int Rust = c - 2; Rust > -1 && string[Rust] == L'\\'; Rust--)
+					slashCount++;
+				cont = slashCount % 2 != 0;
+			}
+			if(cont)
 				continue;
 			return c;
 		}
@@ -2049,7 +2092,7 @@ void TString::SetLower()
  * Parameters: void
  * Returns: TString::the lowercase version of the String
  */
-TString TString::GetLower()
+TString TString::GetLower() const
 {
 	TString ret(this);
 	ret.SetLower();
@@ -2076,7 +2119,7 @@ void TString::SetUpper()
  * Parameters: void
  * Returns: TString::the Uppercase version of the String
  */
-TString TString::GetUpper()
+TString TString::GetUpper()const
 {
 	TString ret(this);
 	ret.SetUpper();

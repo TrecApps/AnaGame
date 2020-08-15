@@ -513,6 +513,16 @@ public:
 	 */
 	TString GetDelete(int& ret, int index, int count = 1);
 
+	/**
+	 * Method: TString::StartsWith
+	 * Purpose: deduces whether the String starts with a given sequence
+	 * Parameters: const TString& seq - the sequence to check
+	 *				bool ignoreCase - whether to ignore case when doing the analysis (false by default)
+	 * Returns: bool
+	 * 
+	 * Note: Will return false if seq is longer than 'this' string
+	 */
+	bool StartsWith(const TString&  seq, bool ignoreCase = false);
 
 
 	/**
@@ -627,7 +637,7 @@ public:
 	 * Parameters: void
 	 * Returns: TString::the lowercase version of the String
 	 */
-	TString GetLower();
+	TString GetLower()const;
 	/**
 	 * Method: TString::SetUpper
 	 * Purpose: Sets this string to have all caps in-place
@@ -641,7 +651,7 @@ public:
 	 * Parameters: void
 	 * Returns: TString::the Uppercase version of the String
 	 */
-	TString GetUpper();
+	TString GetUpper()const;
 
 
 
