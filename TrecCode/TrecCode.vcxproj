@@ -161,7 +161,9 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TAnaGameCodeEnvironment.h" />
+    <ClInclude Include="TAnagameEnvironmentBuilder.h" />
     <ClInclude Include="TAnascriptInterpretor.h" />
+    <ClInclude Include="TEnvironmentBuilder.h" />
     <ClInclude Include="TGradleEnvironment.h" />
     <ClInclude Include="TJavaScriptInterpretor.h" />
     <ClInclude Include="TLanguage.h" />
@@ -177,7 +179,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TAnaGameCodeEnvironment.cpp" />
+    <ClCompile Include="TAnagameEnvironmentBuilder.cpp" />
     <ClCompile Include="TAnascriptInterpretor.cpp" />
+    <ClCompile Include="TEnvironmentBuilder.cpp" />
     <ClCompile Include="TGradleEnvironment.cpp" />
     <ClCompile Include="TJavaScriptInterpretor.cpp" />
     <ClCompile Include="TLanguage.cpp" />
