@@ -358,7 +358,7 @@ private:
 * Class: TTextField
 * Purpose: Supports Anaface's ability to have more complex text layouts, including
 *	Password boxes, number fields, or complex formatted strings.
-* SuperClass: TGadgetControl - allows the combobox to have a feture within it
+* SuperClass: TGadgetControl - allows the TTextField to have a feture within it
 */
 class _ANAFACE_DLL TTextField :	public TGadgetControl
 {
