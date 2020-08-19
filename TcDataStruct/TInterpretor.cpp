@@ -993,4 +993,243 @@ DoubleLong::DoubleLong(double val)
 DoubleLong::DoubleLong()
 {
 	type = double_long::dl_invalid;
+	value.u = 0ULL;
+}
+
+bool DoubleLong::operator<(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d < o.value.d;
+		case double_long::dl_sign:
+			return value.d < o.value.s;
+		case double_long::dl_unsign:
+			return value.d < o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s < o.value.d;
+		case double_long::dl_sign:
+			return value.s < o.value.s;
+		case double_long::dl_unsign:
+			return value.s < o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u < o.value.d;
+		case double_long::dl_sign:
+			return value.u < o.value.s;
+		case double_long::dl_unsign:
+			return value.u < o.value.u;
+		}
+	}
+
+	return false;
+}
+
+bool DoubleLong::operator==(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d == o.value.d;
+		case double_long::dl_sign:
+			return value.d == o.value.s;
+		case double_long::dl_unsign:
+			return value.d == o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s == o.value.d;
+		case double_long::dl_sign:
+			return value.s == o.value.s;
+		case double_long::dl_unsign:
+			return value.s == o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u == o.value.d;
+		case double_long::dl_sign:
+			return value.u == o.value.s;
+		case double_long::dl_unsign:
+			return value.u == o.value.u;
+		}
+	}
+	return false;
+}
+
+ULONG64 DoubleLong::ToUnsignedLong()const
+{
+	ULONG64 ret;
+
+	switch (type)
+	{
+	case double_long::dl_double:
+		memcpy_s(&ret, sizeof(ret), &value.d, sizeof(value.d));
+		break;
+	case double_long::dl_sign:
+		memcpy_s(&ret, sizeof(ret), &value.s, sizeof(value.s));
+		break;
+	case double_long::dl_unsign:
+		ret = value.u;
+		break;
+	default:
+		ret = 0ULL;
+	}
+
+	return ret;
+}
+
+ULONG64 DoubleLong::GetBitAnd(const DoubleLong& o)
+{
+	return ToUnsignedLong() & o.ToUnsignedLong();
+}
+
+ULONG64 DoubleLong::GetBitOr(const DoubleLong& o)
+{
+	return ToUnsignedLong() | o.ToUnsignedLong();
+}
+
+ULONG64 DoubleLong::GetBitXor(const DoubleLong& o)
+{
+	return ToUnsignedLong() ^ o.ToUnsignedLong();
+}
+
+bool DoubleLong::operator<=(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d <= o.value.d;
+		case double_long::dl_sign:
+			return value.d <= o.value.s;
+		case double_long::dl_unsign:
+			return value.d <= o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s <= o.value.d;
+		case double_long::dl_sign:
+			return value.s <= o.value.s;
+		case double_long::dl_unsign:
+			return value.s <= o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u <= o.value.d;
+		case double_long::dl_sign:
+			return value.u <= o.value.s;
+		case double_long::dl_unsign:
+			return value.u <= o.value.u;
+		}
+	}
+	return false;
+}
+
+bool DoubleLong::operator>=(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d >= o.value.d;
+		case double_long::dl_sign:
+			return value.d >= o.value.s;
+		case double_long::dl_unsign:
+			return value.d >= o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s >= o.value.d;
+		case double_long::dl_sign:
+			return value.s >= o.value.s;
+		case double_long::dl_unsign:
+			return value.s >= o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u >= o.value.d;
+		case double_long::dl_sign:
+			return value.u >= o.value.s;
+		case double_long::dl_unsign:
+			return value.u >= o.value.u;
+		}
+	}
+	return false;
+}
+
+bool DoubleLong::operator>(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d > o.value.d;
+		case double_long::dl_sign:
+			return value.d > o.value.s;
+		case double_long::dl_unsign:
+			return value.d > o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s > o.value.d;
+		case double_long::dl_sign:
+			return value.s > o.value.s;
+		case double_long::dl_unsign:
+			return value.s > o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u > o.value.d;
+		case double_long::dl_sign:
+			return value.u > o.value.s;
+		case double_long::dl_unsign:
+			return value.u > o.value.u;
+		}
+	}
+	return false;
 }

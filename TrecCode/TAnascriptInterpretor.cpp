@@ -2,6 +2,7 @@
 #include <DirectoryInterface.h>
 #include <TContainerVariable.h>
 #include <TStringVariable.h>
+#include <TPrimitiveVariable.h>
 
 /**
  * Method: TAnascriptInterpretor::TAnascriptInterpretor
@@ -1086,27 +1087,27 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
             operators.push_back(exp.SubString(0, 7));
             exp.Delete(0, 7);
         }
-        else if (exp.StartsWith(L"nand ", true) || exp.StartsWith(L"xnor ", true))
+        else if (exp.StartsWith(L"nand ", true) || exp.StartsWith(L"xnor ", true) || exp.StartsWith(L"band ", true))
         {
             operators.push_back(exp.SubString(0, 5));
             exp.Delete(0, 5);
         }
-        else if (exp.StartsWith(L"and ", true) || exp.StartsWith(L"xor ", true) || exp.StartsWith(L"nor ", true))
+        else if (exp.StartsWith(L"and ", true) || exp.StartsWith(L"xor ", true) || exp.StartsWith(L"nor ", true) || exp.StartsWith(L"bor ", true))
         {
             operators.push_back(exp.SubString(0, 4));
             exp.Delete(0, 4);
         }
-        else if (exp.StartsWith(L"or ", true))
+        else if (exp.StartsWith(L"or ", true) )
         {
             operators.push_back(exp.SubString(0, 3));
             exp.Delete(0, 3);
         }
-        else if (exp.StartsWith(L"&&") || exp.StartsWith(L"||") || exp.StartsWith(L"==") || exp.StartsWith(L"!="))
+        else if (exp.StartsWith(L"&&") || exp.StartsWith(L"||") || exp.StartsWith(L"==") || exp.StartsWith(L"!=") || exp.StartsWith(L">=") || exp.StartsWith(L"<="))
         {
             operators.push_back(exp.SubString(0, 2));
             exp.Delete(0, 2);
         }
-        else if (!exp.FindOneOf(L"+-*/%^&|"))
+        else if (!exp.FindOneOf(L"+-*/%^&|<>"))
         {
             operators.push_back(TString(exp[0]));
             exp.Delete(0, 1);
@@ -1395,41 +1396,430 @@ void TAnascriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObjec
  */
 void TAnascriptInterpretor::HandleMultDiv(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The Multiplication Division handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].CompareNoCase(L"*"))
+        {
+            errorMessage = ProcessMultiplication(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust+1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"/"))
+        {
+            errorMessage = ProcessDivision(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"%"))
+        {
+            errorMessage = ProcessModDivision(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+    }
 }
 
 void TAnascriptInterpretor::HandleAddSub(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The addition/subtraction handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].CompareNoCase(L"+"))
+        {
+            errorMessage = ProcessAddition(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"-"))
+        {
+            errorMessage = ProcessSubtraction(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+    }
 }
 
 void TAnascriptInterpretor::HandleCompare(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The comparison handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        bool found = false;
+
+        if (!ops[Rust].CompareNoCase(L">="))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for >= comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1 >= v2);
+
+            found = true;
+        }
+
+        if (!ops[Rust].CompareNoCase(L">"))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1 > v2);
+
+            found = true;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"<="))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for <= comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1 <= v2);
+
+            found = true;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"<"))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for < comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1 < v2);
+
+            found = true;
+        }
+
+        if (found)
+        {
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+    }
 }
 
 void TAnascriptInterpretor::HandleEquality(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The Equality handler expected one more Expression than operator!");
+        return;
+    }
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        bool found = false;
+
+        if (!ops[Rust].CompareNoCase(L">="))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for >= comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1 >= v2);
+
+            found = true;
+        }
+
+        if (!ops[Rust].CompareNoCase(L">"))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1 > v2);
+
+            found = true;
+        }
+        if (found)
+        {
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
 void TAnascriptInterpretor::HandleBitAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The Multiplication Division handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"&") || !ops[Rust].CompareNoCase(L"band"))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1.GetBitAnd(v2));
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+
+    }
 }
 
 void TAnascriptInterpretor::HandleBitXorNxor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The xor/xnor handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        bool found = false;
+        if (!ops[Rust].Compare(L"^") || !ops[Rust].CompareNoCase(L"xor"))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1.GetBitXor(v2));
+
+            found = true;
+        }
+        if (!ops[Rust].CompareNoCase(L"xnor"))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1.GetBitXor(v2) ^ 0xFFFFFFFFFFFFFFFF);
+
+            found = true;
+        }
+
+        if (found)
+        {
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+
+    }
 }
 
 void TAnascriptInterpretor::HandleBitOrNor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The or/nor handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        bool found = false;
+        if (!ops[Rust].Compare(L"|") || !ops[Rust].CompareNoCase(L"bor"))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1.GetBitOr(v2));
+
+            found = true;
+        }
+        if (!ops[Rust].CompareNoCase(L"bnor"))
+        {
+            DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
+            {
+                errorMessage.returnCode = errorMessage.improper_type;
+                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                return;
+            }
+
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1.GetBitOr(v2) ^ 0xFFFFFFFFFFFFFFFF);
+
+            found = true;
+        }
+
+        if (found)
+        {
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+
+    }
 }
 
 void TAnascriptInterpretor::HandleAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The 'and' handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"&&") || !ops[Rust].CompareNoCase(L"and"))
+        {
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(IsTruthful(expressions[Rust]) && IsTruthful(expressions[Rust]));
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
 void TAnascriptInterpretor::HandleOr(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The 'or' handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"||") || !ops[Rust].CompareNoCase(L"or"))
+        {
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(IsTruthful(expressions[Rust]) || IsTruthful(expressions[Rust]));
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
 void TAnascriptInterpretor::HandleAssign(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() - 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The assignment handler expected one more Expression than operator!");
+        return;
+    }
+
+
 }
 

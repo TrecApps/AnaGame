@@ -49,6 +49,18 @@ public:
     DoubleLong();
     doubleLong value;
     double_long type;
+
+    bool operator<(const DoubleLong& o);
+    bool operator<=(const DoubleLong& o);
+    bool operator>=(const DoubleLong& o);
+    bool operator>(const DoubleLong& o);
+    bool operator==(const DoubleLong& o);
+
+    ULONG64 ToUnsignedLong()const;
+
+    ULONG64 GetBitAnd(const DoubleLong& o);
+    ULONG64 GetBitOr(const DoubleLong& o);
+    ULONG64 GetBitXor(const DoubleLong& o);
 };
 
 /**
