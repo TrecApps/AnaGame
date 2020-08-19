@@ -1378,10 +1378,27 @@ bool TAnascriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
     return true;
 }
 
+
+/**
+ * Method: TAnascriptInterpretor::InspectNumber
+ * Purpose: Retrieves a number if valid input is provided
+ * Parameters: TString& exp - the expression to analyze statement to inspect and process
+ *              UINT line - the line number being called upon,
+ *              ReportObject& ro - objct indicating the success of the program or falure information
+ * Returns: void
+ */
 void TAnascriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject& ro)
 {
 }
 
+/**
+ * Method: TAnascriptInterpretor::InspectVariable
+ * Purpose: Retrieves a variable if valid
+ * Parameters: TString& exp - the expression to analyze statement to inspect and process
+ *              UINT line - the line number being called upon,
+ *              ReportObject& ro - objct indicating the success of the program or falure information
+ * Returns: void
+ */
 void TAnascriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObject& ro)
 {
 }
@@ -1446,6 +1463,14 @@ void TAnascriptInterpretor::HandleMultDiv(TDataArray<TrecPointer<TVariable>>& ex
     }
 }
 
+/**
+ * Method: TAnascriptInterpretor::HandleAddSub
+ * Purpose: Checks list of expressions and operators and sees if addition or subtraction needs to be done
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
 void TAnascriptInterpretor::HandleAddSub(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() - 1)
@@ -1485,6 +1510,14 @@ void TAnascriptInterpretor::HandleAddSub(TDataArray<TrecPointer<TVariable>>& exp
     }
 }
 
+/**
+ * Method: TAnascriptInterpretor::HandleCompare
+ * Purpose: Checks list of expressions and operators and sees if >/>=/</<= needs to be done
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
 void TAnascriptInterpretor::HandleCompare(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() - 1)
@@ -1573,6 +1606,14 @@ void TAnascriptInterpretor::HandleCompare(TDataArray<TrecPointer<TVariable>>& ex
     }
 }
 
+/**
+ * Method: TAnascriptInterpretor::HandleEquality
+ * Purpose: Checks list of expressions and operators and sees if equality needs to be analyzed
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
 void TAnascriptInterpretor::HandleEquality(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() - 1)
@@ -1626,6 +1667,15 @@ void TAnascriptInterpretor::HandleEquality(TDataArray<TrecPointer<TVariable>>& e
     }
 }
 
+
+/**
+ * Method: TAnascriptInterpretor::HandleBitAnd
+ * Purpose: Checks list of expressions and operators and sees if bitwise AND needs to be done
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
 void TAnascriptInterpretor::HandleBitAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() - 1)
@@ -1659,6 +1709,14 @@ void TAnascriptInterpretor::HandleBitAnd(TDataArray<TrecPointer<TVariable>>& exp
     }
 }
 
+/**
+ * Method: TAnascriptInterpretor::HandleBitXorNxor
+ * Purpose: Checks list of expressions and operators and sees if Bitwise XOR, NXOR needs to be done
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
 void TAnascriptInterpretor::HandleBitXorNxor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() - 1)
@@ -1713,6 +1771,14 @@ void TAnascriptInterpretor::HandleBitXorNxor(TDataArray<TrecPointer<TVariable>>&
     }
 }
 
+/**
+ * Method: TAnascriptInterpretor::HandleBitOrNor
+ * Purpose: Checks list of expressions and operators and sees if bitwise OR or NOR needs to be done
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
 void TAnascriptInterpretor::HandleBitOrNor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() - 1)
@@ -1767,6 +1833,14 @@ void TAnascriptInterpretor::HandleBitOrNor(TDataArray<TrecPointer<TVariable>>& e
     }
 }
 
+/**
+ * Method: TAnascriptInterpretor::HandleAnd
+ * Purpose: Checks list of expressions and operators and sees if Logical AND needs to be done
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
 void TAnascriptInterpretor::HandleAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() - 1)
@@ -1789,6 +1863,14 @@ void TAnascriptInterpretor::HandleAnd(TDataArray<TrecPointer<TVariable>>& expres
     }
 }
 
+/**
+ * Method: TAnascriptInterpretor::HandleOr
+ * Purpose: Checks list of expressions and operators and sees if bitwise OR or NOR needs to be done
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
 void TAnascriptInterpretor::HandleOr(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() - 1)
@@ -1811,6 +1893,14 @@ void TAnascriptInterpretor::HandleOr(TDataArray<TrecPointer<TVariable>>& express
     }
 }
 
+/**
+ * Method: TAnascriptInterpretor::HandleAssign
+ * Purpose: Checks list of expressions and operators and sees if an assignment needs to be done
+ * Parameters: TDataArray<TrecPointer<TVariable>>& expressions - list of expressions to process
+ *              TDataArray<TString>& ops - list of operators
+ *              ReportObject& errorMessage - lets caller know if there was an error detected
+ * Returns: void
+ */
 void TAnascriptInterpretor::HandleAssign(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() - 1)
