@@ -63,6 +63,14 @@ public:
     ULONG64 GetBitXor(const DoubleLong& o);
 };
 
+typedef enum class report_mode
+{
+    report_mode_regular,
+    report_mode_break,
+    report_mode_continue,
+    report_mode_return
+}report_mode;
+
 /**
  * Class ReportObject
  * Purpose: allows the Interpretors to report the results of a run 
@@ -107,6 +115,11 @@ public:
      * Variable that might have been explicitly "thrown" by the coder or some mechanism 
      */
     TrecPointer<TVariable> errorObject;
+
+    /**
+     * What happens when the Interpreter has to return due to a command such as return, break, or continue
+     */
+    report_mode mode;
 
     // Error codes
     const static UINT no_error = 0;

@@ -14,6 +14,7 @@
 ReportObject::ReportObject()
 {
 	returnCode = 0;
+	mode = report_mode::report_mode_regular;
 }
 
 /**
@@ -28,6 +29,7 @@ ReportObject::ReportObject(const ReportObject& obj)
 	errorMessage.Set(obj.errorMessage);
 	stackTrace = obj.stackTrace;
 	errorObject = obj.errorObject;
+	mode = obj.mode;
 }
 
 /**

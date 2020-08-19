@@ -169,7 +169,7 @@ ReportObject TAnascriptInterpretor::Run()
         if (!Keyword.Find(L"function. "))
         {
             // We have a Function Declaration
-
+            ret = ProcessFunction(code, line);
         }
         else if (!Keyword.Find(L"ext. "))
         {
