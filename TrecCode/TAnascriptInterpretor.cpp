@@ -1585,34 +1585,34 @@ void TAnascriptInterpretor::HandleEquality(TDataArray<TrecPointer<TVariable>>& e
     {
         bool found = false;
 
-        if (!ops[Rust].CompareNoCase(L">="))
+        if (!ops[Rust].CompareNoCase(L"==") || !ops[Rust].CompareNoCase(L"equals"))
         {
             DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
 
             if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
             {
                 errorMessage.returnCode = errorMessage.improper_type;
-                errorMessage.errorMessage.Set(L"Improper type detected for >= comparison!");
+                errorMessage.errorMessage.Set(L"Improper type detected for == comparison!");
                 return;
             }
 
-            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1 >= v2);
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1 == v2);
 
             found = true;
         }
 
-        if (!ops[Rust].CompareNoCase(L">"))
+        if (!ops[Rust].CompareNoCase(L"!="))
         {
             DoubleLong v1 = GetValueFromPrimitive(expressions[Rust]), v2 = GetValueFromPrimitive(expressions[Rust + 1]);
 
             if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
             {
                 errorMessage.returnCode = errorMessage.improper_type;
-                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                errorMessage.errorMessage.Set(L"Improper type detected for != comparison!");
                 return;
             }
 
-            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(v1 > v2);
+            errorMessage.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(!(v1 == v2));
 
             found = true;
         }
@@ -1644,7 +1644,7 @@ void TAnascriptInterpretor::HandleBitAnd(TDataArray<TrecPointer<TVariable>>& exp
             if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
             {
                 errorMessage.returnCode = errorMessage.improper_type;
-                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                errorMessage.errorMessage.Set(L"Improper type detected for & comparison!");
                 return;
             }
 
@@ -1678,7 +1678,7 @@ void TAnascriptInterpretor::HandleBitXorNxor(TDataArray<TrecPointer<TVariable>>&
             if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
             {
                 errorMessage.returnCode = errorMessage.improper_type;
-                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                errorMessage.errorMessage.Set(L"Improper type detected for ^ comparison!");
                 return;
             }
 
@@ -1693,7 +1693,7 @@ void TAnascriptInterpretor::HandleBitXorNxor(TDataArray<TrecPointer<TVariable>>&
             if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
             {
                 errorMessage.returnCode = errorMessage.improper_type;
-                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                errorMessage.errorMessage.Set(L"Improper type detected for xnor comparison!");
                 return;
             }
 
@@ -1732,7 +1732,7 @@ void TAnascriptInterpretor::HandleBitOrNor(TDataArray<TrecPointer<TVariable>>& e
             if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
             {
                 errorMessage.returnCode = errorMessage.improper_type;
-                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                errorMessage.errorMessage.Set(L"Improper type detected for | comparison!");
                 return;
             }
 
@@ -1747,7 +1747,7 @@ void TAnascriptInterpretor::HandleBitOrNor(TDataArray<TrecPointer<TVariable>>& e
             if (v1.type == double_long::dl_invalid || v2.type == double_long::dl_invalid)
             {
                 errorMessage.returnCode = errorMessage.improper_type;
-                errorMessage.errorMessage.Set(L"Improper type detected for > comparison!");
+                errorMessage.errorMessage.Set(L"Improper type detected for bnor comparison!");
                 return;
             }
 
