@@ -204,6 +204,7 @@ TInterpretor::TInterpretor(TrecSubPointer<TVariable, TInterpretor> parentInterpr
 {
 	parent = parentInterpretor;
 	environment = env;
+	this->end = 0;
 }
 
 /**

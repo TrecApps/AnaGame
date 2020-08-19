@@ -123,10 +123,10 @@ public:
 	 * Purpose: Reads a line in a file into a String, taking into account the file encoding, stopping at the next line
 	 *			Or when the specificed number of characters are read
 	 * Parameters: TString& rString - the String to read into
-	 *				UINT nMax - max number of characters to read
+	 *				ULONGLONG nMax - max number of characters to read
 	 * Returns: bool - success of reading
 	 */
-	UINT ReadString(TString& rString, UINT nMax);
+	ULONGLONG ReadString(TString& rString, ULONGLONG nMax);
 
 	/**
 	 * Method: TFile::ReadString

@@ -153,7 +153,7 @@ ReportObject TAnascriptInterpretor::Run()
     TString code;
 
     UINT line = 1;
-    while (file->ReadString(code))
+    while (file->ReadString(code, end - file->GetPosition()))
     {
         // Trim unecessary white-space
         code.Trim();
@@ -179,17 +179,24 @@ ReportObject TAnascriptInterpretor::Run()
         else if (!Keyword.Find(L"return "))
         {
             // Prepare to return an expression to the Caller
-
+            ProcessExpression(code, line, ret);
+            ret.mode = report_mode::report_mode_return;
+            return;
         }
         else if (!Keyword.Find(L"let "))
         {
             // Prepare to Create a new variable
+            ret = ProcessLet(code, line);
 
+            if (ret.returnCode)
+                return;
         }
         else if (!Keyword.Find(L"loop "))
         {
             // Scan for the end and prepare to loop
-
+            ret = ProcessLoop(code, line);
+            if (ret.returnCode)
+                return;
         }
         else if (!Keyword.Find(L"print "))
         {
@@ -204,7 +211,19 @@ ReportObject TAnascriptInterpretor::Run()
         else if (!Keyword.Find(L"if "))
         {
             // Prepare to start an if block without a name
-
+            ret = ProcessIf(code, line);
+            if (ret.returnCode)
+                return;
+        }
+        else if (!Keyword.Find(L"break"))
+        {
+            ret.mode = report_mode::report_mode_break;
+            return;
+        }
+        else if (!Keyword.Find(L"continue"))
+        {
+            ret.mode = report_mode::report_mode_continue;
+            return;
         }
 
 

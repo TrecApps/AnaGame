@@ -141,13 +141,13 @@ BOOL TFile::ReadString(TString & rString)
  * Purpose: Reads a line in a file into a String, taking into account the file encoding, stopping at the next line 
  *			Or when the specificed number of characters are read
  * Parameters: TString& rString - the String to read into
- *				UINT nMax - max number of characters to read
- * Returns: bool - success of reading
+ *				ULONGLONG nMax - max number of characters to read
+ * Returns: ULONGLONG - How many characgers were read
  */
-UINT TFile::ReadString(TString & rString, UINT nMax)
+ULONGLONG TFile::ReadString(TString & rString, ULONGLONG nMax)
 {
 	rString.Empty();
-	UINT rust = 0;
+	ULONGLONG rust = 0;
 
 	if (fileEncode == FileEncodingType::fet_unknown)
 		DeduceEncodingType();
