@@ -7,6 +7,20 @@
 #include "MiniHandler.h"
 
 /**
+ * Method: Page::OnFirstDraw
+ * Purpose: intercepts the first draw so that the handler can handle it
+ * Parameters: void
+ * Returns: void
+ */
+void Page::OnFirstDraw()
+{
+	if (!hasDrawn)
+		hasDrawn = true;
+	if (handler.Get())
+		handler->OnFirstDraw();
+}
+
+/**
  * Method: Page::Page
  * Purpose: Constructor
  * Parameters: TrecPointer<DrawingBoard> -  the Drawing Board for All Drawing operations
@@ -19,6 +33,7 @@ Page::Page(TrecPointer<DrawingBoard> board)
 	adjustMatrix = D2D1::Matrix3x2F::Identity();
 	area = D2D1_RECT_F{ 0,0,0,0 };
 	scale = 1.0f;
+	hasDrawn = false;
 }
 
 /**
@@ -981,13 +996,19 @@ void Page::CreateLayout()
 void Page::Draw(TWindowEngine* twe)
 {
 	if (!rootControl.Get() || !drawingBoard.Get()) return;
-	
+
 	//drawingBoard->SetTransform(adjustMatrix);
 	rootControl->onDraw();
 	//regRenderTarget->EndDraw();
+	if (hasDrawn)
+	{
 
+	}
 	if (handler.Get())
+	{
 		handler->Draw();
+
+	}
 }
 
 /**

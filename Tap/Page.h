@@ -500,6 +500,19 @@ public:
 protected:
 
 	/**
+	 * Reports whether the Drawing has commenced
+	 */
+	bool hasDrawn;
+
+	/**
+	 * Method: Page::OnFirstDraw
+	 * Purpose: intercepts the first draw so that the handler can handle it
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void OnFirstDraw();
+
+	/**
 	 * Method: Page::Page
 	 * Purpose: Constructor
 	 * Parameters: TrecPointer<DrawingBoard> -  the Drawing Board for All Drawing operations

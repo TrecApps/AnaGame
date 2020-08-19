@@ -37,6 +37,15 @@ EventHandler::~EventHandler()
 
 }
 
+/**
+ * Method: EventHandler::OnFirstDraw
+ * Purpose: Allows Handlers to perform some task after the first draw
+ * Parameter: void
+ * Returns: void
+ */
+void EventHandler::OnFirstDraw()
+{
+}
 
 /**
  * Method: EventHandler::ShouldProcessMessage
@@ -44,6 +53,7 @@ EventHandler::~EventHandler()
  * Parameters: TrecPointer<HandlerMessage> message - the message to process
  * Returns: bool - whether this is the handler for the submitted message
  */
+
 bool EventHandler::ShouldProcessMessage(TrecPointer<HandlerMessage> message)
 {
 	if(!message.Get())

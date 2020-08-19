@@ -46,6 +46,15 @@ public:
 	 * Returns: void
 	 */
     virtual void Initialize(TrecPointer<Page> page) = 0;
+
+	/**
+	 * Method: EventHandler::OnFirstDraw
+	 * Purpose: Allows Handlers to perform some task after the first draw
+	 * Parameter: void
+	 * Returns: void
+	 */
+	virtual void OnFirstDraw();
+
 	/**
 	 * Method: EventHandler::HandleEvents
 	 * Purpose: Handles Events produced from the set of TControls
