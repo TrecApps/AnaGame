@@ -379,6 +379,12 @@ protected:
 	int command;
 
 	/**
+	 * Used to track whether the Window has drawn or not
+	 */
+	bool hasDrawn;
+
+
+	/**
 	 * Main content of the window
 	 */
 	TrecPointer<Page> mainPage;

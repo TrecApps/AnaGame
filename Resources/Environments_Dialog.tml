@@ -1,0 +1,89 @@
+->TML
+-|Type:Anaface_UI
+-|Version:0.0.1
+-/
+
+->TStack
+-|RowHeight:50
+-|RowHeight:1*
+-->TControl(0,0)
+--|FontSize:48
+--|HorizontalAlignment:Center
+--|VerticalAlignment:Center
+--|Caption:Anagame Builder
+--|BorderColor:1.0,0.0,0.0,1.0
+-->TGrid(0,1)
+--|ColumnWidth:1*
+--|ColumnWidth:1*
+--|ColumnWidth:1*
+--|RowHeight:50
+--|RowHeight:1*
+--|InternalBorderColor:0.0,0.0,0.0,1.0
+--|InternalBorderThickness:2
+
+
+# Recent Environments
+--->TControl(0,0)
+---|HorizontalAlignment:Center
+---|VerticalAlignment:Center
+---|Caption:Recent Projects
+---|BorderColor:1.0,0.0,0.0,1.0
+
+--->TDataBind(0,1,Vertical)
+---|ID:Models
+---|RowHeight:100
+---|EventSelectionChange:OnSelectObject
+---->TStack(0,0)
+----|RowHeight:30
+----|RowHeight:30
+----|RowHeight:30
+----|BorderColor:1.0,1.0,0.5,1.0
+----->TControl(0,0)
+-----|Caption:{Name}
+----->TControl(0,1)
+-----|Caption:{Type}
+----->TControl(0,2)
+-----|Caption:{Location}
+
+# Available Environments
+
+--->TControl(1,0)
+---|HorizontalAlignment:Center
+---|VerticalAlignment:Center
+---|Caption:Recent Projects
+---|BorderColor:1.0,0.0,0.0,1.0
+
+--->TDataBind(1,1)
+---|ID:Models
+---|RowHeight:100
+---|EventSelectionChange:OnSelectObject
+---->TStack(0,0)
+----|RowHeight:30
+----|RowHeight:30
+----|RowHeight:30
+----|BorderColor:1.0,1.0,0.5,1.0
+----->TControl(0,0)
+-----|Caption:{Builder}
+----->TControl(0,1)
+-----|Caption:{Environment}
+
+# Extra Options
+--->TControl(2,0)
+---|HorizontalAlignment:Center
+---|VerticalAlignment:Center
+---|Caption:Other Options
+---|BorderColor:1.0,0.0,0.0,1.0
+
+--->TStack(2,1)
+---|RowHeight:1*
+---|RowHeight:1*
+--->TControl(0,0)
+---|HorizontalAlignment:Center
+---|VerticalAlignment:Center
+---|Caption:Import Project
+---|BorderColor:1.0,0.0,0.0,1.0
+--->TControl(0,1)
+---|HorizontalAlignment:Center
+---|VerticalAlignment:Center
+---|Caption:Open Folder
+---|BorderColor:1.0,0.0,0.0,1.0

@@ -29,6 +29,10 @@ public:
 
 
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message)override;
+
+
+	virtual void OnFirstDraw()override;
+
 protected:
 	TDataArray<LayoutCall> calls;
 

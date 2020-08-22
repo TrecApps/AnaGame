@@ -40,7 +40,7 @@ enum class double_long
  * Class: DoubleLong
  * Purpose: Aids interpretors in basic arithmetic byt hold values and keeping track of their types
  */
-class DoubleLong
+class TC_DATA_STRUCT DoubleLong
 {
 public:
     DoubleLong(ULONG64 val);

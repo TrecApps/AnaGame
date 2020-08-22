@@ -62,6 +62,7 @@ class _TAP_DLL Page : public TObject
 {
 	friend class TrecPointerKey;
 	friend class TPageParentHolder;
+	friend class TWindow;
 public:
 
 	/**

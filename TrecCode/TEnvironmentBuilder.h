@@ -68,6 +68,15 @@ public:
 	 */
 	static bool SubmitBuilder(const TString& builderKey, TrecPointer<TEnvironmentBuilder> builder);
 
+
+	/**
+	 * Method: TEnvironmentBuilder::RefreshDefault
+	 * Purpose: Makes sure that the Built-in Builder is available
+	 * Parameters: void
+	 * Returns: void
+	 */
+	static void RefreshDefault();
+
 	/**
 	 * Method: TEnvironmentBuilder::GetAvailableEnvironments
 	 * Purpose: Allows Anagame to know what environment types are available to it

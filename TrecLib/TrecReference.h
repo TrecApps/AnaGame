@@ -166,6 +166,11 @@ template<class T> class TrecBoxPointer: public TrecBoxPointerBase
 	friend class TrecPointerKey;
 private:
 
+	// Used for Debugging purposes so that we can analyze the actual object held, useless in Release mode
+#ifdef _DEBUG
+	T* debugReference;
+#endif
+
 public:
 
 	/**
@@ -179,6 +184,11 @@ public:
 		counter = (t)? 1 : 0;
 		rawPointer = (void*)t;
 		softCounter = 0;
+
+#ifdef _DEBUG
+		debugReference = t;
+#endif // _DEBUG
+
 	}
 
 	/**
@@ -193,6 +203,10 @@ public:
 		{
 			T* tempRawPointer = reinterpret_cast<T*>(rawPointer);
 			rawPointer = nullptr;
+
+#ifdef _DEBUG
+			debugReference = nullptr;
+#endif // _DEBUG
 
 			delete tempRawPointer;
 		}
@@ -236,6 +250,10 @@ public:
 			T* tempRawPointer = reinterpret_cast<T*>(rawPointer);
 			rawPointer = nullptr;
 
+#ifdef _DEBUG
+			debugReference = nullptr;
+#endif // _DEBUG
+
 			delete tempRawPointer;
 		}
 	}
@@ -255,6 +273,10 @@ public:
 		{							// Main pointers are gone but soft pointers remain. Delete the object but don't yet delete the counter
 			T* tempRawPointer = reinterpret_cast<T*>(rawPointer);
 			rawPointer = nullptr;
+
+#ifdef _DEBUG
+			debugReference = nullptr;
+#endif // _DEBUG
 
 			delete tempRawPointer;
 		}
@@ -289,6 +311,10 @@ public:
 		}
 		// now that the object has been deleted, set it to null to avoid a dangling pointer
 		rawPointer = nullptr;
+
+#ifdef _DEBUG
+		debugReference = nullptr;
+#endif // _DEBUG
 	}
 };
 

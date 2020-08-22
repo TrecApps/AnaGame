@@ -397,7 +397,7 @@ protected:
 	/**
 	 * the width/height of the columns/rows
 	 */
-	TDataArray<int> columnLines, rowLines;
+	TDataArray<float> columnLines, rowLines;
 	/**
 	 * Used to determin which columns/rows are flexible
 	 */

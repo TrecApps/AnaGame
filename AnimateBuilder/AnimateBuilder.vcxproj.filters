@@ -42,6 +42,12 @@
     <ClInclude Include="ArenaApp2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TEnvironmentDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvironmentHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimateBuilder.cpp">
@@ -60,6 +66,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ArenaApp2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TEnvironmentDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvironmentHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

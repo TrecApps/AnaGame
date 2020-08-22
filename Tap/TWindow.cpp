@@ -41,7 +41,7 @@ TWindow::TWindow(TString& name, TString& winClass, UINT style, HWND parent, int 
 	HDC dc = GetWindowDC(currentWindow);
 	SetMapMode(dc, MM_HIENGLISH);
 
-	locked = false;
+	locked = hasDrawn = false;
 	safeToDraw = 0;
 	directFactory = ins->GetFactory();
 	drawingBoard = TrecPointerKey::GetNewSelfTrecPointer<DrawingBoard>(directFactory, currentWindow);
@@ -252,6 +252,15 @@ void TWindow::Draw()
 		}
 		safeToDraw = tempSafe;
 	}
+	if (!hasDrawn)
+	{
+		
+		if (mainPage.Get())
+		{
+			hasDrawn = true;
+			mainPage->OnFirstDraw();
+		}
+	}
 
 }
 
@@ -455,6 +464,7 @@ bool TWindow::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags)
 		returnable = mainPage->OnChar(fromChar, nChar, nRepCnt, nFlags, &mOut);
 	return returnable;
 }
+
 
 /**
  * Method: TWindow::OnWindowResize

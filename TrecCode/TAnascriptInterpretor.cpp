@@ -181,7 +181,7 @@ ReportObject TAnascriptInterpretor::Run()
             // Prepare to return an expression to the Caller
             ProcessExpression(code, line, ret);
             ret.mode = report_mode::report_mode_return;
-            return;
+            return ret;
         }
         else if (!Keyword.Find(L"let "))
         {
@@ -189,14 +189,14 @@ ReportObject TAnascriptInterpretor::Run()
             ret = ProcessLet(code, line);
 
             if (ret.returnCode)
-                return;
+                return ret;
         }
         else if (!Keyword.Find(L"loop "))
         {
             // Scan for the end and prepare to loop
             ret = ProcessLoop(code, line);
             if (ret.returnCode)
-                return;
+                return ret;
         }
         else if (!Keyword.Find(L"print "))
         {
@@ -213,17 +213,17 @@ ReportObject TAnascriptInterpretor::Run()
             // Prepare to start an if block without a name
             ret = ProcessIf(code, line);
             if (ret.returnCode)
-                return;
+                return ret;
         }
         else if (!Keyword.Find(L"break"))
         {
             ret.mode = report_mode::report_mode_break;
-            return;
+            return ret;
         }
         else if (!Keyword.Find(L"continue"))
         {
             ret.mode = report_mode::report_mode_continue;
-            return;
+            return ret;
         }
 
 
@@ -232,7 +232,7 @@ ReportObject TAnascriptInterpretor::Run()
     }
 
 
-	return ReportObject();
+	return ret;
 }
 
 

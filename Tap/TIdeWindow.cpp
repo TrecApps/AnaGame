@@ -592,6 +592,12 @@ void TIdeWindow::SetEnvironment(TrecPointer<TEnvironment> env)
 	environment = env;
 }
 
+
+TrecPointer<TEnvironment> TIdeWindow::GetEnvironment()
+{
+	return environment;
+}
+
 /**
  * Method: TIdeWindow::GetEnvironmentDirectory
  * Purpose: Retrievs the Workign Directory of the TEnvironment

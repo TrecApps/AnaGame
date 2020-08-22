@@ -1,4 +1,5 @@
 #include "TEnvironmentBuilder.h"
+#include "TAnagameEnvironmentBuilder.h"
 
 TMap<TEnvironmentBuilder> builders;
 
@@ -32,10 +33,31 @@ TEnvironmentBuilder::~TEnvironmentBuilder()
  */
 bool TEnvironmentBuilder::SubmitBuilder(const TString& builderKey, TrecPointer<TEnvironmentBuilder> builder)
 {
+    if (builderKey.Compare(L"Anagame"))
+    {
+        RefreshDefault();
+    }
+
     if(!builderKey.GetSize() || !builder.Get())
         return false;
 
     builders.addEntry(builderKey, builder);
+}
+
+/**
+ * Method: TEnvironmentBuilder::RefreshDefault
+ * Purpose: Makes sure that the Built-in Builder is available
+ * Parameters: void
+ * Returns: void
+ */
+void TEnvironmentBuilder::RefreshDefault()
+{
+    auto builder = builders.retrieveEntry(L"Anagame");
+
+    if (!builder.Get())
+    {
+        SubmitBuilder(TString(L"Anagame"), TrecPointerKey::GetNewTrecPointerAlt<TEnvironmentBuilder, TAnagameEnvironmentBuilder>());
+    }
 }
 
 /**
@@ -50,6 +72,8 @@ bool TEnvironmentBuilder::SubmitBuilder(const TString& builderKey, TrecPointer<T
  */
 void TEnvironmentBuilder::GetAvailableEnvironments(TMap<TString>& env, TrecPointer<TFileShell> dir)
 {
+    RefreshDefault();
+
     env.clear();
 
     if (!dir.Get() || !dir->IsDirectory())
@@ -75,6 +99,7 @@ void TEnvironmentBuilder::GetAvailableEnvironments(TMap<TString>& env, TrecPoint
  */
 void TEnvironmentBuilder::GetAvailableEnvironments(TMap<TString>& env)
 {
+    RefreshDefault();
     env.clear();
     for (UINT Rust = 0; Rust < builders.count(); Rust++)
     {

@@ -5,6 +5,7 @@
 #include "SourceCodeApp.h"
 #include "SourceCodeApp2.h"
 #include "ArenaApp2.h"
+#include "TEnvironmentDialog.h"
 
 
 // Found on the Home Tab
@@ -236,6 +237,19 @@ void MainLayoutHandler::OnSwitchTab(TrecPointer<TControl> tc, EventArgs ea)
 
 void MainLayoutHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
+}
+
+void MainLayoutHandler::OnFirstDraw()
+{
+	if (!page.Get())
+		return;
+
+	auto ideWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(page->GetWindowHandle());
+
+	if (!ideWindow.Get() || ideWindow->GetEnvironment().Get())
+		return;
+
+	ActivateEnvironmentDialog(ideWindow->GetInstance(), ideWindow->GetWindowHandle());
 }
 
 void MainLayoutHandler::OnLoadNewSolution(TrecPointer<TControl> tc, EventArgs ea)

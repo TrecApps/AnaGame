@@ -162,12 +162,22 @@ public:
 	void SetEnvironment(TrecPointer<TEnvironment> env);
 
 	/**
+	 * Method: TIdeWindow::GetEnvironment
+	 * Purpose: Gets the Environment held by the Window
+	 * Parameters: void
+	 * Returns: TrecPointer<TEnvironment> - the Environment to manage
+	 */
+	TrecPointer<TEnvironment> GetEnvironment();
+
+	/**
 	 * Method: TIdeWindow::GetEnvironmentDirectory
 	 * Purpose: Retrievs the Workign Directory of the TEnvironment
 	 * Parameters: void 
 	 * Returns: TrecPointer<TFileShell> - the Environment's working directory (could be NULL)
 	 */
 	TrecPointer<TFileShell> GetEnvironmentDirectory();
+
+	
 
 
 	/**

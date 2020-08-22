@@ -161,7 +161,7 @@ void TDataBind::onDraw(TObject * obj)
 				curLoc.left += widthHeight;
 				curLoc.right += widthHeight;
 			}
-			cont->setLocation(curLoc);
+			cont->Resize(curLoc);
 		}
 	}
 	else if (dataWrap)
@@ -200,10 +200,10 @@ void TDataBind::onDraw(TObject * obj)
 				curLoc.left += widthHeight;
 				curLoc.right += widthHeight;
 			}
-			cont->setLocation(curLoc);
+			cont->Resize(curLoc);
 		}
 	}
-	cont->setLocation(original);
+	cont->Resize(original);
 }
 
 /**
