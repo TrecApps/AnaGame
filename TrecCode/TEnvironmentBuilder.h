@@ -97,5 +97,16 @@ public:
 	 * Returns: void
 	 */
 	static void GetAvailableEnvironments(TMap<TString>& env);
+
+
+	/**
+	 * Method: TEnvironmentBuilder::GetEnvironment
+	 * Purpose: Retrieves an environment based off of the key provided
+	 * Parameters: const TString& envType - the type of environment to collect
+	 *				const TString& builder -  the Builder Object in charge of getting the Environment
+	 *				TrecPointer<TFileShell> dir - the Directory to launch the environment in
+	 * Returns: TrecPointer<TEnvironment> - the environment requestd (null if the builder did not recognize the request
+	 */
+	static TrecPointer<TEnvironment> GetEnvironment(const TString& envType, const TString& builder, TrecPointer<TFileShell> dir);
 };
 

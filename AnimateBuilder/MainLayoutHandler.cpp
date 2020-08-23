@@ -249,7 +249,7 @@ void MainLayoutHandler::OnFirstDraw()
 	if (!ideWindow.Get() || ideWindow->GetEnvironment().Get())
 		return;
 
-	ActivateEnvironmentDialog(ideWindow->GetInstance(), ideWindow->GetWindowHandle());
+	ideWindow->SetEnvironment(ActivateEnvironmentDialog(ideWindow->GetInstance(), ideWindow->GetWindowHandle()));
 }
 
 void MainLayoutHandler::OnLoadNewSolution(TrecPointer<TControl> tc, EventArgs ea)

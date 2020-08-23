@@ -56,10 +56,43 @@ int TEnvironmentDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 		return 10;
 }
 
-void ActivateEnvironmentDialog(TrecPointer<TInstance> ins, HWND parent)
+/**
+ * Method: TEnvironmentDialog::OnDestroy
+ * Purpose: Prepares the Dialog for destruction, releasing the Parent Window if necessary
+ * Parameters: void
+ * Returns: bool - whether the dialog can be destroyed yet
+ */
+bool TEnvironmentDialog::OnDestroy()
+{
+	bool ret = TDialog::OnDestroy();
+
+	if (!mainPage.Get() || !mainPage->GetHandler().Get())
+		return false;
+
+	auto handler = mainPage->GetHandler();
+
+	assert(dynamic_cast<EnvironmentHandler*>(handler.Get()));
+
+	env = dynamic_cast<EnvironmentHandler*>(handler.Get())->GetEnvironment();
+
+	return false;
+}
+
+/**
+ * Method: TEnvironmentDialog::GetEnvironment
+ * Purpose: PRetrieves the environment procured byt the Dialog
+ * Parameters: void
+ * Returns: TrecPointer<TEnvironment> - the environment selected by the user
+ */
+TrecPointer<TEnvironment> TEnvironmentDialog::GetEnvironment()
+{
+	return env;
+}
+
+TrecPointer<TEnvironment> ActivateEnvironmentDialog(TrecPointer<TInstance> ins, HWND parent)
 {
 	if (!ins.Get() || !parent)
-		return;
+		return TrecPointer<TEnvironment>();
 
 	TString name(L"Set Anagame Environment");
 	TString winClass(L"Dialog");
@@ -71,4 +104,6 @@ void ActivateEnvironmentDialog(TrecPointer<TInstance> ins, HWND parent)
 	dialog->PrepareWindow();
 
 	dynamic_cast<TEnvironmentDialog*>(dialog.Get())->Run();
+
+	return dynamic_cast<TEnvironmentDialog*>(dialog.Get())->GetEnvironment();
 }

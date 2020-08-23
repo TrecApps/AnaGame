@@ -112,3 +112,13 @@ void TEnvironmentBuilder::GetAvailableEnvironments(TMap<TString>& env)
         env.addEntry(envEntry->key, data);
     }
 }
+
+TrecPointer<TEnvironment> TEnvironmentBuilder::GetEnvironment(const TString& envType, const TString& builder, TrecPointer<TFileShell> dir)
+{
+    auto eBuilder = builders.retrieveEntry(builder);
+
+    if (!eBuilder.Get())
+        return TrecPointer<TEnvironment>();
+
+    return eBuilder->GetEnvironment(envType, dir);
+}

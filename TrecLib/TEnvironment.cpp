@@ -130,6 +130,7 @@ TString retrieveLanguageByExtension(TString ext)
  */
 TEnvironment::TEnvironment(TrecPointer<TFileShell> shell)
 {
+	rootDirectory = shell;
 }
 
 /**

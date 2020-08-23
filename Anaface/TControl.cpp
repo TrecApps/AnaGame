@@ -3923,6 +3923,17 @@ void TControl::setActive(bool act)
 	isActive = act;
 }
 
+/**
+ * Method: TControl::GetActive
+ * Purpose: Reports whether the control is 'active' or not
+ * Parameters: void
+ * Returns: bool - whether the control is active or not
+ */
+bool TControl::GetActive()
+{
+	return isActive;
+}
+
 /*
 * Method: TControl::getEventArgs
 * Purpose: Allows Action Methods to retrieve Event Arguements before calling the target Event Handler

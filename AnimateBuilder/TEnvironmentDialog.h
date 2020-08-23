@@ -1,5 +1,6 @@
 #pragma once
 #include <TDialog.h>
+#include <TEnvironment.h>
 
 /**
  * Class: TEnvironmentDialog
@@ -39,6 +40,25 @@ public:
 	 * Returns: int - error code (0 for success)
 	 */
 	int CompileView(TrecComPointer<ID2D1Factory1> fact);
+
+	/**
+	 * Method: TEnvironmentDialog::OnDestroy
+	 * Purpose: Prepares the Dialog for destruction, releasing the Parent Window if necessary
+	 * Parameters: void
+	 * Returns: bool - whether the dialog can be destroyed yet
+	 */
+	bool OnDestroy() override;
+
+	/**
+	 * Method: TEnvironmentDialog::GetEnvironment
+	 * Purpose: PRetrieves the environment procured byt the Dialog
+	 * Parameters: void
+	 * Returns: TrecPointer<TEnvironment> - the environment selected by the user
+	 */
+	TrecPointer<TEnvironment> GetEnvironment();
+
+private:
+	TrecPointer<TEnvironment> env;
 };
 
-void ActivateEnvironmentDialog(TrecPointer<TInstance> ins, HWND parent);
+TrecPointer<TEnvironment> ActivateEnvironmentDialog(TrecPointer<TInstance> ins, HWND parent);
