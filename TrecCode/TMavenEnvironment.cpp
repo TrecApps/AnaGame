@@ -29,6 +29,10 @@ void TMavenEnvironment::Run()
 {
 }
 
+void TMavenEnvironment::Run(TrecPointer<TFileShell> file)
+{
+}
+
 UINT TMavenEnvironment::RunTask(TString& task)
 {
 	return 0;

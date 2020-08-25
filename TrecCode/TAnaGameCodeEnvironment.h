@@ -33,16 +33,16 @@ public:
 	TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell);
 	void PreProcessSingleFile(TrecPointer<TFile> file);
 
-	virtual UINT RunTask(TString& task);
-	virtual UINT SetUpEnv();
+	virtual UINT RunTask(TString& task)override;
+	virtual UINT SetUpEnv()override;
 
-	virtual void Compile();
-	virtual void Compile(TrecPointer<TFile> logFile);
+	virtual void Compile()override;
+	virtual void Compile(TrecPointer<TFile> logFile)override;
 
-	virtual void Log();
+	virtual void Log()override;
 
-	virtual void Run();
-
+	virtual void Run()override;
+	virtual void Run(TrecPointer<TFileShell> file)override;
 
 protected:
 	TString targetExtensions;	// Extensions to target for compilation

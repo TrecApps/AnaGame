@@ -1,4 +1,5 @@
 #include "TAnaGameCodeEnvironment.h"
+#include "TAnascriptInterpretor.h"
 
 TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shell)
 {
@@ -66,4 +67,29 @@ void TAnaGameCodeEnvironment::Log()
 
 void TAnaGameCodeEnvironment::Run()
 {
+}
+
+void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
+{
+	if (!file.Get() || file->IsDirectory())
+		return;
+
+	auto path = file->GetPath();
+
+
+	if (path.GetSize() > 7 && path.FindLast(L".ascrpt") == path.GetSize() - 7)
+	{
+		// This is an anascript file, Run Anascript
+		auto anascriptInterpreter = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(),
+			TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+		TFile actualFile(path, TFile::t_file_open_always | TFile::t_file_read);
+		UINT setCodeResult = anascriptInterpreter->SetCode(actualFile);
+
+		if (setCodeResult)
+			return;
+
+		auto runCodeResult = anascriptInterpreter->Run();
+
+		int e = 3;
+	}
 }

@@ -29,6 +29,10 @@ void TGradleEnvironment::Run()
 {
 }
 
+void TGradleEnvironment::Run(TrecPointer<TFileShell> file)
+{
+}
+
 UINT TGradleEnvironment::RunTask(TString& task)
 {
 	return 0;

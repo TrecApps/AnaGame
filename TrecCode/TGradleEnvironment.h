@@ -8,16 +8,16 @@ public:
 
 	~TGradleEnvironment();
 
-	virtual UINT SetUpEnv();
+	virtual UINT SetUpEnv()override;
 
-	virtual void Compile();
-	virtual void Compile(TrecPointer<TFile> logFile);
+	virtual void Compile()override;
+	virtual void Compile(TrecPointer<TFile> logFile)override;
 
-	virtual void Log();
+	virtual void Log()override;
 
-	virtual void Run();
+	virtual void Run()override;
 
-
+	virtual void Run(TrecPointer<TFileShell> file)override;
 
 	virtual UINT RunTask(TString& task);
 };

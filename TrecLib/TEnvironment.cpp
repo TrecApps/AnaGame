@@ -58,6 +58,18 @@ TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present)
 }
 
 /**
+ * Method: TEnvironment::SetSelf
+ * Purpose: Sets up the reference to itself
+ * Parameters: TrecPointer<TEnvironment> self - reference to itself
+ * Returns: void
+ */
+void TEnvironment::SetSelf(TrecPointer<TEnvironment> self)
+{
+	if (self.Get() != this) throw L"Error";
+	this->self = TrecPointerKey::GetSoftPointerFromTrec<TEnvironment>(self);
+}
+
+/**
  * Method: TEnvironment::SetUpLanguageExtensionMapping
  * Purpose: Sets up mapping to langugaes by extension
  * Parameters: void

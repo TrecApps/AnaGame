@@ -111,6 +111,15 @@ public:
 	 */
 	virtual void Run() = 0;
 
+
+	/**
+	 * Method: TEnvironment::RunFile
+	 * Purpose: Support for the Run Task
+	 * Parameters: TrecPointer<TFileShell> shell - the file to run
+	 * Returns: void
+	 */
+	virtual void Run(TrecPointer<TFileShell> shell) = 0;
+
 	
 
 	/**
@@ -138,6 +147,14 @@ public:
 	 * Returns: TrecPointer<TVariable> - the variable requested
 	 */
 	TrecPointer<TVariable> GetVariable(TString& var, bool& present);
+
+	/**
+	 * Method: TEnvironment::SetSelf
+	 * Purpose: Sets up the reference to itself
+	 * Parameters: TrecPointer<TEnvironment> self - reference to itself
+	 * Returns: void
+	 */
+	void SetSelf(TrecPointer<TEnvironment> self);
 
 protected:
 
@@ -168,5 +185,10 @@ protected:
 	 * Holds a collection of variables so that interpretors underneath them could have access to them
 	 */
 	TMap<TrecPointer<TVariable>> envVariables;
+
+	/**
+	 * Allows Environment to provide references to itself
+	 */
+	TrecPointerSoft<TEnvironment> self;
 };
 

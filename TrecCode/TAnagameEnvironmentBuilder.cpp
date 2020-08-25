@@ -18,13 +18,13 @@ TrecPointer<TEnvironment> TAnagameEnvironmentBuilder::GetEnvironment(const TStri
 		return TrecPointer<TEnvironment>();
 
 	if (!envType.Compare(L"Maven"))
-		return TrecPointerKey::GetNewTrecPointerAlt<TEnvironment, TMavenEnvironment>(dir);
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TEnvironment, TMavenEnvironment>(dir);
 
 	if (!envType.Compare(L"Gradle"))
-		return TrecPointerKey::GetNewTrecPointerAlt<TEnvironment, TGradleEnvironment>(dir);
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TEnvironment, TGradleEnvironment>(dir);
 
 	if (!envType.Compare(L"AnaCode"))
-		return TrecPointerKey::GetNewTrecPointerAlt<TEnvironment, TAnaGameCodeEnvironment>(dir);
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TEnvironment, TAnaGameCodeEnvironment>(dir);
 
 	return TrecPointer<TEnvironment>();
 }
