@@ -1408,6 +1408,83 @@ bool TAnascriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
  */
 void TAnascriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject& ro)
 {
+    TString tExp(exp.GetTrimRight());
+
+    UINT frontDifference = exp.GetSize() - tExp.GetSize();
+
+    _ASSERT(tExp.GetSize());
+
+    UINT start = 0, end;
+
+    if (tExp.StartsWith(L"0x", true))
+    {
+        for (end = 2; end < tExp.GetSize(); end++)
+        {
+            WCHAR letter = tExp[end];
+
+            if ((letter >= L'0' && letter <= L'9') ||
+                (letter >= L'a' && letter <= L'f') ||
+                (letter >= L'A' && letter <= L'F') ||
+                letter == L'_')
+                continue;
+            break;
+        }
+    }
+    else if (tExp.StartsWith(L"0b", true))
+    {
+        for (end = (tExp[0] == L'-') ? 1 : 0; end < tExp.GetSize(); end++)
+        {
+            WCHAR letter = tExp[end];
+
+            if (letter == L'0' || letter == L'1' || letter == L'_')
+                continue;
+            break;
+        }
+    }
+    else
+    {
+        for (end = 2; end < tExp.GetSize(); end++)
+        {
+            WCHAR letter = tExp[end];
+
+            if ((letter >= L'0' && letter <= L'9') ||
+                letter == L'.' ||  letter == L'_')
+                continue;
+            break;
+        }
+    }
+
+    tExp.Set(tExp.SubString(start, end));
+
+    if (tExp.Find(L'.'))
+    {
+        double d;
+        auto res = tExp.ConvertToDouble(d);
+        if (res)
+        {
+            ro.returnCode = ro.not_number;
+            ro.errorMessage.Set(L"Invalid double detected.");
+            return;
+        }
+        ro.returnCode = 0;
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
+    }
+    else
+    {
+        LONG64 l;
+
+        if (tExp.ConvertToLong(l))
+        {
+
+            ro.returnCode = ro.not_number;
+            ro.errorMessage.Set(L"Invalid double detected.");
+            return;
+        }
+        ro.returnCode = 0;
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(l);
+    }
+
+    exp.Set(exp.SubString(frontDifference + end));
 }
 
 /**
