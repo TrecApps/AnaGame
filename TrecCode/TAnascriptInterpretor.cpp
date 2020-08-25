@@ -1073,7 +1073,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
         else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
         {
             InspectVariable(exp, line, ro);
-            InspectNumber(exp, line, ro);
+            //InspectNumber(exp, line, ro);
             if (ro.returnCode)
                 return;
             expresions.push_back(ro.errorObject);
@@ -1497,6 +1497,31 @@ void TAnascriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject&
  */
 void TAnascriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObject& ro)
 {
+    TString tExp(exp.GetTrimRight());
+
+    UINT frontDifference = exp.GetSize() - tExp.GetSize();
+
+    _ASSERT(tExp.GetSize());
+
+    UINT start = 0, end;
+
+    for (end = 0; end < tExp.GetSize(); end++)
+    {
+        WCHAR letter = tExp[end];
+
+        if ((letter >= L'0' && letter <= L'9') ||
+            (letter >= L'a' && letter <= L'f') ||
+            (letter >= L'A' && letter <= L'F') ||
+            letter == L'_')
+            continue;
+        break;
+    }
+
+    TString varname(tExp.SubString(0, end));
+    bool present;
+    ro.errorObject = GetVariable(varname, present);
+
+    exp.Set(exp.SubString(frontDifference + end));
 }
 
 /**
