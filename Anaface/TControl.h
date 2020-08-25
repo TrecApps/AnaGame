@@ -1684,7 +1684,7 @@ protected:
 	 * Parameters: void
 	 * Returns: TrecPointer<TParentHolder> - the holder object referencing this control as a parent control
 	 */
-	TrecPointer <TParentHolder> GetParentReference();
+	virtual TrecPointer <TParentHolder> GetParentReference();
 
 	/**
 	 * Allows child controls to point to THIS control as their parent

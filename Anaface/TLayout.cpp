@@ -1430,8 +1430,83 @@ void TLayout::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoint
 	TControl::SwitchChildControl(curControl, newControl);
 }
 
+/**
+ * Method: TLayout::GetParentReference
+ * Purpose: Sets up a Parent Holder for this Control (used so that no redundant holder object is created)
+ * Parameters: void
+ * Returns: TrecPointer<TParentHolder> - the holder object referencing this control as a parent control
+ */
+TrecPointer<TParentHolder> TLayout::GetParentReference()
+{
+	if (!thisParent.Get())
+	{
+		thisParent = TrecPointerKey::GetNewTrecPointerAlt<TParentHolder, TLayoutParentHolder>(TrecPointerKey::GetSoftSubPointerFromSoft<TControl, TLayout>(tThis));
+	}
+	return thisParent;
+}
+
 containerControl::containerControl()
 {
 	x = x2 = y = y2 = 0;
 	extend = false;
+}
+
+/**
+ * Method: TLayoutParentHolder::TLayoutParentHolder
+ * Purpose: Constructor
+ * Parameters: TrecSubPointer<TControl, TLayout> parent -  the TControl to serve as a Parent to TControls
+ * Returns: New TLayoutParentHolder
+ */
+TLayoutParentHolder::TLayoutParentHolder(TrecSubPointer<TControl, TLayout> parent)
+{
+	this->parent = TrecPointerKey::GetSoftSubPointerFromSub<TControl, TLayout>(parent);
+}
+
+/**
+ * Method: TLayoutParentHolder::TLayoutParentHolder
+ * Purpose: Constructor
+ * Parameters: TrecSubPointerSoft<TControl, TLayout> parent -  the TControl to serve as a Parent to TControls
+ * Returns: New TLayoutParentHolder
+ */
+TLayoutParentHolder::TLayoutParentHolder(TrecSubPointerSoft<TControl, TLayout> parent)
+{
+	this->parent = parent;
+}
+
+/**
+ * Method: TLayoutParentHolder::SwitchChildControl
+ * Purpose: Has the Control switch one of its child controls with a new one
+ * Parameters: TrecPointerSoft<TControl> cur - the control making the call
+ *				TrecPointer<TControl> newTControl - the Control to replace it with
+ * Returns: void
+ */
+void TLayoutParentHolder::SwitchChildControl(TrecPointerSoft<TControl> cur, TrecPointer<TControl> newTControl)
+{
+	auto pointerParent = TrecPointerKey::GetSubPointerFromSoft<TControl, TLayout>(parent);
+
+	if (pointerParent.Get())
+		pointerParent->SwitchChildControl(cur, newTControl);
+}
+
+/**
+ * Method: TLayoutParentHolder::GetParent
+ * Purpose: Allows the Retrieval of the Parent Control (if the holder is holding a control)
+ * Parameters: void
+ * Returns: TrecPointer<TControl> - the Parent (the default returns null but the TLayoutParentHolder will return the parent)
+ */
+TrecPointer<TControl> TLayoutParentHolder::GetParent()
+{
+	auto sub = TrecPointerKey::GetSubPointerFromSoft<TControl, TLayout>(parent);
+	return TrecPointerKey::GetTrecPointerFromSub<TControl, TLayout>(sub);
+}
+
+/**
+ * Method: TLayoutParentHolder::IsScroller
+ * Purpose: Reports to the Child whether the parent holding it is a Scroller Control
+ * Parameters: void
+ * Returns: bool - whether or not the parent is a Scroller Control
+ */
+bool TLayoutParentHolder::IsScroller()
+{
+	return false;
 }
