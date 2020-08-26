@@ -32,10 +32,10 @@ public:
 	/**
 	 * Method: MiniApp::Initialize
 	 * Purpose: Allows the MiniApp to decide which handlers and Pages it needs to complete itself
-	 * Parameters: void
+	 * Parameters: TrecPointer<TFileShell> file - the file to use if applicable
 	 * Returns: UINT - error code, 0 for success
 	 */
-	virtual UINT Initialize() = 0;
+	virtual UINT Initialize(TrecPointer<TFileShell> file) = 0;
 
 	/**
 	 * Method: MiniApp::ShouldDestroy

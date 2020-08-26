@@ -229,6 +229,15 @@ public:
 	 */
 	virtual void OnSave();
 
+
+	/**
+	 * Method: EventHandler::SetSaveFile
+	 * Purpose: Sets up the file to save if OnSave is called
+	 * Parameters: TrecPointer<TFileShell> file - the file to focus on
+	 * Returns: void
+	 */
+	void SetSaveFile(TrecPointer<TFileShell> file);
+
 protected:
 	/**
 	 * Reference to "this" Handler

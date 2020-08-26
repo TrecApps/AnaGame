@@ -335,7 +335,7 @@ finish:
  */
 void TIdeWindow::AddNewMiniApp(TrecPointer<MiniApp> app)
 {
-	if (app.Get() && !app->Initialize())
+	if (app.Get())
 	{
 		apps.push_back(app);
 	}

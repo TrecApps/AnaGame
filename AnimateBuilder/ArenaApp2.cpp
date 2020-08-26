@@ -9,7 +9,7 @@ void ArenaApp2::DispatchAnagameMessage(TrecPointer<HandlerMessage> message)
 {
 }
 
-UINT ArenaApp2::Initialize()
+UINT ArenaApp2::Initialize(TrecPointer<TFileShell> file)
 {
 	if (!win.Get() || !instance.Get())
 		return 1;

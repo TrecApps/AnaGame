@@ -2,6 +2,7 @@
 #include <Page.h>
 #include "ArenaApp.h"
 #include <TDialog.h>
+#include <DirectoryInterface.h>
 #include "SourceCodeApp.h"
 #include "SourceCodeApp2.h"
 #include "ArenaApp2.h"
@@ -301,7 +302,7 @@ void MainLayoutHandler::OnNewArena(TrecPointer<TControl> tc, EventArgs ea)
 
 	currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, ArenaApp2>(window, arenaName);
 	ActiveDocuments.push_back(currentDocument);
-	currentDocument->Initialize();
+	currentDocument->Initialize(TrecPointer<TFileShell>());
 
 	if (arenaStack1.Get())
 		arenaStack1->setActive(true);
@@ -344,9 +345,34 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
 	currentDocument->InitializeControls();
 	currentDocument->OnShow();*/
 
+	assert(window.Get());
+
+	TString caption("Enter a name for the file going in ");
+
+	auto directory = window->GetEnvironmentDirectory();
+
+	if (!directory.Get())
+		directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Documents));
+	assert(directory.Get());
+
+	caption.AppendFormat(L"%ws :", directory->GetPath().GetConstantBuffer());
+
+	TString fileName(ActivateNameDialog(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app), page->GetWindowHandle()->GetWindowHandle(), caption));
+
+	if (!fileName.GetSize())
+		return;
+
+	TFile file(directory->GetPath() + fileName, TFile::t_file_create_always | TFile::t_file_write);
+
+	file.Close();
+
+
+	// To-Do: Figure out what to do with the fie entered by the user
+
 	currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, SourceCodeApp2>(window);
+
 	ActiveDocuments.push_back(currentDocument);
-	currentDocument->Initialize();
+	currentDocument->Initialize(TFileShell::GetFileInfo(fileName));
 }
 
 void MainLayoutHandler::OnImportCode(TrecPointer<TControl> tc, EventArgs ea)

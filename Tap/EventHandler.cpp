@@ -297,6 +297,17 @@ void EventHandler::OnSave()
 /**
  * Method: EventHandler::SetSaveFile
  * Purpose: Sets up the file to save if OnSave is called
+ * Parameters: TrecPointer<TFileShell> file - the file to focus on
+ * Returns: void
+ */
+void EventHandler::SetSaveFile(TrecPointer<TFileShell> file)
+{
+	filePointer = file;
+}
+
+/**
+ * Method: EventHandler::SetSaveFile
+ * Purpose: Sets up the file to save if OnSave is called
  * Parameters: void
  * Returns: void
  */

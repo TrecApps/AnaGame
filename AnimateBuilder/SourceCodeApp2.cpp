@@ -8,7 +8,7 @@ void SourceCodeApp2::DispatchAnagameMessage(TrecPointer<HandlerMessage> message)
 {
 }
 
-UINT SourceCodeApp2::Initialize()
+UINT SourceCodeApp2::Initialize(TrecPointer<TFileShell> file)
 {
 	if (!win.Get() || !instance.Get())
 		return 1;
@@ -17,6 +17,8 @@ UINT SourceCodeApp2::Initialize()
 
 	if (!codeHandler.Get())
 		return 2;
+
+	codeHandler->SetSaveFile(file);
 
 	commandHandler = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance));
 	if (!commandHandler.Get())

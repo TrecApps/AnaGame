@@ -12,7 +12,7 @@ public:
 
 	virtual void DispatchAnagameMessage(TrecPointer<HandlerMessage> message) override;
 
-	virtual UINT Initialize()override;
+	virtual UINT Initialize(TrecPointer<TFileShell> file)override;
 
 	virtual void OnSave()override;
 
