@@ -105,3 +105,12 @@ TrecPointer<TObjectNode> TAnaGameCodeEnvironment::GetBrowsingNode()
 	node->Initialize(path);
 	return node;
 }
+
+bool TAnaGameCodeEnvironment::SupportsFileExt(const TString& ext)
+{
+	return false;
+}
+
+void TAnaGameCodeEnvironment::SupportsFileExt(TDataArray<TString>& ext)
+{
+}

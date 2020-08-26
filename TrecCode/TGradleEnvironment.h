@@ -22,5 +22,8 @@ public:
 	virtual UINT RunTask(TString& task);
 
 	virtual TrecPointer<TObjectNode> GetBrowsingNode() override;
+
+	virtual bool SupportsFileExt(const TString& ext) override;
+	virtual void SupportsFileExt(TDataArray<TString>& ext) override;
 };
 

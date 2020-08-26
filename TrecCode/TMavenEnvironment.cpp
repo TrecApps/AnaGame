@@ -42,3 +42,12 @@ TrecPointer<TObjectNode> TMavenEnvironment::GetBrowsingNode()
 {
 	return TrecPointer<TObjectNode>();
 }
+
+bool TMavenEnvironment::SupportsFileExt(const TString& ext)
+{
+	return false;
+}
+
+void TMavenEnvironment::SupportsFileExt(TDataArray<TString>& ext)
+{
+}

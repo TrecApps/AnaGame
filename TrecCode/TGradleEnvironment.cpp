@@ -42,3 +42,12 @@ TrecPointer<TObjectNode> TGradleEnvironment::GetBrowsingNode()
 {
 	return TrecPointer<TObjectNode>();
 }
+
+bool TGradleEnvironment::SupportsFileExt(const TString& ext)
+{
+	return false;
+}
+
+void TGradleEnvironment::SupportsFileExt(TDataArray<TString>& ext)
+{
+}

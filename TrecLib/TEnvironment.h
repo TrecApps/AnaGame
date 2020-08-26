@@ -166,6 +166,23 @@ public:
 	 */
 	virtual TrecPointer<TObjectNode> GetBrowsingNode() = 0;
 
+	/**
+	 * Method: TEnvironment::SupportsFileExt
+	 * Purpose: Reports whether the Environment supports the file type proposed
+	 * Parameters: const TString& ext - the extension to test
+	 * Returns: bool - whether the environment supports the file type
+	 */
+	virtual bool SupportsFileExt(const TString& ext) = 0;
+
+
+	/**
+	 * Method: TEnvironment::SupportsFileExt
+	 * Purpose: Reports whether the Environment supports the file type proposed
+	 * Parameters: TDataArray<TString>& ext - the list of extenstions to add
+	 * Returns: void
+	 */
+	virtual void SupportsFileExt(TDataArray<TString>& ext) = 0;
+
 protected:
 
 	/**
