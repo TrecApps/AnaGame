@@ -23,7 +23,7 @@ public:
 	* Parameters: void
 	* Returns: void
 	*/
-	~TObjectNode();
+	virtual ~TObjectNode();
 
 
 

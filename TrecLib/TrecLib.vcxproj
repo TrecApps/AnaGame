@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="TBlankNode.h" />
     <ClInclude Include="TEnvironment.h" />
     <ClInclude Include="AnagameDef.h" />
     <ClInclude Include="Animation.h" />
@@ -199,6 +200,7 @@
     <ClInclude Include="TTypeMetadata.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="TBlankNode.cpp" />
     <ClCompile Include="TEnvironment.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Configuration.cpp" />
