@@ -20,5 +20,7 @@ public:
 	virtual void Run(TrecPointer<TFileShell> file)override;
 
 	virtual UINT RunTask(TString& task);
+
+	virtual TrecPointer<TObjectNode> GetBrowsingNode() override;
 };
 

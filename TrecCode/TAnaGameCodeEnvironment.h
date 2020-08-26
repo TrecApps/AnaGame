@@ -44,6 +44,8 @@ public:
 	virtual void Run()override;
 	virtual void Run(TrecPointer<TFileShell> file)override;
 
+	virtual TrecPointer<TObjectNode> GetBrowsingNode() override;
+
 protected:
 	TString targetExtensions;	// Extensions to target for compilation
 

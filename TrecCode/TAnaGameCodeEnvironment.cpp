@@ -1,5 +1,6 @@
 #include "TAnaGameCodeEnvironment.h"
 #include "TAnascriptInterpretor.h"
+#include <TFileNode.h>
 
 TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shell)
 {
@@ -92,4 +93,15 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 
 		int e = 3;
 	}
+}
+
+TrecPointer<TObjectNode> TAnaGameCodeEnvironment::GetBrowsingNode()
+{
+	if(!rootDirectory.Get())
+		return TrecPointer<TObjectNode>();
+
+	auto node = TrecPointerKey::GetNewSelfTrecPointerAlt<TObjectNode, TFileNode>(0);
+	auto path(rootDirectory->GetPath());
+	node->Initialize(path);
+	return node;
 }

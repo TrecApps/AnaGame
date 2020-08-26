@@ -37,3 +37,8 @@ UINT TMavenEnvironment::RunTask(TString& task)
 {
 	return 0;
 }
+
+TrecPointer<TObjectNode> TMavenEnvironment::GetBrowsingNode()
+{
+	return TrecPointer<TObjectNode>();
+}

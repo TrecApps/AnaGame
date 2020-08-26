@@ -5,6 +5,7 @@
 #include "TrecLib.h"
 #include "TType.h"
 #include "TDirectory.h"
+#include "TObjectNode.h"
 
 class TControl;
 class TPromptControl;
@@ -13,7 +14,8 @@ class TVariable;
 
 void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataArray<TString>& environmentType);
 
-/** struct LangNames
+/** 
+ * Class: LangNames
  * Purpose: holds the name of a Programming language and the file extensions associated with them
  */
 class _TREC_LIB_DLL LangNames : public TObject
@@ -155,6 +157,14 @@ public:
 	 * Returns: void
 	 */
 	void SetSelf(TrecPointer<TEnvironment> self);
+
+	/**
+	 * Method: TEnvironment::GetBrowsingNode
+	 * Purpose: Retrieves the Node relative to the environment
+	 * Parameters: void
+	 * Returns: TrecPinter<TObjectMode> - the nodes relevant to the environment
+	 */
+	virtual TrecPointer<TObjectNode> GetBrowsingNode() = 0;
 
 protected:
 

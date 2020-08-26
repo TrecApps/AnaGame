@@ -37,3 +37,8 @@ UINT TGradleEnvironment::RunTask(TString& task)
 {
 	return 0;
 }
+
+TrecPointer<TObjectNode> TGradleEnvironment::GetBrowsingNode()
+{
+	return TrecPointer<TObjectNode>();
+}
