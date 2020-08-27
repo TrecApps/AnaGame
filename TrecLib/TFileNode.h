@@ -2,6 +2,23 @@
 #include "TObjectNode.h"
 #include "TFileShell.h"
 
+/**
+ * Enum Class: file_node_filter_mode
+ * Purpose: Allows costomization for filering out directories that appear in these nodes
+ */
+typedef enum class file_node_filter_mode
+{
+	fnfm_blank,                   // no directory filtering
+	fnfm_block_upper,             // block the upper directory
+	fnfm_block_current,           // block the current directory
+	fnfm_block_both,              // block both the upper and current directory
+	fnfm_block_upper_and_files,   // Only show regular and current directories
+	fnfm_block_current_and_files, // Only show regular and upper directories
+	fnfm_block_both_and_files,    // Only show regular directories
+	fnfm_block_directories,       // Only show files
+	fnfm_block_files              // Show all Directories and no files
+}file_node_filter_mode;
+
 /*
  * class TFileNode
  * Purpose: Implements the TObjectNode interface for Files found on the local hard drive
@@ -129,7 +146,62 @@ public:
 	 * Returns: TrecPointer<TFileShell> - the data the node is holding
 	 */
 	TrecPointer<TFileShell> GetData();
+
+	/**
+	 * Method: TFileNode::SetShowAllFiles
+	 * Purpose: Sets whether to show all files or whether a filter is in place
+	 * Parameters: bool show - whether to show all files or only the target extensions
+	 * Returns: void
+	 */
+	void SetShowAllFiles(bool show);
+
+
+	/**
+	 * Method: TFileNode::GetShowAllFiles
+	 * Purpose: Reports whether to show all files or whether a filter is in place
+	 * Parameters: void
+	 * Returns: bool - whether to show all files or only the target extensions
+	 */
+	bool GetShowAllFiles();
+
+
+	/**
+	 * Method: TFileNode::AddExtension
+	 * Purpose: Adds a file extension to report
+	 * Parameters: const TString& extension - the extension to add
+	 * Returns: bool - whether the extension is in the list (no if not an extension)
+	 */
+	bool AddExtension(const TString& extension);
+
+
+	/**
+	 * Method: TFileNode::SetFilterMode
+	 * Purpose: Sets the filter mode of the nodes
+	 * Parameters: file_node_filter_mode mode - the mode to filter
+	 * Returns: void
+	 */
+	void SetFilterMode(file_node_filter_mode mode);
+
+
+	/**
+	 * Method: TFileNode::GetFilterMode
+	 * Purpose: Gets the filter mode of the nodes
+	 * Parameters: void
+	 * Returns: file_node_filter_mode - the filter mode of the node
+	 */
+	void SetFilterMode(file_node_filter_mode mode);
+
 protected:
+
+
+	/**
+	 * Method: TFileNode::ShouldShow
+	 * Purpose: Takes the filter configuration to determine if to should be shown
+	 * Parameters: TrecPointer<TFileShell> node -  the file entry to subject to filtering
+	 * Returns: bool - whether the node passes the criteria to be shown
+	 */
+	bool ShouldShow(TrecPointer<TFileShell> node);
+
 	/**
 	 * the data held by this node
 	 */
@@ -139,5 +211,20 @@ protected:
 	 * list of files held by this node (if object is a TDirectory
 	 */
 	TDataArray<TrecPointer<TObjectNode>> files;
+
+	/**
+	 * The Directory filtering mode
+	 */
+	file_node_filter_mode filter_mode;
+
+	/**
+	 * Whether to show all files or only the target ones
+	 */
+	bool showAllFiles;
+
+	/**
+	 * Extension Filter, only report these files 
+	 */
+	TDataArray<TString> extensions;
 };
 

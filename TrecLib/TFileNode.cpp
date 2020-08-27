@@ -9,6 +9,7 @@
 */
 TFileNode::TFileNode(UINT l) : TObjectNode(l)
 {
+	filter_mode = file_node_filter_mode::fnfm_blank;
 }
 
 /*
@@ -137,11 +138,19 @@ void TFileNode::Extend()
 		for (UINT Rust = 0; Rust < shellFiles.Size(); Rust++)
 		{
 			TrecPointer<TFileShell> f = shellFiles[Rust];
-			if (f.Get())
+			if (ShouldShow(f))
 			{
 				TrecPointer<TObjectNode> n = TrecPointerKey::GetNewSelfTrecPointerAlt<TObjectNode, TFileNode>(level + 1);
 				files.push_back(n);
-				dynamic_cast<TFileNode*>(n.Get())->SetFile(f);
+				auto fileNode = dynamic_cast<TFileNode*>(n.Get());
+				fileNode->SetFile(f);
+				fileNode->SetFilterMode(filter_mode);
+				fileNode->SetShowAllFiles(showAllFiles);
+
+				for (UINT Rust = 0; Rust < extensions.Size(); Rust++)
+				{
+					fileNode->AddExtension(extensions[Rust]);
+				}
 			}
 		}
 	}
@@ -207,4 +216,138 @@ void TFileNode::SetFile(TrecPointer<TFileShell>& d)
 TrecPointer<TFileShell> TFileNode::GetData()
 {
 	return data;
+}
+
+void TFileNode::SetShowAllFiles(bool show)
+{
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		auto fileNode = dynamic_cast<TFileNode*>(files[Rust].Get());
+
+		if (fileNode)
+		{
+			fileNode->SetShowAllFiles(show);
+		}
+	}
+
+	showAllFiles = show;
+}
+
+bool TFileNode::GetShowAllFiles()
+{
+	return showAllFiles || !extensions.Size();
+}
+
+bool TFileNode::AddExtension(const TString& extension)
+{
+	for (UINT Rust = 0; Rust < extensions.Size(); Rust++)
+	{
+		if (!extensions[Rust].CompareNoCase(extension))
+			return true;
+	}
+
+	if (extension.GetSize() < 2)
+		return false;
+
+	if (extension[0] == L'.')
+	{
+		for (UINT Rust = 1; Rust < extension.GetSize(); Rust++)
+		{
+			WCHAR letter = extension[Rust];
+
+			if ((letter >= L'A' && letter <= L'Z') ||
+				(letter >= L'a' && letter <= L'z'))
+				continue;
+			return false;
+		}
+
+		extensions.push_back(extension);
+
+		for (UINT Rust = 0; Rust < files.Size(); Rust++)
+		{
+			auto fileNode = dynamic_cast<TFileNode*>(files[Rust].Get());
+
+			if (fileNode)
+			{
+				fileNode->AddExtension(extension);
+			}
+
+		}
+
+		return true;
+	}
+	return false;
+}
+
+void TFileNode::SetFilterMode(file_node_filter_mode mode)
+{
+	filter_mode = mode;
+
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		auto fileNode = dynamic_cast<TFileNode*>(files[Rust].Get());
+		if (fileNode)
+			fileNode->SetFilterMode(mode);
+	}
+}
+
+/**
+ * Method: TFileNode::ShouldShow
+ * Purpose: Takes the filter configuration to determine if to should be shown
+ * Parameters: TrecPointer<TFileShell> node -  the file entry to subject to filtering
+ * Returns: bool - whether the node passes the criteria to be shown
+ */
+bool TFileNode::ShouldShow(TrecPointer<TFileShell> node)
+{
+	if(!node.Get())
+		return false;
+
+	TString nodeName(node->GetName());
+
+	if (node->IsDirectory())
+	{
+		switch (filter_mode)
+		{
+		case file_node_filter_mode::fnfm_blank:
+		case file_node_filter_mode::fnfm_block_files:
+			return true;
+		case file_node_filter_mode::fnfm_block_current:
+		case file_node_filter_mode::fnfm_block_current_and_files:
+			return nodeName.Compare(L".");
+		case file_node_filter_mode::fnfm_block_upper:
+		case file_node_filter_mode::fnfm_block_upper_and_files:
+			return nodeName.Compare(L"..");
+		case file_node_filter_mode::fnfm_block_both:
+		case file_node_filter_mode::fnfm_block_both_and_files:
+			return nodeName.Compare(L".") && nodeName.Compare(L"..");
+		case file_node_filter_mode::fnfm_block_directories:
+			return false;
+		}
+	}
+	else
+	{
+		// We have a regular file
+		switch (filter_mode)
+		{
+		case file_node_filter_mode::fnfm_block_current_and_files:
+		case file_node_filter_mode::fnfm_block_upper_and_files:
+		case file_node_filter_mode::fnfm_block_both_and_files:
+		case file_node_filter_mode::fnfm_block_files:
+			return false;
+		default:
+			if (showAllFiles && extensions.Size())
+			{
+				for (UINT Rust = 0; Rust < extensions.Size(); Rust++)
+				{
+					if (nodeName.FindLast(extensions[Rust]) == nodeName.GetSize() - extensions[Rust].GetSize())
+						return true;
+				}
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+	}
 }
