@@ -13,6 +13,9 @@ TTreeDataBind::TTreeDataBind(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<st
 {
 	isNodeSelected = isTickSelected = false;
 	nodeSelected = 0;
+	highlightNodeSelected = UINT32_MAX;
+
+
 }
 
 /**
@@ -49,6 +52,9 @@ void TTreeDataBind::onDraw(TObject* obj)
 	
 	for (UINT c = 0; curNode.Get(); c++)
 	{
+		if (nodeBrush.Get() && c == highlightNodeSelected)
+			nodeBrush->FillRectangle(cLoc);
+
 		bool ext = curNode->IsExtended();
 		bool extDraw = curNode->IsExtendable();
 
@@ -62,7 +68,6 @@ void TTreeDataBind::onDraw(TObject* obj)
 		
 		if (extDraw)
 		{
-
 			TDataArray<POINT_2D> points;
 
 			if (ext)
@@ -131,11 +136,26 @@ bool TTreeDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		outerBrush = drawingBoard->GetBrush(TColor(D2D1::ColorF::Black));
 		innerBrush = drawingBoard->GetBrush(TColor(D2D1::ColorF::Wheat));
+
+		TrecPointer<TString> valpoint = attributes.retrieveEntry(L"|NodeHighlightColor");
+
+		D2D1_COLOR_F nodeColor{ 1.0f,1.0f,1.0f, 0.0f };
+
+		if (valpoint.Get())
+		{
+			nodeColor = convertStringToD2DColor(valpoint.Get());
+		}
+
+		nodeBrush = drawingBoard->GetBrush(TColor(nodeColor));
+
 	}
 	if (children.Count() && children.ElementAt(0).Get())
 	{
 		children.ElementAt(0)->onCreate(r, d3d);
 	}
+
+
+
 	return false;
 }
 /**
@@ -218,15 +238,20 @@ void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, 
 				triLoc.left += 5 + level * 5;
 				triLoc.right = triLoc.left + 20;
 
-				if (isContained(&point, &triLoc) && isTickSelected && targetNode == nodeSelected)
+				if (targetNode == nodeSelected)
 				{
-					if (tNode->IsExtended())
-						tNode->DropChildNodes();
-					else if(tNode->IsExtendable())
+					if (isContained(&point, &triLoc) && isTickSelected)
 					{
-						tNode->Extend();
-						Resize(location);
-					}
+						if (tNode->IsExtended())
+							tNode->DropChildNodes();
+						else if (tNode->IsExtendable())
+						{
+							tNode->Extend();
+							Resize(location);
+						}
+
+						
+					}highlightNodeSelected = nodeSelected;
 				}
 			}
 		}

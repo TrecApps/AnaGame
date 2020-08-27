@@ -140,6 +140,16 @@ protected:
 	UINT nodeSelected;
 
 	/**
+	 * Used to know when to highlight a given node
+	 */
+	UINT highlightNodeSelected;
+
+	/**
+	 * The color to use for Highlighing
+	 */
+	TrecPointer<TBrush> nodeBrush;
+
+	/**
 	 * Brush that paints the outside of the arrow
 	 */
 	TrecPointer<TBrush> outerBrush;

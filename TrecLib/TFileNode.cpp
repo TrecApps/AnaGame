@@ -291,6 +291,11 @@ void TFileNode::SetFilterMode(file_node_filter_mode mode)
 	}
 }
 
+file_node_filter_mode TFileNode::GetFilterMode()
+{
+	return filter_mode;
+}
+
 /**
  * Method: TFileNode::ShouldShow
  * Purpose: Takes the filter configuration to determine if to should be shown

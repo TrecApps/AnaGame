@@ -189,7 +189,7 @@ public:
 	 * Parameters: void
 	 * Returns: file_node_filter_mode - the filter mode of the node
 	 */
-	void SetFilterMode(file_node_filter_mode mode);
+	file_node_filter_mode GetFilterMode();
 
 protected:
 
