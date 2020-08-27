@@ -362,7 +362,7 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
 	if (!fileName.GetSize())
 		return;
 
-	TFile file(directory->GetPath() + fileName, TFile::t_file_create_always | TFile::t_file_write);
+	TFile file(directory->GetPath() + TString(L'\\') +  fileName, TFile::t_file_create_always | TFile::t_file_write);
 
 	file.Close();
 

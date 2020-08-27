@@ -115,14 +115,7 @@ void TTextField::InputChar(wchar_t cha, int times)
 				goto def;
 			text.Insert(caretLoc++, L'/');
 			break;
-		case VK_DELETE:
-			if (text.GetSize() > 0)
-			{
 
-				text.Delete(caretLoc, 1);
-
-			}
-			break;
 		default:
 		def:
 			text.Insert(caretLoc++, cha);
@@ -762,6 +755,14 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 					if (GetCaretPos(&caretPoint))
 					{
 						moveCaretDown(caretPoint);
+					}
+					break;
+				case VK_DELETE:
+					if (text.GetSize() > 0)
+					{
+
+						text.Delete(caretLoc, 1);
+
 					}
 					break;
 				case VK_ESCAPE:

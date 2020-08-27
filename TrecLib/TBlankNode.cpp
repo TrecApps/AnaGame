@@ -78,16 +78,6 @@ TrecPointer<TObjectNode> TBlankNode::GetNodeAt(UINT target, UINT current)
 	return TrecPointer<TObjectNode>();
 }
 
-/**
- * Method: TBlankNode::TotalChildren
- * Purpose: Reports the total number of "decendants" of this node
- * Parameters: void
- * Returns: UINT - total "decendant" count
- */
-UINT TBlankNode::TotalChildren()
-{
-	return 0;
-}
 
 /**
  * Method: TBlankNode::Initialize
