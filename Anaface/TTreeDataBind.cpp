@@ -251,7 +251,22 @@ void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, 
 						}
 
 						
-					}highlightNodeSelected = nodeSelected;
+					}
+					else
+					{
+						resetArgs();
+
+						args.eventType = R_Message_Type::On_sel_change;
+						args.point = point;
+						args.methodID = getEventID(R_Message_Type::On_sel_change);
+						args.isClick = true;
+						args.isLeftClick = false;
+						args.control = this;
+
+						eventAr.push_back(EventID_Cred(R_Message_Type::On_sel_change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+					}
+					
+					highlightNodeSelected = nodeSelected;
 				}
 			}
 		}
