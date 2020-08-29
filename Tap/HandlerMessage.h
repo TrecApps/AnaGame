@@ -17,7 +17,8 @@ typedef enum class handler_type
 	handler_type_compiler,    // references a compile related handler that has not been written yet
 	handler_type_interpreter, // references an interpretor related handler that has not been written yet
 	handler_type_okay,        // references the "OkayHandler"
-	handler_type_arena,       // references the "ArenaHandler"
+	handler_type_arena,       // references the "ArenaHandler",
+	handler_type_main,        // References the main Handler in an IDE Window
 
 	handler_type_other
 }handler_type;

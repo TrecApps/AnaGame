@@ -169,10 +169,8 @@ bool TTreeDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
  */
 void TTreeDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
-	auto tempLocation = location;
 
-	location = getLocation();
-	if (isContained(&point, &location))
+	if (isContained(&point, &getLocation()))
 	{
 		if (mainNode.Get())
 		{
@@ -207,7 +205,6 @@ void TTreeDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut
 
 		TControl::OnLButtonDown(nFlags, point, mOut, eventAr, clickedButtons);
 	}
-	location = tempLocation;
 }
 /**
  * Method: TTreeDataBind::OnLButtonUp
@@ -220,10 +217,8 @@ void TTreeDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut
  */
 void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	const auto tempLocation = location;
 
-	location = getLocation();
-	if (isContained(&point, &location))
+	if (isContained(&point, &getLocation()))
 	{
 		if (mainNode.Get())
 		{
@@ -282,7 +277,6 @@ void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, 
 	}
 	isTickSelected = isNodeSelected = false;
 	nodeSelected = 0;
-	location = tempLocation;
 }
 /**
  * Method: TTreeDataBind::OnMouseMove Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
@@ -295,12 +289,8 @@ void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, 
  */
 void TTreeDataBind::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
-	auto tempLocation = location;
-
-	location = getLocation();
-
 	TControl::OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
-	location = tempLocation;
+
 }
 /**
  * Method: TTreeDataBind::OnLButtonDblClk
@@ -313,15 +303,10 @@ void TTreeDataBind::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, 
  */
 void TTreeDataBind::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	auto tempLocation = location;
-
-	location = getLocation();
-	TControl::OnLButtonDblClk(nFlags, point, mOut, eventAr);
-
-	location = tempLocation;
-	
 	if (isContained(&point, &getLocation()) && mainNode.Get())
 	{
+		TControl::OnLButtonDblClk(nFlags, point, mOut, eventAr);
+
 		float dist = point.y - location.top;
 
 		UINT targetNode = static_cast<UINT>(dist) / 30;

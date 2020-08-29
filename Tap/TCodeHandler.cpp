@@ -4,10 +4,12 @@
 #include <TScrollerControl.h>
 TCodeHandler::TCodeHandler(TrecPointer<TInstance> in) : DocumentHandler(in)
 {
+	onFocusString.Set(L"Focus CodeHandler");
 }
 
 TCodeHandler::TCodeHandler(TrecPointer<TInstance> in, const TString& name) : DocumentHandler(in, name)
 {
+	onFocusString.Set(L"Focus CodeHandler");
 }
 
 void TCodeHandler::Initialize(TrecPointer<Page> page)
@@ -29,6 +31,28 @@ void TCodeHandler::Initialize(TrecPointer<Page> page)
 	code = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(lay->GetLayoutChild(1, 0));
 
 	this->page = page;
+
+	if (filePointer.Get())
+	{
+		TFile realFile(filePointer->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
+
+		if (realFile.IsOpen())
+		{
+			TString line;
+			TString codeData;
+			while (realFile.ReadString(line))
+			{
+				if (codeData.GetSize())
+				{
+					codeData.AppendFormat(L"\n%ws", line.GetConstantBuffer());
+				}
+				else
+					codeData.Set(line);
+			}
+
+			code->SetText(codeData);
+		}
+	}
 }
 
 void TCodeHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
@@ -51,6 +75,8 @@ void TCodeHandler::OnSave()
 		OnSave(saver);
 	}
 }
+
+
 
 bool TCodeHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
 {

@@ -240,6 +240,23 @@ void MainLayoutHandler::OnSwitchTab(TrecPointer<TControl> tc, EventArgs ea)
 
 void MainLayoutHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
+	if (!message.Get())
+		return;
+
+	auto m = message->GetMessage_();
+
+	auto messageTokens = m.split(L" ");
+
+	if (messageTokens->Size() > 1)
+	{
+		if (!messageTokens->at(0).CompareNoCase(L"focus"))
+		{
+			if (!messageTokens->at(1).CompareNoCase(L"CodeHandler") && docStack2.Get())
+				docStack2->setActive(true);
+			else if (docStack2.Get())
+				docStack2->setActive(false);
+		}
+	}
 }
 
 void MainLayoutHandler::OnFirstDraw()
@@ -375,6 +392,9 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
 
 	ActiveDocuments.push_back(currentDocument);
 	currentDocument->Initialize(TFileShell::GetFileInfo(fileName));
+
+
+	window->SetCurrentApp(currentDocument);
 }
 
 void MainLayoutHandler::OnImportCode(TrecPointer<TControl> tc, EventArgs ea)
@@ -393,33 +413,62 @@ void MainLayoutHandler::OnImportCode(TrecPointer<TControl> tc, EventArgs ea)
 		{
 			TFile readFile(targetFile->GetPath(), TFile::t_file_open_always | TFile::t_file_read);
 
-			TFile writeFile(directory->GetPath() + TString(L"\\") + targetFile->GetName(), TFile::t_file_create_always | TFile::t_file_write);
+			TString writeFileStr(directory->GetPath() + TString(L"\\") + targetFile->GetName());
+			TFile writeFile(writeFileStr, TFile::t_file_create_always | TFile::t_file_write);
 
 			if (readFile.IsOpen() && writeFile.IsOpen())
 			{
-				BYTE bytes[100];
+
+				
+
+				TString textData;
 				UINT bytesRead;
 				do
 				{
-					bytesRead = readFile.Read(bytes, 100);
-					writeFile.Write(bytes, bytesRead);
+					bytesRead = readFile.ReadString(textData, static_cast<ULONGLONG>(1000));
+					writeFile.WriteString(textData);
 				} while (bytesRead);
 
 				
 			}
 			readFile.Close();
 			writeFile.Close();
+			
+			currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, SourceCodeApp2>(window);
+
+			ActiveDocuments.push_back(currentDocument);
+			currentDocument->Initialize(TFileShell::GetFileInfo(writeFileStr));
 		}
+
+		
 	}
+
+
+	window->SetCurrentApp(currentDocument);
 }
 
 void MainLayoutHandler::OnProcessCode(TrecPointer<TControl> tc, EventArgs ea)
 {
+	assert(window.Get());
+	if (!currentDocument.Get())
+		return;
+	auto curHandler = currentDocument->GetMainHandler();
+
+	if (!dynamic_cast<TCodeHandler*>(curHandler.Get()))
+		return;
+
+	auto file = curHandler->GetFilePointer();
+	TString filePath;
+
+	if (window->GetEnvironment().Get())
+	{
+		window->GetEnvironment()->RunTask(filePath);
+	}
 }
 
 bool MainLayoutHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
 {
 	if(!message.Get())
 		return false;
-	return message->GetHandlerType() == handler_type::handler_type_other;
+	return message->GetHandlerType() == handler_type::handler_type_other || message->GetHandlerType() == handler_type::handler_type_main;
 }

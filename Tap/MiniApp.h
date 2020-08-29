@@ -61,6 +61,14 @@ public:
 	 */
 	virtual void OnSave() = 0;
 
+	/**
+	 * Method: MiniApp::GetMainHandler
+	 * Purpose: Reports the main Handler of the App, null if there is none
+	 * Parameters: void
+	 * Returns: TrecPointer<EventHandler> - the main handler associated with this app
+	 */
+	virtual TrecPointer<EventHandler> GetMainHandler();
+
 protected:
 	/**
 	 * the Window holding this MniApp

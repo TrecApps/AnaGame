@@ -282,6 +282,18 @@ void EventHandler::OnFocus()
 		if (win.Get())
 			win->SetCurrentApp(miniApp);
 	}
+
+	if (!onFocusString.GetSize())
+		onFocusString.Set(L"focus Blank!");
+
+	if (app.Get())
+	{
+		auto realApp = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app);
+
+		auto message = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name, handler_type::handler_type_main, 0, message_transmission::message_transmission_name_type, 0, onFocusString);
+
+		realApp->DispatchAnagameMessage(message);
+	}
 }
 
 /**
@@ -303,6 +315,11 @@ void EventHandler::OnSave()
 void EventHandler::SetSaveFile(TrecPointer<TFileShell> file)
 {
 	filePointer = file;
+}
+
+TrecPointer<TFileShell> EventHandler::GetFilePointer()
+{
+	return filePointer;
 }
 
 /**

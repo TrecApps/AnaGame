@@ -40,3 +40,8 @@ void SourceCodeApp2::OnSave()
 	if (codeHandler.Get())
 		codeHandler->OnSave();
 }
+
+TrecPointer<EventHandler> SourceCodeApp2::GetMainHandler()
+{
+	return TrecPointerKey::GetTrecPointerFromSub<EventHandler, TCodeHandler>(codeHandler);
+}

@@ -1780,6 +1780,42 @@ bool TString::StartsWith(const TString& seq, bool ignoreCase)
 	return true;
 }
 
+
+/**
+ * Method: TString::EndsWith
+ * Purpose: deduces whether the String ends with a given sequence
+ * Parameters: const TString& seq - the sequence to check
+ *				bool ignoreCase - whether to ignore case when doing the analysis (false by default)
+ * Returns: bool
+ *
+ * Note: Will return false if seq is longer than 'this' string
+ */
+bool TString::EndsWith(const TString& seq, bool ignoreCase)
+{
+	if (seq.GetSize() > size)
+		return false;
+
+	if (ignoreCase)
+	{
+		TString lSeq(seq.GetLower());
+		TString lThis(this->GetLower());
+		for (UINT C = lThis.GetSize() - 1, Rust = lSeq.GetSize() - 1; C < size && Rust < size; C--, Rust--)
+		{
+			if (lThis[C] != lSeq[Rust])
+				return false;
+		}
+	}
+	else
+	{
+		for (UINT C = size - 1, Rust = seq.GetSize() - 1; C < size && Rust < size; C--, Rust--)
+		{
+			if (string[C] != seq[Rust])
+				return false;
+		}
+	}
+	return true;
+}
+
 /**
  * Method: TString::Find
  * Purpose: Finds the last instance of the specified string

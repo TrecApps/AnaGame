@@ -699,7 +699,10 @@ UINT TFile::Read(void* buffer, UINT count)
 	BOOL res = ReadFile((HANDLE)fileHandle, buffer, count, resCount, nullptr);
 
 	if (!res)
+	{
+		int e = GetLastError();
 		return 0;
+	}
 	position += *resCount;
 
 	DWORD stackResCount = *resCount;

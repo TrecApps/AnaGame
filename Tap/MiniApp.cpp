@@ -22,3 +22,15 @@ void MiniApp::SetSelf(TrecPointer<MiniApp> s)
 		throw L"Error! Needed this to be pointed to self";
 	self = TrecPointerKey::GetSoftPointerFromTrec<MiniApp>(s);
 }
+
+
+/**
+ * Method: MiniApp::GetMainHandler
+ * Purpose: Reports the main Handler of the App, null if there is none
+ * Parameters: void
+ * Returns: TrecPointer<EventHandler> - the main handler associated with this app
+ */
+TrecPointer<EventHandler> MiniApp::GetMainHandler()
+{
+	return TrecPointer<EventHandler>();
+}

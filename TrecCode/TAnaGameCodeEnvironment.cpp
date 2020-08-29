@@ -46,6 +46,25 @@ void TAnaGameCodeEnvironment::PreProcessSingleFile(TrecPointer<TFile> file)
 
 UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 {
+	auto fileTask = TFileShell::GetFileInfo(task);
+
+	if (fileTask.Get())
+	{
+		if (task.EndsWith(L".ascrpt"))
+		{
+			// We have an Anascript file on our hands
+			auto interpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(), TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+
+			TFile file(task, TFile::t_file_open_existing | TFile::t_file_read);
+
+			
+			if (file.IsOpen())
+			{
+				interpretor->SetCode(file);
+				auto result = interpretor->Run();
+			}
+		}
+	}
 	return 0;
 }
 

@@ -1423,7 +1423,13 @@ void TLayout::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoint
 	{
 		if (lChildren.ElementAt(Rust).Get() && lChildren.ElementAt(Rust)->contain.Get() == curControl.Get())
 		{
-			lChildren.ElementAt(Rust)->contain = newControl;
+			auto lElement = lChildren.ElementAt(Rust);
+			lElement->contain = newControl;
+
+			auto rect = getRawSectionLocation(lElement->y, lElement->x);
+
+			//newControl->onCreate(rect, TrecPointer<TWindowEngine>());
+
 			break;
 		}
 	}

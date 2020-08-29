@@ -221,6 +221,7 @@ public:
 	 * Returns: void
 	 */
 	void OnFocus();
+
 	/**
 	 * Method: EventHandler::OnSave
 	 * Purpose: Provides a Save method in case there is a way to save
@@ -238,11 +239,17 @@ public:
 	 */
 	void SetSaveFile(TrecPointer<TFileShell> file);
 
+	TrecPointer<TFileShell> GetFilePointer();
+
+
+
 protected:
 	/**
 	 * Reference to "this" Handler
 	 */
 	TrecPointerSoft<EventHandler> hSelf;
+
+	TString onFocusString;
 
 	/**
 	 * Method: EventHandler::ShouldProcessMessageByType
