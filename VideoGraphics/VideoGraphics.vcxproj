@@ -166,6 +166,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Structure2D.h" />
+    <ClInclude Include="T2DSpriteEngine.h" />
     <ClInclude Include="TArenaEngine.h" />
     <ClInclude Include="TBitmapBrush.h" />
     <ClInclude Include="TBrush.h" />
@@ -188,6 +189,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="T2DSpriteEngine.cpp" />
     <ClCompile Include="TArenaEngine.cpp" />
     <ClCompile Include="TBitmapBrush.cpp" />
     <ClCompile Include="TBrush.cpp" />

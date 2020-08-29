@@ -63,6 +63,9 @@
     <ClInclude Include="TBitmapBrush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="T2DSpriteEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -108,6 +111,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TBitmapBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="T2DSpriteEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
