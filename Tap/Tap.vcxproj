@@ -166,6 +166,7 @@
     <ClInclude Include="ArenaHandler.h" />
     <ClInclude Include="CameraHandler.h" />
     <ClInclude Include="DocumentHandler.h" />
+    <ClInclude Include="FileDialog.h" />
     <ClInclude Include="FileDialogHandler.h" />
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="framework.h" />
@@ -202,6 +203,7 @@
     <ClCompile Include="CameraHandler.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="DocumentHandler.cpp" />
+    <ClCompile Include="FileDialog.cpp" />
     <ClCompile Include="FileDialogHandler.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="HandlerMessage.cpp" />

@@ -8,7 +8,7 @@ TString on_SelectNode(L"OnSelectNode");
 TString on_Cancel(L"OnCancel");
 TString on_Okay(L"OnCancel");
 TString on_FileNameChange(L"OnFileNameChange");
-
+TString on_ClickNode(L"OnClickNode");
 
 
 /**
@@ -27,6 +27,7 @@ FileDialogHandler::FileDialogHandler(TrecPointer<TInstance> instance): EventHand
 	fileEvents.push_back(&FileDialogHandler::OnCancel);
 	fileEvents.push_back(&FileDialogHandler::OnOkay);
 	fileEvents.push_back(&FileDialogHandler::OnFileNameChange);
+	fileEvents.push_back(&FileDialogHandler::OnClickNode);
 
 	// Now set the structure to link the listeners to their text name
 	eventNameID enid;
@@ -45,6 +46,10 @@ FileDialogHandler::FileDialogHandler(TrecPointer<TInstance> instance): EventHand
 
 	enid.eventID = 3;
 	enid.name.Set(on_FileNameChange);
+	events.push_back(enid);
+
+	enid.eventID = 4;
+	enid.name.Set(on_ClickNode);
 	events.push_back(enid);
 }
 
@@ -140,6 +145,11 @@ void FileDialogHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
 }
 
+TString FileDialogHandler::GetPath()
+{
+	return chosenPath;
+}
+
 void FileDialogHandler::SetAttributes(TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile, file_node_filter_mode filter_mode)
 {
 	this->filter_mode = filter_mode;
@@ -224,4 +234,40 @@ void FileDialogHandler::OnFileNameChange(TrecPointer<TControl> tc, EventArgs ea)
 	}
 
 
+}
+
+void FileDialogHandler::OnClickNode(TrecPointer<TControl> tc, EventArgs ea)
+{
+	if (!ea.object.Get())
+		return;
+
+	auto fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(ea.object);
+
+	TrecPointer<TFileShell> obj = fileNode->GetData();
+	if (!fileNode.Get() || !obj.Get())
+		return;
+
+	
+
+	switch (filter_mode)
+	{
+	case file_node_filter_mode::fnfm_block_both_and_files:
+	case file_node_filter_mode::fnfm_block_current_and_files:
+	case file_node_filter_mode::fnfm_block_files:
+	case file_node_filter_mode::fnfm_block_upper_and_files:
+		// Here, we are looking for Directories as our target
+		fileText->SetText(obj->GetName());
+
+		okayControl->setActive(true);
+		break;
+	default:
+		// Here, we filter out directories in favor of files
+
+		if (!obj->IsDirectory())
+		{
+			fileText->SetText(obj->GetName());
+
+			okayControl->setActive(true);
+		}
+	}
 }

@@ -14,7 +14,7 @@ typedef void (FileDialogHandler::* FileDialogEvents)(TrecPointer<TControl> tc, E
  */
 class FileDialogHandler :  public EventHandler
 {
-
+public:
 	/**
 	 * Method: FileDialogHandler::EventHandler
 	 * Purpose: Constructor
@@ -58,6 +58,14 @@ class FileDialogHandler :  public EventHandler
 	 * Returns: void
 	 */
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message) override;
+
+	/**
+	 * Method: FileDialogHandler::GetPath
+	 * Purpose: Reports the selected directory
+	 * Parameters: void
+	 * Returns: TString - the String the user selected (empty if operation was cancelled
+	 */
+	TString GetPath();
 
 	/**
 	 * Method: FileDialogHandler::ProcessMessage
@@ -109,8 +117,7 @@ protected:
 	void OnOkay(TrecPointer<TControl> tc, EventArgs ea);
 
 	void OnFileNameChange(TrecPointer<TControl> tc, EventArgs ea);
+
+	void OnClickNode(TrecPointer<TControl> tc, EventArgs ea);
 };
 
-
-
-TrecPointer<TFileShell> ActivateFileDialog()

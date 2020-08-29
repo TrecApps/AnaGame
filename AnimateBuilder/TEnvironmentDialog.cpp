@@ -54,6 +54,7 @@ int TEnvironmentDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	if (!mainPage.Get())
 		return 10;
+	return 0;
 }
 
 /**
