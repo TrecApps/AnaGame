@@ -214,7 +214,7 @@ void TInstance::AssertDialogRegistered()
 	TString winClass(L"Dialog");
 
 	windowClassStructure.cbSize = sizeof(windowClassStructure);
-	windowClassStructure.style = CS_HREDRAW | CS_VREDRAW;
+	windowClassStructure.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 	windowClassStructure.lpfnWndProc = proctor;
 	windowClassStructure.cbClsExtra = 0;
 	windowClassStructure.cbWndExtra = 0;

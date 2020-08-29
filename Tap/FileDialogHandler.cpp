@@ -6,7 +6,7 @@
 // Declare Handler Functions in String form
 TString on_SelectNode(L"OnSelectNode");
 TString on_Cancel(L"OnCancel");
-TString on_Okay(L"OnCancel");
+TString on_Okay(L"OnOkay");
 TString on_FileNameChange(L"OnFileNameChange");
 TString on_ClickNode(L"OnClickNode");
 
@@ -92,20 +92,20 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 	directoryText = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(1,0));
 	assert(directoryText.Get());
 
-	TrecSubPointer<TControl, TLayout> subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 1));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 1));
 	assert(subLayout.Get());
 
 	browserControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(subLayout->GetLayoutChild(1, 1));
 	assert(browserControl.Get());
 
-	TrecSubPointer<TControl, TLayout> subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 2));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 2));
 	assert(subLayout.Get());
 
 
 	fileText = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(1, 0));
 	assert(fileText.Get());
 
-	TrecSubPointer<TControl, TLayout> subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 3));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 3));
 	assert(subLayout.Get());
 
 	okayControl = subLayout->GetLayoutChild(1, 0);
@@ -139,6 +139,26 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 
 void FileDialogHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 {
+	int e_id = -1;
+	EventArgs ea;
+	for (UINT c = 0; c < eventAr.Size(); c++)
+	{
+		auto tc = eventAr.at(c).control;
+		if (!tc.Get())
+			continue;
+		ea = tc->getEventArgs();
+		e_id = ea.methodID;
+		// At this point, call the appropriate method
+		if (e_id > -1 && e_id < fileEvents.Size())
+		{
+			// call method
+			if (fileEvents[e_id])
+				(this->*fileEvents[e_id])(tc, ea);
+		}
+	}
+
+	//onDraw();
+	eventAr.RemoveAll();
 }
 
 void FileDialogHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
@@ -174,14 +194,40 @@ void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
 	if (fileNode->IsExtendable())
 	{
 		// Here, we are dealing with a directory
+		auto fileObj = fileNode->GetData();
+		assert(fileObj.Get());
 
+		if(!fileObj->GetName().Compare(L"."))
+		{ 
+			// Do Nothing
+		}
+		else if (!fileObj->GetName().Compare(L".."))
+		{
+			auto path = fileObj->GetPath();
+
+			int lastSlash = path.FindLast(L'\\', path.GetSize() - 4);
+
+			path.Set(path.SubString(0, lastSlash));
+			directoryText->SetText(path);
+		}
+		else
+			directoryText->SetText(fileObj->GetPath());
 		// Clean up the content presented to the user
-		fileNode->DropChildNodes();
 
-		browserControl->SetNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(fileNode));
+		auto targetFile = TFileShell::GetFileInfo(directoryText->GetText());
+		auto newNode = TrecPointerKey::GetNewTrecSubPointer<TObjectNode, TFileNode>(0);
+
+		newNode->SetFile(targetFile);
+		newNode->SetFilterMode(filter_mode);
+
+		newNode->Extend();
+
+		browserControl->SetNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(newNode));
 		fileNode->Extend();
-		assert(fileNode->GetData().Get());
-		directoryText->SetText(fileNode->GetData()->GetPath());
+		
+
+
+		
 		fileText->SetText(L"");
 		okayControl->setActive(false);
 	}
@@ -207,7 +253,7 @@ void FileDialogHandler::OnCancel(TrecPointer<TControl> tc, EventArgs ea)
 
 void FileDialogHandler::OnOkay(TrecPointer<TControl> tc, EventArgs ea)
 {
-	chosenPath.Set(directoryText->GetText() + L"\\" + ea.text);
+	chosenPath.Set(directoryText->GetText() + L"\\" + fileText->GetText());
 
 	DestroyWindow(window->GetWindowHandle());
 }

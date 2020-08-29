@@ -73,6 +73,17 @@ public:
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 
+	/*
+	* Method: TScrollerControl::OnLButtonDblClk
+	* Purpose: Allows control to catch the DOuble Click event and act accordingly
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	* Returns: void
+	*/
+	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
+
 	/**
 	 * Method: TScrollerControl::GetChildControl
 	 * Purpose: Rturns the control that the scroller is manipulating

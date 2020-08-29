@@ -8,6 +8,8 @@
 #include "ArenaApp2.h"
 #include "TEnvironmentDialog.h"
 
+#include <FileDialog.h>
+
 
 // Found on the Home Tab
 TString on_LoadNewSolution(L"LoadNewSolution");
@@ -377,6 +379,38 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
 
 void MainLayoutHandler::OnImportCode(TrecPointer<TControl> tc, EventArgs ea)
 {
+	assert(window.Get());
+
+	auto directory = window->GetEnvironmentDirectory();
+	if (directory.Get())
+	{
+		auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app),
+			window->GetWindowHandle(),
+			directory,
+			TString());
+
+		if (targetFile.Get())
+		{
+			TFile readFile(targetFile->GetPath(), TFile::t_file_open_always | TFile::t_file_read);
+
+			TFile writeFile(directory->GetPath() + TString(L"\\") + targetFile->GetName(), TFile::t_file_create_always | TFile::t_file_write);
+
+			if (readFile.IsOpen() && writeFile.IsOpen())
+			{
+				BYTE bytes[100];
+				UINT bytesRead;
+				do
+				{
+					bytesRead = readFile.Read(bytes, 100);
+					writeFile.Write(bytes, bytesRead);
+				} while (bytesRead);
+
+				
+			}
+			readFile.Close();
+			writeFile.Close();
+		}
+	}
 }
 
 void MainLayoutHandler::OnProcessCode(TrecPointer<TControl> tc, EventArgs ea)

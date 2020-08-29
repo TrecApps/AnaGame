@@ -172,6 +172,12 @@ void TScrollerControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 	onScrollFocus = false;
 }
 
+void TScrollerControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (childControl.Get())
+		childControl->OnLButtonDblClk(nFlags, point, mOut, eventAr);
+}
+
 /**
  * Method: TScrollerControl::GetChildControl
  * Purpose: Rturns the control that the scroller is manipulating

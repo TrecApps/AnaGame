@@ -1424,7 +1424,7 @@ void TLayout::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoint
 		if (lChildren.ElementAt(Rust).Get() && lChildren.ElementAt(Rust)->contain.Get() == curControl.Get())
 		{
 			lChildren.ElementAt(Rust)->contain = newControl;
-			return;
+			break;
 		}
 	}
 	TControl::SwitchChildControl(curControl, newControl);

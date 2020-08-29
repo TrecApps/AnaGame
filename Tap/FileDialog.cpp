@@ -34,7 +34,7 @@ bool FileDialog::OnDestroy()
 	if (handler.Get())
 		file = TFileShell::GetFileInfo(handler->GetPath());
 
-	return ret;
+	return false;
 }
 
 TrecPointer<TFileShell> FileDialog::GetFile()
