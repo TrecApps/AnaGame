@@ -186,7 +186,7 @@ ReportObject TAnascriptInterpretor::Run()
         else if (!Keyword.Find(L"let "))
         {
             // Prepare to Create a new variable
-            ret = ProcessLet(code, line);
+            ret = ProcessLet(code, line, true);
 
             if (ret.returnCode)
                 return ret;
@@ -225,6 +225,12 @@ ReportObject TAnascriptInterpretor::Run()
             ret.mode = report_mode::report_mode_continue;
             return ret;
         }
+        else
+        {
+            int eq = code.Find(L'='), sp = code.Find(L' ');
+
+            ProcessLet(code, line, false);
+        }
 
 
 
@@ -249,8 +255,11 @@ ReportObject TAnascriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& para
 	return ReportObject();
 }
 
-ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line)
+ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expectLet)
 {
+
+
+
     ReportObject ret;
 
     auto tokens = let.split(L" ");
@@ -259,21 +268,36 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line)
 
     TString expression;
 
-    // First check for the presence of the '=' operator
-    if (tokens->Size() < 2)
+    UINT one, two, three;
+
+    if (expectLet)
     {
-        ret.returnCode = ReportObject::incomplete_statement;
-        ret.errorMessage.Set(L"'let' statement needs more than the let keyword!");
-        TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
-        ret.stackTrace.push_back(stack);
+        // First check for the presence of the '=' operator
+        if (tokens->Size() < 2)
+        {
+            ret.returnCode = ReportObject::incomplete_statement;
+            ret.errorMessage.Set(L"'let' statement needs more than the let keyword!");
+            TString stack;
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            ret.stackTrace.push_back(stack);
 
 
-        return ret;
+            return ret;
+        }
+
+        one = 1;
+        two = 2;
+        three = 3;
+    }
+    else
+    {
+        one = 0;
+        two = 1;
+        three = 2;
     }
 
 
-    TString firstToken(tokens->at(1));
+    TString firstToken(tokens->at(one));
 
     UINT expIndex = 0;
 
@@ -303,7 +327,7 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line)
         if (ret.returnCode)
             return ret;
 
-        if (tokens->Size() < 3)
+        if (tokens->Size() < three)
         {
             // We have a name but no value being assigned to it. Not an error, but need to
             //  a. Check the authenticity of the name
@@ -335,14 +359,14 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line)
 
         // Okay, so we are still expecting an expression
 
-        if (!tokens->at(2).Compare(L"=") || !tokens->at(2).CompareNoCase(L"be"))
+        if (!tokens->at(two).Compare(L"=") || !tokens->at(two).CompareNoCase(L"be"))
         {
             // Code currently looks like this:
             //      "let [tok1] = ..." or "let [tok1] be ..."
 
             expIndex = 3;
         }
-        else if (tokens->at(2).Find(L"=") > 0)
+        else if (tokens->at(two).Find(L"=") > 0)
         {
             // Error, code looks something like this: "let [tok1] [tok2]=..."
 
@@ -354,7 +378,7 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line)
 
             return ret;
         }
-        else if (tokens->at(2)[0] == L'=')
+        else if (tokens->at(two)[0] == L'=')
         {
             // Still valid, code looks like this: "let [tok1] =[tok2] ..."
 

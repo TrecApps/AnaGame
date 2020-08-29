@@ -56,7 +56,7 @@ public:
      *              UINT line - the line number being called upon,
      * Returns: ReportObject - objct indicating the success of the program or failure information
      */
-    ReportObject ProcessLet(TString& let, UINT line);
+    ReportObject ProcessLet(TString& let, UINT line, bool expectLet);
 
 
     /**
