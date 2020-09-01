@@ -84,6 +84,8 @@ protected:
 
 	TrecSubPointer<TControl, TTextField> fileText;
 
+	TrecSubPointer<TControl, TLayout> browserLayout;
+
 	TrecPointer<TControl> okayControl;
 
 

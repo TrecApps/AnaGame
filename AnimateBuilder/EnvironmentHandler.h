@@ -118,6 +118,7 @@ protected:
 	TDataArray< EnvironmentHandlerEvents> envEvents;
 
 	TrecPointer<EnvironmentList> selectedEnvType;
+	TrecSubPointer<TControl, TLayout> grid;
 
 	TrecPointer<TControl> confirmButton;
 

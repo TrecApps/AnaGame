@@ -97,6 +97,7 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 
 	browserControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(subLayout->GetLayoutChild(1, 1));
 	assert(browserControl.Get());
+	browserLayout = subLayout;
 
 	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 2));
 	assert(subLayout.Get());
@@ -243,6 +244,12 @@ void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
 
 		okayControl->setActive(true);
 	}
+
+	if (browserControl.Get() && browserLayout.Get())
+	{
+		auto rect = browserLayout->getRawSectionLocation(1, 1);
+		browserControl->Resize(rect);
+	}
 }
 
 void FileDialogHandler::OnCancel(TrecPointer<TControl> tc, EventArgs ea)
@@ -315,5 +322,11 @@ void FileDialogHandler::OnClickNode(TrecPointer<TControl> tc, EventArgs ea)
 
 			okayControl->setActive(true);
 		}
+	}
+
+	if (browserControl.Get() && browserLayout.Get())
+	{
+		auto rect = browserLayout->getRawSectionLocation(1, 1);
+		browserControl->Resize(rect);
 	}
 }

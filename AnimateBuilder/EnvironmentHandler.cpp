@@ -83,7 +83,7 @@ void EnvironmentHandler::Initialize(TrecPointer<Page> page)
 
     assert(rootStack.Get());
 
-    auto grid = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(rootStack->GetLayoutChild(0,1));
+    grid = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(rootStack->GetLayoutChild(0,1));
 
     recentBinder = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TDataBind>(grid->GetLayoutChild(0, 1));
     newBinder = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TDataBind>(grid->GetLayoutChild(1, 1));
@@ -339,6 +339,11 @@ void EnvironmentHandler::RefreshEnvironmentList()
         }
 
 
+    }
+    if (newBinder.Get() && grid.Get())
+    {
+        auto rect = grid->getRawSectionLocation(1, 1);
+        newBinder->Resize(rect);
     }
 }
 
