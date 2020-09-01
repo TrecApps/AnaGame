@@ -458,8 +458,9 @@ void MainLayoutHandler::OnProcessCode(TrecPointer<TControl> tc, EventArgs ea)
 		return;
 
 	auto file = curHandler->GetFilePointer();
-	TString filePath;
-
+	if (!file.Get())
+		return;
+	TString filePath(file->GetPath());
 	if (window->GetEnvironment().Get())
 	{
 		window->GetEnvironment()->RunTask(filePath);

@@ -33,7 +33,7 @@ typedef enum class CentralDirectories
  * Parameters: TString& dir - the directory to forge
  * Returns: void
  */
-void _TREC_LIB_DLL ForgeDirectory(TString& dir);
+void _TREC_LIB_DLL ForgeDirectory(const TString& dir);
 
 
 /*

@@ -156,7 +156,7 @@ public:
 	*		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
 	*		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
 	*/
-	TrecPointer<TDataArray<TString>> split(TString, UCHAR flags = 0, WCHAR exitQuote = L'\"');
+	TrecPointer<TDataArray<TString>> split(TString, UCHAR flags = 0, WCHAR exitQuote = L'\"') const;
 
 	/**
 	 * Method: TString::IsBackslahedChar
@@ -743,7 +743,7 @@ public:
 	 *				 int& start - the location to begin at
 	 * Returns:
 	 */
-	TString Tokenize(TString& tokens, int& start);
+	TString Tokenize(TString& tokens, int& start) const;
 
 
 	/*

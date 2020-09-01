@@ -32,6 +32,10 @@ UINT TAnascriptInterpretor::SetCode(TFile& file)
 
     TString shadowPath(GetShadowFilePath(file));
 
+    shadowPath.Replace(L"\\\\", L"\\");
+
+    ForgeDirectory(shadowPath.SubString(0, shadowPath.FindLastOneOf(L"\\/")));
+
     TrecPointer<TFile> newFile = TrecPointerKey::GetNewTrecPointer<TFile>(shadowPath, TFile::t_file_create_always | TFile::t_file_write);
 
     if (!newFile.Get() || !newFile->IsOpen())
@@ -64,7 +68,7 @@ UINT TAnascriptInterpretor::SetCode(TFile& file)
                 newFile->WriteString(line.SubString(startIndex) + L'\n');
                 startIndex = 0;
             }
-            else if (quoteIndex<singleIndex)
+            else if (quoteIndex != -1 && quoteIndex<singleIndex)
             {
                 newFile->WriteString(line.SubString(startIndex, quoteIndex + 1));
                 startIndex = quoteIndex + 1;
@@ -72,7 +76,7 @@ UINT TAnascriptInterpretor::SetCode(TFile& file)
                 quoteStack.push_back(line[quoteIndex]);
                 goto quoteMode;
             }
-            else if (singleIndex< quoteIndex)
+            else if (quoteIndex == -1 || singleIndex < quoteIndex)
             {
                 newFile->WriteString(line.SubString(startIndex, singleIndex) + L'\n');
                 startIndex = 0;
@@ -89,7 +93,7 @@ UINT TAnascriptInterpretor::SetCode(TFile& file)
                 newFile->WriteString(line.SubString(startIndex) + L'\n');
                 startIndex = 0;
             }
-            else if (line[quoteIndex] == quoteStack[quoteStack.Size()])
+            else if (line[quoteIndex] == quoteStack[quoteStack.Size() -1])
             {
                 newFile->WriteString(line.SubString(startIndex, quoteIndex + 1));
                 startIndex = quoteIndex + 1;
@@ -113,7 +117,7 @@ UINT TAnascriptInterpretor::SetCode(TFile& file)
     {
         TString newPath(newFile->GetFilePath());
         newFile->Close();
-        newFile->Open(newPath, TFile::t_file_open_always || TFile::t_file_read);
+        newFile->Open(newPath, TFile::t_file_open_always | TFile::t_file_read);
         if (!newFile->IsOpen())
             return 5;
         this->file = newFile;

@@ -24,7 +24,7 @@ static TString shadowDirectories[16];
  * Parameters: TString& dir - the directory to forge
  * Returns: void
  */
-void ForgeDirectory(TString& dir)
+void ForgeDirectory(const TString& dir)
 {
 	auto pieces = dir.split(TString(L"/\\"));
 	TString bDir;
