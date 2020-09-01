@@ -313,11 +313,21 @@ public:
 	void SetSelf(TrecPointer<ArenaModel>);
 
 protected:
+
+	/**
+	 * the reference to the model
+	 */
 	TrecPointerSoft<ArenaModel> self;
 
 private:
+	/**
+	 * The name of the model
+	 */
 	TString name;
 
+	/**
+	 * The topology of the model
+	 */
 	D3D11_PRIMITIVE_TOPOLOGY primitive;
 
 	/**
@@ -328,36 +338,110 @@ private:
 	 */
 	TextureResources GetTexture(TString& fileName);
 
+	/**
+	 * the vertex data
+	 */
 	TDataArray<float> vertexData;
+	/**
+	 * 
+	 */
 	TDataArray<unsigned char> DataDescriptor;
+	/**
+	 * List of indexies to the vertex
+	 */
 	TDataArray<UINT> index;
+	/**
+	 * 
+	 */
 	TDataArray<UINT> sqIndex;
+	/**
+	 * the location and direction of the model
+	 */
 	DirectX::XMFLOAT3 location, direction;
+	/**
+	 * the Size of the model
+	 */
 	float size;
+	/**
+	 * the engine to use
+	 */
 	TrecPointer<TArenaEngine> engine;
+	/**
+	 * the shader to use
+	 */
 	ShaderKey shader;
 
 	// Color resources
+
+	/**
+	 * List of textures used by the model
+	 */
 	TDataArray<TextureResources> textures;
+	/**
+	 * the colors to use, if using a single color
+	 */
 	DirectX::XMFLOAT4 singleColor, pipeColor;
 
+	/**
+	 * The Device Context
+	 */
 	TrecComPointer<ID3D11DeviceContext> context;
+	/**
+	 * The Swap Chain
+	 */
 	TrecComPointer<IDXGISwapChain> swapChain;
+	/**
+	 * Direct3D Render Target
+	 */
 	TrecComPointer<ID3D11RenderTargetView> renderTarget;
+	/**
+	 * the Direct3D Device used
+	 */
 	TrecComPointer<ID3D11Device> device;
 
 	// Other information
+
+	/**
+	 * buffer version of the index
+	 */
 	TrecComPointer<ID3D11Buffer> indexBuffer;
+	/**
+	 * the buffer version of our verticies
+	 */
 	TrecComPointer<ID3D11Buffer> vertexBuffer;
+	/**
+	 * the projection buffer to send to constant buffers in the shader
+	 */
 	TrecComPointer<ID3D11Buffer> projectionBuffer;
 
+	/**
+	 * the buffer version of the single color
+	 */
 	TrecComPointer<ID3D11Buffer> singleColorBuffer;
+	/**
+	 * the buffer version of the pipe color
+	 */
 	TrecComPointer<ID3D11Buffer> singlePipeColorBuffer;
 
+	/**
+	 * list of constant buffers
+	 */
 	TDataArray<unsigned char> constantBuffer;
+	/**
+	 * how the matrix is to be calculated
+	 */
 	bool shaderMatrix;
+	/**
+	 * the size of each individual vertex
+	 */
 	int bufferSize;
+	/**
+	 * whether the model is ready for use or not
+	 */
 	bool constructionWorked;
+	/**
+	 * whether the model has a pipe color
+	 */
 	bool hasPipeColor;
 };
 
