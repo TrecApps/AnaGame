@@ -218,6 +218,9 @@ void MainLayoutHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 		}*/
 		cont->resetArgs();
 	}
+
+	if (page.Get() && page->GetWindowHandle().Get())
+		page->GetWindowHandle()->Draw();
 }
 
 void MainLayoutHandler::Draw()

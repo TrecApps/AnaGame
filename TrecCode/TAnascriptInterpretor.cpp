@@ -157,7 +157,7 @@ ReportObject TAnascriptInterpretor::Run()
     TString code;
 
     UINT line = 1;
-    while (file->ReadString(code, end - file->GetPosition()))
+    while (file->ReadStringLine(code, end - file->GetPosition()))
     {
         // Trim unecessary white-space
         code.Trim();
@@ -850,7 +850,7 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
     {
         newLine++;
         TString lineStringLower = lineStr.GetLower();
-        auto tokens = lineStringLower.split(L" ");
+        auto tokens = lineStringLower.split(L"\t\r ");
 
         if (tokens->Size())
         {
@@ -940,7 +940,7 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
 
     tokens->at(3).Remove(L'[');
 
-    if (tokens->at(tokens->Size() - 1).Find(L']'))
+    if (!tokens->at(tokens->Size() - 1).EndsWith(L']') )
     {
         ret.returnCode = ReportObject::invalid_name;
         ret.errorMessage.Set(L"Expected token ']' at the end of the parameter list!");
@@ -952,7 +952,9 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
         return ret;
     }
 
-    tokens->at(tokens->Size() - 1).Remove(L']');
+    int closeBracket = tokens->at(tokens->Size() - 1).FindLast(L']');
+
+    tokens->at(tokens->Size() - 1).Set(tokens->at(tokens->Size() -1).SubString(0, closeBracket));
 
     TDataArray<TString> names;
 

@@ -156,7 +156,7 @@ ULONGLONG TFile::ReadString(TString & rString, ULONGLONG nMax)
 	{
 	case FileEncodingType::fet_acsii:
 		char letter[1];
-		for ( ; rust <= nMax && Read(&letter, 1); rust++)
+		for ( ; rust <= nMax && Read(&letter, 1); rust+=2)
 		{
 			rString.AppendChar(ReturnWCharType(letter[0]));
 		}
@@ -165,7 +165,7 @@ ULONGLONG TFile::ReadString(TString & rString, ULONGLONG nMax)
 	case FileEncodingType::fet_unicode:
 		UCHAR letter2[2];
 		
-		for (; rust <= nMax && Read(&letter2, 2); rust++)
+		for (; rust <= nMax && Read(&letter2, 2); rust+=2)
 		{
 			WCHAR cLetter;
 			UCHAR temp = letter2[0];
@@ -180,7 +180,7 @@ ULONGLONG TFile::ReadString(TString & rString, ULONGLONG nMax)
 	case FileEncodingType::fet_unicode_little:
 		WCHAR wLetter;
 		
-		for( ; rust <= nMax && Read(&wLetter, 2); rust++ )
+		for( ; rust <= nMax && Read(&wLetter, 2); rust+=2 )
 		{
 			rString.AppendChar(wLetter);
 		}
@@ -189,6 +189,61 @@ ULONGLONG TFile::ReadString(TString & rString, ULONGLONG nMax)
 	return rust;
 }
 
+
+ULONGLONG TFile::ReadStringLine(TString& rString, ULONGLONG nMax)
+{
+	rString.Empty();
+	ULONGLONG rust = 0;
+
+	if (fileEncode == FileEncodingType::fet_unknown)
+		DeduceEncodingType();
+
+	switch (fileEncode)
+	{
+	case FileEncodingType::fet_acsii:
+		char letter[1];
+		for (; rust <= nMax && Read(&letter, 1) && letter[0] != '\n'; rust++)
+		{
+			rString.AppendChar(ReturnWCharType(letter[0]));
+		}
+
+		break;
+	case FileEncodingType::fet_unicode:
+		UCHAR letter2[2];
+
+		for (; rust <= nMax && Read(&letter2, 2); rust+=2)
+		{
+			WCHAR cLetter;
+			UCHAR temp = letter2[0];
+			letter2[0] = letter2[1];
+			letter2[1] = temp;
+			memcpy(&cLetter, letter2, 2);
+
+			if (cLetter == L'\n')
+			{
+				rust += 2;
+				break;
+			}
+			rString.AppendChar(cLetter);
+		}
+
+		break;
+	case FileEncodingType::fet_unicode_little:
+		WCHAR wLetter;
+
+		for (; rust <= nMax && Read(&wLetter, 2); rust+=2)
+		{
+			if (wLetter == L'\n')
+			{
+				rust += 2;
+				break;
+			}
+			rString.AppendChar(wLetter);
+		}
+
+	}
+	return rust;
+}
 
 /**
  * Method: TFile::ReadString

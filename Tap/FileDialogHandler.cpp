@@ -158,7 +158,8 @@ void FileDialogHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 		}
 	}
 
-	//onDraw();
+	if (window.Get())
+		window->Draw();
 	eventAr.RemoveAll();
 }
 
