@@ -51,10 +51,10 @@ class TContextMenu;
  */
 typedef enum class  messageState
 {
-	normal,
-	mouseHover,
-	mouseLClick,
-	mouseRClick
+	normal,      // Control is in normal mode
+	mouseHover,  // Control is in Mouse-Honer mode
+	mouseLClick, // Control is in Mouse-Click mode
+	mouseRClick  // Control is in Mouse-Right-Click mode
 } messageState;
 
 
@@ -64,27 +64,27 @@ typedef enum class  messageState
  */
 typedef enum class R_Message_Type
 {
-	On_L_Button_Down,
-	On_L_Button_Up,
-	On_R_Button_Down,
-	On_R_Button_Up,
-	On_Click,
-	On_Hold_Click,
-	On_Hover,
-	On_Hover_Leave,
-	On_Right_Click,
-	On_Click_Release,
-	On_Text_Change,
-	On_Right_Release,
-	On_sel_change,
-	On_check,
-	On_radio_change,
-	On_Char,
-	On_Focus,
-	On_Lose_Focus,
-	On_Select_Scroller,
-	On_Flyout,
-	On_LDoubleClick
+	On_L_Button_Down,  // User presses down on left mouse button
+	On_L_Button_Up,    // User releases left mouse button
+	On_R_Button_Down,  // User presses down on right mouse button
+	On_R_Button_Up,    // User releases right mouse button
+	On_Click,          // User presses down and releases left mouse button
+	On_Hold_Click,     // (Not implemented
+	On_Hover,          // Mouse is over the control
+	On_Hover_Leave,    // Mouse leaves the control
+	On_Right_Click,    // User presses down and releases right mouse button
+	On_Click_Release,  // (DEPRICATED)
+	On_Text_Change,    // The text of this control has changed
+	On_Right_Release,  // (DEPRICATED)
+	On_sel_change,     // A Selection has changed
+	On_check,          // a Checkbox status has been changed
+	On_radio_change,   // A Radio Button group has been updated
+	On_Char,           // A Character has been entered
+	On_Focus,          // A Control is now the focus
+	On_Lose_Focus,     // A Control no longer has focus
+	On_Select_Scroller,// A Scroll bar is involved
+	On_Flyout,         // A control is to appear in a flyout
+	On_LDoubleClick    // Double Click detected
 }R_Message_Type;
 
 /**
@@ -173,6 +173,7 @@ typedef enum class TShape {
 /**
  * Enum Class: BrushMarker
  * Purpose: Allows TControls to draw with special styles if specified in the ML
+ * Note: DEPRICATED - TBrush handles this internally
 */
 typedef enum class BrushMarker
 {
