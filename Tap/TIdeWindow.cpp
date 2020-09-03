@@ -648,6 +648,8 @@ void TIdeWindow::SetCurrentApp(TrecPointer<MiniApp> app)
 {
 	if (app.Get())
 	{
+		if (currentApp.Get() == app.Get())
+			return;
 		currentApp = app;
 		bool addApp = true;
 		for (UINT Rust = 0; Rust < apps.Size(); Rust++)
@@ -661,6 +663,10 @@ void TIdeWindow::SetCurrentApp(TrecPointer<MiniApp> app)
 
 		if (addApp)
 			apps.push_back(app);
+
+		auto hand = app->GetMainHandler();
+		if (hand.Get())
+			hand->OnFocus();
 	}
 }
 

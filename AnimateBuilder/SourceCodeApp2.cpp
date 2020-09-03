@@ -32,6 +32,8 @@ UINT SourceCodeApp2::Initialize(TrecPointer<TFileShell> file)
 
 	codeHandler->SetMiniApp(TrecPointerKey::GetTrecPointerFromSoft<MiniApp>(self));
 
+	win->SetCurrentApp(TrecPointerKey::GetTrecPointerFromSoft<MiniApp>(self));
+
 	return 0;
 }
 
