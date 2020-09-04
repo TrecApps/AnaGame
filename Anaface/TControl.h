@@ -1061,13 +1061,13 @@ class _ANAFACE_DLL TControl : public TObject
 	friend class TControlParentHolder;
 public:
 
-	/*
-	* Method: TControl::TControl
-	* Purpose: Constructor
-	* Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on
-	*				TrecPointer<TArray<styleTable>> styTab - Smart Pointer to the list of styles to draw from
-	* Return: New TControl Object
-	*/
+	/**
+	 * Method: TControl::TControl
+	 * Purpose: Constructor
+	 * Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on
+	 *				TrecPointer<TArray<styleTable>> styTab - Smart Pointer to the list of styles to draw from
+	 * Return: New TControl Object
+	 */
 	TControl(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles);
 
 	/*
@@ -1079,19 +1079,19 @@ public:
 	TControl(TControl&);
 
 	/*
-	* Method: TControl::TControl)
+	* Method: TControl::TControl
 	* Purpose: Default contructor
 	* Parameters: void
 	* Returns: Blank TControl
 	*/
 	TControl();
 
-	/*
-	* Method: TControl::~Tcontrol
-	* Purpose: Destructor
-	* Parameters: void
-	* Returns: void
-	*/
+	/**
+	 * Method: TControl::~Tcontrol
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
 	virtual ~TControl();
 
 	/**
@@ -1276,14 +1276,14 @@ public:
 	EventArgs getEventArgs();
 
 
-	/*
-	* Method: TControl::onCreate
-	* Purpose: Allows the Control To contstruct itself based off of the location it has and the
-	*		screen space it is given
-	* Parameters: RECT contain - the area it can use
-	* Returns: bool - success
-	* Note: You Must call this on the Root Control before any control can be drawn on sreen
-	*/
+	/**
+	 * Method: TControl::onCreate
+	 * Purpose: Allows the Control To contstruct itself based off of the location it has and the
+	 *		screen space it is given
+	 * Parameters: RECT contain - the area it can use
+	 * Returns: bool - success
+	 * Note: You Must call this on the Root Control before any control can be drawn on sreen
+	 */
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d);
 
 	/*
@@ -1311,12 +1311,12 @@ public:
 	*/
 	void updateArrayID(int aid);
 
-	/*
-	* Method: TControl::onDraw
-	* Purpose: Draws the control
-	* Parameters: TObject* obj - Raw reference to a TObject that might have specific text to say
-	* Returns: void
-	*/
+	/**
+	 * Method: TControl::onDraw
+	 * Purpose: Draws the control
+	 * Parameters: TObject* obj - Raw reference to a TObject that might have specific text to say
+	 * Returns: void
+	 */
 	virtual void onDraw(TObject* obj = nullptr);
 
 	/*
