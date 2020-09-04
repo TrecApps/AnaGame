@@ -135,6 +135,11 @@ protected:
 	bool isNodeSelected, isTickSelected;
 
 	/**
+	 * Whether expansion needs to be blocked
+	 */
+	bool blockExpansion;
+
+	/**
 	 * Used to trck the initial click down so when the user clicks up, the node can be determined
 	 */
 	UINT nodeSelected;

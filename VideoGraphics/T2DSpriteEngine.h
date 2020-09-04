@@ -48,6 +48,6 @@ protected:
 
     UINT wholeSprites;
 
-    TDataArray<T2DSprite> sprites;
+    TDataArray<TrecPointer<T2DSprite>> sprites;
 };
 

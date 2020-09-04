@@ -15,7 +15,7 @@ TTreeDataBind::TTreeDataBind(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<st
 	nodeSelected = 0;
 	highlightNodeSelected = UINT32_MAX;
 
-
+	blockExpansion = false;
 }
 
 /**
@@ -148,6 +148,14 @@ bool TTreeDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 
 		nodeBrush = drawingBoard->GetBrush(TColor(nodeColor));
 
+
+		valpoint = attributes.retrieveEntry(L"|BlockExtension");
+
+		if (valpoint.Get() && !valpoint->CompareNoCase(L"true"))
+		{
+			blockExpansion = true;
+		}
+
 	}
 	if (children.Count() && children.ElementAt(0).Get())
 	{
@@ -242,7 +250,7 @@ void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, 
 
 				if (targetNode == nodeSelected)
 				{
-					if (isContained(&point, &triLoc) && isTickSelected)
+					if (isContained(&point, &triLoc) && isTickSelected && !blockExpansion)
 					{
 						if (tNode->IsExtended())
 							tNode->DropChildNodes();
