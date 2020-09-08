@@ -1167,7 +1167,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
 
     }
 
-    if (operators.Size() != expresions.Size() + 1)
+    if ((operators.Size() + 1) != expresions.Size())
     {
         ro.returnCode = ro.incomplete_statement;
         ro.errorMessage.Set(L"Expression should have one more subexpressions");
