@@ -731,6 +731,16 @@ void Page::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArra
 
 	if (rootControl.Get())
 		rootControl->OnMouseMove(nFlags, point, mOut, eventAr, mouseFocusControl);
+
+	for (UINT Rust = 0; Rust < mouseFocusControl.Size(); Rust++)
+	{
+		if (mouseFocusControl[Rust] && mouseFocusControl[Rust]->OnMouseLeave(nFlags, point, mOut, eventAr))
+			mouseFocusControl.RemoveAt(Rust--);
+
+		
+	}
+
+	// mouseFocusControl.RemoveAll();
 }
 
 /**

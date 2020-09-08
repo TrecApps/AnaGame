@@ -3671,6 +3671,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 
 	if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
 	{
+		clickedControls.push_back(this);
 		return;
 	}
 
@@ -3706,9 +3707,9 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 			eventAr.push_back(EventID_Cred(R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 		}
 
-		clickedControls.push_back(this);
+		
 	}
-
+	clickedControls.push_back(this);
 }
 
 /*
@@ -3727,6 +3728,35 @@ afx_msg void TControl::OnContextMenu(CWnd* pWnd, TPoint point, messageOutput* mO
 		return;
 }*/
 
+
+/**
+ * Method: TControl::OnMouseLeave
+ * Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
+ * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+ *				TPoint point - the point on screen where the event occured
+ *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+ *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+ *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+ * Returns: void
+ */
+bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (!isContained(point, location))
+	{
+		mState = messageState::normal;
+
+		resetArgs();
+		args.eventType = R_Message_Type::On_Hover_Leave;
+		args.point = point;
+		args.methodID = getEventID(R_Message_Type::On_Hover_Leave);
+		args.isClick = true;
+		args.isLeftClick = false;
+		args.control = this;
+		eventAr.push_back(EventID_Cred(R_Message_Type::On_Hover_Leave, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		return true;
+	}
+	return false;
+}
 /*
 * Method: TControl::OnLButtonDblClk
 * Purpose: Allows control to catch the DOuble Click event and act accordingly
@@ -3736,7 +3766,9 @@ afx_msg void TControl::OnContextMenu(CWnd* pWnd, TPoint point, messageOutput* mO
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-afx_msg void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+
+
+void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	if (!isActive)
 		return;

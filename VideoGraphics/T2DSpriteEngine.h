@@ -24,7 +24,7 @@ protected:
  * Class: T2DSpriteEngine
  * Purpose: Hosts a simple Sprite collection
  */
-class T2DSpriteEngine :
+class _VIDEO_GRAPHICS T2DSpriteEngine :
     public TObject
 {
 public: 

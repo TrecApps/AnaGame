@@ -1182,6 +1182,20 @@ public:
 	*/
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls);
 
+
+
+	/**
+	 * Method: TControl::OnMouseLeave
+	 * Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
+	 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	 *				TPoint point - the point on screen where the event occured
+	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+	 * Returns: bool - whether the leave occured
+	 */
+	afx_msg bool OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+
 	/*
 	* Method: TControl::OnLButtonDblClk
 	* Purpose: Allows control to catch the DOuble Click event and act accordingly
