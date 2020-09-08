@@ -1,5 +1,13 @@
 #include "TShaderParser.h"
 
+/**
+ * Method: ShaderParser::TShaderParser
+ * Purpose: Constructor
+ * Parameters: TShaderHost* ae - the TShader Host to add shaders to
+ *				TString directory - the Directory to search for files in
+ *				TrecComPointer<ID3D11Device> dev - the device responsible for generating actual shaders
+ * Return: new Shader Parser object
+ */
 TShaderParser::TShaderParser(TShaderHost* ae, TString directory, TrecComPointer<ID3D11Device> dev)
 {
 	if (!ae)
@@ -24,10 +32,24 @@ TShaderParser::TShaderParser(TShaderHost* ae, TString directory, TrecComPointer<
 	shaderIDd = false;
 }
 
+/**
+ * Method: ShaderParser::~TShaderParser
+ * Purpose: Destructor
+ * Parameters: void
+ * Return: void
+ */
 TShaderParser::~TShaderParser()
 {
 }
 
+/**
+ * Method: ShaderParser::Obj
+ * Purpose: Generates a buffer for the shader
+ * Parameters: TString& v - the Object to create (in this case, the Buffer to add to the shader
+ * Return: bool
+ *
+ * Note: In contrast to other parsers, this method is expected to be called after the relevant attributes are set, not before
+ */
 bool TShaderParser::Obj(TString& v)
 {
 	if (!v.Compare(L"Buff"))
@@ -50,6 +72,13 @@ bool TShaderParser::Obj(TString& v)
 	return false;
 }
 
+/**
+ * Method: ShaderParser::Attribute
+ * Purpose: Sets an attribute for a shader buffer to use (or a shader file/function) to use
+ * Parameters: TrecPointer<TString> v - vlue of the attribute
+ *				TString& e - attribute key
+ * Return: bool
+ */
 bool TShaderParser::Attribute(TrecPointer<TString> v, TString& e)
 {
 	// Quick Null check so we don't have to worry about it later down the line
@@ -248,21 +277,45 @@ bool TShaderParser::Attribute(TrecPointer<TString> v, TString& e)
 	return SetBasicShader();
 }
 
+/**
+ * Method: ShaderParser::submitType
+ * Purpose: Submits the type of TML file being read,
+ * Parameters: TSTring v - the TML file Type
+ * Return: bool - false for now
+ */
 bool TShaderParser::submitType(TString v)
 {
 	return false;
 }
 
+/**
+ * Method: ShaderParser::submitEdition
+ * Purpose: Submits the edition for this TML file type
+ * Parameters: TString v - the Version of the file
+ * Return: bool - false for now
+ */
 bool TShaderParser::submitEdition(TString v)
 {
 	return false;
 }
 
+/**
+ * Method: ShaderParser::goChild
+ * Purpose: Unused by this type
+ * Parameters: void
+ * Return: bool - false, there are no 'children' in this TML type
+ */
 bool TShaderParser::goChild()
 {
 	return false;
 }
 
+/**
+ * Method: ShaderParser::goParent
+ * Purpose: Unused by this type
+ * Parameters: void
+ * Return: void
+ */
 void TShaderParser::goParent()
 {
 }
@@ -272,12 +325,12 @@ UCHAR* TShaderParser::GetAnaGameType()
 	return nullptr;
 }
 
-/*
-* Method: ShaderParser
-* Purpose:
-* Parameters:
-* Return:
-*/
+/**
+ * Method: ShaderParser::AddShaderToProgram
+ * Purpose: Adds an additional shader program to the generated shader (used for Hull, domain, compute, and geometry shaders)
+ * Parameters: TString
+ * Return: bool - success or failure
+ */
 bool TShaderParser::AddShaderToProgram(TString& str)
 {
 	std::string cStr = str.GetRegString();
@@ -303,12 +356,12 @@ bool TShaderParser::AddShaderToProgram(TString& str)
 	return !err;
 }
 
-/*
-* Method: ShaderParser
-* Purpose:
-* Parameters:
-* Return:
-*/
+/**
+ * Method: ShaderParser::SetBasicShader
+ * Purpose: Attempts to Initialize the basic shader being parsed by the parser
+ * Parameters: void
+ * Return: bool - whether there was no issue (or there was)
+ */
 bool TShaderParser::SetBasicShader()
 {
 	if (bsd.vertexFileSet && bsd.pixelFileSet && bsd.vertexFunctionSet && bsd.pixelFunctionSet && !shaderIDd)
@@ -325,12 +378,12 @@ bool TShaderParser::SetBasicShader()
 	return true;
 }
 
-/*
-* Method: ShaderParser
-* Purpose: Sets the semantic purpose of a vertex buffer entry
-* Parameters: TString & v - semantic buffer purpose in string form
-* Return: bool - whether the string was a valid purpose
-*/
+/**
+ * Method: ShaderParser::SetBufferPurpose
+ * Purpose: Sets the semantic purpose of a vertex buffer entry
+ * Parameters: TString & t - semantic buffer purpose in string form
+ * Return: bool - whether the string was a valid purpose
+ */
 bool TShaderParser::SetBufferPurpose(TString& t)
 {
 	if (!t.Compare(L"Position"))
@@ -383,12 +436,12 @@ bool TShaderParser::SetBufferPurpose(TString& t)
 	return true;
 }
 
-/*
-* Method: ShaderParser - SetInputSlot
-* Purpose: Determines the input slot of a constant buffer
-* Parameters: TString & v - number in string form
-* Return: bool - success, whether the string was a number
-*/
+/**
+ * Method: ShaderParser::SetInputSlot
+ * Purpose: Determines the input slot of a constant buffer
+ * Parameters: TString & v - number in string form
+ * Return: bool - success, whether the string was a number
+ */
 bool TShaderParser::SetInputSlot(TString& v)
 {
 	int value = 0;
@@ -404,12 +457,12 @@ bool TShaderParser::SetInputSlot(TString& v)
 	return false;
 }
 
-/*
-* Method: ShaderParser - SetDataWidth
-* Purpose: Sets the size of a field that a vertex buffer expects
-* Parameters: TString & v - number in string form
-* Return: bool - success, whether the string was a number
-*/
+/**
+ * Method: ShaderParser::SetDataWidth
+ * Purpose: Sets the size of a field that a vertex buffer expects
+ * Parameters: TString & v - number in string form
+ * Return: bool - success, whether the string was a number
+ */
 bool TShaderParser::SetDataWidth(TString& v)
 {
 	int value = 0;
@@ -427,12 +480,12 @@ bool TShaderParser::SetDataWidth(TString& v)
 	return false;
 }
 
-/*
-* Method: ShaderParser - SetDataCount
-* Purpose: Sets the number of a field that a vertex buffer expects
-* Parameters: TString & v - number in string form
-* Return: bool - success, whether the string was a number
-*/
+/**
+ * Method: ShaderParser::SetDataCount
+ * Purpose: Sets the number of a field that a vertex buffer expects
+ * Parameters: TString & v - number in string form
+ * Return: bool - success, whether the string was a number
+ */
 bool TShaderParser::SetDataCount(TString& v)
 {
 	int value = 0;
@@ -449,12 +502,12 @@ bool TShaderParser::SetDataCount(TString& v)
 	return false;
 }
 
-/*
-* Method: ShaderParser - SetTextureCount
-* Purpose: Sets a texture count for the number of textures the shader expects
-* Parameters: TString & v - number in string form
-* Return: bool - success, whether the string was a number
-*/
+/**
+ * Method: ShaderParser::SetTextureCount
+ * Purpose: Sets a texture count for the number of textures the shader expects
+ * Parameters: TString & v - number in string form
+ * Return: bool - success, whether the string was a number
+ */
 bool TShaderParser::SetTextureCount(TString& v)
 {
 	int value = 0;

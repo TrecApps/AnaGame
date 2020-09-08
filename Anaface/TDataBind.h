@@ -1,5 +1,10 @@
 #pragma once
 #include "TLayoutEx.h"
+
+/**
+ * Class: TDataBind
+ * Purpose: Control that holds onto a collection of objects to pass into 'child' controls.
+ */
 class _ANAFACE_DLL TDataBind : public TControl
 {
 public:

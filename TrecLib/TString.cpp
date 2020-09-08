@@ -1705,8 +1705,7 @@ int TString::Compare(const TString& str1, const TString& str2)
  * Returns: int - the new size of the string
  */
 int TString::Delete(int index, int count)
-{
-	if (count < 1)
+{	if (count < 1)
 		return size;
 	if (index < 0 || index > size)
 		return size;

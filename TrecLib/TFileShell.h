@@ -3,7 +3,7 @@
 #include "TString.h"
 
 /*
- * class TFileShell
+ * Class: TFileShell
  * Purpose: Represents a File that exists on the file System.
  *
  * Note: this class does not open a file for reading or writing, merely provides information about the file in question

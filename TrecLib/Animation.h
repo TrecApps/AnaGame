@@ -62,11 +62,11 @@ class TBrush;
 class TControl;
 
 /**
- * class Animation (abstract)
+ * Class: Animation
  * Purpose: Provide the bare-bones essential information on what any Animation object would need to 
  *	function properly.
  *
- * The main essentials an animation object needs are time-based variables, such as the desired refresh rate, time to complete
+ *  Note: The main essentials an animation object needs are time-based variables, such as the desired refresh rate, time to complete
  *	an animation sequence, as well as methods to supply the object with the resources the object is to act upon
  *
  *	It was made abstract in order to better allow for a wide variety of Animations to be implemented

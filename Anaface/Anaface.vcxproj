@@ -183,7 +183,6 @@
     <ClInclude Include="TControl.h" />
     <ClInclude Include="TCurveGeometry.h" />
     <ClInclude Include="TDataBind.h" />
-    <ClInclude Include="TDropMenu.h" />
     <ClInclude Include="TEllipseGeometry.h" />
     <ClInclude Include="TFlyout.h" />
     <ClInclude Include="TGadgetControl.h" />
@@ -234,7 +233,6 @@
     <ClCompile Include="TControl.cpp" />
     <ClCompile Include="TCurveGeometry.cpp" />
     <ClCompile Include="TDataBind.cpp" />
-    <ClCompile Include="TDropMenu.cpp" />
     <ClCompile Include="TEllipseGeometry.cpp" />
     <ClCompile Include="TFlyout.cpp" />
     <ClCompile Include="TGadgetControl.cpp" />

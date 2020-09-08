@@ -14,16 +14,22 @@ const CHAR* _sem_F = "FOG";
 const CHAR* _sem_TS = "TESSFACTOR";
 
 
+/**
+ * Method: TShaderHost::TShaderHost
+ * Purpose: Constructor
+ * Parameters: void
+ * Returns: New TShaderHost object
+ */
 TShaderHost::TShaderHost()
 {
 }
 
-/*
-* Method: ArenaEngine - getBufferSize
-* Purpose: Retrieves the buffer of a single round of Vertex shader input
-* Parameters: int shaderID - the index of the shader to use
-* Return: int -  the buffer size
-*/
+/**
+ * Method: TShaderHost::getBufferSize
+ * Purpose: Retrieves the buffer of a single round of Vertex shader input
+ * Parameters: int shaderID - the index of the shader to use
+ * Return: int -  the buffer size
+ */
 int TShaderHost::getBufferSize(int shaderID)
 {
 	if (shaderID < 0 || shaderID >= shaders.Size())
@@ -32,6 +38,18 @@ int TShaderHost::getBufferSize(int shaderID)
 	return shaders[shaderID].bufferSize;
 }
 
+/**
+ * Method: TShaderHost::SetNewBasicShader
+ * Purpose: Sets up new Basic shader, sporting both Vertex and Pixel Shaders
+ * Parameters: TrecComPointer<ID3D11Device> graphicsDevice - object managing the shader creation
+ *				UINT index - the target shader to update
+ *				TString& vs - file for the Vertex Shader
+ *				TString& ps - file for the Pixel Shader
+ *				const CHAR* vf - name of the Vertex Shader function
+ *				const CHAR* sf - name of the Pixel Shader function
+ *				TDataArray<unsigned short>& bufferDesc - Data about the input expected
+ * Returns: int - error code
+ */
 int TShaderHost::SetNewBasicShader(TrecComPointer<ID3D11Device> graphicsDevice, UINT index, TString& vs, TString& ps, const CHAR* vf, const CHAR* pf, TDataArray<unsigned short>& bufferDesc)
 {
 	if (index >= shaders.Size())
@@ -65,7 +83,17 @@ int TShaderHost::SetNewBasicShader(TrecComPointer<ID3D11Device> graphicsDevice, 
 
 	return 0;
 }
-
+/**
+ * Method: TShaderHost::SetNewBasicShader
+ * Purpose: Sets up new Basic shader, focusing on either the Pixel or Vertex shader
+ * Parameters: TString& s - file for the Shader
+ *				const CHAR* f - function name for the Shader
+ *				TDataArray<unsigned short>& bufferDesc - Data about the input expected by the vertex shader
+ *				bool isVertex - true if focusing on the vertex shader, false for pixel shader
+ * 				UINT index - the target shader to update
+ *				TrecComPointer<ID3D11Device> graphicsDevice - object managing the shader creation
+ * Returns: int - error code
+ */
 int TShaderHost::SetNewBasicShader(TString& s, const CHAR* f, TDataArray<unsigned short>& bufferDesc, bool isVertex, UINT index, TrecComPointer<ID3D11Device> graphicsDevice)
 {
 	if (index >= shaders.Size())
@@ -150,6 +178,12 @@ int TShaderHost::SetNewBasicShader(TString& s, const CHAR* f, TDataArray<unsigne
 	return 0;
 }
 
+/**
+ * Method: TShaderHost::GetModelLocation_
+ * Purpose: Retrieves the index of the Model buffer in a shader
+ * Parameters: int shaderID - the index of the shader
+ * Returns: signed char - location of the requested buffer (-1 if not in shader, -2 if invalid index)
+ */
 signed char TShaderHost::GetModelLocation_(int shaderID)
 {
 	if (shaderID < 0 || shaderID >= shaders.Size())
@@ -157,6 +191,12 @@ signed char TShaderHost::GetModelLocation_(int shaderID)
 	return shaders[shaderID].modelLoc;
 }
 
+/**
+ * Method: TShaderHost::GetViewLocation_
+ * Purpose: Retrieves the index of the View buffer in a shader
+ * Parameters: int shaderID - the index of the shader
+ * Returns: signed char - location of the requested buffer (-1 if not in shader, -2 if invalid index)
+ */
 signed char TShaderHost::GetViewLocation_(int shaderID)
 {
 	if (shaderID < 0 || shaderID >= shaders.Size())
@@ -164,6 +204,12 @@ signed char TShaderHost::GetViewLocation_(int shaderID)
 	return shaders[shaderID].viewLoc;
 }
 
+/**
+ * Method: TShaderHost::GetCameraLocation_
+ * Purpose: Retrieves the index of the Camera buffer in a shader
+ * Parameters: int shaderID - the index of the shader
+ * Returns: signed char - location of the requested buffer (-1 if not in shader, -2 if invalid index)
+ */
 signed char TShaderHost::GetCameraLocation_(int shaderID)
 {
 	if (shaderID < 0 || shaderID >= shaders.Size())
@@ -171,6 +217,17 @@ signed char TShaderHost::GetCameraLocation_(int shaderID)
 	return shaders[shaderID].colorLoc;
 }
 
+/**
+ * Method: TShaderHost::assignShader
+ * Purpose: Sets engine up to use a specific shader for rendering
+ * Parameters: UINT shaderIndex - index of the target shader
+ *				DirectX::XMMATRIX& camera - data for the camera location/direction (fall back if shader doesn't already have it
+ *				DirectX::XMMATRIX& currentCameraProj - data for the camera Projection (fall back if shader doesn't supply it)
+ *				TrecComPointer<ID3D11Device> graphicsDevice - the device manipulating shaders
+ *				TrecComPointer<ID3D11DeviceContext> contextDevice - manages constant buffers
+ *				bool& doMvp - whether the Software needs to do the MVP calculation or not
+ * Returns:
+ */
 bool TShaderHost::assignShader(UINT shaderIndex, DirectX::XMMATRIX& camera, DirectX::XMMATRIX& currentCameraProj, TrecComPointer<ID3D11Device> graphicsDevice, TrecComPointer<ID3D11DeviceContext> contextDevice, bool& doMvp)
 {
 	if (!contextDevice.Get())
@@ -253,6 +310,12 @@ bool TShaderHost::assignShader(UINT shaderIndex, DirectX::XMMATRIX& camera, Dire
 
 }
 
+/**
+ * Method: TShaderHost::InitializeShader
+ * Purpose: Adds a blank shader struct to the collection
+ * Parameters: void
+ * Returns: UINT - the index of the new struct
+ */
 UINT TShaderHost::InitializeShader()
 {
 	ShaderProgram sp;
@@ -261,12 +324,12 @@ UINT TShaderHost::InitializeShader()
 	return shaders.Size() - 1;
 }
 
-/*
-* Method: ArenaEngine - ResetShaderProgram
-* Purpose: sets a Shader Module to it's Nullified state
-* Parameters: ShaderProgram & sp - the shader module to reset
-* Return: void
-*/
+/**
+ * Method: TShaderHost::ResetShaderProgram
+ * Purpose: sets a Shader Module to it's Nullified state
+ * Parameters: ShaderProgram & sp - the shader module to reset
+ * Return: void
+ */
 void TShaderHost::ResetShaderProgram(ShaderProgram& sp)
 {
 	sp.bufferSize = 0;
@@ -288,13 +351,13 @@ void TShaderHost::ResetShaderProgram(ShaderProgram& sp)
 	sp.viewLoc = -1;
 }
 
-/*
-* Method: ArenaEngine - getInputDescription
-* Purpose: Converts An AnaGame Input Layout list to a Direct3D Input Layout List
-* Parameters:TDataArray<unsigned short>& bufferDesc - the Input Laout in AnaGame format
-*			int& buffSize - the total size of the input buffer
-* Return: TDataArray<D3D11_INPUT_ELEMENT_DESC>* - the Direct3D Compatible version of the input layout
-*/
+/**
+ * Method: TShaderHost::getInputDescription
+ * Purpose: Converts An AnaGame Input Layout list to a Direct3D Input Layout List
+ * Parameters:TDataArray<unsigned short>& bufferDesc - the Input Laout in AnaGame format
+ *			int& buffSize - the total size of the input buffer
+ * Return: TDataArray<D3D11_INPUT_ELEMENT_DESC>* - the Direct3D Compatible version of the input layout
+ */
 TDataArray<D3D11_INPUT_ELEMENT_DESC>* TShaderHost::getInputDescription(TDataArray<unsigned short>& bufferDesc, int& buffSize)
 {
 	TDataArray<D3D11_INPUT_ELEMENT_DESC>* returnable = new TDataArray<D3D11_INPUT_ELEMENT_DESC>();
@@ -387,14 +450,14 @@ TDataArray<D3D11_INPUT_ELEMENT_DESC>* TShaderHost::getInputDescription(TDataArra
 	return returnable;
 }
 
-/*
-* Method: ArenaEngine - assignDescriptionFormat
-* Purpose: Aids in the Development of a D3D Input Description b deducing what type of input is being added
-* Parameters: D3D11_INPUT_ELEMENT_DESC & desc - The description to update
-*				unsigned char valueSize - the size of the data types
-*				unsigned short valueCount - the count of data per entry
-* Return: void
-*/
+/**
+ * Method: TShaderHost::assignDescriptionFormat
+ * Purpose: Aids in the Development of a D3D Input Description b deducing what type of input is being added
+ * Parameters: D3D11_INPUT_ELEMENT_DESC & desc - The description to update
+ *				unsigned char valueSize - the size of the data types
+ *				unsigned short valueCount - the count of data per entry
+ * Return: void
+ */
 void TShaderHost::assignDescriptionFormat(D3D11_INPUT_ELEMENT_DESC& desc, unsigned char valueSize, unsigned short valueCount)
 {
 	switch (valueSize)
@@ -453,13 +516,13 @@ void TShaderHost::assignDescriptionFormat(D3D11_INPUT_ELEMENT_DESC& desc, unsign
 	}
 }
 
-/*
-* Method: ArenaEngine - GetConstantBuffer
-* Purpose: Creates a Constant Buffer
-* Parameters: int size - the size being requested
-*				TrecComPointer<ID3D11Buffer>& buff - reference to hold the buffer
-* Return: int - 0 if successful, error code otherwise
-*/
+/**
+ * Method: TShaderHost::GetConstantBuffer
+ * Purpose: Creates a Constant Buffer
+ * Parameters: int size - the size being requested
+ *				TrecComPointer<ID3D11Buffer>& buff - reference to hold the buffer
+ * Return: int - 0 if successful, error code otherwise
+ */
 int TShaderHost::GetConstantBuffer(int size, TrecComPointer<ID3D11Buffer>& buff, TrecComPointer<ID3D11Device> graphicsDevice)
 {
 	if (!size)
@@ -479,7 +542,17 @@ int TShaderHost::GetConstantBuffer(int size, TrecComPointer<ID3D11Buffer>& buff,
 	buff = b.Extract();
 	return !SUCCEEDED(res);
 }
-
+/**
+ * Method: TShaderHost::SetNewConstantBuffer
+ * Purpose: Establishes a Constant buffer in a shader
+ * Parameters: TrecComPointer<ID3D11Buffer>& buff - the buffer to apply to
+ *				int slot - the slot of the GPU (typically 0)
+ *				bool isModelBuffer - is the buffer for the model
+ *				ShaderPhase sp - The Specific Shader phase the buffer applies to
+ *				int shaderID - The index of the shader to target
+ *				unsigned char purp - the purpose of the buffer
+ * Returns: bool - whether he update has been made
+ */
 bool TShaderHost::SetNewConstantBuffer(TrecComPointer<ID3D11Buffer>& buff, int slot, bool isModelBuffer, ShaderPhase sp, int shaderID, unsigned char purp)
 {
 	if (!buff.Get() || shaderID < 0 || shaderID >= shaders.Size() || slot < 0 || slot > 15)
@@ -553,6 +626,15 @@ bool TShaderHost::SetNewConstantBuffer(TrecComPointer<ID3D11Buffer>& buff, int s
 	return true;
 }
 
+/**
+ * Method: TShaderHost::AddComputeShader
+ * Purpose: Adds a Compute Shader to the shader struct
+ * Parameters: TrecComPointer<ID3D11Device> graphicsDevice - the object that compiles the shader code
+ *				int shaderID - the ID of the shader struct
+ *				TString& cs - the file to open
+ *				const CHAR* cf - the name of the function
+ * Returns: int - error code
+ */
 int TShaderHost::AddComputeShader(TrecComPointer<ID3D11Device> graphicsDevice, int shaderID, TString& cs, const CHAR* cf)
 {
 	if (!graphicsDevice.Get())
@@ -587,7 +669,15 @@ int TShaderHost::AddComputeShader(TrecComPointer<ID3D11Device> graphicsDevice, i
 	else
 		return 4;
 }
-
+/**
+ * Method: TShaderHost::AddDomainShader
+ * Purpose: Adds a Domain Shader to the shader struct
+ * Parameters: TrecComPointer<ID3D11Device> graphicsDevice - the object that compiles the shader code
+ *				int shaderID - the ID of the shader struct
+ *				TString& ds - the file to open
+ *				const CHAR* df - the name of the function
+ * Returns: int - error code
+ */
 int TShaderHost::AddDomainShader(TrecComPointer<ID3D11Device> graphicsDevice, int shaderID, TString& ds, const CHAR* df)
 {
 	if (!graphicsDevice.Get())
@@ -622,7 +712,15 @@ int TShaderHost::AddDomainShader(TrecComPointer<ID3D11Device> graphicsDevice, in
 	else
 		return 4;
 }
-
+/**
+ * Method: TShaderHost::AddGeometryShader
+ * Purpose: Adds a Geometry Shader to the shader struct
+ * Parameters: TrecComPointer<ID3D11Device> graphicsDevice - the object that compiles the shader code
+ *				int shaderID - the ID of the shader struct
+ *				TString& gs - the file to open
+ *				const CHAR* gf - the name of the function
+ * Returns: int - error code
+ */
 int TShaderHost::AddGeometryShader(TrecComPointer<ID3D11Device> graphicsDevice, int shaderID, TString& gs, const CHAR* gf)
 {
 	if (!graphicsDevice.Get())
@@ -658,7 +756,15 @@ int TShaderHost::AddGeometryShader(TrecComPointer<ID3D11Device> graphicsDevice, 
 	else
 		return 4;
 }
-
+/**
+ * Method: TShaderHost::AddHullShader
+ * Purpose: Adds a Hull Shader to the shader struct
+ * Parameters: TrecComPointer<ID3D11Device> graphicsDevice - the object that compiles the shader code
+ *				int shaderID - the ID of the shader struct
+ *				TString& hs - the file to open
+ *				const CHAR* hf - the name of the function
+ * Returns: int - error code
+ */
 int TShaderHost::AddHullShader(TrecComPointer<ID3D11Device> graphicsDevice, int shaderID, TString& hs, const CHAR* hf)
 {
 	if (!graphicsDevice.Get())
@@ -695,12 +801,12 @@ int TShaderHost::AddHullShader(TrecComPointer<ID3D11Device> graphicsDevice, int 
 		return 4;
 }
 
-/*
-* Method: ArenaEngine - GetTextureCount
-* Purpose: Retrieves the number of textures the shader expects
-* Parameters: int shaderID - the external shader to look at
-* Return: signed char - the number of texture buffers
-*/
+/**
+ * Method: TShaderHost::GetTextureCount
+ * Purpose: Retrieves the number of textures the shader expects
+ * Parameters: int shaderID - the external shader to look at
+ * Return: signed char - the number of texture buffers
+ */
 signed char TShaderHost::GetTextureCount(int shaderID)
 {
 	if (shaderID < 0 || shaderID >= shaders.Size())
@@ -709,6 +815,13 @@ signed char TShaderHost::GetTextureCount(int shaderID)
 	return sp.TextureCount;
 }
 
+/**
+ * Method: TShaderHost::SetTextureCount
+ * Purpose: Sets the Texture coutn of the shader
+ * Parameters: int shaderID the shader to update
+ *				unsigned char c - the number of textures expected by the shader
+ * Returns: void
+ */
 void TShaderHost::SetTextureCount(int shaderID, unsigned char c)
 {
 	if (shaderID < 0 || shaderID >= shaders.Size())
@@ -717,6 +830,15 @@ void TShaderHost::SetTextureCount(int shaderID, unsigned char c)
 	sp.TextureCount = c;
 }
 
+/**
+ * Method: TShaderHost::UpdateConstantBuffer
+ * Purpose: Updates the Constant Buffer for a shader
+ * Parameters: TrecComPointer<ID3D11DeviceContext> contextDevice - object that does the actual update
+ *				TrecComPointer<ID3D11Buffer>& buff - the buffer to update with
+ *				ShaderPhase sp - the shade type for this operation
+ *				int slot - the slot (typically 0)
+ * Returns: void
+ */
 void TShaderHost::UpdateConstantBuffer(TrecComPointer<ID3D11DeviceContext> contextDevice, TrecComPointer<ID3D11Buffer>& buff, ShaderPhase sp, int slot)
 {
 	if (!buff.Get() || !contextDevice.Get())
@@ -749,7 +871,12 @@ void TShaderHost::UpdateConstantBuffer(TrecComPointer<ID3D11DeviceContext> conte
 
 	buffHolder.Extract(buff);
 }
-
+/**
+ * Method: TShaderHost::getColorBufferLocation_
+ * Purpose: Retrieves the index of the color buffer of the specified shader
+ * Parameters: int shaderID - the index of the chader to target
+ * Returns: signed char - the location of the buffer (-1 if not in the shader, -2 if index is invalid)
+ */
 signed char TShaderHost::getColorBufferLocation_(int shaderID)
 {
 	if (shaderID < 0 || shaderID >= shaders.Size())
@@ -758,14 +885,14 @@ signed char TShaderHost::getColorBufferLocation_(int shaderID)
 	return shaders[shaderID].colorLoc;
 }
 
-/*
-* Method: TShaderHost - ReplaceConstantBuffer
-* Purpose: Replaces a Constant Buffer with new information in an external shader
-* Parameters: int shaderID - the external shader to update
-*				unsigned char slot - the constant buffer to update
-*				ID3D11Buffer * buff - the new buffer to update the Constant buffer with
-* Return: int - 0 if successful, error otherwise
-*/
+/**
+ * Method: TShaderHost::ReplaceConstantBuffer
+ * Purpose: Replaces a Constant Buffer with new information in an external shader
+ * Parameters: int shaderID - the external shader to update
+ *				unsigned char slot - the constant buffer to update
+ *				TrecComPointer<ID3D11Buffer> - the new buffer to update the Constant buffer with
+ * Return: int - 0 if successful, error otherwise
+ */
 int TShaderHost::ReplaceConstantBuffer_(int shaderID, unsigned char slot, TrecComPointer<ID3D11Buffer> buff)
 {
 	if (shaderID < 0 || shaderID >= shaders.Size())

@@ -474,25 +474,20 @@ bool TWindow::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags)
  * Returns: void
  */
 void TWindow::OnWindowResize(UINT width, UINT height)
-{
-	if (d3dEngine.Get())
-		d3dEngine->Resize();
-
-	if(drawingBoard.Get())
-		drawingBoard->Resize(this->currentWindow);
-	
-	if (!mainPage.Get())
-		return;
-
-	//safeToDraw = safeToDraw | 0b00000010;
-
+{	
 	D2D1_RECT_F newLoc;
 	newLoc.top = newLoc.left = 0;
 	newLoc.bottom = height;
 	newLoc.right = width;
+	if (mainPage.Get())
+		mainPage->OnResize(newLoc, 0, d3dEngine);
 
+	//if (d3dEngine.Get())
+	//	d3dEngine->Resize(width, height);
 
-	mainPage->OnResize(newLoc, 0, d3dEngine);
+	if(drawingBoard.Get())
+		drawingBoard->Resize(this->currentWindow);
+
 
 	//safeToDraw = safeToDraw & 0b11111101;
 }

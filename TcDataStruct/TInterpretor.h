@@ -25,7 +25,7 @@ union doubleLong
 };
 
 /**
- * enum class: double_long
+ * Enum Class: double_long
  * Purpose: used to keep track of the status of the doubleLong union
  */
 enum class double_long
@@ -73,6 +73,7 @@ typedef enum class report_mode
 
 /**
  * Class ReportObject
+ * Class: ReportObject
  * Purpose: allows the Interpretors to report the results of a run 
  */
 class TC_DATA_STRUCT ReportObject

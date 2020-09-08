@@ -4,7 +4,7 @@
 #include "TFile.h"
 
 /*
- * class TShell
+ * Class: TShell
  * Purpose: provides support for command-line functionality in Anagame
  */
 class _TREC_LIB_DLL TShell :

@@ -409,7 +409,7 @@ void TTreeDataBind::Resize(D2D1_RECT_F& r)
 	}*/
 }
 
-bool TTreeDataBind::onScroll(int x, int y)
+bool TTreeDataBind::onScroll(float x, float y)
 {
 	location.left += x;
 	location.right += x;

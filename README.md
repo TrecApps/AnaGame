@@ -1,133 +1,30 @@
-# AnaGame (Draft - to be updated soon)
+# AnaGame
 #### Language: C++
 #### Compiler: Visual C++
 #### IDE: Visual Studio 2015 (created), 2019 (Current) - both Community edition
-##### Note: Professional or above should work, so long as MFC part of your installation
+##### Note: Professional or above should work
+##### Note: Anagame used to rely upon MFC but the use of that technology has been mostly phased out. While a couple projects might still have MFC within them (Web_Tours comes to mind), most Projects are MFC free.
 
 ## Set-up
 
-#### Update these fields
-
-![Update Fields](https://github.com/TrecApps/AnaGame/blob/master/Documentation/Read_me_images/Properties%20Windows.PNG)
-
-1. Clone the Project from Github (*git clone https://github.com/TrecApps/AnaGame.git *)
-2. Open the solution in Visual Studio
-3. Build the TrecLib project (you'll need a debug folder)
-4. For each project (other than TrecLib), Open their properties window
-5. Check the "Library Directories" and "Include Directories" in "VC++ Directories"
---Make sure they point to the directories on _your_ system
---Recently, I modified the project files to point to _relevant_ files/folders, meaning you shouldn't have too much work to do.
-6. Check the lib file list ("Linker --> Input --> Additional Dependencies")
-
-__Note:__ For both steps 5 and 6, check the notes on each individual project to make sure your set up meets requirements. Hopefully, you
-	shouldn't have to change anything.
-
-#### Include Example:
-
-![Include example](https://github.com/TrecApps/AnaGame/blob/master/Documentation/Read_me_images/Include%20Directories.PNG)
-
-#### Library Directory Example
-
-![Library Example](https://github.com/TrecApps/AnaGame/blob/master/Documentation/Read_me_images/Library%20Directories.PNG)
-
-#### Lib Files Example
-
-![Lib Files Example](https://github.com/TrecApps/AnaGame/blob/master/Documentation/Read_me_images/Lib%20Files.PNG)
-
-### TrecLib (MFC Extension DLL)
-
-No configurtion needs to be done
-
-### VideoGraphics (MFC Extension DLL)
-
-Include Directories:
-* DirectXTex\DirectXTex-master\DirectXTex (3rd Party Project)
-* TrecLib
- 
-Library Directories: 
-* DirectXTex\DirectXTex-master\DirectXTex\Bin\Desktop_2015\Win32\Debug (3rd Party Project)
-* Debug
-
-Lib Files:
-* TrecLib.lib
-* d3d11.lib
-* evr.lib
-* mf.lib
-* mfplay.lib
-* mfreadwrite.lib
-* mfuuid.lib
-* mfplat.lib
-* dxva2.lib
-* Strmiids.lib
-* D3DCompiler.lib
-* DirectXTex.lib
+### Clone the Required Projects
 
 __Note:__ Starting with Windows 8, the development kit for Windows included DirectX. However, one common
 	function involved with Textures in prior DirectX Development was removed from the kit. Consequently, 
-	because AnaGame was developed on Windows 8 and 10, you'll need the DirectXTex project found here:
-	https://github.com/Microsoft/DirectXTex
+	because AnaGame was developed on Windows 8 and 10, you'll need the DirectXTex project. 
 
-__Note 2:__ I highly advise you to clone the _DirectXTex_ repo from the same directory you clone the _Anagame_ repo. That way, you shouldn't have to modify the 
-	_VideoGraphics_ project file to point to this repo.
-
-### Anaface (MFC Extension DLL)
-
-Include Directories:
-* TrecLib
-* VideoGraphics
-
-Library Directories:
-* Debug
-
-Lib Files:
-* dwrite.lib
-* d2d1.lib
-* TrecLib.lib
-* VideoGraphics.lib
-* evr.lib
-* mf.lib
-* mfplay.lib
-* mfreadwrite.lib
-* mfuuid.lib
-* mfplat.lib
-* dxva2.lib
-* Strmiids.lib
-
-__Note:__ Some of these Lib files might not be needed (I know the first four ARE needed).
-
-### Tap (MFC Extension DLL)
-
-Include Directories:
-* TrecLib
-* VideoGraphics
-* Anaface
-
-Library Directories:
-* Debug
-
-Lib Files:
-* TrecLib.lib
-* Anaface.lib
-* VideoGraphics.lib
-* d2d1.lib
-
-### AnaGame Applications (AnaGame_Builder, AnimateBuilder, AnimateCentral, Web_Tours)
-
-Include Directories:
-* Tap
-* Anaface
-* VideoGraphics
-* TrecLib
-
-Library Directories:
-* Debug
-
-Lib Files:
-* Tap.lib
-* Anaface.lib
-* VideoGraphics.lib
-* TrecLib.lib
-* d2d1.lib
+1. Fork the **Anagame** repo into your own repository. This is because you won't be able to commit and push directly into my Repo.
+2. Find a location on your computer to Clone Both Anagame and DirectXTex into. Anagame expects that repo to be cloned from the same directory that Anagame was cloned from (i.e. if Anagame is located thus _~/Source/Repos/Anagame_ then DirectXText needs to be located at _~/Source/Repos/DirectXTex_).
+3. Clone the **Anagame** Repo from Github (*git clone https://github.com/TrecApps/AnaGame.git *)
+4. Clone the **DirectXTex** Repo from Github (*git clone https://github.com/Microsoft/DirectXTex *)
+5. Open the **DirectXText** solution in Visual Studio - currently, the **DirectXTex_Desktop_2019.sln** file (but keep an eye as that could change).
+6. Check that the IDE is set to _x86_ and build the solution.
+7. Open the **Anagame** Solution in Visual Studio (you should be able to close the **DirectXTex** Window at this point).
+8. You should be able to Build most of the Projects by Building
+    * Anagame_Builder (make sure the "g" is lowercase, need to remove the Project with the uppercase "G")
+    * Anagame_Central or
+    * AnimateBuilder
+9. Once you have a _Debug_ folder, you should copy the _Resources_ and _Languages_ folder into the _Debug_ Folder. Those folders contain Files that the Applications use to present Content.
 
 ## Pointers in AnaGame
 
@@ -141,6 +38,8 @@ Originally, TrecPointers all referred to a table held within the TrecLib library
 	was scrapped in favor of the approach used by Rust's Rc container, which acts in a way similar to 
 	C++'s std::shared_ptr - ie utilizing a counter for the reference. However, it does contain restrictions
 	absent in C++'s shared pointers and present in Rust.
+	
+More information About TrecPointers can be found at https://github.com/TrecApps/AnaGame/wiki/TrecPointers-1-Overview
 
 ### Creating an active TrecPointer
 
@@ -180,6 +79,8 @@ Sometimes, you might have a class that holds a reference to itself. It could be 
 	TrecPointerKey::GetNewSelfTrecPointerAlt<base_self, sub_self>(param);
 	
 This basically combines 2 and 3, but it only works when the base class has the _SetSelf_ method
+
+More Information about the _TrecPointerKey_ and _TrecPointer_ Initialization can be found here: https://github.com/TrecApps/AnaGame/wiki/TrecPointers-2-Initializing
 
 ### TrecPointerSoft: useful for self references
 
@@ -247,26 +148,15 @@ by four MFC applications in the solution.
 AnaGame has a stacked library structure where higher up libraries are dependent on the lower ones
 
 * TrecLib: (Lowest layer) Provides the base of AnaGame including the TObject, TString, TFile, TrecPointers, and more
+* TcDataStruct: (currently only in the _Environment_ branch) Used for Interpretation support
 * VideoGraphics: Provides the 3D Graphics engine, manages 3D shaders, and 3D model management
 * Anaface: User Interface Engine that provides the TControl and subclasses that draw themselves to screen and react to user input
-* Tap:  Ties up the libraries together and provides an interface for applications to use AnaGame libraries effectively
+* Tap: Ties up the libraries together and provides an interface for applications to use AnaGame libraries effectively
 * TrecCode: (Highest library (right now)) The newest addition, Not advanced at all at this point
 
 ### Applications
 
-* AnaGame_Builder: the application intended to serve as AnaGame's IDE as well as oneday support video editing and other productivity functionality
-* AnamateBuilder: Older version of _AnaGame_Builder_ that relies more on MFC and should be used for developing features in isolation
-* AnimateCentral: Intended to serve as AnaGame's hub for watching videos and playing games. Currently used to develop Anaface
-* Web_Tours: Serves as AnaGame's dedicated web browser, facilitating HTML/CSS support in Anaface
-
-### Others
-
-Currently, there are two other projects in AnaGame that were created but not under current development
-
-* AnagameCompiler: Functional DLL that's going to be superceeded by an Extension DLL
-* AnafaceSupport: Functional DLL that's intended to manage possible UI styling attributes, supporting CSS attributes as well as Anaface attributes
-
-## Before Execution
-
-Copy the Resources Folder into the Debug/Release folder (depending on your compile mode). AnaGame expects the "Resources" folder (and its contents) to be in the
-same folder as the exe and dll files.
+* Anagame_Builder: the application intended to serve as AnaGame's IDE as well as (one day) support video editing and other productivity functionality
+* AnamateBuilder: Older version of _AnaGame_Builder_ that currently is used to Develop the _TIdeWindow_ and _IDEPage_ classes and will be moved to the above project at some point. 
+* Anagame_Central: Intended to serve as AnaGame's hub for watching videos and playing games. Currently used to develop Anaface
+* Web_Tours: Serves as AnaGame's dedicated web browser, facilitating HTML/CSS support in Anaface. Currenly not in development and, due to the presence of MFC, will not build

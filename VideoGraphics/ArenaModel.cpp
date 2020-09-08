@@ -132,7 +132,7 @@ TString ArenaModel::getName()
 }
 
 /*
-* Method: ArenaModel - SetNewEngine
+* Method: ArenaModel:: SetNewEngine
 * Purpose: Attaches the model to a new engine
 * Parameters: ArenaEngine& e - the new engine to bound the model to
 * Return: void
@@ -147,7 +147,7 @@ void ArenaModel::SetNewEngine(TrecPointer<TArenaEngine> e)
 }
 
 /*
-* Method: ArenaModel - ValidateConstruction
+* Method: ArenaModel:: ValidateConstruction
 * Purpose: Reports whether the model is ready for usage
 * Parameters: void
 * Return: bool - whether the model is ready for use
@@ -158,7 +158,7 @@ bool ArenaModel::ValidateConstruction()
 }
 
 /*
-* Method: ArenaModel - LoadModel
+* Method: ArenaModel:: LoadModel
 * Purpose:
 * Parameters:
 * Return:
@@ -170,7 +170,7 @@ HRESULT ArenaModel::LoadModel(TFile & ar)
 }
 
 /*
-* Method: ArenaModel - SetVertexData
+* Method: ArenaModel:: SetVertexData
 * Purpose: Sets the models Vertex data to send to the shader as well as the external shader to use
 * Parameters: TDataArray<float>& data - the Vertex data to give the model
 *				int shaderID - the external shader the model should use
@@ -194,7 +194,7 @@ int ArenaModel::SetVertexData(TDataArray<float>& data, int shaderID, D3D11_PRIMI
 }
 
 /*
-* Method: ArenaModel - SetVertexData
+* Method: ArenaModel:: SetVertexData
 * Purpose: Sets the models Vertex data to send to the shader as well as the AnaGame shader to use
 * Parameters: TDataArray<float>& data - the Vertex data to give the model
 *				DefaultShader ds - the AnaGame shader the model should use
@@ -214,7 +214,7 @@ int ArenaModel::SetVertexData(TDataArray<float>& data, DefaultShader ds, D3D11_P
 }
 
 /*
-* Method: ArenaModel - SetVertexData
+* Method: ArenaModel:: SetVertexData
 * Purpose: Sets the models Vertex data to send to the shader, used by the other methods of the same name
 * Parameters: TDataArray<float>& data - the Vertex data to give the model
 * Return: int - 0 if successful, error code otherwise
@@ -248,7 +248,7 @@ int ArenaModel::SetVertexData(TDataArray<float>& data)
 }
 
 /*
-* Method: ArenaModel - SetIndices
+* Method: ArenaModel:: SetIndices
 * Purpose: Sets the model's index data to send to the device context
 * Parameters: TDataArray<UINT>& indices - the list of indices to use
 * Return: bool - whether the indices are compatible with the current vertex list
@@ -292,7 +292,7 @@ bool ArenaModel::SetIndices(TDataArray<UINT>& indices)
 }
 
 /*
-* Method: ArenaModel - ProjectionGPU
+* Method: ArenaModel:: ProjectionGPU
 * Purpose:
 * Parameters:
 * Return:
@@ -304,7 +304,7 @@ void ArenaModel::ProjectionGPU(bool gpu)
 
 
 /*
-* Method: ArenaModel - Render
+* Method: ArenaModel:: Render
 * Purpose: Draws out the Model to the screen
 * Parameters: DirectX::XMMATRIX & proj - the projection matrix
 *				DirectX::XMMATRIX& camera - the camera matrix to use
@@ -438,7 +438,7 @@ void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera)
 
 
 /*
-* Method: ArenaModel - Rotate
+* Method: ArenaModel:: Rotate
 * Purpose: Rotates the Model
 * Parameters: float radian - the degree to rotate the model
 *				DirectX::XMFLOAT3 direction - the direction to rotate the model
@@ -467,7 +467,7 @@ int ArenaModel::Rotate(float radian, DirectX::XMFLOAT3 direction_)
 }
 
 /*
-* Method: ArenaModel - Translate
+* Method: ArenaModel:: Translate
 * Purpose: Moves the Model across the coordinate plane
 * Parameters: float radian - the degree to move the model
 *				DirectX::XMFLOAT3 direction - the direction to move the model
@@ -495,7 +495,7 @@ int ArenaModel::Translate(float degree, DirectX::XMFLOAT3 direction)
 }
 
 /*
-* Method: ArenaModel - Enlarge
+* Method: ArenaModel:: Enlarge
 * Purpose: Adjusts the size of the model
 * Parameters: float ratio - the degree to change the size of the model
 * Return: int - 0 it will work 
@@ -508,7 +508,7 @@ int ArenaModel::Enlarge(float ratio)
 }
 
 /*
-* Method: ArenaModel - GetLocation
+* Method: ArenaModel:: GetLocation
 * Purpose: Retrieves the current location of the model
 * Parameters: void
 * Return: DirectX::XMFLOAT3 - the location of the model
@@ -519,7 +519,7 @@ DirectX::XMFLOAT3 ArenaModel::GetLocation()
 }
 
 /*
-* Method: ArenaModel - GetDirection
+* Method: ArenaModel:: GetDirection
 * Purpose: Retrieves the current direction of the model
 * Parameters: void
 * Return: DirectX::XMFLOAT3 - the direction of the model
@@ -530,7 +530,7 @@ DirectX::XMFLOAT3 ArenaModel::GetDirection()
 }
 
 /*
-* Method: ArenaModel - setColorBuffer
+* Method: ArenaModel:: setColorBuffer
 * Purpose: Sets the Single Solid color for the model
 * Parameters: float r - the red channel
 *				float g - the green channel
@@ -580,7 +580,7 @@ bool ArenaModel::setColorBuffer(float r, float g, float b, float a)
 }
 
 /*
-* Method: ArenaModel - setPipeColorBuffer
+* Method: ArenaModel:: setPipeColorBuffer
 * Purpose: Sets the Single Wireframe color for the model
 * Parameters: float r - the red channel
 *				float g - the green channel
@@ -634,7 +634,7 @@ bool ArenaModel::setPipeColorBuffer(float r, float g, float b, float a)
 }
 
 /*
-* Method: ArenaModel - setSingleColorBuffer
+* Method: ArenaModel:: setSingleColorBuffer
 * Purpose: Updates the Single Color buffer with Direct3D
 * Parameters: bool solidColor - Whether it is solid or wireframe 
 * Return: bool - success
@@ -705,7 +705,7 @@ int ArenaModel::AddTexture(TString & fileName)
 }
 
 /*
-* Method: ArenaModel - UpdateTexture
+* Method: ArenaModel:: UpdateTexture
 * Purpose: Updates an existing texture added to the model
 * Parameters: TString & fileName - the filepath of the image
 *				int location -  the texture to update
@@ -740,7 +740,7 @@ int ArenaModel::UpdateTexture(TString & fileName, int location)
 UCHAR ArenaModelType[] = { 2, 0b10000000, 6 };
 
 /*
-* Method: ArenaModel - GetAnaGameType
+* Method: ArenaModel:: GetAnaGameType
 * Purpose: Retrieves the AnaGame type identifier for this class
 * Parameters: void
 * Return: UCHAR* - the AnaGame type identifier for the Arena Model class
@@ -758,7 +758,7 @@ void ArenaModel::SetSelf(TrecPointer<ArenaModel> s)
 }
 
 /*
-* Method: ArenaModel - GetTexture
+* Method: ArenaModel:: GetTexture
 * Purpose: Retrieves the Texture resources of a given image
 * Parameters: TString & fileName - the filepath of the image
 * Return: TextureResources - the resources being generated, check if compenents are null for error

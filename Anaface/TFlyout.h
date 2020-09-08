@@ -36,7 +36,7 @@ private:
 
 
 /**
- * Class TFlyout
+ * Class: TFlyout
  * Purpose: Base class for Controls intended to be drawn after the general Anaface is drawn, allowing
  *	Windows to draw them last and over other content as necessary
  */

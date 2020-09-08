@@ -3,6 +3,13 @@
 #include "TShaderParser.h"
 #include <TML_Reader_.h>
 
+/**
+ * Method: TWindowEngine::TWindowEngine
+ * Purpose: Constructor
+ * Parameters: HWND win - Handle to the Window to use
+ *				HINSTANCE ins - OS level Instance Engine is operating in
+ * Returns: New 3D Window Engine object
+ */
 TWindowEngine::TWindowEngine(HWND win, HINSTANCE ins)
 {
 	isInit = false;
@@ -19,6 +26,12 @@ TWindowEngine::TWindowEngine(HWND win, HINSTANCE ins)
 	ZeroMemory(&rasterizer, sizeof(rasterizer));
 }
 
+/**
+ * Method: TWindowEngine::~TWindowEngine
+ * Purpose: Destructor
+ * Parameters: void
+ * Returns: void
+ */
 TWindowEngine::~TWindowEngine()
 {
 	int e = 0;
@@ -46,6 +59,12 @@ TWindowEngine::~TWindowEngine()
 
 }
 
+/**
+ * Method: TWindowEngine::Initialize
+ * Purpose: Sets up all of the Direct3D resources this Engine will need to draw properly
+ * Parameters: void
+ * Returns: int - errorcode
+ */
 int TWindowEngine::Initialize()
 {
 	if (isInit)
@@ -233,17 +252,21 @@ int TWindowEngine::Initialize()
 	return NO_ERROR;
 }
 
-void TWindowEngine::Resize()
+/**
+ * Method: TWindowEngine::Resize
+ * Purpose: Allows the Engine to know that the Window has been resized and update resources accordingly
+ * Parameters: UINT x - the new width of the window
+ *				UINT y - the ne height of the window
+ * Returns: void
+ */
+void TWindowEngine::Resize(UINT x, UINT y)
 {
 	if (!swapper.Get() || !surface.Get() || !contextDevice.Get())
 		return;
-	RECT oldRect = Location;
-	if (!GetClientRect(window, &Location))
-		return;
 
 	UINT buffCount = 2;
-	UINT width = Location.right - Location.left;
-	UINT height = Location.bottom - Location.top;
+	UINT width = x;
+	UINT height = y;
 
 	DXGI_FORMAT NewFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
 	UINT flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
@@ -295,72 +318,78 @@ void TWindowEngine::Resize()
 	surface = surfaceHolder.Extract();
 }
 
-/*
-* Method: TWindowEngine - getDevice
-* Purpose: Retrieves the Context Device used for drawing
-* Parameters: void
-* Return: TrecComPointer<ID3D11DeviceContext> - Pointer to the Device Context
-*/
+/**
+ * Method: TWindowEngine::getDevice
+ * Purpose: Retrieves the Context Device used for drawing
+ * Parameters: void
+ * Return: TrecComPointer<ID3D11DeviceContext> - Pointer to the Device Context
+ */
 TrecComPointer<ID3D11DeviceContext> TWindowEngine::getDevice()
 {
 	return contextDevice;
 }
 
-/*
-* Method: TWindowEngine - getSwapChain
-* Purpose: Retrieves the Swap Chain used by the Engine
-* Parameters: void
-* Return: TrecComPointer<IDXGISwapChain> - Pointer to the Swap Chain
-*/
+/**
+ * Method: TWindowEngine::getSwapChain
+ * Purpose: Retrieves the Swap Chain used by the Engine
+ * Parameters: void
+ * Return: TrecComPointer<IDXGISwapChain> - Pointer to the Swap Chain
+ */
 TrecComPointer<IDXGISwapChain> TWindowEngine::getSwapChain()
 {
 	return swapper;
 }
 
-/*
-* Method: TWindowEngine - getRederTarget
-* Purpose: Retrieves the 3D Render Target for the engine
-* Parameters: void
-* Return: TrecComPointer<ID3D11RenderTargetView> - Pointer to the 3D Render Target
-*/
+/**
+ * Method: TWindowEngine::getRederTarget
+ * Purpose: Retrieves the 3D Render Target for the engine
+ * Parameters: void
+ * Return: TrecComPointer<ID3D11RenderTargetView> - Pointer to the 3D Render Target
+ */
 TrecComPointer<ID3D11RenderTargetView> TWindowEngine::getRederTarget()
 {
 	return renderTarget;
 }
 
-/*
-* Method: TWindowEngine - getDeviceD
-* Purpose: Retrieves the Direct 3D device used by the engine
-* Parameters: void
-* Return: TrecComPointer<ID3D11Device> - Pointer to the engine's Direct3D Device
-*/
+/**
+ * Method: TWindowEngine::getDeviceD
+ * Purpose: Retrieves the Direct 3D device used by the engine
+ * Parameters: void
+ * Return: TrecComPointer<ID3D11Device> - Pointer to the engine's Direct3D Device
+ */
 TrecComPointer<ID3D11Device> TWindowEngine::getDeviceD()
 {
 	return graphicsDevice;
 }
 
-/*
-* Method: TWindowEngine - getDeviceD_U
-* Purpose: Retrieves the DirectX (mixer) device the engine uses
-* Parameters: void
-* Return: TrecComPointer<IDXGIDevice> - Pointer to the engine's DirectX Device
-*/
+/**
+ * Method: TWindowEngine::getDeviceD_U
+ * Purpose: Retrieves the DirectX (mixer) device the engine uses
+ * Parameters: void
+ * Return: TrecComPointer<IDXGIDevice> - Pointer to the engine's DirectX Device
+ */
 TrecComPointer<IDXGIDevice> TWindowEngine::getDeviceD_U()
 {
 	return dxDev;
 }
 
+/**
+ * Method: TWindowEngine::GetSurface
+ * Purpose: Retrieves the Surface created to allow the Window to integrate with Direct2D
+ * Parameters: void
+ * Returns: TrecComPointer<IDXGISurface1> - reference to the requested surface
+ */
 TrecComPointer<IDXGISurface1> TWindowEngine::GetSurface()
 {
 	return surface;
 }
 
-/*
-* Method: TWindowEngine - PrepareScene
-* Purpose: Sets up a Round of Drawing
-* Parameters: D2D1::ColorF color - The color to clear the render target to
-* Return: void
-*/
+/**
+ * Method: TWindowEngine::PrepareScene
+ * Purpose: Sets up a Round of Drawing
+ * Parameters: D2D1::ColorF color - The color to clear the render target to
+ * Return: void
+ */
 void TWindowEngine::PrepareScene(D2D1::ColorF color)
 {
 	if (!contextDevice.Get() || !renderTarget.Get())
@@ -372,18 +401,24 @@ void TWindowEngine::PrepareScene(D2D1::ColorF color)
 	contextDevice->OMSetRenderTargets(1, &renderer, nullptr);
 }
 
-/*
-* Method: TWindowEngine - FinalizeScene
-* Purpose: Completes a round of Rendering by presenting it to the Swap Chain
-* Parameters: void
-* Return: void
-*/
+/**
+ * Method: TWindowEngine::FinalizeScene
+ * Purpose: Completes a round of Rendering by presenting it to the Swap Chain
+ * Parameters: void
+ * Return: void
+ */
 void TWindowEngine::FinalizeScene()
 {
 	if (swapper.Get())
 		swapper->Present(0, 0);
 }
 
+/**
+ * Method: TWindowEngine::ReportLiveObjects
+ * Purpose: Debugging method for live objects created under Direct3D
+ * Parameters: void
+ * Returns: void
+ */
 void TWindowEngine::ReportLiveObjects()
 {
 	if (!graphicsDevice.Get())return;
@@ -393,8 +428,25 @@ void TWindowEngine::ReportLiveObjects()
 		debugger->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 }
 
+/**
+ * Method: TWindowEngine::GetWindowHandle
+ * Purpose: Retrieves the Window Handle used by the engine
+ * Parameters: void
+ * Returns: HWND
+ */
+HWND TWindowEngine::GetWindowHandle()
+{
+	return window;
+}
 
 
+
+/**
+ * Method: TWindowEngine::InitializeDefaultShaders
+ * Purpose: Prepares the native Anagame shaders to use
+ * Parameters: void
+ * Return: int - errorcode
+ */
 int TWindowEngine::InitializeDefaultShaders()
 {
 	if (defaultShadersSet)
@@ -574,12 +626,12 @@ int TWindowEngine::InitializeDefaultShaders()
 	return 0;
 }
 
-/*
-* Method: TWindowEngine - SetDefaultRasterization
-* Purpose: Sets the Rasterization mode to the default settings
-* Parameters: void
-* Return: void
-*/
+/**
+ * Method: TWindowEngine::SetDefaultRasterization
+ * Purpose: Sets the Rasterization mode to the default settings
+ * Parameters: void
+ * Return: void
+ */
 void TWindowEngine::SetDefaultRasterization()
 {
 	if (contextDevice.Get())

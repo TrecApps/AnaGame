@@ -20,7 +20,7 @@ typedef enum class file_node_filter_mode
 }file_node_filter_mode;
 
 /*
- * class TFileNode
+ * Class: TFileNode
  * Purpose: Implements the TObjectNode interface for Files found on the local hard drive
  */
 class _TREC_LIB_DLL TFileNode :
@@ -28,7 +28,7 @@ class _TREC_LIB_DLL TFileNode :
 {
 public:
 	/*
-	* Method: TDirectory::Constructor
+	* Method: TFileNode::Constructor
 	* Purpose: Constructs the TFileNode
 	* Parameters: UINT l - level of the node (used by the TObjectNode class)
 	* Returns: void
@@ -36,7 +36,7 @@ public:
 	TFileNode(UINT l);
 
 	/*
-	 * Method: TDirectory::GetContent
+	 * Method: TFileNode::GetContent
 	 * Purpose: Retrieves the Content to present about this object
 	 * Parameters: void
 	 * Returns: TString - the name of the File/directory this node references
@@ -44,7 +44,7 @@ public:
 	TString GetContent() override;
 
 	/*
-	* Method: TDirectory::IsExtendable
+	* Method: TFileNode::IsExtendable
 	* Purpose: Reports whether this node is extendable - in this case, whether the file is a directory or not
 	* Parameters: void
 	* Returns: bool - whether the node is extendable (i.e. references a directory)
@@ -52,7 +52,7 @@ public:
 	bool IsExtendable() override;
 
 	/*
-	* Method: TDirectory::IsExtended
+	* Method: TFileNode::IsExtended
 	* Purpose: Reports whether this node is currently extended
 	* Parameters: void
 	* Returns: bool - whether the node is extended
@@ -60,7 +60,7 @@ public:
 	virtual bool IsExtended();
 
 	/*
-	* Method: TDirectory::GetNodeAt
+	* Method: TFileNode::GetNodeAt
 	* Purpose: Return a specific node, with an assumption on where "this" node is in the heirarchy
 	* Parameters: UINT target - the desired node
 	*				UINT current - the node that this node should assume to be
@@ -69,7 +69,7 @@ public:
 	virtual TrecPointer<TObjectNode> GetNodeAt(UINT target, UINT current);
 
 	/*
-	* Method: TDirectory::TotalChildren
+	* Method: TFileNode::TotalChildren
 	* Purpose: Reports Reports the total number of children, grand children, and so on held by this node
 	* Parameters: void
 	* Returns: UINT - number of nodes for which this node is an ancestor
@@ -77,7 +77,7 @@ public:
 	virtual UINT TotalChildren();
 
 	/*
-	* Method: TDirectory::Initialize
+	* Method: TFileNode::Initialize
 	* Purpose: Supposed to initialize the node tree
 	* Parameters: void
 	* Returns: bool - false as the Node cannot be initialized without the path provided
@@ -85,7 +85,7 @@ public:
 	virtual bool Initialize() override;
 
 	/*
-	* Method: TDirectory::Initialize
+	* Method: TFileNode::Initialize
 	* Purpose: Initializes the node with the path of the file/Directory to start with
 	* Parameters: TStrng& value - the path of the File to reference
 	* Returns: bool - true of a file object was generated, false otherwise
@@ -93,7 +93,7 @@ public:
 	virtual bool Initialize(TString& value) override;
 
 	/*
-	* Method: TDirectory::Extend
+	* Method: TFileNode::Extend
 	* Purpose: Epands the Tree by getting all of the files in the directory
 	* Parameters: void
 	* Returns: void
@@ -103,7 +103,7 @@ public:
 	virtual void Extend() override;
 
 	/*
-	* Method: TDirectory::GetChildNodes
+	* Method: TFileNode::GetChildNodes
 	* Purpose: Retrieves Child Nodes one at a time via an index.
 	* Parameters: UINT index - the index of the child node to retrieve
 	* Returns: TrecPointer<TObjectNode> - the node in question
@@ -113,7 +113,7 @@ public:
 	virtual TrecPointer<TObjectNode> GetChildNodes(UINT index) override;
 
 	/*
-	* Method: TDirectory::DropChildNodes
+	* Method: TFileNode::DropChildNodes
 	* Purpose: Drops the child nodes, provided with a control in mind
 	* Parameters: void
 	* Returns: void
@@ -122,7 +122,7 @@ public:
 
 
 	/*
-	* Method: TDirectory::getVariableValueStr
+	* Method: TFileNode::getVariableValueStr
 	* Purpose: Reports the desired Content
 	* Parameters: const TString& varName - the name
 	* Returns: TString - the file/Directory name held by this object
@@ -131,7 +131,7 @@ public:
 
 
 	/*
-	* Method: TDirectory::SetFile
+	* Method: TFileNode::SetFile
 	* Purpose: Manually Initialize a node with an existing File Record
 	* Parameters: TrecPointer<TFileShell>& d - the file to reference
 	* Returns: void

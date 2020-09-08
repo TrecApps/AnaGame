@@ -2,7 +2,7 @@
 #include "TGadgetControl.h"
 
 /*
-* Class TRadioButton
+* Class: TRadioButton
 * Purpose: Implements Anaface's version of the radio buttom
 */
 class _ANAFACE_DLL TRadioButton :

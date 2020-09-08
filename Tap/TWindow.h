@@ -69,7 +69,7 @@ public:
 
 	/**
 	 * Method: TWindow::GetWinClass
-	 * Purpose: Retrievs the Window-level class of this window
+	 * Purpose: Retrieves the Window-level class of this window
 	 * Parameters: void
 	 * Returns: TString - the class name registered with Windows
 	 */

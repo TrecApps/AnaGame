@@ -54,7 +54,7 @@ private:
 };
 
 
-/* Class: Page
+/** Class: Page
 * Purpose: Provide the foundation through which Drawing resources can be set up on a certain Window or device context,
 *	Allows for refactoring of code that is essentially repeated
 */

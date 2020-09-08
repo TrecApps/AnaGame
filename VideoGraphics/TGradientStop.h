@@ -4,7 +4,7 @@
 #include "Structure2D.h"
 
 /**
- * class TGradientStop
+ * Class: TGradientStop
  * Purpose: Holds GradientStops
  */
 class _VIDEO_GRAPHICS TGradientStop : public TObject

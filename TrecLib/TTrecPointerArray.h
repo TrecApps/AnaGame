@@ -2,7 +2,7 @@
 #include "TDataArrayBase.h"
 #include "TrecReference.h"
 /*
-* Class TArray
+* Class: TArray
 * Holds references to objects (Not meant to store straight foward data in a row)
 */
 template <typename T>class TTrecPointerArray : public TDataArrayBase

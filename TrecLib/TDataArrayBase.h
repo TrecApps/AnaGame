@@ -2,7 +2,7 @@
 #include "TObject.h"
 
 /**
- * class TDataArrayBase
+ * Class: TDataArrayBase
  * Purpose: Provides a base type for all TDataArrays
  */
 class _TREC_LIB_DLL TDataArrayBase :

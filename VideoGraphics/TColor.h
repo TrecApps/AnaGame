@@ -9,7 +9,7 @@
 #define color_struct D2D1_COLOR_F
 
 /**
- * class TColor
+ * Class: TColor
  * Purpose: Anagames base class for color support
  */
 class _VIDEO_GRAPHICS TColor : public TObject

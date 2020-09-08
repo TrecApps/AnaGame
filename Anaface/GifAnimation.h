@@ -3,14 +3,14 @@
 #include <TBitmapBrush.h>
 
 /**
- * Class: Gifnimation
+ * Class: GifAnimation
  * Purpose: Allows Gifs to be played in Anagame
  */
 class GifAnimation : public Animation
 {
 public:
 	/**
-	 * Method: GifAnimation::Animation (Constructor)
+	 * Method: GifAnimation::Animation
 	 * Purpose: Creates the Gif Animation with the specified animation-phase setting
 	 * Parameters: animation_phase ap - the animation_phase this Animation is set to
 	 * Returns: GifAnimation

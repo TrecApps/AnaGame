@@ -3,6 +3,10 @@
 #include <d2d1.h>
 class TControl;
 
+/**
+ * Class: TransitionAnimation
+ * Purpose: Basic straight-line movement from one location to the next
+ */
 class TransitionAnimation :
 	public Animation
 {

@@ -33,7 +33,7 @@
  */
 
 /**
- * class TrecBoxPointerBase
+ * Class: TrecBoxPointerBase
  * Purpose: Holds the counter and base for the 
  */
 class TrecBoxPointerBase
@@ -155,7 +155,7 @@ public:
 
 
 /**
- * class TrecBoxPointer
+ * Class: TrecBoxPointer
  * Purpose: holds the raw pointer and a counter to the object referenced by the various TrecPointers
  */
 template<class T> class TrecBoxPointer: public TrecBoxPointerBase
@@ -319,7 +319,7 @@ public:
 };
 
 /**
- * class TrecComBoxPointer
+ * Class: TrecComBoxPointer
  * Purpose: Holds the actual raw pointer to COM types used
  */
 template<class T> class TrecComBoxPointer
@@ -411,7 +411,7 @@ public:
 
 
 /**
- * class TrecPointerSoft
+ * Class: TrecPointerSoft
  * Purpose: Provides a weak pointer type to help prevent circular references that prevent counters from reaching 0
  * 
  * Note: Written to allow certain objects to hold references to themselves and return regular TrecPointer's to themselves
@@ -502,7 +502,7 @@ public:
 };
 
 /**
- * class TrecSubPointerSoft
+ * Class: TrecSubPointerSoft
  * Purpose: Provides a weak pointer type for the TrecSubPointer (which assumes object is a subclass of type u)
  */
 template<class T, class U> class TrecSubPointerSoft
@@ -588,7 +588,7 @@ public:
 };
 
 /**
- * class TrecSubPointer
+ * Class: TrecSubPointer
  * Purpose: Provide a means to hold a reference to a base class T and provide easy access to members of sub class U
  */
 template<class t, class u> class TrecSubPointer
@@ -745,7 +745,7 @@ public:
 };
 
 /**
- * class TrecPointer
+ * Class: TrecPointer
  * Purpose: Provide a Smart Pointer for use in Anagame
  */
 template<class t> class TrecPointer
@@ -909,7 +909,7 @@ public:
 
 
 /**
- * class TrecComPointer
+ * Class: TrecComPointer
  * Purpose: Provide a smart pointer that can be used on Microsoft COM objects
  *
  * To initialize a new object, the TrecComPointer provides the TrecComHolder class. Here is an example on how to initialize a ID2D1Factory1 object:
@@ -943,7 +943,7 @@ protected:
 	TrecComBoxPointer<t>* pointer;
 public:
 	/**
-	 * class TrecComHolder
+	 * Class: TrecComHolder
 	 * Purpose: Provide a means through which TrecComPointers can be initialized when the means to create them is 
 	 *	through factory methods/functions
 	 */
@@ -1159,7 +1159,7 @@ public:
 
 
 /**
- * class TrecPointerKey
+ * Class: TrecPointerKey
  * Purpose: Utility class to allow for initializing various TrecPointer types and swapping compatible TrecPointer types
  */
 class TrecPointerKey

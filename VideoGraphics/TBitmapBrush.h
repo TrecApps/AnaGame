@@ -4,7 +4,7 @@
 #include <wincodec.h>
 
 /**
- * class TBitmapBrush
+ * Class: TBitmapBrush
  * Purpose: Hold a Bitmap Brush so that images can be drawn
  */
 class _VIDEO_GRAPHICS TBitmapBrush : public TBrush

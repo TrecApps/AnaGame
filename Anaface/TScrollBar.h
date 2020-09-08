@@ -31,6 +31,10 @@ typedef enum class messageOutput
 	positiveScroll
 }messageOutput;
 
+/**
+ * Class: TScrollBar
+ * Purpose: Implements and renders the scroll-bar
+ */
 class _ANAFACE_DLL TScrollBar : public TObject
 {
 public:

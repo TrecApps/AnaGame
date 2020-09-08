@@ -4,7 +4,7 @@
 #include "TFile.h"
 
 /*
-* class ParseReader_
+* Class: ParseReader_
 * Base Class for all Markup-language parsers
 */
 class _TREC_LIB_DLL ParseReader_ : public TObject

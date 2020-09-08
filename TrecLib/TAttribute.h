@@ -12,7 +12,7 @@
 
 
 /**
- * class TAttribute
+ * Class: TAttribute
  * Purpose: Provides base level support for managing a class/object attribute, written with Anagame
  *	compilers in minds
  */

@@ -30,7 +30,7 @@ typedef struct tempHold
 }tempHold;
 
 /*
-* class AnafaceUI
+* Class: AnafaceUI
 * Purpose: enables holding multiple controls in the same space, one at a time.
 *	Use for different pages
 */

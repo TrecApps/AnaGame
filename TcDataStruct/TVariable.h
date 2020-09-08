@@ -15,7 +15,7 @@ typedef enum class var_type
 }var_type;
 
 /**
- * Class TVariable
+ * Class: TVariable
  * Purpose: Represents a given variable in the system, abstract to support both Objects and raw data types
  */
 class TC_DATA_STRUCT TVariable

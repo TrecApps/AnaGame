@@ -1,5 +1,10 @@
 #pragma once
 #include "TLayout.h"
+
+/**
+ * Class: TLayoutEx
+ * Purpose: Extends TLayout to allow Rows and Columns to be added and removed after creation
+ */
 class _ANAFACE_DLL TLayoutEx :	public TLayout
 {
 public:

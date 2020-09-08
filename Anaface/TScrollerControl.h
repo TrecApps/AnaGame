@@ -53,7 +53,8 @@ public:
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)override;
 	/**
-	 * Method: TScrollerControl::OnMouseMove Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
+	 * Method: TScrollerControl::OnMouseMove
+	 * Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
 	 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	 *				TPoint point - the point on screen where the event occured
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
@@ -102,7 +103,7 @@ public:
 	 *		However, the contents might include child locations so their snips might have to be
 	 *		updated
 	 */
-	virtual bool onScroll(int x, int y)override;
+	virtual bool onScroll(float x, float y)override;
 
 protected:
 	/**

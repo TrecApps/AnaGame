@@ -3,7 +3,7 @@
 #include "AnafaceUI.h"
 
 /*
-* class CSSGenerator
+* Class: CSSGenerator
 * Purpose: Parse CSS documents and returns a list of styles
 */
 class CSSGenerator : public TObject
