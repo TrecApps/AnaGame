@@ -486,7 +486,7 @@ TString TString::SubString(UINT beginningIndex, int endIndex) const
 	{
 		endIndex = abs(endIndex);
 		if (static_cast<UINT>(endIndex) > GetSize())
-			return returnable;
+			endIndex = GetSize();
 		for (UINT c = beginningIndex; c < static_cast<UINT>(endIndex); c++)
 			returnable.AppendChar(GetAt(c));
 	}

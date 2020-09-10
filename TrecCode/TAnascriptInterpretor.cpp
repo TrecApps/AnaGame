@@ -168,6 +168,10 @@ ReportObject TAnascriptInterpretor::Run()
             line++;
             continue;
         }
+
+        if (code.EndsWith(L"."))
+            code.Set(code.SubString(0, code.GetSize() - 1));
+
         TString Keyword(code.GetLower());
 
         if (!Keyword.Find(L"function. "))
@@ -1228,6 +1232,9 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
  */
 void TAnascriptInterpretor::ProcessArrayExpression(TString& exp, UINT line, ReportObject& ro)
 {
+    if (exp.EndsWith(L"]"))
+        exp.Set(exp.SubString(0, exp.GetSize() - 1));
+
     auto pieces = exp.split(L",", 0b00000010);
 
     TrecSubPointer<TVariable, TContainerVariable> array_ = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
@@ -1564,7 +1571,7 @@ void TAnascriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObjec
  */
 void TAnascriptInterpretor::HandleMultDiv(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The Multiplication Division handler expected one more Expression than operator!");
@@ -1624,7 +1631,7 @@ void TAnascriptInterpretor::HandleMultDiv(TDataArray<TrecPointer<TVariable>>& ex
  */
 void TAnascriptInterpretor::HandleAddSub(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The addition/subtraction handler expected one more Expression than operator!");
@@ -1671,7 +1678,7 @@ void TAnascriptInterpretor::HandleAddSub(TDataArray<TrecPointer<TVariable>>& exp
  */
 void TAnascriptInterpretor::HandleCompare(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The comparison handler expected one more Expression than operator!");
@@ -1767,7 +1774,7 @@ void TAnascriptInterpretor::HandleCompare(TDataArray<TrecPointer<TVariable>>& ex
  */
 void TAnascriptInterpretor::HandleEquality(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The Equality handler expected one more Expression than operator!");
@@ -1829,7 +1836,7 @@ void TAnascriptInterpretor::HandleEquality(TDataArray<TrecPointer<TVariable>>& e
  */
 void TAnascriptInterpretor::HandleBitAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The Multiplication Division handler expected one more Expression than operator!");
@@ -1870,7 +1877,7 @@ void TAnascriptInterpretor::HandleBitAnd(TDataArray<TrecPointer<TVariable>>& exp
  */
 void TAnascriptInterpretor::HandleBitXorNxor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The xor/xnor handler expected one more Expression than operator!");
@@ -1932,7 +1939,7 @@ void TAnascriptInterpretor::HandleBitXorNxor(TDataArray<TrecPointer<TVariable>>&
  */
 void TAnascriptInterpretor::HandleBitOrNor(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The or/nor handler expected one more Expression than operator!");
@@ -1994,7 +2001,7 @@ void TAnascriptInterpretor::HandleBitOrNor(TDataArray<TrecPointer<TVariable>>& e
  */
 void TAnascriptInterpretor::HandleAnd(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The 'and' handler expected one more Expression than operator!");
@@ -2024,7 +2031,7 @@ void TAnascriptInterpretor::HandleAnd(TDataArray<TrecPointer<TVariable>>& expres
  */
 void TAnascriptInterpretor::HandleOr(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The 'or' handler expected one more Expression than operator!");
@@ -2054,7 +2061,7 @@ void TAnascriptInterpretor::HandleOr(TDataArray<TrecPointer<TVariable>>& express
  */
 void TAnascriptInterpretor::HandleAssign(TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
-    if (expressions.Size() != ops.Size() - 1)
+    if (expressions.Size() != ops.Size() + 1)
     {
         errorMessage.returnCode = errorMessage.broken_reference;
         errorMessage.errorMessage.Set(L"The assignment handler expected one more Expression than operator!");
