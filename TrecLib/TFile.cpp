@@ -231,7 +231,7 @@ ULONGLONG TFile::ReadStringLine(TString& rString, ULONGLONG nMax)
 	case FileEncodingType::fet_unicode_little:
 		WCHAR wLetter;
 
-		for (; rust <= nMax && Read(&wLetter, 2); rust+=2)
+		for (; rust < nMax && Read(&wLetter, 2); rust+=2)
 		{
 			if (wLetter == L'\n')
 			{
