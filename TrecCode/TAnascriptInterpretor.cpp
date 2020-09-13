@@ -260,7 +260,26 @@ ReportObject TAnascriptInterpretor::Run()
  */
 ReportObject TAnascriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params)
 {
-	return ReportObject();
+    // Clear any previous variables set as we are about to get a new set of variables
+    variables.clear();
+
+    for (UINT Rust = 0; Rust < params.Size(); Rust++)
+    {
+        if (Rust < paramNames.Size())
+        {
+            variables.addEntry(paramNames[Rust], params.at(Rust));
+        }
+        else
+        {
+            TString paramName(L"_");
+            paramName.AppendFormat(L"%d", Rust);
+
+            variables.addEntry(paramName, params.at(Rust));
+        }
+    }
+
+
+	return Run();
 }
 
 ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expectLet)
@@ -443,6 +462,7 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
     while (blockStack && file->ReadString(lineStr))
     {
         lineStr.SetLower();
+        lineStr.Trim();
         auto tokens = lineStr.split(L" ");
 
         if (tokens->Size())
@@ -484,15 +504,15 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
     int keyElement = -1;
     int keyName = -1;
     
-    for (UINT Rust = 0; loopTokens->Size(); Rust++)
+    for (UINT Rust = 0; Rust < loopTokens->Size(); Rust++)
     {
-        if (loopTokens->at(Rust).CompareNoCase(L"through"))
+        if (!loopTokens->at(Rust).CompareNoCase(L"through"))
             keyThrough = Rust;
-        else if (loopTokens->at(Rust).CompareNoCase(L"with"))
+        else if (!loopTokens->at(Rust).CompareNoCase(L"with"))
             keyWith = Rust;
-        else if (loopTokens->at(Rust).CompareNoCase(L"element"))
+        else if (!loopTokens->at(Rust).CompareNoCase(L"element"))
             keyElement = Rust;
-        else if (loopTokens->at(Rust).CompareNoCase(L"name"))
+        else if (!loopTokens->at(Rust).CompareNoCase(L"name"))
             keyName = Rust;
     }
 
@@ -619,6 +639,69 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
     return ret;
 }
 
+
+/**
+ * Method: TAnascriptInterpretor::ProcessElse
+ * Purpose: Processes the if block
+ * Parameters: TString& _if - the 'let' statement to inspect and process
+ *              UINT line - the line number being called upon,
+ * Returns: ReportObject - objct indicating the success of the program or failure information
+ */
+ReportObject TAnascriptInterpretor::ProcessElse(TString& _else, UINT line)
+{
+    _else.Trim();
+
+    if (!_else.Compare(L"else"))
+    {
+        ULONG64 blockStart = file->GetPosition();
+        UINT blockStack = 1;
+        UINT newLine = line;
+        TString lineStr;
+
+        ULONGLONG blockEnd = blockStart;
+
+        while (blockStack && file->ReadString(lineStr))
+        {
+            newLine++;
+
+            lineStr.Trim();
+            TString lineStringLower = lineStr.GetLower();
+            auto tokens = lineStringLower.split(L" ");
+
+            if (tokens->Size())
+            {
+                TString tok(tokens->at(0));
+
+                if (!tok.Compare(L"end"))
+                {
+                    blockStack--;
+                }
+                else if (!tok.Compare(L"in") || !tok.Compare(L"if") || !tok.Compare(L"loop") || !tok.Compare(L"while"))
+                    blockStack++;
+            }
+
+            if (!blockStack)
+                break;
+            blockEnd = file->GetPosition();
+        }
+
+        // We have determined that the loop line checks out, now to create an interpretor to process the block itself
+        TrecSubPointer<TVariable, TAnascriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAnascriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, blockStart, blockEnd);
+
+
+        TDataArray<TrecPointer<TVariable>> params;
+        return block->Run(params);
+    }
+    else
+    {
+        TString _if(_else.SubString(4));
+        return ProcessIf(_if, line);
+    }
+}
+
 /**
  * Method: TAnascriptInterpretor::ProcessIf
  * Purpose: Processes the if block
@@ -646,6 +729,8 @@ ReportObject TAnascriptInterpretor::ProcessIf(TString& _if, UINT line)
     while (blockStack && file->ReadString(lineStr))
     {
         newLine++;
+
+        lineStr.Trim();
         TString lineStringLower = lineStr.GetLower();
         auto tokens = lineStringLower.split(L" ");
 
@@ -693,15 +778,12 @@ ReportObject TAnascriptInterpretor::ProcessIf(TString& _if, UINT line)
     TString expression;
     if (!_if.GetLower().Find(L"if "))
         expression.Set(_if.SubString(3));
-    else
-        expression.Set(_if);
 
+    expression.Trim();
+    
     ProcessExpression(expression, line, ret);
 
-    if (ret.returnCode)
-    {
-        return ret;
-    }
+    bool throughElse = false;
 
     if (IsTruthful(ret.errorObject))
     {
@@ -714,21 +796,43 @@ ReportObject TAnascriptInterpretor::ProcessIf(TString& _if, UINT line)
 
         TDataArray<TrecPointer<TVariable>> params;
         ret = block->Run(params);
-
-        return ret;
     }
-    else if (!ended)
+    else if(elseString.GetSize())
     {
-        if (elseTokens->Size() > 1)
+        throughElse = true;
+
+        ret = ProcessElse(elseString, line);
+    }
+    blockStack++;
+    
+    if (!throughElse && !elseString.GetSize())
+    {
+        while (blockStack && file->ReadString(lineStr))
         {
-            elseString.Delete(0, 5);
-            return ProcessIf(elseString, newLine);
+            newLine++;
+
+            lineStr.Trim();
+            TString lineStringLower = lineStr.GetLower();
+            auto tokens = lineStringLower.split(L" ");
+
+            if (tokens->Size())
+            {
+                TString tok(tokens->at(0));
+
+                if (!tok.Compare(L"end"))
+                {
+                    blockStack--;
+                    ended = true;
+                }
+                else if (!tok.Compare(L"in") || !tok.Compare(L"if") || !tok.Compare(L"loop") || !tok.Compare(L"while"))
+                    blockStack++;
+            }
+
+            if (!blockStack)
+                break;
+            blockEnd = file->GetPosition();
         }
     }
-    ret.returnCode = 0;
-    
-
-    file->Seek(setFilePosition, 0);
     return ret;
 }
 
@@ -756,6 +860,8 @@ ReportObject TAnascriptInterpretor::ProcessWhile(TString& _while, UINT line)
     while (blockStack && file->ReadString(lineStr))
     {
         newLine++;
+
+        lineStr.Trim();
         TString lineStringLower = lineStr.GetLower();
         auto tokens = lineStringLower.split(L" ");
 
@@ -853,6 +959,8 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
     while (blockStack && file->ReadString(lineStr))
     {
         newLine++;
+
+        lineStr.Trim();
         TString lineStringLower = lineStr.GetLower();
         auto tokens = lineStringLower.split(L"\t\r ");
 
@@ -1135,24 +1243,26 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
 
         // Now Check for an operator
 
+        exp.Trim();
+
         if (exp.StartsWith(L"equals ", true))
         {
-            operators.push_back(exp.SubString(0, 7));
+            operators.push_back(exp.SubString(0, 6));
             exp.Delete(0, 7);
         }
         else if (exp.StartsWith(L"nand ", true) || exp.StartsWith(L"xnor ", true) || exp.StartsWith(L"band ", true))
         {
-            operators.push_back(exp.SubString(0, 5));
+            operators.push_back(exp.SubString(0, 4));
             exp.Delete(0, 5);
         }
         else if (exp.StartsWith(L"and ", true) || exp.StartsWith(L"xor ", true) || exp.StartsWith(L"nor ", true) || exp.StartsWith(L"bor ", true))
         {
-            operators.push_back(exp.SubString(0, 4));
+            operators.push_back(exp.SubString(0, 3));
             exp.Delete(0, 4);
         }
         else if (exp.StartsWith(L"or ", true) )
         {
-            operators.push_back(exp.SubString(0, 3));
+            operators.push_back(exp.SubString(0, 2));
             exp.Delete(0, 3);
         }
         else if (exp.StartsWith(L"&&") || exp.StartsWith(L"||") || exp.StartsWith(L"==") || exp.StartsWith(L"!=") || exp.StartsWith(L">=") || exp.StartsWith(L"<="))
@@ -1493,7 +1603,7 @@ void TAnascriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject&
 
     tExp.Set(tExp.SubString(start, end));
 
-    if (tExp.Find(L'.'))
+    if (tExp.Find(L'.') != 1)
     {
         double d;
         auto res = tExp.ConvertToDouble(d);
@@ -1547,8 +1657,8 @@ void TAnascriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObjec
         WCHAR letter = tExp[end];
 
         if ((letter >= L'0' && letter <= L'9') ||
-            (letter >= L'a' && letter <= L'f') ||
-            (letter >= L'A' && letter <= L'F') ||
+            (letter >= L'a' && letter <= L'z') ||
+            (letter >= L'A' && letter <= L'Z') ||
             letter == L'_')
             continue;
         break;

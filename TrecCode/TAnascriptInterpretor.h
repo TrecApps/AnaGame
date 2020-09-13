@@ -69,6 +69,15 @@ public:
     ReportObject ProcessLoop(TString& let, UINT line);
 
     /**
+     * Method: TAnascriptInterpretor::ProcessElse
+     * Purpose: Processes the if block
+     * Parameters: TString& _if - the 'let' statement to inspect and process
+     *              UINT line - the line number being called upon,
+     * Returns: ReportObject - objct indicating the success of the program or failure information
+     */
+    ReportObject ProcessElse(TString& _else, UINT line);
+
+    /**
      * Method: TAnascriptInterpretor::ProcessIf
      * Purpose: Processes the if block
      * Parameters: TString& _if - the 'let' statement to inspect and process
