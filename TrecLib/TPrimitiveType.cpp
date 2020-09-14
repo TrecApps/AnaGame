@@ -36,16 +36,12 @@ code_type_cat TPrimitiveType::GetTypeCategory()
 	return code_type_cat::code_type_cat_prim;
 }
 
-/**
- * Method: TPrimitiveType::GetType
- * Purpose: Returns what this type is supposed to represent
- * Parameters: void
- * Returns: BYTE - the Primitive type type in BYTE form
- */
-BYTE TPrimitiveType::GetType()
+BYTE TPrimitiveType::GetPrimitiveType()
 {
-	return type;
+	return 0;
 }
+
+
 
 /**
  * Method: TPrimitiveType::GetMetadata

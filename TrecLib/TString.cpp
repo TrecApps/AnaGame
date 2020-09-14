@@ -9,13 +9,23 @@ UCHAR TStringType[] = { 2, 0b10000000, 1 };
 * Parameters: void
 * Returns: void
 */
+
 TString::TString()
 {
 	string = nullptr;
 	Empty();
 }
 
-
+/**
+ * Method: TString::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TString::GetType()
+{
+	return TString(L"TString;") + TObject::GetType();
+}
 
 /*
 * Method: TString::Destructor

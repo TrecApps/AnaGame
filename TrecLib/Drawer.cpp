@@ -1,4 +1,6 @@
 #include "Drawer.h"
+#include "TString.h"
+
 
 /**
  * Method: Drawer::GetWindowHandle
@@ -20,4 +22,15 @@ HWND Drawer::GetWindowHandle()
 TrecComPointer<ID2D1Factory1> Drawer::GetFactory()
 {
 	return directFactory;
+}
+
+/**
+ * Method: Drawer::GetType()
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString Drawer::GetType()
+{
+	return TString(L"Drawer;") + TObject::GetType();
 }

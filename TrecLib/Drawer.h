@@ -33,9 +33,18 @@ public:
      * Method: Drawer::GetFactory
      * Purpose: Returns the Direct2D Factory used by the window
      * Parameters: void
-     * Returns: TrecComPointer<ID2D1Factory1> -  the Pointer to the factory
+     * Returns: TrecComPointer<ID2D1Factory1> - the Pointer to the factory
      */
     TrecComPointer<ID2D1Factory1> GetFactory();
+
+
+    /**
+     * Method: Drawer::GetType()
+     * Purpose: Returns a String Representation of the object type
+     * Parameters: void
+     * Returns: TString - representation of the object type
+     */
+    virtual TString GetType()override;
 
 protected:
     /**

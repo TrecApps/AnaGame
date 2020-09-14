@@ -43,12 +43,12 @@ public:
 	virtual code_type_cat GetTypeCategory();
 
 	/**
-     * Method: TPrimitiveType::GetType
+     * Method: TPrimitiveType::GetPrimitiveType
      * Purpose: Returns what this type is supposed to represent
      * Parameters: void
      * Returns: BYTE - the Primitive type type in BYTE form
      */
-	BYTE GetType();
+	BYTE GetPrimitiveType();
 
 	/**
      * Method: TPrimitiveType::GetMetadata

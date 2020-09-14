@@ -3,6 +3,19 @@
 
 UCHAR Parser_Type[] = { 2, 0b10000000, 4 };
 
+/**
+ * Method: Parser_::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString Parser_::GetType()
+{
+	return TString(L"Parser_;") + TObject::GetType();
+}
+
+
+
 /*
 * Method: Parser_::Parser_
 * Purpose: Constructor

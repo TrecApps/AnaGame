@@ -7,11 +7,22 @@
 * Parameters: UINT l - level of the node (used by the TObjectNode class)
 * Returns: void
 */
+
 TFileNode::TFileNode(UINT l) : TObjectNode(l)
 {
 	filter_mode = file_node_filter_mode::fnfm_blank;
 }
 
+/**
+ * Method: TFileNode::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TFileNode::GetType()
+{
+	return TString(L"TFileNode;") + TObjectNode::GetType();
+}
 /*
  * Method: TDirectory::GetContent
  * Purpose: Retrieves the Content to present about this object

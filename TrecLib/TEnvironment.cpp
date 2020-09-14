@@ -133,6 +133,16 @@ TString retrieveLanguageByExtension(TString ext)
 	return TString();
 }
 
+/**
+ * Method: TEnvironment::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TEnvironment::GetType()
+{
+	return TString(L"TEnvironment;") + TObject::GetType();
+}
 
 /**
  * Method: TEnvironment::TEnvironment
@@ -140,6 +150,7 @@ TString retrieveLanguageByExtension(TString ext)
  * Parameters: TrecPointer<TFileShell> shell - the Root Directory to focus on (working Directory)
  * Returns: New Environment object
  */
+
 TEnvironment::TEnvironment(TrecPointer<TFileShell> shell)
 {
 	rootDirectory = shell;

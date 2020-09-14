@@ -37,12 +37,12 @@ public:
 	virtual short GetDetails() = 0;
 
 	/**
-     * Method: TAttribute::GetType
+     * Method: TAttribute::GetAttributeType
      * Purpose: Returns the type of the attribute
      * Parameters: void
      * Return: TrecPointer<TType> -  the type involved
      */
-	virtual TrecPointer<TType> GetType() = 0;
+	virtual TrecPointer<TType> GetAttributeType() = 0;
 
 	/**
      * Method: TAttribute::GetAttributeByName

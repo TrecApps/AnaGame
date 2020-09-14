@@ -19,6 +19,14 @@ protected:
 	TDirectory(const TString& path);
 public:
 
+	/**
+	 * Method: TDirectory::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TDirectory::IsDirectory
 	* Purpose: Reports whether this object represents a directory as opposed to a regular file

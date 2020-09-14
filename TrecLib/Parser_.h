@@ -10,6 +10,15 @@ class _TREC_LIB_DLL Parser_ : public TObject
 {
 public:
 
+
+	/**
+	 * Method: Parser_::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: Parser_::Parser_
 	* Purpose: Constructor

@@ -1,5 +1,15 @@
 #include "TBlankNode.h"
 
+/**
+ * Method: TBlankNode::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TBlankNode::GetType()
+{
+	return TString(L"TBlankNode;") + TObjectNode::GetType();
+}
 
 /*
 * Method: TBlankNode::TBlankNode
@@ -7,6 +17,7 @@
 * Parameters: UINT l - the level (i.e. distance) from the head node
 * Returns: void
 */
+
 TBlankNode::TBlankNode(UINT l) : TObjectNode(l)
 {
 	isExtended = false;

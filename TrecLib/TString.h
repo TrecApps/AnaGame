@@ -40,6 +40,14 @@ class _TREC_LIB_DLL TString : public TObject
 {
 public:
 
+	/**
+	 * Method: TString::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TString::Constructor
 	* Purpose: Default Constructor for the TString Class

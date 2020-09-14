@@ -10,6 +10,16 @@ class _TREC_LIB_DLL TObjectNode :
 	public TObject
 {
 public:
+
+	/**
+	 * Method: TObjectNode::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+
 	/*
 	* Method: TObjectNode::TObjectNode
 	* Purpose: Constructor

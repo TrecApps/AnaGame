@@ -46,6 +46,15 @@ public:
 	*/
 	virtual UCHAR* GetAnaGameType();
 
+
+	/**
+	 * Method: ParseReader_::GetType()
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 protected:
 
 	/**

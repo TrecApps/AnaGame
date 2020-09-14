@@ -27,6 +27,16 @@ class _TREC_LIB_DLL TFileNode :
 	public TObjectNode
 {
 public:
+
+	/**
+	 * Method: TFileNode::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+
 	/*
 	* Method: TFileNode::Constructor
 	* Purpose: Constructs the TFileNode

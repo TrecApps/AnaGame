@@ -1,5 +1,5 @@
 #include "Animation.h"
-
+#include "TString.h"
 /**
  * Method: Animation::Animation (Constructor)
  * Purpose: Creates the Animation with the specified animation-phase setting
@@ -132,4 +132,9 @@ float GetFloatBetween(float value1, float value2, float progress)
 	float diff = value2 - value1;
 
 	return value1 + diff * progress;
+}
+
+TString Animation::GetType()
+{
+	return TString(L"Animation;") + TObject::GetType();
 }

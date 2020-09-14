@@ -1,12 +1,23 @@
 #include "TFileShell.h"
 #include "TDirectory.h"
 
+/**
+ * Method: TBlankNode::TFileShell
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TFileShell::GetType()
+{
+	return TString(L"TFileShell;") + TObject::GetType();
+}
 /*
 * Method: TFileShell::IsDirectory
 * Purpose: Reports whether this file represents a directory
 * Parameters: void
 * Returns: bool - false if object is the base class, true, if object is a TDirectory
 */
+
 bool TFileShell::IsDirectory()
 {
 	return false;

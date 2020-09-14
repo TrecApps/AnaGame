@@ -147,6 +147,17 @@ UCHAR * HTML_Reader::GetAnaGameType()
 	return HTML_ReaderType;
 }
 
+/**
+ * Method: HTML_Reader::GetType()
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString HTML_Reader::GetType()
+{
+	return TString(L"HTML_Reader;") + ParseReader_::GetType();
+}
+
 /*
 * Method: HTML_Reader::DeduceCharType
 * Purpose: Uses the first character to decude whether it is reading Unicode or ACSII

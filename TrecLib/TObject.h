@@ -59,6 +59,17 @@ public:
 	 */
 	virtual TString toString();
 
+	/**
+	 * Method: TObject::GetType()
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 * 
+	 * Note: This method is provided to allow interpretors to allow scripts to access methods of Anagame Objects.
+	 *   subclasses should report their type first, then the parent clss type and seperate it with a SemiColon
+	 */
+	virtual TString GetType();
+
 protected:
 	
 };

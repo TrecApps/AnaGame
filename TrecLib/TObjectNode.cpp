@@ -1,12 +1,24 @@
 #include "TObjectNode.h"
 #include "TString.h"
 
+
+/**
+ * Method: TObjectNode::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TObjectNode::GetType()
+{
+	return TString(L"TObjectNode;") + TObject::GetType();
+}
 /*
 * Method: TObjectNode::TObjectNode
 * Purpose: Constructor
 * Parameters: UINT l - the level (i.e. distance) from the head node 
 * Returns: void
 */
+
 TObjectNode::TObjectNode(UINT l)
 {
 	level = l;

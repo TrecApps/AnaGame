@@ -17,7 +17,7 @@ typedef enum class prompt_mode
  * Class: TPromptControl
  * Purpose: Allows Anagame to support terminals in it's interface
  */
-class TPromptControl :
+class _ANAFACE_DLL TPromptControl :
 	public TTextField
 {
 public:

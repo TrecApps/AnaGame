@@ -4,12 +4,25 @@
 
 UCHAR TFileType[] = { 2, 0b10000000, 2 };
 
+
+/**
+ * Method: TFile::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TFile::GetType() 
+{
+	return TString(L"TFile;") + TObject::GetType();
+}
+
 /*
 * Method: TFile::TFile 
 * Purpose: Default Constrictor
 * Parameters: void
 * Returns: void
 */
+
 TFile::TFile()
 {
 	fileEncode = FileEncodingType::fet_unknown;

@@ -2,12 +2,25 @@
 #include "DirectoryInterface.h"
 #include "PathConfiguration.h"
 
+
+/**
+ * Method: TShell::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TShell::GetType()
+{
+	return TString(L"TShell;") + TObject::GetType();
+}
+
 /*
 * Method: TShell::TShell
 * Purpose: Creates the Shell, with the Home directory as the initial working directory
 * Parameters: void
 * Returns: void
 */
+
 TShell::TShell()
 {
 	workingDirectory.Set(GetDirectoryWithSlash(CentralDirectories::cd_Documents));

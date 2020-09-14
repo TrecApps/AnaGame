@@ -14,6 +14,15 @@ class _TREC_LIB_DLL TFileShell :
 	friend class TrecPointerKey;
 public:
 
+
+	/**
+	 * Method: TFileShell::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TFileShell::IsDirectory
 	* Purpose: Reports whether this file represents a directory

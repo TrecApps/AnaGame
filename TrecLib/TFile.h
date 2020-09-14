@@ -72,6 +72,15 @@ public:
 	static const UCHAR t_file_include_terminator = 0b00000001;
 
 
+
+	/**
+	 * Method: TFile::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TFile::TFile
 	* Purpose: Default Constrictor

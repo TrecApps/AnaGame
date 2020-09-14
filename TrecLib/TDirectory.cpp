@@ -11,12 +11,24 @@ TDirectory::TDirectory(const TString& path) : TFileShell(path)
 
 }
 
+/**
+ * Method: TDirectory::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TDirectory::GetType()
+{
+	return TString(L"TDirectory;") + TFileShell::GetType();
+} 
+
 /*
 * Method: TDirectory::IsDirectory
 * Purpose: Reports whether this object represents a directory as opposed to a regular file
 * Parameters: void
 * Returns: bool - true as this is a directory (overrides the TFileShell method that returns false)
 */
+
 bool TDirectory::IsDirectory()
 {
 	return true;
