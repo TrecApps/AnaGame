@@ -1,6 +1,7 @@
 #include "TAnaGameCodeEnvironment.h"
 #include "TAnascriptInterpretor.h"
 #include <TFileNode.h>
+#include <TPromptControl.h>
 
 TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shell)
 {
@@ -132,4 +133,24 @@ bool TAnaGameCodeEnvironment::SupportsFileExt(const TString& ext)
 
 void TAnaGameCodeEnvironment::SupportsFileExt(TDataArray<TString>& ext)
 {
+}
+
+bool TAnaGameCodeEnvironment::Print(TString& input)
+{
+	if (shellRunner.Get())
+	{
+		shellRunner->Print(input);
+		return true;
+	}
+	return false;
+}
+
+bool TAnaGameCodeEnvironment::PrintLine(TString& input)
+{
+	if (shellRunner.Get())
+	{
+		shellRunner->Print(input);
+		return true;
+	}
+	return false;
 }

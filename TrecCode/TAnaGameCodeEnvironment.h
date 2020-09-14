@@ -49,6 +49,22 @@ public:
 	virtual bool SupportsFileExt(const TString& ext) override;
 	virtual void SupportsFileExt(TDataArray<TString>& ext) override;
 
+	/**
+	 * Method: TEnvironment::Print
+	 * Purpose: Allows external code to manually add something to print out
+	 * Parameters: TString& input - the command to enter
+	 * Returns: bool - whether a prompt was set or not
+	 */
+	virtual bool Print(TString& input)override;
+
+	/**
+	 * Method: TEnvironment::PrintLine
+	 * Purpose: Allows external code to manually add something to print out, adding an extra new line at the end
+	 * Parameters: TString& input - the command to enter
+	 * Returns: void
+	 */
+	virtual bool PrintLine(TString& input)override;
+
 protected:
 	TString targetExtensions;	// Extensions to target for compilation
 

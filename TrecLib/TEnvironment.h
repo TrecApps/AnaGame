@@ -63,6 +63,31 @@ public:
 	TEnvironment(TrecSubPointer<TControl, TPromptControl> prompt);
 
 	/**
+	 * Method: TEnvironment::SetPrompt
+	 * Purpose: Allows a prompt to be set after the construction
+	 * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
+	 * Returns: void
+	 */
+	void SetPrompt(TrecSubPointer<TControl, TPromptControl> prompt);
+
+
+	/**
+	 * Method: TEnvironment::Print
+	 * Purpose: Allows external code to manually add something to print out
+	 * Parameters: TString& input - the command to enter
+	 * Returns: bool - whether a prompt was set or not
+	 */
+	virtual bool Print(TString& input);
+
+	/**
+	 * Method: TEnvironment::PrintLine
+	 * Purpose: Allows external code to manually add something to print out, adding an extra new line at the end
+	 * Parameters: TString& input - the command to enter
+	 * Returns: void
+	 */
+	virtual bool PrintLine(TString& input);
+
+	/**
 	 * Method: TEnvironment::GetTaskList
 	 * Purpose: Retrieves the list of tasks offered by the Environment
 	 * Parameters: void

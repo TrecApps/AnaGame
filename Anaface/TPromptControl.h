@@ -1,6 +1,17 @@
 #pragma once
 #include "TTextField.h"
 #include <TShell.h>
+/**
+ * Class Enum: prompt_mode
+ * Purpose: How to handle interactions
+ */
+typedef enum class prompt_mode
+{
+	regular,       // Behave like a regular prompt
+	print_only,    // only print material through print methods
+	program_input  // Accept input but only print out what a user types or a program provides
+}prompt_mode;
+
 
 /**
  * Class: TPromptControl
@@ -81,6 +92,38 @@ public:
 	 * Returns: void
 	 */
 	void SubmitCommand(TString& command);
+
+	/**
+	 * For use with scripts and other programs
+	 */
+
+	/**
+	 * Method: TPromptControl::Print
+	 * Purpose: Allows external code to manually add something to print out
+	 * Parameters: TString& input - the command to enter
+	 * Returns: void
+	 */
+	void Print(TString& input);
+
+	/**
+	 * Method: TPromptControl::PrintLine
+	 * Purpose: Allows external code to manually add something to print out, adding an extra new line at the end
+	 * Parameters: TString& input - the command to enter
+	 * Returns: void
+	 */
+	void PrintLine(TString& input);
+
+
+	/**
+	 * Method: TPromptControl::Clear
+	 * Purpose: Allows external code to manually clear the buffer
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void Clear();
+
+	
+
 protected:
 	/**
 	 * the Input provided by the user, seperate from the output from the control of the TShell underneath
@@ -94,6 +137,11 @@ protected:
 	 * Whether a process is currently running under this control
 	 */
 	bool processRunning;
+
+	/**
+	 * the mode to operate under
+	 */
+	prompt_mode promptMode;
 
 	/*
 	 * Method: TPromptControl::isInInput

@@ -13,6 +13,7 @@ extern TDataArray<TTextField*> TextList;
 TPromptControl::TPromptControl(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta, HWND w):TTextField(rt,ta,w)
 {
 	processRunning = false;
+	promptMode = prompt_mode::regular;
 }
 
 /*
@@ -34,6 +35,10 @@ TPromptControl::~TPromptControl()
 bool TPromptControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
 	TTextField::onCreate(r, d3d);
+
+	auto valpoint = attributes.retrieveEntry(L"|ConsoleMode");
+	if (valpoint.Get() && !valpoint->CompareNoCase(L"Program"))
+		promptMode = prompt_mode::print_only;
 
 	isPassword = false;
 	isNumber = false;
@@ -69,28 +74,32 @@ void TPromptControl::onDraw(TObject* obj)
 
 	bool processCheck = shell.CheckProcess();
 
-	if (processRunning && !processCheck)
+
+	if (promptMode == prompt_mode::regular)
 	{
-		processRunning = false;
-		TString add;
+		if (processRunning && !processCheck)
+		{
+			processRunning = false;
+			TString add;
 
-		TString output(shell.GetOutput());
-		if (output.GetSize())
-			output.Set(TString(L"\n") + output + L"\n");
+			TString output(shell.GetOutput());
+			if (output.GetSize())
+				output.Set(TString(L"\n") + output + L"\n");
 
-		if (isEditable)
-			add.Set(output + shell.GetWorkingDirectory() + L"\n-->" + input);
-		else
-			add.Set(output);
+			if (isEditable)
+				add.Set(output + shell.GetWorkingDirectory() + L"\n-->" + input);
+			else
+				add.Set(output);
 
-		TTextField::SetText(text + add);
-		caretLoc += add.GetSize();
-	}
-	else if (isEditable && !shell.CheckProcess() && !text.GetSize())
-	{
-		TString add(shell.GetOutput() + L"\n" + shell.GetWorkingDirectory() + L"\n-->" + input);
-		TTextField::SetText(text + add);
-		caretLoc += add.GetSize();
+			TTextField::SetText(text + add);
+			caretLoc += add.GetSize();
+		}
+		else if (isEditable && !shell.CheckProcess() && !text.GetSize())
+		{
+			TString add(shell.GetOutput() + L"\n" + shell.GetWorkingDirectory() + L"\n-->" + input);
+			TTextField::SetText(text + add);
+			caretLoc += add.GetSize();
+		}
 	}
 
 	TControl::onDraw(obj);
@@ -275,7 +284,7 @@ bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags
 	// To-Do: sort out anomalies with characters
 	resetArgs();
 
-	if (onFocus)
+	if (onFocus && promptMode != prompt_mode::print_only)
 	{
 		if (fromChar)
 		{
@@ -371,6 +380,45 @@ void TPromptControl::SubmitCommand(TString& command)
 	processRunning = true;
 }
 
+/**
+ * Method: TPromptControl::Print
+ * Purpose: Allows external code to manually add something to print out
+ * Parameters: TString& input - the command to enter
+ * Returns: void
+ */
+void TPromptControl::Print(TString& input)
+{
+	if (promptMode == prompt_mode::print_only)
+	{
+		text.Append(input);
+		updateTextString();
+	}
+}
+
+/**
+ * Method: TPromptControl::PrintLine
+ * Purpose: Allows external code to manually add something to print out, adding an extra new line at the end
+ * Parameters: TString& input - the command to enter
+ * Returns: void
+ */
+void TPromptControl::PrintLine(TString& input)
+{
+	TString lInput(input + L'\n');
+	Print(lInput);
+}
+
+/**
+ * Method: TPromptControl::Clear
+ * Purpose: Allows external code to manually clear the buffer
+ * Parameters: void
+ * Returns: void
+ */
+void TPromptControl::Clear()
+{
+	text.Empty();
+	updateTextString();
+}
+
 /*
  * Method: TPromptControl::isInInput
  * Purpose: Checks whether a string index is within the input region
@@ -392,8 +440,17 @@ bool TPromptControl::isInInput(UINT proposeLoc)
 void TPromptControl::SubmitCommand()
 {
 	isPassword = false;
+
+	// if mode == regular
+
 	shell.SubmitCommand(input);
 	processRunning = true;
+
+	// else if mode == program_input
+
+
+
+
 	input.Empty();
 }
 
