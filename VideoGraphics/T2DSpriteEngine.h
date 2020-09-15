@@ -28,6 +28,17 @@ class _VIDEO_GRAPHICS T2DSpriteEngine :
     public TObject
 {
 public: 
+
+
+    /**
+     * Method: T2DSpriteEngine::GetType
+     * Purpose: Returns a String Representation of the object type
+     * Parameters: void
+     * Returns: TString - representation of the object type
+     */
+    virtual TString GetType();
+
+
     T2DSpriteEngine(TrecPointer<DrawingBoard>);
 
     virtual ~T2DSpriteEngine();

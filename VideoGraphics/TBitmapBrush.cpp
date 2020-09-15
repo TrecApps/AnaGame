@@ -3,6 +3,19 @@
 #include "DrawingBoard.h"
 #include "TGeometry.h"
 
+
+/**
+ * Method: TBitmapBrush::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TBitmapBrush::GetType()
+{
+	return TString(L"TBitmapBrush;") + TBrush::GetType();
+}
+
+
 /**
  * Method: TBitmapBrush::NextFrame
  * Purpose: In a multiframe image, sets the brush to draw the next frame in a sequence

@@ -26,6 +26,14 @@ class _VIDEO_GRAPHICS TGeometry :
 public:
 
 	/**
+	 * Method: TGeometry::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/**
 	 * Method: TGeometry::TGeometry
 	 * Purpose: Creates a Geometry from a set of points
 	 * Parameters: TrecComPointer<ID2D1Factory1> fact - used to create the geometry

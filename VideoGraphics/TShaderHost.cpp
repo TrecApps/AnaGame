@@ -15,6 +15,17 @@ const CHAR* _sem_TS = "TESSFACTOR";
 
 
 /**
+ * Method: TShaderHost::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TShaderHost::GetType()
+{
+	return TString(L"TShaderHost;") + TObject::GetType();
+}
+
+/**
  * Method: TShaderHost::TShaderHost
  * Purpose: Constructor
  * Parameters: void

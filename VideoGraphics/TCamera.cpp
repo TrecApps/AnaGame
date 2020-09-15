@@ -1,5 +1,16 @@
 #include "TCamera.h"
 
+/**
+ * Method: TCamera::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TCamera::GetType()
+{
+	return TString(L"TCamera;") + TObject::GetType();
+}
+
 TCamera::TCamera()
 {
 }

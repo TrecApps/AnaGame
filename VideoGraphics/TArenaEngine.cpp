@@ -2,6 +2,17 @@
 #include "ArenaModel.h"
 
 /**
+ * Method: TArenaEngine::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TArenaEngine::GetType()
+{
+	return TString(L"TArenaEngine;") + TShaderHost::GetType();
+}
+
+/**
  * Method: TArenaEngine::TArenaEngine
  * Purpose: Constructor
  * Parameters: TrecPointer<TWindowEngine> wEngine - the Window Level Engine to work with

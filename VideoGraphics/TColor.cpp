@@ -1,4 +1,17 @@
 #include "TColor.h"
+#include <TString.h>
+
+
+/**
+ * Method: TColor::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TColor::GetType()
+{
+	return TString(L"TColor;") + TObject::GetType();
+}
 
 /**
  * Method: TColor::TColor

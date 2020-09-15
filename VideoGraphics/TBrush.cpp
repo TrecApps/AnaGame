@@ -3,6 +3,18 @@
 #include "TGeometry.h"
 #include <atltrace.h>
 
+
+/**
+ * Method: TBrush::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TBrush::GetType()
+{
+	return TString(L"TBrush;") + TObject::GetType();
+}
+
 /**
  * Method: TBrush::DrawRectangle
  * Purpose: draws the given Rectangle on the DrawingBoard

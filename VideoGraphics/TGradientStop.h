@@ -12,6 +12,14 @@ class _VIDEO_GRAPHICS TGradientStop : public TObject
 public:
 
 	/**
+	 * Method: TGradientStop::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/**
 	 * Method: TGradientStop::TGradientStop
 	 * Purpose: Attribute Constructor
 	 * Parameters: const TColor& color - the color of the new gradient stop

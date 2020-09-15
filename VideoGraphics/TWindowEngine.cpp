@@ -4,6 +4,17 @@
 #include <TML_Reader_.h>
 
 /**
+ * Method: TWindowEngine::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TWindowEngine::GetType()
+{
+	return TString(L"TWindowEngine;") + TShaderHost::GetType();
+}
+
+/**
  * Method: TWindowEngine::TWindowEngine
  * Purpose: Constructor
  * Parameters: HWND win - Handle to the Window to use

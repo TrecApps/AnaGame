@@ -31,6 +31,15 @@ class _VIDEO_GRAPHICS TBrush : public TObject
 	friend class DrawingBoard;
 public:
 
+
+	/**
+	 * Method: TBrush::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TBrush::DrawRectangle
 	 * Purpose: draws the given Rectangle on the DrawingBoard

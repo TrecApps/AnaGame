@@ -17,6 +17,15 @@ class _VIDEO_GRAPHICS DrawingBoard : public TObject
 {
 public:
 
+
+	/**
+	 * Method: DrawingBoard::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType();
+
 	/**
 	 * Method: DrawingBoard::DrawingBoard
 	 * Purpose: Constructor that sets the mode to 2D

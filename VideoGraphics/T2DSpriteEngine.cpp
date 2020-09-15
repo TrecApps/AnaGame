@@ -22,6 +22,11 @@ UINT T2DSprite::GetIndex()
     return 0;
 }
 
+TString T2DSpriteEngine::GetType()
+{
+    return TString(L"T2DSpriteEngine;") + TObject::GetType();
+}
+
 T2DSpriteEngine::T2DSpriteEngine(TrecPointer<DrawingBoard>)
 {
 }

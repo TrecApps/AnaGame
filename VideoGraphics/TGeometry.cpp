@@ -1,4 +1,16 @@
 #include "TGeometry.h"
+#include <TString.h>
+
+/**
+ * Method: TGeometry::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TGeometry::GetType()
+{
+	return TString(L"TGeometry;") + TObject::GetType();
+}
 
 /**
  * Method: TGeometry::TGeometry

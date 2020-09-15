@@ -17,6 +17,14 @@ class _VIDEO_GRAPHICS TColor : public TObject
 public:
 
 	/**
+	 * Method: TColor::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/**
 	 * Method: TColor::TColor
 	 * Purpose: Default constructor
 	 * Parameters: void

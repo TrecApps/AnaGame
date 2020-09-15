@@ -1,5 +1,17 @@
 #include "TShaderParser.h"
 
+
+/**
+ * Method: TShaderParser::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TShaderParser::GetType()
+{
+	return TString(L"TShaderParser;") + Parser_::GetType();
+}
+
 /**
  * Method: ShaderParser::TShaderParser
  * Purpose: Constructor

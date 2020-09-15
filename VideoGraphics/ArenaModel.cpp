@@ -15,6 +15,18 @@
 
 using namespace DirectX;
 
+
+/**
+ * Method: ArenaModel::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString ArenaModel::GetType()
+{
+	return TString(L"ArenaModel;") + TObject::GetType();
+}
+
 /*
 * Method: (ArenaModel) (Constructor)
 * Purpose: Sets up the Model with the resources of an engine

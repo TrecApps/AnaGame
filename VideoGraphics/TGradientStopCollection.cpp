@@ -1,5 +1,16 @@
 #include "TGradientStopCollection.h"
+#include <TString.h>
 
+/**
+ * Method: TGradientStopCollection::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TGradientStopCollection::GetType()
+{
+	return TString(L"TGradientStopCollection;") + TObject::GetType();
+}
 
 /**
  * Method: TGradientStopCollection::TGradientStopCollection

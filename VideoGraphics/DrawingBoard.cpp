@@ -3,6 +3,17 @@
 
 
 /**
+ * Method: DrawingBoard::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString DrawingBoard::GetType()
+{
+	return TString(L"DrawingBoard;") + TObject::GetType();
+}
+
+/**
  * Method: DrawingBoard::DrawingBoard
  * Purpose: Constructor that sets the mode to 2D
  * Parameters: TrecComPointer<ID2D1Factory1> fact - the Direct2D Factory associated with the intance

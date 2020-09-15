@@ -13,6 +13,14 @@ class _VIDEO_GRAPHICS TBitmapBrush : public TBrush
 public:
 
 	/**
+	 * Method: TBitmapBrush::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/**
 	 * Method: TBitmapBrush::NextFrame
 	 * Purpose: In a multiframe image, sets the brush to draw the next frame in a sequence
 	 * Parameters:void

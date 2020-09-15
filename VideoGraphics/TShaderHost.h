@@ -97,6 +97,15 @@ class _VIDEO_GRAPHICS TShaderHost :	public TObject
 	friend class TArenaEngine;
 	friend class ArenaModel;
 public:
+
+	/**
+	 * Method: TShaderHost::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TShaderHost::TShaderHost
 	 * Purpose: Constructor
