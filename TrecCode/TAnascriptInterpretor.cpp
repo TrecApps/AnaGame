@@ -208,8 +208,54 @@ ReportObject TAnascriptInterpretor::Run()
         }
         else if (!Keyword.Find(L"print "))
         {
+            if (!environment.Get())
+                continue;
             // Print some message to the command line
+            TString exp(code.SubString(code.GetLower().Find(L"print ") + 6));
 
+            ProcessExpression(exp, line, ret);
+
+            if (ret.returnCode)
+                return ret;
+
+            auto value = ret.errorObject;
+
+            if (!value.Get())
+            {
+                TString null(L"null");
+                environment->Print(null);
+            }
+            else
+            {
+                TString printable(value->GetString());
+                environment->Print(printable);
+            }
+
+        }
+        else if (!Keyword.Find(L"print_line "))
+        {
+            if (!environment.Get())
+                continue;
+            // Print some message to the command-line, then move console to the next line
+            TString exp(code.SubString(code.GetLower().Find(L"print ") + 6));
+
+            ProcessExpression(exp, line, ret);
+
+            if (ret.returnCode)
+                return ret;
+
+            auto value = ret.errorObject;
+
+            if (!value.Get())
+            {
+                TString null(L"null");
+                environment->Print(null);
+            }
+            else
+            {
+                TString printable(value->GetString());
+                environment->Print(printable);
+            }
         }
         else if (!Keyword.Find(L"in "))
         {

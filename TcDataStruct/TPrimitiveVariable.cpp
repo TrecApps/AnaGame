@@ -367,12 +367,46 @@ var_type TPrimitiveVariable::GetVarType()
  * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
  * Parameters: void
  * Returns: TString - The TString referered by the variable (empty if not a string)
- *
- * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
  */
 TString TPrimitiveVariable::GetString()
 {
-    return TString();
+    TString ret;
+    if (type & TPrimitiveVariable::type_bool)
+    {
+        if (value)
+            ret.Set("true");
+        else
+            ret.Set("false");
+    }
+    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_one)
+    {
+        char v = static_cast<char>(value);
+        ret.Format(L"%c", v);
+    }
+    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_two)
+    {
+        WCHAR v[2] = { static_cast<WCHAR>(value), L'\0' };
+        ret.Format(L"%ls", v);
+    }
+    else if (type & TPrimitiveVariable::type_float)
+    {
+        double d;
+
+        memcpy_s(&d, sizeof(d), &value, sizeof(value));
+
+        ret.Format(L"%f");
+    }
+    else if (type & TPrimitiveVariable::type_unsigned)
+    {
+        ret.Format(L"%llu", value);
+    }
+    else
+    {
+        LONG64 l = static_cast<LONG64>(value);
+
+        ret.Format(L"lld", l);
+    }
+    return ret;
 }
 
 /**
