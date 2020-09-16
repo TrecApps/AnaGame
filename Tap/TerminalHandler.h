@@ -51,16 +51,21 @@ public:
 	 */
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message)override;
 
-private:
+
 	/**
-	 * List of Terminals held 
+	 * Method: TerminalHandler::GetTerminal
+	 * Purpose: Returns the Current Prompt held by the handler
+	 * Parameters: void
+	 * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
 	 */
-	TMap<TControl> terminals;
+	TrecSubPointer<TControl, TPromptControl> GetTerminal();
+
+private:
 	
 	/**
 	 * The current Command Prompt to fucus on
 	 */
-	TrecPointer<TControl> currentTerminal;
+	TrecSubPointer<TControl, TPromptControl> currentTerminal;
 
 	/**
 	 * Method: TerminalHandler::ShouldProcessMessageByType

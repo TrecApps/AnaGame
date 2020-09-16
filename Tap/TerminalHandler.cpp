@@ -1,5 +1,5 @@
 #include "TerminalHandler.h"
-
+#include "Page.h"
 /**
  * Method: TerminalHandler::TerminalHandler
  * Purpose: Constructor
@@ -28,6 +28,13 @@ TerminalHandler::~TerminalHandler()
  */
 void TerminalHandler::Initialize(TrecPointer<Page> page)
 {
+	if (!page.Get())
+		return;
+
+	auto root = page->GetRootControl();
+
+	if (root.Get())
+		currentTerminal = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TPromptControl>(root);
 }
 
 /**
@@ -48,6 +55,17 @@ void TerminalHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
  */
 void TerminalHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
+}
+
+/**
+ * Method: TerminalHandler::GetTerminal
+ * Purpose: Returns the Current Prompt held by the handler
+ * Parameters: void
+ * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
+ */
+TrecSubPointer<TControl, TPromptControl> TerminalHandler::GetTerminal()
+{
+	return currentTerminal;
 }
 
 /**

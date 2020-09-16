@@ -188,6 +188,18 @@ void TEnvironment::SetPrompt(TrecSubPointer<TControl, TPromptControl> prompt)
 	shellRunner = prompt;
 }
 
+
+/**
+ * Method: TEnvironment::GetPrompt
+ * Purpose: Returns the Current Prompt being used by the Environment
+ * Parameters: void
+ * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
+ */
+TrecSubPointer<TControl, TPromptControl> TEnvironment::GetPrompt()
+{
+	return shellRunner;
+}
+
 /**
  * Method: TEnvironment::Print
  * Purpose: Allows external code to manually add something to print out

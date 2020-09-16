@@ -1,4 +1,5 @@
 #include "SourceCodeApp2.h"
+#include <IDEPage.h>
 
 SourceCodeApp2::SourceCodeApp2(TrecSubPointer<TWindow, TIdeWindow> win): MiniApp(win)
 {
@@ -29,6 +30,26 @@ UINT SourceCodeApp2::Initialize(TrecPointer<TFileShell> file)
 	win->AddPage(anagame_page::anagame_page_command_prompt, ide_page_type::ide_page_type_deep_console, TString(L"Debug"));
 
 	win->AddPage(anagame_page::anagame_page_file_node, ide_page_type::ide_page_type_upper_right, TString(L"Files"));
+
+	auto env = win->GetEnvironment();
+	if (env.Get())
+	{
+		if (!env->GetPrompt().Get())
+		{
+			auto promptPage = 
+				win->AddNewPage(
+					anagame_page::anagame_page_console,
+					ide_page_type::ide_page_type_deep_console,
+					TString(L"Program Output"),
+					TString(),
+					TrecPointerKey::GetTrecPointerFromSub<EventHandler, TCodeHandler>(codeHandler)
+				);
+
+			auto promptHandler = TrecPointerKey::GetTrecSubPointerFromTrec<EventHandler, TerminalHandler>(promptPage->GetHandler());
+
+			env->SetPrompt(promptHandler->GetTerminal());
+		}
+	}
 
 	codeHandler->SetMiniApp(TrecPointerKey::GetTrecPointerFromSoft<MiniApp>(self));
 

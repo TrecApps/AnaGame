@@ -27,6 +27,7 @@ typedef enum class anagame_page
 	anagame_page_custom,          // a Custom page, the TML file is expected to be provided
 	anagame_page_file_node,       // Presents a Page that holds a File node control
 	anagame_page_command_prompt,  // Presents a page that holds a Command Prompt
+	anagame_page_console,         // Presents a Page that holds a Console that Programs can write to
 	anagame_page_code_explorer,   // Presents a page that holds a node control that focuses on code elements
 	anagame_page_object_explorer, // Presents a Page intended to present the properties of a given object
 	anagame_page_code_file,       // Presents a Page that holds a Text Edit control intended to hold a code file
