@@ -26,6 +26,18 @@ void runLoop()
 	otherRun = true;
 }
 
+
+/**
+ * Method: TRadioButton::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TRadioButton::GetType()
+{
+	return TString(L"TRadioButton;") + TGadgetControl::GetType();
+}
+
 /*
 * Method: TRadioButton::TRadioButton
 * Purpose: Cunstructor

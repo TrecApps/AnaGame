@@ -1,5 +1,17 @@
 #include "TScrollerControl.h"
 
+
+/**
+ * Method: TScrollerControl::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TScrollerControl::GetType()
+{
+	return TString(L"TScrollerControl;") + TControl::GetType();
+}
+
 /**
  * Method: TScrollerControl::TScrollerControl
  * Purpose: Constructor

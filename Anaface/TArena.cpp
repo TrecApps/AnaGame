@@ -4,6 +4,18 @@
 #include <DirectXMath.h>
 #include <DirectXColors.h>
 
+
+/**
+ * Method: TArena::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TArena::GetType()
+{
+	return TString(L"TArena;TControl;") + TCamera::GetType();
+}
+
 /*
 * Method: TArena::TArena 
 * Purpose: Constructor

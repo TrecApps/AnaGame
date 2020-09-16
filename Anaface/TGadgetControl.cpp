@@ -1,6 +1,18 @@
 
 #include "TGadgetControl.h"
 
+
+/**
+ * Method: TGadgetControl::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TGadgetControl::GetType()
+{
+	return TString(L"TGadgetControl;") + TControl::GetType();
+}
+
 /*
 * Method: TGadgetControl::TGadgetControl 
 * Purpose: Constructor

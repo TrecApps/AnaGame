@@ -3,6 +3,17 @@
 
 
 /**
+ * Method: TDataBind::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TDataBind::GetType()
+{
+	return TString(L"TDataBind;") + TControl::GetType();
+}
+
+/**
  * Method: TDataBind::TDataBind
  * Purpose: Constructor
  * Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on

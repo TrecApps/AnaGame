@@ -141,6 +141,16 @@ void TFlyout::SetSelf(TrecPointer<TFlyout> self)
         control->setParent(holder);
 }
 
+/**
+ * Method: TFlyoutParentHolder::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TFlyoutParentHolder::GetType()
+{
+	return TString(L"TFlyoutParentHolder;") + TParentHolder::GetType();
+}
 
 /**
  * Method: TFlyoutParentHolder::TFlyoutParentHolder

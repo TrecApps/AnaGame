@@ -2,6 +2,17 @@
 #include "TLayoutEx.h"
 
 
+/**
+ * Method: TLayoutEx::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TLayoutEx::GetType()
+{
+	return TString(L"TLayoutEx;") + TLayout::GetType();
+}
+
 /*
  * Method: TLayoutEx::TLayoutEx
  * Purpose: Constructor

@@ -1,6 +1,16 @@
 #include "TSpriteControl.h"
 
 
+/**
+ * Method: TSpriteControl::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TSpriteControl::GetType()
+{
+	return TString(L"TSpriteControl;") + TControl::GetType();
+}
 
 /**
  * Method: TSpriteControl::TSpriteControl

@@ -6,6 +6,17 @@
 TString colorAnimationString(L"Simple-Color");
 
 /**
+ * Method: ColorAnimation::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString ColorAnimation::GetType()
+{
+	return TString(L"ColorAnimation;") + Animation::GetType();
+}
+
+/**
  * Method: ColorAnimation::Animation (Constructor)
  * Purpose: Creates the ColorAnimation with the specified animation-phase setting
  * Parameters: animation_phase ap - the animation_phase this Animation is set to

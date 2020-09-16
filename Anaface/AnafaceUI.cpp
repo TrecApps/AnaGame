@@ -1,6 +1,18 @@
 
 #include "AnafaceUI.h"
 
+
+/**
+ * Method: AnafaceUI::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString AnafaceUI::GetType()
+{
+	return TString(L"AnafaceUI;") + TControl::GetType();
+}
+
 /*
 * Method: AnaFaceUI::AnafaceUI
 * Purpose: Constructor

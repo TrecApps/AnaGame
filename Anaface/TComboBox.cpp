@@ -324,6 +324,17 @@ void TComboBox::UpdateCaption(TString& str, UINT index)
 	args.text = str;
 }
 
+/**
+ * Method: TComboBoxExtension::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TComboBoxExtension::GetType()
+{
+	return TString(L"TComboBoxExtension;") + TControl::GetType();
+}
+
 TComboBoxExtension::TComboBoxExtension(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta, TrecSubPointer<TControl, TComboBox> combo): TControl(rt, ta)
 {
 	this->combo = combo;

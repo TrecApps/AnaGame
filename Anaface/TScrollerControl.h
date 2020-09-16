@@ -10,6 +10,14 @@ class _ANAFACE_DLL TScrollerControl : public TControl
 public:
 
 	/**
+	 * Method: TScrollerControl::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/**
 	 * Method: TScrollerControl::TScrollerControl
 	 * Purpose: Constructor
 	 * Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on

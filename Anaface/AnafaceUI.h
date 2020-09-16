@@ -38,6 +38,14 @@ class _ANAFACE_DLL AnafaceUI : public TControl
 {
 public:
 
+	/**
+	 * Method: AnafaceUI::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: AnaFaceUI::AnafaceUI
 	* Purpose: Constructor

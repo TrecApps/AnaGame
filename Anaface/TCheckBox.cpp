@@ -1,6 +1,18 @@
 
 #include "TCheckBox.h"
 
+
+/**
+ * Method: TCheckBox::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TCheckBox::GetType()
+{
+	return TString(L"TCheckBox;") + TGadgetControl::GetType();
+}
+
 /*
 * Method: TCheckBox::TCheckBox 
 * Purpose: Constructor

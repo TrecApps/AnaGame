@@ -13,6 +13,18 @@
 * Returns:
 */
 
+
+/**
+ * Method: TControl::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TControl::GetType()
+{
+	return TString(L"TControl;") + TObject::GetType();
+}
+
 /*
 * Method: TControl::TControl
 * Purpose: Constructor
@@ -4259,6 +4271,17 @@ EventArgs TControl::getEventArgs()
 	return args;
 }
 
+/**
+ * Method: TBorder::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TBorder::GetType()
+{
+	return TString(L"TBorder;") + TObject::GetType();
+}
+
 /*
 * Method:  TBorder::TBorder
 * Purpose: Constructor
@@ -4731,6 +4754,17 @@ int TBorder::storeInTML(TFile * ar, int childLevel,messageState ms)
 	ar->WriteString(val);
 	ar->WriteString(L"\n");
 	return 0;
+}
+
+/**
+ * Method: TText::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TText::GetType()
+{
+	return TString(L"TText;") + TObject::GetType();
 }
 
 /*
@@ -5469,6 +5503,17 @@ int TText::storeInTML(TFile * ar, int childLevel,messageState ms)
 
 
 	return 0;
+}
+
+/**
+ * Method: TContent::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TContent::GetType()
+{
+	return TString(L"TContent;") + TObject::GetType();
 }
 
 /*
@@ -6701,6 +6746,17 @@ EventID_Cred::EventID_Cred(TrecPointer<TFlyout> fly)
 	if (!fly.Get())
 		throw L"Error! Needed initialized Flyout!";
 	flyout = fly;
+}
+
+/**
+ * Method: TControlParentHolder::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TControlParentHolder::GetType()
+{
+	return TString(L"TControlParentHolder;") + TParentHolder::GetType();
 }
 
 /**

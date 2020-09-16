@@ -8,11 +8,21 @@
 class _ANAFACE_DLL TLayoutEx :	public TLayout
 {
 public:
+
+	/**
+	 * Method: TLayoutEx::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+
 	/*
 	 * Method: TLayoutEx::TLayoutEx
 	 * Purpose: Constructor
 	 * Parameters: TrecPointer<DrawingBoard> rt -  the Render target to draw to (TControl handles it)
-	*				TrecPointer<TArray<styleTable>> ta - the Class Style list (TControl handles this)
+	 *				TrecPointer<TArray<styleTable>> ta - the Class Style list (TControl handles this)
 	 * Returns: New TLayoutEx Object
 	 */
 	TLayoutEx(TrecPointer<DrawingBoard>, TrecPointer<TArray<styleTable>> ta);

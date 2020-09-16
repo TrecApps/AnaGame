@@ -15,6 +15,16 @@
 bool isLayout(TrecPointer<TControl> cont);
 
 
+/**
+ * Method: AnafaceParser::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString AnafaceParser::GetType()
+{
+	return TString(L"AnafaceParser;") + Parser_::GetType();
+}
 
 /*
 * Method: AnafaceParser::AnafaceParser

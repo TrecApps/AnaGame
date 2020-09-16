@@ -3,6 +3,17 @@
 
 
 /**
+ * Method: TSpreadSheet::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TSpreadSheet::GetType()
+{
+	return TString(L"TSpreadSheet;") + TLayoutEx::GetType();
+}
+
+/**
  * Method: TSpreadSheet::TSpreadSheet
  * Purpose: Constructor
  * Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on

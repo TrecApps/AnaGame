@@ -364,6 +364,15 @@ class _ANAFACE_DLL TTextField :	public TGadgetControl
 {
 	friend class AnafaceParser;
 public:
+
+	/**
+	 * Method: TTextField::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TTextField::TTextField
 	* Purpose: Constructor

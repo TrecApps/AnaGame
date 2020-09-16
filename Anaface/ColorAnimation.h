@@ -10,6 +10,15 @@
 class ColorAnimation : public Animation
 {
 public:
+
+	/**
+	 * Method: ColorAnimation::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: ColorAnimation::ColorAnimation
 	 * Purpose: Constructor

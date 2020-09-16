@@ -9,6 +9,15 @@
 class GifAnimation : public Animation
 {
 public:
+
+	/**
+	 * Method: GifAnimation::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: GifAnimation::Animation
 	 * Purpose: Creates the Gif Animation with the specified animation-phase setting

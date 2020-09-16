@@ -3,6 +3,18 @@
 
 TString transitionAnimationString(L"Simple-Transition");
 
+
+/**
+ * Method: TransitionAnimation::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TransitionAnimation::GetType()
+{
+	return TString(L"TransitionAnimation;") + Animation::GetType();
+}
+
 /**
  * Method: TransitionAnimation::Animation (Constructor)
  * Purpose: Creates the TransitionAnimation with the specified animation-phase setting

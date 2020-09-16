@@ -2,6 +2,18 @@
 
 extern TDataArray<TTextField*> TextList;
 
+
+/**
+ * Method: TPromptControl::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TPromptControl::GetType()
+{
+	return TString(L"TPromptControl;") + TTextField::GetType();
+}
+
 /*
  * Method: TPromptControl::TPromptControl
  * Purpose: Constructor

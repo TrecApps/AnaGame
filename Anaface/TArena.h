@@ -17,6 +17,15 @@
 class _ANAFACE_DLL TArena : public TControl, public TCamera
 {
 public:
+
+	/**
+	 * Method: TArena::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TArena::TArena
 	* Purpose: Constructor

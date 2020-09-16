@@ -3,6 +3,17 @@
 #include <d2d1.h>
 
 /**
+ * Method: TTreeDataBind::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TTreeDataBind::GetType()
+{
+	return TString(L"TTreeDataBind;") + TControl::GetType();
+}
+
+/**
  * Method: TTreeDataBind::TTreeDataBind
  * Purpose: Constructor
  * Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on

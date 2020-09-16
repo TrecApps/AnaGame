@@ -214,6 +214,14 @@ class _ANAFACE_DLL TBorder : public TControlComponent
 	friend class TBorder;
 public:
 
+	/**
+	 * Method: TBorder::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType() override;
+
 	/*
 	* Method:  TBorder::TBorder
 	* Purpose: Constructor
@@ -454,6 +462,15 @@ class _ANAFACE_DLL TText :public TControlComponent
 	friend class TContextMenu;
 	friend class TTabBar;
 public:
+
+
+	/**
+	 * Method: TText::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/*
 	* Method: TText::TText
@@ -800,13 +817,26 @@ private:
 
 };
 
-
+/**
+ * Class: TContent
+ * Purpose: Supplies the content of the Control, whether a color or a picture
+ */
 class _ANAFACE_DLL TContent :public TControlComponent
 {
 	friend class TControl;
 	friend class TGadgetControl;
 	friend class TTabBar;
 public:
+
+
+	/**
+	 * Method: TContent::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TContent::TContent
 	* Purpose: Constructor
@@ -998,6 +1028,15 @@ private:
 class _ANAFACE_DLL TControlParentHolder: public TParentHolder
 {
 public:
+
+	/**
+	 * Method: TControlParentHolder::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TControlParentHolder::TControlParentHolder
 	 * Purpose: Constructor
@@ -1061,6 +1100,14 @@ class _ANAFACE_DLL TControl : public TObject
 	friend class TTreeDataBind;
 	friend class TControlParentHolder;
 public:
+
+	/**
+	 * Method: TControl::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TControl::TControl

@@ -9,6 +9,15 @@ class _ANAFACE_DLL TDataBind : public TControl
 {
 public:
 
+
+	/**
+	 * Method: TDataBind::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TDataBind::TDataBind
 	 * Purpose: Constructor

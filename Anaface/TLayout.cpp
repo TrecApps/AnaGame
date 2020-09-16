@@ -1344,6 +1344,17 @@ containerControl::containerControl()
 }
 
 /**
+ * Method: containerControl::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString containerControl::GetType()
+{
+	return TString(L"containerControl;") + TObject::GetType();
+}
+
+/**
  * Method: TLayoutParentHolder::TLayoutParentHolder
  * Purpose: Constructor
  * Parameters: TrecSubPointer<TControl, TLayout> parent -  the TControl to serve as a Parent to TControls

@@ -12,6 +12,18 @@ static TDataArray<TTextField*> TextList;
  * Returns:
  */
 
+
+ /**
+  * Method: TTextField::GetType
+  * Purpose: Returns a String Representation of the object type
+  * Parameters: void
+  * Returns: TString - representation of the object type
+  */
+TString TTextField::GetType()
+{
+	return TString(L"TTextField;") + TGadgetControl::GetType();
+}
+
 /*
 * Method: TTextField::TTextField
 * Purpose: Constructor

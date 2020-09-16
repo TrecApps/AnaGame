@@ -11,6 +11,15 @@ class TransitionAnimation :
 	public Animation
 {
 public:
+
+	/**
+	 * Method: TransitionAnimation::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TransitionAnimation::Animation (Constructor)
 	 * Purpose: Creates the TransitionAnimation with the specified animation-phase setting

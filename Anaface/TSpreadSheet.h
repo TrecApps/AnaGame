@@ -20,6 +20,13 @@ class _ANAFACE_DLL TSpreadSheet :
 {
 public:
 
+	/**
+	 * Method: TSpreadSheet::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TSpreadSheet::TSpreadSheet
