@@ -33,6 +33,17 @@ NameDialog::~NameDialog()
 }
 
 /**
+ * Method: NameDialog::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString NameDialog::GetType()
+{
+	return TString(L"NameDialog;") + TDialog::GetType();
+}
+
+/**
  * Method: NameDialog::CompileView
  * Purpose: Performs initialization of the dialog's contents
  * Parameters: TrecComPointer<ID2D1Factory1> fact -  the resource needed to create drawing boards

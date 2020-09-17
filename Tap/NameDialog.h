@@ -31,6 +31,15 @@ public:
 	 */
 	~NameDialog();
 
+
+	/**
+	 * Method: NameDialog::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: NameDialog::CompileView
 	 * Purpose: Performs initialization of the dialog's contents

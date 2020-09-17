@@ -38,6 +38,17 @@ TIdeWindow::~TIdeWindow()
 }
 
 /**
+ * Method: TIdeWindow::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TIdeWindow::GetType()
+{
+	return TString(L"TIdeWindow;") + TWindow::GetType();
+}
+
+/**
  * Method: TIdeWindow::PrepareWindow
  * Purpose: Prepares the Window while also managing the links between the IDE-Pages
  * Parameters: void

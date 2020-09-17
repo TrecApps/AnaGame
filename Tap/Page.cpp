@@ -167,6 +167,17 @@ Page::~Page()
 	}
 }
 
+/**
+ * Method: Page::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString Page::GetType()
+{
+	return TString(L"Page;") + TObject::GetType();
+}
+
 
 /**
  * Method: static Page::GetWindowPage
@@ -1051,9 +1062,21 @@ void Page::SetArea(const D2D1_RECT_F& loc)
  * Parameters: TrecPointerSoft<class Page> page -  the Page to serve as the Parent
  * Returns: New Page Holder Object
  */
+
 TPageParentHolder::TPageParentHolder(TrecPointerSoft<class Page> page)
 {
 	parent = page;
+}
+
+/**
+ * Method: TPageParentHolder::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TPageParentHolder::GetType()
+{
+	return TString(L"TPageParentHolder;") + TParentHolder::GetType();
 }
 
 /**

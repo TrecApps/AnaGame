@@ -43,6 +43,17 @@ TInstance::TInstance(TString& name, TString& winClass, UINT style, HWND parent, 
 	dialogAtom = 0;
 }
 
+/**
+ * Method: TInstance::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TInstance::GetType()
+{
+	return TString(L"TInstance;") + TObject::GetType();
+}
+
 TInstance::~TInstance()
 {
 	mainWindow.Delete();

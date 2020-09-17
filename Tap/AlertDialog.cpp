@@ -32,6 +32,17 @@ AlertDialog::~AlertDialog()
 }
 
 /**
+ * Method: AlertDialog::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString AlertDialog::GetType()
+{
+	return TString(L"AlertDialog;") + TDialog::GetType();
+}
+
+/**
  * Method: AlertDialog::CompileView
  * Purpose: Performs initialization of the dialog's contents
  * Parameters: TrecComPointer<ID2D1Factory1> fact -  the resource needed to create drawing boards

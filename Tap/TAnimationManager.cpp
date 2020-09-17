@@ -24,6 +24,17 @@ TAnimationManager::~TAnimationManager()
 }
 
 /**
+ * Method: TAnimationManager::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TAnimationManager::GetType()
+{
+	return TString(L"TAnimationManager;") + TObject::GetType();
+}
+
+/**
  * Method: TAnimationManager::SetWindow
  * Purpose: Sets the Window associated with this Animation Manager
  * Parameters: TrecPointer<TWindow> win -  the Window that created this manager

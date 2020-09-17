@@ -33,6 +33,17 @@ TString HandlerMessage::GetHandlerName()
 }
 
 /**
+ * Method: HandlerMessage::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString HandlerMessage::GetType()
+{
+	return TString(L"HandlerMessage;") + TObject::GetType();
+}
+
+/**
  * Method: HandlerMessage::GetMessage_
  * Purpose: Retrieves the message of the Obejct
  * Parameters: void

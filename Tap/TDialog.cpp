@@ -42,6 +42,17 @@ TDialog::~TDialog()
 }
 
 /**
+ * Method: TDialog::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TDialog::GetType()
+{
+	return TString(L"TDialog;") + TWindow::GetType();
+}
+
+/**
  * Method: TDialog::PrepareWindow
  * Purpose: Sets up the Dialog Window, restricting the Parent Window as called for
  * Parameters: void

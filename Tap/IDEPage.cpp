@@ -24,6 +24,17 @@ IDEPage::IDEPage(ide_page_type type, UINT barSpace, TrecPointer<DrawingBoard> bo
 
 }
 
+/**
+ * Method: IDEPage::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString IDEPage::GetType()
+{
+	return TString(L"IDEPage;") + Page::GetType();
+}
+
 IDEPage::~IDEPage()
 {
 	for (UINT Rust = 0; Rust < pages.Size(); Rust++)

@@ -12,6 +12,17 @@ FileDialog::~FileDialog()
 {
 }
 
+/**
+ * Method: FileDialog::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString FileDialog::GetType()
+{
+	return TString(L"FileDialog;") + TDialog::GetType();
+}
+
 int FileDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 {
 	TString file = GetDirectoryWithSlash(CentralDirectories::cd_Executable);

@@ -60,7 +60,7 @@ public:
 
 	/**
 	 * Method: TInstance::TInstance
-	 * Purpose:
+	 * Purpose: Constructor
 	 * Parameters: TString& name - the name of the main window
 	 *				TString& winClass - the class name of the Window (used by Windows)
 	 *				UINT style - the desired style of the Window
@@ -72,6 +72,21 @@ public:
 	 */
 	TInstance(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, HINSTANCE ins, WNDPROC wp);
 
+
+	/**
+	 * Method: TInstance::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/**
+	 * Method: TInstance::~TInstance
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
 	~TInstance();
 
 	/**

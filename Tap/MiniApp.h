@@ -21,6 +21,15 @@ public:
 	 */
 	MiniApp(TrecSubPointer<TWindow, TIdeWindow> win);
 
+
+	/**
+	 * Method: MiniApp::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: MiniApp::DispatchAnagameMessage
 	 * Purpose: Enables Handlers to dispatch a Message through the App instead of the TInstance

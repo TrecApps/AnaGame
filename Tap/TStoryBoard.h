@@ -64,6 +64,15 @@ public:
 	 */
 	~TStoryBoard();
 
+
+	/**
+	 * Method: TStoryBoard::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TStoryBoard::AddAnimation
 	 * Purpose: Adds an Animation to the Story Board

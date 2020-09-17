@@ -31,6 +31,14 @@ class TPageParentHolder: public TParentHolder
 public:
 
 	/**
+	 * Method: TPageParentHolder::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/**
 	 * Method: TPageParentHolder::TPageParentHolder
 	 * Purpose: Constructor
 	 * Parameters: TrecPointerSoft<class Page> page -  the Page to serve as the Parent
@@ -72,6 +80,15 @@ public:
 	 * Returns: void
 	 */
 	virtual ~Page();
+
+
+	/**
+	 * Method: Page::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType() override;
 
 
 	/**

@@ -52,6 +52,9 @@ public:
 	virtual ~IDEPageHolder();
 
 
+
+
+
 	/**
 	 * Method: IDEPageHolder::GetBasePage
 	 * Purpose: Retrieves the Base Reference to the Page it is holding
@@ -165,6 +168,15 @@ protected:
 	 */
 	IDEPage(ide_page_type type, UINT barSpace, TrecPointer<DrawingBoard> board);
 
+
+
+	/**
+	 * Method: IDEPage::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType() override;
 
 	/**
 	 * Method: IDEPage::~IDEPage

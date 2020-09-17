@@ -11,6 +11,17 @@ MiniApp::MiniApp(TrecSubPointer<TWindow, TIdeWindow> win)
 	}
 }
 
+/**
+ * Method: MiniApp::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString MiniApp::GetType()
+{
+	return TString(L"MiniApp;") + TObject::GetType();
+}
+
 bool MiniApp::ShouldDestroy()
 {
 	return mainPage.Get() == nullptr;

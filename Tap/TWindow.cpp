@@ -67,6 +67,17 @@ TWindow::~TWindow()
 }
 
 /**
+ * Method: TWindow::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TWindow::GetType()
+{
+	return TString(L"TWindow;") + Drawer::GetType();
+}
+
+/**
  * Method: TWindow::PrepareWindow
  * Purpose: Sets the Window up for viewing
  * Parameters: void

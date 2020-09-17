@@ -27,6 +27,7 @@ public:
 	~TerminalHandler();
 
 
+
 	/**
 	 * Method: TerminalHandler::Initialize
 	 * Purpose: Initializes the Handler so that it has direct Access to certain Controls held by the page

@@ -63,6 +63,17 @@ TStoryBoard::~TStoryBoard()
 }
 
 /**
+ * Method: TStoryBoard::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TStoryBoard::GetType()
+{
+	return TString(L"TStoryBoard;") + TObject::GetType();
+}
+
+/**
  * Method: TStoryBoard::AddAnimation
  * Purpose: Adds an Animation to the Story Board
  * Parameters: TrecPointer<Animation> a -  the Animation to add
