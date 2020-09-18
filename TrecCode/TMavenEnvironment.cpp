@@ -8,6 +8,11 @@ TMavenEnvironment::~TMavenEnvironment()
 {
 }
 
+TString TMavenEnvironment::GetType()
+{
+	return TString(L"TMavenEnvironment;") + TEnvironment::GetType();
+}
+
 UINT TMavenEnvironment::SetUpEnv()
 {
 	return 0;

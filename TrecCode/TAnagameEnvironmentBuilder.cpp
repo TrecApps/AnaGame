@@ -12,6 +12,11 @@ TAnagameEnvironmentBuilder::~TAnagameEnvironmentBuilder()
 {
 }
 
+TString TAnagameEnvironmentBuilder::GetType()
+{
+	return TString(L"TAnagameEnvironmentBuilder;") + TEnvironmentBuilder::GetType();
+}
+
 TrecPointer<TEnvironment> TAnagameEnvironmentBuilder::GetEnvironment(const TString& envType, TrecPointer<TFileShell> dir)
 {
 	if (!dir.Get() || !dir->IsDirectory())

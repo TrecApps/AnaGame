@@ -23,6 +23,16 @@ TEnvironmentBuilder::~TEnvironmentBuilder()
 {
 }
 
+/**
+ * Method: TEnvironmentBuilder::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TEnvironmentBuilder::GetType()
+{
+    return TString(L"TEnvironmentBuilder;") + TObject::GetType();
+}
 
 /**
  * Method: TEnvironmentBuilder::SubmitBuilder

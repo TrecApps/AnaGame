@@ -72,7 +72,6 @@ typedef enum class report_mode
 }report_mode;
 
 /**
- * Class ReportObject
  * Class: ReportObject
  * Purpose: allows the Interpretors to report the results of a run 
  */

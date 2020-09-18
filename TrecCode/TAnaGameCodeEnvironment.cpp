@@ -7,6 +7,11 @@ TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell):
 {
 }
 
+TString TAnaGameCodeEnvironment::GetType()
+{
+	return TString(L"TAnaGameCodeEnvironment;") + TEnvironment::GetType();
+}
+
 void TAnaGameCodeEnvironment::PreProcessSingleFile(TrecPointer<TFile> file)
 {
 	//if (!file.Get() || !file->IsOpen())

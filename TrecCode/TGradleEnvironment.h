@@ -6,6 +6,8 @@ class TGradleEnvironment :
 public:
 	TGradleEnvironment(TrecPointer<TFileShell> shell);
 
+	virtual TString GetType()override;
+
 	~TGradleEnvironment();
 
 	virtual UINT SetUpEnv()override;

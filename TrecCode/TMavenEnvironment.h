@@ -7,6 +7,8 @@ public:
 	TMavenEnvironment(TrecPointer<TFileShell> shell);
 	~TMavenEnvironment();
 
+	virtual TString GetType()override;
+
 	virtual UINT SetUpEnv();
 
 	virtual void Compile()override;

@@ -4,6 +4,11 @@ TGradleEnvironment::TGradleEnvironment(TrecPointer<TFileShell> shell):TEnvironme
 {
 }
 
+TString TGradleEnvironment::GetType()
+{
+	return TString(L"TGradleEnvironment;") + TEnvironment::GetType();
+}
+
 TGradleEnvironment::~TGradleEnvironment()
 {
 }

@@ -28,6 +28,15 @@ public:
 
 
 	/**
+	 * Method: TAnagameEnvironmentBuilder::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+
+	/**
 	 * Method: TAnagameEnvironmentBuilder::GetEnvironment
 	 * Purpose: Retrieves an environment based off of the key provided
 	 * Parameters: const TString& envType - the type of environment to collect
