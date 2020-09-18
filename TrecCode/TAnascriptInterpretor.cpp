@@ -208,6 +208,7 @@ ReportObject TAnascriptInterpretor::Run()
         }
         else if (!Keyword.Find(L"print "))
         {
+            continue;
             if (!environment.Get())
                 continue;
             // Print some message to the command line
@@ -237,7 +238,7 @@ ReportObject TAnascriptInterpretor::Run()
             if (!environment.Get())
                 continue;
             // Print some message to the command-line, then move console to the next line
-            TString exp(code.SubString(code.GetLower().Find(L"print ") + 6));
+            TString exp(code.SubString(code.GetLower().Find(L"print_line ") + 11));
 
             ProcessExpression(exp, line, ret);
 
@@ -249,12 +250,12 @@ ReportObject TAnascriptInterpretor::Run()
             if (!value.Get())
             {
                 TString null(L"null");
-                environment->Print(null);
+                environment->PrintLine(null);
             }
             else
             {
                 TString printable(value->GetString());
-                environment->Print(printable);
+                environment->PrintLine(printable);
             }
         }
         else if (!Keyword.Find(L"in "))
@@ -1268,7 +1269,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
         }
         else if (exp[0] == L'\'' || exp[0] == L'\"')
         {
-            int loc = exp.Find(exp[0], 0, false);
+            int loc = exp.Find(exp[0], 1, false);
 
             if (loc == -1)
             {

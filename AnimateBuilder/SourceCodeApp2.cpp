@@ -42,7 +42,7 @@ UINT SourceCodeApp2::Initialize(TrecPointer<TFileShell> file)
 					ide_page_type::ide_page_type_deep_console,
 					TString(L"Program Output"),
 					TString(),
-					TrecPointerKey::GetTrecPointerFromSub<EventHandler, TCodeHandler>(codeHandler)
+					TrecPointerKey::GetTrecPointerFromSub<EventHandler, TerminalHandler>(commandHandler)
 				);
 
 			auto promptHandler = TrecPointerKey::GetTrecSubPointerFromTrec<EventHandler, TerminalHandler>(promptPage->GetHandler());

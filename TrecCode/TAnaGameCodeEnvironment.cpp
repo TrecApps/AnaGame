@@ -62,7 +62,30 @@ UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 			if (file.IsOpen())
 			{
 				interpretor->SetCode(file);
+
+				file.Close();
+
 				auto result = interpretor->Run();
+
+				if (this->shellRunner.Get())
+				{
+					TString resultStr(L"Program exited with code: ");
+					resultStr.AppendFormat(L"%i\n", result.returnCode);
+
+					if (result.returnCode)
+					{
+						resultStr.Append(result.errorMessage);
+
+						for (UINT Rust = 0; Rust < result.stackTrace.Size(); Rust++)
+						{
+							resultStr.AppendFormat(L"\n\t%ws", result.stackTrace[Rust].GetConstantBuffer());
+						}
+						resultStr.AppendChar(L'\n');
+					}
+
+
+					shellRunner->Print(resultStr);
+				}
 			}
 		}
 	}
@@ -149,7 +172,7 @@ bool TAnaGameCodeEnvironment::PrintLine(TString& input)
 {
 	if (shellRunner.Get())
 	{
-		shellRunner->Print(input);
+		shellRunner->PrintLine(input);
 		return true;
 	}
 	return false;
