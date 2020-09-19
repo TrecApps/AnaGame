@@ -394,7 +394,7 @@ TString TPrimitiveVariable::GetString()
 
         memcpy_s(&d, sizeof(d), &value, sizeof(value));
 
-        ret.Format(L"%f");
+        ret.Format(L"%f", d);
     }
     else if (type & TPrimitiveVariable::type_unsigned)
     {

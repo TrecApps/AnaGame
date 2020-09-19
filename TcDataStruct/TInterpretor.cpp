@@ -244,6 +244,20 @@ UINT TInterpretor::SetCode(TrecPointer<TFile> file, ULONG64 start, ULONG64 end)
 	return 0;
 }
 
+/**
+ * Method: TInterpretor::CloseFile
+ * Purpose: Closes the file so a second run can be possible
+ * Parameters: void
+ * Returns: void
+ *
+ * Note: This should only be called on the top-level interpretor
+ */
+void TInterpretor::CloseFile()
+{
+	if (file.Get() && file->IsOpen())
+		file->Close();
+}
+
 
 /**
  * Method: TInterpretor::ProcessAddition

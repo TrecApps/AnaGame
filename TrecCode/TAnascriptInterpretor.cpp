@@ -148,9 +148,11 @@ ReportObject TAnascriptInterpretor::Run()
     if (!file.Get() || !file->IsOpen())
     {
         ret.returnCode = ReportObject::broken_reference;
-        ret.errorMessage.Set(L"Error! No access to the JavaScript file!");
+        ret.errorMessage.Set(L"Error! No access to the Anascript file!");
         return ret;
     }
+
+    //ULONG64 curFilePosition = file->GetPosition();
 
     file->Seek(start, FILE_BEGIN);
 
@@ -161,6 +163,11 @@ ReportObject TAnascriptInterpretor::Run()
     {
         // Trim unecessary white-space
         code.Trim();
+
+        while (code.EndsWith(L";"))
+        {
+            code.Set(code.SubString(0, code.GetSize() - 1));
+        }
 
         // If no code, proceed to the next line
         if (code.IsEmpty())
@@ -187,7 +194,10 @@ ReportObject TAnascriptInterpretor::Run()
         else if (!Keyword.Find(L"return "))
         {
             // Prepare to return an expression to the Caller
-            ProcessExpression(code, line, ret);
+
+            TString retCode(code.SubString(7));
+
+            ProcessExpression(retCode, line, ret);
             ret.mode = report_mode::report_mode_return;
             return ret;
         }
@@ -208,7 +218,6 @@ ReportObject TAnascriptInterpretor::Run()
         }
         else if (!Keyword.Find(L"print "))
         {
-            continue;
             if (!environment.Get())
                 continue;
             // Print some message to the command line
@@ -292,6 +301,7 @@ ReportObject TAnascriptInterpretor::Run()
         line++;
     }
 
+    //file->Seek(curFilePosition, FILE_BEGIN);
 
 	return ret;
 }
@@ -1174,7 +1184,9 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
 
     TDataArray<TString> operators;
 
-    while (exp.GetSize())
+    UINT curSize;
+
+    while (curSize = exp.GetSize())
     {
         if (exp[0] == L'(')
         {
@@ -1326,6 +1338,15 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
         // Trim so that if we have only whitespace, we can break out of the loop
         exp.Trim();
 
+
+        if (curSize == exp.GetSize())
+        {
+            ro.returnCode = ro.broken_reference;
+            ro.errorMessage.Format(L"Potential Infinite loop caused by expression ((( %ws )))!", exp.GetConstantBuffer());
+
+
+            return;
+        }
     }
 
     if ((operators.Size() + 1) != expresions.Size())
@@ -1511,10 +1532,33 @@ void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Report
         ro.errorMessage.Format(L"Varible type %ws needs to be of type Interpretor so that Anascript can call it!", procedureName.GetConstantBuffer());
         return;
     }
+    UINT end = 0;
+    UINT parethStack = 1;
+    for (end = openPar + 1; end < exp.GetSize(); end++)
+    {
+        WCHAR letter = exp[end];
+        if (letter == L'(')
+            parethStack++;
+        else if (letter == L')')
+        {
+            parethStack--;
+            if (!parethStack)
+                break;
+        }
+    }
 
+    if (end >= exp.GetSize())
+    {
+        ro.returnCode = ReportObject::incomplete_statement;
+        ro.errorMessage.Format(L"Expected %i more ')' in expression!", parethStack);
 
-    TString params(exp.SubString(openPar + 1));
+        return;
+    }
+
+    TString params(exp.SubString(openPar + 1, end));
     ProcessProcedureCall(object, call, params,line, ro);
+
+    exp.Set(exp.SubString(end + 1));
 }
 
 void TAnascriptInterpretor::ProcessProcedureCall(TrecPointer<TVariable> object, TrecPointer<TVariable> call, TString& exp, UINT line, ReportObject& ro)
@@ -1557,9 +1601,10 @@ void TAnascriptInterpretor::ProcessProcedureCall(TrecPointer<TVariable> object, 
 
         parameters.push_back(ro.errorObject);
     }
-
+    ULONG64 curPostion = file->GetPosition();
     ro = dynamic_cast<TInterpretor*>(call.Get())->Run(parameters);
 
+    file->Seek(curPostion, FILE_BEGIN);
 
 }
 
@@ -1691,17 +1736,17 @@ void TAnascriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject&
  */
 void TAnascriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObject& ro)
 {
-    TString tExp(exp.GetTrimRight());
+    exp.TrimRight();
 
-    UINT frontDifference = exp.GetSize() - tExp.GetSize();
+    
 
-    _ASSERT(tExp.GetSize());
+    _ASSERT(exp.GetSize());
 
     UINT start = 0, end;
 
-    for (end = 0; end < tExp.GetSize(); end++)
+    for (end = 0; end < exp.GetSize(); end++)
     {
-        WCHAR letter = tExp[end];
+        WCHAR letter = exp[end];
 
         if ((letter >= L'0' && letter <= L'9') ||
             (letter >= L'a' && letter <= L'z') ||
@@ -1711,11 +1756,36 @@ void TAnascriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObjec
         break;
     }
 
-    TString varname(tExp.SubString(0, end));
-    bool present;
-    ro.errorObject = GetVariable(varname, present);
+    bool procedureCall = false;
 
-    exp.Set(exp.SubString(frontDifference + end));
+    for (UINT fEnd = end; fEnd < exp.GetSize(); fEnd++)
+    {
+        WCHAR letter = exp[fEnd];
+
+        if (letter == L'(')
+        {
+            procedureCall = true;
+            break;
+        }
+
+        if (letter != L' ')
+            break;
+    }
+
+    if (procedureCall)
+    {
+        ProcessProcedureCall(exp, line, ro);
+    }
+    else
+    {
+        TString varname(exp.SubString(0, end));
+        bool present;
+        ro.errorObject = GetVariable(varname, present);
+
+        exp.Set(exp.SubString(end));
+    }
+
+    
 }
 
 /**

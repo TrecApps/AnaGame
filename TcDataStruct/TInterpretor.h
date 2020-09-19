@@ -181,6 +181,17 @@ public:
     virtual UINT SetCode(TrecPointer<TFile> file, ULONG64 start, ULONG64 end);
 
     /**
+     * Method: TInterpretor::CloseFile
+     * Purpose: Closes the file so a second run can be possible
+     * Parameters: void
+     * Returns: void
+     * 
+     * Note: This should only be called on the top-level interpretor
+     */
+    void CloseFile();
+
+
+    /**
      * Method: TInterpretor::Run
      * Purpose: Runs the interpretor
      * Parameters: void
