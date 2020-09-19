@@ -7,6 +7,15 @@ public:
 	DocumentHandler(TrecPointer<TInstance> in);
 	DocumentHandler(TrecPointer<TInstance> in, const TString& name);
 
+
+	/**
+	 * Method: DocumentHandler::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	virtual void OnSave();
 	virtual void OnLoad();
 

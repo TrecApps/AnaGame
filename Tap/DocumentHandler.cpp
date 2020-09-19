@@ -13,6 +13,17 @@ DocumentHandler::DocumentHandler(TrecPointer<TInstance> in, const TString& name)
 {
 }
 
+/**
+ * Method: DocumentHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString DocumentHandler::GetType()
+{
+	return TString(L"DocumentHandler;") + EventHandler::GetType();
+}
+
 void DocumentHandler::OnSave()
 {
 	TrecPointer<TWindow> win;

@@ -30,6 +30,17 @@ OkayHandler::~OkayHandler()
 }
 
 /**
+ * Method: OkayHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString OkayHandler::GetType()
+{
+	return TString(L"OkayHandler;") + EventHandler::GetType();
+}
+
+/**
  * Method: OkayHandler::Initialize
  * Purpose: Basic Handler initialization
  * Parameters: TrecPointer<Page> page - the page the Handler is to associate with

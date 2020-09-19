@@ -28,6 +28,15 @@ public:
 
 
 	/**
+	 * Method: TCodeHandler::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+
+	/**
 	 * Method: TCodeHandler::Initialize
 	 * Purpose: Initializes the Handler so that it has direct Access to certain Controls held by the page
 	 * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to

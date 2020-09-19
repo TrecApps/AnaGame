@@ -38,6 +38,17 @@ EventHandler::~EventHandler()
 }
 
 /**
+ * Method: EventHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString EventHandler::GetType()
+{
+	return TString(L"EventHandler;") + TObject::GetType();
+}
+
+/**
  * Method: EventHandler::OnFirstDraw
  * Purpose: Allows Handlers to perform some task after the first draw
  * Parameter: void

@@ -63,6 +63,17 @@ FileDialogHandler::~FileDialogHandler()
 {
 }
 
+/**
+ * Method: FileDialogHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString FileDialogHandler::GetType()
+{
+	return TString(L"FileDialogHandler;") + EventHandler::GetType();
+}
+
 void FileDialogHandler::Initialize(TrecPointer<Page> page)
 {
 	if (!page.Get() || !page->GetRootControl().Get() || !page->GetWindowHandle().Get())

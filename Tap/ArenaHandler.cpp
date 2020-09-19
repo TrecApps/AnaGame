@@ -15,6 +15,16 @@ ArenaHandler::ArenaHandler(TrecPointer<TInstance> instance, TString& name): Even
 }
 
 /**
+ * Method: ArenaHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString ArenaHandler::GetType()
+{
+	return TString(L"ArenaHandler;") + EventHandler::GetType();
+}
+/**
  * Method: ArenaHandler::~ArenaHandler
  * Purpose: Destructor
  * Parameters: void

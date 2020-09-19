@@ -37,6 +37,16 @@ FileHandler::~FileHandler()
 }
 
 /**
+ * Method: FileHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString FileHandler::GetType()
+{
+	return TString(L"FileHandler;") + EventHandler::GetType();
+}
+/**
  * Method: FileHandler::Initialize
  * Purpose: Initializes the Handler so that it has direct Access to certain Controls held by the page
  * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to

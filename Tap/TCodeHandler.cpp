@@ -12,6 +12,17 @@ TCodeHandler::TCodeHandler(TrecPointer<TInstance> in, const TString& name) : Doc
 	onFocusString.Set(L"Focus CodeHandler");
 }
 
+/**
+ * Method: TCodeHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TCodeHandler::GetType()
+{
+	return TString(L"TCodeHandler;") + EventHandler::GetType();
+}
+
 void TCodeHandler::Initialize(TrecPointer<Page> page)
 {
 	if (!page.Get())
