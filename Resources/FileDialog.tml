@@ -1,0 +1,116 @@
+->TML
+-|Type:Anaface_UI
+-|Version:0.0.1
+-/
+
+->TStack
+-|RowHeight:75
+-|RowHeight:75
+-|RowHeight:1*
+-|RowHeight:75
+-|RowHeight:75
+-|InternalBorderColor:0.0,0.0,0.0,1.0
+-|InternalBorderThickness:2
+
+# Report Current Directory
+-->TGallery(0,0)
+--|ColumnWidth:150
+--|ColumnWidth:1*
+--->TControl(0,0)
+---|VerticalAlignment:Center
+---|Caption:Current Directory
+---|BorderColor:1.0,0.0,0.0,1.0
+--->TTextField(1,0)
+---|VerticalAlignment:Center
+---|BorderColor:1.0,0.0,0.0,1.0
+---|CanEdit:False
+
+# Allows Options to be presented
+-->TGallery(0,1)
+--|ColumnWidth:1*
+--|ColumnWidth:1*
+--->TControl(0,0)
+---|HoverContentColor:0.0,0.0,0.6,1.0
+---|VerticalAlignment:Center
+---|Caption:Add Directory to Favorites
+---|BorderColor:1.0,0.0,0.0,1.0
+--->TControl(1,0)
+---|VerticalAlignment:Center
+---|BorderColor:1.0,0.0,0.0,1.0
+---|HoverContentColor:0.0,0.0,0.6,1.0
+---|Caption:NewFolder
+---|EventOnClick:OnNewFolder
+
+# Main Body
+-->TGrid(0,2)
+--|RowHeight:75
+--|RowHeight:1*
+--|ColumnWidth:200
+--|ColumnWidth:1*
+--|InternalBorderColor:0.0,0.0,0.0,1.0
+--|InternalBorderThickness:2
+
+
+# Common Folders
+--->TControl(0,0)
+---|VerticalAlignment:Center
+---|Caption:Common Folders
+---|BorderColor:1.0,0.0,0.0,1.0
+--->TTreeDataBind(0,1)
+---|EventOnDblClick:OnSelectNode
+---|EventOnClick:OnClickNode
+---|NodeHighlightColor: 0.3,0.1,1.0,0.5
+---|BlockExtension:true
+---->TControl
+----|FontColor: 0.0,0.0,0.0,1.0
+----|Caption:{}
+
+# Browsing Folder
+--->TControl(1,0)
+---|VerticalAlignment:Center
+---|Caption:Common Folders
+---|BorderColor:1.0,0.0,0.0,1.0
+--->TTreeDataBind(1,1)
+---|EventOnDblClick:OnSelectNode
+---|EventOnClick:OnClickNode
+---|NodeHighlightColor: 0.3,0.1,1.0,0.5
+---|BlockExtension:true
+---->TControl
+----|FontColor: 0.0,0.0,0.0,1.0
+----|Caption:{}
+
+# Report Selected File Name
+-->TGallery(0,3)
+--|ColumnWidth:150
+--|ColumnWidth:1*
+--->TControl(0,0)
+---|VerticalAlignment:Center
+---|Caption:Selected File
+---|BorderColor:1.0,0.0,0.0,1.0
+--->TTextField(1,0)
+---|VerticalAlignment:Center
+---|BorderColor:1.0,0.0,0.0,1.0
+---|EventOnTextChange:OnFileNameChange
+
+# Finalize
+-->TGallery(0,4)
+--|ColumnWidth:1*
+--|ColumnWidth:1*
+--->TControl(0,0)
+---|VerticalAlignment:Center
+---|HorizontalAlignment:Center
+---|Caption:Cancel
+---|EventOnClick:OnCancel
+---|TextColor:1.0,0.0,0.0,1.0
+---|BorderColor:1.0,0.0,0.0,1.0
+---|HoverTextColor:0.0,0.0,0.0,1.0
+---|HoverContentColor:1.0,0.0,0.0,1.0
+--->TControl(1,0)
+---|VerticalAlignment:Center
+---|HorizontalAlignment:Center
+---|Caption:Okay
+---|EventOnClick:OnOkay
+---|TextColor:0.0,1.0,0.0,1.0
+---|BorderColor:1.0,1.0,0.0,1.0
+---|HoverTextColor:0.0,1.0,0.0,1.0
+---|HoverContentColor:0.0,1.0,0.0,1.0

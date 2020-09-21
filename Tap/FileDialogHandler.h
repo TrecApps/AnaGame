@@ -87,6 +87,8 @@ public:
 protected:
 	// Relevent controls once controls are generated from a TML file
 
+	TrecSubPointer<TObjectNode, TFileNode> fileNode;
+
 	TrecSubPointer<TControl, TTextField> directoryText;
 
 	TrecSubPointer<TControl, TTreeDataBind> browserControl;
@@ -130,5 +132,7 @@ protected:
 	void OnFileNameChange(TrecPointer<TControl> tc, EventArgs ea);
 
 	void OnClickNode(TrecPointer<TControl> tc, EventArgs ea);
+
+	void OnNewFolder(TrecPointer<TControl> tc, EventArgs ea);
 };
 

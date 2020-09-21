@@ -6,3 +6,4 @@
 ->TPrompt
 -|ContentColor:0.0,0.0,0.0,1.0
 -|FontColor:1.0,1.0,1.0,1.0
+-|ConsoleMode:Program

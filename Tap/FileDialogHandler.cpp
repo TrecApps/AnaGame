@@ -3,12 +3,15 @@
 #include "TIdeWindow.h"
 #include <DirectoryInterface.h>
 
+#include "TDialog.h"
+
 // Declare Handler Functions in String form
 TString on_SelectNode(L"OnSelectNode");
 TString on_Cancel(L"OnCancel");
 TString on_Okay(L"OnOkay");
 TString on_FileNameChange(L"OnFileNameChange");
 TString on_ClickNode(L"OnClickNode");
+TString on_NewFolder(L"OnNewFolder");
 
 
 /**
@@ -28,6 +31,7 @@ FileDialogHandler::FileDialogHandler(TrecPointer<TInstance> instance): EventHand
 	fileEvents.push_back(&FileDialogHandler::OnOkay);
 	fileEvents.push_back(&FileDialogHandler::OnFileNameChange);
 	fileEvents.push_back(&FileDialogHandler::OnClickNode);
+	fileEvents.push_back(&FileDialogHandler::OnNewFolder);
 
 	// Now set the structure to link the listeners to their text name
 	eventNameID enid;
@@ -50,6 +54,10 @@ FileDialogHandler::FileDialogHandler(TrecPointer<TInstance> instance): EventHand
 
 	enid.eventID = 4;
 	enid.name.Set(on_ClickNode);
+	events.push_back(enid);
+
+	enid.eventID = 5;
+	enid.name.Set(on_NewFolder);
 	events.push_back(enid);
 }
 
@@ -103,27 +111,27 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 	directoryText = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(1,0));
 	assert(directoryText.Get());
 
-	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 1));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 2));
 	assert(subLayout.Get());
 
 	browserControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(subLayout->GetLayoutChild(1, 1));
 	assert(browserControl.Get());
 	browserLayout = subLayout;
 
-	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 2));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 3));
 	assert(subLayout.Get());
 
 
 	fileText = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(1, 0));
 	assert(fileText.Get());
 
-	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 3));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 4));
 	assert(subLayout.Get());
 
 	okayControl = subLayout->GetLayoutChild(1, 0);
 	assert(okayControl.Get());
 
-	TrecSubPointer<TObjectNode, TFileNode> fileNode = TrecPointerKey::GetNewTrecSubPointer<TObjectNode, TFileNode>(0);
+	fileNode = TrecPointerKey::GetNewTrecSubPointer<TObjectNode, TFileNode>(0);
 
 	fileNode->SetFile(startDirectory);
 
@@ -340,5 +348,37 @@ void FileDialogHandler::OnClickNode(TrecPointer<TControl> tc, EventArgs ea)
 	{
 		auto rect = browserLayout->getRawSectionLocation(1, 1);
 		browserControl->Resize(rect);
+	}
+}
+
+void FileDialogHandler::OnNewFolder(TrecPointer<TControl> tc, EventArgs ea)
+{
+	if (!fileNode.Get())
+		return;
+
+	if (!window.Get() || !window->GetInstance().Get())
+		return;
+	TString newDir(L"Enter a name for this directory");
+	TString dirName = ActivateNameDialog(window->GetInstance(), window->GetWindowHandle(), newDir);
+
+	if (dirName.GetSize())
+	{
+		int invalidChar = dirName.FindOneOf(L"/\\:*?|\"<>");
+		if (invalidChar != -1)
+		{
+			WCHAR inChar[2] = { dirName[invalidChar], L'\0' };
+			TString cap;
+			cap.Format(L"Invalid character '%ws' detected in the entry! Remove it and try again!", inChar);
+			ActivateAlertDialog(window->GetInstance(), window->GetWindowHandle(), cap);
+		}
+		else
+		{
+			TString newDir(fileNode->GetData()->GetPath() + L"\\" + dirName);
+
+			ForgeDirectory(newDir);
+
+			fileNode->DropChildNodes();
+			fileNode->Extend();
+		}
 	}
 }
