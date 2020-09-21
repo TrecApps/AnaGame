@@ -7,6 +7,8 @@
  * Purpose: Represents a File that exists on the file System.
  *
  * Note: this class does not open a file for reading or writing, merely provides information about the file in question
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL TFileShell :
 	public TObject
@@ -28,6 +30,8 @@ public:
 	* Purpose: Reports whether this file represents a directory
 	* Parameters: void
 	* Returns: bool - false if object is the base class, true, if object is a TDirectory
+	* 
+	* Attributes: virtual - overriden by the TDirectory
 	*/
 	virtual bool IsDirectory();
 

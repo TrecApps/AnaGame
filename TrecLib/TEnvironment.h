@@ -17,6 +17,8 @@ void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataA
 /** 
  * Class: LangNames
  * Purpose: holds the name of a Programming language and the file extensions associated with them
+ * 
+ * SuperClass: TObject
  */
 class _TREC_LIB_DLL LangNames : public TObject
 {
@@ -28,6 +30,8 @@ public:
 /**
  * Class: TEnvironment
  * Purpose: Provides information about the Project currently managed in the scope of an IDE Window
+ * 
+ * SuperClass: TObject
  *
  * Note: This class was originally in the TrecCode Library. However, it was moved to the Tap library as a means to 
  *  provide the Ide Window with a means of knowing what directory it is focusing on
@@ -94,6 +98,8 @@ public:
 	 * Purpose: Allows external code to manually add something to print out
 	 * Parameters: TString& input - the command to enter
 	 * Returns: bool - whether a prompt was set or not
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual bool Print(TString& input);
 
@@ -102,6 +108,8 @@ public:
 	 * Purpose: Allows external code to manually add something to print out, adding an extra new line at the end
 	 * Parameters: TString& input - the command to enter
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual bool PrintLine(TString& input);
 
@@ -110,6 +118,8 @@ public:
 	 * Purpose: Retrieves the list of tasks offered by the Environment
 	 * Parameters: void
 	 * Returns: TDataArray<TString> - list of tasks offered by the Environment
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual TDataArray<TString> GetTaskList();
 
@@ -118,6 +128,8 @@ public:
 	 * Purpose: Initializes the Environment
 	 * Parameters: void
 	 * Returns: UINT - error code (0 for success)
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual UINT SetUpEnv() = 0;
 
@@ -127,6 +139,8 @@ public:
 	 * Purpose: Support for a Compile task
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual void Compile() = 0;
 
@@ -135,6 +149,8 @@ public:
 	 * Purpose: Support for a Compile task
 	 * Parameters: TrecPointer<TFile> logFile - the Log file to log errors to
 	 * Returns: void
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual void Compile(TrecPointer<TFile> logFile) = 0;
 
@@ -144,6 +160,8 @@ public:
 	 * Purpose: Starts logging 
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual void Log() = 0;
 
@@ -153,6 +171,8 @@ public:
 	 * Purpose: Support for the Run Task
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual void Run() = 0;
 
@@ -162,6 +182,8 @@ public:
 	 * Purpose: Support for the Run Task
 	 * Parameters: TrecPointer<TFileShell> shell - the file to run
 	 * Returns: void
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual void Run(TrecPointer<TFileShell> shell) = 0;
 
@@ -172,6 +194,8 @@ public:
 	 * Purpose: Runs a specific task
 	 * Parameters: TString& task - the task to run
 	 * Returns: UINT - Error code (0 for success)
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual UINT RunTask(TString& task) = 0;
 
@@ -206,6 +230,8 @@ public:
 	 * Purpose: Retrieves the Node relative to the environment
 	 * Parameters: void
 	 * Returns: TrecPinter<TObjectMode> - the nodes relevant to the environment
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual TrecPointer<TObjectNode> GetBrowsingNode() = 0;
 
@@ -214,6 +240,8 @@ public:
 	 * Purpose: Reports whether the Environment supports the file type proposed
 	 * Parameters: const TString& ext - the extension to test
 	 * Returns: bool - whether the environment supports the file type
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual bool SupportsFileExt(const TString& ext) = 0;
 
@@ -223,6 +251,8 @@ public:
 	 * Purpose: Reports whether the Environment supports the file type proposed
 	 * Parameters: TDataArray<TString>& ext - the list of extenstions to add
 	 * Returns: void
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual void SupportsFileExt(TDataArray<TString>& ext) = 0;
 

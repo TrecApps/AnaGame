@@ -4,7 +4,9 @@
 
 /*
 * Class: HTML_Reader
-* Parser Reader optimized for HTML files
+* Purpose: Parser Reader optimized for HTML files
+* 
+* SuperClass: ParseReader_ - Implements the Reader Class for HTML files
 */
 class _TREC_LIB_DLL HTML_Reader :	public ParseReader_
 {
@@ -34,6 +36,8 @@ public:
 	* Purpose: Reads the file anticipating the HTML format
 	* Parameters: int* - the line number an error occurs
 	* Returns: bool - success
+	* 
+	* Attributes: override - reads the file, assuming the file is HTML
 	*/
 	bool read(int*)override;
 

@@ -20,7 +20,7 @@ typedef enum class animation_phase
 }animation_phase;
 
 /**
- * enum animation_value_type
+ * Enum Class: animation_value_type
  * Purpose: Provide Animations setting themselves up with insight on what values they should strive for
  *
  * Note: Each of these values are relevant to certain type of animations and irrelevant to others. For instance,
@@ -70,6 +70,8 @@ class TControl;
  *	an animation sequence, as well as methods to supply the object with the resources the object is to act upon
  *
  *	It was made abstract in order to better allow for a wide variety of Animations to be implemented
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL Animation :
 	public TObject

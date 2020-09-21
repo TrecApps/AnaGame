@@ -4,6 +4,8 @@
 /*
 * Class: TML_Reader_
 * Purpose: Reads TML Files
+* 
+* SuperClass: ParseReader_ - Implements reader for TML files
 */
 class _TREC_LIB_DLL TML_Reader_ :
 	public ParseReader_
@@ -30,8 +32,10 @@ public:
 	 * Purpose: Reads the file anticipating a TML format
 	 * Parameters: int* - the line number an error occurs
 	 * Returns: bool - success
+	 * 
+	 * Attributes: override;
 	 */
-	bool read(int*);
+	bool read(int*)override;
 
 private:
 	/**

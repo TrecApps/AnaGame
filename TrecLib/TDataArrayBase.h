@@ -4,6 +4,8 @@
 /**
  * Class: TDataArrayBase
  * Purpose: Provides a base type for all TDataArrays
+ * 
+ * SuperClass: TObject 
  */
 class _TREC_LIB_DLL TDataArrayBase :
 	public TObject
@@ -49,6 +51,8 @@ public:
      * Purpose: Reports the number of elements currently held
      * Parameters: void
      * Return: UINT - the elements being held
+	 * 
+	 * Attributes: const
      */
 	UINT Size()const;
 
@@ -57,6 +61,8 @@ public:
      * Purpose: Reports the size of the array being used
      * Parameters: void
      * Return: UINT - the cappacity/length of the current unerlying array
+	 * 
+	 * Attributes: const
      */
 	UINT Capacity()const;
 

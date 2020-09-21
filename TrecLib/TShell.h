@@ -6,6 +6,8 @@
 /*
  * Class: TShell
  * Purpose: provides support for command-line functionality in Anagame
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL TShell :
 	public TObject

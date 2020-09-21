@@ -4,6 +4,8 @@
 /*
  * Class: TDirectory
  * Purpose: Represents a Folder in the file system
+ * 
+ * SuperClass: TFileShell - serves as a TFileShell for folders
  */
 class _TREC_LIB_DLL TDirectory :
 	public TFileShell
@@ -32,6 +34,8 @@ public:
 	* Purpose: Reports whether this object represents a directory as opposed to a regular file
 	* Parameters: void
 	* Returns: bool - true as this is a directory (overrides the TFileShell method that returns false)
+	* 
+	* Attributes: override
 	*/
 	bool IsDirectory()override;
 
