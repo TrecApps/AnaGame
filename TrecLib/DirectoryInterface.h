@@ -4,7 +4,7 @@
 #include "TFile.h"
 
 /*
-* enum CentralDirectories
+* Enum Class: CentralDirectories
 * Represents possible directory types AnaGame and its taps might be interested in
 */
 typedef enum class CentralDirectories

@@ -3,10 +3,12 @@
 #include "TObject.h"
 #include "TFile.h"
 
-/*
-* Class: ParseReader_
-* Base Class for all Markup-language parsers
-*/
+/**
+ * Class: ParseReader_
+ * Purpose: Base Class for all Markup-language parsers
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
+ */
 class _TREC_LIB_DLL ParseReader_ : public TObject
 {
 public:
@@ -33,6 +35,8 @@ public:
 	* Purpose: Reads the file in a predefined format
 	* Parameters: int* - the line number an error occurs
 	* Returns: bool - success
+	* 
+	* Attributes: virtual
 	*/
 	virtual bool read(int*);
 
@@ -42,7 +46,7 @@ public:
 	* Parameters: void
 	* Returns: UCHAR* - the AnaGame type ID format
 	*
-	* Note: DEPRICATED
+	* Attribtues: DEPRICATED
 	*/
 	virtual UCHAR* GetAnaGameType();
 

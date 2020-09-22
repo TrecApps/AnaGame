@@ -4,7 +4,9 @@
 
 /**
  * Class: TPoint
- * Basic class holding information about a 2D point
+ * Purpose: Basic class holding information about a 2D point
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL TPoint :
 	public TObject

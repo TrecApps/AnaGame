@@ -32,6 +32,8 @@ public:
 /*
 * Class: TMap
 * Purpose: Holds data with a key
+* 
+* SuperClass: TMapBase - common base class for all maps
 */
 template<class t2>class _TREC_LIB_DLL TMap : public TMapBase
 {

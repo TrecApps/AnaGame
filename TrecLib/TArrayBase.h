@@ -4,6 +4,8 @@
 /**
  * Class: TArrayBase
  * Purpose: holds the bare essentials for all TArray's
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL TArrayBase :
 	public TObject

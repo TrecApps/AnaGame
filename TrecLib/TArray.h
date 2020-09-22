@@ -4,7 +4,9 @@
 
 /*
 * Class: TArray
-* Holds references to objects (Not meant to store straight foward data in a row)
+* Purpose: Holds references to objects (Not meant to store straight foward data in a row)
+* 
+* SuperClass: TArrayBase - common class for all TArray's
 */
 template <typename t>class _TREC_LIB_DLL TArray : public TArrayBase
 {

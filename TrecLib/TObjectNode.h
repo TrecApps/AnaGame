@@ -5,6 +5,8 @@
 /*
  * Class: TObjectNode
  * Purpose: Provides an Interface for which Trees of ny type of Object can be formed
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL TObjectNode :
 	public TObject
@@ -42,6 +44,8 @@ public:
 	 * Purpose: Retrievs the "content" of the node
 	 * Parameters: void
 	 * Returns: TString - the "content" of the node
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual TString GetContent() = 0;
 	/**
@@ -49,6 +53,8 @@ public:
 	 * Purpose: Whether the ndoe can be extended
 	 * Parameters: void
 	 * Returns: bool - whether the node can be extended
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual bool IsExtendable() = 0;
 	/**
@@ -56,6 +62,8 @@ public:
 	 * Purpose: Whether the node currently has children or not
 	 * Parameters: void
 	 * Returns: bool - whether the node has children or not
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual bool IsExtended() = 0;
 	/**
@@ -63,6 +71,8 @@ public:
 	 * Purpose: Allows for basic initialiation
 	 * Parameters: void
 	 * Returns: bool - whether initialization worked
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual bool Initialize() = 0;
 	/**
@@ -71,6 +81,8 @@ public:
 	 * Parameters: UINT target - the intended target of the node
 	 *			UINT current - lets this node know what location it is in
 	 * Returns:
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual TrecPointer<TObjectNode> GetNodeAt(UINT target, UINT current) =0;
 	/**
@@ -78,6 +90,8 @@ public:
 	 * Purpose: Reports the total number of "decendants" of this node
 	 * Parameters: void
 	 * Returns: UINT - total "decendant" count
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual UINT TotalChildren() = 0;
 
@@ -86,6 +100,8 @@ public:
 	 * Purpose: Initializes the data of the object based off of the provided string
 	 * Parameters: TString& value -  info on how to initialize
 	 * Returns: bool - whether initialization was successful
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual bool Initialize(TString& value) = 0;
 	/**
@@ -93,6 +109,8 @@ public:
 	 * Purpose: Extends the node so that it has child nodes (if possible)
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual void Extend() = 0;
 	/**
@@ -100,6 +118,8 @@ public:
 	 * Purpose: Retirevs the Child node at the given index
 	 * Parameters: UINT location of the target node
 	 * Returns: TrecPointer<TObjectNode> - the targeted node
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual TrecPointer<TObjectNode> GetChildNodes(UINT) = 0;
 	/**
@@ -107,6 +127,8 @@ public:
 	 * Purpose: Drops any child nodes this node currently holds
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual void DropChildNodes() = 0;
 

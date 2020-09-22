@@ -22,6 +22,8 @@ typedef enum class file_node_filter_mode
 /*
  * Class: TFileNode
  * Purpose: Implements the TObjectNode interface for Files found on the local hard drive
+ * 
+ * SuperClass: TObjectNode - Allows TBlankNode to be used by the TTreeDataBind control
  */
 class _TREC_LIB_DLL TFileNode :
 	public TObjectNode
@@ -50,6 +52,8 @@ public:
 	 * Purpose: Retrieves the Content to present about this object
 	 * Parameters: void
 	 * Returns: TString - the name of the File/directory this node references
+	 * 
+	 * Attributes: virtual;override
 	 */
 	TString GetContent() override;
 
@@ -58,6 +62,8 @@ public:
 	* Purpose: Reports whether this node is extendable - in this case, whether the file is a directory or not
 	* Parameters: void
 	* Returns: bool - whether the node is extendable (i.e. references a directory)
+	 * 
+	 * Attributes: virtual;override
 	*/
 	bool IsExtendable() override;
 
@@ -66,8 +72,10 @@ public:
 	* Purpose: Reports whether this node is currently extended
 	* Parameters: void
 	* Returns: bool - whether the node is extended
+	 * 
+	 * Attributes: virtual;override
 	*/
-	virtual bool IsExtended();
+	virtual bool IsExtended()override;
 
 	/*
 	* Method: TFileNode::GetNodeAt
@@ -91,6 +99,8 @@ public:
 	* Purpose: Supposed to initialize the node tree
 	* Parameters: void
 	* Returns: bool - false as the Node cannot be initialized without the path provided
+	 * 
+	 * Attributes: virtual;override
 	*/
 	virtual bool Initialize() override;
 
@@ -99,6 +109,8 @@ public:
 	* Purpose: Initializes the node with the path of the file/Directory to start with
 	* Parameters: TStrng& value - the path of the File to reference
 	* Returns: bool - true of a file object was generated, false otherwise
+	 * 
+	 * Attributes: virtual;override
 	*/
 	virtual bool Initialize(TString& value) override;
 
@@ -109,6 +121,8 @@ public:
 	* Returns: void
 	*
 	* Note: This method only functions of the file in question is a directory, this can be determined via the IsExtendable method
+	 * 
+	 * Attributes: virtual;override
 	*/
 	virtual void Extend() override;
 
@@ -119,6 +133,8 @@ public:
 	* Returns: TrecPointer<TObjectNode> - the node in question
 	*
 	* Note: Pointer returned is null if the index is too high. To browse the tree, start the index at 0 and once the result is null, you can be sure there are no more nodes
+	 * 
+	 * Attributes: virtual;override
 	*/
 	virtual TrecPointer<TObjectNode> GetChildNodes(UINT index) override;
 
@@ -127,6 +143,8 @@ public:
 	* Purpose: Drops the child nodes, provided with a control in mind
 	* Parameters: void
 	* Returns: void
+	 * 
+	 * Attributes: virtual;override
 	*/
 	virtual void DropChildNodes() override;
 
@@ -136,6 +154,8 @@ public:
 	* Purpose: Reports the desired Content
 	* Parameters: const TString& varName - the name
 	* Returns: TString - the file/Directory name held by this object
+	 * 
+	 * Attributes: virtual;override
 	*/
 	virtual TString getVariableValueStr(const TString& varName)override;
 

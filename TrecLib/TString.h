@@ -10,8 +10,8 @@
 #define NOT_NUMB 2
 
 /*
-* ColorFormat
-* Used to keep track of how the color originally was presented
+* Enum Class: ColorFormat
+* Purpose: Used to keep track of how the color originally was presented
 */
 typedef enum class _TREC_LIB_DLL ColorFormat
 {
@@ -31,11 +31,13 @@ typedef struct IndexRange {
 }IndexRange;
 
 
-/*
-* Class: TString
-* Represents the UNICODE version of the String class, with features such as split,
-*	number extraction, substring, and trim
-*/
+/**
+ * Class: TString
+ * Purpose: Represents the UNICODE version of the String class, with features such as split,
+ *	number extraction, substring, and trim
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
+ */
 class _TREC_LIB_DLL TString : public TObject
 {
 public:
@@ -163,6 +165,8 @@ public:
 	* flags: 0b00000001 - t_file_check_back_slash - ignore a hit if odd number of backslashes are present
 	*		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
 	*		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
+	* 
+	* Attributes: const
 	*/
 	TrecPointer<TDataArray<TString>> split(TString, UCHAR flags = 0, WCHAR exitQuote = L'\"') const;
 
@@ -182,6 +186,8 @@ public:
 	*
 	* Note: the data returned was initialized via new[] and thereforem you need to call delete[] on it. It is recommended you
 	*		use "GetConstantBuffer()" wherever possible
+	* 
+	* Attributes: const
 	*/
 	WCHAR* GetBufferCopy()const ;
 
@@ -190,6 +196,8 @@ public:
 	 * Purpose: Returns the underlying String
 	 * Parameters: void
 	 * Returns: const WCHAR* - a constant pointer of the underlying string buffer
+	* 
+	* Attributes: const
 	 */
 	const WCHAR* GetConstantBuffer() const;
 
@@ -199,6 +207,8 @@ public:
 	* Parameters: UINT beginningIndex - the index to start at
 	*			int endIndex - exclusive index to end (use negative value to go to end)
 	* Returns: TString::the Substring generated
+	* 
+	* Attributes: const
 	*/
 	TString SubString(UINT beginningIndex, int endIndex = -1) const;
 
@@ -290,6 +300,8 @@ public:
 	* Purpose: Adds the contents of an existing TString to this one
 	* Parameters: TString& t - the TString to append
 	* Returns: void
+	* 
+	* Attributes: const
 	*/
 	TString operator+(const TString&) const;
 	/*
@@ -297,6 +309,8 @@ public:
 	* Purpose: Adds the contents of an existing TString to this one
 	* Parameters: TString& t - the TString to append
 	* Returns: void
+	* 
+	* Attributes: const
 	*/
 	TString operator+(const TString*) const;
 	/*
@@ -304,6 +318,8 @@ public:
 	* Purpose: Adds the contents of an existing wide string to this one
 	* Parameters: WCHAR* w - the wide string to append
 	* Returns: void
+	* 
+	* Attributes: const
 	*/
 	TString operator+(const WCHAR*)const;
 	/**
@@ -311,6 +327,8 @@ public:
 	 * Purpose: Returns a version of this string with the character appended
 	 * Parameters: WCHAR w -the character to append
 	 * Returns: TString version of the string with the appended character
+	 * 
+	 * Attributes: const
 	 */
 	TString operator+(const WCHAR w)const;
 	/*
@@ -408,6 +426,8 @@ public:
 	 * Purpose: Retrieves the size of the string
 	 * Parameters: void
 	 * Returns: UINT - the current size of the string
+	 * 
+	 * Attributes: const
 	 */
 	UINT GetSize() const;
 	/**
@@ -415,6 +435,8 @@ public:
 	 * Purpose: Retrieves the character at the provided index
 	 * Parameters: UINT c - the index of the character
 	 * Returns: WCHAR - the character at the index, '\0' if index is out of bounds
+	 * 
+	 * Attributes: const
 	 */
 	WCHAR GetAt(UINT c)const;
 
@@ -476,6 +498,8 @@ public:
 	 * Purpose: Compares this string with a provided string
 	 * Parameters: const TString& other - the string to compare this string to
 	 * Returns: int - 0 if they are the same
+	 * 
+	 * Attributes: const
 	 */
 	int Compare(const TString& other)const ;
 	/**
@@ -483,6 +507,8 @@ public:
 	 * Purpose: Compares this string with a provided raw string
 	 * Parameters: const WCHAR* other - the string to compare this string to
 	 * Returns: int - 0 if they are the same
+	 * 
+	 * Attributes: const
 	 */
 	int Compare(const WCHAR* other)const;
 	/**
@@ -550,6 +576,8 @@ public:
 	 * Parameters: const TString& sub - the string to search for
 	 *				int start - the index to begin the search from
 	 * Returns: int - the index of the string found
+	 * 
+	 * Attributes: const
 	 */
 	int Find(const TString& sub, int start = 0) const;
 	/**
@@ -559,6 +587,8 @@ public:
 	 *				int start - the index to begin the search from
 	 *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
 	 * Returns: int - the index of the character found
+	 * 
+	 * Attributes: const
 	 */
 	int Find(WCHAR sub, int start = 0, bool ignoreEscape = true)const;
 	/**
@@ -567,6 +597,8 @@ public:
 	 * Parameters: const TString& chars -  the list of characters to search for
 	 *				int start - the index to begin the search from
 	 * Returns: int - the index of the character found
+	 * 
+	 * Attributes: const
 	 */
 	int FindOneOf(const TString& chars, int start = 0)const;
 
@@ -577,6 +609,8 @@ public:
 	 * Parameters: const TString& sub - the string to search for
 	 *				int start - the index to begin the search from (searches backwards)
 	 * Returns: int - the index of the string found
+	 * 
+	 * Attributes: const
 	 */
 	int FindLast(const TString& sub, int start = -1) const;
 	/**
@@ -585,6 +619,8 @@ public:
 	 * Parameters: WCHAR sub - the character to search for
 	 *				int start - the index to begin the search from (searches backwards)
 	 * Returns: int - the index of the character found
+	 * 
+	 * Attributes: const
 	 */
 	int FindLast(WCHAR sub, int start = -1)const ;
 	/**
@@ -593,6 +629,8 @@ public:
 	 * Parameters: const TString& chars -  the list of characters to search for
 	 *				int start - the index to begin the search from (searches backwards)
 	 * Returns: int - the index of the character found
+	 * 
+	 * Attributes: const
 	 */
 	int FindLastOneOf(const TString& chars, int start = -1) const;
 
@@ -655,6 +693,8 @@ public:
 	 * Purpose: Retrieves a version of the String with all lowercase
 	 * Parameters: void
 	 * Returns: TString::the lowercase version of the String
+	 * 
+	 * Attributes: const
 	 */
 	TString GetLower()const;
 	/**
@@ -669,6 +709,8 @@ public:
 	 * Purpose: Retrieves a version of the String with all caps
 	 * Parameters: void
 	 * Returns: TString::the Uppercase version of the String
+	 * 
+	 * Attributes: const
 	 */
 	TString GetUpper()const;
 
@@ -750,6 +792,8 @@ public:
 	 * Parameters: TString& tokens - characters to split by
 	 *				 int& start - the location to begin at
 	 * Returns:
+	 * 
+	 * Attributes: const
 	 */
 	TString Tokenize(TString& tokens, int& start) const;
 
@@ -767,6 +811,8 @@ public:
 	 * Purpose: Retrieves acopy of the TString with whitespace trimmed. It does not alter the original String
 	 * Parameters: void
 	 * Returns: TString::Trimmed copy of the String
+	 * 
+	 * Attributes: const
 	 */
 	TString GetTrim() const;
 

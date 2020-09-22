@@ -15,7 +15,7 @@ class TString;
 
 /*
 * Class: TObject
-* Serves as the base object for the AnaGame platform
+* Purpose: Serves as the base object for the AnaGame platform
 */
 class _TREC_LIB_DLL TObject 
 {
@@ -49,6 +49,8 @@ public:
 	 * Purpose: Returns the String value of a TObjects given variable, meant for databinding
 	 * Parameters: TString& varName - the name of the variable to seek
 	 * Returns: TString - the variable value in String form, or an empty string if variable does not exist
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual TString getVariableValueStr(const TString& varName);
 	/**
@@ -56,6 +58,8 @@ public:
 	 * Purpose: Returns a string representation of this object
 	 * Parameters: void
 	 * Returns: TString - repreetnation of this object
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual TString toString();
 
@@ -67,6 +71,8 @@ public:
 	 * 
 	 * Note: This method is provided to allow interpretors to allow scripts to access methods of Anagame Objects.
 	 *   subclasses should report their type first, then the parent clss type and seperate it with a SemiColon
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual TString GetType();
 

@@ -10,6 +10,8 @@
 /*
 * Class: TDataArray (Regular Type version)
 * Purpose: AnaGame array designed to hold raw data
+* 
+* SuperClass: TDataArrayBase - common base class for all TDataArrays
 */
 template<typename T> class  TDataArray : public TDataArrayBase
 {
@@ -45,6 +47,8 @@ public:
 	* Purpose: Retrieves the location of the underlying array
 	* Parameters: void
 	* Returns: T* - data address in memory
+	* 
+	* Attributes: const
 	*/
 	T* data() const
 	{
@@ -146,6 +150,8 @@ public:
 	* Purpose: Reports the size of the underlying array
 	* Parameters: void
 	* Returns: UINT - the size of the unerlying array being used
+	* 
+	* Attributes: const
 	*/
 	UINT Capacity() const
 	{
@@ -215,6 +221,8 @@ public:
 /*
 * Class: TDataArray (Pointer Type Version)
 * Purpose: AnaGame Array designed to hold raw pointers to data 
+* 
+* SuperClass: TDataArrayBase - common base class for all TDataArrays
 */
 template<typename T> 
 class  TDataArray<T*> : public TDataArrayBase
@@ -234,6 +242,8 @@ public:
 	* Purpose: Retrieves the location of the underlying array
 	* Parameters: void
 	* Returns: T* data address in memory
+	* 
+	* Attributes: const
 	*/
 	T** data() const
 	{

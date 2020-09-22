@@ -3,8 +3,8 @@
 #include "TString.h"
 
 /*
-* enum FileEncodingType
-* used to track what type of encoding the file is using
+* Enum Class: FileEncodingType
+* Purpose: used to track what type of encoding the file is using
 */
 typedef enum class FileEncodingType
 {
@@ -19,10 +19,12 @@ typedef enum class FileEncodingType
 	fet_unicode7          // The Encoding is UTF-7
 }FileEncodingType;
 
-/*
+/**
  * Class: TFile
- * Provides AnaGame's implementation of the File Class
-*/
+ * Purpose: Provides AnaGame's implementation of the File Class
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
+ */
 class _TREC_LIB_DLL TFile : public TObject
 {
 public:
@@ -172,6 +174,8 @@ public:
 	* Purpose: Reports whether the File is open or not
 	* Parameters: void
 	* Returns: bool - is the file open
+	* 
+	* Attributes: const
 	*/
 	bool IsOpen()const;
 	/*
@@ -227,6 +231,8 @@ public:
 	 * Purpose: Gets the name of the file
 	 * Parameters: void
 	 * Returns: TString - the name of the file (minus the path)
+	 * 
+	 * Attributes: const
 	 */
 	TString GetFileName()const;
 	/**
@@ -234,6 +240,8 @@ public:
 	 * Purpose: Retrievs the fill path of the file
 	 * Parameters: void
 	 * Returns: TString - the path of the file
+	 * 
+	 * Attributes: const
 	 */
 	TString GetFilePath()const;
 	/**
@@ -241,6 +249,8 @@ public:
 	 * Purpose: Retirevs the "title" of the file
 	 * Parameters: void
 	 * Returns: TString - the title of the file
+	 * 
+	 * Attributes: const
 	 */
 	TString GetFileTitle()const;
 	/**
@@ -248,6 +258,8 @@ public:
 	 * Purpose: Retirevs the current size of the file
 	 * Parameters: void
 	 * Returns: ULONGLONG - length of the file
+	 * 
+	 * Attributes: const
 	 */
 	ULONGLONG GetLength()const;
 	/**
@@ -255,6 +267,8 @@ public:
 	 * Purpose: Retrievs the current position of the file pointer
 	 * Parameters: void
 	 * Returns: ULONGLONG -  the current position of the file pointer
+	 * 
+	 * Attributes: const
 	 */
 	ULONGLONG GetPosition()const;
 
