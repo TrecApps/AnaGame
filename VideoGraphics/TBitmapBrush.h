@@ -6,6 +6,8 @@
 /**
  * Class: TBitmapBrush
  * Purpose: Hold a Bitmap Brush so that images can be drawn
+ * 
+ * SuperClass: TBrush - allows it to be drawn to the drawing board like a regular brush
  */
 class _VIDEO_GRAPHICS TBitmapBrush : public TBrush
 {
@@ -85,6 +87,8 @@ public:
 	 * Purpose: Fills the Rectangle with the currently selected image
 	 * Parameters: const RECT_2D& r - the rectangle to apply the brush to
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void FillRectangle(const RECT_2D& r)override;
 
@@ -93,6 +97,8 @@ public:
 	 * Purpose:  Fills the Rounded Rectangle with the currently selected image
 	 * Parameters: const ROUNDED_RECT_2D& r - the rounded rectangle to apply the brush to
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void FillRoundedRectangle(const ROUNDED_RECT_2D& r)override;
 
@@ -101,6 +107,8 @@ public:
 	 * Purpose: Fills the Ellipse with the currently selected image
 	 * Parameters: const ELLIPSE_2D& r - the Ellipse to apply the brush to
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void FillEllipse(const ELLIPSE_2D& r)override;
 
@@ -109,6 +117,8 @@ public:
 	 * Purpose: Fills the Geometry with the currently selected image
 	 * Parameters: TrecPointer<TGeometry> geo - the Geometry to apply the brush to
 	 * Returns:void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void FillGeometry(TrecPointer<TGeometry> geo)override;
 
@@ -156,6 +166,8 @@ protected:
 	 *		a new Render Target is used
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void RefreshBrush()override;
 	RECT_2D location;

@@ -23,8 +23,9 @@
  * Purpose: Hold 3D Resources that can be shared within a Window such as the Context Device,
  *		renderTargets, SwapChains, and AnaGame native shaders.
  * Note: Ideally, there should be one instance of this class per Window and is intended to be 
-		an attribute of the TWindow class of AnaGame's Tap library (or which ever class in a 3rd party Library
-		that manages Windows)
+ *		an attribute of the TWindow class of AnaGame's Tap library (or which ever class in a 3rd party Library
+ *  	that manages Windows)
+ * SuperClass: TShaderHost - allows WIndow Engien to host Anagame shaders
  */
 class _VIDEO_GRAPHICS TWindowEngine :
 	public TShaderHost

@@ -6,6 +6,8 @@
 /**
  * Class: TGradientStop
  * Purpose: Holds GradientStops
+ * 
+ * SuperClass: TObject
  */
 class _VIDEO_GRAPHICS TGradientStop : public TObject
 {
@@ -75,6 +77,8 @@ public:
 	 * Purpose:  retrieves the color of the gradient
 	 * Parameters: void
 	 * Returns: TColor - the color of the gradient
+	 * 
+	 * Attributes: const
 	 */
 	TColor GetColor()const;
 
@@ -83,6 +87,8 @@ public:
 	 * Purpose: Retrieves the position of the gradient
 	 * Parameters: void
 	 * Returns: float - the position of the gradient
+	 * 
+	 * Attributes: const
 	 */
 	float GetPosition()const;
 
@@ -91,6 +97,8 @@ public:
 	 * Purpose: Retrieves the underlying gradient
 	 * Parameters: void
 	 * Returns: GRADIENT_STOP_2D - the underlying gradient
+	 * 
+	 * Attributes: const
 	 */ 
 	GRADIENT_STOP_2D GetGradient()const;
 protected:

@@ -6,7 +6,9 @@ class ArenaModel;
 
 /*
  * Class: TArenaEngine
- * Purpose: Holds a list of models as well as 3rd party shaders.  
+ * Purpose: Holds a list of models as well as 3rd party shaders.
+ *
+ * SuperClass: TShaderHost - allows arena engine to host shaders
  */
 class _VIDEO_GRAPHICS TArenaEngine :
 	public TShaderHost

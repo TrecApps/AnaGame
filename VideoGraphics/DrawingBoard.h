@@ -11,7 +11,9 @@ class TWindow;
 
 /**
  * Class: DrawingBoard
- * Holds the Direct2D RenderTarget and provides methods on manipulatingit and retrieving Brushes to draw upon it
+ * Purpose: Holds the Direct2D RenderTarget and provides methods on manipulatingit and retrieving Brushes to draw upon it
+ * 
+ * SuperClass: TObject
  */
 class _VIDEO_GRAPHICS DrawingBoard : public TObject
 {

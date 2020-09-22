@@ -34,6 +34,8 @@ typedef struct BasicShaderDetails
 /**
  * Class: TShaderParser
  * Purpose: Parses information about a shader from a TML file
+ * 
+ * SuperClass: Parser_ - Allows Shaders to be parsed in Anagames parsing architexture
  */
 class TShaderParser :
 	public Parser_
@@ -74,6 +76,8 @@ public:
 	 * Return: bool 
 	 * 
 	 * Note: In contrast to other parsers, this method is expected to be called after the relevant attributes are set, not before
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool Obj(TString& v) override;
 	// for the attribute name
@@ -84,6 +88,8 @@ public:
 	 * Parameters: TrecPointer<TString> v - vlue of the attribute
 	 *				TString& e - attribute key
 	 * Return: bool
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool Attribute(TrecPointer<TString> v, TString& e) override;
 	// for the attribute value (here it may be good that TStrings are used)
@@ -94,30 +100,38 @@ public:
 	 * Purpose: Submits the type of TML file being read,
 	 * Parameters: TSTring v - the TML file Type
 	 * Return: bool - false for now
+	 * 
+	 * Attributes: override
 	 */
-	virtual bool submitType(TString v);
+	virtual bool submitType(TString v) override;
 	/**
 	 * Method: ShaderParser::submitEdition
 	 * Purpose: Submits the edition for this TML file type
 	 * Parameters: TString v - the Version of the file
 	 * Return: bool - false for now
+	 * 
+	 * Attributes: override
 	 */
-	virtual bool submitEdition(TString v);
+	virtual bool submitEdition(TString v)override;
 
 	/**
 	 * Method: ShaderParser::goChild
 	 * Purpose: Unused by this type
 	 * Parameters: void
 	 * Return: bool - false, there are no 'children' in this TML type
+	 * 
+	 * Attributes: override
 	 */
-	virtual bool goChild();
+	virtual bool goChild()override;
 	/**
 	 * Method: ShaderParser::goParent
 	 * Purpose: Unused by this type
 	 * Parameters: void
 	 * Return: void
+	 * 
+	 * Attributes: override
 	 */
-	virtual void goParent();
+	virtual void goParent()override;
 
 	virtual UCHAR* GetAnaGameType()override;
 

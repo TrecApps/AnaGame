@@ -9,6 +9,13 @@
 
 #define IF_IS_LOOK_TO(camType)   if(camType)
 #define IF_IS_LOOK_AT(camType)   if(!camType)
+
+/**
+ * Class: TCamera
+ * Purpose: Supports a 3D camera interface and provides methods on manipulating the camera
+ * 
+ * SuperClass: TObject
+ */
 class _VIDEO_GRAPHICS TCamera :
 	public TObject
 {

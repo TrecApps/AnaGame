@@ -11,6 +11,8 @@
 /**
  * Class: TColor
  * Purpose: Anagames base class for color support
+ * 
+ * SuperClass: TObject
  */
 class _VIDEO_GRAPHICS TColor : public TObject
 {
@@ -123,6 +125,8 @@ public:
 	 * Purpose: Retrieves the red value of the color
 	 * Parameters: void
 	 * Returns: float - the red value of the color
+	 * 
+	 * Attributes: const
 	 */
 	float GetRed()const;
 
@@ -131,6 +135,8 @@ public:
 	 * Purpose: Retrieves the blue value of the color
 	 * Parameters: void
 	 * Returns: float - the blue value of the color
+	 * 
+	 * Attributes: const
 	 */
 	float GetBlue()const;
 
@@ -139,6 +145,8 @@ public:
 	 * Purpose: Retrieves the green value of the color
 	 * Parameters: void
 	 * Returns: float - the green value of the color
+	 * 
+	 * Attributes: const
 	 */
 	float GetGreen()const;
 
@@ -147,6 +155,8 @@ public:
 	 * Purpose: Retrieves the Opacity value of the color
 	 * Parameters: void
 	 * Returns: float - the opacity of the color
+	 * 
+	 * Attributes: const
 	 */
 	float GetOpacity()const;
 
@@ -156,6 +166,8 @@ public:
 	 * Purpose: Returns the color held by the object
 	 * Parameters: void
 	 * Returns: color_struct - the underlying color structure
+	 * 
+	 * Attributes: const
 	 */
 	color_struct GetColor()const;
 private:

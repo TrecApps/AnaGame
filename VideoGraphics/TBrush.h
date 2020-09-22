@@ -24,6 +24,8 @@ typedef enum class brush_type
  * Purpose: Applies rendering operations to the Drawing Board depending on the color settings applied to it
  *
  * Note: The base class only supports solid colors, linear gradients, and radial gradients. For bitmap support, use the TBitmapClass
+ * 
+ * SuperClass: TObject
  */
 class _VIDEO_GRAPHICS TBrush : public TObject
 {
@@ -54,6 +56,8 @@ public:
 	 * Purpose: fills the given Rectangle on the DrawingBoard
 	 * Parameters: const RECT_2D& r - The Rectangle to apply
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void FillRectangle(const RECT_2D& r);
 
@@ -71,6 +75,8 @@ public:
 	 * Purpose: fills the given Rounded Rectangle on the DrawingBoard
 	 * Parameters: const ROUNDED_RECT_2D& r - The Rounded Rectangle to apply
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void FillRoundedRectangle(const ROUNDED_RECT_2D& r);
 
@@ -88,6 +94,8 @@ public:
 	 * Purpose: fills the given Ellipse on the DrawingBoard
 	 * Parameters:const ELLIPSE_2D& r - The Ellipse to apply
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void FillEllipse(const ELLIPSE_2D& r);
 
@@ -105,6 +113,8 @@ public:
 	 * Purpose: fills the given Geometry on the DrawingBoard
 	 * Parameters: TrecPointer<TGeometry> geo - The Geometry to apply
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void FillGeometry(TrecPointer<TGeometry> geo);
 

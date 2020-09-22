@@ -91,6 +91,12 @@ typedef struct ShaderLayoutDesc
 	unsigned char elementCount;
 }ShaderLayoutDesc;
 
+/**
+ * Class: TShaderHost
+ * Purpose: Hosts shaders
+ * 
+ * SuperClass: TObject
+ */
 class _VIDEO_GRAPHICS TShaderHost :	public TObject
 {
 	friend class TShaderParser;

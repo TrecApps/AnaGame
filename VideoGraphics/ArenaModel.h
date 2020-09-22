@@ -70,6 +70,8 @@ public:
 /**
  * Class: ArenaModel
  * Purpose: Represents a Model in Anagame's 3D engine
+ * 
+ * SuperClass: TObject - allows access to environment scripts
  */
 class _VIDEO_GRAPHICS ArenaModel : public TObject
 {
@@ -114,6 +116,8 @@ public:
 	 * Purpose: Retrieves a String reporesentation of the model
 	 * Parameters: void
 	 * Returns: TSTring - the TString version of this model
+	 * 
+	 * Attributes: override
 	 */
 	TString toString() override;
 
@@ -122,6 +126,8 @@ public:
 	 * Purpose: Retrieves a variable in string form
 	 * Parameters: const TString& varName - the name of the variable to retrieve
 	 * Returns: TString the String version of the requested parameter, or empty if invalid
+	 * 
+	 * Attributes: override
 	 */
 	TString getVariableValueStr(const TString& varName) override;
 

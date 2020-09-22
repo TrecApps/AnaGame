@@ -19,6 +19,8 @@ typedef enum class geo_type
 /**
  * Class: TGeometry
  * Purpose: Helps simplifiy the management of geometries in 2D drawing
+ * 
+ * SuperClass: TObject
  */
 class _VIDEO_GRAPHICS TGeometry :
 	public TObject
@@ -84,6 +86,8 @@ public:
 	 * Purpose: Reports whether Geomatry construction was successful
 	 * Parameters: void
 	 * Returns:bool - whether the object is ready for use
+	 * 
+	 * Attributes: const
 	 */
 	bool IsValid()const;
 

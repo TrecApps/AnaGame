@@ -7,6 +7,8 @@
 /**
  * Class: TGradientStopCollection
  * Purpose: Holds a collection of gradientStops for use in creating non-solid TBrush's
+ * 
+ * SuperClass: TObject
  */
 class _VIDEO_GRAPHICS TGradientStopCollection :	public TObject
 {
@@ -50,6 +52,8 @@ public:
 	 * Purpose: Reports the current count of the collected gradients
 	 * Parameters: void
 	 * Returns: UINT - the number of gradients currently held
+	 * 
+	 * Attributes: const
 	 */
 	UINT GetGradientCount()const;
 	
@@ -59,6 +63,8 @@ public:
 	 * Purpose: Reports whether the desired index is within bounds
 	 * Parameters: UNIT index - the index of the gradient
 	 * Returns: bool - whether the specified index is within bounds
+	 * 
+	 * Attributes: const
 	 */
 	bool IsValid(UINT index)const;
 
@@ -67,6 +73,8 @@ public:
 	 * Purpose: Retrieves the Gradient at the specified location
 	 * Parameters: UINT index - the index of the gradient
 	 * Returns: TGradientStop - the Gradient requested
+	 * 
+	 * Attributes: const
 	 */
 	TGradientStop GetGradientStopAt(UINT index)const;
 
@@ -123,6 +131,8 @@ public:
 	 * Purpose: Returns the collection in a form compatible with Direct2D
 	 * Parameters: void
 	 * Returns: TDataArray<GRADIENT_STOP_2D> - the raw gradient collection, compatible with Direct2D
+	 * 
+	 * Attributes: const
 	 */
 	TDataArray<GRADIENT_STOP_2D> GetRawCollection()const;
 protected:

@@ -23,6 +23,8 @@ protected:
 /**
  * Class: T2DSpriteEngine
  * Purpose: Hosts a simple Sprite collection
+ * 
+ * SuperClass: TObject - allows access by Environment Scripts
  */
 class _VIDEO_GRAPHICS T2DSpriteEngine :
     public TObject
