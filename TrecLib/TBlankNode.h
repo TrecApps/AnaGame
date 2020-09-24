@@ -12,7 +12,7 @@
 class TBlankNode :
     public TObjectNode
 {
-
+public:
 	/**
 	 * Method: TBlankNode::GetType
 	 * Purpose: Returns a String Representation of the object type
