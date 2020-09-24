@@ -281,7 +281,7 @@ void TWindow::Draw()
  * Parameters:
  * Returns:
  *
- * DEPRICATED
+ * deprecated
  */
 void TWindow::Draw(Page& draw)
 {
@@ -522,7 +522,7 @@ bool TWindow::OnDestroy()
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED in favor of the Ide Window/IDE Page
+ * Note: deprecated in favor of the Ide Window/IDE Page
  */
 TrecPointer<Page> TWindow::GetHandlePage(bool singleton)
 {
@@ -548,7 +548,7 @@ TrecPointer<Page> TWindow::GetHandlePage(bool singleton)
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED in favor of the Ide Window/IDE Page
+ * Note: deprecated in favor of the Ide Window/IDE Page
  */
 TrecPointer<Page> TWindow::GetHandlePage(const TString& name)
 {
@@ -570,7 +570,7 @@ TrecPointer<Page> TWindow::GetHandlePage(const TString& name)
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED in favor of the Ide Window/IDE Page
+ * Note: deprecated in favor of the Ide Window/IDE Page
  */
 TrecPointer<Page> TWindow::Get3DPage(bool singleton, TString& engineId)
 {
@@ -597,7 +597,7 @@ TrecPointer<Page> TWindow::Get3DPage(bool singleton, TString& engineId)
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED in favor of the Ide Window/IDE Page
+ * Note: deprecated in favor of the Ide Window/IDE Page
  */
 TrecPointer<Page> TWindow::Get3DPage(bool singleton, TrecPointer<TArenaEngine> engine)
 {
@@ -665,7 +665,7 @@ void TWindow::SetSelf(TrecPointer<TWindow> win)
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED in favor of the Ide Window/IDE Page
+ * Note: deprecated in favor of the Ide Window/IDE Page
  */
 TrecPointer<Page> TWindow::GetPageByArea(D2D1_RECT_F r)
 {

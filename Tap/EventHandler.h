@@ -102,7 +102,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
 	 */
 	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut);
 	/**
@@ -111,7 +111,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut);
 	/**
@@ -120,7 +120,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
 	 */
 	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut);
 	/**
@@ -129,7 +129,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut);
 	/**
@@ -138,7 +138,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
 	 */
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut);
 	/**
@@ -147,7 +147,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut);
 	/**
@@ -156,7 +156,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
 	 */
 	afx_msg virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut);
 	/**
@@ -165,7 +165,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
 	 */
 	afx_msg virtual void OnResize(D2D1_RECT_F newSize);
 
@@ -183,7 +183,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
 	 */
 	virtual void Draw();
 

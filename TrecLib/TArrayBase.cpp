@@ -30,7 +30,7 @@ TArrayBase::~TArrayBase()
  * Parameters: void
  * Returns: UCHAR* array expressing the type of this object
  *
- * Note: DEPRICATED - should not be used in Anagame development
+ * Note: deprecated - should not be used in Anagame development
  */
 UCHAR * TArrayBase::GetAnaGameType()
 {

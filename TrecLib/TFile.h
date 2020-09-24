@@ -199,7 +199,7 @@ public:
 	* Parameters: void
 	* Returns: UCHAR* - the AnaGame type
 	*
-	* Note: DEPRICATED
+	* Note: deprecated
 	*/
 	virtual UCHAR* GetAnaGameType() override;
 

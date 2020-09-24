@@ -120,7 +120,7 @@ void Parser_::goParent()
 * Parameters: void
 * Returns: UCHAR* - AnaGame representation of the objects type
 *
-* Note: DEPRICATED
+* Note: deprecated
 */
 UCHAR * Parser_::GetAnaGameType()
 {

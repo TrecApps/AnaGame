@@ -108,7 +108,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - in favor of the IDE Page in the TIdeWindow
+	 * Note: deprecated - in favor of the IDE Page in the TIdeWindow
 	 */
 	static TrecPointer<Page> GetSmallPage(TrecPointer<TInstance> in, TrecPointer<TWindow> window, D2D1_RECT_F area);
 
@@ -193,7 +193,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED 
+	 * Note: deprecated 
 	 */
 	virtual UCHAR* GetAnaGameType()override;
 
@@ -203,7 +203,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - Use Resize or SetArea instead
+	 * Note: deprecated - Use Resize or SetArea instead
 	 */
 	afx_msg void OnSize(UINT nType, int cx,	int cy);
 
@@ -484,7 +484,7 @@ public:
 	 * Parameters: TrecSubPointer<EventHandler, MiniHandler> mh - the miniHandler to set
 	 * Returns: void
 	 *
-	 * Note: DEPRICATED - MiniHandler class is depricated so this method is as well
+	 * Note: deprecated - MiniHandler class is deprecated so this method is as well
 	 */
 	void SetMiniHandler(TrecSubPointer<EventHandler, MiniHandler> mh);
 

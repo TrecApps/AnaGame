@@ -422,6 +422,8 @@ public:
 	* Parameters: CArchive * ar - File to read from
 	* Returns: int
 	* Note: DEPRECIATED - Functionality should be handled by a compatible Anaface-HTML parser
+	 * 
+	 * Attributes: override; deprecated
 	*/
 	virtual int loadFromHTML(TFile* ar) override;
 	/*
@@ -431,6 +433,8 @@ public:
 	*				int childLevel - the generation if the TControl
 	*				bool overrideChildren - whether to ignore the children to save
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	virtual void storeInTML(TFile* ar, int childLevel, bool ov = false) override;
 	/*
@@ -438,6 +442,8 @@ public:
 	* Purpose: Stores the control in an HTML format
 	* Parameters: CArchive * ar - the file to write to
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	virtual void storeInHTML(TFile* ar) override;
 
@@ -446,6 +452,8 @@ public:
 	* Purpose: Sets up the TTextFeild with Text Specific attributes
 	* Parameters: RECT r - the location that the control would work in
 	* Returns: bool - success (currently arbitrarily)
+	 * 
+	 * Attributes: override
 	*/
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d) override;
 
@@ -454,6 +462,8 @@ public:
 	* Purpose: Draws the text that it was given
 	* Parameters: void
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	virtual void onDraw(TObject* obj = nullptr) override;
 	/*
@@ -461,6 +471,8 @@ public:
 	* Purpose: Determines how high the control HAS to be that it was still functional
 	* Parameters: void
 	* Returns: UINT - The minimum height control needed
+	 * 
+	 * Attributes: override
 	*/
 	UINT determineMinHeightNeeded()override;
 	/*
@@ -468,6 +480,8 @@ public:
 	* Purpose: Sets a new location for the Control
 	* Parameters: RECT& r - the new location
 	* Returns: void
+	 * 
+	 * Attributes: override; deprecated
 	*/
 	void SetNewLocation(const D2D1_RECT_F& r)override;
 
@@ -479,6 +493,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 	/*

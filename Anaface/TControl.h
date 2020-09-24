@@ -73,9 +73,9 @@ typedef enum class R_Message_Type
 	On_Hover,          // Mouse is over the control
 	On_Hover_Leave,    // Mouse leaves the control
 	On_Right_Click,    // User presses down and releases right mouse button
-	On_Click_Release,  // (DEPRICATED)
+	On_Click_Release,  // (deprecated)
 	On_Text_Change,    // The text of this control has changed
-	On_Right_Release,  // (DEPRICATED)
+	On_Right_Release,  // (deprecated)
 	On_sel_change,     // A Selection has changed
 	On_check,          // a Checkbox status has been changed
 	On_radio_change,   // A Radio Button group has been updated
@@ -173,7 +173,7 @@ typedef enum class TShape {
 /**
  * Enum Class: BrushMarker
  * Purpose: Allows TControls to draw with special styles if specified in the ML
- * Note: DEPRICATED - TBrush handles this internally
+ * Note: deprecated - TBrush handles this internally
 */
 typedef enum class BrushMarker
 {
@@ -1024,6 +1024,8 @@ private:
 /**
  * Class: TControlParentHolder
  * Purpose: Implenents the TParentHolder to allow TControls to act as parents to other TControls
+ * 
+ * SuperClass: TParentHolder
  */
 class _ANAFACE_DLL TControlParentHolder: public TParentHolder
 {
@@ -1058,6 +1060,8 @@ public:
 	 * Parameters: TrecPointerSoft<TControl> cur - the control making the call
 	 *				TrecPointer<TControl> newTControl - the Control to replace it with
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void SwitchChildControl(TrecPointerSoft<TControl> cur, TrecPointer<TControl> newTControl)override;
 
@@ -1067,8 +1071,10 @@ public:
 	 * Purpose: Allows the Retrieval of the Parent Control (if the holder is holding a control)
 	 * Parameters: void
 	 * Returns: TrecPointer<TControl> - the Parent (the default returns null but the TControlParentHolder will return the parent)
+	 * 
+	 * Attributes: override
 	 */
-	virtual TrecPointer<TControl> GetParent();
+	virtual TrecPointer<TControl> GetParent()override;
 
 
 	/**
@@ -1076,6 +1082,8 @@ public:
 	 * Purpose: Reports to the Child whether the parent holding it is a Scroller Control
 	 * Parameters: void
 	 * Returns: bool - whether or not the parent is a Scroller Control
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool IsScroller() override;
 private:
@@ -1088,6 +1096,8 @@ private:
 /**
  * Class: TControl
  * Purpose: Base Class for all Controls in Anaface
+ * 
+ * SuperClass: TObject
  */
 class _ANAFACE_DLL TControl : public TObject
 {
@@ -1158,6 +1168,8 @@ public:
 	* Parameters: CArchive* ar - archive to read the HTML file
 	* Returns: int - error
 	* Note: DEPRECIATED - Functionality should be handled by an HTML parser that's Anaface Compatible
+	* 
+	* Attributes: deprecated
 	*/
 	virtual int loadFromHTML(TFile* ar);
 
@@ -1190,6 +1202,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	* 
+	* Attributes: virtual; message
 	 */
 	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -1202,6 +1216,8 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
+	* 
+	* Attributes: virtual; message
 	*/
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons);
 
@@ -1214,6 +1230,8 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
+	* 
+	* Attributes: virtual; message
 	*/
 	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls);
 
@@ -1226,6 +1244,8 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
+	* 
+	* Attributes: virtual; message
 	*/
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls);
 
@@ -1240,6 +1260,8 @@ public:
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	 * Returns: bool - whether the leave occured
+	* 
+	* Attributes: virtual; message
 	 */
 	afx_msg bool OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -1251,6 +1273,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	* 
+	* Attributes: virtual; message
 	*/
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -1262,6 +1286,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	* 
+	* Attributes: virtual; message
 	*/
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -1275,6 +1301,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	* 
+	* Attributes: virtual; message
 	*/
 	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput *mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -1287,6 +1315,8 @@ public:
 	 *				TPoint point - the Point where event occured
 	 *				TrecPointer<TControl>& mOut - allows control to mark itself - not used in this method
 	 * Returns: void
+	* 
+	* Attributes: message
 	 */
 	afx_msg void Builder_OnLButtonUp(UINT flags, TPoint point, TControl** mOut);
 
@@ -1298,6 +1328,8 @@ public:
 	*				TrecPointer<TControl>& mOut - allows control to mark itself - not used in this method
 	*				messageOutput* o - Allows control to keep track of how other controls respond to the call
 	* Returns: void
+	* 
+	* Attributes: message
 	*/
 	afx_msg void Builder_OnLButtonDown(UINT flags, TPoint point, TControl** mOut, messageOutput* o);
 
@@ -1310,6 +1342,8 @@ public:
 	*				const RECT& bounds - bounds of the parent
 	*				messageOutput* o - Allows control to keep track of how other controls respond to the call
 	* Returns: void
+	* 
+	* Attributes: message
 	*/
 	afx_msg void Builder_OnMouseMove(UINT flags, TPoint, TControl** mOut,const RECT&, messageOutput* o);
 
@@ -1345,6 +1379,8 @@ public:
 	 * Parameters: RECT contain - the area it can use
 	 * Returns: bool - success
 	 * Note: You Must call this on the Root Control before any control can be drawn on sreen
+	* 
+	* Attributes: virtual
 	 */
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d);
 
@@ -1353,6 +1389,8 @@ public:
 	 * Purpose: Resizes the control upon the window being resized
 	 * Parameters: RECT r - the new location for the control
 	 * Returns: void
+	* 
+	* Attributes: virtual
 	 */
 	virtual void Resize(D2D1_RECT_F&);
 
@@ -1378,6 +1416,8 @@ public:
 	 * Purpose: Draws the control
 	 * Parameters: TObject* obj - Raw reference to a TObject that might have specific text to say
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void onDraw(TObject* obj = nullptr);
 
@@ -1386,6 +1426,8 @@ public:
 	* Purpose: Retrieves the current physical location on the RenderTarget of the control
 	* Parameters: void
 	* Returns: D2D1_RECT_F - the location
+	* 
+	* Attributes: virtual
 	*/
 	virtual D2D1_RECT_F getLocation();
 
@@ -1492,6 +1534,8 @@ public:
 	* Purpose: Sets the Control in a new location
 	* Parameters: RECT R - the new location
 	* Returns: void
+	* 
+	* Attributes: virtual
 	*/
 	virtual void setLocation(D2D1_RECT_F r);
 
@@ -1545,6 +1589,8 @@ public:
 	* Purpose: Determines the minimum height needed, base returns the current height, useful for sub classes
 	* Parameters: void
 	* Returns: UINT - the minimum height needed
+	* 
+	* Attributes: virtual
 	*/
 	virtual UINT determineMinHeightNeeded();
 
@@ -1560,6 +1606,8 @@ public:
 	*		some of whom might find ways to shrink themselves
 	* Parameters: void
 	* Returns: void
+	* 
+	* Attributes: virtual
 	*/
 	virtual void ShrinkHeight();
 
@@ -1629,15 +1677,19 @@ public:
 
 	// Methods to support Scrolling
 
-	/* Purpose: to allow the TControl to shift it's contents according to how it is scrolled.
+	/**
+	 * Method: TControl::onScroll
+	 * Purpose: to allow the TControl to shift it's contents according to how it is scrolled.
 	 * Caller: Member TScrollBars, either vScroll or hScroll
-	 * Parameter: int (x) how to shift itself horizontally
-	 * Parameter: int (y) how to shift itself vertically
+	 * Parameters: float x - how to shift itself horizontally
+	 *				 float y - how to shift itself vertically
 	 * return: bool, just because
-	 * Details: Changes the contents location on the board, reflected in the changes to
+	 * Note: Changes the contents location on the board, reflected in the changes to
 	 *		TControl's location, but not where it draws, hence why it's own snip stays the same
 	 *		However, the contents might include child locations so their snips might have to be
 	 *		updated
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual bool onScroll(float x, float y);
 
@@ -1712,6 +1764,8 @@ protected:
 	 * Parameters: TrecPointerSoft<TControl> curControl - the Control making the call (used to help parent control identify which child to replace)
 	 *				 TrecPointer<TControl> newControl - the Control to replace it with
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPointer<TControl> newControl);
 
@@ -1745,6 +1799,8 @@ protected:
 	 * Purpose: Sets up a Parent Holder for this Control (used so that no redundant holder object is created)
 	 * Parameters: void
 	 * Returns: TrecPointer<TParentHolder> - the holder object referencing this control as a parent control
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual TrecPointer <TParentHolder> GetParentReference();
 

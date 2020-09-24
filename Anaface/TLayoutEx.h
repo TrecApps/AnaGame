@@ -4,6 +4,8 @@
 /**
  * Class: TLayoutEx
  * Purpose: Extends TLayout to allow Rows and Columns to be added and removed after creation
+ * 
+ * SuperClass: TLayout
  */
 class _ANAFACE_DLL TLayoutEx :	public TLayout
 {
@@ -86,6 +88,8 @@ public:
 	 * Purpose: Sets up the attributes of the TLayout by processing the attributes and playing it out
 	 * Parameters: RECT margin - the location the layout has to work with
 	 * Returns: bool - success
+	* 
+	* Attributes: override
 	 */
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d)override;
 
@@ -94,6 +98,8 @@ public:
 	 * Purpose: Draws out the Layout Generated
 	 * Parameters: void
 	 * Returns: void
+	* 
+	* Attributes: override
 	 */
 	virtual void onDraw(TObject* obj = nullptr) override;
 	virtual UCHAR* GetAnaGameType()override;

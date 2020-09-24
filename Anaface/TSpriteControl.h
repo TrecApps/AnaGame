@@ -5,6 +5,8 @@
 /**
  * Class: TSpriteControl
  * Purpose: Holds a 2D Sprite Engine
+ * 
+ * SuperClass: TContro;
  */
 class TSpriteControl :
     public TControl
@@ -42,6 +44,8 @@ class TSpriteControl :
 	 * Purpose: Draws the control
 	 * Parameters: TObject* obj - Raw reference to a TObject that might have specific text to say
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void onDraw(TObject* obj = nullptr) override;
 

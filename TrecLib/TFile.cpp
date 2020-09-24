@@ -328,10 +328,11 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
 {
 	bool success = false;
 	rString.Empty();
+	char letter[1] = { '\0' };
 	switch (fileEncode)
 	{
 	case FileEncodingType::fet_acsii:
-		char letter[1];
+		
 		while (Read(&letter, 1))
 		{
 			if (chars.Find(letter[0]) != 1)
@@ -482,7 +483,7 @@ TString TFile::GetFileDirectory()
 * Parameters: void
 * Returns: UCHAR* - the AnaGame type 
 * 
-* Note: DEPRICATED
+* Note: deprecated
 */
 UCHAR * TFile::GetAnaGameType()
 {

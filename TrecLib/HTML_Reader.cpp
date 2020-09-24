@@ -140,7 +140,7 @@ bool HTML_Reader::read(int * i)
  * Parameters: void
  * Returns: UCHAR* - the AnaGame type ID format
  *
- * Note: DEPRICATED
+ * Note: deprecated
  */
 UCHAR * HTML_Reader::GetAnaGameType()
 {

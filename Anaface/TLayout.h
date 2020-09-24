@@ -1,16 +1,20 @@
 #pragma once
 #include "TControl.h"
 
+/**
+ * Enum Class: orgLayout
+ * Purpose: how the layout is organized
+ */
 typedef enum class orgLayout
 {
-	grid,
-	VStack,
-	HStack,
-	VBuff,
-	HBuff,
-	VMix,
-	HMix,
-	tCanvas
+	grid,	// rows and columns, flexibility enabled
+	VStack, // Rows, fixed height
+	HStack, // Columns, fixed width
+	VBuff,	// Rows, enforced flexible height
+	HBuff,	// Columns, enforced flexible width
+	VMix,	// Rows, flexible or fixed height
+	HMix,	// Columns, flexible or fixed width
+	tCanvas	// UNUSED
 }orgLayut;
 
 typedef enum class conflictRes
@@ -35,6 +39,8 @@ typedef enum class specialLayout
 /**
  * Class: containerControl
  * Purpose: holds child controls in the layout and information on where in the layout the controls are
+ * 
+ * SuperClass: TObject
  */
 class containerControl : public TObject
 {
@@ -73,6 +79,8 @@ class TLayout;
 /**
  * Class: TLayoutParentHolder
  * Purpose: Allows a reference to a TLayout to be held by the Layouts controls
+ * 
+ * SuperClass: TParentHolder
  */
 class TLayoutParentHolder : public TParentHolder
 {
@@ -98,6 +106,8 @@ public:
 	 * Parameters: TrecPointerSoft<TControl> cur - the control making the call
 	 *				TrecPointer<TControl> newTControl - the Control to replace it with
 	 * Returns: void
+	* 
+	* Attributes: override
 	 */
 	virtual void SwitchChildControl(TrecPointerSoft<TControl> cur, TrecPointer<TControl> newTControl)override;
 
@@ -107,8 +117,10 @@ public:
 	 * Purpose: Allows the Retrieval of the Parent Control (if the holder is holding a control)
 	 * Parameters: void
 	 * Returns: TrecPointer<TControl> - the Parent (the default returns null but the TLayoutParentHolder will return the parent)
+	 * 
+	 * Attributes: override
 	 */
-	virtual TrecPointer<TControl> GetParent();
+	virtual TrecPointer<TControl> GetParent()override;
 
 
 	/**
@@ -116,6 +128,8 @@ public:
 	 * Purpose: Reports to the Child whether the parent holding it is a Scroller Control
 	 * Parameters: void
 	 * Returns: bool - whether or not the parent is a Scroller Control
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool IsScroller() override;
 
@@ -129,6 +143,8 @@ private:
 /**
  * Class: TLayout
  * Purpose: Extends TControl to hold child controls in an organized manner
+ * 
+ * SuperClass: TControl
  */
 class _ANAFACE_DLL TLayout :
 	public TControl
@@ -242,6 +258,8 @@ public:
 	* Parameters: CArchive* ar - the file to read from
 	* Returns: int - 0
 	* Note: DEPRECIATED - HTML reading functionality is to be handled by an HTML parser
+	* 
+	* Attributes: override; deprecated
 	 */
 	int loadFromHTML(TFile* ar) override;
 	/*
@@ -251,6 +269,8 @@ public:
 	*				int childLevel - the generation the Layout is (how many dashes to write
 	*				bool ov - not used
 	* Returns: void
+	* 
+	* Attributes: override
 	*/
 	void storeInTML(TFile* ar, int childLevel,bool ov = false)override;
 	/*
@@ -258,6 +278,8 @@ public:
 	* Purpose: Allows the layout to save itself as an HTML tag
 	* Parameters: CArchive * ar - the file to write to
 	* Returns: void
+	* 
+	* Attributes: override
 	*/
 	void storeInHTML(TFile* ar)override;
 
@@ -266,6 +288,8 @@ public:
 	* Purpose: Sets up the attributes of the TLayout by processing the attributes and playing it out
 	* Parameters: RECT margin - the location the layout has to work with
 	* Returns: bool - success
+	* 
+	* Attributes: override
 	*/
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d)override;
 	/*
@@ -273,6 +297,8 @@ public:
 	* Purpose: Draws out the Layout Generated
 	* Parameters: void
 	* Returns: void
+	* 
+	* Attributes: override
 	*/
 	virtual void onDraw(TObject* obj = nullptr) override;
 
@@ -310,6 +336,8 @@ public:
 	* Purpose: Reports the minimum height needed by the Layout and the child controls
 	* Parameters: void
 	* Returns: UINT - Returns the minimum height needed by the Layout, not the current height
+	* 
+	* Attributes: override
 	*/
 	virtual UINT determineMinHeightNeeded()override;
 	/*
@@ -317,6 +345,8 @@ public:
 	* Purpose: Sets the new location of the Layout and adjusts the child controls accordingly
 	* Parameters: RECT& r - the new location to occupy
 	* Returns: void
+	* 
+	* Attributes: override
 	*/
 	void SetNewLocation(const D2D1_RECT_F& r)override;
 	/*
@@ -399,6 +429,8 @@ protected:
 	 * Parameters: TrecPointerSoft<TControl> curControl - the control making the call
 	 *				TrecPointer<TControl> newTControl - the Control to replace it with
 	 * Returns: void
+	* 
+	* Attributes: override
 	 */
 	void SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPointer<TControl> newControl)override;
 
@@ -408,6 +440,8 @@ protected:
 	 * Purpose: Sets up a Parent Holder for this Control (used so that no redundant holder object is created)
 	 * Parameters: void
 	 * Returns: TrecPointer<TParentHolder> - the holder object referencing this control as a parent control
+	* 
+	* Attributes: override
 	 */
 	virtual TrecPointer <TParentHolder> GetParentReference()override;
 	

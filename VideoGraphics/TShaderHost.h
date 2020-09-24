@@ -45,12 +45,14 @@ typedef struct ConstantBufferMark
 }ConstantBufferMark;
 
 /*
-* struct ShaderProgram
+* Class: ShaderProgram
 * Holds all of the resources that constitute a shader as well as indexes to imprtant
 *	resources within the shader
 */
-typedef struct ShaderProgram
+class ShaderProgram
 {
+public:
+	ShaderProgram();
 	TrecComPointer<ID3D11VertexShader> vs;
 	TrecComPointer<ID3D11ComputeShader> cs;
 	TrecComPointer<ID3D11DomainShader> ds;
@@ -69,17 +71,18 @@ typedef struct ShaderProgram
 	signed char viewLoc;
 	signed char TextureCount;
 	bool mvp_cpu;
-}ShaderProgram;
+};
 
 /*
 * struct DefaultShaderProgram
 * Holds a Default shader
 */
-typedef struct DefaultShaderProgram
+class DefaultShaderProgram
 {
+public: 
 	ShaderProgram sp;
 	DefaultShader type;
-}DefaultShaderProgram;
+};
 
 /*
 * struct ShaderLayoutDesc

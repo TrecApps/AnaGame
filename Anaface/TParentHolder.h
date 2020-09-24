@@ -8,6 +8,7 @@ class TControl;
  * Class: TParentHolder
  * Purpose: Provide's the TControl an abstract Interface for interacting with it's parent, whether that parent is a TControl
  *      or another object that holds a TControl
+ * SuperClass: TObject
  */
 class _ANAFACE_DLL TParentHolder : public TObject
 {
@@ -36,6 +37,8 @@ public:
      * Parameters: TrecPointerSoft<TControl> c1 - the current child control (lets the parent control know which control to replace it with
      *              TrecPointer<TControl> c2 - the control to swap it with
      * Returns: void
+	 * 
+	 * Attributes: abstract
      */
 	virtual void SwitchChildControl(TrecPointerSoft<TControl> c1, TrecPointer<TControl> c2) = 0;
 
@@ -44,6 +47,8 @@ public:
      * Purpose: Allows the Retrieval of the Parent Control (if the holder is holding a control)
      * Parameters: void
      * Returns: TrecPointer<TControl> - the Parent (the default returns null but the TControlParentHolder will return the parent)
+	 * 
+	 * Attributes: virtual
      */
 	virtual TrecPointer<TControl> GetParent();
 
@@ -52,6 +57,8 @@ public:
      * Purpose: Reports to the Child whether the parent holding it is a Scroller Control
      * Parameters: void
      * Returns: bool - whether or not the parent is a Scroller Control (default is false, but the Holder that holds a control can determine otherwise)
+	 * 
+	 * Attributes: virtual
      */
     virtual bool IsScroller();
 };

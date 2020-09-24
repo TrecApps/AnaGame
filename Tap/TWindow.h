@@ -109,7 +109,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * DEPRICATED
+	 * deprecated
 	 */
 	void Draw(Page& draw);
 
@@ -215,7 +215,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
 	 */
 	TrecPointer<Page> GetHandlePage(bool singleton);
 
@@ -225,7 +225,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
 	 */
 	TrecPointer<Page> GetHandlePage(const TString& name);
 
@@ -235,7 +235,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
 	 */
 	TrecPointer<Page> Get3DPage(bool singleton, TString& engineId);
 
@@ -245,7 +245,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
 	 */
 	TrecPointer<Page> Get3DPage(bool singleton, TrecPointer<TArenaEngine> engine);
 
@@ -282,7 +282,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
 	 */
 	TrecPointer<Page> GetPageByArea(D2D1_RECT_F r);
 
@@ -413,7 +413,7 @@ protected:
 	TMap<Page> keyPages;
 	// Singleton Pages
 	/**
-	 * DEPRICATED
+	 * deprecated
 	 */
 	TrecPointer<Page> _3DPage, handlePage;
 

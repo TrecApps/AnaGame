@@ -16,6 +16,8 @@ typedef enum class prompt_mode
 /**
  * Class: TPromptControl
  * Purpose: Allows Anagame to support terminals in it's interface
+ * 
+ * SuperClass: TTextField
  */
 class _ANAFACE_DLL TPromptControl :
 	public TTextField
@@ -52,6 +54,8 @@ public:
 	* Purpose: Sets up the TPromptControl with Prompt Specific attributes
 	* Parameters: RECT r - the location that the control would work in
 	* Returns: bool - success (currently arbitrarily)
+	* 
+	* Attributes: override
 	*/
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d) override;
 
@@ -60,6 +64,8 @@ public:
 	* Purpose: Draws the text that it was given
 	* Parameters: TObject* obj - object used for databinding (unlikely to be used here)
 	* Returns: void
+	* 
+	* Attributes: override
 	*/
 	virtual void onDraw(TObject* obj = nullptr) override;
 
@@ -71,8 +77,10 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	* 
+	* Attributes: override; message
 	*/
-	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl);
+	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 	/*
 	* Method: TPromptControl::OnChar
 	* Purpose: Adds a character to the String
@@ -83,8 +91,10 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	* 
+	* Attributes: override; message
 	*/
-	afx_msg bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 
 	/*
 	 * Method: TPromptControl::
@@ -173,6 +183,8 @@ protected:
 	 * Parameters: WCHAR ch - the character to add
 	 *				int - the number of times to add that character
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void InputChar(wchar_t, int)override;
 };

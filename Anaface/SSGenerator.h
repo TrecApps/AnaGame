@@ -5,6 +5,8 @@
 /*
 * Class: CSSGenerator
 * Purpose: Parse CSS documents and returns a list of styles
+* 
+* SuperClass: TObject
 */
 class CSSGenerator : public TObject
 {

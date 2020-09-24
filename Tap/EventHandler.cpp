@@ -109,7 +109,7 @@ bool EventHandler::OnDestroy()
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+ * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
 void EventHandler::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
 {
@@ -121,7 +121,7 @@ void EventHandler::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+ * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
 void EventHandler::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
 {
@@ -133,7 +133,7 @@ void EventHandler::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+ * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
 void EventHandler::OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut)
 {
@@ -145,7 +145,7 @@ void EventHandler::OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut)
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+ * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
 void EventHandler::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut)
 {
@@ -157,7 +157,7 @@ void EventHandler::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut)
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+ * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
 void EventHandler::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
 {
@@ -169,7 +169,7 @@ void EventHandler::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOu
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+ * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
 void EventHandler::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
 {
@@ -181,7 +181,7 @@ void EventHandler::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+ * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
 bool EventHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)
 {
@@ -194,7 +194,7 @@ bool EventHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, 
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+ * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
 void EventHandler::OnResize(D2D1_RECT_F newSize)
 {
@@ -217,7 +217,7 @@ TDataArray<eventNameID>& EventHandler::GetEventNameList()
  * Parameters:
  * Returns:
  *
- * Note: DEPRICATED - should be handled by Instance, Window, Page and TControls, not by the Handler
+ * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
 void EventHandler::Draw()
 {

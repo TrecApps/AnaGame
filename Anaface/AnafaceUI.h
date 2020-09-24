@@ -33,6 +33,8 @@ typedef struct tempHold
 * Class: AnafaceUI
 * Purpose: enables holding multiple controls in the same space, one at a time.
 *	Use for different pages
+* 
+* SuperClass: TControl
 */
 class _ANAFACE_DLL AnafaceUI : public TControl
 {
@@ -71,6 +73,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 	/*
@@ -82,6 +86,8 @@ public:
 	 *			TDataArray<EventID_Cred>& eventAr - events and their handlers documented by the control
 	 *			TDataArray<TControl*>& clickedControl - allows the control to report that this is a contestant for clicks
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */	
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 
@@ -94,6 +100,8 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
+	 * 
+	 * Attributes: override; message
 	*/
 	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)override;
 	/*
@@ -105,6 +113,8 @@ public:
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
+	 * 
+	 * Attributes: override; message
 	*/
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)override;
 
@@ -116,6 +126,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	 * 
+	 * Attributes: override; message
 	*/
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 	/*
@@ -126,6 +138,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	 * 
+	 * Attributes: override; message
 	*/
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 	/*
@@ -138,6 +152,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	 * 
+	 * Attributes: override; message
 	*/
 	afx_msg virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 
@@ -156,6 +172,8 @@ public:
 	 * Parameters: TrecPointerSoft<TControl> curControl - the Control making the call (used to help parent control identify which child to replace)
 	 *				 TrecPointer<TControl> newControl - the Control to replace it with
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPointer<TControl> newControl)override;
 
@@ -165,6 +183,8 @@ public:
 	* Purpose: Sets up the switching control with AnafaceUI specific attributes
 	* Parameters: RECT container - the location the control will be stored
 	* Returns: bool
+	 * 
+	 * Attributes: override
 	*/
 	bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d)override;
 	/*
@@ -195,6 +215,8 @@ public:
 	* Purpose: Draws the control and any tabs present
 	* Parameters: void
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	void onDraw(TObject* obj) override;
 	/*
@@ -236,6 +258,8 @@ public:
 	 * Purpose: Resizes the control upon the window being resized
 	 * Parameters: D2D1_RECT_F& r - the new location for the control
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	void Resize(D2D1_RECT_F& r)override;
 

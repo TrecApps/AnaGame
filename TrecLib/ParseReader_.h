@@ -46,7 +46,7 @@ public:
 	* Parameters: void
 	* Returns: UCHAR* - the AnaGame type ID format
 	*
-	* Attribtues: DEPRICATED
+	* Attribtues: deprecated
 	*/
 	virtual UCHAR* GetAnaGameType();
 
@@ -75,7 +75,7 @@ protected:
 	 */
 	bool materials;
 	/**
-	 * DEPRICATED - used when Reader was still able to use MFC's CArchive
+	 * deprecated - used when Reader was still able to use MFC's CArchive
 	 */
 	bool usingTFile;
 };

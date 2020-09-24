@@ -8,6 +8,8 @@
 /**
  * Class: AnimationBuilder
  * Purpose: Holds basic information and attributes about an animation template until it can be used to create an animation object
+ * 
+ * SuperClass: TObject
  */
 class _ANAFACE_DLL AnimationBuilder : public TObject
 {

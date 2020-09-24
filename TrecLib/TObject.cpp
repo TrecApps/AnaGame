@@ -35,7 +35,7 @@ TObject::~TObject()
 * Parameters: void
 * Returns: UCHAR* - the AnaGame type represenation 
 *
-* Note: DEPRICATED
+* Note: deprecated
 */
 UCHAR * TObject::GetAnaGameType()
 {

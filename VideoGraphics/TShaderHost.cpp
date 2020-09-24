@@ -921,3 +921,24 @@ int TShaderHost::ReplaceConstantBuffer_(int shaderID, unsigned char slot, TrecCo
 
 	return 0;
 }
+
+ShaderProgram::ShaderProgram()
+{
+	bufferSize = 0;
+	cs.Nullify();
+	ds.Nullify();
+	elementCount = 0;
+	elements = 0;
+	gs.Nullify();
+	hs.Nullify();
+	layout.Nullify();
+	layoutError = 0;
+	mvp_cpu = false;
+	ps.Nullify();
+	TextureCount = 0;
+	vs.Nullify();
+	cameraLoc = -1;
+	colorLoc = -1;
+	modelLoc = -1;
+	viewLoc = -1;
+}

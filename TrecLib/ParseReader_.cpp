@@ -49,7 +49,7 @@ bool ParseReader_::read(int *)
 * Parameters: void
 * Returns: UCHAR* - the AnaGame type ID format
 *
-* Note: DEPRICATED
+* Note: deprecated
 */
 UCHAR * ParseReader_::GetAnaGameType()
 {

@@ -41,7 +41,7 @@ public:
 	* Parameters: void
 	* Returns: UCHAR* - the AnaGame type represenation
 	*
-	* Note: DEPRICATED
+	* Note: deprecated
 	*/
 	virtual UCHAR* GetAnaGameType();
 	/**

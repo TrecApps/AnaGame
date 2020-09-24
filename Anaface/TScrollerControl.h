@@ -4,6 +4,8 @@
 /**
  * Class: TScrollerControl
  * Purpose: Specializes in managing scrolling
+ * 
+ * SuperClass: TControl
  */
 class _ANAFACE_DLL TScrollerControl : public TControl
 {
@@ -31,6 +33,8 @@ public:
 	 * Purpose: Draws the control
 	 * Parameters: TObject* obj - Raw reference to a TObject that might have specific text to say
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	void onDraw(TObject* obj)override;
 
@@ -47,6 +51,8 @@ public:
 	 * Purpose: Resizes the control upon the window being resized
 	 * Parameters: RECT r - the new location for the control
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void Resize(D2D1_RECT_F&)override;
 
@@ -58,6 +64,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)override;
 	/**
@@ -69,6 +77,8 @@ public:
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)override;
 	/**
@@ -79,6 +89,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 
@@ -90,6 +102,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	 * 
+	 * Attributes: override; message
 	*/
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 
@@ -101,15 +115,19 @@ public:
 	 */
 	TrecPointer<TControl> GetChildControl();
 
-	/* Purpose: to allow the TControl to shift it's contents according to how it is scrolled.
+	/**
+	 * Method: TScrollerControl::onScroll 
+	 * Purpose: to allow the TControl to shift it's contents according to how it is scrolled.
 	 * Caller: Member TScrollBars, either vScroll or hScroll
-	 * Parameter: int (x) how to shift itself horizontally
-	 * Parameter: int (y) how to shift itself vertically
+	 * Parameters: float x - how to shift itself horizontally
+	 *				float y - how to shift itself vertically
 	 * return: bool, just because
-	 * Details: Changes the contents location on the board, reflected in the changes to
+	 * Note: Changes the contents location on the board, reflected in the changes to
 	 *		TControl's location, but not where it draws, hence why it's own snip stays the same
 	 *		However, the contents might include child locations so their snips might have to be
 	 *		updated
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool onScroll(float x, float y)override;
 
