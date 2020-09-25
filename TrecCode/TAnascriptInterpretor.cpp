@@ -783,6 +783,8 @@ ReportObject TAnascriptInterpretor::ProcessIf(TString& _if, UINT line)
 
     UINT newLine = line;
 
+    ULONGLONG ifEnd = 0;
+
     while (blockStack && file->ReadString(lineStr))
     {
         newLine++;
@@ -807,6 +809,7 @@ ReportObject TAnascriptInterpretor::ProcessIf(TString& _if, UINT line)
 
                 elseTokens = tokens;
                 elseString.Set(lineStr);
+                
             }
             else if (!tok.Compare(L"in") || !tok.Compare(L"if") || !tok.Compare(L"loop") || !tok.Compare(L"while"))
                 blockStack++;
@@ -862,7 +865,7 @@ ReportObject TAnascriptInterpretor::ProcessIf(TString& _if, UINT line)
     }
     blockStack++;
     
-    if (!throughElse && !elseString.GetSize())
+    if (!throughElse && elseString.GetSize())
     {
         while (blockStack && file->ReadString(lineStr))
         {

@@ -9,8 +9,7 @@
  * 
  * SuperClass: TObjectNode - Allows TBlankNode to be used by the TTreeDataBind control
  */
-class TBlankNode :
-    public TObjectNode
+class _TREC_LIB_DLL TBlankNode : public TObjectNode
 {
 public:
 	/**
