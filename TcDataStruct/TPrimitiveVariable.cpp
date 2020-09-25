@@ -193,7 +193,7 @@ void TPrimitiveVariable::Set(double value)
 void TPrimitiveVariable::Set(signed char value)
 {
     memcpy_s(&this->value, 8, &value, 1);
-    this->value >> 56;
+    this->value = this->value >> 56;
 
     type = type_one;
 }
@@ -207,7 +207,7 @@ void TPrimitiveVariable::Set(signed char value)
 void TPrimitiveVariable::Set(char value)
 {
     memcpy_s(&this->value, 8, &value, 1);
-    this->value >> 56;
+    this->value = this->value >> 56;
 
     type = type_one | type_unsigned;
 }
@@ -221,7 +221,7 @@ void TPrimitiveVariable::Set(char value)
 void TPrimitiveVariable::Set(UCHAR value)
 {
     memcpy_s(&this->value, 8, &value, 2);
-    this->value >> 48;
+    this->value = this->value >> 48;
 
     type = type_two | type_unsigned;
 }
@@ -235,7 +235,7 @@ void TPrimitiveVariable::Set(UCHAR value)
 void TPrimitiveVariable::Set(short value)
 {
     memcpy_s(&this->value, 8, &value, 2);
-    this->value >> 48;
+    this->value = this->value >> 48;
 
     type = type_two;
 }
@@ -249,7 +249,7 @@ void TPrimitiveVariable::Set(short value)
 void TPrimitiveVariable::Set(USHORT value)
 {
     memcpy_s(&this->value, 8, &value, 2);
-    this->value >> 48;
+    this->value = this->value >> 48;
 
     type = type_two | type_char;
 }
@@ -263,7 +263,7 @@ void TPrimitiveVariable::Set(USHORT value)
 void TPrimitiveVariable::Set(WCHAR value)
 {
     memcpy_s(&this->value, 8, &value, 2);
-    this->value >> 48;
+    this->value = this->value >> 48;
 
     type = type_two | type_char;
 }
@@ -277,7 +277,7 @@ void TPrimitiveVariable::Set(WCHAR value)
 void TPrimitiveVariable::Set(int value)
 {
     memcpy_s(&this->value, 8, &value, 4);
-    this->value >> 32;
+    this->value = this->value >> 32;
 
     type = type_four;
 }
@@ -291,7 +291,7 @@ void TPrimitiveVariable::Set(int value)
 void TPrimitiveVariable::Set(UINT value)
 {
     memcpy_s(&this->value, 8, &value, 4);
-    this->value >> 32;
+    this->value = this->value >> 32;
 
     type = type_four | type_unsigned;
 }
