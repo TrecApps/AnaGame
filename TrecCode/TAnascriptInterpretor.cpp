@@ -1698,7 +1698,7 @@ void TAnascriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject&
 
     tExp.Set(tExp.SubString(start, end));
 
-    if (tExp.Find(L'.') != 1)
+    if (tExp.Find(L'.') != -1)
     {
         double d;
         auto res = tExp.ConvertToDouble(d);

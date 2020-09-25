@@ -166,7 +166,7 @@ void TPrimitiveVariable::Set(float value)
 {
 
     memcpy_s(&this->value, 8, &value, 4);
-    this->value >> 32;
+    this->value = this->value >> 32;
 
     type = type_four | type_float;
 }
@@ -404,7 +404,7 @@ TString TPrimitiveVariable::GetString()
     {
         LONG64 l = static_cast<LONG64>(value);
 
-        ret.Format(L"lld", l);
+        ret.Format(L"%lld", l);
     }
     return ret;
 }
