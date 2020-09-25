@@ -4,6 +4,8 @@
 /**
  * Class: TerminalHandler
  * Purpose: Extends the EventHandler class to manage Terminal Pages
+ * 
+ * SuperClass: EventHandler
  */
 class _TAP_DLL TerminalHandler :
 	public EventHandler
@@ -40,6 +42,8 @@ public:
 	 * Purpose: Initializes the Handler so that it has direct Access to certain Controls held by the page
 	 * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void Initialize(TrecPointer<Page> page) override;
 
@@ -48,6 +52,8 @@ public:
 	 * Purpose: Handles Events produced from the set of TControls
 	 * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr)override;
 
@@ -56,6 +62,8 @@ public:
 	 * Purpose: Processes the message sent to the handler
 	 * Parameters: TrecPointer<HandlerMessage> message - the message to recieve and Process
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message)override;
 
@@ -80,6 +88,8 @@ private:
 	 * Purpose: Reports whether this Object is of the correct type to recieve the message
 	 * Parameters: TrecPointer<HandlerMessage> message - the message to scan
 	 * Returns: bool - true if the type matches, false oherwise
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 };

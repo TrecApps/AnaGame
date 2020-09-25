@@ -150,6 +150,8 @@ protected:
 /**
  * Class: IDEPage
  * Purpose: Extends the page class to allow it to brush up against other pages
+ * 
+ * SuperClass: Page
  */
 class _TAP_DLL IDEPage :
 	public Page
@@ -220,6 +222,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)override;
 	/**
@@ -229,6 +233,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)override;
 	/**
@@ -238,6 +244,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut) override;
 	/**
@@ -247,6 +255,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)override;
 	/**
@@ -256,6 +266,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut) override;
 	/**
@@ -265,6 +277,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly) override;
 	/**
@@ -276,6 +290,8 @@ protected:
 	 *				UINT nFlags - flags associated with the message
 	 *				messageOutput* mOut - the result of the event
 	 * Returns: bool 
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut) override;
 	/**
@@ -285,6 +301,8 @@ protected:
 	 *				UINT nFlags - flags associated with the move
 	 *				TrecPointer<TWindowEngine> - the 3D Engine to work with
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>) override;
 
@@ -298,6 +316,8 @@ public:
 	 *				messageOutput* mOut - result of the click
 	 *				TDataArray<EventID_Cred>& eventAr - list of events to feed the Handler if applicable
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)override;
 	/**
@@ -308,6 +328,8 @@ public:
 	 *				messageOutput* mOut - result of the movement
 	 *				TDataArray<EventID_Cred>& eventAr - list of events to feed the Handler if applicable
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)override;
 	/**
@@ -315,6 +337,8 @@ public:
 	 * Purpose: Used to confirm whether a proper click was done
 	 * Parameters: TPoint& point - location where the mouse is when the user releases
 	 * Returns: bool - whether the mouse was in the Page's region
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg bool OnLButtonUp(TPoint& point);
 

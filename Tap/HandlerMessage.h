@@ -42,6 +42,8 @@ typedef enum class message_transmission
 /**
  * Class: HandlerMessage
  * Purpose: Allows Event Handlers to communicate between each other
+ * 
+ * SuperClass: TObject
  */
 class _TAP_DLL HandlerMessage : public TObject
 {

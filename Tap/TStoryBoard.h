@@ -41,6 +41,8 @@ public:
 /**
  * Class: TStoryBoard
  * Purpose: Holds a collection of Animations and manages a Thread running through them
+ * 
+ * SuperClass: TObject
  */
 class _TAP_DLL TStoryBoard :
 	public TObject

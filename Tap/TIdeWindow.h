@@ -42,6 +42,8 @@ class MiniApp;
 /**
  * Class: TIdeWindow
  * Purpose: Extends the WIndow class and partitions it's drawing space
+ * 
+ * SuperClass: TWindow
  */
 class _TAP_DLL TIdeWindow :
 	public TWindow
@@ -63,7 +65,12 @@ public:
 	 */
 	TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, UINT mainViewSpace, UINT pageBarSpace);
 
-
+	/**
+	 * Method: TIdeWindow::~TIdeWindow
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
 	~TIdeWindow();
 
 
@@ -81,6 +88,8 @@ public:
 	 * Purpose: Prepares the Window while also managing the links between the IDE-Pages
 	 * Parameters: void
 	 * Returns: int - error code (0 = success)
+	 * 
+	 * Attributes: override
 	 */
 	virtual int PrepareWindow()override;
 
@@ -90,6 +99,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	void OnLButtonUp(UINT nFlags, TPoint point);
 
@@ -99,6 +110,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that the mouse is now
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	void OnMouseMove(UINT nFlags, TPoint point)override;
 
@@ -108,6 +121,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	void OnLButtonDown(UINT nFlags, TPoint point)override;
 
@@ -151,6 +166,8 @@ public:
 	 * Parameters: TString& file - path of the TML file holding the Anaface
 	 *				TrecPointer<EventHandler> eh - the Handler to the Main page
 	 * Returns: int - error (0 == success)
+	 * 
+	 * Attributes: override
 	 */
 	int CompileView(TString& file, TrecPointer<EventHandler> eh)override;
 
@@ -250,6 +267,8 @@ protected:
 	 * Purpose: Draws the other page it has set up
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void DrawOtherPages()override;
 

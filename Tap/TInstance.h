@@ -48,6 +48,8 @@ typedef enum class t_window_type
 /**
  * Class: TInstance
  * Purpose: Respresents an instance of a Machine-Level Anagame Application
+ * 
+ * SuperClass: TObject
  */
 class _TAP_DLL TInstance : public TObject
 {
@@ -94,6 +96,8 @@ public:
 	 * Purpose: Takes in messages from WinProc and sends them to the appropriate window
 	 * Parameters: HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	 * Returns: LRESULT - the Result of the message
+	 * 
+	 * Attributes: message
 	 */
 	LRESULT Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

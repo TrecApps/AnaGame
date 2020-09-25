@@ -1,6 +1,13 @@
 #pragma once
 #include "TDialog.h"
 #include "FileDialogHandler.h"
+
+/**
+ * Class: FileDialog
+ * Purpose: Hosts a Fild Dialog
+ * 
+ * SuperClass: TDialog
+ */
 class _TAP_DLL FileDialog :
     public TDialog
 {
@@ -35,6 +42,8 @@ public:
 	 * Purpose: Returns a String Representation of the object type
 	 * Parameters: void
 	 * Returns: TString - representation of the object type
+	 * 
+	 * Attributes: override
 	 */
 	virtual TString GetType()override;
 
@@ -43,14 +52,18 @@ public:
 	 * Purpose: Performs initialization of the dialog's contents
 	 * Parameters: TrecComPointer<ID2D1Factory1> fact -  the resource needed to create drawing boards
 	 * Returns: int - error code (0 for success)
+	 * 
+	 * Attributes: override
 	 */
-	int CompileView(TrecComPointer<ID2D1Factory1> fact);
+	int CompileView(TrecComPointer<ID2D1Factory1> fact)override;
 
 	/**
 	 * Method: FileDialog::OnDestroy
 	 * Purpose: Prepares the Dialog for destruction, releasing the Parent Window if necessary
 	 * Parameters: void
 	 * Returns: bool - whether the dialog can be destroyed yet
+	 * 
+	 * Attributes: override
 	 */
 	bool OnDestroy() override;
 

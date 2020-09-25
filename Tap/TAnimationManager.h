@@ -9,6 +9,8 @@ class TWindow;
 /**
  * Class: TAnimationManager
  * Purpose: Holds a collection of Story Boards and controls their process
+ * 
+ * SuperClass: TObject
  */
 class _TAP_DLL TAnimationManager :public TObject
 {

@@ -10,6 +10,8 @@ bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float differ
 /**
  * Class: TWindow
  * Purpose: Base class for managing a Window in ANagame
+ * 
+ * SuperClass: Drawer
  */
 class _TAP_DLL TWindow : public Drawer
 {
@@ -52,6 +54,8 @@ public:
 	 * Purpose: Sets the Window up for viewing
 	 * Parameters: void
 	 * Returns: int - error code (0 = success)
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual int PrepareWindow();
 
@@ -62,6 +66,8 @@ public:
 	 * Parameters: TString& file - path of the TML file holding the Anaface
 	 *				TrecPointer<EventHandler> eh - the Handler to the Main page
 	 * Returns: int - error (0 == success)
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual int CompileView(TString& file, TrecPointer<EventHandler> eh);
 
@@ -72,7 +78,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * DEPRECATED - 
+	 * Attributes: deprecated
 	 */
 	bool MovePageToTop(TrecPointer<Page> p);
 
@@ -100,6 +106,8 @@ public:
 	 * Purpose: Draws the window
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void Draw() override;
 
@@ -109,7 +117,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * deprecated
+	 * Attributes: deprecated
 	 */
 	void Draw(Page& draw);
 
@@ -119,7 +127,7 @@ public:
 	 * Parameters: void
 	 * Returns: void
 	 * 
-	 * Note: this method is provided to be called by nimation threads as Draw should only be called by the Message thread, not by Animation threads
+	 * Note: this method is provided to be called by Animation threads as Draw should only be called by the Message thread, not by Animation threads
 	 */
 	void InduceDraw();
 	
@@ -130,6 +138,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnRButtonUp(UINT nFlags, TPoint point);
 
@@ -139,8 +149,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
-	 * Parameters:
-	 * Returns:
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point);
 
@@ -150,6 +160,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnRButtonDown(UINT nFlags, TPoint);
 
@@ -159,6 +171,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point);
 
@@ -168,6 +182,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnLButtonDblClk(UINT nFlags, TPoint point);
 
@@ -177,6 +193,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point);
 
@@ -188,6 +206,8 @@ public:
 	 *				UINT nRepCnt - the number of times to add it 
 	 *				UINT nFlags - flags associated with the message
 	 * Returns: bool 
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags);
 
@@ -197,6 +217,8 @@ public:
 	 * Parameters: UINT width - the new width of the window
 	 *				UINT height - the new height of the Window
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnWindowResize(UINT width, UINT height);
 
@@ -205,6 +227,8 @@ public:
 	 * Purpose: Reports whether it is ready for destruction of not
 	 * Parameters: void
 	 * Returns: bool - whether it is ready for destruction
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg virtual bool OnDestroy();
 
@@ -236,6 +260,7 @@ public:
 	 * Returns:
 	 *
 	 * Note: deprecated in favor of the Ide Window/IDE Page
+	 * Attributes: deprecated
 	 */
 	TrecPointer<Page> Get3DPage(bool singleton, TString& engineId);
 
@@ -246,6 +271,7 @@ public:
 	 * Returns:
 	 *
 	 * Note: deprecated in favor of the Ide Window/IDE Page
+	 * Attributes: deprecated
 	 */
 	TrecPointer<Page> Get3DPage(bool singleton, TrecPointer<TArenaEngine> engine);
 
@@ -374,6 +400,8 @@ protected:
 	 * Purpose: Draws other pages registered in this window
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void DrawOtherPages();
 

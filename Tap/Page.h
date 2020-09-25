@@ -25,6 +25,8 @@ typedef enum class RenderTargetType
 /**
  * Class: TPageParentHolder
  * Allows Root TControls to reference the Page as a Parent, event though Pages are not known to the TControl
+ * 
+ * SuperClass: TParentHolder
  */
 class TPageParentHolder: public TParentHolder
 {
@@ -52,6 +54,8 @@ public:
 	 * Parameters: TrecPointerSoft<TControl> cur - the current root control
 	 *				TrecPointer<TControl> newTControl - the new control to set as root
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void SwitchChildControl(TrecPointerSoft<TControl> cur, TrecPointer<TControl> newTControl)override;
 private:
@@ -62,10 +66,13 @@ private:
 };
 
 
-/** Class: Page
-* Purpose: Provide the foundation through which Drawing resources can be set up on a certain Window or device context,
-*	Allows for refactoring of code that is essentially repeated
-*/
+/**
+ * Class: Page
+ * Purpose: Provide the foundation through which Drawing resources can be set up on a certain Window or device context,
+ *	Allows for refactoring of code that is essentially repeated
+ *
+ * SuperClass: TObject
+ */
 class _TAP_DLL Page : public TObject
 {
 	friend class TrecPointerKey;
@@ -98,6 +105,8 @@ public:
 	 *				TrecPointer<TWindow> - the WIndow to hold this page
 	 *				TrecPointer<EventHandler> - the Event Handler to work with this page
 	 * Returns: TrecPointer<Page> - the page object requested
+	 * 
+	 * Attributes: static
 	 */
 	static TrecPointer<Page> GetWindowPage(TrecPointer<TInstance>, TrecPointer<TWindow>,  TrecPointer<EventHandler>);
 
@@ -109,6 +118,8 @@ public:
 	 * Returns:
 	 *
 	 * Note: deprecated - in favor of the IDE Page in the TIdeWindow
+	 * 
+	 * Attributes: static; deprecated
 	 */
 	static TrecPointer<Page> GetSmallPage(TrecPointer<TInstance> in, TrecPointer<TWindow> window, D2D1_RECT_F area);
 
@@ -255,6 +266,8 @@ public:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut);
 
@@ -266,6 +279,8 @@ public:
 	 *				messageOutput* mOut -  the result of the message
 	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
 
@@ -276,6 +291,8 @@ public:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut);
 
@@ -287,6 +304,8 @@ public:
 	 *				messageOutput* mOut -  the result of the message
 	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
 
@@ -297,6 +316,8 @@ public:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut);
 
@@ -308,6 +329,8 @@ public:
 	 *				messageOutput* mOut -  the result of the message
 	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
 
@@ -320,6 +343,8 @@ public:
 	 *				UINT nFlags - flags associated with the message
 	 *				messageOutput* mOut - the result of the event
 	 * Returns: bool 
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput *mOut);
 
@@ -330,6 +355,8 @@ public:
 	 *				UINT nFlags - flags associated with the move
 	 *				TrecPointer<TWindowEngine> - the 3D Engine to work with
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>);
 
@@ -345,6 +372,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -359,6 +388,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly);
 
@@ -372,6 +403,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -386,6 +419,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly);
 
@@ -399,6 +434,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -413,6 +450,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly);
 
@@ -428,6 +467,8 @@ public:
 	 * Returns: bool
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -441,6 +482,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr);
 
@@ -449,6 +492,8 @@ public:
 	 * Purpose: Reports whether the Page is ready to be destroyed
 	 * Parameters: void
 	 * Returns: bool - true if the Page doesn't have a handler or that handler is ready to be destroyed
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg bool OnDestroy();
 

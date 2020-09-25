@@ -3,6 +3,8 @@
 /**
  * Class: NameDialog
  * Purpsoe: Allows users to enter a name into a Dialog for use in a main application
+ * 
+ * SuperClass: TDialog
  */
 class NameDialog :	public TDialog
 {
@@ -37,6 +39,8 @@ public:
 	 * Purpose: Returns a String Representation of the object type
 	 * Parameters: void
 	 * Returns: TString - representation of the object type
+	 * 
+	 * Attributes: override
 	 */
 	virtual TString GetType()override;
 
@@ -45,14 +49,18 @@ public:
 	 * Purpose: Performs initialization of the dialog's contents
 	 * Parameters: TrecComPointer<ID2D1Factory1> fact -  the resource needed to create drawing boards
 	 * Returns: int - error code (0 for success)
+	 * 
+	 * Attributes: override
 	 */
-	int CompileView(TrecComPointer<ID2D1Factory1> fact);
+	int CompileView(TrecComPointer<ID2D1Factory1> fact)override;
 
 	/**
 	 * Method: NameDialog::OnDestroy
 	 * Purpose: Allows the Dialog to capture the User Input before destruction
 	 * Parameters: void
 	 * Returns: whether the Dialog can be destroyed
+	 * 
+	 * Attributes: override
 	 */
 	bool OnDestroy() override;
 
