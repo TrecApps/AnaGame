@@ -4,6 +4,7 @@
 #include <DirectoryInterface.h>
 
 #include "TDialog.h"
+#include <TBlankNode.h>
 
 // Declare Handler Functions in String form
 TString on_SelectNode(L"OnSelectNode");
@@ -155,6 +156,44 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 
 	// Update the directory text
 	directoryText->SetText(fileNode->GetData()->GetPath());
+
+
+	// figure out the common files to show
+	TrecSubPointer<TObjectNode, TBlankNode> folders = TrecPointerKey::GetNewTrecSubPointer<TObjectNode, TBlankNode>(0);
+
+	TrecPointer<TFileShell> folderFile = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"Local\\AnaGame\\Common_Folders.txt");
+
+	if (folderFile.Get())
+	{
+		TFile folderFileContents(folderFile->GetPath(), TFile::t_file_read | TFile::t_file_open_existing);
+
+		assert(folderFileContents.IsOpen());
+
+		TString commonFolderPath;
+
+		while (folderFileContents.ReadString(commonFolderPath))
+		{
+			TrecPointer<TFileShell> commonFolder = TFileShell::GetFileInfo(commonFolderPath);
+
+			if (!commonFolder.Get() || !commonFolder->IsDirectory())
+				continue;
+
+			TrecSubPointer<TObjectNode, TFileNode> folderNode = TrecPointerKey::GetNewTrecSubPointer<TObjectNode, TFileNode>(0);
+
+			folderNode->SetFile(commonFolder);
+
+			folderNode->SetFilterMode(file_node_filter_mode::fnfm_block_both_and_files);
+
+			folders->AddNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(folderNode));
+		}
+	}
+	else
+	{
+		// Since the file does not currently exist, make sure it exists in the future
+		ForgeDirectory(GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"Local\\AnaGame\\");
+		TFile f(GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"Local\\AnaGame\\Common_Folders.txt", TFile::t_file_create_always | TFile::t_file_write);
+		f.Close();
+	}
 }
 
 void FileDialogHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)

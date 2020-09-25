@@ -9,10 +9,9 @@
  * 
  * SuperClass: TObjectNode - Allows TBlankNode to be used by the TTreeDataBind control
  */
-class TBlankNode :
-    public TObjectNode
+class _TREC_LIB_DLL TBlankNode : public TObjectNode
 {
-
+public:
 	/**
 	 * Method: TBlankNode::GetType
 	 * Purpose: Returns a String Representation of the object type
