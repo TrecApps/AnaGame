@@ -102,6 +102,7 @@ protected:
 	TrecSubPointer<TControl, TTextField> directoryText;
 
 	TrecSubPointer<TControl, TTreeDataBind> browserControl;
+	TrecSubPointer<TControl, TTreeDataBind> favoritesControl;
 
 	TrecSubPointer<TControl, TTextField> fileText;
 
@@ -111,6 +112,9 @@ protected:
 
 
 	TrecPointer<TFileShell> startDirectory;
+
+	TrecSubPointer<TControl, TTextField> toggleFavoriteDirectory;
+
 
 
 	TString chosenPath, extensions;
@@ -132,6 +136,9 @@ protected:
 	 */
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 
+	bool isFavorite;
+	void RefreshFavoriteToggle();
+
 
 	TDataArray<FileDialogEvents> fileEvents;
 
@@ -146,5 +153,7 @@ protected:
 	void OnClickNode(TrecPointer<TControl> tc, EventArgs ea);
 
 	void OnNewFolder(TrecPointer<TControl> tc, EventArgs ea);
+
+	void OnToggleFavoriteFolder(TrecPointer<TControl> tc, EventArgs ea);
 };
 

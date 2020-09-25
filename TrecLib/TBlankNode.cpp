@@ -86,6 +86,24 @@ bool TBlankNode::Initialize()
  */
 TrecPointer<TObjectNode> TBlankNode::GetNodeAt(UINT target, UINT current)
 {
+	if (target == current)
+		return TrecPointerKey::GetTrecPointerFromSoft<TObjectNode>(self);
+
+	if (target < current)
+		return TrecPointer<TObjectNode>();
+
+	TrecPointer<TObjectNode> ret;
+
+	current++;
+
+	for (UINT rust = 0; rust < nodes.Size(); rust++)
+	{
+		ret = nodes[rust]->GetNodeAt(target, current);
+		if (ret.Get())
+			return ret;
+
+		current += nodes[rust]->TotalChildren() + 1;
+	}
 	return TrecPointer<TObjectNode>();
 }
 
@@ -149,6 +167,37 @@ void TBlankNode::AddNode(TrecPointer<TObjectNode> node)
 {
 	if(node.Get())
 		nodes.push_back(node);
+}
+
+/**
+ * Method: TBlankNode::RemoveNode
+ * Purpose: Removes the specified node
+ * Parameteres: TrecPointer<TObjectNode> - the node to remove
+ * Returns: bool - whether the node was found
+ *
+ * Attributes: override
+ */
+bool TBlankNode::RemoveNode(TrecPointer<TObjectNode> obj)
+{
+	if (!obj.Get())
+		return false;
+
+	for (UINT Rust = 0; Rust < nodes.Size(); Rust++)
+	{
+		auto f = nodes[Rust].Get();
+		if (!f)
+			continue;
+
+		if (f == obj.Get())
+		{
+			nodes.RemoveAt(Rust);
+			return true;
+		}
+
+		if (f->RemoveNode(obj))
+			return true;
+	}
+	return false;
 }
 
 /*

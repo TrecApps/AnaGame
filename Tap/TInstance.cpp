@@ -121,7 +121,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					windowList[windowIndex]->destroy = true;
 					windowList[windowIndex]->messageStack--;
 				}
-				return DefWindowProc(hWnd, message, wParam, lParam);
+				// return DefWindowProc(hWnd, message, wParam, lParam);
 			}
 		}
 		break;

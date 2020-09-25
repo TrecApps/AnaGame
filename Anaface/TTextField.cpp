@@ -888,6 +888,8 @@ void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TD
 	}
 	if (isInside)
 		highlighter.ResetUp(locCarLoc);
+
+	TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
 }
 
 /*

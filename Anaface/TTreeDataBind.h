@@ -132,6 +132,8 @@ public:
 	 *		updated
 	 */
 	virtual bool onScroll(float x, float y)override;
+
+	TrecPointer<TObjectNode> GetNode();
 protected:
 	/**
 	 * The root node that starts the tree this control goes down

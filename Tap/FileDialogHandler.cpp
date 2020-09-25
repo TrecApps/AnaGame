@@ -13,6 +13,7 @@ TString on_Okay(L"OnOkay");
 TString on_FileNameChange(L"OnFileNameChange");
 TString on_ClickNode(L"OnClickNode");
 TString on_NewFolder(L"OnNewFolder");
+TString on_ToggleFavoriteFolder(L"OnToggleFavoriteFolder");
 
 
 /**
@@ -33,6 +34,7 @@ FileDialogHandler::FileDialogHandler(TrecPointer<TInstance> instance): EventHand
 	fileEvents.push_back(&FileDialogHandler::OnFileNameChange);
 	fileEvents.push_back(&FileDialogHandler::OnClickNode);
 	fileEvents.push_back(&FileDialogHandler::OnNewFolder);
+	fileEvents.push_back(&FileDialogHandler::OnToggleFavoriteFolder);
 
 	// Now set the structure to link the listeners to their text name
 	eventNameID enid;
@@ -60,6 +62,10 @@ FileDialogHandler::FileDialogHandler(TrecPointer<TInstance> instance): EventHand
 	enid.eventID = 5;
 	enid.name.Set(on_NewFolder);
 	events.push_back(enid);
+
+	enid.eventID = 6;
+	enid.name.Set(on_ToggleFavoriteFolder);
+	events.push_back(enid);
 }
 
 /**
@@ -70,6 +76,28 @@ FileDialogHandler::FileDialogHandler(TrecPointer<TInstance> instance): EventHand
  */
 FileDialogHandler::~FileDialogHandler()
 {
+	ForgeDirectory(GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"Local\\AnaGame\\");
+	TFile f(GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"Local\\AnaGame\\Common_Folders.txt", TFile::t_file_create_always | TFile::t_file_write);
+
+	if (favoritesControl.Get() && f.IsOpen())
+	{
+		auto mainNode = favoritesControl->GetNode();
+
+		assert(mainNode.Get());
+
+		UINT Rust = 0;
+
+		TrecSubPointer<TObjectNode, TFileNode> fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+
+		while (fileNode.Get())
+		{
+			f.WriteString(fileNode->GetData()->GetPath());
+			
+			fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+		}
+	}
+
+	f.Close();
 }
 
 /**
@@ -112,11 +140,24 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 	directoryText = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(1,0));
 	assert(directoryText.Get());
 
+	// Get Toggle Directory
+
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 1));
+	assert(subLayout.Get());
+
+	toggleFavoriteDirectory = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(0, 0));
+	assert(toggleFavoriteDirectory.Get());
+
+	// Get contents
+
 	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 2));
 	assert(subLayout.Get());
 
 	browserControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(subLayout->GetLayoutChild(1, 1));
 	assert(browserControl.Get());
+	favoritesControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(subLayout->GetLayoutChild(0, 1));
+	assert(favoritesControl.Get());
+
 	browserLayout = subLayout;
 
 	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 3));
@@ -132,7 +173,7 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 	okayControl = subLayout->GetLayoutChild(1, 0);
 	assert(okayControl.Get());
 
-	fileNode = TrecPointerKey::GetNewTrecSubPointer<TObjectNode, TFileNode>(0);
+	fileNode = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TFileNode>(0);
 
 	fileNode->SetFile(startDirectory);
 
@@ -159,7 +200,7 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 
 
 	// figure out the common files to show
-	TrecSubPointer<TObjectNode, TBlankNode> folders = TrecPointerKey::GetNewTrecSubPointer<TObjectNode, TBlankNode>(0);
+	TrecSubPointer<TObjectNode, TBlankNode> folders = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TBlankNode>(0);
 
 	TrecPointer<TFileShell> folderFile = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"Local\\AnaGame\\Common_Folders.txt");
 
@@ -178,14 +219,18 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 			if (!commonFolder.Get() || !commonFolder->IsDirectory())
 				continue;
 
-			TrecSubPointer<TObjectNode, TFileNode> folderNode = TrecPointerKey::GetNewTrecSubPointer<TObjectNode, TFileNode>(0);
+			TrecSubPointer<TObjectNode, TFileNode> folderNode = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TFileNode>(0);
 
 			folderNode->SetFile(commonFolder);
 
 			folderNode->SetFilterMode(file_node_filter_mode::fnfm_block_both_and_files);
 
 			folders->AddNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(folderNode));
+
 		}
+
+		favoritesControl->SetNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TBlankNode>(folders));
+		folders->Extend();
 	}
 	else
 	{
@@ -194,6 +239,8 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 		TFile f(GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"Local\\AnaGame\\Common_Folders.txt", TFile::t_file_create_always | TFile::t_file_write);
 		f.Close();
 	}
+
+	RefreshFavoriteToggle();
 }
 
 void FileDialogHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
@@ -244,6 +291,47 @@ bool FileDialogHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> m
 	return false;
 }
 
+void FileDialogHandler::RefreshFavoriteToggle()
+{
+	isFavorite = false;
+
+	if (!toggleFavoriteDirectory.Get())
+		return;
+
+	if (favoritesControl.Get())
+	{
+		auto mainNode = favoritesControl->GetNode();
+
+		assert(mainNode.Get());
+
+		toggleFavoriteDirectory->setActive(true);
+
+		UINT Rust = 0;
+
+		TrecSubPointer<TObjectNode, TFileNode> fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+
+		while (fileNode.Get())
+		{
+			if (!fileNode->GetData()->GetPath().Compare(directoryText->GetText()))
+			{
+				isFavorite = true;
+				break;
+			}
+			fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+		}
+	}
+	else
+	{
+		toggleFavoriteDirectory->setActive(false);
+	}
+
+
+	if (isFavorite)
+		toggleFavoriteDirectory->SetText(L"Remove From Favorites");
+	else
+		toggleFavoriteDirectory->SetText(L"Add to Favorites");
+}
+
 void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
 {
 	auto fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(ea.object);
@@ -275,7 +363,7 @@ void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
 		// Clean up the content presented to the user
 
 		auto targetFile = TFileShell::GetFileInfo(directoryText->GetText());
-		auto newNode = TrecPointerKey::GetNewTrecSubPointer<TObjectNode, TFileNode>(0);
+		auto newNode = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TFileNode>(0);
 
 		newNode->SetFile(targetFile);
 		newNode->SetFilterMode(filter_mode);
@@ -303,6 +391,7 @@ void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
 
 		okayControl->setActive(true);
 	}
+	RefreshFavoriteToggle();
 
 	if (browserControl.Get() && browserLayout.Get())
 	{
@@ -420,4 +509,52 @@ void FileDialogHandler::OnNewFolder(TrecPointer<TControl> tc, EventArgs ea)
 			fileNode->Extend();
 		}
 	}
+}
+
+void FileDialogHandler::OnToggleFavoriteFolder(TrecPointer<TControl> tc, EventArgs ea)
+{
+	if (!favoritesControl.Get())
+		return;
+
+	auto mainNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TBlankNode>(favoritesControl->GetNode());
+	if (!mainNode.Get())
+		return;
+	if (!directoryText.Get())
+		return;
+
+	if (isFavorite)
+	{
+		TString curDirectory = directoryText->GetText();
+
+		UINT Rust = 0;
+
+		TrecSubPointer<TObjectNode, TFileNode> fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+
+		while (fileNode.Get())
+		{
+			if (!fileNode->GetData()->GetPath().Compare(directoryText->GetText()))
+			{
+				mainNode->RemoveNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(fileNode));
+				break;
+			}
+			fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+		}
+	}
+	else
+	{
+		TrecPointer<TFileShell> commonFolder = TFileShell::GetFileInfo(directoryText->GetText());
+
+		assert(commonFolder.Get() && commonFolder->IsDirectory());
+		
+
+		TrecSubPointer<TObjectNode, TFileNode> folderNode = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TFileNode>(0);
+
+		folderNode->SetFile(commonFolder);
+
+		folderNode->SetFilterMode(file_node_filter_mode::fnfm_block_both_and_files);
+
+		mainNode->AddNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(folderNode));
+	}
+
+	RefreshFavoriteToggle();
 }

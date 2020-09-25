@@ -49,7 +49,7 @@ typedef struct ConstantBufferMark
 * Holds all of the resources that constitute a shader as well as indexes to imprtant
 *	resources within the shader
 */
-class ShaderProgram
+class _VIDEO_GRAPHICS ShaderProgram
 {
 public:
 	ShaderProgram();
@@ -77,7 +77,7 @@ public:
 * struct DefaultShaderProgram
 * Holds a Default shader
 */
-class DefaultShaderProgram
+class _VIDEO_GRAPHICS DefaultShaderProgram
 {
 public: 
 	ShaderProgram sp;

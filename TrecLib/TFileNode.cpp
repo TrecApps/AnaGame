@@ -308,6 +308,37 @@ file_node_filter_mode TFileNode::GetFilterMode()
 }
 
 /**
+ * Method: TFileNode::RemoveNode
+ * Purpose: Removes the specified node
+ * Parameteres: TrecPointer<TObjectNode> - the node to remove
+ * Returns: bool - whether the node was found
+ *
+ * Attributes: override
+ */
+bool TFileNode::RemoveNode(TrecPointer<TObjectNode> obj)
+{
+	if (!obj.Get())
+		return false;
+
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		auto f = files[Rust].Get();
+		if (!f)
+			continue;
+
+		if (f == obj.Get())
+		{
+			files.RemoveAt(Rust);
+			return true;
+		}
+
+		if (f->RemoveNode(obj))
+			return true;
+	}
+	return false;
+}
+
+/**
  * Method: TFileNode::ShouldShow
  * Purpose: Takes the filter configuration to determine if to should be shown
  * Parameters: TrecPointer<TFileShell> node -  the file entry to subject to filtering

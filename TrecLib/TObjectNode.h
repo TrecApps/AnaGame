@@ -165,6 +165,17 @@ public:
 	 */
 	virtual TString getVariableValueStr(const TString& varName)override;
 
+	/**
+	 * Method: TObjectNode::RemoveNode
+	 * Purpose: Removes the specified node
+	 * Parameteres: TrecPointer<TObjectNode> - the node to remove
+	 * Returns: bool - whether the node was found
+	 * 
+	 * Attributes: abstract
+	 */
+	virtual bool RemoveNode(TrecPointer<TObjectNode> obj) = 0;
+
+
 protected:
 	/**
 	 * The distance from the root (0 means this is the root node)

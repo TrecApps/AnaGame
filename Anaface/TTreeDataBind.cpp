@@ -430,3 +430,8 @@ bool TTreeDataBind::onScroll(float x, float y)
 
 	return true;
 }
+
+TrecPointer<TObjectNode> TTreeDataBind::GetNode()
+{
+	return mainNode;
+}

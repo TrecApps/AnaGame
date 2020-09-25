@@ -39,6 +39,7 @@ TDialog::TDialog(TString& name, TString& winClass, UINT style, HWND parent, int 
  */
 TDialog::~TDialog()
 {
+	int e = 9;
 }
 
 /**
@@ -141,6 +142,8 @@ void ActivateAlertDialog(TrecPointer<TInstance> ins, HWND parent, TString& capti
 	dialog->PrepareWindow();
 
 	dynamic_cast<AlertDialog*>(dialog.Get())->Run();
+
+	// dialog.Delete();
 }
 
 /**
@@ -171,5 +174,9 @@ TString ActivateNameDialog(TrecPointer<TInstance> ins, HWND parent, TString& cap
 
 	dynamic_cast<NameDialog*>(dialog.Get())->Run();
 
-	return TString(sharedData.Get());
+	TString ret(sharedData.Get());
+
+	//dialog.Delete();
+
+	return ret;
 }
