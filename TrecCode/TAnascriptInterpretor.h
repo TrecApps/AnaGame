@@ -1,5 +1,12 @@
 #pragma once
 #include <TInterpretor.h>
+
+/**
+ * Class: TAnascriptInterpretor
+ * Purpose: Interprets the Anagame specific language Anascript
+ * 
+ * SuperClass: TInterpretor
+ */
 class TAnascriptInterpretor :
     public TInterpretor
 {
@@ -21,6 +28,8 @@ public:
      * Returns: UINT - error code
      *
      * Note: call this method if this interpretor is the top level interpretor for the code file, it will filter the comments out
+     * 
+     * Attributes: override
      */
     virtual UINT SetCode(TFile&) override;
 
@@ -32,6 +41,8 @@ public:
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that are either top level or basic control blocks
+     * 
+     * Attributes: override
      */
     virtual ReportObject Run() override;
 
@@ -43,6 +54,8 @@ public:
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that represent specific methods or functions
+     * 
+     * Attributes: override
      */
     virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) override;
 

@@ -4,6 +4,8 @@
 /**
  * Class: TAnagameEnvironmentBuilder
  * Purpose: Provides Anagame with a built-in Environment Builder
+ * 
+ * SuperClass: TEnvironmentBuilder
  */
 class TAnagameEnvironmentBuilder :
     public TEnvironmentBuilder
@@ -42,6 +44,8 @@ public:
 	 * Parameters: const TString& envType - the type of environment to collect
 	 *				TrecPointer<TFileShell> dir - the Directory to launch the environment in
 	 * Returns: TrecPointer<TEnvironment> - the environment requestd (null if the builder did not recognize the request
+     * 
+     * Attributes: override
 	 */
 	virtual TrecPointer<TEnvironment> GetEnvironment(const TString& envType, TrecPointer<TFileShell> dir) override;
 
@@ -53,6 +57,8 @@ public:
 	 * Returns: TString - semicolon seperated list of possible environments that could take up the project based off of possible project files found
 	 *
 	 * Note: this is intended for the purposes of importing an existing project.
+     * 
+     * Attributes: override
 	 */
 	virtual TString GetEnvironmentTypes(TrecPointer<TFileShell> rootDirectory) override;
 
@@ -64,6 +70,8 @@ public:
 	 * Returns: TString - semicolon seperated list of possible environments that this Builder could create
 	 *
 	 * Note: this is intended for the purposes of creating a new project
+     * 
+     * Attributes: override
 	 */
 	virtual TString GetEnvironmentTypes() override;
 };

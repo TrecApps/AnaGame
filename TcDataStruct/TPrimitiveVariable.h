@@ -4,6 +4,8 @@
 /**
  * Class: TPrimitiveVariable
  * Purpose: Represents a primitive variable, such as a number or a character
+ * 
+ * SuperClass: TVariable
  */
 class TC_DATA_STRUCT TPrimitiveVariable :
     public TVariable
@@ -17,6 +19,8 @@ public:
      * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
      *
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
+     * 
+     * Attributes: override
      */
     virtual TrecObjectPointer GetObject()override;
 
@@ -25,6 +29,8 @@ public:
      * Purpose: Reports the type of varible that this object represents
      * Parameters: void
      * Returns: var_type - the type of variable this represents
+     * 
+     * Attributes: override
      */
     virtual var_type GetVarType() override;
 
@@ -35,6 +41,8 @@ public:
      * Returns: TString - The TString referered by the variable (empty if not a string)
      *
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
+     * 
+     * Attributes: override
      */
     virtual TString GetString()override;
 
@@ -43,6 +51,8 @@ public:
      * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)
      * Parameters: void
      * Returns: UINT - The value held as a UINT (0 if not a primitive type
+     * 
+     * Attributes: override
      */
     virtual UINT Get4Value()override;
 
@@ -53,6 +63,8 @@ public:
      * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
      * Parameters: void
      * Returns: ULONG64 - The value held as an 8 bit integer (0 if not a primitive type)
+     * 
+     * Attributes: override
      */
     virtual ULONG64 Get8Value()override;
 
@@ -62,6 +74,8 @@ public:
      * Purpose: Returns the estimated size of the value held
      * Parameters: void
      * Returns: UINT - The estimated size in bytes of the data
+     * 
+     * Attributes: override
      */
     virtual UINT GetSize()override;
 
@@ -71,6 +85,8 @@ public:
      * Purpose: Returns the basic type of the object
      * Parameters: void
      * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
+     * 
+     * Attributes: override
      */
     virtual UINT GetType()override;
 

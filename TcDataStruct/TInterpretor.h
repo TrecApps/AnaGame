@@ -30,10 +30,10 @@ union doubleLong
  */
 enum class double_long
 {
-    dl_sign,
-    dl_unsign,
-    dl_double,
-    dl_invalid
+    dl_sign,  // Set to a signed integer
+    dl_unsign,// Set to an unsigned integer
+    dl_double,// Set to double
+    dl_invalid // Not properly set
 };
 
 /**
@@ -137,6 +137,8 @@ public:
 /**
  * Class: TInterpretor
  * Purpose: Interface Class that represents a runnable program, most likely some source code
+ * 
+ * SuperClass: TVariable
  */
 class TC_DATA_STRUCT TInterpretor : public TVariable
 {
@@ -156,6 +158,8 @@ public:
      * Purpose: Reports the type of varible that this object represents
      * Parameters: void
      * Returns: var_type - the type of variable this represents
+     * 
+     * Attributes: override
      */
     virtual var_type GetVarType() override;
 
@@ -166,6 +170,8 @@ public:
      * Returns: UINT - error code
      * 
      * Note: call this method if this interpretor is the top level interpretor for the code file, it will filter the comments out
+     * 
+     * Attributes: abstract
      */
     virtual UINT SetCode(TFile&) = 0;
 
@@ -177,6 +183,8 @@ public:
      * Returns: UINT - error code
      *
      * Note: call this method if this interpretor is the top level interpretor for the code file, it will filter the comments out
+     * 
+     * Attributes: virtual
      */
     virtual UINT SetCode(TrecPointer<TFile> file, ULONG64 start, ULONG64 end);
 
@@ -198,6 +206,8 @@ public:
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that are either top level or basic control blocks
+     * 
+     * Attributes: abstract
      */
     virtual ReportObject Run() = 0;
 
@@ -209,6 +219,8 @@ public:
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that represent specific methods or functions
+     * 
+     * Attributes: abstract
      */
     virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) = 0;
 
@@ -238,6 +250,8 @@ public:
      * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
      *
      * Note: Call "GetVarType" first and make sure that it returns "var_type::native_object" first
+     * 
+     * Attributes: override
      */
     virtual TrecObjectPointer GetObject() override;
 
@@ -249,6 +263,8 @@ public:
      * Returns: TString - The TString referered by the variable (empty if not a string)
      *
      * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
+     * 
+     * Attributes: override
      */
     virtual TString GetString() override;
 
@@ -259,6 +275,8 @@ public:
      * Returns: UINT - The value held as a UINT (0 if not a primitive type)
      *
      * Note: Call "GetVarType" first and make sure that it returns "var_type::primitive" first
+     * 
+     * Attributes: override
      */
     virtual UINT Get4Value() override;
 
@@ -269,6 +287,8 @@ public:
      * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
      * Parameters: void
      * Returns: ULONG64 - The value held as an 8 bit integer (0 if not a primitive type)
+     * 
+     * Attributes: override
      */
     virtual ULONG64 Get8Value() override;
 
@@ -278,6 +298,8 @@ public:
      * Purpose: Returns the estimated size of the value held
      * Parameters: void
      * Returns: UINT - The estimated size in bytes of the data
+     * 
+     * Attributes: override
      */
     virtual UINT GetSize() override;
 
@@ -287,6 +309,8 @@ public:
      * Purpose: Returns the basic type of the object
      * Parameters: void
      * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
+     * 
+     * Attributes: override
      */
     virtual UINT GetType() override;
 
@@ -296,6 +320,8 @@ public:
      * Purpose: Allows the Variable to have a reference to itself
      * Parameters: TrecPointer<TVariable> - reference to assign
      * Returns: void
+     * 
+     * Attributes: override
      */
     virtual void SetSelf(TrecPointer<TVariable>) override;
 
@@ -354,6 +380,8 @@ protected:
      * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the first addend
      *              TrecPointer<TVariable> var2 - the second variable, representing the second addend
      * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     * 
+     * Attributes: virtual
      */
     virtual ReportObject ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
 
@@ -363,6 +391,8 @@ protected:
      * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the minuend
      *              TrecPointer<TVariable> var2 - the second variable, representing the subtrahend
      * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     * 
+     * Attributes: virtual
      */
     virtual ReportObject ProcessSubtraction(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
     /**
@@ -371,6 +401,8 @@ protected:
      * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the first factor
      *              TrecPointer<TVariable> var2 - the second variable, representing the second factor
      * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     * 
+     * Attributes: virtual
      */
     virtual ReportObject ProcessMultiplication(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
     /**
@@ -379,6 +411,8 @@ protected:
      * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the dividend
      *              TrecPointer<TVariable> var2 - the second variable, representing the divisor
      * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     * 
+     * Attributes: virtual
      */
     virtual ReportObject ProcessDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
     /**
@@ -387,6 +421,8 @@ protected:
      * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the dividend
      *              TrecPointer<TVariable> var2 - the second variable, representing the divisor
      * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     * 
+     * Attributes: virtual
      */
     virtual ReportObject ProcessModDivision(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
     /**
@@ -395,6 +431,8 @@ protected:
      * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the base
      *              TrecPointer<TVariable> var2 - the second variable, representing the power
      * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     * 
+     * Attributes: virtual
      */
     virtual ReportObject ProcessExponent(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2);
 
@@ -404,6 +442,8 @@ protected:
      * Parameters: const DoubleLong& v1 - the first addend for the operation
      *              const DoubleLong& v2 - the second addend for the operation
      * Returns: DoubleLong - the result of the Addition operation
+     * 
+     * Attributes: virtual
      */
     virtual DoubleLong Add(const DoubleLong& v1, const DoubleLong& v2);
     /**
@@ -412,6 +452,8 @@ protected:
      * Parameters: const DoubleLong& v1 - the minuend for the operation
      *              const DoubleLong& v2 - the subtrahend for the operation
      * Returns: DoubleLong - the result of the Subtraction operation
+     * 
+     * Attributes: virtual
      */
     virtual DoubleLong Subtract(const DoubleLong& v1, const DoubleLong& v2);
     /**
@@ -420,6 +462,8 @@ protected:
      * Parameters: const DoubleLong& v1 - the first factor for the operation
      *              const DoubleLong& v2 - the second factor for the operation
      * Returns: DoubleLong - the result of the Multiply operation
+     * 
+     * Attributes: virtual
      */
     virtual DoubleLong Multiply(const DoubleLong& v1, const DoubleLong& v2);
     /**
@@ -428,6 +472,8 @@ protected:
      * Parameters: const DoubleLong& v1 - the dividend for the operation
      *              const DoubleLong& v2 - the divisor for the operation
      * Returns: DoubleLong - the result of the Division operation
+     * 
+     * Attributes: virtual
      */
     virtual DoubleLong Divide(const DoubleLong& v1, const DoubleLong& v2);
     /**
@@ -436,6 +482,8 @@ protected:
      * Parameters: const DoubleLong& v1 - the dividend for the operation
      *              const DoubleLong& v2 - the divisor for the operation
      * Returns: DoubleLong - the result of the Mod Division operation
+     * 
+     * Attributes: virtual
      */
     virtual DoubleLong ModDivide(const DoubleLong& v1, const DoubleLong& v2);
     /**
@@ -444,6 +492,8 @@ protected:
      * Parameters: const DoubleLong& v1 - the base value for the operation
      *              const DoubleLong& v2 - the power value for the operation
      * Returns: DoubleLong - the result of the Exponent operation
+     * 
+     * Attributes: virtual
      */
     virtual DoubleLong Exponent(const DoubleLong& v1, const DoubleLong& v2);
 

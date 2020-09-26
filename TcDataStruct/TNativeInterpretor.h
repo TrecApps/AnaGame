@@ -7,7 +7,9 @@ typedef void (*NativeFunction)(TDataArray<TrecPointer<TVariable>>& params, TrecP
 
 /**
  * Class: TNativeInterpretor
- * Purpose: Allows Code interpretors and high-level source code to call native functions and methods provided by Anagame 
+ * Purpose: Allows Code interpretors and high-level source code to call native functions and methods provided by Anagame
+ * 
+ * SuperClass: TInterpretor
  */
 class TC_DATA_STRUCT TNativeInterpretor :
 	public TInterpretor
@@ -31,6 +33,8 @@ public:
      * Returns: UINT - error code
      *
      * Note: This is unused as this interpretor gets it'c code from a native function (meaning it's already compiled), not a source file
+     * 
+     * Attributes: override
      */
     virtual UINT SetCode(TFile&) override;
 
@@ -41,6 +45,8 @@ public:
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that are either top level or basic control blocks
+     * 
+     * Attributes: override
      */
     virtual ReportObject Run()override;
 
@@ -52,6 +58,8 @@ public:
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that represent specific methods or functions
+     * 
+     * Attributes: override
      */
     virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) override;
 
