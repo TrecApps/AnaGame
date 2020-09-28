@@ -12,6 +12,12 @@ TString TGeometry::GetType()
 	return TString(L"TGeometry;") + TObject::GetType();
 }
 
+TGeometry::TGeometry()
+{
+	valid = false;
+	geoType = geo_type::geo_type_unset;
+}
+
 /**
  * Method: TGeometry::TGeometry
  * Purpose: Creates a Geometry from a set of points
@@ -46,7 +52,7 @@ TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const TDataArray<POINT_
 
 	sink->Release();
 	valid = true;
-	//geoType = geo_type_path;
+	geoType = geo_type::geo_type_path;
 }
 
 /**
@@ -67,7 +73,7 @@ TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const RECT_2D& r)
 
 	geo = TrecPointerKey::GetComPointer<ID2D1Geometry, ID2D1RectangleGeometry>(rectHolder);
 	valid = true;
-	//geoType = geo_type_rect;
+	geoType = geo_type::geo_type_rect;
 }
 
 /**

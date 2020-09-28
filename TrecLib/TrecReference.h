@@ -303,7 +303,7 @@ public:
 	{
 		if (rawPointer)
 		{
-			T* tempRawPointer = reinterpret_cast<T*>(rawPointer);
+			T* tempRawPointer = static_cast<T*>(rawPointer);
 			rawPointer = nullptr;
 
 			delete tempRawPointer;

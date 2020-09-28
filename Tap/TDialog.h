@@ -99,6 +99,7 @@ public:
 	 */
 	void Run();
 
+
 protected:
 	TDialogMode dialogMode;
 	bool breakLoop;

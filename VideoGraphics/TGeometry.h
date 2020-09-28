@@ -13,7 +13,8 @@ typedef enum class geo_type
 	geo_type_rect,
 	geo_type_rounded_rect,
 	geo_type_ellipse,
-	geo_type_path
+	geo_type_path,
+	geo_type_unset
 }geo_type;
 
 /**
@@ -34,6 +35,8 @@ public:
 	 * Returns: TString - representation of the object type
 	 */
 	virtual TString GetType()override;
+
+	TGeometry();
 
 	/**
 	 * Method: TGeometry::TGeometry

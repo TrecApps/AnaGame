@@ -10,6 +10,7 @@ FileDialog::FileDialog(TString& name, TString& winClass, UINT style, HWND parent
 
 FileDialog::~FileDialog()
 {
+	handler.Delete();
 }
 
 /**
@@ -45,7 +46,7 @@ bool FileDialog::OnDestroy()
 	if (handler.Get())
 		file = TFileShell::GetFileInfo(handler->GetPath());
 
-	return false;
+	return true;
 }
 
 TrecPointer<TFileShell> FileDialog::GetFile()
@@ -74,5 +75,9 @@ TrecPointer<TFileShell> BrowseForFile(TrecPointer<TInstance> in, HWND parent, Tr
 
 	dialog->Run();
 
-	return dialog->GetFile();
+	TrecPointer<TFileShell> ret = dialog->GetFile();
+
+	dialog.Delete();
+
+	return ret;
 }

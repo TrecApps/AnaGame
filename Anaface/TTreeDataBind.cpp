@@ -59,7 +59,7 @@ void TTreeDataBind::onDraw(TObject* obj)
 
 	D2D1_RECT_F cLoc = location;
 	cLoc.bottom = cLoc.top + 30;
-	TrecPointer<TGeometry> path;
+	
 	
 	for (UINT c = 0; curNode.Get(); c++)
 	{
@@ -94,7 +94,7 @@ void TTreeDataBind::onDraw(TObject* obj)
 				points.push_back(D2D1::Point2F(triLoc.right, (triLoc.top + triLoc.bottom) / 2.0f));
 			}
 			
-			path = drawingBoard->GetGeometry(points);
+			auto path = drawingBoard->GetGeometry(points);
 
 			if (path.Get())
 			{

@@ -119,7 +119,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (windowList[windowIndex].Get())
 				{
 					windowList[windowIndex]->destroy = true;
-					windowList[windowIndex]->messageStack--;
+					//windowList[windowIndex]->messageStack--;
 				}
 				// return DefWindowProc(hWnd, message, wParam, lParam);
 			}
@@ -155,7 +155,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
-	if (windowIndex != -1 && windowIndex < windowList.Size() && windowList[windowIndex].Get())
+	if (windowIndex != -1 && windowIndex < windowList.Size() && windowList[windowIndex].Get() && windowList[windowIndex]->messageStack > 0)
 	{
 		windowList[windowIndex]->messageStack--;
 	}
@@ -482,7 +482,7 @@ void TInstance::CleanWindows()
 	{
 		if (windowList[Rust].Get() && windowList[Rust]->destroy && !windowList[Rust]->messageStack)
 		{
-			windowList[Rust]->window.Delete();
+			// windowList[Rust]->window.Delete();
 			windowList.RemoveAt(Rust);
 		}
 	}

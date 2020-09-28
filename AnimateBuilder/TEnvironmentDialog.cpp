@@ -76,7 +76,7 @@ bool TEnvironmentDialog::OnDestroy()
 
 	env = dynamic_cast<EnvironmentHandler*>(handler.Get())->GetEnvironment();
 
-	return false;
+	return ret;
 }
 
 /**
@@ -106,5 +106,9 @@ TrecPointer<TEnvironment> ActivateEnvironmentDialog(TrecPointer<TInstance> ins, 
 
 	dynamic_cast<TEnvironmentDialog*>(dialog.Get())->Run();
 
-	return dynamic_cast<TEnvironmentDialog*>(dialog.Get())->GetEnvironment();
+	TrecPointer<TEnvironment> ret = dynamic_cast<TEnvironmentDialog*>(dialog.Get())->GetEnvironment();
+
+	dialog.Delete();
+
+	return ret;
 }

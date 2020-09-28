@@ -3,10 +3,11 @@
 #include <TrecReference.h>
 #include "Structure2D.h"
 #include "TGradientStopCollection.h"
+#include "TGeometry.h"
 
 class DrawingBoard;
 class TColor;
-class TGeometry;
+
 
 /**
  * Helps the TBrush keep track of the brush type it has
