@@ -485,6 +485,15 @@ public:
 	*/
 	void SetNewLocation(const D2D1_RECT_F& r)override;
 
+
+	/**
+	 * Method: TTextField::getLocation
+	 * Purpose: Reports how much space this object will actually need to draw
+	 * Parameters: void
+	 * Returns: D2D1_RECT_F -  the Rectangle of the content that would be drawn (even if it was officially allocated less space)
+	 */
+	D2D1_RECT_F getLocation()override;
+
 	/*
 	* Method: TTextField::OnLButtonDown
 	* Purpose: Determines if a mouse click occured and where it should put the caret

@@ -1,5 +1,6 @@
 
 #include "TTextField.h"
+#include "TScrollerControl.h"
 #include <atltrace.h>
 
 // Allows Anaface to keep track of where the caret is
@@ -539,6 +540,32 @@ void TTextField::SetNewLocation(const D2D1_RECT_F& r)
 	}
 }
 
+/**
+ * Method: TTextField::getLocation
+ * Purpose: Reports how much space this object will actually need to draw
+ * Parameters: void
+ * Returns: D2D1_RECT_F -  the Rectangle of the content that would be drawn (even if it was officially allocated less space)
+ */
+D2D1_RECT_F TTextField::getLocation()
+{
+	if (!text1.Get())
+		return location;
+
+	DWRITE_TEXT_METRICS mets;
+
+	text1->fontLayout->GetMetrics(&mets);
+
+	D2D1_RECT_F ret;
+
+	ret.left = location.left;
+	ret.top = location.top;
+
+	ret.bottom = ret.top + (max(mets.height, mets.layoutHeight));
+	ret.right = ret.left + (max(mets.widthIncludingTrailingWhitespace, mets.layoutWidth));
+
+	return ret;
+}
+
 /*
 * Method: TTextField::OnLButtonDown
 * Purpose: Determines if a mouse click occured and where it should put the caret
@@ -1016,6 +1043,7 @@ void TTextField::SetText(TString t )
 {
 	text = t;
 	updateTextString();
+	Resize(location);
 }
 
 UCHAR * TTextField::GetAnaGameType()
@@ -1050,6 +1078,27 @@ void TTextField::Resize(D2D1_RECT_F& r)
 
 		circleCenter.x = passwordPeek_outer.point.x;
 		circleCenter.y = passwordPeek_outer.point.y;
+	}
+
+	
+	if (text1.Get() && parent.Get() && !parent->IsScroller())
+	{
+		text1->SetLocation(location);
+
+		D2D1_RECT_F textLoc = this->getLocation();
+
+		if ((textLoc.right - textLoc.left > location.right - location.left + 2.0f)
+			|| (textLoc.bottom - textLoc.top > location.bottom - location.top + 2.0f))
+		{
+			TrecPointer<TControl> scrollControl = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TScrollerControl>(drawingBoard, styles);
+			scrollControl->onCreate(r, TrecPointer<TWindowEngine>());
+
+			auto oldParent = parent;
+
+			dynamic_cast<TScrollerControl*>(scrollControl.Get())->SetChildControl(TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
+			oldParent->SwitchChildControl(tThis, scrollControl);
+			
+		}
 	}
 }
 
@@ -1953,7 +2002,6 @@ void TextHighlighter::SetFirstPosition(UINT f)
 	beginningPosition = f;
 	beginningIsInitial = true;
 	isActive = true;
-	ATLTRACE(L"HIGHLIGHTER PREPARED\n");
 }
 
 /*
@@ -1993,7 +2041,6 @@ void TextHighlighter::SetSecondPosition(UINT s)
 		else
 			beginningPosition = s;
 	}
-	ATLTRACE(L"HIGHLIGHTER MODIFIED\n");
 	layout->SetDrawingEffect(brush->GetUnderlyingBrush().Get(), DWRITE_TEXT_RANGE{ beginningPosition, endingPosition - beginningPosition });
 	isActive = true;
 }
@@ -2016,7 +2063,6 @@ bool TextHighlighter::Reset(UINT cLocation)
 		
 	}
 	isActive = false;
-	ATLTRACE(L"HIGHLIGHTER RESET\n");
 	return true;
 }
 
