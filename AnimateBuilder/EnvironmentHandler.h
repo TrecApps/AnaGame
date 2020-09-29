@@ -95,6 +95,7 @@ protected:
 	void OnImportProject(TrecPointer<TControl> tc, EventArgs ea);
 	void OnSelectWorkspace(TrecPointer<TControl> tc, EventArgs ea);
 	void OnConfirm(TrecPointer<TControl> tc, EventArgs ea);
+	void OnFileType(TrecPointer<TControl> tc, EventArgs ea);
 
 	/**
 	 * Method: EnvironmentHandler::ShouldProcessMessageByType

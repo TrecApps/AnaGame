@@ -11,6 +11,7 @@ TString on_SelectAvailable(L"OnSelectAvailable");
 TString on_SelectWorkspace(L"OnSelectWorkspace");
 TString on_ImportProject(L"OnImportProject");
 TString on_Confirm(L"OnConfirm");
+TString on_FileType(L"OnFileType");
 
 
 /**
@@ -28,6 +29,8 @@ EnvironmentHandler::EnvironmentHandler(TrecPointer<TInstance> instance) : EventH
     envEvents.push_back(&EnvironmentHandler::OnSelectWorkspace);
 
     envEvents.push_back(&EnvironmentHandler::OnConfirm);
+    envEvents.push_back(&EnvironmentHandler::OnFileType);
+
     // Now set the structure to link the listeners to their text name
     eventNameID enid;
 
@@ -49,6 +52,10 @@ EnvironmentHandler::EnvironmentHandler(TrecPointer<TInstance> instance) : EventH
 
     enid.eventID = 4;
     enid.name.Set(on_Confirm);
+    events.push_back(enid);
+
+    enid.eventID = 5;
+    enid.name.Set(on_FileType);
     events.push_back(enid);
 
     mode = environment_handler_mode::ehm_not_set;
@@ -239,6 +246,11 @@ void EnvironmentHandler::OnConfirm(TrecPointer<TControl> tc, EventArgs ea)
     environment = TEnvironmentBuilder::GetEnvironment(selectedEnvType->GetEnvironment(), selectedEnvType->GetBuilder(), currentWorkspace);
 
     DestroyWindow(window->GetWindowHandle());
+}
+
+void EnvironmentHandler::OnFileType(TrecPointer<TControl> tc, EventArgs ea)
+{
+    RefreshView();
 }
 
 /**
