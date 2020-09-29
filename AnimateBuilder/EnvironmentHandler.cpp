@@ -207,6 +207,11 @@ void EnvironmentHandler::OnImportProject(TrecPointer<TControl> tc, EventArgs ea)
     {
         mode = environment_handler_mode::ehm_import_set;
         RefreshEnvironmentList();
+
+        if (selectReport.Get())
+        {
+            selectReport->SetText(L"Import Project");
+        }
     }
 
     RefreshView();
@@ -220,6 +225,11 @@ void EnvironmentHandler::OnSelectWorkspace(TrecPointer<TControl> tc, EventArgs e
     {
         mode = environment_handler_mode::ehm_available_set;
         RefreshEnvironmentList();
+
+        if (selectReport.Get())
+        {
+            selectReport->SetText(L"New Environment");
+        }
     }
 
     RefreshView();
