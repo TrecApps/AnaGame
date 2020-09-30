@@ -57,6 +57,11 @@ class TJavaScriptInterpretor :
     virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params)override;
 
 private:
+
+    bool hasOddMiltiLineStrMarkers(const TString& str);
+
+    UINT InsertSemiColons();
+
     /**
      * Method: TJavaScriptInterpretor::GetNextStatement
      * Purpose: retrieves the tokens 

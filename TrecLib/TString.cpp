@@ -838,12 +838,12 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
  *				 int start - location to start the search
  * Returns: int - the index of the substring found (-1 if not found)
  */
-int TString::FindOutOfQuotes(const TString& subString, int start)
+int TString::FindOutOfQuotes(const TString& subString, int start, bool ignoreEscape) const 
 {
 	TDataArray<int> possibleIndeces;
 	while (start != -1) 
 	{
-		start = Find(subString, start);
+		start = Find(subString, start, ignoreEscape);
 		if (start != -1)
 		{
 			possibleIndeces.push_back(start);
@@ -1830,13 +1830,14 @@ bool TString::EndsWith(const TString& seq, bool ignoreCase)
  * Purpose: Finds the last instance of the specified string
  * Parameters: const TString& sub - the string to search for
  *				int start - the index to begin the search from 
+ *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
  * Returns: int - the index of the string found
  */
-int TString::Find(const TString& sub, int start) const 
+int TString::Find(const TString& sub, int start, bool ignoreEscape) const
 {
 	int indexStart = start;
 
-	while ((indexStart = Find(sub[0], indexStart)) != -1)
+	while ((indexStart = Find(sub[0], indexStart, ignoreEscape)) != -1)
 	{
 		bool works = true;
 		for (int c = 0, rust = indexStart; c < sub.GetSize() || rust < size; c++, rust++)

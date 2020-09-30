@@ -227,9 +227,10 @@ public:
 	 * Purpose: Performs the find operation while ignoring hits found within quotation marks
 	 * Parameters: const TString& subString - the substring to search for
 	 *				 int start - location to start the search
+	 *				 bool ignoreEscape - whether to ignore escape characters
 	 * Returns: int - the index of the substring found (-1 if not found)
 	 */
-	int FindOutOfQuotes(const TString& subString, int start = 0);
+	int FindOutOfQuotes(const TString& subString, int start = 0, bool ignoreEscape = true) const;
 
 	// Set Methods, to be used in place of Assignment operators to avoid C26444 Warnings
 
@@ -575,11 +576,12 @@ public:
 	 * Purpose: Finds the last instance of the specified string
 	 * Parameters: const TString& sub - the string to search for
 	 *				int start - the index to begin the search from
+	 *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
 	 * Returns: int - the index of the string found
 	 * 
 	 * Attributes: const
 	 */
-	int Find(const TString& sub, int start = 0) const;
+	int Find(const TString& sub, int start = 0, bool ignoreEscape = true) const;
 	/**
 	 * Method: TString::Find
 	 * Purpose: Finds the first instance of the specified character

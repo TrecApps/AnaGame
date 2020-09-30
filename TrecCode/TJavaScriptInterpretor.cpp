@@ -1,6 +1,19 @@
 #include "TJavaScriptInterpretor.h"
 #include <DirectoryInterface.h>
 
+
+static TDataArray<WCHAR> noSemiColonEnd;
+
+WCHAR noSemiColonEnd[] = {
+    L'+',
+    L'-',
+    L'=',
+    L'%',
+    L'/',
+    L'\\'
+};
+
+
 /**
  * Method: TJavaScriptInterpretor::TJavaScriptInterpretor
  * Purpose: Constructor
@@ -9,7 +22,15 @@
  */
 TJavaScriptInterpretor::TJavaScriptInterpretor(TrecSubPointer<TVariable,TInterpretor> parentInterpretor, TrecPointer<TEnvironment> env): TInterpretor(parentInterpretor, env)
 {
-
+    if (noSemiColonEnd.Size() == 0)
+    {
+        noSemiColonEnd.push_back(L'+');
+        noSemiColonEnd.push_back(L'-');
+        noSemiColonEnd.push_back(L'=');
+        noSemiColonEnd.push_back(L'%');
+        noSemiColonEnd.push_back(L'/');
+        noSemiColonEnd.push_back(L'\\');
+    }
 }
 
 UINT TJavaScriptInterpretor::SetCode(TFile& file)
@@ -131,7 +152,7 @@ UINT TJavaScriptInterpretor::SetCode(TFile& file)
         newFile->SeekToBegin();
         this->end = newFile->GetLength();
         this->start = 0LL;
-        return 0;
+        return InsertSemiColons();
     }
     newFile->Close();
     newFile.Nullify();
@@ -256,4 +277,134 @@ ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& par
     }
 
     return Run();
+}
+
+bool TJavaScriptInterpretor::hasOddMiltiLineStrMarkers(const TString& str)
+{
+    if (!str.GetSize())
+        return false;
+    UINT count = str[0] == L'`'? 1 : 0;
+
+    int find = 0;
+
+    while ((find = str.FindOutOfQuotes(L"`", find + 1)) != -1)
+    {
+        count++;
+    }
+
+
+    return count % 2 == 1;
+}
+
+UINT TJavaScriptInterpretor::InsertSemiColons()
+{
+    TFile newFile(file->GetFilePath() + L"2", TFile::t_file_create_always | TFile::t_file_write);
+
+    if (!newFile.IsOpen())
+    {
+        return 5;
+    }
+
+    TString dLines[2];
+
+    TString readLine;
+
+    if (file->ReadString(readLine))
+        dLines[0].Set(readLine);
+    else
+        return 6;
+
+    UINT empty = 0;
+
+    bool inMultiString = hasOddMiltiLineStrMarkers(readLine);
+
+    while (file->ReadString(readLine))
+    {
+
+        if (readLine.GetTrim().GetSize() == 0)
+        {
+            empty++;
+            continue;
+        }
+
+        dLines[1].Set(readLine);
+
+        // Only insert semicolon if we are outside a multi-line String
+        if (!inMultiString)
+        {
+
+            bool insertSemiColon = true;
+
+            // Don't insert semicolon here as it could signify a function in line one and parameters list in line 2
+            if (dLines[1].GetTrim().StartsWith(L"("))
+                insertSemiColon = false;
+            else
+            {
+                TString line0(dLines[0].GetTrim());
+                TString line1(dLines[1].GetTrim());
+
+                // Invalid JavaScript code detected.
+                // To-Do: Develop more sophisticated means of reporting this had happened
+                if (line0.StartsWith(L"if") && line0.EndsWith(L")") && line1.StartsWith(L"else"))
+                    return 7;
+
+                // if statement already ends with a semicolon, no point in adding another one
+                if (line0.EndsWith(L';'))
+                    insertSemiColon = false;
+
+                if (line0.FindOneOf(L" \t") == -1)
+                {
+                    if (!line1.StartsWith(L"++") && line1.StartsWith(L"--"))
+                        insertSemiColon = false;
+                }
+
+                if (line0.EndsWith(L"{"))
+                    insertSemiColon = false;
+
+                for (UINT Rust = 0; Rust < noSemiColonEnd.Size() && insertSemiColon; Rust++)
+                {
+                    if (line0.EndsWith(noSemiColonEnd[Rust]))
+                        insertSemiColon = false;
+                    
+                }
+            }
+
+            if (insertSemiColon)
+                dLines[0].AppendChar(L';');
+        }
+
+        newFile.WriteString(dLines[0] + L'\n');
+
+        TString emptyLine((inMultiString) ? L"\n" : L";\n");
+
+        while (empty--)
+            newFile.WriteString(emptyLine);
+
+        inMultiString = hasOddMiltiLineStrMarkers(readLine);
+
+        dLines[0].Set(dLines[1]);
+    }
+
+
+    newFile.WriteString(readLine);
+
+
+    file->Close();
+
+    TString path(newFile.GetFilePath());
+
+    newFile.Close();
+
+    file->Open(path, TFile::t_file_open_always);
+
+    if (file->IsOpen())
+    {
+        end = file->GetLength();
+
+        file->SeekToBegin();
+
+        return 0;
+    }
+
+    return 8;
 }
