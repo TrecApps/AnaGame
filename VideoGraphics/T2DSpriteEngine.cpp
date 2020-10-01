@@ -95,7 +95,7 @@ void T2DSpriteEngine::Draw(D2D1_RECT_F& space)
         {
             if (sprites[Rust].Get())
             {
-                sprites[Rust]->OnDraw(location);
+                sprites[Rust]->OnDraw(location, board);
             }
 
             whole--;
@@ -116,7 +116,7 @@ void T2DSpriteEngine::Draw(D2D1_RECT_F& space)
                 miniLoc.right = miniLoc.right + spriteWidth;
 
 
-                sprites[Rust]->OnDraw(miniLoc);
+                sprites[Rust]->OnDraw(miniLoc, board);
             }
             if (++currentColumn >= columns)
             {
