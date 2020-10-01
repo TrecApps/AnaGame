@@ -183,6 +183,54 @@ ReportObject TJavaScriptInterpretor::Run()
 
     TFile tokenLog(file->GetFilePath() + L".output", TFile::t_file_create_new | TFile::t_file_write);
 
+    UINT line = 1;
+
+    // Read the String with the following flags:
+    // 0b00000001 - ensures that our terminating character is included in the resulting string
+    // 0b00000010 - Tells the method to not terminate if the termination character is within a quote
+    // 0b00000100 - Tells the method to watch out for an odd number of backslashes 
+    while (file->ReadString(code, L"{;", 0b00000111))
+    {
+        // First make sure this statement doesn't land us in a multi-line string (`) which the ReadString
+        // Method doesn't account for
+        bool inMultiString = hasOddMiltiLineStrMarkers(code);
+
+        while (inMultiString)
+        {
+            TString appendable;
+            if (!file->ReadString(appendable, L"`", 0b00000001) || !appendable.EndsWith(L"`"))
+            {
+                // if this happens, then the file ends in the middle of a multiline string, which is an error
+                ret.returnCode = ret.incomplete_block;
+
+                ret.errorMessage.Set(L"Code File ends in the middle of a multi-line statement!");
+
+                TString stack;
+                stack.Format(L"\tAt %ws, line %d", file->GetFileName().GetConstantBuffer(), line + appendable.CountFinds(L'\n'));
+
+                ret.stackTrace.push_back(stack);
+                return ret;
+            }
+
+
+            code.Append(appendable);
+            file->ReadString(appendable, L"{;", 0b00000111);
+
+            code.Append(appendable);
+
+            inMultiString = hasOddMiltiLineStrMarkers(code);
+        }
+
+        line += code.CountFinds(L'\n');
+
+
+
+    }
+
+
+
+
+
 
 
     for (currentPoint = start; currentPoint < end; currentPoint += file->ReadString(code, TString(L";\n{"), TFile::t_file_include_terminator))

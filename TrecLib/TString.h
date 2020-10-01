@@ -645,6 +645,35 @@ public:
 	 */
 	bool SetAsEnvironmentVariable(TString& var);
 
+	/**
+	 * Method: TString::CountFinds
+	 * Purpose: Counts the number of times the provided string appears in this string
+	 * Parameters: const TString& query - the string to search for
+	 * Returns: UINT - the number of times the query string appears in this string
+	 * 
+	 * Attributes: const
+	 */
+	UINT CountFinds(const TString& query) const;
+
+	/**
+	 * Method: TString::CountFinds
+	 * Purpose: Counts the number of times the provided character appears in this string
+	 * Parameters: WCHAR ch - the string to search for
+	 * Returns: UINT - the number of times the query string appears in this string
+	 * 
+	 * Attributes: const
+	 */
+	UINT CountFinds(WCHAR ch) const;
+
+	/**
+	 * Method: TString::CountOneOfFinds
+	 * Purpose: Counts the number of times one of the characters in the provided string appears in this string
+	 * Parameters: const TString& query - the collection of characters to search for
+	 * Returns: UINT - the number of times the query string appears in this string
+	 * 
+	 * Attributes: const
+	 */
+	UINT CountOneOfFinds(const TString& query) const;
 
 	/**
 	 * Method: TString::Insert

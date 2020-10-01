@@ -2036,6 +2036,76 @@ bool TString::SetAsEnvironmentVariable(TString& var)
 	return true;
 }
 
+
+/**
+ * Method: TString::CountFinds
+ * Purpose: Counts the number of times the provided string appears in this string
+ * Parameters: const TString& query - the string to search for
+ * Returns: UINT - the number of times the query string appears in this string
+ * 
+ * Attributes: const
+ */
+UINT TString::CountFinds(const TString& query) const
+{
+	UINT ret = 0;
+
+	int start = 0;
+
+	while ((start = Find(query, start)) != -1)
+	{
+		ret++;
+		start++;
+	}
+
+	return ret;
+}
+
+/**
+ * Method: TString::CountFinds
+ * Purpose: Counts the number of times the provided character appears in this string
+ * Parameters: WCHAR ch - the string to search for
+ * Returns: UINT - the number of times the query string appears in this string
+ * 
+ * Attributes: const
+ */
+UINT TString::CountFinds(WCHAR ch) const
+{
+	UINT ret = 0;
+
+	int start = 0;
+
+	while ((start = Find(ch, start)) != -1)
+	{
+		ret++;
+		start++;
+	}
+
+	return ret;
+}
+
+/**
+ * Method: TString::CountOneOfFinds
+ * Purpose: Counts the number of times one of the characters in the provided string appears in this string
+ * Parameters: const TString& query - the collection of characters to search for
+ * Returns: UINT - the number of times the query string appears in this string
+ * 
+ * Attributes: const
+ */
+UINT TString::CountOneOfFinds(const TString& query) const
+{
+	UINT ret = 0;
+
+	int start = 0;
+
+	while ((start = FindOneOf(query, start)) != -1)
+	{
+		ret++;
+		start++;
+	}
+
+	return ret;
+}
+
 /**
  * Method: TString::Insert
  * Purpose: Inserts a sub-string in-place

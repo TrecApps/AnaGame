@@ -323,24 +323,72 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
  * Note: Written with Source code interpretation in mind
  * Flags variable values:
  *		0b00000001 - TFile::include_end - include the terminating character in the return String
+ *      0b00000010 - TFile::out_of_quotes - makesure that when we do find the characters, they are outside of quotes
+ *      0booooo100 - TFile::watch_backslash - factor backslashes in handling the other flags
  */
 UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
 {
 	bool success = false;
 	rString.Empty();
 	char letter[1] = { '\0' };
+
+	WCHAR quote = L'\0';
+
+	UINT backslashes = 0;
+
 	switch (fileEncode)
 	{
 	case FileEncodingType::fet_acsii:
 		
 		while (Read(&letter, 1))
 		{
-			if (chars.Find(letter[0]) != 1)
+			// If we care about backslashes and we encounter one on this character, increase the count
+			if (flags & 0b00000100)
 			{
-				if( flags & 0b00000001)
-					rString.AppendChar(ReturnWCharType(letter[0]));
-				break;
+				if (letter[0] == '\\')
+					backslashes++;
+				// else backslashes = 0;
 			}
+
+			// If we don't care about backslashes or we have an od number of them, they they don't bother us for these operations
+			if ((flags & 0b00000100) == 0 || backslashes % 2 == 0)
+			{
+				// If we care about making sure the final character is out of quotes, check to make sure we are, in fact, out of them
+				if (flags & 0b00000010)
+				{
+					if (letter[0] == '\'')
+					{
+						if (quote == L'\'')
+							quote = 0;
+						else if (!quote)
+							quote = L'\'';
+					}
+					else if (letter[0] == '\"')
+					{
+						if (quote == L'\"')
+							quote = 0;
+						else if (!quote)
+							quote = L'\"';
+					}
+				}
+
+				// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
+				if ((!(flags & 0b00000010) || !quote) && chars.Find(letter[0]) != 1)
+				{
+					// If we want to add the terminating character, then do so here
+					if (flags & 0b00000001)
+						rString.AppendChar(ReturnWCharType(letter[0]));
+					break;
+				}
+			}
+
+			// Odd # of backslashes will affect the first non-backslash character, so process it first before resetting the backslash count
+			if (flags & 0b00000100)
+			{
+				if (letter[0] != '\\')
+					backslashes = 0;
+			}
+
 			rString.AppendChar(ReturnWCharType(letter[0]));
 			success = true;
 		}
@@ -355,12 +403,61 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
 			letter2[0] = letter2[1];
 			letter2[1] = temp;
 			memcpy(&cLetter, letter2, 2);
-			if (chars.Find(cLetter) != -1)
+
+
+
+			// If we care about backslashes and we encounter one on this character, increase the count
+			if (flags & 0b00000100)
 			{
-				if (flags & 0b00000001)
-					rString.AppendChar(ReturnWCharType(letter[0]));
-				break;
+				if (cLetter == '\\')
+					backslashes++;
+				// else backslashes = 0;
 			}
+
+			// If we don't care about backslashes or we have an od number of them, they they don't bother us for these operations
+			if ((flags & 0b00000100) == 0 || backslashes % 2 == 0)
+			{
+				// If we care about making sure the final character is out of quotes, check to make sure we are, in fact, out of them
+				if (flags & 0b00000010)
+				{
+					if (cLetter == '\'')
+					{
+						if (quote == L'\'')
+							quote = 0;
+						else if (!quote)
+							quote = L'\'';
+					}
+					else if (cLetter == '\"')
+					{
+						if (quote == L'\"')
+							quote = 0;
+						else if (!quote)
+							quote = L'\"';
+					}
+				}
+
+				// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
+				if ((!(flags & 0b00000010) || !quote) && chars.Find(cLetter) != 1)
+				{
+
+
+
+					if (chars.Find(cLetter) != -1)
+					{
+						if (flags & 0b00000001)
+							rString.AppendChar(cLetter);
+						break;
+					}
+				}
+			}
+
+			// Odd # of backslashes will affect the first non-backslash character, so process it first before resetting the backslash count
+			if (flags & 0b00000100)
+			{
+				if (cLetter != '\\')
+					backslashes = 0;
+			}
+
 			rString.AppendChar(cLetter);
 			success = true;
 		}
@@ -370,11 +467,55 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
 		WCHAR wLetter;
 		while (Read(&wLetter, 2))
 		{
-			if (chars.Find(wLetter) != -1)
+			// If we care about backslashes and we encounter one on this character, increase the count
+			if (flags & 0b00000100)
 			{
-				if (flags & 0b00000001)
-					rString.AppendChar(ReturnWCharType(letter[0]));
-				break;
+				if (wLetter == '\\')
+					backslashes++;
+				// else backslashes = 0;
+			}
+
+			// If we don't care about backslashes or we have an od number of them, they they don't bother us for these operations
+			if ((flags & 0b00000100) == 0 || backslashes % 2 == 0)
+			{
+				// If we care about making sure the final character is out of quotes, check to make sure we are, in fact, out of them
+				if (flags & 0b00000010)
+				{
+					if (wLetter == '\'')
+					{
+						if (quote == L'\'')
+							quote = 0;
+						else if (!quote)
+							quote = L'\'';
+					}
+					else if (wLetter == '\"')
+					{
+						if (quote == L'\"')
+							quote = 0;
+						else if (!quote)
+							quote = L'\"';
+					}
+				}
+
+				// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
+				if ((!(flags & 0b00000010) || !quote) && chars.Find(wLetter) != 1)
+				{
+
+
+					if (chars.Find(wLetter) != -1)
+					{
+						if (flags & 0b00000001)
+							rString.AppendChar(wLetter);
+						break;
+					}
+				}
+			}
+
+			// Odd # of backslashes will affect the first non-backslash character, so process it first before resetting the backslash count
+			if (flags & 0b00000100)
+			{
+				if (wLetter != '\\')
+					backslashes = 0;
 			}
 				
 			rString.AppendChar(wLetter);
