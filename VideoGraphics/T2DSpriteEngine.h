@@ -10,13 +10,16 @@ public:
     void SetTiltDegrees(float degrees);
     float GetTiltDegrees();
 
-    void OnDraw(D2D1_RECT_F& loc);
+    void OnDraw(D2D1_RECT_F& loc, TrecPointer<DrawingBoard> board);
 
     UINT GetIndex();
 
 protected:
     float tilt;
     UINT index;
+
+    UINT collisionUnit;
+
     TrecSubPointer<TBrush, TBitmapBrush> brush;
 };
 
