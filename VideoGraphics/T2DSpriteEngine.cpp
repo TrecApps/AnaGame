@@ -71,8 +71,34 @@ UINT T2DSpriteEngine::Initialize(TDataArray<TFileShell>& files)
     return 0;
 }
 
-void T2DSpriteEngine::SetCenter(UINT row, UINT column)
+void T2DSpriteEngine::SetCenter(UINT row, UINT column, D2D1_RECT_F& space)
 {
+    if (!columns || !rows)
+        return;
+
+    D2D1_RECT_F margin;
+
+    float locWidth = location.right - location.left;
+    float locHeight = location.bottom - location.top;
+
+    float spriteWidth = locWidth / static_cast<float>(columns);
+    float spriteHeight = locHeight / static_cast<float>(rows);
+
+    float spaceWidth = space.right - space.left;
+    float spaceHeight = space.bottom - space.top;
+
+    location.left = (space.left + (spaceWidth / 2.0f) - (spriteWidth / 2.0f + (spriteWidth * column)));
+
+    location.top = (space.top + (spaceHeight / 2.0f) - (spriteHeight / 2.0f + (spriteHeight * row)));
+
+    if (location.left > space.left)
+        location.left = space.left;
+
+    if (location.top > space.top)
+        location.top = space.top;
+
+    location.right = location.left + locWidth;
+    location.bottom = location.top + locHeight;
 }
 
 void T2DSpriteEngine::Draw(D2D1_RECT_F& space)

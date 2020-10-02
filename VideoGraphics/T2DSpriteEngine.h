@@ -50,7 +50,7 @@ public:
 
     UINT Initialize(TDataArray<TFileShell>& files);
 
-    void SetCenter(UINT row, UINT column);
+    void SetCenter(UINT row, UINT column, D2D1_RECT_F& space);
 
     void Draw(D2D1_RECT_F& space);
 
