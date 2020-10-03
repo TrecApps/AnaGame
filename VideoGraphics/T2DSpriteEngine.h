@@ -8,6 +8,9 @@ public:
     T2DSprite(TDataArray<TrecSubPointer<TBrush, TBitmapBrush>>& brushes, UINT index);
 
     void SetTiltDegrees(float degrees);
+    void setCollisionUnit(UINT unit);
+
+
     float GetTiltDegrees();
 
     void OnDraw(D2D1_RECT_F& loc, TrecPointer<DrawingBoard> board);
@@ -22,6 +25,8 @@ protected:
 
     TrecSubPointer<TBrush, TBitmapBrush> brush;
 };
+
+
 
 /**
  * Class: T2DSpriteEngine
@@ -54,7 +59,10 @@ public:
 
     void Draw(D2D1_RECT_F& space);
 
+    void SetSelf(TrecPointer<T2DSpriteEngine> self);
+
 protected:
+    TrecPointerSoft< T2DSpriteEngine> self;
 
     TrecPointer<DrawingBoard> board;
     D2D1_RECT_F location;
@@ -67,3 +75,22 @@ protected:
     TDataArray<TrecPointer<T2DSprite>> sprites;
 };
 
+class T2DMovableSprite : public T2DSprite
+{
+public:
+    T2DMovableSprite(TDataArray<TrecSubPointer<TBrush, TBitmapBrush>>& brushes, UINT index, TrecPointer<T2DSpriteEngine> engine);
+
+    void SetSize(float height, float width);
+    void SetPosition(UINT column, UINT row);
+
+    void removeWholeUnits();
+
+    bool AttemptMove(float horizontal, float vertical, bool throughWall, UINT& objColl, UINT& envCol);
+
+protected:
+    float height, width; // Size of the object
+    float baseRow, baseColumn; // 
+    bool wholeUnits;
+
+    TrecPointer<T2DSpriteEngine> engine;
+};

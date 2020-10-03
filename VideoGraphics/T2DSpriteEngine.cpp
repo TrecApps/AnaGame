@@ -12,6 +12,11 @@ void T2DSprite::SetTiltDegrees(float degrees)
     tilt = degrees;
 }
 
+void T2DSprite::setCollisionUnit(UINT unit)
+{
+    collisionUnit = unit;
+}
+
 float T2DSprite::GetTiltDegrees()
 {
     return tilt;
@@ -157,4 +162,39 @@ void T2DSpriteEngine::Draw(D2D1_RECT_F& space)
 
 
     board->PopLayer();
+}
+
+void T2DSpriteEngine::SetSelf(TrecPointer<T2DSpriteEngine> self)
+{
+    if (self.Get() != this)
+        throw L"Expected Self Pointer to point to this!";
+    this->self = TrecPointerKey::GetSoftPointerFromTrec<T2DSpriteEngine>(self);
+}
+
+T2DMovableSprite::T2DMovableSprite(TDataArray<TrecSubPointer<TBrush, TBitmapBrush>>& brushes, UINT index, TrecPointer<T2DSpriteEngine> engine)
+    : T2DSprite(brushes, index)
+{
+    this->engine = engine;
+}
+
+void T2DMovableSprite::SetSize(float height, float width)
+{
+    this->height = height;
+    this->width = width;
+}
+
+void T2DMovableSprite::SetPosition(UINT column, UINT row)
+{
+    baseColumn = column;
+    baseRow = row;
+}
+
+void T2DMovableSprite::removeWholeUnits()
+{
+    wholeUnits = false;
+}
+
+bool T2DMovableSprite::AttemptMove(float horizontal, float vertical, bool throughWall, UINT& objColl, UINT& envCol)
+{
+    return false;
 }
