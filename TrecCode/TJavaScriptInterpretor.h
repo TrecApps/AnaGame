@@ -1,6 +1,36 @@
 #pragma once
 #include <TInterpretor.h>
 
+typedef enum class js_statement_type
+{
+    js_if,
+    js_while,
+    js_for,
+    js_var,
+    js_let,
+    js_const,
+    js_function,
+    js_class,
+    js_regular
+
+}js_statement_type;
+
+
+class JavaScriptStatement
+{
+public:
+    JavaScriptStatement(js_statement_type type);
+    JavaScriptStatement(const JavaScriptStatement& orig);
+    js_statement_type type;
+
+    TString contents;
+
+    UINT lineStart, lineEnd;
+
+    ULONG64 fileStart, fileEnd;
+};
+
+
 /**
  * Class: TJavaScriptInterpretor
  * Purpose: Interpretors JavaScript files
@@ -61,6 +91,11 @@ private:
     bool hasOddMiltiLineStrMarkers(const TString& str);
 
     UINT InsertSemiColons();
+
+    void ProcessParenthBlock(ReportObject& ro, const TString& currentCode, UINT line);
+
+
+    ULONG64 GetBlockEnd();
 
     /**
      * Method: TJavaScriptInterpretor::GetNextStatement

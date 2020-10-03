@@ -553,11 +553,12 @@ public:
 	 * Purpose: deduces whether the String starts with a given sequence
 	 * Parameters: const TString& seq - the sequence to check
 	 *				bool ignoreCase - whether to ignore case when doing the analysis (false by default)
+	 *				bool whitespace - if true, only return true if there is whitespace at the character after 'seq'
 	 * Returns: bool
 	 * 
 	 * Note: Will return false if seq is longer than 'this' string
 	 */
-	bool StartsWith(const TString&  seq, bool ignoreCase = false);
+	bool StartsWith(const TString&  seq, bool ignoreCase = false, bool whitespace = false);
 
 
 	/**

@@ -185,6 +185,8 @@ ReportObject TJavaScriptInterpretor::Run()
 
     UINT line = 1;
 
+    TDataArray<JavaScriptStatement> statements;
+
     // Read the String with the following flags:
     // 0b00000001 - ensures that our terminating character is included in the resulting string
     // 0b00000010 - Tells the method to not terminate if the termination character is within a quote
@@ -194,6 +196,8 @@ ReportObject TJavaScriptInterpretor::Run()
         // First make sure this statement doesn't land us in a multi-line string (`) which the ReadString
         // Method doesn't account for
         bool inMultiString = hasOddMiltiLineStrMarkers(code);
+
+        UINT beginLine = line;
 
         while (inMultiString)
         {
@@ -224,6 +228,183 @@ ReportObject TJavaScriptInterpretor::Run()
         line += code.CountFinds(L'\n');
 
 
+        TString startStatement(code.GetTrimLeft());
+
+        int startParenth = startStatement.Find(L'(');
+
+        if (startStatement.StartsWith(L"if", false, true))
+        {
+            if (startParenth == -1 || startStatement.SubString(2,startParenth).GetTrim().GetSize())
+            {
+                ret.returnCode = ret.broken_reference;
+                ret.errorMessage.Set(L"Unexpected token after 'if' statement!");
+
+
+
+                return ret;
+            }
+
+
+            ProcessParenthBlock(ret, startStatement.SubString(2), line);
+
+            if (ret.returnCode)
+                return ret;
+
+
+            JavaScriptStatement statement(js_statement_type::js_if);
+
+            statement.contents.Set(ret.errorMessage);
+            statement.lineStart = beginLine;
+            statement.lineEnd = line;
+
+
+            statement.fileStart = file->GetPosition() + 1;
+
+            statement.fileEnd = GetBlockEnd();
+            
+            if (!statement.fileEnd)
+            {
+                ret.returnCode = ret.incomplete_block;
+                ret.errorMessage.Set(L"If-block does not have a complete block");
+
+
+
+                return ret;
+            }
+            statements.push_back(statement);
+        }
+        else if (startStatement.StartsWith(L"for", false, true))
+        {
+            if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
+            {
+                ret.returnCode = ret.broken_reference;
+                ret.errorMessage.Set(L"Unexpected token after 'for' statement!");
+
+
+
+                return ret;
+            }
+
+
+            ProcessParenthBlock(ret, startStatement.SubString(2), line);
+
+            if (ret.returnCode)
+                return ret;
+
+
+            JavaScriptStatement statement(js_statement_type::js_for);
+
+            statement.contents.Set(ret.errorMessage);
+            statement.lineStart = beginLine;
+            statement.lineEnd = line;
+
+
+            statement.fileStart = file->GetPosition() + 1;
+
+            statement.fileEnd = GetBlockEnd();
+
+            if (!statement.fileEnd)
+            {
+                ret.returnCode = ret.incomplete_block;
+                ret.errorMessage.Set(L"For-block does not have a complete block");
+
+
+
+                return ret;
+            }
+            statements.push_back(statement);
+        }
+        else if (startStatement.StartsWith(L"while", false, true))
+        {
+            if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
+            {
+                ret.returnCode = ret.broken_reference;
+                ret.errorMessage.Set(L"Unexpected token after 'while' statement!");
+
+
+
+                return ret;
+            }
+
+
+            ProcessParenthBlock(ret, startStatement.SubString(2), line);
+
+            if (ret.returnCode)
+                return ret;
+
+
+            JavaScriptStatement statement(js_statement_type::js_while);
+
+            statement.contents.Set(ret.errorMessage);
+            statement.lineStart = beginLine;
+            statement.lineEnd = line;
+
+
+            statement.fileStart = file->GetPosition() + 1;
+
+            statement.fileEnd = GetBlockEnd();
+
+            if (!statement.fileEnd)
+            {
+                ret.returnCode = ret.incomplete_block;
+                ret.errorMessage.Set(L"While-block does not have a complete block");
+
+
+
+                return ret;
+            }
+            statements.push_back(statement);
+        }
+        else if (startStatement.StartsWith(L"const", false, true))
+        {
+            JavaScriptStatement statement(js_statement_type::js_const);
+
+            statement.lineStart = beginLine;
+            statement.lineEnd = line;
+
+            statement.contents.Set(startStatement.SubString(5).GetTrim());
+
+            statements.push_back(statement);
+        }
+        else if (startStatement.StartsWith(L"function", false, true))
+        {
+            JavaScriptStatement statement(js_statement_type::js_function);
+        }
+        else if (startStatement.StartsWith(L"let", false, true))
+        {
+            JavaScriptStatement statement(js_statement_type::js_let);
+
+            statement.lineStart = beginLine;
+            statement.lineEnd = line;
+
+            statement.contents.Set(startStatement.SubString(5).GetTrim());
+
+            statements.push_back(statement);
+        }
+        else if (startStatement.StartsWith(L"var", false, true))
+        {
+            JavaScriptStatement statement(js_statement_type::js_var);
+            statement.lineStart = beginLine;
+            statement.lineEnd = line;
+
+            statement.contents.Set(startStatement.SubString(5).GetTrim());
+
+            statements.push_back(statement);
+        }
+        else if (startStatement.StartsWith(L"class", false, true))
+        {
+            JavaScriptStatement statement(js_statement_type::js_class);
+        }
+        else
+        {
+            JavaScriptStatement statement(js_statement_type::js_regular);
+            statement.lineStart = beginLine;
+            statement.lineEnd = line;
+
+            statement.contents.Set(startStatement.SubString(5).GetTrim());
+
+            statements.push_back(statement);
+        }
 
     }
 
@@ -455,4 +636,154 @@ UINT TJavaScriptInterpretor::InsertSemiColons()
     }
 
     return 8;
+}
+
+void TJavaScriptInterpretor::ProcessParenthBlock(ReportObject& ro, const TString& currentCode, UINT line)
+{
+    TString trimedCode(currentCode.GetTrim());
+
+    if (!trimedCode.GetSize())
+    {
+        ro.returnCode = ReportObject::incomplete_statement;
+        ro.errorMessage.Set(L"Unexpected EOF!");
+
+        TString stack;
+        stack.Format(L"\t at line %d", line);
+
+        ro.stackTrace.push_back(stack);
+
+        return;
+    }
+
+    if (!trimedCode[0] != L'(')
+    {
+        ro.returnCode = ReportObject::mismatched_parehtnesis;
+        ro.errorMessage.Set(L"Expected token '(' after ");
+
+        TString stack;
+        stack.Format(L"\t at line %d", line);
+
+        ro.stackTrace.push_back(stack);
+
+        return;
+    }
+
+    UINT parenthesisStack;
+
+
+
+    parenthesisStack = 1;
+
+    for (UINT Rust = 1; Rust < trimedCode.GetSize(); Rust++)
+    {
+        if (trimedCode[Rust] == L'(')
+            parenthesisStack++;
+        if (trimedCode[Rust] == L')')
+            parenthesisStack--;
+
+        if (!parenthesisStack)
+            break;
+    }
+
+    if (parenthesisStack)
+    {
+        TString code;
+        while (parenthesisStack)
+        {
+            
+            if (!file->ReadString(code, L")", 0b00000111) || !code.EndsWith(L")"))
+            {
+                ro.returnCode = ro.mismatched_parehtnesis;
+                ro.errorMessage.Set(L"Closing Parenthesis ')' not found!");
+                TString stack;
+                stack.Format(L"\t at line %d", line + code.CountFinds(L"\n"));
+
+                ro.stackTrace.push_back(stack);
+                return;
+            }
+
+            trimedCode.Append(code);
+
+            parenthesisStack--;
+        }
+        
+        if (!file->ReadString(code, L"{", 0b00000111) || !code.EndsWith(L"{"))
+        {
+            ro.returnCode = ReportObject::incomplete_block;
+            ro.errorMessage.Set(L"Block not found!");
+
+            TString stack;
+            stack.Format(L"\t at line %d", line + code.CountFinds(L"\n"));
+
+            ro.stackTrace.push_back(stack);
+
+            return;
+        }
+
+        trimedCode.Append(code);
+    }
+
+    if (trimedCode.EndsWith(L"{"))
+    {
+        ro.returnCode = ReportObject::no_error;
+        ro.errorMessage.Set(trimedCode);
+    }
+    else
+    {
+        ro.returnCode = ReportObject::incomplete_block;
+        ro.errorMessage.Set(L"Block Not found");
+    }
+}
+
+ULONG64 TJavaScriptInterpretor::GetBlockEnd()
+{
+    TString code, total;
+
+    bool complete = false;
+
+    UINT curlyStack = 1;
+
+    while (file->ReadString(code, L"{`}", 0b00000111))
+    {
+        // First make sure this statement doesn't land us in a multi-line string (`) which the ReadString
+       // Method doesn't account for
+        if (code.EndsWith(L"{"))
+            curlyStack++;
+        if (code.EndsWith(L"}"))
+            curlyStack--;
+        if (code.EndsWith(L"`"))
+        {
+            // Within the multi-line string, no need to worry about other quote types
+            if (!file->ReadString(code, L"`", 0b00000101) || !code.EndsWith(L"`"))
+            {
+                return 0;
+            }
+        }
+
+        if (!curlyStack)
+            break;
+    }
+
+
+
+    return curlyStack ? 0 : file->GetPosition() -1;
+}
+
+JavaScriptStatement::JavaScriptStatement(js_statement_type type)
+{
+    this->type = type;
+    fileEnd = 0;
+    fileStart = 0;
+    lineEnd = 0;
+    lineStart = 0;
+}
+
+JavaScriptStatement::JavaScriptStatement(const JavaScriptStatement& orig)
+{
+    this->contents.Set(orig.contents);
+    this->fileEnd = orig.fileEnd;
+    this->fileStart = orig.fileStart;
+    this->lineEnd = orig.lineEnd;
+    this->lineStart = orig.lineStart;
+    this->type = orig.type;
 }

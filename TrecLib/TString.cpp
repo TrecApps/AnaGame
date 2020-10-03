@@ -3,6 +3,23 @@
 
 UCHAR TStringType[] = { 2, 0b10000000, 1 };
 
+static TDataArray<WCHAR> whiteChar;
+
+
+void fillWhiteChar()
+{
+	if (whiteChar.Size())
+		return;
+
+	whiteChar.push_back(L' ');
+	whiteChar.push_back(L'\s');
+	whiteChar.push_back(L'\n');
+	whiteChar.push_back(L'\r');
+	whiteChar.push_back(L'\t');
+
+}
+
+
 /*
 * Method: TString::Constructor
 * Purpose: Default Constructor for the TString Class
@@ -14,6 +31,7 @@ TString::TString()
 {
 	string = nullptr;
 	Empty();
+	fillWhiteChar();
 }
 
 /**
@@ -48,6 +66,7 @@ TString::~TString()
 */
 TString::TString(const TString * orig)
 {
+	fillWhiteChar();
 	if (!orig)
 	{
 		size = capacity = 0;
@@ -71,6 +90,7 @@ TString::TString(const TString * orig)
 */
 TString::TString(const char* cps)
 {
+	fillWhiteChar();
 	if(!cps)
 	{
 		string = nullptr;
@@ -94,6 +114,7 @@ TString::TString(const char* cps)
 */
 TString::TString(const WCHAR * wcps)
 {
+	fillWhiteChar();
 	if (!wcps)
 	{
 		string = nullptr;
@@ -117,6 +138,7 @@ TString::TString(const WCHAR * wcps)
 */
 TString::TString(const TString & c)
 {
+	fillWhiteChar();
 	size = c.size;
 	capacity = c.capacity;
 
@@ -133,6 +155,7 @@ TString::TString(const TString & c)
 */
 TString::TString(std::string & str)
 {
+	fillWhiteChar();
 	size = str.size();
 	capacity = size + 1;
 	string = new WCHAR[capacity];
@@ -148,6 +171,7 @@ TString::TString(std::string & str)
 */
 TString::TString(WCHAR c)
 {
+	fillWhiteChar();
 	size = 1;
 	capacity = 5;
 	string = new WCHAR[capacity];
@@ -1759,11 +1783,12 @@ TString TString::GetDelete(int& ret, int index, int count)
  * Purpose: deduces whether the String starts with a given sequence
  * Parameters: const TString& seq - the sequence to check
  *				bool ignoreCase - whether to ignore case when doing the analysis
+ *				bool whitespace - if true, only return true if there is whitespace at the character after 'seq'
  * Returns: bool
  *
  * Note: Will return false if seq is longer than 'this' string
  */
-bool TString::StartsWith(const TString& seq, bool ignoreCase)
+bool TString::StartsWith(const TString& seq, bool ignoreCase, bool whitespace)
 {
 	if (seq.GetSize() > size)
 		return false;
@@ -1784,6 +1809,22 @@ bool TString::StartsWith(const TString& seq, bool ignoreCase)
 		{
 			if (string[Rust] != seq[Rust]) return false;
 		}
+	}
+
+	if (whitespace)
+	{
+		if (seq.GetSize() == size)
+			return false;
+
+		WCHAR ch = this->string[seq.GetSize()];
+
+		for (UINT Rust = 0; Rust < whiteChar.Size(); Rust++)
+		{
+			if (whiteChar[Rust] == ch)
+				return true;
+		}
+
+		return false;
 	}
 
 	return true;
