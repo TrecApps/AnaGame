@@ -138,7 +138,7 @@ void T2DSpriteEngine::Draw(D2D1_RECT_F& space)
                 float spriteWidth = (location.right - location.left) / static_cast<float>(columns);
                 float spriteHeight = (location.bottom - location.top) / static_cast<float>(rows);
 
-                D2D1_RECT_F miniLoc;
+                D2D1_RECT_F miniLoc = { 0,0,0,0 };
 
                 miniLoc.top = location.top + (spriteHeight * currentRow);
                 miniLoc.bottom = miniLoc.top + spriteHeight;

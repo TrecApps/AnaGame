@@ -20,7 +20,11 @@ class JavaScriptStatement
 {
 public:
     JavaScriptStatement(js_statement_type type);
+    JavaScriptStatement();
     JavaScriptStatement(const JavaScriptStatement& orig);
+
+    void operator=(const JavaScriptStatement& other);
+
     js_statement_type type;
 
     TString contents;

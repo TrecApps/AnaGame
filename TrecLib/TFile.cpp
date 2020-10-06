@@ -318,6 +318,7 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
  * Parameters: TString& rString - the string to retun
  *				TString& chars - the characters to stop at
  *				UCHAR flags - flags influence the behavior of this method
+ *				UINT max - max number of bytes to read (0 for no maximum)
  * Returns: UINT - the size of the resulting string
  *
  * Note: Written with Source code interpretation in mind
@@ -326,7 +327,7 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
  *      0b00000010 - TFile::out_of_quotes - makesure that when we do find the characters, they are outside of quotes
  *      0booooo100 - TFile::watch_backslash - factor backslashes in handling the other flags
  */
-UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
+UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags, UINT max)
 {
 	bool success = false;
 	rString.Empty();
@@ -335,6 +336,8 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
 	WCHAR quote = L'\0';
 
 	UINT backslashes = 0;
+
+	bool maxSet = max > 0;
 
 	switch (fileEncode)
 	{
@@ -391,6 +394,12 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
 
 			rString.AppendChar(ReturnWCharType(letter[0]));
 			success = true;
+
+			if (maxSet && !(--max))
+			{
+				break;
+			}
+
 		}
 
 		break;
@@ -460,6 +469,13 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
 
 			rString.AppendChar(cLetter);
 			success = true;
+
+			if (maxSet)
+			{
+				max -= 2;
+				if (!max) break;
+			}
+
 		}
 
 		break;
@@ -520,6 +536,11 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags)
 				
 			rString.AppendChar(wLetter);
 			success = true;
+			if (maxSet)
+			{
+				max -= 2;
+				if (!max || max == UINT32_MAX) break;
+			}
 		}
 
 	}

@@ -4,14 +4,6 @@
 
 static TDataArray<WCHAR> noSemiColonEnd;
 
-WCHAR noSemiColonEnd[] = {
-    L'+',
-    L'-',
-    L'=',
-    L'%',
-    L'/',
-    L'\\'
-};
 
 
 /**
@@ -776,6 +768,21 @@ JavaScriptStatement::JavaScriptStatement(js_statement_type type)
     fileStart = 0;
     lineEnd = 0;
     lineStart = 0;
+}
+
+JavaScriptStatement::JavaScriptStatement() : JavaScriptStatement(js_statement_type::js_regular)
+{
+   
+}
+
+void JavaScriptStatement::operator=(const JavaScriptStatement& other)
+{
+    this->contents.Set(other.contents);
+    this->fileEnd = other.fileEnd;
+    this->fileStart = other.fileStart;
+    this->lineEnd = other.lineEnd;
+    this->lineStart = other.lineStart;
+    this->type = other.type;
 }
 
 JavaScriptStatement::JavaScriptStatement(const JavaScriptStatement& orig)

@@ -159,7 +159,7 @@ public:
 	 */
 	UINT ReadString(TString& rString, WCHAR chara);
 
-	UINT ReadString(TString& rString, const TString& chars, UCHAR flags);
+	UINT ReadString(TString& rString, const TString& chars, UCHAR flags, UINT max = 0);
 	
 
 	/*
