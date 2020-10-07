@@ -324,14 +324,14 @@ ReportObject TAnascriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& para
     {
         if (Rust < paramNames.Size())
         {
-            variables.addEntry(paramNames[Rust], params.at(Rust));
+            variables.addEntry(paramNames[Rust], TVariableMarker(false, params.at(Rust)));
         }
         else
         {
             TString paramName(L"_");
             paramName.AppendFormat(L"%d", Rust);
 
-            variables.addEntry(paramName, params.at(Rust));
+            variables.addEntry(paramName, TVariableMarker(false, params.at(Rust)));
         }
     }
 
@@ -419,9 +419,9 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expe
 
 
             // Now check to see if the Variable already exists
-            auto existVar = variables.retrieveEntry(varname);
+            TVariableMarker marker;
 
-            if (existVar.Get())
+            if (variables.retrieveEntry(varname, marker))
             {
                 ret.returnCode = ReportObject::existing_var;
                 ret.errorMessage.Format(L"Variable with name '%ws' already exists in the current scope!", varname.GetConstantBuffer());
@@ -433,7 +433,7 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expe
             }
 
             // Perform the operation
-            variables.addEntry(varname, TrecPointer<TVariable>());
+            variables.addEntry(varname, marker);
 
             ret.returnCode = ReportObject::no_error;
             ret.errorMessage.Empty();
@@ -493,7 +493,7 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expe
     ProcessExpression(expression, line, ret);
 
     if (!ret.returnCode)
-        variables.addEntry(varname, ret.errorObject);
+        variables.addEntry(varname, TVariableMarker(true, ret.errorObject));
 
     return ret;
 }
@@ -593,10 +593,10 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
         {
             exp.AppendFormat(L" %ws", loopTokens->at(Rust));
         }
+        TVariableMarker marker;
+        TrecPointer<TVariable> variable;
 
-        TrecPointer<TVariable> variable = variables.retrieveEntry(exp);
-
-        if (!variable.Get())
+        if (!variables.retrieveEntry(exp, marker))
         {
             // Okay, try getting it through an expression
             ProcessExpression(exp, line, ret);
@@ -605,6 +605,10 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
                 return ret;
 
             variable = ret.errorObject;
+        }
+        else
+        {
+            variable = marker.GetVariable();
         }
 
         if (!variable.Get())
@@ -1153,7 +1157,7 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
 
     block->SetParamNames(names);
 
-    variables.addEntry(functionName, TrecPointerKey::GetTrecPointerFromSub<TVariable, TAnascriptInterpretor>(block));
+    variables.addEntry(functionName, TVariableMarker(true, TrecPointerKey::GetTrecPointerFromSub<TVariable, TAnascriptInterpretor>(block)));
 
     ret.returnCode = 0;
     return ret;
@@ -1500,11 +1504,20 @@ void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Report
         }
         else
         {
-            object = variables.retrieveEntry(var);
+            TVariableMarker marker;
+            if (!variables.retrieveEntry(var, marker))
+            {
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Format(L"Encountered Undefined variable %ws while preparing method call!", var.GetConstantBuffer());
+                return;
+            }
+            
+
+            object = marker.GetVariable();
             if (!object.Get())
             {
                 ro.returnCode = ro.broken_reference;
-                ro.errorMessage.Format(L"Encountered Null or undefined variable %ws while preparing method call!", var.GetConstantBuffer());
+                ro.errorMessage.Format(L"Encountered Null variable %ws while preparing method call!", var.GetConstantBuffer());
                 return;
             }
         }
@@ -1514,8 +1527,10 @@ void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Report
 
     TString procedureName(start.SubString(indexDotStart).GetTrim());
     bool pres = true;
+    TVariableMarker marker;
     call = (object.Get() && object->GetVarType() == var_type::collection) ? dynamic_cast<TContainerVariable*>(object.Get())->GetValue(procedureName, pres) :
-        variables.retrieveEntry(procedureName);
+
+        (variables.retrieveEntry(procedureName,marker) ? marker.GetVariable() : TrecPointer<TVariable>());
 
     if (!call.Get())
     {

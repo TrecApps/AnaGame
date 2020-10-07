@@ -1,7 +1,7 @@
 #pragma once
 #include <TObject.h>
 #include "TVariable.h"
-#include <TMap.h>
+#include <TDataMap.h>
 #include <TFile.h>
 #include <TEnvironment.h>
 
@@ -348,7 +348,7 @@ protected:
     /**
      * Variables declared in this interpretor's scope
      */
-    TMap<TVariable> variables;
+    TDataMap<TVariableMarker> variables;
 
     /**
      * Parameter names (if this interpretor represents a specific function)

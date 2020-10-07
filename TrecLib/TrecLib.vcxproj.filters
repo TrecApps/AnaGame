@@ -138,6 +138,9 @@
     <ClInclude Include="TBlankNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TDataMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

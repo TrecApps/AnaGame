@@ -494,7 +494,7 @@ ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& par
 
     for (UINT Rust = 0; Rust < params.Size() && Rust < paramNames.Size(); Rust++)
     {
-        variables.addEntry(paramNames[Rust], params[Rust]);
+        variables.addEntry(paramNames[Rust], TVariableMarker(true, params[Rust]));
     }
 
     return Run();

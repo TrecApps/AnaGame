@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "TInterpretor.h"
 #include "TPrimitiveVariable.h"
 #include "TStringVariable.h"
@@ -41,14 +41,13 @@ ReportObject::ReportObject(const ReportObject& obj)
  */
 TrecPointer<TVariable> TInterpretor::GetVariable(TString& varName, bool& present)
 {
-	for (int C = variables.count() - 1; C >= 0; C--)
+	TVariableMarker marker;
+	if (variables.retrieveEntry(varName, marker))
 	{
-		if (variables.GetEntryAt(C).Get() && !variables.GetEntryAt(C)->key.Compare(varName))
-		{
-			present = true;
-			return variables.GetEntryAt(C)->object;
-		}
+		present = true;
+		return marker.GetVariable();
 	}
+
 	if (parent.Get())
 		return parent->GetVariable(varName, present);
 	if (environment.Get())

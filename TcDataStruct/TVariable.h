@@ -5,14 +5,21 @@
 #include <TString.h>
 #include "TcDataStruct.h"
 
+/**
+ * Enum Class: var_type
+ * Purpose: Tracks the type of variable being held, whether primitive, collection, native, etc.
+ */
 typedef enum class var_type
 {
-    primitive,
-    collection,
-    native_object,
-    string,
-    interpretor
+    primitive, // Primitive variable is being held
+    collection, // A collection type variable is being held, whether an array, JavaScript style object, tuple, dictionary, etc.
+    native_object, // Variable references a C++ level native Anagame object
+    string, // References a String
+    interpretor // References an Interpretor (i.e. procedures/functions that are stored as variables
 }var_type;
+
+
+
 
 /**
  * Class: TVariable
@@ -127,3 +134,84 @@ namespace VarFunction
     TC_DATA_STRUCT bool IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def = 0);
 
 }
+
+/**
+ * Class: TVariableMarker
+ * Purpose: holdes a TVariable reference as well as whether the variable is marked as mutable or not
+ */
+class TC_DATA_STRUCT TVariableMarker
+{
+private:
+    /*
+     * whether the variable is mutable or not
+     */
+    bool mutableVar;
+
+    /**
+     * The variable itself
+     */
+    TrecPointer<TVariable> var;
+
+public:
+
+    /**
+     * Method: TVariableMarker::TVariableMarker
+     * Purpose: Constructor
+     * Parameters: bool makeMutable - whether this variable should be able to be changed later
+     *              TrecPointer<TVariable> var - the new variable
+     * Returns: New Variable marker
+     */
+    TVariableMarker(bool makeMutable, TrecPointer<TVariable> var);
+
+
+    /**
+     * Method: TVariableMarker::TVariableMarker
+     * Purpose: Default Constructor
+     * Parameters: void
+     * Returns: New Variable marker
+     */
+    TVariableMarker();
+
+
+    /**
+     * Method: TVariableMarker::TVariableMarker
+     * Purpose: Copy Constructor
+     * Parameters: const TVariableMarker& orig -  the marker to copy from
+     * Returns: New Variable marker
+     */
+    TVariableMarker(const TVariableMarker& orig);
+
+
+    /**
+     * Method: TVariableMarker::operator=
+     * Purpose: Overloads assignment operator for the class
+     * Parameters: const TVariableMarker& orig -  the marker to copy from
+     * Returns: void
+     */
+    void operator=(const TVariableMarker& orig);
+
+
+    /**
+     * Method: TVariableMarker::SetVariable
+     * Purpose: Sets the Variable if allowed
+     * Parameters: TrecPointer<TVariable> var - the new variable to assign to
+     * Returns: bool - whether the new variable was set
+     */
+    bool SetVariable(TrecPointer<TVariable> var);
+
+    /**
+     * Method: TVariableMarker::GetVariable
+     * Purpose: Reports the Variable being held
+     * Parameters: void
+     * Returns: TrecPointer<TVariable> var - the variable being held
+     */
+    TrecPointer<TVariable> GetVariable() const;
+
+    /**
+     * Method: TVariableMarker::IsMutable
+     * Purpose: Reports whether the variable is mutable (can be changed) or not
+     * Parameters: void
+     * Returns: bool - mutability status
+     */
+    bool IsMutable() const;
+};

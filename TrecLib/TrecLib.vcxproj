@@ -158,6 +158,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="TBlankNode.h" />
+    <ClInclude Include="TDataMap.h" />
     <ClInclude Include="TEnvironment.h" />
     <ClInclude Include="AnagameDef.h" />
     <ClInclude Include="Animation.h" />
