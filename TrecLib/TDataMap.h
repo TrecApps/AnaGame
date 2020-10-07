@@ -95,6 +95,37 @@ public:
 		fields.push_back(entry);
 	}
 
+
+	/*
+	 * Method: TMap::setEntry
+	 * Purpose: Adds an entry to the TMap
+	 * Parameters: TString& str - the key
+	 *				const T& obj - the object itself
+	 * Returns: void
+	 */
+	void setEntry(const TString& str, const T& obj)
+	{
+		UINT target;
+		bool found = false;
+		for (target = 0; target < fields.Size(); target++)
+		{
+			if (str.Compare(fields[target].key))
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (found)
+		{
+			fields[target].object(obj);
+		}
+		else
+		{
+			addEntry(str, obj);
+		}
+	}
+
 	/*
 	 * Method: TMap::GetEntryAt
 	 * Purpose: Retrieves an entry at a specific index

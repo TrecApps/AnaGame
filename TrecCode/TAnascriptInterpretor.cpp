@@ -421,17 +421,36 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expe
             // Now check to see if the Variable already exists
             TVariableMarker marker;
 
-            if (variables.retrieveEntry(varname, marker))
+            bool varExists = variables.retrieveEntry(varname, marker);
+
+            if (varExists)
             {
-                ret.returnCode = ReportObject::existing_var;
-                ret.errorMessage.Format(L"Variable with name '%ws' already exists in the current scope!", varname.GetConstantBuffer());
-                TString stack;
-                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
-                ret.stackTrace.push_back(stack);
+                if (expectLet)
+                {
+                    ret.returnCode = ReportObject::existing_var;
+                    ret.errorMessage.Format(L"Variable with name '%ws' already exists in the current scope!", varname.GetConstantBuffer());
+                    TString stack;
+                    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                    ret.stackTrace.push_back(stack);
+                    return ret;
+                }
+                if (!marker.IsMutable())
+                {
+                    ret.returnCode = ReportObject::existing_var;
+                    ret.errorMessage.Format(L"Variable with name '%ws' is const current scope! Cannot assign to it!", varname.GetConstantBuffer());
+                    TString stack;
+                    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                    ret.stackTrace.push_back(stack);
+                    return ret;
+                }
+                marker.SetVariable(TrecPointer<TVariable>());
+                variables.setEntry(varname, marker);
+
+                ret.errorObject = marker.GetVariable();
 
                 return ret;
             }
-
+            
             // Perform the operation
             variables.addEntry(varname, marker);
 
@@ -487,6 +506,10 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expe
     {
         expression.Append(tokens->at(expIndex) + L' ');
     }
+
+
+
+
 
     expression.Trim();
 
