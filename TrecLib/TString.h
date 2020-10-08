@@ -170,6 +170,23 @@ public:
 	*/
 	TrecPointer<TDataArray<TString>> split(TString, UCHAR flags = 0, WCHAR exitQuote = L'\"') const;
 
+	/*
+	* Method: TString::splitn
+	* Purpose: Splits a String by the provided deliniators, providing a limit as to how many times the string can be split
+	* Parameters: TString str - the TString holding deliniators
+	*			UINT elements - the max number of elements to split by (0 for no limit)
+	*			UCHAR flags - flags to use to control the behavior of this method
+				WCHAR exitQuote - quote to look for if String is believed to begin in quotes
+	* Returns: TrecPointer<TArray<TString>> - Array of TStrings holding tokens
+	*
+	* flags: 0b00000001 - t_file_check_back_slash - ignore a hit if odd number of backslashes are present
+	*		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
+	*		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
+	*
+	* Attributes: const
+	*/
+	TrecPointer<TDataArray<TString>> splitn(TString, UINT elements = 0, UCHAR flags = 0, WCHAR exitQuote = L'\"') const;
+
 	/**
 	 * Method: TString::IsBackslahedChar
 	 * Purpose: Reports whether the character indexed has an odd number of backslashes in front of it

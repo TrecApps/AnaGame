@@ -418,7 +418,26 @@ short TString::ConvertToFloat(float& value)
 */
 TrecPointer<TDataArray<TString>> TString::split(TString str, UCHAR flags, WCHAR exitQuote) const 
 {
-	//TArray<TString>* tats = new TArray<TString>();
+	return splitn(str, 0, flags, exitQuote);
+}
+
+/*
+* Method: TString::splitn
+* Purpose: Splits a String by the provided deliniators, providing a limit as to how many times the string can be split
+* Parameters: TString str - the TString holding deliniators
+*			UINT elements - the max number of elements to split by (0 for no limit)
+*			UCHAR flags - flags to use to control the behavior of this method
+			WCHAR exitQuote - quote to look for if String is believed to begin in quotes
+* Returns: TrecPointer<TArray<TString>> - Array of TStrings holding tokens
+*
+* flags: 0b00000001 - t_file_check_back_slash - ignore a hit if odd number of backslashes are present
+*		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
+*		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
+*
+* Attributes: const
+*/
+TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCHAR flags, WCHAR exitQuote) const
+{
 	TrecPointer<TDataArray<TString>> ret;
 	ret = TrecPointerKey::GetNewTrecPointer<TDataArray<TString>>();
 
@@ -427,17 +446,25 @@ TrecPointer<TDataArray<TString>> TString::split(TString str, UCHAR flags, WCHAR 
 		return ret;
 	}
 
+
+	if (elements == 1)
+	{
+		ret->push_back(TString(this));
+		return ret;
+	}
+	bool hasLimit = elements > 0;
+
 	TString tok;
 
-	int pos = (flags & 0b00000110 == 0b00000110) ? Find(exitQuote) : 0;
-	
+	int pos = ((flags & 0b00000110) == 0b00000110) ? Find(exitQuote) : 0;
+
 	int begPos = pos;
 	tok.Set(this->Tokenize(str, pos));
-	while (!tok.IsEmpty() && begPos != -1)
+	while (!tok.IsEmpty() && begPos != -1 && (!hasLimit || elements--))
 	{
 		if (flags & 0b00000001)
 		{
-			
+
 			while (tok.IsBackSlashChar(tok.GetSize()))
 			{
 				tok.Set(this->Tokenize(str, pos));

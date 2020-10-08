@@ -1,5 +1,6 @@
 #include "TJavaScriptInterpretor.h"
 #include <DirectoryInterface.h>
+#include <cassert>
 
 
 static TDataArray<WCHAR> noSemiColonEnd;
@@ -369,7 +370,7 @@ ReportObject TJavaScriptInterpretor::Run()
             statement.lineStart = beginLine;
             statement.lineEnd = line;
 
-            statement.contents.Set(startStatement.SubString(5).GetTrim());
+            statement.contents.Set(startStatement.SubString(4).GetTrim());
 
             statements.push_back(statement);
         }
@@ -379,7 +380,7 @@ ReportObject TJavaScriptInterpretor::Run()
             statement.lineStart = beginLine;
             statement.lineEnd = line;
 
-            statement.contents.Set(startStatement.SubString(5).GetTrim());
+            statement.contents.Set(startStatement.SubString(4).GetTrim());
 
             statements.push_back(statement);
         }
@@ -393,89 +394,123 @@ ReportObject TJavaScriptInterpretor::Run()
             statement.lineStart = beginLine;
             statement.lineEnd = line;
 
-            statement.contents.Set(startStatement.SubString(5).GetTrim());
+            statement.contents.Set(startStatement.GetTrim());
 
             statements.push_back(statement);
         }
 
     }
 
-
-
-
-
-
-
-    for (currentPoint = start; currentPoint < end; currentPoint += file->ReadString(code, TString(L";\n{"), TFile::t_file_include_terminator))
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
     {
-        int firstQuote;
-
-        
-
-        while ((firstQuote = code.FindOneOf(L"\"'`", startQuoteSearch)) != -1)
+        switch (statements[Rust].type)
         {
-            // We have a String in our statement and need to make sure we have the whole statement
-            WCHAR quoteType = code[firstQuote];
-
-            int secondQuote = code.FindOneOf(L" \t", firstQuote + 1);
-
-            if (secondQuote == -1)
-            {
-                TString code2;
-                currentPoint += file->ReadString(code2, TString(quoteType), TFile::t_file_include_terminator);
-                TString code3;
-                currentPoint += file->ReadString(code3, TString(L";\n{"), TFile::t_file_include_terminator);
-
-                code.Append(code2);
-                startQuoteSearch = code.GetSize() + 1;
-                code.Append(code3);
-            }
+        case js_statement_type::js_class:
+            ProcessClass(statements, Rust, statements[Rust], ret);
+            break;
+        case js_statement_type::js_const:
+            ProcessConst(statements, Rust, statements[Rust], ret);
+            break;
+        case js_statement_type::js_for:
+            ProcessFor(statements, Rust, statements[Rust], ret);
+            break; 
+        case js_statement_type::js_function:
+            ProcessFunction(statements, Rust, statements[Rust], ret);
+            break; 
+        case js_statement_type::js_if:
+            ProcessIf(statements, Rust, statements[Rust], ret);
+            break; 
+        case js_statement_type::js_let:
+            ProcessLet(statements, Rust, statements[Rust], ret);
+            break; 
+        case js_statement_type::js_regular:
+            ProcessReg(statements, Rust, statements[Rust], ret);
+            break; 
+        case js_statement_type::js_var:
+            ProcessVar(statements, Rust, statements[Rust], ret);
+            break;
+        case js_statement_type::js_while:
+            ProcessWhile(statements, Rust, statements[Rust], ret);
         }
 
-        TDataArray<TString> tokens;
-        TString tok;
-        WCHAR quoteMode = L'\0';
-        for (UINT Rust = 0; Rust < code.GetSize(); Rust++)
-        {
-            WCHAR curChar = code[Rust];
-
-            if (quoteMode)
-            {
-                tok.AppendChar(curChar);
-                if (curChar == quoteMode)
-                    quoteMode = L'\0';
-
-                continue;
-            }
-
-            if (curChar == L' ' || curChar == L'\t')
-            {
-                if (tok.GetSize())
-                {
-                    tokens.push_back(tok);
-                    tok.Empty();
-                }
-                continue;
-            }
-
-            if (curChar == L'\'' || curChar == L'\"' || curChar == L'`')
-                quoteMode = curChar;
-
-            tok.AppendChar(curChar);
-        }
-
-
-        // Now Parse the Statement we got
-        if (tokenLog.IsOpen())
-        {
-            for (UINT Rust = 0; Rust < tokens.Size(); Rust++)
-            {
-                tokenLog.WriteString(tokens[Rust] + L'\n');
-            }
-
-            tokenLog.WriteString(L"\n\n");
-        }
+        if (ret.returnCode)
+            return ret;
     }
+
+
+
+
+
+    //for (currentPoint = start; currentPoint < end; currentPoint += file->ReadString(code, TString(L";\n{"), TFile::t_file_include_terminator))
+    //{
+    //    int firstQuote;
+
+    //    
+
+    //    while ((firstQuote = code.FindOneOf(L"\"'`", startQuoteSearch)) != -1)
+    //    {
+    //        // We have a String in our statement and need to make sure we have the whole statement
+    //        WCHAR quoteType = code[firstQuote];
+
+    //        int secondQuote = code.FindOneOf(L" \t", firstQuote + 1);
+
+    //        if (secondQuote == -1)
+    //        {
+    //            TString code2;
+    //            currentPoint += file->ReadString(code2, TString(quoteType), TFile::t_file_include_terminator);
+    //            TString code3;
+    //            currentPoint += file->ReadString(code3, TString(L";\n{"), TFile::t_file_include_terminator);
+
+    //            code.Append(code2);
+    //            startQuoteSearch = code.GetSize() + 1;
+    //            code.Append(code3);
+    //        }
+    //    }
+
+    //    TDataArray<TString> tokens;
+    //    TString tok;
+    //    WCHAR quoteMode = L'\0';
+    //    for (UINT Rust = 0; Rust < code.GetSize(); Rust++)
+    //    {
+    //        WCHAR curChar = code[Rust];
+
+    //        if (quoteMode)
+    //        {
+    //            tok.AppendChar(curChar);
+    //            if (curChar == quoteMode)
+    //                quoteMode = L'\0';
+
+    //            continue;
+    //        }
+
+    //        if (curChar == L' ' || curChar == L'\t')
+    //        {
+    //            if (tok.GetSize())
+    //            {
+    //                tokens.push_back(tok);
+    //                tok.Empty();
+    //            }
+    //            continue;
+    //        }
+
+    //        if (curChar == L'\'' || curChar == L'\"' || curChar == L'`')
+    //            quoteMode = curChar;
+
+    //        tok.AppendChar(curChar);
+    //    }
+
+
+    //    // Now Parse the Statement we got
+    //    if (tokenLog.IsOpen())
+    //    {
+    //        for (UINT Rust = 0; Rust < tokens.Size(); Rust++)
+    //        {
+    //            tokenLog.WriteString(tokens[Rust] + L'\n');
+    //        }
+
+    //        tokenLog.WriteString(L"\n\n");
+    //    }
+    //}
 
     tokenLog.Close();
 
@@ -793,4 +828,126 @@ JavaScriptStatement::JavaScriptStatement(const JavaScriptStatement& orig)
     this->lineEnd = orig.lineEnd;
     this->lineStart = orig.lineStart;
     this->type = orig.type;
+}
+
+void TJavaScriptInterpretor::ProcessIf(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::ProcessWhile(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::ProcessVar(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+    AssignmentStatemet(statements, cur, statement, ro);
+}
+
+void TJavaScriptInterpretor::ProcessLet(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+    AssignmentStatemet(statements, cur, statement, ro);
+}
+
+void TJavaScriptInterpretor::ProcessConst(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+    AssignmentStatemet(statements, cur, statement, ro);
+}
+
+void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::ProcessReg(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::AssignmentStatemet(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+    assert(statement.type == js_statement_type::js_let);
+
+    auto toks = statement.contents.split(L',', 2);
+
+    UINT newLines = 0;
+
+    TString statementType;
+    bool mutableValue = true;
+    switch (statement.type)
+    {
+    case js_statement_type::js_const:
+        statementType.Set(L"const");
+        mutableValue = false;
+        break;
+    case js_statement_type::js_let:
+        statementType.Set(L"let");
+        break;
+    case js_statement_type::js_var:
+        statementType.Set(L"var");
+    }
+
+    if (toks->Size())
+    {
+        for (UINT Rust = 0; Rust < toks->Size(); Rust++)
+        {
+            auto eqToks = toks->at(Rust).splitn(L'=', 2, 2);
+
+            if (!eqToks->Size())
+            {
+                ro.returnCode = ro.incomplete_statement;
+                ro.errorMessage.Format(L"Empty Sub-statement detected in '%ws' statament!", statementType.GetConstantBuffer());
+
+
+                TString stack;
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), statement.lineStart + newLines);
+                ro.stackTrace.push_back(stack);
+            }
+
+            TString varname(eqToks->at(0));
+
+            newLines += varname.CountFinds(L'\n');
+
+            varname.Trim();
+
+            CheckVarName(varname, ro, statement.lineStart + newLines);
+
+            if (ro.returnCode)
+                return;
+
+            if (eqToks->Size() == 1)
+            {
+                if(mutableValue)
+                    variables.addEntry(varname, TVariableMarker());
+                else
+                {
+                    ro.returnCode = ro.incomplete_statement;
+                    ro.errorMessage.Set(L"Variables declared in a 'const' statement must be assigned in the statement they are declared!");
+
+                    TString stack;
+                    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), statement.lineStart + newLines);
+                    ro.stackTrace.push_back(stack);
+                    return;
+                }
+            }
+            else
+            {
+                TString exp(eqToks->at(1));
+                ProcessExpression(statements, cur, exp, statement.lineStart + newLines, ro);
+                if (ro.returnCode)
+                    return;
+                variables.addEntry(varname, TVariableMarker(mutableValue, ro.errorObject));
+                newLines += exp.CountFinds(L'\n');
+            }
+        }
+    }
+}
+
+void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+{
 }
