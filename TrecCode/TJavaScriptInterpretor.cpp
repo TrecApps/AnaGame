@@ -1,5 +1,6 @@
 #include "TJavaScriptInterpretor.h"
 #include <DirectoryInterface.h>
+#include <TStringVariable.h>
 #include <cassert>
 
 
@@ -232,6 +233,7 @@ ReportObject TJavaScriptInterpretor::Run()
                 ret.returnCode = ret.broken_reference;
                 ret.errorMessage.Set(L"Unexpected token after 'if' statement!");
 
+                // To-Do: Add Stack code
 
 
                 return ret;
@@ -255,6 +257,65 @@ ReportObject TJavaScriptInterpretor::Run()
 
             statement.fileEnd = GetBlockEnd();
             
+            if (!statement.fileEnd)
+            {
+                ret.returnCode = ret.incomplete_block;
+                ret.errorMessage.Set(L"If-block does not have a complete block");
+
+
+
+                return ret;
+            }
+            statements.push_back(statement);
+        }
+        else if (startStatement.StartsWith(L"else", false, true))
+        {
+            startStatement.Set(startStatement.SubString(5).GetTrimLeft());
+
+            bool useIf = false;
+
+            if (startStatement.StartsWith(L"if", false, true))
+            {
+                
+                if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
+                {
+                    ret.returnCode = ret.broken_reference;
+                    ret.errorMessage.Set(L"Unexpected token after 'if' statement!");
+
+                    // To-Do: Add Stack code
+
+
+                    return ret;
+                }
+
+
+                ProcessParenthBlock(ret, startStatement.SubString(2), line);
+
+                if (ret.returnCode)
+                    return ret;
+                useIf = true;
+            }
+            else if (!startStatement.EndsWith(L"{"))
+            {
+                ret.returnCode = ret.broken_reference;
+                ret.errorMessage.Set(L"No Block detected for 'else' statement!");
+
+                // To-Do: Add Stack code
+
+
+                return ret;
+            }
+            JavaScriptStatement statement(useIf ? js_statement_type::js_else_if : js_statement_type::js_else);
+
+            statement.contents.Set(ret.errorMessage);
+            statement.lineStart = beginLine;
+            statement.lineEnd = line;
+
+
+            statement.fileStart = file->GetPosition() + 1;
+
+            statement.fileEnd = GetBlockEnd();
+
             if (!statement.fileEnd)
             {
                 ret.returnCode = ret.incomplete_block;
@@ -757,8 +818,8 @@ void TJavaScriptInterpretor::ProcessParenthBlock(ReportObject& ro, const TString
     }
     else
     {
-        ro.returnCode = ReportObject::incomplete_block;
-        ro.errorMessage.Set(L"Block Not found");
+    ro.returnCode = ReportObject::incomplete_block;
+    ro.errorMessage.Set(L"Block Not found");
     }
 }
 
@@ -793,7 +854,7 @@ ULONG64 TJavaScriptInterpretor::GetBlockEnd()
 
 
 
-    return curlyStack ? 0 : file->GetPosition() -1;
+    return curlyStack ? 0 : file->GetPosition() - 1;
 }
 
 JavaScriptStatement::JavaScriptStatement(js_statement_type type)
@@ -807,7 +868,7 @@ JavaScriptStatement::JavaScriptStatement(js_statement_type type)
 
 JavaScriptStatement::JavaScriptStatement() : JavaScriptStatement(js_statement_type::js_regular)
 {
-   
+
 }
 
 void JavaScriptStatement::operator=(const JavaScriptStatement& other)
@@ -830,12 +891,91 @@ JavaScriptStatement::JavaScriptStatement(const JavaScriptStatement& orig)
     this->type = orig.type;
 }
 
-void TJavaScriptInterpretor::ProcessIf(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+void TJavaScriptInterpretor::ProcessIf(TDataArray<JavaScriptStatement>& statements, UINT& cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
+    assert(statement.type == js_statement_type::js_if || statement.type == js_statement_type::js_else_if);
+
+    TString contents(statement.contents);
+    ProcessExpression(statements, cur, contents, statement.lineStart, ro);
+
+    if (ro.returnCode)
+        return;
+
+    if (IsTruthful(ro.errorObject))
+    {
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+
+
+        TDataArray<TrecPointer<TVariable>> params;
+        ro = block->Run(params);
+    }
+    else
+    {
+        if ((cur + 1) < statements.Size() && (statements[cur + 1].type == js_statement_type::js_else || statements[cur + 1].type == js_statement_type::js_else_if))
+        {
+            cur++;
+            ProcessElse(statements, cur, statements[cur], ro);
+        }
+    }
+}
+
+
+void TJavaScriptInterpretor::ProcessElse(TDataArray<JavaScriptStatement>& statements, UINT& cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+    assert(cur && cur < statements.Size());
+
+    if (statements[cur - 1].type != js_statement_type::js_if && statements[cur - 1].type != js_statement_type::js_else_if)
+    {
+        ro.returnCode = ReportObject::improper_type;
+        ro.errorMessage.Set(L"Expected 'if' or 'else if' statement to preceed the 'else statement'!");
+
+        // To-Do: add Stack info
+
+        return;
+    }
+    if (statement.type == js_statement_type::js_else)
+    {
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+
+
+        TDataArray<TrecPointer<TVariable>> params;
+        ro = block->Run(params);
+    }
+    else if (statement.type == js_statement_type::js_else_if)
+    {
+        ProcessIf(statements, cur, statement, ro);
+    }
+
+
 }
 
 void TJavaScriptInterpretor::ProcessWhile(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
+    assert(statement.type == js_statement_type::js_while);
+    TString contents(statement.contents);
+    ProcessExpression(statements, cur, contents, statement.lineStart, ro);
+
+    while (!ro.returnCode && IsTruthful(ro.errorObject))
+    {
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+
+
+        TDataArray<TrecPointer<TVariable>> params;
+        ro = block->Run(params);
+        if (ro.returnCode)
+            return;
+
+        ProcessExpression(statements, cur, contents, statement.lineStart, ro);
+    }
 }
 
 void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
@@ -950,4 +1090,23 @@ void TJavaScriptInterpretor::AssignmentStatemet(TDataArray<JavaScriptStatement>&
 
 void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
 {
+}
+
+bool TJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
+{
+    if (!var.Get())
+        return false;
+
+    switch (var->GetVarType())
+    {
+    case var_type::string:
+        // If a String, then only the Empty String is considered Falsy
+        return dynamic_cast<TStringVariable*>(var.Get())->GetSize() > 0;
+    case var_type::primitive:
+        // If a Primitive value, boolean false, 
+        return var->Get8Value() > 0;
+    }
+
+
+    return true;
 }

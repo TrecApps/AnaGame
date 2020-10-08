@@ -1,9 +1,12 @@
 #pragma once
 #include <TInterpretor.h>
+#include <TContainerVariable.h>
 
 typedef enum class js_statement_type
 {
     js_if,
+    js_else,
+    js_else_if,
     js_while,
     js_for,
     js_var,
@@ -102,7 +105,8 @@ private:
     ULONG64 GetBlockEnd();
     
     // Statement Process Methods
-    void ProcessIf(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
+    void ProcessIf(TDataArray<JavaScriptStatement>& statements, UINT& cur, const JavaScriptStatement& statement, ReportObject& ro);
+    void ProcessElse(TDataArray<JavaScriptStatement>& statements, UINT& cur, const JavaScriptStatement& statement, ReportObject& ro);
     void ProcessWhile(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
     void ProcessFor(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
     void ProcessVar(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
@@ -115,5 +119,14 @@ private:
     // Helper Process Methods
     void AssignmentStatemet(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
     void ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
+
+
+    /**
+     * Method: TAnascriptInterpretor::IsTruthful
+     * Purpose: Determines whether an expression is truthful or not
+     * Parameters: TrecPointer<TVariable> var - the variable to analyze.
+     * Returns: bool
+     */
+    bool IsTruthful(TrecPointer<TVariable> var);
 };
 
