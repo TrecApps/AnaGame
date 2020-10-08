@@ -118,7 +118,7 @@ public:
 
 		if (found)
 		{
-			fields[target].object(obj);
+			fields[target].object = obj;
 		}
 		else
 		{

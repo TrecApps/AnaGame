@@ -33,10 +33,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // TODO: Place code here.
     TString tmlFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable));
-    tmlFile.Append(L"Resources\\AnagameBuilderRibbon.tml");
+    tmlFile.Append(L"Resources\\Web-Tours\\BrowserInterface.tml.txt");
 
-    TString title(L"Anagame Builder");
-    TString winClass(L"BuilderWindow");
+    TString title(L"Web-Tours");
+    TString winClass(L"WebToursWindow");
 
     mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
 
@@ -56,7 +56,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.lpszClassName = winClass.GetConstantBuffer();
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < EventHandler, WebToursHandler>(mainInstance), t_window_type::t_window_type_ide);
+    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < EventHandler, WebToursHandler>(mainInstance), t_window_type::t_window_type_plain);
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WEBTOURS));
 
