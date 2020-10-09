@@ -415,6 +415,7 @@ short TString::ConvertToFloat(float& value)
 * flags: 0b00000001 - t_file_check_back_slash - ignore a hit if odd number of backslashes are present
 *		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
 *		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
+*        0b00001000 - t_file_include_empty
 */
 TrecPointer<TDataArray<TString>> TString::split(TString str, UCHAR flags, WCHAR exitQuote) const 
 {
@@ -433,6 +434,7 @@ TrecPointer<TDataArray<TString>> TString::split(TString str, UCHAR flags, WCHAR 
 * flags: 0b00000001 - t_file_check_back_slash - ignore a hit if odd number of backslashes are present
 *		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
 *		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
+*        0b00001000 - t_file_include_empty
 *
 * Attributes: const
 */
@@ -458,9 +460,11 @@ TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCH
 
 	int pos = ((flags & 0b00000110) == 0b00000110) ? Find(exitQuote) : 0;
 
+	bool insertEmpty = flags & 0b00001000;
+
 	int begPos = pos;
 	tok.Set(this->Tokenize(str, pos));
-	while (!tok.IsEmpty() && begPos != -1 && (!hasLimit || elements--))
+	while ((!tok.IsEmpty() || (insertEmpty && pos != -1)) && begPos != -1 && (!hasLimit || elements--))
 	{
 		if (flags & 0b00000001)
 		{

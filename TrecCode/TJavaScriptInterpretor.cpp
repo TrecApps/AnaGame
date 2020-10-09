@@ -2,6 +2,7 @@
 #include <DirectoryInterface.h>
 #include <TStringVariable.h>
 #include <cassert>
+#include <TPrimitiveVariable.h>
 
 
 static TDataArray<WCHAR> noSemiColonEnd;
@@ -492,6 +493,9 @@ ReportObject TJavaScriptInterpretor::Run()
             break;
         case js_statement_type::js_while:
             ProcessWhile(statements, Rust, statements[Rust], ret);
+            break;
+        case js_statement_type::js_try:
+            ProcessTry(statements, Rust, statements[Rust], ret);
         }
 
         if (ret.returnCode)
@@ -980,25 +984,181 @@ void TJavaScriptInterpretor::ProcessWhile(TDataArray<JavaScriptStatement>& state
 
 void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
+    TrecPointer<TDataArray<TString>> fields = statement.contents.split(L";", 2 + 8);
+
+    if (fields->Size() == 1)
+    {
+        TrecPointer<TDataArray<TString>> tokens = fields->at(0).split(L" \s\n\r\t", 0);
+
+        if (tokens->Size() != 3)
+        {
+            ro.returnCode = ro.broken_reference;
+            ro.errorMessage.Set(L"Unexpected token in for loop");
+            // To-Do - Stack
+
+            return;
+        }
+
+        TString varName(tokens->at(0).GetTrim());
+
+        CheckVarName(varName, ro, statement.lineStart);
+
+        if (ro.returnCode)
+            return;
+
+        TString middle(tokens->at(1).GetTrim());
+
+        if (middle.Compare(L"in") && middle.Compare(L"of"))
+        {
+            ro.returnCode = ro.broken_reference;
+            ro.errorMessage.Set(L"Unexpected token in 'for' statement!");
+
+            return;
+        }
+
+
+        bool wasPresent;
+        TString collName(tokens->at(2).GetTrim());
+        TrecPointer<TVariable> collection = GetVariable(collName, wasPresent);
+
+        if (!collection.Get())
+        {
+            ro.returnCode = ro.broken_reference;
+
+            ro.errorMessage.Format(L"For loop found %ws to be %ws, expected a collection!", collName.GetConstantBuffer(), (wasPresent) ? L"null" : L"undefined");
+
+            return;
+        }
+
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        TDataArray<TString> pNames;
+        pNames.push_back(varName);
+        dynamic_cast<TInterpretor*>(block.Get())->SetParamNames(pNames);
+
+        TDataArray<TrecPointer<TVariable>> params;
+
+        if (collection->GetVarType() == var_type::collection)
+        {
+            for (UINT Rust = 0; Rust < collection->GetSize(); Rust++)
+            {
+                params.RemoveAll();
+                params.push_back(dynamic_cast<TContainerVariable*>(collection.Get())->GetValueAt(Rust));
+
+                ro = block->Run(params);
+                if (ro.returnCode)
+                    return;
+            }
+        }
+        else if (collection->GetVarType() == var_type::string)
+        {
+            TString collString(collection->GetString());
+            for (UINT Rust = 0; Rust < collString.GetSize(); Rust++)
+            {
+                params.RemoveAll();
+                params.push_back(TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(collString[Rust]));
+
+                ro = block->Run(params);
+                if (ro.returnCode)
+                    return;
+            }
+        }
+    }
+    else if (fields->Size() == 3)
+    {
+        TString initialStatement(fields->at(0).GetTrim());
+        TString condition(fields->at(1).GetTrim());
+        TString update(fields->at(2).GetTrim());
+
+        JavaScriptStatement startStatement;
+
+        TDataMap<TVariableMarker> vars;
+
+        if (initialStatement.StartsWith(L"var", false, true))
+        {
+            startStatement.type = js_statement_type::js_let;
+            startStatement.contents.Set(initialStatement.SubString(4));
+            startStatement.lineStart = startStatement.lineEnd = statement.lineStart;
+            AssignmentStatement(statements, 0, startStatement, ro, vars);
+        }
+        else if (initialStatement.StartsWith(L"let", false, true))
+        {
+            startStatement.type = js_statement_type::js_let;
+            startStatement.contents.Set(initialStatement.SubString(4));
+            startStatement.lineStart = startStatement.lineEnd = statement.lineStart;
+            AssignmentStatement(statements, 0, startStatement, ro, vars);
+        }
+        else
+        {
+            startStatement.type = js_statement_type::js_regular;
+            startStatement.contents.Set(initialStatement);
+            startStatement.lineStart = startStatement.lineEnd = statement.lineStart;
+            ProcessReg(statements, cur, startStatement, ro);
+        }
+        if (ro.returnCode)
+            return;
+       
+        TDataArray<TString> varNames;
+        TDataArray<TrecPointer<TVariable>> varValues;
+
+        for (UINT Rust = 0; Rust < vars.count(); Rust++)
+        {
+            TDataEntry<TVariableMarker> mark;
+            if (!vars.GetEntryAt(Rust, mark))
+                continue;
+
+            varNames.push_back(mark.key);
+            varValues.push_back(mark.object.GetVariable());
+        }
+
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        dynamic_cast<TInterpretor*>(block.Get())->SetParamNames(varNames);
+        ProcessExpression(statements, cur, condition, statement.lineStart, ro);
+
+        while (!ro.returnCode && IsTruthful(ro.errorObject))
+        {
+            ro = block->Run(varValues);
+
+            if (ro.returnCode)return;
+
+            // Process the 
+            ProcessExpression(statements, cur, update, statement.lineStart, ro);
+            if (ro.returnCode)return;
+
+            ProcessExpression(statements, cur, condition, statement.lineStart, ro);
+        }
+    }
+    else
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"For loop has inproper number of statements!");
+
+    }
 }
 
 void TJavaScriptInterpretor::ProcessVar(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
-    AssignmentStatemet(statements, cur, statement, ro);
+    AssignmentStatement(statements, cur, statement, ro, variables);
 }
 
 void TJavaScriptInterpretor::ProcessLet(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
-    AssignmentStatemet(statements, cur, statement, ro);
+    AssignmentStatement(statements, cur, statement, ro, variables);
 }
 
 void TJavaScriptInterpretor::ProcessConst(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
-    AssignmentStatemet(statements, cur, statement, ro);
+    AssignmentStatement(statements, cur, statement, ro, variables);
 }
 
 void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
+    ProcessFunctionDef(0, statements, cur, statement, ro);
 }
 
 void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
@@ -1009,7 +1169,113 @@ void TJavaScriptInterpretor::ProcessReg(TDataArray<JavaScriptStatement>& stateme
 {
 }
 
-void TJavaScriptInterpretor::AssignmentStatemet(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+void TJavaScriptInterpretor::ProcessTry(TDataArray<JavaScriptStatement>& statements, UINT& cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+    if (cur + 1 == statements.Size())
+    {
+        ro.incomplete_statement;
+        ro.errorMessage.Set(L"Try cannot be the last statement in the Script!");
+
+        // To-Do: Handle stack
+
+
+        return;
+    }
+
+    if (statements[cur + 1].type != js_statement_type::js_catch || statements[cur + 1].type != js_statement_type::js_finally)
+    {
+        ro.incomplete_statement;
+        ro.errorMessage.Set(L"Try must be followed by a catch or finally block!");
+
+        // To-Do: Handle stack
+
+
+        return;
+    }
+
+
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+    dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+
+
+    TDataArray<TrecPointer<TVariable>> params;
+    ro = block->Run(params);
+
+    if (ro.returnCode)
+    {
+        // Something was thrown
+        if (statements[++cur].type == js_statement_type::js_catch)
+            ProcessCatch(statements, cur, statements[cur], ro);
+        else
+            ProcessFinally(statements, cur, statements[cur], ro);
+    }
+    else
+    {
+        if (statements[++cur].type == js_statement_type::js_finally)
+            ProcessFinally(statements, cur, statements[cur], ro);
+        else if(statements[cur + 1].type == js_statement_type::js_finally)
+            ProcessFinally(statements, ++cur, statements[cur], ro);
+    }
+}
+
+void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& statements, UINT& cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+    TString erName(statement.contents.GetTrim());
+
+    ReportObject ro2;
+    CheckVarName(erName, ro2, statement.lineStart);
+
+    if (ro2.returnCode)
+    {
+        ro = ro2;
+        return;
+    }
+
+    ro.returnCode = 0;
+
+    // To-Do: Set up errorObject
+
+    ro.errorMessage.Empty();
+
+    // Set up error parameter
+    TDataArray<TString> erParamName;
+    erParamName.push_back(erName);
+    TDataArray<TrecPointer<TVariable>> erObject;
+    erObject.push_back(ro.errorObject);
+
+
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+    dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+
+
+    dynamic_cast<TInterpretor*>(block.Get())->SetParamNames(erParamName);
+    ro = block->Run(erObject);
+
+    if (cur + 1 < statements.Size() && statements[cur + 1].type == js_statement_type::js_finally)
+        ProcessFinally(statements, ++cur, statements[cur], ro);
+}
+
+void TJavaScriptInterpretor::ProcessFinally(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+    dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+
+
+    TDataArray<TrecPointer<TVariable>> params;
+    auto ro2 = block->Run(params);
+
+    if (ro.returnCode && !ro2.returnCode)
+        return;
+    ro = ro2;
+}
+
+void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro, TDataMap<TVariableMarker>& variables)
 {
     assert(statement.type == js_statement_type::js_let);
 
@@ -1089,6 +1355,10 @@ void TJavaScriptInterpretor::AssignmentStatemet(TDataArray<JavaScriptStatement>&
 }
 
 void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::ProcessFunctionDef(UINT mode, TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
 }
 
