@@ -30,12 +30,18 @@
     <ClInclude Include="WebToursHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WebEnvironment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Web_tours.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WebToursHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebEnvironment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
