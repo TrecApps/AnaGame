@@ -192,9 +192,11 @@
     <ClInclude Include="TStackObjectVirtualMachine.h" />
     <ClInclude Include="TVirtualMachine.h" />
     <ClInclude Include="TStoryBoard.h" />
+    <ClInclude Include="TWebWindow.h" />
     <ClInclude Include="TWindow.h" />
     <ClInclude Include="EventHandler.h" />
     <ClInclude Include="MiniHandler.h" />
+    <ClInclude Include="WebPage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlertDialog.cpp" />
@@ -231,9 +233,11 @@
     <ClCompile Include="TStackObjectVirtualMachine.cpp" />
     <ClCompile Include="TVirtualMachine.cpp" />
     <ClCompile Include="TStoryBoard.cpp" />
+    <ClCompile Include="TWebWindow.cpp" />
     <ClCompile Include="TWindow.cpp" />
     <ClCompile Include="EventHandler.cpp" />
     <ClCompile Include="MiniHandler.cpp" />
+    <ClCompile Include="WebPage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Machine.asm" />
