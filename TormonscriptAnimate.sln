@@ -78,6 +78,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Web_tours", "Web_tours\Web_
 		{D51F30ED-A597-4CB8-9BEB-7EC42AECE350} = {D51F30ED-A597-4CB8-9BEB-7EC42AECE350}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnaWeb", "AnaWeb\AnaWeb.vcxproj", "{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -174,6 +176,14 @@ Global
 		{CA07A82F-D60D-4A3C-BE4A-CB9DF9553FAD}.Release|x64.Build.0 = Release|x64
 		{CA07A82F-D60D-4A3C-BE4A-CB9DF9553FAD}.Release|x86.ActiveCfg = Release|Win32
 		{CA07A82F-D60D-4A3C-BE4A-CB9DF9553FAD}.Release|x86.Build.0 = Release|Win32
+		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Debug|x64.ActiveCfg = Debug|x64
+		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Debug|x64.Build.0 = Debug|x64
+		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Debug|x86.ActiveCfg = Debug|Win32
+		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Debug|x86.Build.0 = Debug|Win32
+		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Release|x64.ActiveCfg = Release|x64
+		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Release|x64.Build.0 = Release|x64
+		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Release|x86.ActiveCfg = Release|Win32
+		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
