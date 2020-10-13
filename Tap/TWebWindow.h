@@ -45,6 +45,16 @@ public:
 	~TWebWindow();
 
 	/**
+	 * Method: TWebWindow::PrepareWindow
+	 * Purpose: Sets the Window up for viewing
+	 * Parameters: void
+	 * Returns: int - error code (0 = success)
+	 *
+	 * Attributes: override
+	 */
+	virtual int PrepareWindow()override;
+
+	/**
 	 * Method: TWebWindow::AddNewTab
 	 * Purpose: Adds a New Tab to the Window
 	 * Parameters: void
@@ -75,6 +85,10 @@ public:
 
 protected:
 
+	TString FixUrl(const TString& url);
+
+	TrecSubPointer<Page, WebPage> GetWebPage(const TString& url);
+
 	/**
 	 * Space to offer the Tab Bars
 	 */
@@ -88,7 +102,7 @@ protected:
 	/**
 	 * Tabs which lead to the Web Pages themselves
 	 */
-	TDataArray<TrecPointer<WebPageHolder>> tabs;
+	TDataArray<TrecPointer<WebPageHolder>> tabList;
 
 	/**
 	 * Locations to keep track of

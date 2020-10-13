@@ -1,5 +1,6 @@
 #pragma once
 #include "Page.h"
+#include <TEnvironment.h>
 
 // Remove this once the library managng HTML is created and provides the TWebNode
 class TWebNode;
@@ -99,9 +100,6 @@ public:
 	 */
 	void SetCurrentPoint(TPoint& p);
 
-
-protected:
-
 	/**
 	 * Method: WebPageHolder::SetPage
 	 * Purpose:sets the Page for this Tab
@@ -109,7 +107,7 @@ protected:
 	 * Returns: void
 	 */
 	void SetPage(TrecPointer<Page> p);
-
+protected:
 	/**
 	 * Image to draw on the Tab
 	 */
@@ -150,6 +148,7 @@ protected:
  */
 class WebPage : public Page
 {
+	friend class TWebWindow;
 public:
 
 	/**
@@ -225,6 +224,8 @@ public:
 
 
 protected:
+
+	TrecPointer<TEnvironment> environment;
 
 	TrecPointer<TWebNode> rootNode;
 

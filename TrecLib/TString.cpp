@@ -1819,7 +1819,7 @@ TString TString::GetDelete(int& ret, int index, int count)
  *
  * Note: Will return false if seq is longer than 'this' string
  */
-bool TString::StartsWith(const TString& seq, bool ignoreCase, bool whitespace)
+bool TString::StartsWith(const TString& seq, bool ignoreCase, bool whitespace) const
 {
 	if (seq.GetSize() > size)
 		return false;

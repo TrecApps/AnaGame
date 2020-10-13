@@ -573,9 +573,11 @@ public:
 	 *				bool whitespace - if true, only return true if there is whitespace at the character after 'seq'
 	 * Returns: bool
 	 * 
+	 * Attributes: const
+	 * 
 	 * Note: Will return false if seq is longer than 'this' string
 	 */
-	bool StartsWith(const TString&  seq, bool ignoreCase = false, bool whitespace = false);
+	bool StartsWith(const TString&  seq, bool ignoreCase = false, bool whitespace = false) const;
 
 
 	/**
