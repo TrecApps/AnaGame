@@ -423,7 +423,41 @@ ReportObject TJavaScriptInterpretor::Run()
         }
         else if (startStatement.StartsWith(L"function", false, true))
         {
+            int startParenth = startStatement.Find(L'(');
+            if (startParenth == -1)
+            {
+                ret.returnCode = ret.mismatched_parehtnesis;
+                ret.errorMessage.Set(L"Unexpected token detected in 'function-block statement'");
+
+                return ret;
+            }
+
+
+            ProcessParenthBlock(ret, startStatement.SubString(startParenth), line);
+
+            if (ret.returnCode)
+                return ret;
+
             JavaScriptStatement statement(js_statement_type::js_function);
+
+            statement.contents.Set(startStatement.SubString(0, startParenth) + ret.errorMessage);
+            statement.lineStart = beginLine;
+            statement.lineEnd = line;
+
+
+            statement.fileStart = file->GetPosition() + 1;
+
+            statement.fileEnd = GetBlockEnd();
+            if (!statement.fileEnd)
+            {
+                ret.returnCode = ret.incomplete_block;
+                ret.errorMessage.Set(L"function-block does not have a complete block");
+
+
+
+                return ret;
+            }
+            statements.push_back(statement);
         }
         else if (startStatement.StartsWith(L"let", false, true))
         {
@@ -1158,7 +1192,38 @@ void TJavaScriptInterpretor::ProcessConst(TDataArray<JavaScriptStatement>& state
 
 void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
-    ProcessFunctionDef(0, statements, cur, statement, ro);
+    TString var(statement.contents.SubString(0, statement.contents.Find(L'(')).GetTrim());
+
+    CheckVarName(var, ro, statement.lineStart);
+
+    if (ro.returnCode)
+        return;
+
+    TString parametersString(statement.contents.SubString(statement.contents.Find(L'(') + 1));
+
+    auto paramsList = parametersString.split(L',');
+
+    TDataArray<TString> paramNames;
+
+    for (UINT Rust = 0; Rust < paramsList->Size(); Rust++)
+    {
+
+        paramsList->at(Rust).Trim();
+
+        TString paramName(paramsList->at(Rust));
+        CheckVarName(paramName, ro, statement.lineStart);
+        if (ro.returnCode)
+            return;
+        paramNames.push_back(paramName);
+    }
+
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> function = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+    dynamic_cast<TInterpretor*>(function.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+    function->SetParamNames(paramNames);
+
+    variables.addEntry(var, TVariableMarker(true, TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(function)));
 }
 
 void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
@@ -1358,8 +1423,65 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 {
 }
 
-void TJavaScriptInterpretor::ProcessFunctionDef(UINT mode, TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
 {
+    TString trimmed(exp.GetTrim());
+
+    if (!trimmed.EndsWith(L'{'))
+    {
+        ro.returnCode = ro.broken_reference;
+
+
+        return;
+    }
+
+    if (!trimmed.StartsWith(L'('))
+    {
+        ro.returnCode = ro.broken_reference;
+
+
+
+        return;
+    }
+
+    int endParam = trimmed.FindLast(L')');
+
+    if (endParam == -1)
+    {
+        ro.returnCode = ro.incomplete_statement;
+
+
+        return;
+    }
+
+    ULONG64 start = file->GetPosition() + 1;
+    ULONG64 end = GetBlockEnd();
+
+    TString parametersString(trimmed.SubString(1, endParam));
+
+    auto paramsList = parametersString.split(L',');
+
+    TDataArray<TString> paramNames;
+
+    for (UINT Rust = 0; Rust < paramsList->Size(); Rust++)
+    {
+
+        paramsList->at(Rust).Trim();
+
+        TString paramName(paramsList->at(Rust));
+        CheckVarName(paramName, ro, line);
+        if (ro.returnCode)
+            return;
+        paramNames.push_back(paramName);
+    }
+
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> function = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
+    dynamic_cast<TInterpretor*>(function.Get())->SetCode(file, start, end);
+    function->SetParamNames(paramNames);
+
+    ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(function);
 }
 
 bool TJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
