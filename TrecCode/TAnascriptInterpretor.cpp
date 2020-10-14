@@ -1235,7 +1235,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
             if (stack)
             {
                 ro.returnCode = ro.mismatched_parehtnesis;
-                ro.errorMessage.Format(L"Mismatched Parenthesis, needed {} more to close it!", stack);
+                ro.errorMessage.Format(L"Mismatched Parenthesis, needed %i more to close it!", stack);
                 TString stack;
                 stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
                 ro.stackTrace.push_back(stack);
@@ -1273,7 +1273,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
             if (stack)
             {
                 ro.returnCode = ro.mismatched_parehtnesis;
-                ro.errorMessage.Format(L"Mismatched Square Brackets, needed {} more to close it!", stack);
+                ro.errorMessage.Format(L"Mismatched Square Brackets, needed %i more to close it!", stack);
                 TString stack;
                 stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
                 ro.stackTrace.push_back(stack);

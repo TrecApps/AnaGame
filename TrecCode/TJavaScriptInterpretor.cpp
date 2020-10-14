@@ -7,6 +7,8 @@
 
 static TDataArray<WCHAR> noSemiColonEnd;
 
+static TDataArray<TString> standardOperators;
+
 
 
 /**
@@ -25,6 +27,40 @@ TJavaScriptInterpretor::TJavaScriptInterpretor(TrecSubPointer<TVariable,TInterpr
         noSemiColonEnd.push_back(L'%');
         noSemiColonEnd.push_back(L'/');
         noSemiColonEnd.push_back(L'\\');
+    }
+
+    if (!standardOperators.Size())
+    {
+        standardOperators.push_back(L">>>=");
+        standardOperators.push_back(L"===");
+        standardOperators.push_back(L"!==");
+        standardOperators.push_back(L">>>");
+        standardOperators.push_back(L"<<=");
+        standardOperators.push_back(L">>=");
+        standardOperators.push_back(L"&&=");
+        standardOperators.push_back(L"||=");
+        standardOperators.push_back(L"??=");
+        standardOperators.push_back(L"**=");
+        standardOperators.push_back(L"++");
+        standardOperators.push_back(L"--");
+        standardOperators.push_back(L"**");
+        standardOperators.push_back(L"<<");
+        standardOperators.push_back(L">>");
+        standardOperators.push_back(L"<=");
+        standardOperators.push_back(L">=");
+        standardOperators.push_back(L"==");
+        standardOperators.push_back(L"!=");
+        standardOperators.push_back(L"&&");
+        standardOperators.push_back(L"||");
+        standardOperators.push_back(L"??");
+        standardOperators.push_back(L"+=");
+        standardOperators.push_back(L"-=");
+        standardOperators.push_back(L"*=");
+        standardOperators.push_back(L"/=");
+        standardOperators.push_back(L"%=");
+        standardOperators.push_back(L"&=");
+        standardOperators.push_back(L"^=");
+        standardOperators.push_back(L"|=");
     }
 }
 
@@ -1340,6 +1376,8 @@ void TJavaScriptInterpretor::ProcessFinally(TDataArray<JavaScriptStatement>& sta
     ro = ro2;
 }
 
+// inspiration for how to pull this off came from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence#Table
+
 void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro, TDataMap<TVariableMarker>& variables)
 {
     assert(statement.type == js_statement_type::js_let);
@@ -1419,7 +1457,216 @@ void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>
     }
 }
 
-void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& expParam, UINT line, ReportObject& ro)
+{
+    TString exp(expParam.GetTrim());
+
+
+    if (!exp.GetSize())
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"Expression amounted to a blank!");
+        TString stack;
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        ro.stackTrace.push_back(stack);
+
+        return;
+    }
+
+    TDataArray<TrecPointer<TVariable>> expresions;
+
+    TDataArray<TString> operators;
+
+    UINT curSize;
+
+    while (curSize = exp.GetSize())
+    {
+        if (exp[0] == L'(')
+        {
+            UINT stack = 1;
+
+            UINT end;
+
+            for (end = 1; end < exp.GetSize() && stack; end++)
+            {
+                if (exp[end] == L'(')
+                    stack++;
+                else if (exp[end] == L')')
+                    stack--;
+            }
+
+            if (stack)
+            {
+                ro.returnCode = ro.mismatched_parehtnesis;
+                ro.errorMessage.Format(L"Mismatched Parenthesis, needed %i more to close it!", stack);
+                TString stack;
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                ro.stackTrace.push_back(stack);
+
+                return;
+            }
+
+            TString smallExp(exp.SubString(1, end));
+
+            ProcessExpression(statements, cur, smallExp, line, ro);
+
+            if (ro.returnCode)
+            {
+                return;
+            }
+
+            expresions.push_back(ro.errorObject);
+
+            exp.Set(exp.SubString(end + 1).GetTrim());
+        }
+        else if (exp[0] == L'[')
+        {
+            UINT stack = 1;
+
+            UINT end;
+
+            for (end = 1; end < exp.GetSize() && stack; end++)
+            {
+                if (exp[end] == L'[')
+                    stack++;
+                else if (exp[end] == L']')
+                    stack--;
+            }
+
+            if (stack)
+            {
+                ro.returnCode = ro.mismatched_parehtnesis;
+                ro.errorMessage.Format(L"Mismatched Square Brackets, needed %i more to close it!", stack);
+                TString stack;
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                ro.stackTrace.push_back(stack);
+
+                return;
+            }
+
+            TString smallExp(exp.SubString(1, end));
+
+            ProcessArrayExpression(statements, cur, smallExp, line, ro);
+
+            if (ro.returnCode)
+            {
+                return;
+            }
+
+            expresions.push_back(ro.errorObject);
+
+            exp.Set(exp.SubString(end + 1).GetTrim());
+        }
+        else if (exp[0] >= L'0' && exp[0] <= L'9')
+        {
+            InspectNumber(exp, line, ro);
+            if (ro.returnCode)
+                return;
+            expresions.push_back(ro.errorObject);
+        }
+        else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
+        {
+            InspectVariable(exp, line, ro);
+            //InspectNumber(exp, line, ro);
+            if (ro.returnCode)
+                return;
+            expresions.push_back(ro.errorObject);
+        }
+        else if (exp[0] == L'\'' || exp[0] == L'\"' || exp[0] == L'\`')
+        {
+            int loc = exp.Find(exp[0], 1, false);
+
+            if (loc == -1)
+            {
+                ro.returnCode = ro.incomplete_statement;
+                ro.errorMessage.Set(L"Unfinished String Expression!");
+
+                TString stack;
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                ro.stackTrace.push_back(stack);
+
+                return;
+            }
+
+            expresions.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(exp.SubString(1, loc)));
+
+            exp.Set(exp.SubString(loc + 1));
+        }
+
+        // Now Check for an operator
+
+        exp.Trim();
+
+        bool foundOp = false;
+
+        for (UINT Rust = 0; Rust < standardOperators.Size(); Rust++)
+        {
+            if (exp.StartsWith(standardOperators[Rust]))
+            {
+                operators.push_back(standardOperators[Rust]);
+                foundOp = true;
+                exp.Delete(0, standardOperators[Rust].GetSize());
+                break;
+            }
+        }
+
+        if (!foundOp)
+        {
+            if (!exp.FindOneOf(L"+-*/%^&|<>?=~!,"))
+            {
+                operators.push_back(TString(exp[0]));
+                exp.Delete(0, 1);
+            }
+        }
+    }
+
+    HandlePreExpr(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleExponents(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleMultDiv(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleAddSub(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleBitwiseShift(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleLogicalComparison(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleEquality(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleBitwiseAnd(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleBitwiseXor(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleBitwiseOr(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleLogicalAnd(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleLogicalOr(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleNullish(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleConditional(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleComma(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+}
+
+void TJavaScriptInterpretor::ProcessArrayExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
 {
 }
 
@@ -1482,6 +1729,74 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
     function->SetParamNames(paramNames);
 
     ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(function);
+}
+
+void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleExponents(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleLogicalOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleNullish(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
+void TJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
 }
 
 bool TJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
