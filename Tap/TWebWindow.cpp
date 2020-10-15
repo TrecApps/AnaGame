@@ -92,6 +92,11 @@ int TWebWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
     return 0;
 }
 
+void TWebWindow::SetEnvironmentGenerator(TrecPointer<EnvironmentGenerator> gen)
+{
+    envGenerator = gen;
+}
+
 TString TWebWindow::FixUrl(const TString& url)
 {
     return TString();

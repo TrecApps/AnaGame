@@ -81,3 +81,8 @@ void WebEnvironment::SupportsFileExt(TDataArray<TString>& ext)
     // ext.push_back(L"");
     // ext.push_back(L"");
 }
+
+TrecPointer<TEnvironment> WebEnvGenerator::GetEnvironment(TrecPointer<TFileShell> shell)
+{
+    return TrecPointerKey::GetNewSelfTrecPointerAlt<TEnvironment, WebEnvironment>(shell);
+}

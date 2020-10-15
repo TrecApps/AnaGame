@@ -4,6 +4,15 @@
 #include "WebPage.h"
 
 /**
+ * Class: EnvironmentGenerator
+ * Purpose: Supplies the TWebWindow with an acceptable WebEnvironment
+ */
+class EnvironmentGenerator
+{
+	virtual TrecPointer<TEnvironment> GetEnvironment(TrecPointer<TFileShell> shell) = 0;
+};
+
+/**
  * Class: TWebWindow
  * Purpose: Specialized Window designed to hold Web-Content
  * 
@@ -82,12 +91,22 @@ public:
 	 */
 	int CompileView(TString& file, TrecPointer<EventHandler> eh)override;
 
+	/**
+	 * Method: TWebWindow::SetEnvironmentGenerator
+	 * Purpose: Allows the Web Window to generate eb environments
+	 * Parameters: TrecPointer<EnvironmentGenerator> - the object to generate Environments with 
+	 * Returns: void
+	 */
+	void SetEnvironmentGenerator(TrecPointer<EnvironmentGenerator> gen);
+
 
 protected:
 
 	TString FixUrl(const TString& url);
 
 	TrecSubPointer<Page, WebPage> GetWebPage(const TString& url);
+
+	TrecPointer<EnvironmentGenerator> envGenerator;
 
 	/**
 	 * Space to offer the Tab Bars

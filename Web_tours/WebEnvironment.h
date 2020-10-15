@@ -3,6 +3,13 @@
 #include <TPromptControl.h>
 #include <TJavaScriptInterpretor.h>
 #include <TAnascriptInterpretor.h>
+#include <TWebWindow.h>
+
+class WebEnvGenerator: public EnvironmentGenerator
+{
+	virtual TrecPointer<TEnvironment> GetEnvironment(TrecPointer<TFileShell> shell) override;
+};
+
 
 class WebEnvironment : public TEnvironment
 {

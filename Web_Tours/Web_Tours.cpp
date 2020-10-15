@@ -6,6 +6,8 @@
 #include <TInstance.h>
 #include <DirectoryInterface.h>
 #include "WebToursHandler.h"
+#include <TWebWindow.h>
+#include "WebEnvironment.h"
 
 #define MAX_LOADSTRING 100
 
@@ -56,7 +58,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.lpszClassName = winClass.GetConstantBuffer();
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < EventHandler, WebToursHandler>(mainInstance), t_window_type::t_window_type_plain);
+    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < EventHandler, WebToursHandler>(mainInstance), t_window_type::t_window_type_web);
+
+    TrecSubPointer<TWindow, TWebWindow> webWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TWebWindow>( mainInstance->GetMainWindow());
+
+    if (webWindow.Get())
+    {
+        // Web Based Initialization here
+        webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>());
+
+    }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WEBTOURS));
 

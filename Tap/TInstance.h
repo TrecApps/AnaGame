@@ -41,8 +41,9 @@ public:
  */
 typedef enum class t_window_type
 {
-	t_window_type_plain, // Gets a Plain Window
-	t_window_type_ide    // Gets a Basic IDE style Window
+	t_window_type_plain,  // Gets a Plain Window
+	t_window_type_ide,    // Gets a Basic IDE style Window
+	t_window_type_web     // Window Optimized for Web-Browsing
 }t_window_type;
 
 /**
