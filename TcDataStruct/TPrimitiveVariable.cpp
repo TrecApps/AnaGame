@@ -339,6 +339,152 @@ void TPrimitiveVariable::Set(bool value)
 }
 
 /**
+ * Method: TPrimitiveVariable::BitShift
+ * Purpose: Performs a bitshift operatoin on the variable
+ * Parameters: bool rightshift - true for right shift, false for left shift
+ *              UINT shiftCount - the number of bits to shoft by
+ *              USHORT flags - flags that go into this shift
+ * Returns: bool - whether the operation can be applied
+ *
+ * Note: Flags are as follows
+ *
+ *  0b0000000000000001 - Applies to boolean
+ *  0b0000000000000010 - Applies to float
+ *  0b0000000000000100 - Fill in-side with out-bit
+ *  0b0000000000001000 - Cut down to 32 bits
+ *  0b0000000000010000 - cut down to 16 bits
+ *  0b0000000000011000 - cut down to 8 bits
+ *  0b0000000000100000 - make unsigned
+ *  0b0000000001100000 - make unsigned if float
+ */
+bool TPrimitiveVariable::BitShift(bool rightShift, UINT shiftCount, USHORT flags)
+{
+    if (!(flags & 1) && type & 0b00000001)    // It was a boolean and the passed flag doesn't allow for that
+        return false;
+    if (!(flags & 2) && type & type_float)      // Type was a float and the passed flag doesn't allow for that
+        return false;
+
+    ULONG64 preShift = value;
+
+    UINT moder = 64;
+    if (type & type_four)
+        moder = 32;
+    else if (type & type_two)
+        moder = 16;
+    else if (type & type_one)
+        moder = 8;
+
+    shiftCount = shiftCount % moder;
+
+    if (rightShift)
+    {
+        value = value >> shiftCount;
+
+        if (flags & 4)
+        {
+            value += (preShift << (moder - shiftCount));
+            switch (moder)
+            {
+            case 32:
+                value = value & 0x00000000ffffffff;
+                break;
+            case 16:
+                value = value & 0x000000000000ffff;
+                break;
+            case 8:
+                value = value & 0x00000000000000ff;
+            }
+        }
+    }
+    else
+    {
+        value = value << shiftCount;
+        if (flags & 4)
+        {
+            value += (preShift >> (moder - shiftCount));
+            switch (moder)
+            {
+            case 32:
+                value = value & 0x00000000ffffffff;
+                break;
+            case 16:
+                value = value & 0x000000000000ffff;
+                break;
+            case 8:
+                value = value & 0x00000000000000ff;
+            }
+        }
+    }
+    
+    // See if new value needs to be cut down
+    if (flags & 0b0000000000011000)
+    {
+        // it does
+        if ((flags & 0b0000000000001000))
+        {
+            if (type & type_float)
+            {
+                value = preShift;
+                return false;
+            }
+
+            // Don't cut down to 32 bits, cut down to 16
+            value = value & 0x000000000000ffff;
+        }
+        else if (!(flags & 0b0000000000010000))
+        {
+            // Cut down to 32
+            value = value & 0x00000000ffffffff;
+        }
+        else
+        {
+            if (type & type_float)
+            {
+                value = preShift;
+                return false;
+            }
+
+            // cut down to 8
+            value = value & 0x00000000000000ff;
+        }
+    }
+
+    if (flags & 0b0000000000100000)
+    {
+        // here cast to unsigned int
+        if (!(flags & 0b0000000001000000) && type & type_float)
+        {
+            // We are supposed to cast to unsigned but not if it is a float
+            value = preShift;
+            return false;
+        }
+
+        if (!(type & type_unsigned))
+        {
+            switch (moder)
+            {
+            case 64:
+                if (value & 0x0000000080000000)
+                    value = value ^ 0x00000000ffffffff;
+                break;
+            case 32:
+                if (value & 0x0000000000800000)
+                    value = value ^ 0x0000000000ffffff;
+                break;
+            case 16:
+                if (value & 0x0000000000008000)
+                    value = value ^ 0x000000000000ffff;
+                break;
+                if (value & 0x0000000000000080)
+                    value = value ^ 0x00000000000000ff;
+            }
+        }
+    }
+
+    return true;
+}
+
+/**
  * Method: TPrimitiveVarible::GetObject
  * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
  * Parameters: void

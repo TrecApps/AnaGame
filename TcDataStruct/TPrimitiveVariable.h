@@ -321,6 +321,27 @@ public:
      */
      void Set(bool value);
 
+    /**
+     * Method: TPrimitiveVariable::BitShift
+     * Purpose: Performs a bitshift operatoin on the variable
+     * Parameters: bool rightshift - true for right shift, false for left shift
+     *              UINT shiftCount - the number of bits to shoft by
+     *              USHORT flags - flags that go into this shift
+     * Returns: bool - whether the operation can be applied
+     * 
+     * Note: Flags are as follows
+     * 
+     *  0b0000000000000001 - Applies to boolean
+     *  0b0000000000000010 - Applies to float
+     *  0b0000000000000100 - Fill in-side with out-bit
+     *  0b0000000000001000 - Cut down to 32 bits
+     *  0b0000000000010000 - cut down to 16 bits
+     *  0b0000000000011000 - cut down to 8 bits
+     *  0b0000000000100000 - make unsigned
+     *  0b0000000001100000 - make unsigned if float
+     */
+     bool BitShift(bool rightShift, UINT shiftCount, USHORT flags = 0);
+
 private:
     /**
      * The actual value being held
@@ -368,5 +389,24 @@ private:
      * indicates this is 8 bytes
      */
     const static UCHAR type_eight = 0b01000000;
+
+    /*
+     *  0b0000000000000001 - Applies to boolean
+ *  0b0000000000000010 - Applies to float
+ *  0b0000000000000100 - Fill in-side with out-bit
+ *  0b0000000000001000 - Cut down to 32 bits
+ *  0b0000000000010000 - cut down to 16 bits
+ *  0b0000000000011000 - cut down to 8 bits
+ *  0b0000000000100000 - make unsigned
+ *  0b0000000001100000 - make unsigned if float
+    */
+    const static USHORT bit_bool = 0b0000000000000001;
+    const static USHORT bit_float = 0b0000000000000010;
+    const static USHORT bit_replenish = 0b0000000000000100;
+    const static USHORT bit_to_32 = 0b0000000000001000;
+    const static USHORT bit_to_16 = 0b0000000000010000;
+    const static USHORT bit_to_8 = 0b0000000000011000;
+    const static USHORT bit_to_un = 0b0000000000100000;
+    const static USHORT bit_to_un_f = 0b0000000001100000;
 };
 

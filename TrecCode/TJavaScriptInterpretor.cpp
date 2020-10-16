@@ -9,7 +9,7 @@ static TDataArray<WCHAR> noSemiColonEnd;
 
 static TDataArray<TString> standardOperators;
 
-
+static TrecPointer<TVariable> one;
 
 /**
  * Method: TJavaScriptInterpretor::TJavaScriptInterpretor
@@ -61,6 +61,11 @@ TJavaScriptInterpretor::TJavaScriptInterpretor(TrecSubPointer<TVariable,TInterpr
         standardOperators.push_back(L"&=");
         standardOperators.push_back(L"^=");
         standardOperators.push_back(L"|=");
+    }
+
+    if (!one.Get())
+    {
+        one = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<int>(1));
     }
 }
 
@@ -1907,22 +1912,254 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Repor
 
 void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
 {
+    for (UINT Rust = 0; Rust < operators.Size(); Rust++)
+    {
+        if (Rust >= expresions.Size())
+        {
+            ro.returnCode = ro.too_few_params;
+            ro.errorMessage.Set(L"Too many operators for the expression List!");
+
+            return;
+        }
+
+
+        bool remove = false;
+        if (!operators[Rust].Compare(L"++"))
+        {
+            TrecPointer<TVariable> var = expresions[Rust];
+            remove = true;
+            // To-Do: Add 1 to var
+            ro = ProcessAddition(var, one);
+            if (ro.returnCode)
+                return;
+            expresions[Rust] = ro.errorObject;
+        }
+        else if (operators[Rust].Compare(L"--"))
+        {
+            TrecPointer<TVariable> var = expresions[Rust];
+            remove = true;
+            // To-Do: Subtract 1 from var
+            ro = ProcessSubtraction(var, one);
+            if (ro.returnCode)
+                return;
+            expresions[Rust] = ro.errorObject;
+
+        }
+
+        if (remove)
+        {
+            operators.RemoveAt(Rust--);
+        }
+
+    }
 }
 
 void TJavaScriptInterpretor::HandleExponents(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
 {
+    if (expresions.Size() != operators.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-Exponent handler expected one more Expression than operator!");
+        return;
+    }
+
+    if (operators.Size())
+    {
+        // JavaScript Processes exponents from right to left, so make sure that operators are available and 
+        // Start towars the end instead of at 0
+        for (int Rust = static_cast<int>(operators.Size()) - 1; Rust >= 0; Rust--)
+        {
+            if (!operators[Rust].Compare(L"**"))
+            {
+                ro = this->ProcessExponent(expresions[Rust], expresions[Rust + 1]);
+                if (ro.returnCode)
+                    return;
+
+                expresions[Rust] = ro.errorObject;
+                expresions.RemoveAt(Rust + 1);
+                operators.RemoveAt(Rust--);
+            }
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The JS-Multiplication-Division handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].CompareNoCase(L"*"))
+        {
+            errorMessage = ProcessMultiplication(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"/"))
+        {
+            errorMessage = ProcessDivision(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"%"))
+        {
+            errorMessage = ProcessModDivision(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].CompareNoCase(L"+"))
+        {
+            errorMessage = ProcessAddition(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"-"))
+        {
+            errorMessage = ProcessSubtraction(expressions[Rust], expressions[Rust + 1]);
+            if (errorMessage.returnCode)
+                return;
+
+            expressions[Rust] = errorMessage.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        errorMessage.returnCode = errorMessage.broken_reference;
+        errorMessage.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        bool canDo = true;
+
+        TrecSubPointer<TVariable, TPrimitiveVariable> operand = 
+            TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(expressions[Rust]);
+        if (canDo = (operand.Get() != nullptr))
+        {
+            canDo = expressions[Rust + 1].Get() != nullptr;
+        }
+        UINT shift = 0;
+        if (canDo)
+        {
+            if (expressions[Rust + 1]->GetVarType() == var_type::primitive)
+                shift = expressions[Rust + 1]->Get4Value();
+            else if (expressions[Rust + 1]->GetVarType() == var_type::primitive)
+            {
+                int iShift;
+                if (expressions[Rust + 1]->GetString().ConvertToInt(iShift))
+                    canDo = false;
+                else
+                    shift = iShift;
+            }
+        }
+
+        bool doBit = false;
+        bool doRightBit = false;
+        USHORT flag = 0;
+
+        if (!ops[Rust].Compare(L">>"))
+        {
+            if (!canDo)
+            {
+                errorMessage.returnCode = ReportObject::broken_reference;
+
+                return;
+            }
+            doBit = doRightBit = true;
+            flag = TPrimitiveVariable::bit_float;
+        }
+        else if (!ops[Rust].Compare(L">>>"))
+        {
+            if (!canDo)
+            {
+                errorMessage.returnCode = ReportObject::broken_reference;
+
+                return;
+            }
+            doBit = doRightBit = true;
+            flag = TPrimitiveVariable::bit_float | TPrimitiveVariable::bit_replenish | TPrimitiveVariable::bit_to_32 | TPrimitiveVariable::bit_to_un_f;
+        }
+        else if (!ops[Rust].Compare(L"<<"))
+        {
+            if (!canDo)
+            {
+                errorMessage.returnCode = ReportObject::broken_reference;
+
+                return;
+            }
+            doBit = true;
+            flag = TPrimitiveVariable::bit_float;
+        }
+
+        if (doBit)
+        {
+            if (operand->BitShift(doRightBit, shift, flag))
+            {
+                expressions.RemoveAt(Rust + 1);
+                ops.RemoveAt(Rust--);
+            }
+            else
+            {
+                errorMessage.returnCode = ReportObject::broken_reference;
+                errorMessage.errorMessage.Set(L"Internal Error Attempting to Perform Bitwise manipulation!");
+            }
+        }
+    }
 }
 
 void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
