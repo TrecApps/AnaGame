@@ -129,7 +129,8 @@ private:
     void ProcessArrayExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
     void ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
     void InspectNumber(TString& exp, UINT line, ReportObject& ro);
-    void InspectVariable(TString& exp, UINT line, ReportObject& ro);
+    void InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
+    void ProcessProcedureCall(TString& exp, UINT line, ReportObject& ro);
 
     // Operator Handler Methods
     void HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro);

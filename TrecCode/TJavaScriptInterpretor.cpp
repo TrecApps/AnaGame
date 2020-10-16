@@ -1566,7 +1566,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
         }
         else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
         {
-            InspectVariable(exp, line, ro);
+            InspectVariable(statements, cur, exp, line, ro);
             //InspectNumber(exp, line, ro);
             if (ro.returnCode)
                 return;
@@ -1668,6 +1668,30 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
 void TJavaScriptInterpretor::ProcessArrayExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
 {
+    if (exp.EndsWith(L"]"))
+        exp.Set(exp.SubString(0, exp.GetSize() - 1));
+
+    auto pieces = exp.split(L",", 0b00000010);
+
+    TrecSubPointer<TVariable, TContainerVariable> array_ = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
+
+
+
+    for (UINT Rust = 0; Rust < pieces->Size(); Rust++)
+    {
+        TString piece(pieces->at(Rust));
+
+        ProcessExpression(statements, cur, piece, line, ro);
+
+        if (ro.returnCode)
+        {
+            return;
+        }
+
+        array_->AppendValue(ro.errorObject);
+    }
+
+    ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(array_);
 }
 
 void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
@@ -1733,9 +1757,151 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
 
 void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject& ro)
 {
+    TString tExp(exp.GetTrimRight());
+
+    UINT frontDifference = exp.GetSize() - tExp.GetSize();
+
+    _ASSERT(tExp.GetSize());
+
+    UINT start = 0, end;
+
+    if (tExp.StartsWith(L"0x", true))
+    {
+        for (end = 2; end < tExp.GetSize(); end++)
+        {
+            WCHAR letter = tExp[end];
+
+            if ((letter >= L'0' && letter <= L'9') ||
+                (letter >= L'a' && letter <= L'f') ||
+                (letter >= L'A' && letter <= L'F') ||
+                letter == L'_')
+                continue;
+            break;
+        }
+    }
+    else if (tExp.StartsWith(L"0b", true))
+    {
+        for (end = (tExp[0] == L'-') ? 1 : 0; end < tExp.GetSize(); end++)
+        {
+            WCHAR letter = tExp[end];
+
+            if (letter == L'0' || letter == L'1' || letter == L'_')
+                continue;
+            break;
+        }
+    }
+    else
+    {
+        for (end = 2; end < tExp.GetSize(); end++)
+        {
+            WCHAR letter = tExp[end];
+
+            if ((letter >= L'0' && letter <= L'9') ||
+                letter == L'.' || letter == L'_')
+                continue;
+            break;
+        }
+    }
+
+    tExp.Set(tExp.SubString(start, end));
+
+    if (tExp.Find(L'.') != -1)
+    {
+        double d;
+        auto res = tExp.ConvertToDouble(d);
+        if (res)
+        {
+            ro.returnCode = ro.not_number;
+            ro.errorMessage.Set(L"Invalid double detected.");
+            return;
+        }
+        ro.returnCode = 0;
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
+    }
+    else
+    {
+        LONG64 l;
+
+        if (tExp.ConvertToLong(l))
+        {
+
+            ro.returnCode = ro.not_number;
+            ro.errorMessage.Set(L"Invalid double detected.");
+            return;
+        }
+        ro.returnCode = 0;
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(l);
+    }
+
+    exp.Set(exp.SubString(frontDifference + end));
 }
 
-void TJavaScriptInterpretor::InspectVariable(TString& exp, UINT line, ReportObject& ro)
+void TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+{
+    exp.TrimRight();
+
+
+
+    _ASSERT(exp.GetSize());
+
+    UINT start = 0, end;
+
+    for (end = 0; end < exp.GetSize(); end++)
+    {
+        WCHAR letter = exp[end];
+
+        if ((letter >= L'0' && letter <= L'9') ||
+            (letter >= L'a' && letter <= L'z') ||
+            (letter >= L'A' && letter <= L'Z') ||
+            letter == L'_')
+            continue;
+        break;
+    }
+
+    // See if it a "function" expression
+    TString varName(exp.SubString(0, end));
+    if (!varName.Compare(L"function"))
+    {
+        exp.Delete(0, 8);
+        exp.TrimRight();
+
+        ProcessFunctionDef(statements, cur, exp, line, ro);
+        return;
+    }
+
+
+    // See if we need to call a Procedure
+    bool procedureCall = false;
+
+    for (UINT fEnd = end; fEnd < exp.GetSize(); fEnd++)
+    {
+        WCHAR letter = exp[fEnd];
+
+        if (letter == L'(')
+        {
+            procedureCall = true;
+            break;
+        }
+
+        if (letter != L' ')
+            break;
+    }
+
+    if (procedureCall)
+    {
+        ProcessProcedureCall(exp, line, ro);
+    }
+    else
+    {
+        TString varname(exp.SubString(0, end));
+        bool present;
+        ro.errorObject = GetVariable(varname, present);
+
+        exp.Set(exp.SubString(end));
+    }
+}
+
+void TJavaScriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, ReportObject& ro)
 {
 }
 
