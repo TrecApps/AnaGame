@@ -168,6 +168,8 @@ public:
 	 */
 	virtual ~WebPage();
 
+	void SetEnvironment(TrecPointer<TEnvironment> env);
+
 	/**
 	 * Method: WebPage::SetAnaface
 	 * Purpose: Sets up the Anaface of this Page as well as the Handler

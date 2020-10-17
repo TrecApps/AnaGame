@@ -1,4 +1,5 @@
 #include "TWebWindow.h"
+#include <DirectoryInterface.h>
 
 TString TWebWindow::GetType()
 {
@@ -104,13 +105,61 @@ TString TWebWindow::FixUrl(const TString& url)
 
 TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
 {
+    auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<Page, WebPage>();
+    ret->SetEnvironment(envGenerator->GetEnvironment(TrecPointer<TFileShell>()));
+
     if (url.StartsWith(L"Anagame://"))
     {
+        TString aFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\Web-Tours\\");
+
+        TString feature(url.SubString(10));
+
+        TString target(aFile + feature + L"\\index.tml");
+
+        TrecPointer<TFileShell> index = TFileShell::GetFileInfo(target);
+
+        if (!index.Get())
+        {
+            target.Set(aFile + L"error\\index.tml");
+            index = TFileShell::GetFileInfo(target);
+            if (!index.Get())
+            {
+                MessageBox(currentWindow, L"Failed to Set up Error Message for Anagame Page!", nullptr, MB_OK);
+                return ret;
+            }
+        }
+
+        // To-Do: Set up Web-Handler
+
+
+        TrecPointer<TFile> file = TrecPointerKey::GetNewTrecPointer<TFile>(index->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
+
+        ret->SetAnaface(file, TrecPointer < EventHandler>());
 
     }
     else if (url.StartsWith(L"File://"))
     {
+        TString target(url.SubString(7));
 
+        TrecPointer<TFileShell> index = TFileShell::GetFileInfo(target);
+
+        if (!index.Get())
+        {
+            target.Set(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\Web-Tours\\error\\index.tml");
+            index = TFileShell::GetFileInfo(target);
+            if (!index.Get())
+            {
+                MessageBox(currentWindow, L"Failed to Set up Error Message for Anagame Page!", nullptr, MB_OK);
+                return ret;
+            }
+        }
+
+        // To-Do: Set up Web-Handler
+
+
+        TrecPointer<TFile> file = TrecPointerKey::GetNewTrecPointer<TFile>(index->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
+
+        ret->SetAnaface(file, TrecPointer < EventHandler>());
     }
     else if (url.StartsWith(L"http://"))
     {
@@ -124,5 +173,5 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
     {
 
     }
-    return TrecSubPointer<Page, WebPage>();
+    return ret;
 }

@@ -9,6 +9,7 @@
  */
 class EnvironmentGenerator
 {
+public:
 	virtual TrecPointer<TEnvironment> GetEnvironment(TrecPointer<TFileShell> shell) = 0;
 };
 

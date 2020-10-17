@@ -9,6 +9,11 @@ WebPage::~WebPage()
 {
 }
 
+void WebPage::SetEnvironment(TrecPointer<TEnvironment> env)
+{
+	environment = env;
+}
+
 int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 {
 	return 0;
