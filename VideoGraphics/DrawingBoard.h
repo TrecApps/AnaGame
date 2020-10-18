@@ -2,7 +2,6 @@
 #include <TObject.h>
 #include <d2d1.h>
 #include <TrecReference.h>
-#include <Drawer.h>
 #include "TWindowEngine.h"
 #include "TBrush.h"
 #include "TBitmapBrush.h"

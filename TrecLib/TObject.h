@@ -76,6 +76,46 @@ public:
 	 */
 	virtual TString GetType();
 
+	/**
+	 * Method: ProcessPointer
+	 * Purpose: Intended to be used to ensure that only TObjects are valid (this version takes in a TObject)
+	 * Parameters: TObject* obj - the pointer to the Object
+	 * Returns: TObject* - the parameter
+	 *
+	 * Attributes: static
+	 */
+	static TObject* ProcessPointer(TObject* obj);
+
+	/**
+	 * Method: ProcessPointer
+	 * Purpose: Intended to be used to ensure that only TObjects are valid (this version takes in a void)
+	 * Parameters: void* obj - the pointer to memory
+	 * Returns: TObject* - null since void cannot be converted to TObject
+	 *
+	 * Attributes: static
+	 */
+	static TObject* ProcessPointer(void* obj);
+
+	/**
+	 * Method: ProcessPointer
+	 * Purpose: Intended to be used to ensure that only TObjects are valid (this version takes in an int)
+	 * Parameters: int* obj - the pointer to memory
+	 * Returns: TObject* - null since void cannot be converted to TObject
+	 *
+	 * Attributes: static
+	 */
+	static TObject* ProcessPointer(int* obj);
+
+	/**
+	 * Method: ProcessPointer
+	 * Purpose: Intended to be used to ensure that only TObjects are valid (this version takes in a float)
+	 * Parameters: float* obj - the pointer to memory
+	 * Returns: TObject* - null since float cannot be converted to TObject
+	 *
+	 * Attributes: static
+	 */
+	static TObject* ProcessPointer(float* obj);
+
 protected:
 	
 };

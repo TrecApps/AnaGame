@@ -1401,7 +1401,7 @@ public:
 	template <class T> static TrecObjectPointer GetTrecObjectPointer(TrecPointer<T> obj)
 	{
 		T* temp = obj.Get();
-		if (dynamic_cast<TObject*>(temp))
+		if (TObject::ProcessPointer(temp))
 		{
 			return TrecObjectPointer(obj.pointer);
 		}

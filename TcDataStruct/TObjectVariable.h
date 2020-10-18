@@ -10,6 +10,7 @@
 class TC_DATA_STRUCT TObjectVariable :
     public TVariable
 {
+public:
     /**
      * Method: TObjectVariable::TObjectVariable
      * Purpose: Constructor

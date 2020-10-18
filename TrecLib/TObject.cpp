@@ -78,6 +78,26 @@ TString TObject::GetType()
 	return TString(L"TObject");
 }
 
+TObject* TObject::ProcessPointer(TObject* obj)
+{
+	return obj;
+}
+
+TObject* TObject::ProcessPointer(void* obj)
+{
+	return nullptr;
+}
+
+TObject* TObject::ProcessPointer(int* obj)
+{
+	return nullptr;
+}
+
+TObject* TObject::ProcessPointer(float* obj)
+{
+	return nullptr;
+}
+
 /*
 * Function: boolToString 
 * Purpose: returns string representations of the bool

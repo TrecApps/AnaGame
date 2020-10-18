@@ -1,5 +1,4 @@
 #pragma once
-#include <Drawer.h>
 #include "Page.h"
 #include <TWindowEngine.h>
 #include <TControl.h>
@@ -13,7 +12,7 @@ bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float differ
  * 
  * SuperClass: Drawer
  */
-class _TAP_DLL TWindow : public Drawer
+class _TAP_DLL TWindow : public TObject
 {
 	friend class Page;
 public:
@@ -109,7 +108,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void Draw() override;
+	virtual void Draw();
 
 	/**
 	 * Method: TWindow::Draw
@@ -390,10 +389,36 @@ public:
 	 */
 	void SetFlyout(TrecPointer<TFlyout> fly);
 
+
+	/**
+	 * Method: TWindow::GetWindowHandle
+	 * Purpose: Returns the Window handle
+	 * Parameters: void
+	 * Returns: HWND - the handle to the Window object in the OS
+	 */
+	HWND GetWindowHandle();
+
+	/**
+	 * Method: TWindow::GetFactory
+	 * Purpose: Returns the Direct2D Factory used by the window
+	 * Parameters: void
+	 * Returns: TrecComPointer<ID2D1Factory1> - the Pointer to the factory
+	 */
+	TrecComPointer<ID2D1Factory1> GetFactory();
+
 protected:
 
 	// Draw Other pages that are special to the Window
+	/**
+	 * the Direct2D factory used by this drawer
+	 */
+	TrecComPointer<ID2D1Factory1> directFactory;
 
+	/**
+	 * parent: the Handle to the window owning this window
+	 * currentWindow: the Handle to the window
+	 */
+	HWND parent, currentWindow;
 
 	/**
 	 * Method: TWindow::DrawOtherPages

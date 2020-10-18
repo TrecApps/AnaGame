@@ -1,6 +1,7 @@
 #pragma once
 #include <TInterpretor.h>
 #include <TContainerVariable.h>
+#include "TrecCode.h"
 
 typedef enum class js_statement_type
 {
@@ -47,10 +48,10 @@ public:
  * 
  * SuperClass: TInterpretor
  */
-class TJavaScriptInterpretor :
+class _TREC_CODE_DLL TJavaScriptInterpretor :
     public TInterpretor
 {
-
+public:
     /**
      * Method: TJavaScriptInterpretor::TInterpretor
      * Purpose: Constructor

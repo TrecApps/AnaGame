@@ -19,7 +19,7 @@ public:
  * 
  * SuperClass: TWindow
  */
-class TWebWindow : public TWindow
+class _TAP_DLL TWebWindow : public TWindow
 {
 public:
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <TInterpretor.h>
+#include "TrecCode.h"
 
 /**
  * Class: TAnascriptInterpretor
@@ -7,7 +8,7 @@
  * 
  * SuperClass: TInterpretor
  */
-class TAnascriptInterpretor :
+class _TREC_CODE_DLL TAnascriptInterpretor :
     public TInterpretor
 {
 public:

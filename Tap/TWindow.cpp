@@ -74,7 +74,7 @@ TWindow::~TWindow()
  */
 TString TWindow::GetType()
 {
-	return TString(L"TWindow;") + Drawer::GetType();
+	return TString(L"TWindow;") + TObject::GetType();
 }
 
 /**
@@ -813,6 +813,29 @@ bool TWindow::PrepAnimations(TrecPointer<Page> page)
 void TWindow::SetFlyout(TrecPointer<TFlyout> fly)
 {
 	flyout = fly;
+}
+
+
+/**
+ * Method: TWindow::GetWindowHandle
+ * Purpose: Returns the Window handle
+ * Parameters: void
+ * Returns: HWND - the handle to the Window object in the OS
+ */
+HWND TWindow::GetWindowHandle()
+{
+	return currentWindow;
+}
+
+/**
+ * Method: TWindow::GetFactory
+ * Purpose: Returns the Direct2D Factory used by the window
+ * Parameters: void
+ * Returns: TrecComPointer<ID2D1Factory1> -  the Pointer to the factory
+ */
+TrecComPointer<ID2D1Factory1> TWindow::GetFactory()
+{
+	return directFactory;
 }
 
 /**

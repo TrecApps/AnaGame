@@ -25,8 +25,8 @@ UINT WebEnvironment::SetUpEnv()
     mainJavaScript.Delete();
     mainAnaScript.Delete();
 
-    mainJavaScript = TrecPointerKey::GetNewTrecSubPointer<TVariable, TJavaScriptInterpretor>(self);
-    mainAnaScript = TrecPointerKey::GetNewTrecSubPointer<TVariable, TAnascriptInterpretor>(self);
+    mainJavaScript = TrecPointerKey::GetNewTrecSubPointer<TVariable, TJavaScriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(),TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+    mainAnaScript = TrecPointerKey::GetNewTrecSubPointer<TVariable, TAnascriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(), TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
 
     return 0;
 }
