@@ -2489,6 +2489,10 @@ void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& 
     }
 }
 
+void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+{
+}
+
 void TJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
