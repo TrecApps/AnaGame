@@ -2167,7 +2167,7 @@ void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatem
     if (expressions.Size() != ops.Size() + 1)
     {
         ro.returnCode = ro.broken_reference;
-        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        ro.errorMessage.Set(L"The JS-logical-comparison handler expected one more Expression than operator!");
         return;
     }
 
@@ -2273,7 +2273,7 @@ void TJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptStatement>& sta
     if (expressions.Size() != ops.Size() + 1)
     {
         ro.returnCode = ro.broken_reference;
-        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        ro.errorMessage.Set(L"The JS-equality handler expected one more Expression than operator!");
         return;
     }
 
@@ -2317,7 +2317,7 @@ void TJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptStatement>& s
     if (expressions.Size() != ops.Size() + 1)
     {
         ro.returnCode = ro.broken_reference;
-        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        ro.errorMessage.Set(L"The JS-bitwise-and handler expected one more Expression than operator!");
         return;
     }
 
@@ -2346,7 +2346,7 @@ void TJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptStatement>& s
     if (expressions.Size() != ops.Size() + 1)
     {
         ro.returnCode = ro.broken_reference;
-        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        ro.errorMessage.Set(L"The JS-bitwise-xor handler expected one more Expression than operator!");
         return;
     }
 
@@ -2375,7 +2375,7 @@ void TJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptStatement>& st
     if (expressions.Size() != ops.Size() + 1)
     {
         ro.returnCode = ro.broken_reference;
-        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        ro.errorMessage.Set(L"The JS-bitwise-or handler expected one more Expression than operator!");
         return;
     }
 
@@ -2399,24 +2399,114 @@ void TJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptStatement>& st
     }
 }
 
-void TJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-Logical-and handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"&&"))
+        {
+            expressions[Rust] = IsTruthful(expressions[Rust]) ? expressions[Rust + 1] : expressions[Rust];
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleLogicalOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleLogicalOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-Logical-or handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"||"))
+        {
+            expressions[Rust] = IsTruthful(expressions[Rust]) ? expressions[Rust] : expressions[Rust + 1];
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleNullish(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleNullish(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-Nullish handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"??"))
+        {
+            expressions[Rust] = expressions[Rust].Get() ? expressions[Rust] : expressions[Rust + 1];
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-Conditional handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"?"))
+        {
+            if (Rust + 1 == ops.Size() || ops[Rust + 1].Compare(L":"))
+            {
+                ro.returnCode = ro.broken_reference;
+
+                return;
+            }
+
+
+            expressions[Rust] = IsTruthful(expressions[Rust]) ? expressions[Rust + 1] : expressions[Rust + 2];
+            expressions.RemoveAt(Rust + 1);
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-Conditional handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L","))
+        {
+            expressions[Rust] = expressions[Rust + 1];
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
 bool TJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
