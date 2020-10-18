@@ -1,5 +1,7 @@
 #pragma once
-#include "TVariable.h"
+#include <TVariable.h>
+#include "TcDataStruct.h"
+
 /**
  * Class: TStringVariable
  * Purpose: Represents a Variable that holds a String

@@ -1,6 +1,7 @@
 #pragma once
 #include <TObject.h>
-#include "TVariable.h"
+#include <TVariable.h>
+#include "TcDataStruct.h"
 #include <TDataMap.h>
 #include <TFile.h>
 #include <TEnvironment.h>

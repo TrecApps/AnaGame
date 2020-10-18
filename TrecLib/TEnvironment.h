@@ -6,10 +6,11 @@
 #include "TType.h"
 #include "TDirectory.h"
 #include "TObjectNode.h"
+#include "TVariable.h"
 
 class TControl;
 class TPromptControl;
-class TVariable;
+
 
 
 void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataArray<TString>& environmentType);
@@ -256,6 +257,17 @@ public:
 	 */
 	virtual void SupportsFileExt(TDataArray<TString>& ext) = 0;
 
+
+	/**
+	 * Method: TEnvironment::AddVariable
+	 * Purpose: Adds a Variable to the environment
+	 * Parameters: const TString& name - variable name
+	 *				TrecPointer<TVariable> var - the variable to hold
+	 * Returns: void
+	 * 
+	 */
+	void AddVariable(const TString& name, TrecPointer<TVariable> var);
+
 protected:
 
 	/**
@@ -284,7 +296,7 @@ protected:
 	/**
 	 * Holds a collection of variables so that interpretors underneath them could have access to them
 	 */
-	TMap<TrecPointer<TVariable>> envVariables;
+	TMap<TVariable> envVariables;
 
 	/**
 	 * Allows Environment to provide references to itself

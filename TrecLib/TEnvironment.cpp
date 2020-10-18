@@ -40,17 +40,8 @@ TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present)
 
 		if (!entry->key.Compare(var))
 		{
-
-			if (present = entry->object.Get())
-			{
-				return *entry->object.Get();
-			}
-			else
-			{
-				return TrecPointer<TVariable>();
-			}
-
-			
+			present = true;
+			return entry->object;
 		}
 	}
 	present = false;
@@ -67,6 +58,19 @@ void TEnvironment::SetSelf(TrecPointer<TEnvironment> self)
 {
 	if (self.Get() != this) throw L"Error";
 	this->self = TrecPointerKey::GetSoftPointerFromTrec<TEnvironment>(self);
+}
+
+/**
+ * Method: TEnvironment::AddVariable
+ * Purpose: Adds a Variable to the environment
+ * Parameters: const TString& name - variable name
+ *				TrecPointer<TVariable> var - the variable to hold
+ * Returns: void
+ *
+ */
+void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
+{
+	envVariables.addEntry(name, var);
 }
 
 /**

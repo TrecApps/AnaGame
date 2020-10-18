@@ -152,6 +152,14 @@ class WebPage : public Page
 public:
 
 	/**
+	 * Method: WebPage::WebPage
+	 * Purpose: Constructor
+	 * Parameters: TrecPointer<DrawingBoard> board - the board to draw upon
+	 * Returns: New WebPage object
+	 */
+	WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win);
+
+	/**
 	 * Method: WebPage::GetType
 	 * Purpose: Returns a String Representation of the object type
 	 * Parameters: void

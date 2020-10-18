@@ -1,5 +1,6 @@
 #pragma once
-#include "TVariable.h"
+#include <TVariable.h>
+#include "TcDataStruct.h"
 /**
  * Class: TObjectVariable
  * Purpose: Represents an Object variable, refering to an actual Native Anagame Object

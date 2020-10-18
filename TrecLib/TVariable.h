@@ -1,9 +1,8 @@
 #pragma once
 
-#include <TObject.h>
-#include <TrecReference.h>
-#include <TString.h>
-#include "TcDataStruct.h"
+#include "TObject.h"
+#include "TrecReference.h"
+#include "TString.h"
 
 /**
  * Enum Class: var_type
@@ -25,7 +24,7 @@ typedef enum class var_type
  * Class: TVariable
  * Purpose: Represents a given variable in the system, abstract to support both Objects and raw data types
  */
-class TC_DATA_STRUCT TVariable
+class _TREC_LIB_DLL TVariable
 {
 public:
     /**
@@ -131,7 +130,7 @@ namespace VarFunction
      * 
      * Note: if this function returns false, the interpretor should consider the line to be an error and handle it accordingly.
      */
-    TC_DATA_STRUCT bool IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def = 0);
+    _TREC_LIB_DLL bool IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def = 0);
 
 }
 
@@ -139,7 +138,7 @@ namespace VarFunction
  * Class: TVariableMarker
  * Purpose: holdes a TVariable reference as well as whether the variable is marked as mutable or not
  */
-class TC_DATA_STRUCT TVariableMarker
+class _TREC_LIB_DLL TVariableMarker
 {
 private:
     /*

@@ -1,4 +1,10 @@
 #include "WebPage.h"
+#include <TObjectVariable.h>
+
+WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): Page(board)
+{
+	windowHandle = win;
+}
 
 TString WebPage::GetType()
 {
@@ -12,10 +18,28 @@ WebPage::~WebPage()
 void WebPage::SetEnvironment(TrecPointer<TEnvironment> env)
 {
 	environment = env;
+
+	if (environment.Get())
+	{
+		// Set up access to the DOM
+		environment->AddVariable(L"document", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(
+			TrecPointerKey::GetTrecObjectPointer<Page>(TrecPointerKey::GetTrecPointerFromSoft<Page>(self))));
+
+		// Set up Access to the BOM
+		environment->AddVariable(L"window", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(
+			TrecPointerKey::GetTrecObjectPointer<TWindow>(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle))));
+	}
 }
 
 int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 {
+	if (!file.Get() || !file->IsOpen())
+		return 1;
+
+	if (!environment.Get())
+		return 2;
+
+
 	return 0;
 }
 

@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="TBlankNode.h" />
     <ClInclude Include="TDataMap.h" />
+    <ClInclude Include="TVariable.h" />
     <ClInclude Include="TEnvironment.h" />
     <ClInclude Include="AnagameDef.h" />
     <ClInclude Include="Animation.h" />
@@ -202,6 +203,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TBlankNode.cpp" />
+    <ClCompile Include="TVariable.cpp" />
     <ClCompile Include="TEnvironment.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Configuration.cpp" />
