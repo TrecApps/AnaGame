@@ -91,7 +91,7 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
  *              bool& present - whether the index was found. This can be used by JavaScript to distinguish between NULL and UNDEFINED
  * Returns: TrecPointer<TVariable> - the value at the provided index, or null if the index was not found
  */
-TrecPointer<TVariable> TContainerVariable::GetValue(TString& key, bool& present)
+TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present)
 {
     auto ret = values.retrieveEntry(key);
     present = ret.Get() != nullptr;

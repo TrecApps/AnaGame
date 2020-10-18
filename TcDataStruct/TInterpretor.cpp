@@ -1090,7 +1090,7 @@ bool DoubleLong::operator==(const DoubleLong& o)
 			return value.u == o.value.u;
 		}
 	}
-	return false;
+	return type == o.type;
 }
 
 ULONG64 DoubleLong::ToUnsignedLong()const

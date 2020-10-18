@@ -150,11 +150,23 @@ private:
     void HandleComma(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro);
 
     /**
-     * Method: TAnascriptInterpretor::IsTruthful
+     * Method: TJavaScriptInterpretor::IsTruthful
      * Purpose: Determines whether an expression is truthful or not
      * Parameters: TrecPointer<TVariable> var - the variable to analyze.
      * Returns: bool
      */
     bool IsTruthful(TrecPointer<TVariable> var);
+
+    /**
+     * Method: TJavaScriptInterpretor::GetValueFromPrimitive
+     * Purpose: Helper method for interpreting arithmetic operations by extracting the value from the variable
+     * Parameters: TrecPointer<TVariable> var - the variable believed holding the primitive value
+     * Returns: DoubleLong - the value held by the variable
+     * 
+     * Note: Added to ensure that if a boolean needs to be converted to a Number, it can happen
+     */
+    virtual DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var)override;
+
+    bool IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEqual, bool castType);
 };
 

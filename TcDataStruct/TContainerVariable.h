@@ -66,11 +66,11 @@ public:
     /**
      * Method: TContainerVariable::GetValue
      * Purpose: Retrieves the value by Key
-     * Parameters: TString& key - the key of the value to look for
+     * Parameters: const TString& key - the key of the value to look for
      *              bool& present - whether the index was found. This can be used by JavaScript to distinguish between NULL and UNDEFINED
      * Returns: TrecPointer<TVariable> - the value at the provided index, or null if the index was not found
      */
-    TrecPointer<TVariable> GetValue(TString& key, bool& present);
+    TrecPointer<TVariable> GetValue(const TString& key, bool& present);
 
     /**
      * Method: TContainerVariable::SetValue

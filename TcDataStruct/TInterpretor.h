@@ -503,7 +503,7 @@ protected:
      * Parameters: TrecPointer<TVariable> var - the variable believed holding the primitive value
      * Returns: DoubleLong - the value held by the variable
      */
-    DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var);
+    virtual DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var);
     /**
      * Method: TInterpretor::GetStringFromPrimitive
      * Purpose:

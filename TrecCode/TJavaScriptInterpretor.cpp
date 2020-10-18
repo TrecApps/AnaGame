@@ -2162,24 +2162,241 @@ void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>&
     }
 }
 
-void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        auto left = expressions[Rust];
+        auto right = expressions[Rust + 1];
+
+        bool found = false;
+        bool val;
+        if (!ops[Rust].Compare(L"in"))
+        {
+            found = true;
+            if (!left.Get() || !right.Get() || left->GetVarType() != var_type::string || right->GetVarType() != var_type::collection)
+            {
+                val = false;
+            }
+            else
+            {
+                
+                dynamic_cast<TContainerVariable*>(right.Get())->GetValue(left->GetString(), val);
+                
+            }
+
+        }
+        else if (!ops[Rust].Compare(L"instanceof"))
+        {
+            // To-Do: Implement once type management if implemented for this interpretor to use
+        }
+        else
+        {
+            UCHAR larger = 0;
+            if (!left.Get() || !right.Get())
+            {
+                larger = 255;
+                val = false;
+            }
+
+            if (!larger)
+            {
+                if (left->GetVarType() == var_type::string && right->GetVarType() == var_type::string)
+                {
+                    int i = left->GetString().Compare(right->GetString());
+
+                    if (i > 0)
+                        larger = 2;
+                    else if (i < 0)
+                        larger = 1;
+                }
+                else
+                {
+                    DoubleLong leftDl = GetValueFromPrimitive(left);
+                    DoubleLong rightDl = GetValueFromPrimitive(right);
+
+                    if (leftDl.type == double_long::dl_invalid || rightDl.type == double_long::dl_invalid)
+                    {
+                        larger = 255;
+                        val = false;
+                    }
+                    else
+                    {
+                        if (leftDl > rightDl)
+                            larger = 2;
+                        else if (leftDl < rightDl)
+                            larger = 1;
+                    }
+                }
+            }
+
+            if (!ops[Rust].Compare(L"<"))
+            {
+                found = true;
+                val = larger == 1;
+            }
+            else if (!ops[Rust].Compare(L"<="))
+            {
+                found = true;
+                val = (!larger || larger == 1);
+            }
+            else if (!ops[Rust].Compare(L">"))
+            {
+                found = true;
+                val = larger == 2;
+            }
+            else if (!ops[Rust].Compare(L">="))
+            {
+                found = true;
+                val = (!larger || larger == 2);
+            }
+        }
+
+        if (found)
+        {
+            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(val);
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        bool found = false, result;
+        auto left = expressions[Rust];
+        auto right = expressions[Rust + 1];
+        if (!ops[Rust].Compare(L"==="))
+        {
+            found = true;
+            result = IsEqual(left, right, true, false);
+        }
+        else if (!ops[Rust].Compare(L"=="))
+        {
+            found = true;
+            result = IsEqual(left, right, true, true);
+        }
+        else if (!ops[Rust].Compare(L"!=="))
+        {
+            found = true;
+            result = IsEqual(left, right, false, false);
+        }
+        else if (!ops[Rust].Compare(L"!="))
+        {
+            found = true;
+            result = IsEqual(left, right, false, true);
+        }
+
+        if (found)
+        {
+            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(result);
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"&"))
+        {
+            DoubleLong dl1 = GetValueFromPrimitive( expressions[Rust]);
+            DoubleLong dl2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+            {
+                ro.returnCode = ro.improper_type;
+
+                return;
+            }
+            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitAnd(dl2));
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"^"))
+        {
+            DoubleLong dl1 = GetValueFromPrimitive(expressions[Rust]);
+            DoubleLong dl2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+            {
+                ro.returnCode = ro.improper_type;
+
+                return;
+            }
+            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitXor(dl2));
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-addition/subtraction handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"|"))
+        {
+            DoubleLong dl1 = GetValueFromPrimitive(expressions[Rust]);
+            DoubleLong dl2 = GetValueFromPrimitive(expressions[Rust + 1]);
+
+            if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+            {
+                ro.returnCode = ro.improper_type;
+
+                return;
+            }
+            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitOr(dl2));
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
 void TJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
@@ -2219,4 +2436,65 @@ bool TJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
 
 
     return true;
+}
+
+DoubleLong TJavaScriptInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
+{
+    if (var.Get() && var->GetVarType() == var_type::primitive && (var->GetType() & TPrimitiveVariable::type_bool))
+    {
+        return DoubleLong(var->Get8Value());
+    }
+
+    // JavaScript also attempts to Convert Strings to Primitives
+    if (var.Get() && var->GetVarType() == var_type::string)
+    {
+        double d;
+        if (!var->GetString().ConvertToDouble(d))
+            return DoubleLong(d);
+        LONG64 l;
+        if (!var->GetString().ConvertToLong(l))
+            return DoubleLong(l);
+    }
+    return TInterpretor::GetValueFromPrimitive(var);
+}
+
+bool TJavaScriptInterpretor::IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEqual, bool castType)
+{
+    bool eqVal = false, eqType;
+
+    if (var1.Get() && var2.Get())
+    {
+        DoubleLong dl1 = GetValueFromPrimitive(var1);
+        DoubleLong dl2 = GetValueFromPrimitive(var2);
+
+        eqType = dl1.type == dl2.type && var1->GetVarType() == var2->GetVarType() && var1->GetType();
+
+        eqVal = dl1 == dl2;
+    }
+    else if (var1.Get())
+    {
+        eqType = false;
+        DoubleLong dl = GetValueFromPrimitive(var1);
+
+        eqVal = dl.type == double_long::dl_invalid || dl == DoubleLong((LONG64)0);
+    }
+    else if (var2.Get())
+    {
+        eqType = false;
+        DoubleLong dl = GetValueFromPrimitive(var2);
+
+        eqVal = dl.type == double_long::dl_invalid || dl == DoubleLong((LONG64)0);
+    }
+    else eqType == true;
+
+    if (isEqual)
+    {
+        // Dealing with == or ===
+        return eqVal && (castType) ? true : eqType;
+    }
+    else
+    {
+        // Dealing with != or !==
+        return (castType) ? !eqVal : (!eqVal && !eqType);
+    }
 }
