@@ -1363,7 +1363,7 @@ void TString::AppendFormat(const WCHAR* format, ...)
 	va_end(vList);
 
 
-	TString ret;
+	//TString ret;
 	if (result > -1)
 	{
 		formatedString[result] = L'\0';
