@@ -1,5 +1,6 @@
 #include "TAnaGameCodeEnvironment.h"
 #include "TAnascriptInterpretor.h"
+#include "TJavaScriptInterpretor.h"
 #include <TFileNode.h>
 #include <TPromptControl.h>
 
@@ -93,6 +94,43 @@ UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 				}
 			}
 		}
+		else if (task.EndsWith(L".js"))
+		{
+			// We have an Anascript file on our hands
+			auto interpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(), TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+
+			TFile file(task, TFile::t_file_open_existing | TFile::t_file_read);
+
+
+			if (file.IsOpen())
+			{
+				interpretor->SetCode(file);
+
+				file.Close();
+
+				auto result = interpretor->Run();
+
+				if (this->shellRunner.Get())
+				{
+					TString resultStr(L"Program exited with code: ");
+					resultStr.AppendFormat(L"%i\n", result.returnCode);
+
+					if (result.returnCode)
+					{
+						resultStr.Append(result.errorMessage);
+
+						for (UINT Rust = 0; Rust < result.stackTrace.Size(); Rust++)
+						{
+							resultStr.AppendFormat(L"\n\t%ws", result.stackTrace[Rust].GetConstantBuffer());
+						}
+						resultStr.AppendChar(L'\n');
+					}
+
+
+					shellRunner->Print(resultStr);
+				}
+			}
+		}
 	}
 	return 0;
 }
@@ -138,6 +176,20 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 			return;
 
 		auto runCodeResult = anascriptInterpreter->Run();
+
+		int e = 3;
+	}
+	else if (path.GetSize() > 3 && path.EndsWith(L".js"))
+	{
+		auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(),
+			TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+		TFile actualFile(path, TFile::t_file_open_always | TFile::t_file_read);
+		UINT setCodeResult = javaScriptInterpretor->SetCode(actualFile);
+
+		if (setCodeResult)
+			return;
+
+		auto runCodeResult = javaScriptInterpretor->Run();
 
 		int e = 3;
 	}
