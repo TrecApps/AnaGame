@@ -12,6 +12,9 @@ class TC_DATA_STRUCT TStringVariable :
     public TVariable
 {
 public:
+
+    virtual TrecPointer<TVariable> Clone()override;
+
     /**
      * Method: TStringVariable::TStringVariable
      * Purpose: Constructor

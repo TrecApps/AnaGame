@@ -1478,7 +1478,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
         return;
     }
 
-    TDataArray<TrecPointer<TVariable>> expresions;
+    TDataArray<JavaScriptExpression> expresions;
 
     TDataArray<TString> operators;
 
@@ -1520,7 +1520,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 return;
             }
 
-            expresions.push_back(ro.errorObject);
+            expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
 
             exp.Set(exp.SubString(end + 1).GetTrim());
         }
@@ -1558,7 +1558,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 return;
             }
 
-            expresions.push_back(ro.errorObject);
+            expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
 
             exp.Set(exp.SubString(end + 1).GetTrim());
         }
@@ -1567,7 +1567,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
             InspectNumber(exp, line, ro);
             if (ro.returnCode)
                 return;
-            expresions.push_back(ro.errorObject);
+            expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
         }
         else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
         {
@@ -1575,7 +1575,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
             //InspectNumber(exp, line, ro);
             if (ro.returnCode)
                 return;
-            expresions.push_back(ro.errorObject);
+            expresions.push_back(JavaScriptExpression(ro.errorMessage, ro.errorObject));
         }
         else if (exp[0] == L'\'' || exp[0] == L'\"' || exp[0] == L'\`')
         {
@@ -1593,7 +1593,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 return;
             }
 
-            expresions.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(exp.SubString(1, loc)));
+            expresions.push_back(JavaScriptExpression(L"", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(exp.SubString(1, loc))));
 
             exp.Set(exp.SubString(loc + 1));
         }
@@ -1603,6 +1603,61 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
         exp.Trim();
 
         bool foundOp = false;
+
+
+        // Handle Post-Increment/Decrement
+        if (expresions.Size() && expresions[expresions.Size() - 1].varName.GetSize() && (exp.StartsWith(L"++") || exp.StartsWith(L"--")))
+        {
+            bool inc = exp.StartsWith(L"++");
+
+            JavaScriptExpression jExp(expresions[expresions.Size() - 1]);
+
+            jExp.value = (jExp.value.Get()) ? jExp.value->Clone() : jExp.value;
+
+
+            // Now handle the increment or decrement step
+            bool present;
+            TrecPointer<TVariable> tempValue = GetVariable(jExp.varName, present);
+
+            if (!tempValue.Get())
+            {
+                ro.returnCode = ro.broken_reference;
+
+                ro.errorMessage.Format(L"Post-%ws attempt encountered %ws variable!",
+                    inc ? L"Increment" : L"Decrement",
+                    present ? L"Null": L"Default");
+                return;
+            }
+
+            ro = inc ? ProcessAddition(tempValue, one) :
+                ProcessSubtraction(tempValue, one);
+
+            if (ro.returnCode)
+                return;
+
+            UINT updateResult = UpdateVariable(jExp.varName, ro.errorObject);
+
+            ro.errorObject.Nullify();
+            if (updateResult == 1)
+            {
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Format(L"Post-%ws attempt encountered %ws variable!",
+                    inc ? L"Increment" : L"Decrement",
+                    present ? L"Null" : L"Default");
+                return;
+            }
+            if (updateResult == 2)
+            {
+                ro.returnCode = ro.invalid_name;
+                ro.errorMessage.Format(L"Post-%ws attempt to update immutable variable!",
+                    inc ? L"Increment" : L"Decrement");
+                return;
+            }
+
+            exp.Delete(0, 2);
+            exp.Trim();
+        }
+
 
         for (UINT Rust = 0; Rust < standardOperators.Size(); Rust++)
         {
@@ -1901,7 +1956,7 @@ void TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
         TString varname(exp.SubString(0, end));
         bool present;
         ro.errorObject = GetVariable(varname, present);
-
+        ro.errorMessage.Set(varname);
         exp.Set(exp.SubString(end));
     }
 }
@@ -1910,7 +1965,7 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Repor
 {
 }
 
-void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)
 {
     for (UINT Rust = 0; Rust < operators.Size(); Rust++)
     {
@@ -1926,23 +1981,23 @@ void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& stat
         bool remove = false;
         if (!operators[Rust].Compare(L"++"))
         {
-            TrecPointer<TVariable> var = expresions[Rust];
+            TrecPointer<TVariable> var = expresions[Rust].value;
             remove = true;
             // To-Do: Add 1 to var
             ro = ProcessAddition(var, one);
             if (ro.returnCode)
                 return;
-            expresions[Rust] = ro.errorObject;
+            expresions[Rust].value = ro.errorObject;
         }
         else if (operators[Rust].Compare(L"--"))
         {
-            TrecPointer<TVariable> var = expresions[Rust];
+            TrecPointer<TVariable> var = expresions[Rust].value;
             remove = true;
             // To-Do: Subtract 1 from var
             ro = ProcessSubtraction(var, one);
             if (ro.returnCode)
                 return;
-            expresions[Rust] = ro.errorObject;
+            expresions[Rust].value = ro.errorObject;
 
         }
 
@@ -1954,7 +2009,7 @@ void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& stat
     }
 }
 
-void TJavaScriptInterpretor::HandleExponents(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleExponents(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)
 {
     if (expresions.Size() != operators.Size() + 1)
     {
@@ -1971,11 +2026,11 @@ void TJavaScriptInterpretor::HandleExponents(TDataArray<JavaScriptStatement>& st
         {
             if (!operators[Rust].Compare(L"**"))
             {
-                ro = this->ProcessExponent(expresions[Rust], expresions[Rust + 1]);
+                ro = this->ProcessExponent(expresions[Rust].value, expresions[Rust + 1].value);
                 if (ro.returnCode)
                     return;
 
-                expresions[Rust] = ro.errorObject;
+                expresions[Rust].value = ro.errorObject;
                 expresions.RemoveAt(Rust + 1);
                 operators.RemoveAt(Rust--);
             }
@@ -1983,7 +2038,7 @@ void TJavaScriptInterpretor::HandleExponents(TDataArray<JavaScriptStatement>& st
     }
 }
 
-void TJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+void TJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -1996,11 +2051,11 @@ void TJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptStatement>& stat
     {
         if (!ops[Rust].CompareNoCase(L"*"))
         {
-            errorMessage = ProcessMultiplication(expressions[Rust], expressions[Rust + 1]);
+            errorMessage = ProcessMultiplication(expressions[Rust].value, expressions[Rust + 1].value);
             if (errorMessage.returnCode)
                 return;
 
-            expressions[Rust] = errorMessage.errorObject;
+            expressions[Rust].value = errorMessage.errorObject;
 
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
@@ -2009,11 +2064,11 @@ void TJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptStatement>& stat
 
         if (!ops[Rust].CompareNoCase(L"/"))
         {
-            errorMessage = ProcessDivision(expressions[Rust], expressions[Rust + 1]);
+            errorMessage = ProcessDivision(expressions[Rust].value, expressions[Rust + 1].value);
             if (errorMessage.returnCode)
                 return;
 
-            expressions[Rust] = errorMessage.errorObject;
+            expressions[Rust].value = errorMessage.errorObject;
 
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
@@ -2022,11 +2077,11 @@ void TJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptStatement>& stat
 
         if (!ops[Rust].CompareNoCase(L"%"))
         {
-            errorMessage = ProcessModDivision(expressions[Rust], expressions[Rust + 1]);
+            errorMessage = ProcessModDivision(expressions[Rust].value, expressions[Rust + 1].value);
             if (errorMessage.returnCode)
                 return;
 
-            expressions[Rust] = errorMessage.errorObject;
+            expressions[Rust].value = errorMessage.errorObject;
 
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
@@ -2035,7 +2090,7 @@ void TJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptStatement>& stat
     }
 }
 
-void TJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+void TJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2048,11 +2103,11 @@ void TJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptStatement>& state
     {
         if (!ops[Rust].CompareNoCase(L"+"))
         {
-            errorMessage = ProcessAddition(expressions[Rust], expressions[Rust + 1]);
+            errorMessage = ProcessAddition(expressions[Rust].value, expressions[Rust + 1].value);
             if (errorMessage.returnCode)
                 return;
 
-            expressions[Rust] = errorMessage.errorObject;
+            expressions[Rust].value = errorMessage.errorObject;
 
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
@@ -2061,11 +2116,11 @@ void TJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptStatement>& state
 
         if (!ops[Rust].CompareNoCase(L"-"))
         {
-            errorMessage = ProcessSubtraction(expressions[Rust], expressions[Rust + 1]);
+            errorMessage = ProcessSubtraction(expressions[Rust].value, expressions[Rust + 1].value);
             if (errorMessage.returnCode)
                 return;
 
-            expressions[Rust] = errorMessage.errorObject;
+            expressions[Rust].value = errorMessage.errorObject;
 
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
@@ -2074,7 +2129,7 @@ void TJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptStatement>& state
     }
 }
 
-void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
+void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& errorMessage)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2088,20 +2143,20 @@ void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>&
         bool canDo = true;
 
         TrecSubPointer<TVariable, TPrimitiveVariable> operand = 
-            TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(expressions[Rust]);
+            TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(expressions[Rust].value);
         if (canDo = (operand.Get() != nullptr))
         {
-            canDo = expressions[Rust + 1].Get() != nullptr;
+            canDo = expressions[Rust + 1].value.Get() != nullptr;
         }
         UINT shift = 0;
         if (canDo)
         {
-            if (expressions[Rust + 1]->GetVarType() == var_type::primitive)
-                shift = expressions[Rust + 1]->Get4Value();
-            else if (expressions[Rust + 1]->GetVarType() == var_type::primitive)
+            if (expressions[Rust + 1].value->GetVarType() == var_type::primitive)
+                shift = expressions[Rust + 1].value->Get4Value();
+            else if (expressions[Rust + 1].value->GetVarType() == var_type::primitive)
             {
                 int iShift;
-                if (expressions[Rust + 1]->GetString().ConvertToInt(iShift))
+                if (expressions[Rust + 1].value->GetString().ConvertToInt(iShift))
                     canDo = false;
                 else
                     shift = iShift;
@@ -2162,7 +2217,7 @@ void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>&
     }
 }
 
-void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2173,8 +2228,8 @@ void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatem
 
     for (UINT Rust = 0; Rust < ops.Size(); Rust++)
     {
-        auto left = expressions[Rust];
-        auto right = expressions[Rust + 1];
+        auto left = expressions[Rust].value;
+        auto right = expressions[Rust + 1].value;
 
         bool found = false;
         bool val;
@@ -2261,14 +2316,14 @@ void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatem
 
         if (found)
         {
-            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(val);
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(val);
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
         }
     }
 }
 
-void TJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2280,8 +2335,8 @@ void TJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptStatement>& sta
     for (UINT Rust = 0; Rust < ops.Size(); Rust++)
     {
         bool found = false, result;
-        auto left = expressions[Rust];
-        auto right = expressions[Rust + 1];
+        auto left = expressions[Rust].value;
+        auto right = expressions[Rust + 1].value;
         if (!ops[Rust].Compare(L"==="))
         {
             found = true;
@@ -2305,14 +2360,14 @@ void TJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptStatement>& sta
 
         if (found)
         {
-            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(result);
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(result);
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
         }
     }
 }
 
-void TJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2325,8 +2380,8 @@ void TJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptStatement>& s
     {
         if (!ops[Rust].Compare(L"&"))
         {
-            DoubleLong dl1 = GetValueFromPrimitive( expressions[Rust]);
-            DoubleLong dl2 = GetValueFromPrimitive(expressions[Rust + 1]);
+            DoubleLong dl1 = GetValueFromPrimitive( expressions[Rust].value);
+            DoubleLong dl2 = GetValueFromPrimitive(expressions[Rust + 1].value);
 
             if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
             {
@@ -2334,14 +2389,14 @@ void TJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptStatement>& s
 
                 return;
             }
-            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitAnd(dl2));
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitAnd(dl2));
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
         }
     }
 }
 
-void TJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2354,8 +2409,8 @@ void TJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptStatement>& s
     {
         if (!ops[Rust].Compare(L"^"))
         {
-            DoubleLong dl1 = GetValueFromPrimitive(expressions[Rust]);
-            DoubleLong dl2 = GetValueFromPrimitive(expressions[Rust + 1]);
+            DoubleLong dl1 = GetValueFromPrimitive(expressions[Rust].value);
+            DoubleLong dl2 = GetValueFromPrimitive(expressions[Rust + 1].value);
 
             if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
             {
@@ -2363,14 +2418,14 @@ void TJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptStatement>& s
 
                 return;
             }
-            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitXor(dl2));
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitXor(dl2));
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
         }
     }
 }
 
-void TJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2383,8 +2438,8 @@ void TJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptStatement>& st
     {
         if (!ops[Rust].Compare(L"|"))
         {
-            DoubleLong dl1 = GetValueFromPrimitive(expressions[Rust]);
-            DoubleLong dl2 = GetValueFromPrimitive(expressions[Rust + 1]);
+            DoubleLong dl1 = GetValueFromPrimitive(expressions[Rust].value);
+            DoubleLong dl2 = GetValueFromPrimitive(expressions[Rust + 1].value);
 
             if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
             {
@@ -2392,14 +2447,14 @@ void TJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptStatement>& st
 
                 return;
             }
-            expressions[Rust] = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitOr(dl2));
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitOr(dl2));
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
         }
     }
 }
 
-void TJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2412,14 +2467,14 @@ void TJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptStatement>& s
     {
         if (!ops[Rust].Compare(L"&&"))
         {
-            expressions[Rust] = IsTruthful(expressions[Rust]) ? expressions[Rust + 1] : expressions[Rust];
+            expressions[Rust] = IsTruthful(expressions[Rust].value) ? expressions[Rust + 1] : expressions[Rust];
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
         }
     }
 }
 
-void TJavaScriptInterpretor::HandleLogicalOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleLogicalOr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2432,14 +2487,14 @@ void TJavaScriptInterpretor::HandleLogicalOr(TDataArray<JavaScriptStatement>& st
     {
         if (!ops[Rust].Compare(L"||"))
         {
-            expressions[Rust] = IsTruthful(expressions[Rust]) ? expressions[Rust] : expressions[Rust + 1];
+            expressions[Rust] = IsTruthful(expressions[Rust].value) ? expressions[Rust] : expressions[Rust + 1];
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
         }
     }
 }
 
-void TJavaScriptInterpretor::HandleNullish(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleNullish(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2452,14 +2507,14 @@ void TJavaScriptInterpretor::HandleNullish(TDataArray<JavaScriptStatement>& stat
     {
         if (!ops[Rust].Compare(L"??"))
         {
-            expressions[Rust] = expressions[Rust].Get() ? expressions[Rust] : expressions[Rust + 1];
+            expressions[Rust] = expressions[Rust].value.Get() ? expressions[Rust] : expressions[Rust + 1];
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust--);
         }
     }
 }
 
-void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2480,7 +2535,7 @@ void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& 
             }
 
 
-            expressions[Rust] = IsTruthful(expressions[Rust]) ? expressions[Rust + 1] : expressions[Rust + 2];
+            expressions[Rust] = IsTruthful(expressions[Rust].value) ? expressions[Rust + 1] : expressions[Rust + 2];
             expressions.RemoveAt(Rust + 1);
             expressions.RemoveAt(Rust + 1);
             ops.RemoveAt(Rust);
@@ -2489,11 +2544,11 @@ void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& 
     }
 }
 
-void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)
 {
 }
 
-void TJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<TrecPointer<TVariable>>& expressions, TDataArray<TString>& ops, ReportObject& ro)
+void TJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
     if (expressions.Size() != ops.Size() + 1)
     {
@@ -2591,4 +2646,20 @@ bool TJavaScriptInterpretor::IsEqual(TrecPointer<TVariable> var1, TrecPointer<TV
         // Dealing with != or !==
         return (castType) ? !eqVal : (!eqVal && !eqType);
     }
+}
+
+JavaScriptExpression::JavaScriptExpression()
+{
+}
+
+JavaScriptExpression::JavaScriptExpression(const JavaScriptExpression& orig)
+{
+    varName.Set(orig.varName);
+    value = orig.value;
+}
+
+JavaScriptExpression::JavaScriptExpression(const TString& name, TrecPointer<TVariable> value)
+{
+    varName.Set(name);
+    this->value = value;
 }

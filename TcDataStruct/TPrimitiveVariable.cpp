@@ -132,6 +132,11 @@ TPrimitiveVariable::TPrimitiveVariable(LONG64 value)
     Set(value);
 }
 
+TPrimitiveVariable::TPrimitiveVariable()
+{
+    Set(0ull);
+}
+
 
 /**
  * Method: TPrimitiveVariable::TPrimitiveVariable
@@ -482,6 +487,14 @@ bool TPrimitiveVariable::BitShift(bool rightShift, UINT shiftCount, USHORT flags
     }
 
     return true;
+}
+
+TrecPointer<TVariable> TPrimitiveVariable::Clone()
+{
+
+    TrecPointer<TVariable> ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(value);
+    dynamic_cast<TPrimitiveVariable*>(ret.Get())->type = type;
+    return ret;
 }
 
 /**

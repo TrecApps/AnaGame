@@ -27,6 +27,9 @@ typedef enum class var_type
 class _TREC_LIB_DLL TVariable
 {
 public:
+
+    virtual TrecPointer<TVariable> Clone();
+
     /**
      * Method: TVariable::GetVarType
      * Purpose: Reports the type of varible that this object represents

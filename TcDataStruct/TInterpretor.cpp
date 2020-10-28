@@ -194,6 +194,36 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 }
 
 /**
+ * Method: TInterpretor::UpdateVariable
+ * Purpose: Updates an existing Variable
+ * Parameters: const TString& name - the name to update
+ *              TrecPointer<TVariable> value - value to update it with
+ * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable)
+ */
+UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value)
+{
+	for (UINT Rust = 0; Rust < variables.count(); Rust++)
+	{
+		TDataEntry<TVariableMarker> varMarker;
+		if (variables.GetEntryAt(Rust, varMarker))
+		{
+			if (!varMarker.key.Compare(name))
+			{
+				if (varMarker.object.IsMutable())
+				{
+					varMarker.object.SetVariable(value);
+					variables.setEntry(name, varMarker.object);
+					return 0;
+				}
+				else return 2;
+			}
+		}
+	}
+	return parent.Get() ? parent->UpdateVariable(name, value) : 1;
+}
+
+
+/**
  * Method: TInterpretor::TInterpretor
  * Purpose: Constructor
  * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)

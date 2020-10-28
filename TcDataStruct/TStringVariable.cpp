@@ -2,12 +2,18 @@
 #include "TStringVariable.h"
 
 
+TrecPointer<TVariable> TStringVariable::Clone()
+{
+    return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(string);
+}
+
 /**
  * Method: TStringVariable::TStringVariable
  * Purpose: Constructor
  * Parameters: TString& string - the String tp hold
  * Returns New String Variable
  */
+
 TStringVariable::TStringVariable(const TString& string)
 {
     this->string.Set(string);

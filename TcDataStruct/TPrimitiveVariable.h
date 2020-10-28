@@ -11,7 +11,10 @@
 class TC_DATA_STRUCT TPrimitiveVariable :
     public TVariable
 {
+    friend class TPrimitiveVariable;
 public:
+
+    virtual TrecPointer<TVariable> Clone()override;
 
     /**
      * Method: TPrimitiveVarible::GetObject
@@ -353,10 +356,10 @@ private:
      */
     UCHAR type;
 
+    TPrimitiveVariable();
 
 
-
-    public:
+public:
     /**
      * indicates this is a boolean variable
      */
