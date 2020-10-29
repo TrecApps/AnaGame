@@ -112,10 +112,10 @@ BOOL TFile::ReadString(TString & rString)
 		
 		while (Read(&letter[0], 1))
 		{
+			success = true;
 			if (letter[0] == '\n')
 				break;
 			rString.AppendChar(ReturnWCharType(letter[0]));
-			success = true;
 		}
 		
 		break;
@@ -123,6 +123,7 @@ BOOL TFile::ReadString(TString & rString)
 		
 		while (Read(letter2, 2))
 		{
+			success = true;
 			temp = letter2[0];
 			letter2[0] = letter2[1];
 			letter2[1] = temp;
@@ -130,7 +131,6 @@ BOOL TFile::ReadString(TString & rString)
 			if (cLetter == L'\n')
 				break;
 			rString.AppendChar(cLetter);
-			success = true;
 		}
 
 		break;
@@ -138,10 +138,10 @@ BOOL TFile::ReadString(TString & rString)
 		
 		while (Read(&wLetter, 2))
 		{
+			success = true;
 			if (wLetter == L'\n')
 				break;
 			rString.AppendChar(wLetter);
-			success = true;
 		}
 
 	}

@@ -157,7 +157,7 @@ UINT TJavaScriptInterpretor::SetCode(TFile& file)
                 newFile->WriteString(line.SubString(startIndex) + L'\n');
                 startIndex = 0;
             }
-            else if (line[quoteIndex] == quoteStack[quoteStack.Size()])
+            else if (quoteStack.Size() && (line[quoteIndex] == quoteStack[quoteStack.Size() - 1]))
             {
                 newFile->WriteString(line.SubString(startIndex, quoteIndex + 1));
                 startIndex = quoteIndex + 1;
@@ -181,7 +181,7 @@ UINT TJavaScriptInterpretor::SetCode(TFile& file)
     {
         TString newPath(newFile->GetFilePath());
         newFile->Close();
-        newFile->Open(newPath, TFile::t_file_open_always || TFile::t_file_read);
+        newFile->Open(newPath, TFile::t_file_open_always | TFile::t_file_read);
         if (!newFile->IsOpen())
             return 5;
         this->file = newFile;
@@ -750,7 +750,7 @@ UINT TJavaScriptInterpretor::InsertSemiColons()
 
                 if (line0.FindOneOf(L" \t") == -1)
                 {
-                    if (!line1.StartsWith(L"++") && line1.StartsWith(L"--"))
+                    if (!line1.StartsWith(L"++") && !line1.StartsWith(L"--"))
                         insertSemiColon = false;
                 }
 
@@ -761,28 +761,35 @@ UINT TJavaScriptInterpretor::InsertSemiColons()
                 {
                     if (line0.EndsWith(noSemiColonEnd[Rust]))
                         insertSemiColon = false;
-                    
+
                 }
             }
 
             if (insertSemiColon)
+            {
+                dLines[0].TrimRight();
                 dLines[0].AppendChar(L';');
+            }
         }
 
         newFile.WriteString(dLines[0] + L'\n');
 
         TString emptyLine((inMultiString) ? L"\n" : L";\n");
 
-        while (empty--)
+        while (empty)
+        {
+            empty--;
             newFile.WriteString(emptyLine);
+        }
 
+        
         inMultiString = hasOddMiltiLineStrMarkers(readLine);
 
         dLines[0].Set(dLines[1]);
     }
 
 
-    newFile.WriteString(readLine);
+    newFile.WriteString(dLines[0]);
 
 
     file->Close();
@@ -791,7 +798,7 @@ UINT TJavaScriptInterpretor::InsertSemiColons()
 
     newFile.Close();
 
-    file->Open(path, TFile::t_file_open_always);
+    file->Open(path, TFile::t_file_open_always | TFile::t_file_read);
 
     if (file->IsOpen())
     {
