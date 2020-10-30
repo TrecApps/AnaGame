@@ -1,10 +1,12 @@
 #include "T2DSpriteEngine.h"
+#include <TFile.h>
 
 T2DSprite::T2DSprite(TDataArray<TrecSubPointer<TBrush, TBitmapBrush>>& brushes, UINT index)
 {
     tilt = 0.0f;
     this->index = index;
     brush = brushes.at(index);
+    collisionUnit = 0;
 }
 
 void T2DSprite::SetTiltDegrees(float degrees)
@@ -76,8 +78,129 @@ T2DSpriteEngine::~T2DSpriteEngine()
 {
 }
 
-UINT T2DSpriteEngine::Initialize(TDataArray<TFileShell>& files)
+UINT T2DSpriteEngine::Initialize(TDataArray<TrecPointer<TFileShell>>& files)
 {
+    if (files.Size() < 2)
+        return 1;
+
+    for (UINT Rust = 0; files.Size(); Rust++)
+        if (!files[Rust].Get())
+            return 2;
+
+    TFile layout(files[0]->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
+
+    if (!layout.IsOpen())
+        return 3;
+    auto rec = D2D1::RectF(0.0f, 0.0f, 500, 500);
+
+    TDataArray<TrecSubPointer<TBrush, TBitmapBrush>> brushes;
+
+    for (UINT Rust = 1; Rust < files.Size(); Rust++)
+    {
+        TFile pic(files[Rust]->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
+        if (!pic.IsOpen())
+            return 4;
+        pic.Close();
+        TrecSubPointer<TBrush, TBitmapBrush> brush = board->GetBrush(files[Rust], rec);
+
+        if (!brush.Get() || !brush->IsValid())
+            return 5;
+
+        brushes.push_back(brush);
+    }
+
+    TString value1, value2;
+
+    int iRows, iColumns;
+
+    if (!layout.ReadString(value1) || !layout.ReadString(value2))
+        return 6;
+
+    if (value1.ConvertToInt(iRows) || value2.ConvertToInt(iColumns))
+        return 7;
+
+    rows = iRows;
+    columns = iColumns;
+
+    do
+    {
+        if (!layout.ReadString(value1))
+            return 8;
+    } while (!value1.GetSize());
+
+    // Here, we have arrived at the rows
+    UINT rowCount = 1;
+    do
+    {
+        TrecPointer<TDataArray<TString>> numbers = value1.split(L" ");
+        int val;
+        for (UINT Rust = 0; Rust < numbers->Size(); Rust++)
+        {
+            if (!numbers->at(Rust).GetSize())
+            {
+                numbers->RemoveAt(Rust--);
+                continue;
+            }
+            TrecPointer<TDataArray<TString>> data = numbers->at(Rust).split(L";");
+
+            if (data->at(0).ConvertToInt(val))
+                return 9;
+
+            if (static_cast<UINT>(val) >= brushes.Size())
+                return 10;
+
+            TrecPointer<T2DSprite> sprite = TrecPointerKey::GetNewTrecPointer<T2DSprite>(brushes, val);
+            if (data->Size() > 1)
+            {
+                if (data->at(1).ConvertToInt(val))
+                    return 11;
+                sprite->setCollisionUnit(val);
+            }
+            sprites.push_back(sprite);
+        }
+
+        if (numbers->Size() != columns)
+            return 12;
+        rowCount++;
+        if (!layout.ReadString(value1))
+            return 13;
+    } while (value1.GetSize());
+
+    if (rowCount != rows)
+        return 14;
+
+    do
+    {
+        if (!layout.ReadString(value1))
+            return 0;
+    } while (!value1.GetSize());
+
+    do
+    {
+        TrecPointer<TDataArray<TString>> numbers = value1.split(L";");
+        int moveRow, moveCol, moveSprite, moveColl;
+        moveRow = moveCol = moveSprite = moveColl = 0;
+        float tilt;
+
+        if (numbers->Size() < 4)
+            return 15;
+
+        if (numbers->at(0).ConvertToInt(moveRow) && numbers->at(1).ConvertToInt(moveCol) && numbers->at(2).ConvertToInt(moveSprite) && numbers->at(3).ConvertToInt(moveColl))
+            return 16;
+
+        TrecPointer<T2DSprite> sprite = TrecPointerKey::GetNewTrecPointerAlt<T2DSprite, T2DMovableSprite>(brushes, moveSprite, TrecPointerKey::GetTrecPointerFromSoft<T2DSpriteEngine>(self));
+        sprite->setCollisionUnit(moveColl);
+        dynamic_cast<T2DMovableSprite*>(sprite.Get())->SetPosition(moveCol, moveRow);
+
+        if (numbers->Size() >= 5)
+        {
+            if (numbers->at(4).ConvertToFloat(tilt))
+                return 17;
+            sprite->SetTiltDegrees(tilt);
+        }
+
+    } while (layout.ReadString(value1));
+
     return 0;
 }
 

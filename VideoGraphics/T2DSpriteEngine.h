@@ -7,7 +7,7 @@ class T2DSprite
 public:
     T2DSprite(TDataArray<TrecSubPointer<TBrush, TBitmapBrush>>& brushes, UINT index);
 
-    void SetTiltDegrees(float degrees);
+    virtual void SetTiltDegrees(float degrees);
     void setCollisionUnit(UINT unit);
 
 
@@ -55,7 +55,7 @@ public:
 
     virtual ~T2DSpriteEngine();
 
-    UINT Initialize(TDataArray<TFileShell>& files);
+    UINT Initialize(TDataArray<TrecPointer<TFileShell>>& files);
 
     void SetCenter(UINT row, UINT column, D2D1_RECT_F& space);
 
