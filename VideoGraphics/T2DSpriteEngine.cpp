@@ -54,6 +54,11 @@ UINT T2DSprite::GetIndex()
     return index;
 }
 
+UINT T2DSprite::GetCollisionUnit()
+{
+    return collisionUnit;
+}
+
 TString T2DSpriteEngine::GetType()
 {
     return TString(L"T2DSpriteEngine;") + TObject::GetType();
@@ -171,6 +176,25 @@ void T2DSpriteEngine::SetSelf(TrecPointer<T2DSpriteEngine> self)
     this->self = TrecPointerKey::GetSoftPointerFromTrec<T2DSpriteEngine>(self);
 }
 
+bool T2DSpriteEngine::GetCollisionSprite(UINT row, UINT column, UINT& result)
+{
+    if (row >= rows || column >= columns)
+        return false;
+
+    auto index = (row * rows) + column;
+    if(index >= sprites.Size())
+        return false;
+
+    auto sprite = sprites[index];
+
+    if (sprite.Get())
+    {
+        result = sprite->GetCollisionUnit();
+        return true;
+    }
+    return false;
+}
+
 T2DMovableSprite::T2DMovableSprite(TDataArray<TrecSubPointer<TBrush, TBitmapBrush>>& brushes, UINT index, TrecPointer<T2DSpriteEngine> engine)
     : T2DSprite(brushes, index)
 {
@@ -196,5 +220,46 @@ void T2DMovableSprite::removeWholeUnits()
 
 bool T2DMovableSprite::AttemptMove(float horizontal, float vertical, bool throughWall, UINT& objColl, UINT& envCol)
 {
-    return false;
+    if (!engine.Get())
+        return false;
+    objColl = collisionUnit;
+
+    if (horizontal == 0.0f && vertical == 0.0f)
+    {
+        return engine->GetCollisionSprite(baseRow, baseColumn, envCol);
+    }
+    UINT newColumn = baseColumn + horizontal;
+    UINT newRow = baseRow + vertical;
+    if (throughWall)
+    {
+        return engine->GetCollisionSprite(newRow, newColumn, envCol);
+    }
+    else
+    {
+        UINT start = 0;
+        envCol = start;
+        UINT min = min(newColumn, baseColumn);
+        UINT max = max(newColumn, baseColumn);
+        for (UINT Rust = min; Rust <= max; Rust++)
+        {
+            if (!engine->GetCollisionSprite(Rust, baseColumn, start))
+                return false;
+
+            if (start > envCol)
+                envCol = start;
+        }
+
+        min = min(newRow, baseRow);
+        max = max(newRow, baseRow);
+
+        for (UINT Rust = min; Rust <= max; Rust++)
+        {
+            if (!engine->GetCollisionSprite(newColumn, Rust, start))
+                return false;
+
+            if (start > envCol)
+                envCol = start;
+        }
+        return true;
+    }
 }

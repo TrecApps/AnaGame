@@ -17,6 +17,8 @@ public:
 
     UINT GetIndex();
 
+    UINT GetCollisionUnit();
+
 protected:
     float tilt;
     UINT index;
@@ -60,6 +62,8 @@ public:
     void Draw(D2D1_RECT_F& space);
 
     void SetSelf(TrecPointer<T2DSpriteEngine> self);
+
+    bool GetCollisionSprite(UINT row, UINT column, UINT& result);
 
 protected:
     TrecPointerSoft< T2DSpriteEngine> self;
