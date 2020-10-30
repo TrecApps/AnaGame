@@ -371,7 +371,7 @@ ReportObject TJavaScriptInterpretor::Run()
         }
         else if (startStatement.StartsWith(L"for", false, true))
         {
-            if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
+            if (startParenth == -1 || startStatement.SubString(3, startParenth).GetTrim().GetSize())
             {
                 ret.returnCode = ret.broken_reference;
                 ret.errorMessage.Set(L"Unexpected token after 'for' statement!");
@@ -382,7 +382,7 @@ ReportObject TJavaScriptInterpretor::Run()
             }
 
 
-            ProcessParenthBlock(ret, startStatement.SubString(2), line);
+            ProcessParenthBlock(ret, startStatement.SubString(3).GetTrimLeft(), line);
 
             if (ret.returnCode)
                 return ret;
@@ -525,7 +525,7 @@ ReportObject TJavaScriptInterpretor::Run()
         {
             JavaScriptStatement statement(js_statement_type::js_class);
         }
-        else
+        else if(!startStatement.StartsWith(L";"))
         {
             JavaScriptStatement statement(js_statement_type::js_regular);
             statement.lineStart = beginLine;
@@ -829,7 +829,7 @@ void TJavaScriptInterpretor::ProcessParenthBlock(ReportObject& ro, const TString
         return;
     }
 
-    if (!trimedCode[0] != L'(')
+    if (trimedCode[0] != L'(')
     {
         ro.returnCode = ReportObject::mismatched_parehtnesis;
         ro.errorMessage.Set(L"Expected token '(' after ");
