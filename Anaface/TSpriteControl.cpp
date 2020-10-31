@@ -42,12 +42,11 @@ TSpriteControl::~TSpriteControl()
  */
 void TSpriteControl::onDraw(TObject* obj)
 {
-	TControl::onDraw(obj);
-
 	if (sprite.Get())
 	{
 		sprite->Draw(location);
 	}
+	TControl::onDraw(obj);
 }
 
 /**
