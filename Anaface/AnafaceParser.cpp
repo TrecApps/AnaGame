@@ -292,9 +292,14 @@ bool AnafaceParser::Obj(TString& va)
 	}
 	else if (!v.Compare(L"Class"))
 	{
-	currentStyle = TrecPointerKey::GetNewTrecPointer<styleTable>(); //  new styleTable();
+		currentStyle = TrecPointerKey::GetNewTrecPointer<styleTable>(); //  new styleTable();
 		addToTree(currentObj);
 		currentObj.Nullify();//  null<TControl>();
+	}
+	else if (!v.Compare(L"SpriteEngine") || !v.Compare(L"TSpriteEngine"))
+	{
+		currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TSpriteControl>(renderer, classList);
+		addToTree(currentObj);
 	}
 	else if (!v.Compare(L"Animation"))
 	{

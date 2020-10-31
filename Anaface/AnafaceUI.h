@@ -14,6 +14,7 @@
 #include "TImage.h"
 #include "TPromptControl.h"
 #include "TTreeDataBind.h"
+#include "TSpriteControl.h"
 
 class AnafaceUI;
 typedef struct _ANAFACE_DLL auiHold {
