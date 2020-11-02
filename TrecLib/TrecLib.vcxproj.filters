@@ -141,6 +141,12 @@
     <ClInclude Include="TDataMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TStringSlice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TSliceManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -252,6 +258,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TBlankNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TStringSlice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TSliceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
