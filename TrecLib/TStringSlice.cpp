@@ -1,9 +1,12 @@
 #include "TStringSlice.h"
 
-TStringSlice::TStringSlice(TrecPointer<TString>, TrecPointerSoft<TSliceManager> parent, UINT start, UINT count)
+TStringSlice::TStringSlice(TrecPointer<TString>string, TrecPointerSoft<TSliceManager> parent, UINT start, UINT count)
 {
+	this->string = string;
+	this->sliceManager = parent;
 	this->start = start;
 	this->count = count;
+	valid = string.Get() && parent.Get() && (start + count < string->GetSize());
 }
 
 void TStringSlice::Invalidate()
