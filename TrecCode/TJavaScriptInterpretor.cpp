@@ -1247,7 +1247,7 @@ void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& st
     if (ro.returnCode)
         return;
 
-    TString parametersString(statement.contents.SubString(statement.contents.Find(L'(') + 1));
+    TString parametersString(statement.contents.SubString(statement.contents.Find(L'(') + 1, statement.contents.Find(L')')));
 
     auto paramsList = parametersString.split(L',');
 
@@ -1392,8 +1392,6 @@ void TJavaScriptInterpretor::ProcessFinally(TDataArray<JavaScriptStatement>& sta
 
 void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro, TDataMap<TVariableMarker>& variables)
 {
-    assert(statement.type == js_statement_type::js_let);
-
     auto toks = statement.contents.split(L',', 2);
 
     UINT newLines = 0;
@@ -1415,6 +1413,50 @@ void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>
 
     if (toks->Size())
     {
+        // Join these string if necessary
+        UINT squareStack = 0;
+        WCHAR quote = L'\0';
+        UINT C = 0;
+        for (UINT Rust = 0; Rust < toks->Size(); Rust++)
+        {
+            for (; C < toks->at(Rust).GetSize(); C++)
+            {
+                WCHAR ch = toks->at(Rust).GetAt(C);
+                if (quote && ch == quote)
+                    quote = L'\0';
+                else if (!quote)
+                {
+                    if (ch == L'\'' || ch == L'\"' || ch == L'`')
+                        quote = ch;
+                    else if (ch == L'[')
+                        squareStack++;
+                    else if (ch == L']')
+                    {
+                        if (squareStack)
+                            squareStack--;
+                        else
+                        {
+                            ro.returnCode = ro.mismatched_parehtnesis;
+                            ro.errorMessage.Set(L"Mismatched Square Brackets!");
+
+                            return;
+                        }
+                    }
+                }
+            }
+            if (squareStack && (Rust + 1) < toks->Size())
+            {
+                // We are in the middle of an array declaration and should join the strings together again with a comma
+                toks->at(Rust).AppendFormat(L",%ws", toks->at(Rust + 1).GetConstantBuffer());
+                toks->RemoveAt(Rust + 1);
+                Rust--;
+            }
+            else
+                C = 0;
+        }
+
+
+
         for (UINT Rust = 0; Rust < toks->Size(); Rust++)
         {
             auto eqToks = toks->at(Rust).splitn(L'=', 2, 2);
@@ -1491,7 +1533,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
     UINT curSize;
 
-    while (curSize = exp.GetSize())
+    while ((curSize = exp.GetSize()) && exp.GetTrim().Compare(L";"))
     {
         if (exp[0] == L'(')
         {
@@ -1848,7 +1890,7 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
     }
     else if (tExp.StartsWith(L"0b", true))
     {
-        for (end = (tExp[0] == L'-') ? 1 : 0; end < tExp.GetSize(); end++)
+        for (end = 2; end < tExp.GetSize(); end++)
         {
             WCHAR letter = tExp[end];
 
@@ -1859,7 +1901,7 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
     }
     else
     {
-        for (end = 2; end < tExp.GetSize(); end++)
+        for (end = (tExp[0] == L'-') ? 1 : 0; end < tExp.GetSize(); end++)
         {
             WCHAR letter = tExp[end];
 
@@ -1893,7 +1935,7 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
         {
 
             ro.returnCode = ro.not_number;
-            ro.errorMessage.Set(L"Invalid double detected.");
+            ro.errorMessage.Set(L"Invalid long detected.");
             return;
         }
         ro.returnCode = 0;

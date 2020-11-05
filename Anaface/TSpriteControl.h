@@ -11,7 +11,7 @@
 class TSpriteControl :
     public TControl
 {
-
+public:
 	/**
 	 * Method: TSpriteControl::GetType
 	 * Purpose: Returns a String Representation of the object type

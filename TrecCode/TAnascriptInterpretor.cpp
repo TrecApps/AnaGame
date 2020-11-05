@@ -1712,7 +1712,7 @@ void TAnascriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject&
     }
     else if (tExp.StartsWith(L"0b", true))
     {
-        for (end = (tExp[0] == L'-') ? 1 : 0; end < tExp.GetSize(); end++)
+        for (end = 2; end < tExp.GetSize(); end++)
         {
             WCHAR letter = tExp[end];
 
@@ -1723,7 +1723,7 @@ void TAnascriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject&
     }
     else
     {
-        for (end = 2; end < tExp.GetSize(); end++)
+        for (end = (tExp[0] == L'-') ? 1 : 0; end < tExp.GetSize(); end++)
         {
             WCHAR letter = tExp[end];
 
