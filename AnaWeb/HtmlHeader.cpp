@@ -1,7 +1,12 @@
 #include "pch.h"
 #include "HtmlHeader.h"
 
-UINT HtmlHeader::ProcessHtml(TrecPointer<TFile> file)
+HtmlHeader::HtmlHeader(TrecPointer<TEnvironment> env)
 {
-    return 0;
+    this->env = env;
+}
+
+TString HtmlHeader::ProcessHtml(TrecPointer<TFile> file, const TString& data)
+{
+    return TString();
 }

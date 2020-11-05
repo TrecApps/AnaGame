@@ -1,25 +1,13 @@
 #pragma once
 #include <TObject.h>
-#include <TFile.h>
 #include <TEnvironment.h>
-
-/**
- * Class: HtmlHeader
- * Purpose: Represents the Html Header in Anagame
- */
-class HtmlHeader : public TObject
+class HtmlScriptBlock : public TObject
 {
 public:
-    /**
-     * Method: HtmlHeader::HtmlHeader
-     * Purpose: Constructor
-     * Parameters: TrecPointer<TEnvironment> env - the environment to work with
-     * Returns: New HtmlHeaderObject
-     */
-    HtmlHeader(TrecPointer<TEnvironment> env);
+	HtmlScriptBlock(TrecPointer<TEnvironment> env);
 
     /**
-     * Method: HtmlHeader::ProcessHtml
+     * Method: HtmlScriptBlock::ProcessHtml
      * Purpose: Processes new HTML code from a file
      * Parameters: TrecPointer<TFile> file - the file to read from
      *              const TString& data - The line that was already read
@@ -28,8 +16,7 @@ public:
      */
     TString ProcessHtml(TrecPointer<TFile> file, const TString& data);
 
-
 private:
-    TrecPointer<TEnvironment> env;
+	TrecPointer<TEnvironment> env;
 };
 

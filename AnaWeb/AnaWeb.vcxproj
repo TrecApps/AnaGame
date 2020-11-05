@@ -155,13 +155,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="HtmlBody.h" />
+    <ClInclude Include="HtmlBuilder.h" />
     <ClInclude Include="HtmlHeader.h" />
+    <ClInclude Include="HtmlScriptBlock.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TWebNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="HtmlBody.cpp" />
+    <ClCompile Include="HtmlBuilder.cpp" />
     <ClCompile Include="HtmlHeader.cpp" />
+    <ClCompile Include="HtmlScriptBlock.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

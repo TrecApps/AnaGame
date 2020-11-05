@@ -2,32 +2,25 @@
 #include <TObject.h>
 #include <TFile.h>
 #include <TEnvironment.h>
-
-/**
- * Class: HtmlHeader
- * Purpose: Represents the Html Header in Anagame
- */
-class HtmlHeader : public TObject
+class HtmlBody : public TObject
 {
 public:
     /**
-     * Method: HtmlHeader::HtmlHeader
+     * Method: HtmlBody::HtmlHeader
      * Purpose: Constructor
      * Parameters: TrecPointer<TEnvironment> env - the environment to work with
      * Returns: New HtmlHeaderObject
      */
-    HtmlHeader(TrecPointer<TEnvironment> env);
+    HtmlBody(TrecPointer<TEnvironment> env);
 
     /**
-     * Method: HtmlHeader::ProcessHtml
+     * Method: HtmlBody::ProcessHtml
      * Purpose: Processes new HTML code from a file
      * Parameters: TrecPointer<TFile> file - the file to read from
      *              const TString& data - The line that was already read
-     *              TrecPointer<TEnvironment> env - the Environment to work with
      * Returns: UINT - error code (0 for success)
      */
     TString ProcessHtml(TrecPointer<TFile> file, const TString& data);
-
 
 private:
     TrecPointer<TEnvironment> env;
