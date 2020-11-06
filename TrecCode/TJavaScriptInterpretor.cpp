@@ -227,7 +227,7 @@ ReportObject TJavaScriptInterpretor::Run()
     // 0b00000001 - ensures that our terminating character is included in the resulting string
     // 0b00000010 - Tells the method to not terminate if the termination character is within a quote
     // 0b00000100 - Tells the method to watch out for an odd number of backslashes 
-    while (file->ReadString(code, L"{;", 0b00000111))
+    while (file->ReadString(code, L"{;", 0b00000111, end - file->GetPosition()))
     {
         // First make sure this statement doesn't land us in a multi-line string (`) which the ReadString
         // Method doesn't account for
@@ -1070,7 +1070,17 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
 
     if (fields->Size() == 1)
     {
-        TrecPointer<TDataArray<TString>> tokens = fields->at(0).split(L" \s\n\r\t", 0);
+        TrecPointer<TDataArray<TString>> tokens = fields->at(0).split(L" \s\n\r\t", 2);
+
+        // Remove the Open bracket token
+        if (tokens->Size() > 3 && tokens->at(tokens->Size() - 1).StartsWith(L'{'))
+            tokens->RemoveAt(tokens->Size() - 1);
+        // Remove the close parenthesis if part of a seperate token
+        if (tokens->Size() > 3 && tokens->at(tokens->Size() - 1).StartsWith(L')'))
+            tokens->RemoveAt(tokens->Size() - 1);
+        // Remove the open parenthesis if seperate from body of expression
+        if (tokens->Size() > 3 && tokens->at(0).EndsWith(L'('))
+            tokens->RemoveAt(0);
 
         if (tokens->Size() != 3)
         {
@@ -1080,6 +1090,9 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
 
             return;
         }
+
+        if (tokens->at(0).StartsWith(L"("))
+            tokens->at(0).Delete(0);
 
         TString varName(tokens->at(0).GetTrim());
 
@@ -1101,6 +1114,10 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
 
         bool wasPresent;
         TString collName(tokens->at(2).GetTrim());
+
+        if (collName.EndsWith(L')'))
+            collName.Delete(collName.GetSize() - 1);
+
         TrecPointer<TVariable> collection = GetVariable(collName, wasPresent);
 
         if (!collection.Get())
