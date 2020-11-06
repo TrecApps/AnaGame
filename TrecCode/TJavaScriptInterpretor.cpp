@@ -395,7 +395,7 @@ ReportObject TJavaScriptInterpretor::Run()
             statement.lineEnd = line;
 
 
-            statement.fileStart = file->GetPosition() + 1;
+            statement.fileStart = file->GetPosition();
 
             statement.fileEnd = GetBlockEnd();
 
