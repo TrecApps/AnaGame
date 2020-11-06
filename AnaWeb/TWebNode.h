@@ -2,6 +2,8 @@
 #include <TObject.h>
 #include <DrawingBoard.h>
 #include <TControl.h>
+#include <TStringSlice.h>
+#include <TDataMap.h>
 
 /**
  * Class: TWebNode
@@ -24,11 +26,11 @@ public:
     /**
      * Method: TWebNode::ProcessHtml
      * Purpose: Processes new HTML code from a file
-     * Parameters: TrecPointer<TFile> file - the file to read from
-     *              const TString& tag - the tag this Node identifies as
+     * Parameters: TStringSliceManager& html the string to process
+     *              UINT start - the index to start at
      * Returns: UINT - error code (0 for success)
      */
-    UINT ProcessHtml(TrecPointer<TFile> file, const TString& tag);
+    UINT ProcessHtml(TStringSliceManager& html, UINT& start);
 
     /**
      * Method: TWebNode::ProcessInnerHtml
@@ -36,7 +38,7 @@ public:
      * Parameters: void
      * Returns: UINT - error code (0 for success)
      */
-    UINT ProcessInnerHtml();
+    UINT ProcessInnerHtml(TStringSliceManager& html, UINT& start);
 
     /**
      * Method: TWebNode::SetInnerHtml
@@ -44,7 +46,7 @@ public:
      * Parameters: const TString& html - the html to set the insides of this node to
      * Returns: UINT - error code (0 for success)
      */
-    UINT SetInnerHtml(const TString& html);
+    UINT SetInnerHtml(TStringSliceManager& html);
 
     /**
      * Method: TWebNode::GetElementsByName
@@ -100,7 +102,7 @@ protected:
     /**
      * represents the Element Node's innerHTML attribute
      */
-    TString innerHtml;
+    TrecPointer<TStringSlice> innerHtml;
 
     /**
      * Holds on to all child Elements underneath it
@@ -116,6 +118,11 @@ protected:
      * Basic string attributes
      */
     TString tagName, id, nodeClass, name;
+
+    /**
+     * The attributes gained
+     */
+    TDataMap<TString> attributes;
 
     /**
      * Hold the Drawing board being held

@@ -1514,6 +1514,18 @@ void TString::Append(const TString& app)
 	string = newString;
 }
 
+bool IsWhitespace(WCHAR ch)
+{
+	fillWhiteChar();
+
+	for (UINT Rust = 0; Rust < whiteChar.Size(); Rust++)
+	{
+		if (whiteChar[Rust] == ch)
+			return true;
+	}
+
+	return false;
+}
 
 /*
 * Function: convertToNumber

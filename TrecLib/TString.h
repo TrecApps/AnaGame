@@ -931,6 +931,8 @@ private:
 	WCHAR* string;
 };
 
+bool IsWhitespace(WCHAR ch);
+
 /*
 * Function: convertToNumber
 * Purpose: Converts a character into a number

@@ -93,3 +93,14 @@ TrecPointer<TStringSlice> TStringSliceManager::GetSlice(UINT start, UINT count)
 		return TrecPointer<TStringSlice>();
 	return TrecPointerKey::GetNewTrecPointer<TStringSlice>(string, self, start, count);
 }
+
+/**
+ * Method: TStringSliceManager::GetUnderlyingString
+ * Purpose: allows objects to access the underlying string
+ * Parameters: void
+ * Returns: TrecPointer<TString> - the underlying string
+ */
+TrecPointer<TString> TStringSliceManager::GetUnderlyingString()
+{
+	return this->string;
+}

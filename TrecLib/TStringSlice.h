@@ -120,6 +120,14 @@ public:
 	 */
 	TrecPointer<TStringSlice> GetSlice(UINT start, UINT count);
 
+	/**
+	 * Method: TStringSliceManager::GetUnderlyingString
+	 * Purpose: allows objects to access the underlying string
+	 * Parameters: void
+	 * Returns: TrecPointer<TString> - the underlying string
+	 */
+	TrecPointer<TString> GetUnderlyingString();
+
 protected:
 	/**
 	 * The string to manage
