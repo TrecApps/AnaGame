@@ -42,6 +42,21 @@ class _TREC_LIB_DLL TEnvironment :
 {
 public:
 
+	/**
+	 * Method: TEnvironment::GetUrl
+	 * Purpose: Returns The URL of the Srting
+	 * Parameters: void
+	 * Returns: TString - the URL of the environment
+	 */
+	TString GetUrl();
+
+	/**
+	 * Method: TEnvironment::SetUrl
+	 * Purpose: Sets the URL of the Environment
+	 * Parameters: const TString& url
+	 * Returns: void
+	 */
+	void SetUrl(const TString& url);
 
 	/**
 	 * Method: TEnvironment::GetType
@@ -302,5 +317,11 @@ protected:
 	 * Allows Environment to provide references to itself
 	 */
 	TrecPointerSoft<TEnvironment> self;
+
+	/**
+	 * The Base URL for the environment, for most, it will be the same as the root directory,
+	 * For Web, it would be what the user typed into the search box and the base Website url that results
+	 */
+	TString url;
 };
 

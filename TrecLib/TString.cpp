@@ -1883,7 +1883,7 @@ bool TString::StartsWith(const TString& seq, bool ignoreCase, bool whitespace) c
  *
  * Note: Will return false if seq is longer than 'this' string
  */
-bool TString::EndsWith(const TString& seq, bool ignoreCase)
+bool TString::EndsWith(const TString& seq, bool ignoreCase)const 
 {
 	if (seq.GetSize() > size)
 		return false;

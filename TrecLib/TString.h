@@ -589,7 +589,7 @@ public:
 	 *
 	 * Note: Will return false if seq is longer than 'this' string
 	 */
-	bool EndsWith(const TString& seq, bool ignoreCase = false);
+	bool EndsWith(const TString& seq, bool ignoreCase = false) const ;
 
 	/**
 	 * Method: TString::Find

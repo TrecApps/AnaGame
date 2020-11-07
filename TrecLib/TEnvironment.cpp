@@ -138,6 +138,29 @@ TString retrieveLanguageByExtension(TString ext)
 }
 
 /**
+ * Method: TEnvironment::GetUrl
+ * Purpose: Returns The URL of the Srting
+ * Parameters: void
+ * Returns: TString - the URL of the environment
+ */
+TString TEnvironment::GetUrl()
+{
+	return url;
+}
+
+/**
+ * Method: TEnvironment::SetUrl
+ * Purpose: Sets the URL of the Environment
+ * Parameters: const TString& url
+ * Returns: void
+ */
+void TEnvironment::SetUrl(const TString& url)
+{
+	this->url.Set(url);
+}
+
+
+/**
  * Method: TEnvironment::GetType
  * Purpose: Returns a String Representation of the object type
  * Parameters: void

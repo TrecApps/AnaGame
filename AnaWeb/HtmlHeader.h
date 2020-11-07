@@ -2,6 +2,8 @@
 #include <TObject.h>
 #include <TFile.h>
 #include <TEnvironment.h>
+#include <TDataMap.h>
+#include "HtmlScriptBlock.h"
 
 /**
  * Class: HtmlHeader
@@ -30,6 +32,21 @@ public:
 
 
 private:
+    /**
+     * The Environment to work with
+     */
     TrecPointer<TEnvironment> env;
+
+    /**
+     * The attributes gained
+     */
+    TDataMap<TString> attributes, meta;
+
+    /**
+     * 
+     */
+    TDataArray<TrecPointer<HtmlScriptBlock>> scripts;
+
+    TString css, title;
 };
 
