@@ -1,6 +1,7 @@
 #pragma once
 #include <TObject.h>
 #include <TEnvironment.h>
+#include <TDataMap.h>
 class HtmlScriptBlock : public TObject
 {
 public:
@@ -18,5 +19,9 @@ public:
 
 private:
 	TrecPointer<TEnvironment> env;
+    /**
+     * The attributes gained
+     */
+    TDataMap<TString> attributes;
 };
 
