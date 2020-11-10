@@ -113,7 +113,7 @@ TString HtmlHeader::ProcessHtml(TrecPointer<TFile> file, const TString& data)
 	if(data.EndsWith(L"/>"))
 		return TString(L"Premature End to header!");
 
-	while (file->ReadString(headData, L">", 7))
+	while (file->ReadString(headData, L">", 6))
 	{
 		headData.Trim();
 		if (!headData.EndsWith(L">")) return L"Premature End to header!";
@@ -124,7 +124,27 @@ TString HtmlHeader::ProcessHtml(TrecPointer<TFile> file, const TString& data)
 
 		if (headData.StartsWith(L"meta", true, true))
 		{
+			headData.Delete(0, 5);
+			headData.Trim();
+			TrecPointer<TDataArray<TString>> tokens = headData.split(L" \t\n=", 3);
 
+			if (tokens->Size() == 2)
+			{
+				meta.addEntry(tokens->at(0), tokens->at(1));
+			}
+			else if (tokens->Size() == 4)
+			{
+				if (!tokens->at(2).CompareNoCase(L"content"))
+				{
+					// The presumed case, but check to make sure the html writer put content next
+					meta.addEntry(tokens->at(1), tokens->at(3));
+				}
+				else
+				{
+					// Turns out, the user placed the contents tag first
+					meta.addEntry(tokens->at(3), tokens->at(1));
+				}
+			}
 		}
 		else if (headData.StartsWith(L"title", true, true))
 		{
