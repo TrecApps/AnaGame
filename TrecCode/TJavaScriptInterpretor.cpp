@@ -268,7 +268,7 @@ ReportObject TJavaScriptInterpretor::Run()
 
         int startParenth = startStatement.Find(L'(');
 
-        if (startStatement.StartsWith(L"if", false, true))
+        if (startStatement.StartsWith(L"if", false, true) || startStatement.StartsWith(L"if("))
         {
             if (startParenth == -1 || startStatement.SubString(2,startParenth).GetTrim().GetSize())
             {
@@ -310,13 +310,13 @@ ReportObject TJavaScriptInterpretor::Run()
             }
             statements.push_back(statement);
         }
-        else if (startStatement.StartsWith(L"else", false, true))
+        else if (startStatement.StartsWith(L"else", false, true) || startStatement.StartsWith(L"else{"))
         {
             startStatement.Set(startStatement.SubString(5).GetTrimLeft());
 
             bool useIf = false;
 
-            if (startStatement.StartsWith(L"if", false, true))
+            if (startStatement.StartsWith(L"if", false, true) || startStatement.StartsWith(L"if("))
             {
                 
                 if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
@@ -369,7 +369,7 @@ ReportObject TJavaScriptInterpretor::Run()
             }
             statements.push_back(statement);
         }
-        else if (startStatement.StartsWith(L"for", false, true))
+        else if (startStatement.StartsWith(L"for", false, true) || startStatement.StartsWith(L"for("))
         {
             if (startParenth == -1 || startStatement.SubString(3, startParenth).GetTrim().GetSize())
             {
@@ -410,7 +410,7 @@ ReportObject TJavaScriptInterpretor::Run()
             }
             statements.push_back(statement);
         }
-        else if (startStatement.StartsWith(L"while", false, true))
+        else if (startStatement.StartsWith(L"while", false, true) || startStatement.StartsWith(L"while("))
         {
             if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
             {
@@ -1576,6 +1576,8 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
                 return;
             }
+            if (exp[end] != L')')
+                end--;
 
             TString smallExp(exp.SubString(1, end));
 
