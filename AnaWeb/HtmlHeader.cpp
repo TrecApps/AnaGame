@@ -166,7 +166,12 @@ TString HtmlHeader::ProcessHtml(TrecPointer<TFile> file, const TString& data)
 		}
 		else if (headData.StartsWith(L"link", true, true))
 		{
+			headData.Delete(0, 4);
+			TrecPointer<HtmlLink> link = TrecPointerKey::GetNewTrecPointer<HtmlLink>(env);
 
+			TString res(link->ProcessHtml(file, headData));
+			if (res.GetSize()) return res;
+			links.push_back(link);
 		}
 		else if (headData.StartsWith(L"script", true, true))
 		{

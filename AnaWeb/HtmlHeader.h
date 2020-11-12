@@ -4,6 +4,7 @@
 #include <TEnvironment.h>
 #include <TDataMap.h>
 #include "HtmlScriptBlock.h"
+#include "HtmlLink.h"
 
 /**
  * Class: HtmlHeader
@@ -47,6 +48,14 @@ private:
      */
     TDataArray<TrecPointer<HtmlScriptBlock>> scripts;
 
+    /**
+     * Basic String details (note, this css field should only hold direct css data from "<style>" tags
+     */
     TString css, title;
+
+    /**
+     * List of Links detected
+     */
+    TDataArray<TrecPointer<HtmlLink>> links;
 };
 
