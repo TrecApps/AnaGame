@@ -981,7 +981,14 @@ void TJavaScriptInterpretor::ProcessIf(TDataArray<JavaScriptStatement>& statemen
 {
     assert(statement.type == js_statement_type::js_if || statement.type == js_statement_type::js_else_if);
 
+    
+
     TString contents(statement.contents);
+
+    if (contents.EndsWith(L"{"))
+        contents.Delete(contents.GetSize() - 1);
+    contents.Trim();
+
     ProcessExpression(statements, cur, contents, statement.lineStart, ro);
 
     if (ro.returnCode)
@@ -1746,6 +1753,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 exp.Delete(0, 1);
             }
         }
+        exp.Trim();
     }
 
     HandlePreExpr(statements, cur, expresions, operators, ro);
@@ -1792,6 +1800,9 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
     HandleComma(statements, cur, expresions, operators, ro);
     if (ro.returnCode) return;
+
+    if (expresions.Size() == 1)
+        ro.errorObject = expresions[0].value;
 }
 
 void TJavaScriptInterpretor::ProcessArrayExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
@@ -2057,7 +2068,7 @@ void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& stat
                 return;
             expresions[Rust].value = ro.errorObject;
         }
-        else if (operators[Rust].Compare(L"--"))
+        else if (!operators[Rust].Compare(L"--"))
         {
             TrecPointer<TVariable> var = expresions[Rust].value;
             remove = true;
@@ -2707,7 +2718,7 @@ bool TJavaScriptInterpretor::IsEqual(TrecPointer<TVariable> var1, TrecPointer<TV
     if (isEqual)
     {
         // Dealing with == or ===
-        return eqVal && (castType) ? true : eqType;
+        return eqVal && ((castType) ? true : eqType);
     }
     else
     {

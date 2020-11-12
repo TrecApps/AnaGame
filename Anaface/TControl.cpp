@@ -3394,7 +3394,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 	{
 		children.ElementAt(c)->OnRButtonUp(nFlags, point, mOut,eventAr);
 	}
-	if (!isContained(&point, &getLocation()))
+	if (!isContained(point, getLocation()))
 	{
 		mState = messageState::normal;
 		isRClick = false;
@@ -3498,7 +3498,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), hScroll));
 	}
 
-	if (!isContained(&point, &getLocation()))
+	if (!isContained(point, getLocation()))
 	{
 		if (mState != messageState::normal)
 		{
@@ -3573,7 +3573,7 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		return;
 
 
-	if (!isContained(&point, &getLocation()))
+	if (!isContained(point, getLocation()))
 	{
 		if (mState != messageState::normal)
 		{
@@ -3631,7 +3631,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 	if (!isActive)
 		return;
 
-	if (!isContained(&point, &getLocation()))
+	if (!isContained(point, getLocation()))
 	{
 		if (mState != messageState::normal)
 		{
@@ -3786,7 +3786,7 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 		return;
 
 
-	if (!isContained(&point, &getLocation()))
+	if (!isContained(point, getLocation()))
 	{
 		if (mState != messageState::normal)
 		{
@@ -3860,7 +3860,7 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		if (*mOut != messageOutput::negative && *mOut != messageOutput::negativeUpdate)
 			break;
 	}
-	if (!isContained(&point, &getLocation()))
+	if (!isContained(point, getLocation()))
 	{
 		mState = messageState::normal;
 		*mOut = messageOutput::negative;

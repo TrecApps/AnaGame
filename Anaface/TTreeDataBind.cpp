@@ -189,7 +189,7 @@ bool TTreeDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 void TTreeDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
 
-	if (isContained(&point, &getLocation()))
+	if (isContained(point, getLocation()))
 	{
 		if (mainNode.Get())
 		{
@@ -237,7 +237,7 @@ void TTreeDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut
 void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
 
-	if (isContained(&point, &getLocation()))
+	if (isContained(point, getLocation()))
 	{
 		if (mainNode.Get())
 		{
@@ -322,7 +322,7 @@ void TTreeDataBind::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, 
  */
 void TTreeDataBind::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	if (isContained(&point, &getLocation()) && mainNode.Get())
+	if (isContained(point, getLocation()) && mainNode.Get())
 	{
 		TControl::OnLButtonDblClk(nFlags, point, mOut, eventAr);
 
