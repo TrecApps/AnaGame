@@ -117,7 +117,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual bool Print(TString& input);
+	virtual bool Print(const TString& input);
 
 	/**
 	 * Method: TEnvironment::PrintLine
@@ -127,7 +127,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual bool PrintLine(TString& input);
+	virtual bool PrintLine(const TString& input);
 
 	/**
 	 * Method: TEnvironment::GetTaskList

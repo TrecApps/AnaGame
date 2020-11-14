@@ -181,5 +181,13 @@ private:
     virtual DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var)override;
 
     bool IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEqual, bool castType);
+    
+    // Sets up a console Object
+    TrecPointer<TVariable> GetJsConsole();
 };
+
+
+// Functions to support the JavaScript Console
+
+
 

@@ -155,12 +155,13 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
  * Returns: bool - whether the operation was PERMITTED or not int index - index to set
  *              TrecPointer<TVariable> value - the value to set
  */
-bool TContainerVariable::SetValue(TString& key, TrecPointer<TVariable> value)
+bool TContainerVariable::SetValue(const TString& key, TrecPointer<TVariable> value)
 {
     if(type == ContainerType::ct_tuple)
         return false;
+    TString sKey(key);
 
-    values.removeEntry(key);
+    values.removeEntry(sKey);
     values.addEntry(key, value);
     return true;
 }

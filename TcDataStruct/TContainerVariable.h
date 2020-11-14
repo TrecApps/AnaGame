@@ -91,7 +91,7 @@ public:
      * Returns: bool - whether the operation was PERMITTED or not int index - index to set
      *              TrecPointer<TVariable> value - the value to set
      */
-    bool SetValue(TString& key, TrecPointer<TVariable> value);
+    bool SetValue(const TString& key, TrecPointer<TVariable> value);
 
     /**
      * Method: TContainerVariable::AppendValue

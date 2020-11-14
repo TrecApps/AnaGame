@@ -233,7 +233,7 @@ TrecSubPointer<TControl, TPromptControl> TEnvironment::GetPrompt()
  * Parameters: TString& input - the command to enter
  * Returns: bool - whether a prompt was set or not
  */
-bool TEnvironment::Print(TString& input)
+bool TEnvironment::Print(const TString& input)
 {
 	return false;
 }
@@ -244,7 +244,7 @@ bool TEnvironment::Print(TString& input)
  * Parameters: TString& input - the command to enter
  * Returns: bool - whether a prompt was set or not
  */
-bool TEnvironment::PrintLine(TString& input)
+bool TEnvironment::PrintLine(const TString& input)
 {
 	return false;
 }
