@@ -68,6 +68,7 @@ TJavaScriptInterpretor::TJavaScriptInterpretor(TrecSubPointer<TVariable,TInterpr
     {
         one = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<int>(1));
     }
+    line = 1;
 }
 
 UINT TJavaScriptInterpretor::SetCode(TFile& file)
@@ -214,335 +215,40 @@ ReportObject TJavaScriptInterpretor::Run()
         ret.errorMessage.Set(L"Error! No access to the JavaScript file!");
         return ret;
     }
-
-    file->Seek(start, FILE_BEGIN);
-
-    ULONGLONG currentPoint = start;
-
-    TString code;
-
-    UINT startQuoteSearch = 0;
-
-    TFile tokenLog(file->GetFilePath() + L".output", TFile::t_file_create_new | TFile::t_file_write);
-
-    UINT line = 1;
-
-    TDataArray<JavaScriptStatement> statements;
-
-    // Read the String with the following flags:
-    // 0b00000001 - ensures that our terminating character is included in the resulting string
-    // 0b00000010 - Tells the method to not terminate if the termination character is within a quote
-    // 0b00000100 - Tells the method to watch out for an odd number of backslashes 
-    while (file->ReadString(code, L"{;", 0b00000111, end - file->GetPosition()))
+    
+    if (statements.Size() == 0)
     {
-        // First make sure this statement doesn't land us in a multi-line string (`) which the ReadString
-        // Method doesn't account for
-        bool inMultiString = hasOddMiltiLineStrMarkers(code);
+        ProcessStatements(ret);
 
-        UINT beginLine = line;
+        if (ret.returnCode)
+            return ret;
 
-        while (inMultiString)
+        // Prep Sub-Blocks
+        for (UINT Rust = 0; Rust < statements.Size(); Rust++)
         {
-            TString appendable;
-            if (!file->ReadString(appendable, L"`", 0b00000001) || !appendable.EndsWith(L"`"))
+            switch (statements[Rust].type)
             {
-                // if this happens, then the file ends in the middle of a multiline string, which is an error
-                ret.returnCode = ret.incomplete_block;
+            case js_statement_type::js_catch:
+            case js_statement_type::js_else:
+            case js_statement_type::js_else_if:
+            case js_statement_type::js_finally:
+            case js_statement_type::js_for:
+            case js_statement_type::js_if:
+            case js_statement_type::js_try:
+            case js_statement_type::js_while:
 
-                ret.errorMessage.Set(L"Code File ends in the middle of a multi-line statement!");
+                statements[Rust].body = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+                    TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+                dynamic_cast<TInterpretor*>(statements[Rust].body.Get())->SetCode(
+                    file, statements[Rust].fileStart, statements[Rust].fileEnd);
 
-                TString stack;
-                stack.Format(L"\tAt %ws, line %d", file->GetFileName().GetConstantBuffer(), line + appendable.CountFinds(L'\n'));
-
-                ret.stackTrace.push_back(stack);
-                return ret;
-            }
-
-
-            code.Append(appendable);
-            file->ReadString(appendable, L"{;", 0b00000111);
-
-            code.Append(appendable);
-
-            inMultiString = hasOddMiltiLineStrMarkers(code);
-        }
-
-        line += code.CountFinds(L'\n');
-
-
-        TString startStatement(code.GetTrimLeft());
-
-        int startParenth = startStatement.Find(L'(');
-
-        if (startStatement.StartsWith(L"if", false, true) || startStatement.StartsWith(L"if("))
-        {
-            if (startParenth == -1 || startStatement.SubString(2,startParenth).GetTrim().GetSize())
-            {
-                ret.returnCode = ret.broken_reference;
-                ret.errorMessage.Set(L"Unexpected token after 'if' statement!");
-
-                // To-Do: Add Stack code
-
-
-                return ret;
-            }
-
-
-            ProcessParenthBlock(ret, startStatement.SubString(2), line);
-
-            if (ret.returnCode)
-                return ret;
-
-
-            JavaScriptStatement statement(js_statement_type::js_if);
-
-            statement.contents.Set(ret.errorMessage);
-            statement.lineStart = beginLine;
-            statement.lineEnd = line;
-
-
-            statement.fileStart = file->GetPosition() + 1;
-
-            statement.fileEnd = GetBlockEnd();
-            
-            if (!statement.fileEnd)
-            {
-                ret.returnCode = ret.incomplete_block;
-                ret.errorMessage.Set(L"If-block does not have a complete block");
-
-
-
-                return ret;
-            }
-            statements.push_back(statement);
-        }
-        else if (startStatement.StartsWith(L"else", false, true) || startStatement.StartsWith(L"else{"))
-        {
-            startStatement.Set(startStatement.SubString(5).GetTrimLeft());
-
-            bool useIf = false;
-
-            if (startStatement.StartsWith(L"if", false, true) || startStatement.StartsWith(L"if("))
-            {
-                
-                if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
-                {
-                    ret.returnCode = ret.broken_reference;
-                    ret.errorMessage.Set(L"Unexpected token after 'if' statement!");
-
-                    // To-Do: Add Stack code
-
-
-                    return ret;
-                }
-
-
-                ProcessParenthBlock(ret, startStatement.SubString(2), line);
-
+                statements[Rust].body->ProcessStatements(ret);
                 if (ret.returnCode)
                     return ret;
-                useIf = true;
             }
-            else if (!startStatement.EndsWith(L"{"))
-            {
-                ret.returnCode = ret.broken_reference;
-                ret.errorMessage.Set(L"No Block detected for 'else' statement!");
-
-                // To-Do: Add Stack code
-
-
-                return ret;
-            }
-            JavaScriptStatement statement(useIf ? js_statement_type::js_else_if : js_statement_type::js_else);
-
-            statement.contents.Set(ret.errorMessage);
-            statement.lineStart = beginLine;
-            statement.lineEnd = line;
-
-
-            statement.fileStart = file->GetPosition() + 1;
-
-            statement.fileEnd = GetBlockEnd();
-
-            if (!statement.fileEnd)
-            {
-                ret.returnCode = ret.incomplete_block;
-                ret.errorMessage.Set(L"If-block does not have a complete block");
-
-
-
-                return ret;
-            }
-            statements.push_back(statement);
         }
-        else if (startStatement.StartsWith(L"for", false, true) || startStatement.StartsWith(L"for("))
-        {
-            if (startParenth == -1 || startStatement.SubString(3, startParenth).GetTrim().GetSize())
-            {
-                ret.returnCode = ret.broken_reference;
-                ret.errorMessage.Set(L"Unexpected token after 'for' statement!");
-
-
-
-                return ret;
-            }
-
-
-            ProcessParenthBlock(ret, startStatement.SubString(3).GetTrimLeft(), line);
-
-            if (ret.returnCode)
-                return ret;
-
-
-            JavaScriptStatement statement(js_statement_type::js_for);
-
-            statement.contents.Set(ret.errorMessage);
-            statement.lineStart = beginLine;
-            statement.lineEnd = line;
-
-
-            statement.fileStart = file->GetPosition();
-
-            statement.fileEnd = GetBlockEnd();
-
-            if (!statement.fileEnd)
-            {
-                ret.returnCode = ret.incomplete_block;
-                ret.errorMessage.Set(L"For-block does not have a complete block");
-
-
-
-                return ret;
-            }
-            statements.push_back(statement);
-        }
-        else if (startStatement.StartsWith(L"while", false, true) || startStatement.StartsWith(L"while("))
-        {
-            if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
-            {
-                ret.returnCode = ret.broken_reference;
-                ret.errorMessage.Set(L"Unexpected token after 'while' statement!");
-
-
-
-                return ret;
-            }
-
-
-            ProcessParenthBlock(ret, startStatement.SubString(2), line);
-
-            if (ret.returnCode)
-                return ret;
-
-
-            JavaScriptStatement statement(js_statement_type::js_while);
-
-            statement.contents.Set(ret.errorMessage);
-            statement.lineStart = beginLine;
-            statement.lineEnd = line;
-
-
-            statement.fileStart = file->GetPosition() + 1;
-
-            statement.fileEnd = GetBlockEnd();
-
-            if (!statement.fileEnd)
-            {
-                ret.returnCode = ret.incomplete_block;
-                ret.errorMessage.Set(L"While-block does not have a complete block");
-
-
-
-                return ret;
-            }
-            statements.push_back(statement);
-        }
-        else if (startStatement.StartsWith(L"const", false, true))
-        {
-            JavaScriptStatement statement(js_statement_type::js_const);
-
-            statement.lineStart = beginLine;
-            statement.lineEnd = line;
-
-            statement.contents.Set(startStatement.SubString(5).GetTrim());
-
-            statements.push_back(statement);
-        }
-        else if (startStatement.StartsWith(L"function", false, true))
-        {
-            int startParenth = startStatement.Find(L'(');
-            if (startParenth == -1)
-            {
-                ret.returnCode = ret.mismatched_parehtnesis;
-                ret.errorMessage.Set(L"Unexpected token detected in 'function-block statement'");
-
-                return ret;
-            }
-
-
-            ProcessParenthBlock(ret, startStatement.SubString(startParenth), line);
-
-            if (ret.returnCode)
-                return ret;
-
-            JavaScriptStatement statement(js_statement_type::js_function);
-
-            statement.contents.Set(startStatement.SubString(0, startParenth) + ret.errorMessage);
-            statement.lineStart = beginLine;
-            statement.lineEnd = line;
-
-
-            statement.fileStart = file->GetPosition() + 1;
-
-            statement.fileEnd = GetBlockEnd();
-            if (!statement.fileEnd)
-            {
-                ret.returnCode = ret.incomplete_block;
-                ret.errorMessage.Set(L"function-block does not have a complete block");
-
-
-
-                return ret;
-            }
-            statements.push_back(statement);
-        }
-        else if (startStatement.StartsWith(L"let", false, true))
-        {
-            JavaScriptStatement statement(js_statement_type::js_let);
-
-            statement.lineStart = beginLine;
-            statement.lineEnd = line;
-
-            statement.contents.Set(startStatement.SubString(4).GetTrim());
-
-            statements.push_back(statement);
-        }
-        else if (startStatement.StartsWith(L"var", false, true))
-        {
-            JavaScriptStatement statement(js_statement_type::js_var);
-            statement.lineStart = beginLine;
-            statement.lineEnd = line;
-
-            statement.contents.Set(startStatement.SubString(4).GetTrim());
-
-            statements.push_back(statement);
-        }
-        else if (startStatement.StartsWith(L"class", false, true))
-        {
-            JavaScriptStatement statement(js_statement_type::js_class);
-        }
-        else if(!startStatement.StartsWith(L";"))
-        {
-            JavaScriptStatement statement(js_statement_type::js_regular);
-            statement.lineStart = beginLine;
-            statement.lineEnd = line;
-
-            statement.contents.Set(startStatement.GetTrim());
-
-            statements.push_back(statement);
-        }
-
     }
+
 
     for (UINT Rust = 0; Rust < statements.Size(); Rust++)
     {
@@ -658,7 +364,6 @@ ReportObject TJavaScriptInterpretor::Run()
     //    }
     //}
 
-    tokenLog.Close();
 
     return ReportObject();
 }
@@ -679,6 +384,345 @@ ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& par
     }
 
     return Run();
+}
+
+void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
+{
+    if (!file.Get() || !file->IsOpen())
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"JS File Not Set!");
+    }
+
+    if (!statements.Size())
+    {
+        file->Seek(start, FILE_BEGIN);
+        ULONGLONG currentPoint = start;
+
+        TString code;
+
+        UINT startQuoteSearch = 0;
+
+        // Read the String with the following flags:
+        // 0b00000001 - ensures that our terminating character is included in the resulting string
+        // 0b00000010 - Tells the method to not terminate if the termination character is within a quote
+        // 0b00000100 - Tells the method to watch out for an odd number of backslashes 
+        while (file->ReadString(code, L"{;", 0b00000111, end - file->GetPosition()))
+        {
+            // First make sure this statement doesn't land us in a multi-line string (`) which the ReadString
+            // Method doesn't account for
+            bool inMultiString = hasOddMiltiLineStrMarkers(code);
+
+            UINT beginLine = line;
+
+            while (inMultiString)
+            {
+                TString appendable;
+                if (!file->ReadString(appendable, L"`", 0b00000001) || !appendable.EndsWith(L"`"))
+                {
+                    // if this happens, then the file ends in the middle of a multiline string, which is an error
+                    ro.returnCode = ro.incomplete_block;
+
+                    ro.errorMessage.Set(L"Code File ends in the middle of a multi-line statement!");
+
+                    TString stack;
+                    stack.Format(L"\tAt %ws, line %d", file->GetFileName().GetConstantBuffer(), line + appendable.CountFinds(L'\n'));
+
+                    ro.stackTrace.push_back(stack);
+                    return ;
+                }
+
+
+                code.Append(appendable);
+                file->ReadString(appendable, L"{;", 0b00000111);
+
+                code.Append(appendable);
+
+                inMultiString = hasOddMiltiLineStrMarkers(code);
+            }
+
+            line += code.CountFinds(L'\n');
+
+
+            TString startStatement(code.GetTrimLeft());
+
+            int startParenth = startStatement.Find(L'(');
+
+            if (startStatement.StartsWith(L"if", false, true) || startStatement.StartsWith(L"if("))
+            {
+                if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Set(L"Unexpected token after 'if' statement!");
+
+                    // To-Do: Add Stack code
+
+
+                    return;
+                }
+
+
+                ProcessParenthBlock(ro, startStatement.SubString(2), line);
+
+                if (ro.returnCode)
+                    return;
+
+
+                JavaScriptStatement statement(js_statement_type::js_if);
+
+                statement.contents.Set(ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition() + 1;
+
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"If-block does not have a complete block");
+
+
+
+                    return;
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"else", false, true) || startStatement.StartsWith(L"else{"))
+            {
+                startStatement.Set(startStatement.SubString(5).GetTrimLeft());
+
+                bool useIf = false;
+
+                if (startStatement.StartsWith(L"if", false, true) || startStatement.StartsWith(L"if("))
+                {
+
+                    if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
+                    {
+                        ro.returnCode = ro.broken_reference;
+                        ro.errorMessage.Set(L"Unexpected token after 'if' statement!");
+
+                        // To-Do: Add Stack code
+
+
+                        return ;
+                    }
+
+
+                    ProcessParenthBlock(ro, startStatement.SubString(2), line);
+
+                    if (ro.returnCode)
+                        return;
+                    useIf = true;
+                }
+                else if (!startStatement.EndsWith(L"{"))
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Set(L"No Block detected for 'else' statement!");
+
+                    // To-Do: Add Stack code
+
+
+                    return;
+                }
+                JavaScriptStatement statement(useIf ? js_statement_type::js_else_if : js_statement_type::js_else);
+
+                statement.contents.Set(ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition() + 1;
+
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"If-block does not have a complete block");
+
+
+
+                    return ;
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"for", false, true) || startStatement.StartsWith(L"for("))
+            {
+                if (startParenth == -1 || startStatement.SubString(3, startParenth).GetTrim().GetSize())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Set(L"Unexpected token after 'for' statement!");
+
+
+
+                    return ;
+                }
+
+
+                ProcessParenthBlock(ro, startStatement.SubString(3).GetTrimLeft(), line);
+
+                if (ro.returnCode)
+                    return ;
+
+
+                JavaScriptStatement statement(js_statement_type::js_for);
+
+                statement.contents.Set(ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition();
+
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"For-block does not have a complete block");
+
+
+
+                    return ;
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"while", false, true) || startStatement.StartsWith(L"while("))
+            {
+                if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Set(L"Unexpected token after 'while' statement!");
+
+
+
+                    return ;
+                }
+
+
+                ProcessParenthBlock(ro, startStatement.SubString(2), line);
+
+                if (ro.returnCode)
+                    return ;
+
+
+                JavaScriptStatement statement(js_statement_type::js_while);
+
+                statement.contents.Set(ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition() + 1;
+
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"While-block does not have a complete block");
+
+
+
+                    return ;
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"const", false, true))
+            {
+                JavaScriptStatement statement(js_statement_type::js_const);
+
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+                statement.contents.Set(startStatement.SubString(5).GetTrim());
+
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"function", false, true))
+            {
+                int startParenth = startStatement.Find(L'(');
+                if (startParenth == -1)
+                {
+                    ro.returnCode = ro.mismatched_parehtnesis;
+                    ro.errorMessage.Set(L"Unexpected token detected in 'function-block statement'");
+
+                    return ;
+                }
+
+
+                ProcessParenthBlock(ro, startStatement.SubString(startParenth), line);
+
+                if (ro.returnCode)
+                    return ;
+
+                JavaScriptStatement statement(js_statement_type::js_function);
+
+                statement.contents.Set(startStatement.SubString(0, startParenth) + ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition() + 1;
+
+                statement.fileEnd = GetBlockEnd();
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"function-block does not have a complete block");
+
+
+
+                    return ;
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"let", false, true))
+            {
+                JavaScriptStatement statement(js_statement_type::js_let);
+
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+                statement.contents.Set(startStatement.SubString(4).GetTrim());
+
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"var", false, true))
+            {
+                JavaScriptStatement statement(js_statement_type::js_var);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+                statement.contents.Set(startStatement.SubString(4).GetTrim());
+
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"class", false, true))
+            {
+                JavaScriptStatement statement(js_statement_type::js_class);
+            }
+            else if (!startStatement.StartsWith(L";"))
+            {
+                JavaScriptStatement statement(js_statement_type::js_regular);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+                statement.contents.Set(startStatement.GetTrim());
+
+                statements.push_back(statement);
+            }
+
+        }
+    }
+}
+
+void TJavaScriptInterpretor::setLine(UINT line)
+{
+    this->line = line;
 }
 
 bool TJavaScriptInterpretor::hasOddMiltiLineStrMarkers(const TString& str)
@@ -1002,11 +1046,14 @@ void TJavaScriptInterpretor::ProcessIf(TDataArray<JavaScriptStatement>& statemen
 
     if (IsTruthful(ro.errorObject))
     {
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
 
-        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
-
+        if (!block.Get())
+        {
+            block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+                TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+            dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        }
 
         TDataArray<TrecPointer<TVariable>> params;
         ro = block->Run(params);
@@ -1037,10 +1084,14 @@ void TJavaScriptInterpretor::ProcessElse(TDataArray<JavaScriptStatement>& statem
     }
     if (statement.type == js_statement_type::js_else)
     {
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
 
-        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        if (!block.Get())
+        {
+            block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+                TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+            dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        }
 
 
         TDataArray<TrecPointer<TVariable>> params;
@@ -1062,10 +1113,14 @@ void TJavaScriptInterpretor::ProcessWhile(TDataArray<JavaScriptStatement>& state
 
     while (!ro.returnCode && IsTruthful(ro.errorObject))
     {
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
 
-        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        if (!block.Get())
+        {
+            block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+                TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+            dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        }
 
 
         TDataArray<TrecPointer<TVariable>> params;
@@ -1142,10 +1197,14 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
             return;
         }
 
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
 
-        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        if (!block.Get())
+        {
+            block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+                TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+            dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        }
         TDataArray<TString> pNames;
         pNames.push_back(varName);
         dynamic_cast<TInterpretor*>(block.Get())->SetParamNames(pNames);
@@ -1225,10 +1284,14 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
             varValues.push_back(mark.object.GetVariable());
         }
 
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
 
-        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        if (!block.Get())
+        {
+            block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+                TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+            dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+        }
         dynamic_cast<TInterpretor*>(block.Get())->SetParamNames(varNames);
         ProcessExpression(statements, cur, condition, statement.lineStart, ro);
 
@@ -1336,12 +1399,14 @@ void TJavaScriptInterpretor::ProcessTry(TDataArray<JavaScriptStatement>& stateme
         return;
     }
 
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
 
-    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
-
-    dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
-
+    if (!block.Get())
+    {
+        block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+    }
 
     TDataArray<TrecPointer<TVariable>> params;
     ro = block->Run(params);
@@ -1389,12 +1454,14 @@ void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& state
     erObject.push_back(ro.errorObject);
 
 
-    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
 
-    dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
-
-
+    if (!block.Get())
+    {
+        block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+    }
     dynamic_cast<TInterpretor*>(block.Get())->SetParamNames(erParamName);
     ro = block->Run(erObject);
 
@@ -1404,12 +1471,14 @@ void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& state
 
 void TJavaScriptInterpretor::ProcessFinally(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
-    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
 
-    dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
-
-
+    if (!block.Get())
+    {
+        block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+        dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
+    }
     TDataArray<TrecPointer<TVariable>> params;
     auto ro2 = block->Run(params);
 

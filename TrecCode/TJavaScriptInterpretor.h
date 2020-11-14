@@ -32,6 +32,8 @@ public:
 
     void operator=(const JavaScriptStatement& other);
 
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> body;
+
     js_statement_type type;
 
     TString contents;
@@ -108,7 +110,13 @@ public:
      */
     virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params)override;
 
+    void ProcessStatements(ReportObject& ro);
+
+    void setLine(UINT line);
 private:
+    UINT line;
+
+    TDataArray<JavaScriptStatement> statements;
 
     bool hasOddMiltiLineStrMarkers(const TString& str);
 
