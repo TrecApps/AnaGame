@@ -6,6 +6,15 @@
 #include "HtmlScriptBlock.h"
 #include "HtmlLink.h"
 
+class HtmlHeaderBase
+{
+public:
+    HtmlHeaderBase();
+
+    bool isSet;
+    TString url, target;
+};
+
 /**
  * Class: HtmlHeader
  * Purpose: Represents the Html Header in Anagame
@@ -38,6 +47,8 @@ private:
      */
     TrecPointer<TEnvironment> env;
 
+    void getBaseElement(const TString& att, const TString& val);
+
     /**
      * The attributes gained
      */
@@ -57,5 +68,10 @@ private:
      * List of Links detected
      */
     TDataArray<TrecPointer<HtmlLink>> links;
+
+    /**
+     * Refers to the base block of an html header
+     */
+    HtmlHeaderBase base;
 };
 

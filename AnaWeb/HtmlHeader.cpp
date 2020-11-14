@@ -183,7 +183,22 @@ TString HtmlHeader::ProcessHtml(TrecPointer<TFile> file, const TString& data)
 		}
 		else if (headData.StartsWith(L"base", true, true))
 		{
+			if (base.isSet)
+				return L"Only one base Element can be set!";
 
+			headData.Delete(0, 5);
+			headData.Trim();
+			TrecPointer<TDataArray<TString>> tokens = headData.split(L" \t\n=", 3);
+
+			if (tokens->Size() >= 2)
+			{
+				getBaseElement(tokens->at(0), tokens->at(1));
+			}
+			if (tokens->Size() >= 4)
+			{
+				getBaseElement(tokens->at(2), tokens->at(3));
+			}
+			base.isSet = true;
 		}
 		else if (headData.StartsWith(L"/") && headData.Find(L"head") != -1)
 		{
@@ -194,4 +209,17 @@ TString HtmlHeader::ProcessHtml(TrecPointer<TFile> file, const TString& data)
 
 
     return TString();
+}
+
+void HtmlHeader::getBaseElement(const TString& att, const TString& val)
+{
+	if (!att.Compare(L"href"))
+		base.url.Set(val);
+	else if (!att.Compare(L"target"))
+		base.target.Set(val);
+}
+
+HtmlHeaderBase::HtmlHeaderBase()
+{
+	isSet = false;
 }
