@@ -1,6 +1,7 @@
 #pragma once
 #include "Page.h"
 #include <TEnvironment.h>
+#include <HtmlBuilder.h>
 
 // Remove this once the library managng HTML is created and provides the TWebNode
 class TWebNode;
@@ -234,6 +235,8 @@ public:
 
 
 protected:
+
+	TrecPointer<HtmlBuilder> htmlBuilder;
 
 	TrecPointer<TEnvironment> environment;
 

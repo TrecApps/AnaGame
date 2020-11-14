@@ -1,5 +1,6 @@
 #include "WebPage.h"
 #include <TObjectVariable.h>
+#include "TWindow.h"
 
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): Page(board)
 {
@@ -28,7 +29,13 @@ void WebPage::SetEnvironment(TrecPointer<TEnvironment> env)
 		// Set up Access to the BOM
 		environment->AddVariable(L"window", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(
 			TrecPointerKey::GetTrecObjectPointer<TWindow>(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle))));
+
+
+		htmlBuilder = TrecPointerKey::GetNewTrecPointer<HtmlBuilder>(environment);
+
 	}
+
+	
 }
 
 int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
@@ -39,6 +46,23 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 	if (!environment.Get())
 		return 2;
 
+	if (file->GetFileName().EndsWith(L".html") || file->GetFileName().EndsWith(L".htm"))
+	{
+		if (!htmlBuilder.Get())
+			return 3;
+
+		TString res(htmlBuilder->BuildPage(file));
+
+		if (res.GetSize())
+		{
+			TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
+
+			MessageBoxExW(win->GetWindowHandle(), res.GetConstantBuffer(), L"Error Creating WebPage", 0, 0);
+			return 4;
+		}
+	}
+	else if (file->GetFileName().EndsWith(L".tml"))
+		return Page::SetAnaface(file, eh);
 
 	return 0;
 }
