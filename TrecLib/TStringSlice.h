@@ -8,7 +8,7 @@
  * 
  * Note: Managed by a slice manager to modify the slice or invalidate it as any change to the string may call for
  */
-class TStringSlice
+class _TREC_LIB_DLL TStringSlice
 {
 	friend class TStringSliceManager;
 public:
@@ -55,7 +55,7 @@ protected:
  * 
  * SuperClass: TSliceManager
  */
-class TStringSliceManager : public TSliceManager
+class _TREC_LIB_DLL TStringSliceManager : public TSliceManager
 {
 public:
 	/**

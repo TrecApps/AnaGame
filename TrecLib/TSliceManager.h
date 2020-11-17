@@ -2,7 +2,7 @@
 #include <wtypes.h>
 #include "TrecReference.h"
 
-class TSliceManager
+class _TREC_LIB_DLL TSliceManager
 {
 public:
 	virtual void Insert(UINT start, UINT count) = 0;
