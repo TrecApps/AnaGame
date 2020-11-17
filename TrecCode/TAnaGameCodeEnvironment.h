@@ -65,7 +65,7 @@ public:
 	 * Parameters: TString& input - the command to enter
 	 * Returns: bool - whether a prompt was set or not
 	 */
-	virtual bool Print(TString& input)override;
+	virtual bool Print(const TString& input)override;
 
 	/**
 	 * Method: TEnvironment::PrintLine
@@ -73,7 +73,7 @@ public:
 	 * Parameters: TString& input - the command to enter
 	 * Returns: void
 	 */
-	virtual bool PrintLine(TString& input)override;
+	virtual bool PrintLine(const TString& input)override;
 
 protected:
 	TString targetExtensions;	// Extensions to target for compilation

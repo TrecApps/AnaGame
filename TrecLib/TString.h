@@ -931,7 +931,7 @@ private:
 	WCHAR* string;
 };
 
-bool IsWhitespace(WCHAR ch);
+bool _TREC_LIB_DLL IsWhitespace(WCHAR ch);
 
 /*
 * Function: convertToNumber

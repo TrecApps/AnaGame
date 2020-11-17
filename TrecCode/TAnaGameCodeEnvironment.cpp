@@ -215,7 +215,7 @@ void TAnaGameCodeEnvironment::SupportsFileExt(TDataArray<TString>& ext)
 {
 }
 
-bool TAnaGameCodeEnvironment::Print(TString& input)
+bool TAnaGameCodeEnvironment::Print(const TString& input)
 {
 	if (shellRunner.Get())
 	{
@@ -225,7 +225,7 @@ bool TAnaGameCodeEnvironment::Print(TString& input)
 	return false;
 }
 
-bool TAnaGameCodeEnvironment::PrintLine(TString& input)
+bool TAnaGameCodeEnvironment::PrintLine(const TString& input)
 {
 	if (shellRunner.Get())
 	{

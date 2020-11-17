@@ -3,7 +3,7 @@
 #include "HtmlHeader.h"
 #include "HtmlBody.h"
 #include <TEnvironment.h>
-class HtmlBuilder : public TObject
+class ANA_WEB_DLL HtmlBuilder : public TObject
 {
 public:
 	HtmlBuilder(TrecPointer<TEnvironment> env);

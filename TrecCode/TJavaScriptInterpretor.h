@@ -32,7 +32,7 @@ public:
 
     void operator=(const JavaScriptStatement& other);
 
-    TrecSubPointer<TVariable, TJavaScriptInterpretor> body;
+    TrecSubPointer<TVariable, TInterpretor> body;
 
     js_statement_type type;
 

@@ -39,6 +39,9 @@
     <ClInclude Include="HtmlLink.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AnaWeb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

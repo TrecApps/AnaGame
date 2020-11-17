@@ -1270,7 +1270,7 @@ public:
 	 * Parameters: TrecSubPointer<t, u>& sub - the Sub Pointer to get the regular TrecPointer
 	 * Returns: TrecPointer<t> - the Regular TrecPointer 
 	 */
-	template <class t, class u> static TrecPointer<t> GetTrecPointerFromSub(TrecSubPointer<t, u>& sub)
+	template <class t, class u> static TrecPointer<t> GetTrecPointerFromSub(const TrecSubPointer<t, u>& sub)
 	{
 		TrecPointer<t> ret;
 		ret.pointer = sub.pointer;

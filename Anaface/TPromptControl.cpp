@@ -398,7 +398,7 @@ void TPromptControl::SubmitCommand(TString& command)
  * Parameters: TString& input - the command to enter
  * Returns: void
  */
-void TPromptControl::Print(TString& input)
+void TPromptControl::Print(const TString& input)
 {
 	if (promptMode == prompt_mode::print_only)
 	{
@@ -413,7 +413,7 @@ void TPromptControl::Print(TString& input)
  * Parameters: TString& input - the command to enter
  * Returns: void
  */
-void TPromptControl::PrintLine(TString& input)
+void TPromptControl::PrintLine(const TString& input)
 {
 	TString lInput(input + L'\n');
 	Print(lInput);

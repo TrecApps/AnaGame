@@ -2,7 +2,9 @@
 #include <TObject.h>
 #include <TFile.h>
 #include <TEnvironment.h>
-class HtmlBody : public TObject
+#include "AnaWeb.h"
+
+class ANA_WEB_DLL HtmlBody : public TObject
 {
 public:
     /**

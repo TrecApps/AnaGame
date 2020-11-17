@@ -223,6 +223,9 @@ ReportObject TJavaScriptInterpretor::Run()
         if (ret.returnCode)
             return ret;
 
+        auto subInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+
         // Prep Sub-Blocks
         for (UINT Rust = 0; Rust < statements.Size(); Rust++)
         {
@@ -237,12 +240,12 @@ ReportObject TJavaScriptInterpretor::Run()
             case js_statement_type::js_try:
             case js_statement_type::js_while:
 
-                statements[Rust].body = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-                    TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
+                statements[Rust].body = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(
+                    TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(subInterpretor));
                 dynamic_cast<TInterpretor*>(statements[Rust].body.Get())->SetCode(
                     file, statements[Rust].fileStart, statements[Rust].fileEnd);
 
-                statements[Rust].body->ProcessStatements(ret);
+                dynamic_cast<TJavaScriptInterpretor*>(statements[Rust].body.Get())->ProcessStatements(ret);
                 if (ret.returnCode)
                     return ret;
             }
@@ -1046,7 +1049,8 @@ void TJavaScriptInterpretor::ProcessIf(TDataArray<JavaScriptStatement>& statemen
 
     if (IsTruthful(ro.errorObject))
     {
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
+        auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
 
         if (!block.Get())
         {
@@ -1084,7 +1088,8 @@ void TJavaScriptInterpretor::ProcessElse(TDataArray<JavaScriptStatement>& statem
     }
     if (statement.type == js_statement_type::js_else)
     {
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
+        auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
 
         if (!block.Get())
         {
@@ -1113,7 +1118,8 @@ void TJavaScriptInterpretor::ProcessWhile(TDataArray<JavaScriptStatement>& state
 
     while (!ro.returnCode && IsTruthful(ro.errorObject))
     {
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
+        auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
 
         if (!block.Get())
         {
@@ -1197,7 +1203,8 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
             return;
         }
 
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
+        auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
 
         if (!block.Get())
         {
@@ -1284,7 +1291,8 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
             varValues.push_back(mark.object.GetVariable());
         }
 
-        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
+        auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
+        TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
 
         if (!block.Get())
         {
@@ -1399,7 +1407,8 @@ void TJavaScriptInterpretor::ProcessTry(TDataArray<JavaScriptStatement>& stateme
         return;
     }
 
-    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
+    auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
 
     if (!block.Get())
     {
@@ -1454,7 +1463,8 @@ void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& state
     erObject.push_back(ro.errorObject);
 
 
-    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
+    auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
 
     if (!block.Get())
     {
@@ -1471,7 +1481,8 @@ void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& state
 
 void TJavaScriptInterpretor::ProcessFinally(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
-    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = statement.body;
+    auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
 
     if (!block.Get())
     {

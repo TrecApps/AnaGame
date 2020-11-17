@@ -6,6 +6,8 @@
 #include "HtmlScriptBlock.h"
 #include "HtmlLink.h"
 
+#include "AnaWeb.h"
+
 class HtmlHeaderBase
 {
 public:
@@ -19,7 +21,7 @@ public:
  * Class: HtmlHeader
  * Purpose: Represents the Html Header in Anagame
  */
-class HtmlHeader : public TObject
+class ANA_WEB_DLL HtmlHeader : public TObject
 {
 public:
     /**

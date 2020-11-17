@@ -122,7 +122,7 @@ public:
 	 * Parameters: TString& input - the command to enter
 	 * Returns: void
 	 */
-	void Print(TString& input);
+	void Print(const TString& input);
 
 	/**
 	 * Method: TPromptControl::PrintLine
@@ -130,7 +130,7 @@ public:
 	 * Parameters: TString& input - the command to enter
 	 * Returns: void
 	 */
-	void PrintLine(TString& input);
+	void PrintLine(const TString& input);
 
 
 	/**
