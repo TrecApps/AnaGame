@@ -127,6 +127,6 @@ protected:
 	/**
 	 * Locations to keep track of
 	 */
-	D2D1_RECT_F mainPage, tabs, webPage;
+	D2D1_RECT_F mainPageSpace, tabs, webPage;
 };
 

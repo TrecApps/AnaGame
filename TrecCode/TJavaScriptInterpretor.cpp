@@ -1030,6 +1030,7 @@ JavaScriptStatement::JavaScriptStatement(const JavaScriptStatement& orig)
     this->type = orig.type;
 }
 
+
 void TJavaScriptInterpretor::ProcessIf(TDataArray<JavaScriptStatement>& statements, UINT& cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
     assert(statement.type == js_statement_type::js_if || statement.type == js_statement_type::js_else_if);
@@ -2856,3 +2857,8 @@ JavaScriptExpression::JavaScriptExpression(const TString& name, TrecPointer<TVar
 }
 
 
+void JavaScriptExpression::operator=(const JavaScriptExpression& orig)
+{
+    varName.Set(orig.varName);
+    value = orig.value;
+}

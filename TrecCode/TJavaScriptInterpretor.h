@@ -23,7 +23,7 @@ typedef enum class js_statement_type
 }js_statement_type;
 
 
-class JavaScriptStatement
+class _TREC_CODE_DLL JavaScriptStatement
 {
 public:
     JavaScriptStatement(js_statement_type type);
@@ -43,12 +43,14 @@ public:
     ULONG64 fileStart, fileEnd;
 };
 
-class JavaScriptExpression
+class _TREC_CODE_DLL JavaScriptExpression
 {
 public:
     JavaScriptExpression();
     JavaScriptExpression(const JavaScriptExpression& orig);
     JavaScriptExpression(const TString& name, TrecPointer<TVariable> value);
+
+    void operator=(const JavaScriptExpression& orig);
 
     TString varName;
     TrecPointer<TVariable> value;

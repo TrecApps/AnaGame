@@ -26,14 +26,14 @@ int TWebWindow::PrepareWindow()
     RECT location = { 0,0,0,0 };
     GetClientRect(currentWindow, &location);
 
-    mainPage.left = location.left;
-    mainPage.right = location.right;
-    mainPage.top = location.top;
-    mainPage.bottom = mainPage.top + mainViewSpace;
+    mainPageSpace.left = location.left;
+    mainPageSpace.right = location.right;
+    mainPageSpace.top = location.top;
+    mainPageSpace.bottom = mainPageSpace.top + mainViewSpace;
 
-    tabs.left = mainPage.left;
-    tabs.right = mainPage.right;
-    tabs.top = mainPage.bottom;
+    tabs.left = mainPageSpace.left;
+    tabs.right = mainPageSpace.right;
+    tabs.top = mainPageSpace.bottom;
     tabs.bottom = tabs.top + pageBarSpace;
 
     webPage.left = tabs.left;
@@ -88,7 +88,32 @@ void TWebWindow::AddNewTab(const TString& url)
 
 int TWebWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 {
+    if (!windowInstance.Get())
+        return -1;
+    if (!currentWindow)
+        return -2;
 
+    TrecPointer<TFile> aFile = TrecPointerKey::GetNewTrecPointer<TFile>(file, TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
+
+    if (!aFile.Get() || !aFile->IsOpen())
+        return 1;
+
+    assert(windowInstance.Get());
+    mainPage = Page::GetWindowPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), eh);
+
+    if (!mainPage.Get())
+        return 2;
+
+    mainPage->SetArea(mainPageSpace);
+
+    mainPage->SetAnaface(aFile, eh);
+
+    mainPage->PrepAnimations(animationCentral);
+
+    animationCentral.StartBegin();
+    animationCentral.StartNewPersistant();
+    safeToDraw = 1;
+    Draw();
 
     return 0;
 }
