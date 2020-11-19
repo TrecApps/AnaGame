@@ -583,7 +583,10 @@ bool Page::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOu
 		returnable = OnChar(fromChar, nChar, nRepCnt, nFlags, mOut, eventAr);
 
 	if (handler.Get())
+	{
 		handler->HandleEvents(eventAr);
+		handler->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut);
+	}
 
 	if (*mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
 		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return false;

@@ -1,5 +1,5 @@
 #include "WebToursHandler.h"
-
+#include <Page.h>
 
 /**
  * Method: WebToursHandler::EventHandler
@@ -45,6 +45,15 @@ TString WebToursHandler::GetType()
  */
 void WebToursHandler::Initialize(TrecPointer<Page> page)
 {
+	this->page = page;
+
+	window = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TWebWindow>(page->GetWindowHandle());
+
+	TrecSubPointer<TControl, TLayout> root = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(page->GetRootControl());
+
+	assert(root.Get() && window.Get());
+
+	urlBox = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(root->GetLayoutChild(3, 0));
 }
 
 /**
@@ -69,6 +78,22 @@ void WebToursHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
  */
 void WebToursHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
+}
+
+bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)
+{
+	if (urlBox.Get() && urlBox->isOnFocus())
+	{
+		if (fromChar && nChar == VK_RETURN)
+		{
+			window->AddNewTab(urlBox->GetText());
+			TTextField::RemoveFocus();
+		}
+
+
+		
+	}
+	return false;
 }
 
 /**

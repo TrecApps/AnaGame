@@ -626,7 +626,7 @@ public:
 	 * Returns: void
 	 */
 	void AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length);
-protected:
+
 	TextHighlighter highlighter;
 
 	/*
@@ -636,6 +636,8 @@ protected:
 	 * Returns: void
 	 */
 	static void RemoveFocus();
+protected:
+
 
 
 	/**
@@ -689,6 +691,11 @@ protected:
 	 * the radius of the pek button
 	 */
 	int radius;
+
+	/**
+	 * Whether inut from the return key should be included
+	 */
+	bool includeReturn;
 
 	/**
 	 * location of the bottom button (decrement button)

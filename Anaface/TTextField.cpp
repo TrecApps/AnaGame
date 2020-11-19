@@ -59,6 +59,7 @@ TTextField::TTextField(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTab
 	radius = 0;
 	isNumber = false;
 	offerPasswordPeek = false;
+	includeReturn = true;
 }
 
 /*
@@ -131,7 +132,8 @@ void TTextField::InputChar(wchar_t cha, int times)
 
 		default:
 		def:
-			text.Insert(caretLoc++, cha);
+			if(cha != VK_RETURN || includeReturn)
+				text.Insert(caretLoc++, cha);
 
 		}
 	}
@@ -302,6 +304,11 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	valpoint = attributes.retrieveEntry(TString(L"|CanEdit"));
 	if (valpoint.Get() && !valpoint.Get()->Compare(L"False"))
 		isEditable = false;
+
+	valpoint = attributes.retrieveEntry(L"|BlockReturn");
+	if (valpoint.Get() && !valpoint->CompareNoCase(L"true"))
+		includeReturn = false;
+
 
 	valpoint = attributes.retrieveEntry(TString(L"|IsNumberControl"));
 	if (valpoint.Get() && !valpoint->Compare(L"True"))
@@ -622,7 +629,7 @@ afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput*
 	}
 	else
 	{
-		if (onFocus)
+		if (onFocus && !isContained(&point, location))
 		{
 			DestroyCaret();
 			onFocus = false;

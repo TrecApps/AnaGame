@@ -1,5 +1,6 @@
 #pragma once
 #include <EventHandler.h>
+#include <TWebWindow.h>
 class WebToursHandler :
     public EventHandler
 {
@@ -63,6 +64,8 @@ public:
 	 */
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message) override;
 
+	virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)override;
+
 protected:
 	/**
 	 * Method: EventHandler::ShouldProcessMessageByType
@@ -73,5 +76,9 @@ protected:
 	 * Attributes: override
 	 */
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
+
+	TrecSubPointer<TControl, TTextField> urlBox;
+
+	TrecSubPointer<TWindow, TWebWindow> window;
 };
 
