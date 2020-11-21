@@ -106,6 +106,14 @@ BOOL TFile::ReadString(TString & rString)
 	WCHAR cLetter;
 	UCHAR temp;
 	WCHAR wLetter;
+
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+	std::string charHolder;
+
 	switch (fileEncode)
 	{
 	case FileEncodingType::fet_acsii:
@@ -143,7 +151,29 @@ BOOL TFile::ReadString(TString & rString)
 				break;
 			rString.AppendChar(wLetter);
 		}
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8))
+		{
+			success = true;
+			if (uni8[0] == '\n')
+				break;
 
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
+		}
+
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR) * charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
 	}
 	return success;
 }
@@ -165,11 +195,18 @@ ULONGLONG TFile::ReadString(TString & rString, ULONGLONG nMax)
 	if (fileEncode == FileEncodingType::fet_unknown)
 		DeduceEncodingType();
 
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+	std::string charHolder;
+
 	switch (fileEncode)
 	{
 	case FileEncodingType::fet_acsii:
 		char letter[1];
-		for ( ; rust <= nMax && Read(&letter, 1); rust+=2)
+		for ( ; rust <= nMax && Read(&letter, 1); rust+=1)
 		{
 			rString.AppendChar(ReturnWCharType(letter[0]));
 		}
@@ -197,7 +234,27 @@ ULONGLONG TFile::ReadString(TString & rString, ULONGLONG nMax)
 		{
 			rString.AppendChar(wLetter);
 		}
-		
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8) && rust <= nMax)
+		{
+			rust += bytes;
+
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
+		}
+
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR) * charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
 	}
 	return rust;
 }
@@ -210,6 +267,13 @@ ULONGLONG TFile::ReadStringLine(TString& rString, ULONGLONG nMax)
 
 	if (fileEncode == FileEncodingType::fet_unknown)
 		DeduceEncodingType();
+
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+	std::string charHolder;
 
 	switch (fileEncode)
 	{
@@ -253,7 +317,29 @@ ULONGLONG TFile::ReadStringLine(TString& rString, ULONGLONG nMax)
 			}
 			rString.AppendChar(wLetter);
 		}
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8) && rust <= nMax)
+		{
+			rust += bytes;
+			if (uni8[0] == '\n')
+				break;
 
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
+		}
+
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR) * charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
 	}
 	return rust;
 }
@@ -269,6 +355,16 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
 {
 	bool success = false;
 	rString.Empty();
+
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+	WCHAR charaComp;
+
+	std::string charHolder;
+
 	switch (fileEncode)
 	{
 	case FileEncodingType::fet_acsii:
@@ -307,7 +403,29 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
 			rString.AppendChar(wLetter);
 			success = true;
 		}
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8))
+		{
+			
+			if (MultiByteToWideChar(CP_UTF8, 0, uni8, bytes, &charaComp, 1) && chara == charaComp)
+				break;
 
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
+		}
+
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR) * charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
 	}
 	return rString.GetSize();
 }
@@ -338,6 +456,15 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags, UINT
 	UINT backslashes = 0;
 
 	bool maxSet = max > 0;
+	WCHAR charaComp;
+
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+
+	std::string charHolder;
 
 	switch (fileEncode)
 	{
@@ -542,6 +669,96 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags, UINT
 				if (!max || max == UINT32_MAX) break;
 			}
 		}
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8))
+		{
+
+			UINT worked = MultiByteToWideChar(CP_UTF8, 0, uni8, bytes, &charaComp, 1);
+			
+			// If we care about backslashes and we encounter one on this character, increase the count
+			if (worked )
+			{
+				if(flags & 0b00000100)
+				{
+					if (charaComp == '\\')
+					backslashes++;
+				// else backslashes = 0;
+				}
+
+				// If we don't care about backslashes or we have an od number of them, they they don't bother us for these operations
+				if ((flags & 0b00000100) == 0 || backslashes % 2 == 0)
+				{
+					// If we care about making sure the final character is out of quotes, check to make sure we are, in fact, out of them
+					if (flags & 0b00000010)
+					{
+						if (charaComp == '\'')
+						{
+							if (quote == L'\'')
+								quote = 0;
+							else if (!quote)
+								quote = L'\'';
+						}
+						else if (charaComp == '\"')
+						{
+							if (quote == L'\"')
+								quote = 0;
+							else if (!quote)
+								quote = L'\"';
+						}
+					}
+
+					// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
+					if ((!(flags & 0b00000010) || quote == 0) && chars.Find(charaComp) != -1)
+					{
+
+
+						if (chars.Find(charaComp) != -1)
+						{
+							if (flags & 0b00000001)
+								for (UINT Rust = 0; bytes; bytes--, Rust++)
+									charHolder.push_back(uni8[Rust]);
+							break;
+						}
+					}
+				}
+
+				// Odd # of backslashes will affect the first non-backslash character, so process it first before resetting the backslash count
+				if (flags & 0b00000100)
+				{
+					if (charaComp != '\\')
+						backslashes = 0;
+				}
+
+			} // if worked
+			success = true;
+
+			bool reachedMax = false;
+
+			if (maxSet)
+			{
+				max -= bytes;
+				if (!max || max == UINT32_MAX)reachedMax = true;
+			}
+
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
+
+			if (reachedMax)
+				break;
+		}
+
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR)* charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
 
 	}
 	return rString.GetSize();
@@ -837,6 +1054,35 @@ void TFile::ConvertFlags(UINT& input, UINT& open, UINT& security, UINT& creation
 
 	security = (input >> 8) & 0x000000ff;
 	creation = (input >> 16) & 0x000000ff;
+}
+
+UCHAR TFile::ReadUnicode8Char(char* seq4)
+{
+	if(!Read(seq4,1))
+	return 0;
+
+	if ((seq4[0] & 0b11110000) == 0b11110000)
+	{
+		// we are dealing with a 4 byte sequence in UTF-8
+		// Already have the first byte, now get the other three
+		return 1 + Read(&seq4[1], 3);
+	}
+
+	if ((seq4[0] & 0b11100000) == 0b11100000)
+	{
+		// At this point, we are dealing with a 3 byte sequence,
+		// Get the other two
+		return 1 + Read(&seq4[1], 2);
+	}
+
+	if ((seq4[0] & 0b11000000) == 0b11000000)
+	{
+		// Just a two byte sequence
+		// Get the second byte
+		return 1 + Read(&seq4[1], 1);
+	}
+	// just one byte
+	return 1;
 }
 
 /**

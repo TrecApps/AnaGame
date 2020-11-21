@@ -102,6 +102,7 @@ void WebPage::Close()
 
 void WebPageHolder::SetPage(TrecPointer<Page> p)
 {
+	this->page = p;
 }
 
 WebPageHolder::WebPageHolder(TString name, TrecPointer<DrawingBoard> rt, UINT barSpace, TrecPointer<EventHandler> handler, TrecPointer<TWindow> win, D2D1_RECT_F initLoc)

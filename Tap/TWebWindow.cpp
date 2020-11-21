@@ -125,14 +125,22 @@ void TWebWindow::SetEnvironmentGenerator(TrecPointer<EnvironmentGenerator> gen)
 
 TString TWebWindow::FixUrl(const TString& url)
 {
-    return TString();
+    if(url.StartsWith(L"Anagame://") || url.StartsWith(L"File://") || url.StartsWith(L"http://") || url.StartsWith(L"https://") || url.StartsWith(L"ftp://"))
+        return TString(url);
+
+    TrecPointer<TFileShell> file = TFileShell::GetFileInfo(url);
+
+    if (file.Get())
+        return TString(L"File://") + url;
+    return TString(L"https://") + url;
+    
 }
 
 TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
 {
     auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<Page, WebPage>(drawingBoard, self);
 
-    ret->SetEnvironment(envGenerator->GetEnvironment(TrecPointer<TFileShell>()));
+    // ret->SetEnvironment(envGenerator->GetEnvironment(TrecPointer<TFileShell>()));
 
     if (url.StartsWith(L"Anagame://"))
     {
@@ -160,6 +168,8 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
 
         TrecPointer<TFile> file = TrecPointerKey::GetNewTrecPointer<TFile>(index->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
 
+        ret->SetEnvironment(envGenerator->GetEnvironment(TFileShell::GetFileInfo(file->GetFileDirectory())));
+
         ret->SetAnaface(file, TrecPointer < EventHandler>());
 
     }
@@ -184,6 +194,7 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
 
 
         TrecPointer<TFile> file = TrecPointerKey::GetNewTrecPointer<TFile>(index->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
+        ret->SetEnvironment(envGenerator->GetEnvironment(TFileShell::GetFileInfo(file->GetFileDirectory())));
 
         ret->SetAnaface(file, TrecPointer < EventHandler>());
     }

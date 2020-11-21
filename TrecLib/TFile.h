@@ -280,6 +280,10 @@ public:
 	 * Returns: UINT - number of bytes read
 	 */
 	UINT Read(void* buffer, UINT count);
+
+	
+
+
 	/**
 	 * Method: TFile::Seek
 	 * Purpose: Sets the file's seek point according to the users specification
@@ -344,5 +348,8 @@ private:
 	FileEncodingType fileEncode;
 	HANDLE fileHandle;
 	ULONGLONG position;
+
+
+	UCHAR ReadUnicode8Char(char* seq4);
 };
 
