@@ -249,6 +249,8 @@ public:
 	 */
 	int FindOutOfQuotes(const TString& subString, int start = 0, bool ignoreEscape = true) const;
 
+	int FindOneOfOutOfQuotes(const TString& chars, int start) const;
+
 	// Set Methods, to be used in place of Assignment operators to avoid C26444 Warnings
 
 
@@ -789,7 +791,7 @@ public:
 	 * Parameters: WCHAR c - the character to remove
 	 * Returns: int - The number of times the WCHAR was found in the string
 	 */
-	int Remove(WCHAR c);
+	int Remove(WCHAR c, bool outOfQuotes = false);
 	/**
 	 * Method: TString::GetRemove
 	 * Purpose: Returns a TString with a given character removed
@@ -797,7 +799,7 @@ public:
 	 *				WCHAR c - the character to remove
 	 * Returns: TString::copy with the specified character removed
 	 */
-	TString GetRemove(int& ret, WCHAR c);
+	TString GetRemove(int& ret, WCHAR c, bool outOfQuotes = false);
 
 
 
@@ -846,7 +848,7 @@ public:
 	 * 
 	 * Attributes: const
 	 */
-	TString Tokenize(TString& tokens, int& start) const;
+	TString Tokenize(TString& tokens, int& start, bool outOfQuotes) const;
 
 
 	/*

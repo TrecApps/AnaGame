@@ -113,7 +113,7 @@ TString HtmlHeader::ProcessHtml(TrecPointer<TFile> file, const TString& data)
 	if(data.EndsWith(L"/>"))
 		return TString(L"Premature End to header!");
 
-	while (file->ReadString(headData, L">", 6))
+	while (file->ReadString(headData, L">", 7))
 	{
 		headData.Trim();
 		if (!headData.EndsWith(L">")) return L"Premature End to header!";
@@ -146,14 +146,14 @@ TString HtmlHeader::ProcessHtml(TrecPointer<TFile> file, const TString& data)
 				}
 			}
 		}
-		else if (headData.StartsWith(L"title", true, true))
+		else if (headData.StartsWith(L"title", true, false))
 		{
 			if (title.GetSize()) return L"Cannot have more than 1 title block!";
 			if (!file->ReadString(headData, L">", 7)) return L"Error Parsing title tag in Header block";
 
 			int endStyle = headData.FindLast(L"</");
 			if (endStyle == -1) return L"Error Parsing styleTage in title block, expected '</' token";
-			title.Set(headData.SubString(1, endStyle).GetTrim());
+			title.Set(headData.SubString(0, endStyle).GetTrim());
 		}
 		else if (headData.StartsWith(L"style", true, true))
 		{

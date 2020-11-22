@@ -37,7 +37,7 @@ TString HtmlScriptBlock::ProcessHtml(TrecPointer<TFile> file, const TString& dat
 			}
 			else if (ch == L'=')
 				attMode = false;
-			else if (IsWhitespace(ch))
+			else if (IsWhitespace(ch) || ch == L'>')
 			{
 				attMode = true;
 				attributes.addEntry(attribute, value);
@@ -78,12 +78,15 @@ TString HtmlScriptBlock::ProcessHtml(TrecPointer<TFile> file, const TString& dat
 				srcEntry.AppendChar(L'\n');
 			closeTag = readable.FindOutOfQuotes(L"</", startSearch);
 			scriptTag = readable.FindOutOfQuotes(L"script", startSearch);
-			closeTag2 = readable.FindLast(L'>');
+			closeTag2 = readable.FindOutOfQuotes(L'>', scriptTag);
 
 			if (scriptTag > closeTag && closeTag2 > scriptTag && closeTag != -1)
 			{
 				if (readable.SubString(0, closeTag).CountFinds(L'`') % 2 == 0)
 				{
+
+
+
 					// We're Done. Reset the file position and prepare to return
 					UINT sub = readable.GetSize() - closeTag2;
 					file->Seek(file->GetPosition() - sub, 0);

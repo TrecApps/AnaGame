@@ -463,7 +463,7 @@ TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCH
 	bool insertEmpty = flags & 0b00001000;
 
 	int begPos = pos;
-	tok.Set(this->Tokenize(str, pos));
+	tok.Set(this->Tokenize(str, pos, flags & 0b00000010));
 	while ((!tok.IsEmpty() || (insertEmpty && pos != -1)) && begPos != -1 && (!hasLimit || elements--))
 	{
 		if (flags & 0b00000001)
@@ -471,19 +471,21 @@ TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCH
 
 			while (tok.IsBackSlashChar(tok.GetSize()))
 			{
-				tok.Set(this->Tokenize(str, pos));
+				tok.Set(this->Tokenize(str, pos, flags & 0b00000010));
 				tok.Set(this->SubString(begPos, pos));
 			}
 		}
+		WCHAR q = L'\0';
 
 		for (UINT Rust = 0; Rust < str.size; Rust++)
 		{
-			tok.Remove(str[Rust]);
+			
+			tok.Remove(str[Rust], flags & 0b00000010);
 		}
 
 		(ret).Get()->push_back(tok);
 		begPos = pos;
-		tok.Set(this->Tokenize(str, pos));
+		tok.Set(this->Tokenize(str, pos, flags & 0b00000010));
 	}
 
 	return ret;
@@ -496,7 +498,7 @@ bool TString::IsBackSlashChar(UINT index)
 
 	UINT comp = 0;
 
-	for (int C = index - 1; C >= 0 && this->string[C]; C--)
+	for (int C = index - 1; C >= 0 && this->string[C] == L'\\'; C--)
 		comp++;
 
 	return comp % 2 == 1;
@@ -956,6 +958,27 @@ int TString::FindOutOfQuotes(const TString& subString, int start, bool ignoreEsc
 		if (works) return ind;
 	}
 	return -1;
+}
+
+int TString::FindOneOfOutOfQuotes(const TString& chars, int start) const
+{
+	int min = INT32_MAX;
+
+	bool found = false;
+
+	for (UINT Rust = 0; Rust < chars.GetSize(); Rust++)
+	{
+		int end = FindOutOfQuotes(chars[Rust], start, false);
+
+		if (end != -1)
+		{
+			found = true;
+			if (end < min)
+				min = end;
+		}
+	}
+
+	return found ? min : -1;
 }
 
 
@@ -2020,6 +2043,10 @@ int TString::FindLast(const TString& sub, int start) const
 {
 	if (start >= static_cast<int>(size))
 		return -1;
+
+	if (start < 0)
+		start = size - 1;
+
 	for (int c = start; c >= 0; c--)
 	{
 		if (sub[0] == string[c])
@@ -2361,14 +2388,25 @@ TString TString::GetReverse()
  * Parameters: WCHAR c - the character to remove
  * Returns: int - The number of times the WCHAR was found in the string
  */
-int TString::Remove(WCHAR c)
+int TString::Remove(WCHAR c, bool outOfQuotes)
 {
 	WCHAR* newString = new WCHAR[capacity];
 
 	int newCount = 0;
+
+	WCHAR q = L'\0';
+
 	for (int rust = 0; rust < size; rust++)
 	{
-		if (string[rust] == c)
+		if (outOfQuotes)
+		{
+			if (!q && (string[rust] == L'\'' || string[rust] == L'\"'))
+				q = string[rust];
+			else if (q == string[rust])
+				q = L'\0';
+		}
+
+		if (!q && string[rust] == c)
 			continue;
 		newString[newCount++] = string[rust];
 	}
@@ -2385,10 +2423,10 @@ int TString::Remove(WCHAR c)
  *				WCHAR c - the character to remove
  * Returns: TString::copy with the specified character removed
  */
-TString TString::GetRemove(int& ret, WCHAR c)
+TString TString::GetRemove(int& ret, WCHAR c, bool outOfQuotes)
 {
 	TString retStr(this);
-	ret = retStr.Remove(c);
+	ret = retStr.Remove(c, outOfQuotes);
 	return retStr;
 }
 
@@ -2517,12 +2555,20 @@ TString TString::GetReplace(int& ret, WCHAR& oldStr, WCHAR& newStr)
  *				 int& start - the location to begin at
  * Returns:
  */
-TString TString::Tokenize(TString& tokens, int& start) const
+TString TString::Tokenize(TString& tokens, int& start, bool outOfQuotes) const
 {
 	int end;
-	while ((end = FindOneOf(tokens, start)) == start)
+	if (!outOfQuotes)
 	{
-		start++;
+		while ((end = FindOneOf(tokens, start)) == start)
+		{
+			start++;
+		}
+	}
+	else
+	{
+		while ((end = FindOneOfOutOfQuotes(tokens, start)) == start)
+			start++;
 	}
 
 	TString ret = SubString(start, end);

@@ -13,6 +13,7 @@ HtmlBuilder::HtmlBuilder(TrecPointer<TEnvironment> env)
         throw L"Rot Directory in environment is not a directory";
 
     directory = fileLoc;
+    environment = env;
 }
 
 TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
@@ -39,7 +40,7 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
     do
     {
         // Get the line
-        if (!file->ReadString(topLine))
+        if (!file->ReadString(topLine, L">", 0b00000111))
         {
             done = true; // end of file
             break;
@@ -74,9 +75,11 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
     TString line;
 
     // Ideally, we should be coming up on the head block. Repeat the process as above with the variable string
+
+    processBlock1:
     do
     {
-        if (!file->ReadString(line))
+        if (!file->ReadString(line,L">", 0b00000111))
         {
             done = true;
             break;
@@ -94,18 +97,21 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
     }
 
     // Just in case we get the body first (or the header was detected as 'topLine'
-    if (line.StartsWith(L"<") && line.GetLower().Find(L"body") != -1)
+    else if (line.StartsWith(L"<") && line.GetLower().Find(L"body") != -1)
     {
         body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment);
         ret.Set(body->ProcessHtml(file, line));
         if (ret.GetSize()) return ret;
     }
+    else
+        goto processBlock1;
 
 
     // Ideally, we should get the body tag 
+    processBlock2:
     do
     {
-        if (!file->ReadString(line))
+        if (!file->ReadString(line, L">", 0b00000111))
         {
             done = true;
             break;
@@ -123,12 +129,13 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
         if (ret.GetSize()) return ret;
     }
 
-    if (line.StartsWith(L"<") && line.GetLower().Find(L"body") != -1)
+    else if (line.StartsWith(L"<") && line.GetLower().Find(L"body") != -1)
     {
         body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment);
         ret.Set(body->ProcessHtml(file, line));
         if (ret.GetSize()) return ret;
     }
+    else goto processBlock2;
 
     return ret;
 }
