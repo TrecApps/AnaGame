@@ -410,7 +410,7 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
         // 0b00000001 - ensures that our terminating character is included in the resulting string
         // 0b00000010 - Tells the method to not terminate if the termination character is within a quote
         // 0b00000100 - Tells the method to watch out for an odd number of backslashes 
-        while (file->ReadString(code, L"{;", 0b00000111, end - file->GetPosition()))
+        while ((end - file->GetPosition())? file->ReadString(code, L"{;", 0b00000111, end - file->GetPosition()): 0)
         {
             // First make sure this statement doesn't land us in a multi-line string (`) which the ReadString
             // Method doesn't account for
@@ -478,7 +478,7 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                 statement.lineEnd = line;
 
 
-                statement.fileStart = file->GetPosition() + 1;
+                statement.fileStart = file->GetPosition();
 
                 statement.fileEnd = GetBlockEnd();
 
@@ -537,7 +537,7 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                 statement.lineEnd = line;
 
 
-                statement.fileStart = file->GetPosition() + 1;
+                statement.fileStart = file->GetPosition();
 
                 statement.fileEnd = GetBlockEnd();
 
@@ -619,7 +619,7 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                 statement.lineEnd = line;
 
 
-                statement.fileStart = file->GetPosition() + 1;
+                statement.fileStart = file->GetPosition();
 
                 statement.fileEnd = GetBlockEnd();
 
@@ -669,7 +669,7 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                 statement.lineEnd = line;
 
 
-                statement.fileStart = file->GetPosition() + 1;
+                statement.fileStart = file->GetPosition();
 
                 statement.fileEnd = GetBlockEnd();
                 if (!statement.fileEnd)
@@ -708,7 +708,7 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
             {
                 JavaScriptStatement statement(js_statement_type::js_class);
             }
-            else if (!startStatement.StartsWith(L";"))
+            else if (!startStatement.StartsWith(L";") && startStatement.GetSize())
             {
                 JavaScriptStatement statement(js_statement_type::js_regular);
                 statement.lineStart = beginLine;
@@ -993,7 +993,7 @@ ULONG64 TJavaScriptInterpretor::GetBlockEnd()
 
 
 
-    return curlyStack ? 0 : file->GetPosition() - 1;
+    return curlyStack ? 0 : file->GetPosition() - 2;
 }
 
 JavaScriptStatement::JavaScriptStatement(js_statement_type type)
@@ -1382,6 +1382,8 @@ void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& state
 
 void TJavaScriptInterpretor::ProcessReg(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
+    TString exp(statement.contents);
+    ProcessExpression(statements, cur, exp, statement.lineStart,ro);
 }
 
 void TJavaScriptInterpretor::ProcessTry(TDataArray<JavaScriptStatement>& statements, UINT& cur, const JavaScriptStatement& statement, ReportObject& ro)
@@ -1733,9 +1735,9 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
         }
         else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
         {
-            InspectVariable(statements, cur, exp, line, ro);
+            ;
             //InspectNumber(exp, line, ro);
-            if (ro.returnCode)
+            if (!InspectVariable(statements, cur, exp, line, ro) || ro.returnCode)
                 return;
             expresions.push_back(JavaScriptExpression(ro.errorMessage, ro.errorObject));
         }
@@ -2062,7 +2064,7 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
     exp.Set(exp.SubString(frontDifference + end));
 }
 
-void TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
 {
     exp.TrimRight();
 
@@ -2071,7 +2073,12 @@ void TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     _ASSERT(exp.GetSize());
 
     UINT start = 0, end;
+    bool present, procedureCall;
+    TString varName;
+    TrecPointer<TVariable> curVar, objVar;
 
+    // Get Next Variable title
+    getNextVar:
     for (end = 0; end < exp.GetSize(); end++)
     {
         WCHAR letter = exp[end];
@@ -2085,21 +2092,56 @@ void TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     }
 
     // See if it a "function" expression
-    TString varName(exp.SubString(0, end));
+    varName.Set(exp.SubString(0, end));
     if (!varName.Compare(L"function"))
     {
         exp.Delete(0, 8);
         exp.TrimRight();
 
         ProcessFunctionDef(statements, cur, exp, line, ro);
-        return;
+        return true;
     }
+    objVar = curVar;
+
+    if (curVar.Get())
+    {
+        if (curVar->GetVarType() == var_type::collection)
+        {
+            curVar = dynamic_cast<TContainerVariable*>(curVar.Get())->GetValue(varName, present);
+        }
+        else
+        {
+            ro.returnCode = ro.improper_type;
+            ro.errorMessage.Format(L"Variable not a collection variable. Could not get Member name %ws", varName.GetConstantBuffer());
+            return false;
+        }
+    }
+    else
+    {
+        curVar = GetVariable(varName, present);
+    }
+
+    exp.Set(exp.SubString(end).GetTrim());
+
+    if (exp.StartsWith(L"?.") && !curVar.Get())
+    {
+        ro.errorObject.Nullify();
+        return false;
+    }
+    if (exp.StartsWith(L"?.") || exp.StartsWith(L"."))
+    {
+        exp.Delete(0, exp[0] == L'?' ? 2 : 1);
+        exp.Trim();
+        goto getNextVar;
+    }
+
+    
 
 
     // See if we need to call a Procedure
-    bool procedureCall = false;
+    procedureCall = false;
 
-    for (UINT fEnd = end; fEnd < exp.GetSize(); fEnd++)
+    for (UINT fEnd = 0; fEnd < exp.GetSize(); fEnd++)
     {
         WCHAR letter = exp[fEnd];
 
@@ -2115,7 +2157,8 @@ void TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
 
     if (procedureCall)
     {
-        ProcessProcedureCall(exp, line, ro);
+        ro.errorObject = curVar;
+        ProcessProcedureCall(statements, cur, exp, line, ro, objVar);
     }
     else
     {
@@ -2125,10 +2168,105 @@ void TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
         ro.errorMessage.Set(varname);
         exp.Set(exp.SubString(end));
     }
+
+    if (ro.returnCode)
+        return false;
+
+    exp.Trim();
+    curVar = ro.errorObject;
+    if (exp.StartsWith(L"?.") && !curVar.Get())
+    {
+        ro.errorObject.Nullify();
+        return false;
+    }
+
+    if (exp.StartsWith(L"?.") || exp.StartsWith(L"."))
+    {
+        exp.Delete(0, exp[0] == L'?' ? 2 : 1);
+        exp.Trim();
+        goto getNextVar;
+    }
+
+
+    return true;
 }
 
-void TJavaScriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, ReportObject& ro)
+void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> objVar)
 {
+    if (!ro.errorObject.Get())
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got nul/undefined!");
+        return;
+    }
+
+    if (ro.errorObject->GetVarType() != var_type::interpretor)
+    {
+        ro.returnCode = ro.improper_type;
+        ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got non-procedure object!");
+        return;
+    }
+
+    TDataArray<TrecPointer<TVariable>> vars;
+
+    if (objVar.Get())
+        vars.push_back(objVar);
+
+    exp.Trim();
+    if (exp.StartsWith(L'('))
+        exp.Delete(0, 1);
+    int closeParenth = 1;
+
+    WCHAR quote = L'\0';
+    UINT Rust = 0;
+
+    TDataArray<TString> expressions;
+
+    for (; Rust < exp.GetSize(); Rust++)
+    {
+        startFor:
+        if (quote && quote == exp[Rust])
+            quote = L'\0';
+        else
+        {
+            if (exp[Rust] == L',' && closeParenth == 1)
+            {
+                expressions.push_back(exp.SubString(0, Rust).GetTrim());
+                exp.Delete(0, Rust);
+                Rust = 0;
+                goto startFor;
+            }
+            else if (exp[Rust] == L'(')
+                closeParenth++;
+            else if (exp[Rust] == L')')
+                closeParenth--;
+            else if (exp[Rust] == L'\'' || exp[Rust] == L'\"' || exp[Rust] == L'`')
+                quote = exp[Rust];
+        }
+        if (!closeParenth)break;
+    }
+
+    if (closeParenth)
+    {
+        ro.returnCode = ReportObject::mismatched_parehtnesis;
+        ro.errorMessage.Set(L"Mismatched parenthesis when processing expressions for function call");
+        return;
+    }
+    expressions.push_back(exp.SubString(0, Rust).GetTrim());
+    exp.Delete(0, Rust);
+
+    TrecSubPointer<TVariable, TInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(ro.errorObject);
+
+    for (Rust = 0; Rust < expressions.Size(); Rust++)
+    {
+        ProcessExpression(statements, cur, expressions[Rust], line, ro);
+        if (ro.returnCode)
+            return;
+
+        vars.push_back(ro.errorObject);
+    }
+
+    ro = func->Run(vars);
 }
 
 void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)
