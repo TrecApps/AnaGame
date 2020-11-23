@@ -192,7 +192,7 @@ UINT TJavaScriptInterpretor::SetCode(TFile& file)
         this->start = 0LL;
 
         // Intitialize a Console Object
-        variables.addEntry(L"Console", TVariableMarker(false, GetJsConsole()));
+        variables.addEntry(L"console", TVariableMarker(false, GetJsConsole()));
 
 
         return InsertSemiColons();
@@ -286,9 +286,20 @@ ReportObject TJavaScriptInterpretor::Run()
             break;
         case js_statement_type::js_try:
             ProcessTry(statements, Rust, statements[Rust], ret);
+            break;
+        case js_statement_type::js_return:
+            ProcessReturn(statements, Rust, statements[Rust], ret);
+            break;
+        case js_statement_type::js_break:
+            ret.mode = report_mode::report_mode_break;
+            return ret;
+        case js_statement_type::js_continue:
+            ret.mode = report_mode::report_mode_continue;
+            return ret;
         }
 
-        if (ret.returnCode)
+        if (ret.returnCode || ret.mode == report_mode::report_mode_break ||
+            ret.mode == report_mode::report_mode_continue || ret.mode == report_mode::report_mode_return)
             return ret;
     }
 
@@ -380,6 +391,7 @@ ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& par
         ret.errorMessage.Set(L"Error! No access to the JavaScript file!");
         return ret;
     }
+    variables.clear();
 
     for (UINT Rust = 0; Rust < params.Size() && Rust < paramNames.Size(); Rust++)
     {
@@ -707,6 +719,26 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
             else if (startStatement.StartsWith(L"class", false, true))
             {
                 JavaScriptStatement statement(js_statement_type::js_class);
+            }
+            else if (startStatement.StartsWith(L"return", false, true) || startStatement.StartsWith(L"return;"))
+            {
+                JavaScriptStatement statement(js_statement_type::js_return);
+                if (startStatement[6] != L';')
+                {
+                    statement.lineStart = beginLine;
+                    statement.lineEnd = line;
+
+                    statement.contents.Set(startStatement.SubString(6).GetTrim());
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"break", false, true) || startStatement.StartsWith(L"break;"))
+            {
+                statements.push_back(JavaScriptStatement(js_statement_type::js_break));
+            }
+            else if (startStatement.StartsWith(L"continue", false, true) || startStatement.StartsWith(L"continue;"))
+            {
+                statements.push_back(JavaScriptStatement(js_statement_type::js_continue));
             }
             else if (!startStatement.StartsWith(L";") && startStatement.GetSize())
             {
@@ -1132,8 +1164,21 @@ void TJavaScriptInterpretor::ProcessWhile(TDataArray<JavaScriptStatement>& state
 
         TDataArray<TrecPointer<TVariable>> params;
         ro = block->Run(params);
-        if (ro.returnCode)
+
+        // Check to see if either an error occured or a return statement has been reached.
+        // The For loop is not responsible for handling either scenario
+        if (ro.returnCode || ro.mode == report_mode::report_mode_return)
             return;
+
+        // For loop is responsible for handling break and for
+        if (ro.mode != report_mode::report_mode_regular)
+        {
+            // here, we either break or continue
+            report_mode m = ro.mode;
+            ro.mode = report_mode::report_mode_regular;
+            if (m == report_mode::report_mode_break)
+                return;
+        }
 
         ProcessExpression(statements, cur, contents, statement.lineStart, ro);
     }
@@ -1227,8 +1272,21 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
                 params.push_back(dynamic_cast<TContainerVariable*>(collection.Get())->GetValueAt(Rust));
 
                 ro = block->Run(params);
-                if (ro.returnCode)
+
+                // Check to see if either an error occured or a return statement has been reached.
+                // The For loop is not responsible for handling either scenario
+                if (ro.returnCode || ro.mode == report_mode::report_mode_return)
                     return;
+
+                // For loop is responsible for handling break and for
+                if (ro.mode != report_mode::report_mode_regular)
+                {
+                    // here, we either break or continue
+                    report_mode m = ro.mode;
+                    ro.mode = report_mode::report_mode_regular;
+                    if (m == report_mode::report_mode_break)
+                        return;
+                }
             }
         }
         else if (collection->GetVarType() == var_type::string)
@@ -1240,8 +1298,21 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
                 params.push_back(TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(collString[Rust]));
 
                 ro = block->Run(params);
-                if (ro.returnCode)
+
+                // Check to see if either an error occured or a return statement has been reached.
+                // The For loop is not responsible for handling either scenario
+                if (ro.returnCode || ro.mode == report_mode::report_mode_return)
                     return;
+
+                // For loop is responsible for handling break and for
+                if (ro.mode != report_mode::report_mode_regular)
+                {
+                    // here, we either break or continue
+                    report_mode m = ro.mode;
+                    ro.mode = report_mode::report_mode_regular;
+                    if (m == report_mode::report_mode_break)
+                        return;
+                }
             }
         }
     }
@@ -1310,6 +1381,21 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
 
             if (ro.returnCode)return;
 
+            // Check to see if either an error occured or a return statement has been reached.
+            // The For loop is not responsible for handling either scenario
+            if (ro.returnCode || ro.mode == report_mode::report_mode_return)
+                return;
+
+            // For loop is responsible for handling break and for
+            if (ro.mode != report_mode::report_mode_regular)
+            {
+                // here, we either break or continue
+                report_mode m = ro.mode;
+                ro.mode = report_mode::report_mode_regular;
+                if (m == report_mode::report_mode_break)
+                    return;
+            }
+
             // Process the 
             ProcessExpression(statements, cur, update, statement.lineStart, ro);
             if (ro.returnCode)return;
@@ -1343,6 +1429,11 @@ void TJavaScriptInterpretor::ProcessConst(TDataArray<JavaScriptStatement>& state
 void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
     TString var(statement.contents.SubString(0, statement.contents.Find(L'(')).GetTrim());
+
+    if (var.StartsWith(L"function", false, true))
+    {
+        var.Set(var.SubString(8).GetTrim());
+    }
 
     CheckVarName(var, ro, statement.lineStart);
 
@@ -1384,6 +1475,13 @@ void TJavaScriptInterpretor::ProcessReg(TDataArray<JavaScriptStatement>& stateme
 {
     TString exp(statement.contents);
     ProcessExpression(statements, cur, exp, statement.lineStart,ro);
+}
+
+void TJavaScriptInterpretor::ProcessReturn(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+{
+    TString exp(statement.contents);
+    ProcessExpression(statements, cur, exp, statement.lineStart, ro);
+    ro.mode = report_mode::report_mode_return;
 }
 
 void TJavaScriptInterpretor::ProcessTry(TDataArray<JavaScriptStatement>& statements, UINT& cur, const JavaScriptStatement& statement, ReportObject& ro)
@@ -2155,25 +2253,27 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
             break;
     }
 
+
     if (procedureCall)
     {
         ro.errorObject = curVar;
         ProcessProcedureCall(statements, cur, exp, line, ro, objVar);
     }
-    else
-    {
-        TString varname(exp.SubString(0, end));
-        bool present;
-        ro.errorObject = GetVariable(varname, present);
-        ro.errorMessage.Set(varname);
-        exp.Set(exp.SubString(end));
-    }
+    //else 
+    //{
+    //    TString varname(exp.SubString(0, end));
+    //    bool present;
+    //    ro.errorObject = GetVariable(varname, present);
+    //    ro.errorMessage.Set(varname);
+    //    exp.Set(exp.SubString(end));
+    //}
 
     if (ro.returnCode)
         return false;
 
     exp.Trim();
-    curVar = ro.errorObject;
+    if(!procedureCall)
+        ro.errorObject = curVar;
     if (exp.StartsWith(L"?.") && !curVar.Get())
     {
         ro.errorObject.Nullify();
@@ -2224,7 +2324,7 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
 
     for (; Rust < exp.GetSize(); Rust++)
     {
-        startFor:
+    startFor:
         if (quote && quote == exp[Rust])
             quote = L'\0';
         else
@@ -2232,7 +2332,7 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
             if (exp[Rust] == L',' && closeParenth == 1)
             {
                 expressions.push_back(exp.SubString(0, Rust).GetTrim());
-                exp.Delete(0, Rust);
+                exp.Delete(0, Rust + 1);
                 Rust = 0;
                 goto startFor;
             }
@@ -2243,7 +2343,10 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
             else if (exp[Rust] == L'\'' || exp[Rust] == L'\"' || exp[Rust] == L'`')
                 quote = exp[Rust];
         }
-        if (!closeParenth)break;
+        if (!closeParenth)
+        {
+            break;
+        }
     }
 
     if (closeParenth)
@@ -2253,7 +2356,7 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
         return;
     }
     expressions.push_back(exp.SubString(0, Rust).GetTrim());
-    exp.Delete(0, Rust);
+    exp.Delete(0, Rust + 1);
 
     TrecSubPointer<TVariable, TInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(ro.errorObject);
 
@@ -2267,6 +2370,9 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
     }
 
     ro = func->Run(vars);
+
+    if (!ro.returnCode && ro.mode == report_mode::report_mode_return)
+        ro.mode = report_mode::report_mode_regular;
 }
 
 void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)
