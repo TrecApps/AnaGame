@@ -607,7 +607,7 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
             }
             else if (startStatement.StartsWith(L"while", false, true) || startStatement.StartsWith(L"while("))
             {
-                if (startParenth == -1 || startStatement.SubString(2, startParenth).GetTrim().GetSize())
+                if (startParenth == -1 || startStatement.SubString(5, startParenth).GetTrim().GetSize())
                 {
                     ro.returnCode = ro.broken_reference;
                     ro.errorMessage.Set(L"Unexpected token after 'while' statement!");
@@ -618,7 +618,7 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                 }
 
 
-                ProcessParenthBlock(ro, startStatement.SubString(2), line);
+                ProcessParenthBlock(ro, startStatement.SubString(5), line);
 
                 if (ro.returnCode)
                     return ;
@@ -1147,6 +1147,11 @@ void TJavaScriptInterpretor::ProcessWhile(TDataArray<JavaScriptStatement>& state
 {
     assert(statement.type == js_statement_type::js_while);
     TString contents(statement.contents);
+
+    if (contents.EndsWith(L"{"))
+        contents.Delete(contents.GetSize() - 1);
+    contents.Trim();
+
     ProcessExpression(statements, cur, contents, statement.lineStart, ro);
 
     while (!ro.returnCode && IsTruthful(ro.errorObject))
@@ -1326,6 +1331,20 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
 
         TDataMap<TVariableMarker> vars;
 
+        if (initialStatement.StartsWith(L'('))
+            initialStatement.Set(initialStatement.SubString(1).GetTrim());
+
+
+        if (update.EndsWith(L'{'))
+        {
+            update.Delete(update.GetSize() - 1);
+            update.Trim();
+        }
+        if (update.EndsWith(L')'))
+        {
+            update.Delete(update.GetSize() - 1);
+            update.Trim();
+        }
         if (initialStatement.StartsWith(L"var", false, true))
         {
             startStatement.type = js_statement_type::js_let;
