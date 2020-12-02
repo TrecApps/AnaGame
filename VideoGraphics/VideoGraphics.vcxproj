@@ -100,7 +100,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;d2d1.lib;dwrite.lib;d3d11.lib;evr.lib;mf.lib;mfplay.lib;mfreadwrite.lib;mfuuid.lib;mfplat.lib;dxva2.lib;Strmiids.lib;D3DCompiler.lib;DirectXTex.lib;Ole32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;d2d1.lib;dwrite.lib;d3d11.lib;evr.lib;mf.lib;mfplay.lib;mfreadwrite.lib;mfuuid.lib;mfplat.lib;dxva2.lib;Strmiids.lib;D3DCompiler.lib;DirectXTex.lib;Ole32.lib;windowscodecs.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -175,6 +175,7 @@
     <ClInclude Include="TGeometry.h" />
     <ClInclude Include="TGradientStop.h" />
     <ClInclude Include="TGradientStopCollection.h" />
+    <ClInclude Include="TPlayer.h" />
     <ClInclude Include="TShaderHost.h" />
     <ClInclude Include="TShaderParser.h" />
     <ClInclude Include="TWindowEngine.h" />
@@ -198,6 +199,7 @@
     <ClCompile Include="TGeometry.cpp" />
     <ClCompile Include="TGradientStop.cpp" />
     <ClCompile Include="TGradientStopCollection.cpp" />
+    <ClCompile Include="TPlayer.cpp" />
     <ClCompile Include="TShaderHost.cpp" />
     <ClCompile Include="TShaderParser.cpp" />
     <ClCompile Include="TWindowEngine.cpp" />
