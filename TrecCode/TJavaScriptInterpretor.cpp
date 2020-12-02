@@ -223,9 +223,6 @@ ReportObject TJavaScriptInterpretor::Run()
         if (ret.returnCode)
             return ret;
 
-        auto subInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
-
         // Prep Sub-Blocks
         for (UINT Rust = 0; Rust < statements.Size(); Rust++)
         {
@@ -241,7 +238,8 @@ ReportObject TJavaScriptInterpretor::Run()
             case js_statement_type::js_while:
 
                 statements[Rust].body = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(
-                    TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(subInterpretor));
+                    TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+                        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment)));
                 dynamic_cast<TInterpretor*>(statements[Rust].body.Get())->SetCode(
                     file, statements[Rust].fileStart, statements[Rust].fileEnd);
 
@@ -758,6 +756,84 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
 void TJavaScriptInterpretor::setLine(UINT line)
 {
     this->line = line;
+}
+
+ReportObject TJavaScriptInterpretor::ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
+{
+    ReportObject ret;
+
+    if (!var1.Get() && !var2.Get())
+    {
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(0ULL);
+        return ret;
+    }
+
+    if (var1.Get() && var1->GetVarType() == var_type::string)
+    {
+        TString value(var1->GetString());
+        value.Append(var2.Get() ? var2->GetString() : L"null");
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+        return ret;
+    }
+    else if (var2.Get() && var2->GetVarType() == var_type::string)
+    {
+        TString value(var1.Get() ? var1->GetString() : L"null");
+        value.Append(var2->GetString());
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+        return ret;
+    }
+
+    if (var1.Get() && !var2.Get())
+    {
+        if (var1->GetVarType() == var_type::collection)
+        {
+            auto varColl = dynamic_cast<TContainerVariable*>(var1.Get());
+            TString value;
+            for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
+            {
+                auto val = varColl->GetValueAt(Rust);
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer(): L"null");
+            }
+            if (value.StartsWith(L","))
+                value.Delete(0);
+            value.Append(L"null");
+            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+            return ret;
+        }
+        if (var1->GetVarType() == var_type::primitive)
+        {
+            ret.errorObject = var1;
+            return ret;
+        }
+    }
+
+    if (var2.Get() && !var1.Get())
+    {
+        if (var2->GetVarType() == var_type::collection)
+        {
+            auto varColl = dynamic_cast<TContainerVariable*>(var2.Get());
+            TString value;
+            for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
+            {
+                auto val = varColl->GetValueAt(Rust);
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer() : L"null");
+            }
+            if (value.StartsWith(L","))
+                value.Delete(0);
+            value.Set(TString(L"null") + value);
+            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+            return ret;
+        }
+        if (var2->GetVarType() == var_type::primitive)
+        {
+            ret.errorObject = var2;
+            return ret;
+        }
+    }
+
+
+
+    return TInterpretor::ProcessAddition(var1, var2);
 }
 
 bool TJavaScriptInterpretor::hasOddMiltiLineStrMarkers(const TString& str)
@@ -1887,7 +1963,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
 
         // Handle Post-Increment/Decrement
-        if (expresions.Size() && expresions[expresions.Size() - 1].varName.GetSize() && (exp.StartsWith(L"++") || exp.StartsWith(L"--")))
+        if (expresions.Size() && expresions[expresions.Size() - 1].varName.GetSize() && ((exp.StartsWith(L"++") || exp.StartsWith(L"--"))))
         {
             bool inc = exp.StartsWith(L"++");
 
@@ -2291,8 +2367,11 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
         return false;
 
     exp.Trim();
-    if(!procedureCall)
+    if (!procedureCall)
+    {
         ro.errorObject = curVar;
+        ro.errorMessage.Set(varName);
+    }
     if (exp.StartsWith(L"?.") && !curVar.Get())
     {
         ro.errorObject.Nullify();
@@ -2432,6 +2511,10 @@ void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& stat
 
         if (remove)
         {
+            if (expresions[Rust].varName.GetSize())
+            {
+                this->UpdateVariable(expresions[Rust].varName, expresions[Rust].value);
+            }
             operators.RemoveAt(Rust--);
         }
 

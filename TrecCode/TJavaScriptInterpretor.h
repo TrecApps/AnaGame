@@ -118,6 +118,19 @@ public:
     void ProcessStatements(ReportObject& ro);
 
     void setLine(UINT line);
+
+protected:
+
+    /**
+     * Method: TInterpretor::ProcessAddition
+     * Purpose: Filters variables in preparation for performing an addition operation
+     * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the first addend
+     *              TrecPointer<TVariable> var2 - the second variable, representing the second addend
+     * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     *
+     * Attributes: virtual
+     */
+    virtual ReportObject ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2) override;
 private:
     UINT line;
 

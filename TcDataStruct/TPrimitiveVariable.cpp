@@ -281,8 +281,9 @@ void TPrimitiveVariable::Set(WCHAR value)
  */
 void TPrimitiveVariable::Set(int value)
 {
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 4);
-    this->value = this->value >> 32;
+    //this->value = this->value >> 32;
 
     type = type_four;
 }
