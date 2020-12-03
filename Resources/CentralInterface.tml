@@ -84,6 +84,10 @@
 ---|Class:Selector
 ---|Caption:Gif
 ---|EventOnClick:OnSelectGif
+--->TControl(0,12)
+---|Class:Selector
+---|Caption:Video
+---|EventOnClick:OnSelectVid
 -->TControl(1,0)
 --|ID:Changable
 --/
