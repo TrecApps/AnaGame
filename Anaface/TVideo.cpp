@@ -7,7 +7,6 @@ TVideo::TVideo(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> st,
 	window = win;
 	HRESULT res;
 	player = TPlayer::CreateInstance(res, window, window);
-	
 }
 
 TVideo::~TVideo()
@@ -89,4 +88,14 @@ void TVideo::Resize(D2D1_RECT_F& r)
 		player->ResizeVideo(rr);
 	}
 	TControl::Resize(r);
+}
+
+TrecPointer<TControl> TVideo::QueryVideoControl()
+{
+	return TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis);
+}
+
+TrecComPointer<TPlayer> TVideo::GetPlayer()
+{
+	return player;
 }

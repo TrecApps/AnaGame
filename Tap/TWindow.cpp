@@ -301,6 +301,16 @@ void TWindow::InduceDraw()
 	RedrawWindow(currentWindow, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW);
 }
 
+void TWindow::OnVideoEvent(WPARAM param)
+{
+	if (videoPlayer.Get())
+	{
+		TrecComPointer<TPlayer> p = videoPlayer->GetPlayer();
+		if (p.Get())
+			p->HandleEvent(param);
+	}
+}
+
 /**
  * Method: TWindow::OnRButtonUp
  * Purpose: Manages the Right Button Up Message
@@ -836,6 +846,12 @@ HWND TWindow::GetWindowHandle()
 TrecComPointer<ID2D1Factory1> TWindow::GetFactory()
 {
 	return directFactory;
+}
+
+void TWindow::submitPlayer(TrecPointer<TControl> play)
+{
+	videoPlayer = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TVideo>(play);
+	assert(videoPlayer.Get());
 }
 
 /**

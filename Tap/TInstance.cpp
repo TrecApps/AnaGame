@@ -99,6 +99,9 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
+	case WM_APP_PLAYER_EVENT:
+		win->OnVideoEvent(wParam);
+		break;
 	case WM_PAINT:
 		win->Draw();
 		break;

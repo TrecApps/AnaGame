@@ -1738,6 +1738,14 @@ public:
 	*/
 	void SetNormalMouseState();
 
+	/**
+	 * Method: TControl::QueryVideoControl
+	 * Purpose: Retrieves a specified video Player
+	 * Parameters: void
+	 * Returns: TrecSubPointer<TControl, TVideo> - the video player requested
+	 */
+	virtual TrecPointer<TControl> QueryVideoControl();
+
 protected:
 	//CMap<CString, CString, CString, CString> styles;
 	TDataArray<TrecPointer<AnimationData>> animateData;

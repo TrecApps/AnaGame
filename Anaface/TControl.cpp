@@ -1098,6 +1098,21 @@ void TControl::SetNormalMouseState()
 	mState = messageState::normal;
 }
 
+TrecPointer<TControl> TControl::QueryVideoControl()
+{
+	TrecPointer<TControl> ret;
+	for (UINT Rust = 0; Rust < children.Count(); Rust++)
+	{
+		auto ch = children.ElementAt(Rust);
+		if (!ch.Get())continue;
+
+		ret = ch->QueryVideoControl();
+		if (ret.Get())
+			break;
+	}
+	return ret;
+}
+
 /**
  * Method: TControl::GetMultiData
  * Purpose: Retireves the Attribute[s] of the Control by the key

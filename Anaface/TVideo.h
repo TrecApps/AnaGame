@@ -27,6 +27,16 @@ public:
 	 */
 	virtual void Resize(D2D1_RECT_F&) override;
 
+	/**
+	 * Method: TControl::QueryVideoControl
+	 * Purpose: Retrieves a specified video Player
+	 * Parameters: void
+	 * Returns: TrecSubPointer<TControl, TVideo> - the video player requested
+	 */
+	virtual TrecPointer<TControl> QueryVideoControl()override;
+
+	TrecComPointer<TPlayer> GetPlayer();
+
 private:
 	TrecComPointer<TPlayer> player;
 	HWND window;

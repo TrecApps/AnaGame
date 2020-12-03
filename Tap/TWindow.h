@@ -5,6 +5,7 @@
 
 bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference);
 #include "TAnimationManager.h"
+#include <TVideo.h>
 
 /**
  * Class: TWindow
@@ -130,6 +131,7 @@ public:
 	 */
 	void InduceDraw();
 	
+	afx_msg void OnVideoEvent(WPARAM param);
 
 	/**
 	 * Method: TWindow::OnRButtonUp
@@ -406,7 +408,11 @@ public:
 	 */
 	TrecComPointer<ID2D1Factory1> GetFactory();
 
+	void submitPlayer(TrecPointer<TControl> play);
+
 protected:
+
+	TrecSubPointer<TControl, TVideo> videoPlayer;
 
 	// Draw Other pages that are special to the Window
 	/**

@@ -264,6 +264,14 @@ int Page::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 	rootControl = dynamic_cast<AnafaceParser*>(parser.Get())->getRootControl();
 	if (rootControl.Get())
 	{
+		auto vid = rootControl->QueryVideoControl();
+		if (vid.Get())
+		{
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->SetUp3D();
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->submitPlayer(vid);
+		}
+
+
 		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
 		rootControl->setParent(selfHolder);
 	}
@@ -305,6 +313,12 @@ int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
 	rootControl = dynamic_cast<AnafaceParser*>(parser.Get())->getRootControl();
 	if (rootControl.Get())
 	{
+		auto vid = rootControl->QueryVideoControl();
+		if (vid.Get())
+		{
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->SetUp3D();
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->submitPlayer(vid);
+		}
 		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
 		rootControl->setParent(selfHolder);
 	}
