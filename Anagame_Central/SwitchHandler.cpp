@@ -2,6 +2,7 @@
 #include <Page.h>
 #include <TWindow.h>
 #include <DirectoryInterface.h>
+#include <FileDialog.h>
 
 SwitchHandler::SwitchHandler(TrecPointer<TInstance> ins): EventHandler(ins)
 { 
@@ -71,6 +72,10 @@ SwitchHandler::SwitchHandler(TrecPointer<TInstance> ins): EventHandler(ins)
 	events.push_back(enid);
 	handlers[enid.eventID] = &SwitchHandler::OnSelectGif;
 
+	enid.eventID = 12;
+	enid.name.Set(L"OnSelectVid");
+	events.push_back(enid);
+	handlers[enid.eventID] = &SwitchHandler::OnSelectVid;
 }
 
 SwitchHandler::~SwitchHandler()
@@ -950,6 +955,28 @@ void SwitchHandler::OnSelectGif(TrecPointer<TControl> tc, EventArgs ea)
 	page->CreateLayout();
 
 	window->PrepAnimations(page);
+}
+
+void SwitchHandler::OnSelectVid(TrecPointer<TControl> tc, EventArgs ea)
+{
+	auto window = page->GetWindowHandle();
+	window->SetUp3D();
+	TrecPointer<DrawingBoard> rtb = window->GetDrawingBoard();
+	TrecPointer<TFileShell> directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Documents));
+	auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app),
+		window->GetWindowHandle(),
+		directory,
+		TString(L".avi;.mpg;.mov;.wmv;.mkv"));
+
+	if (!targetFile.Get()) return;
+
+
+	changeControl = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TVideo>(rtb, TrecPointer<TArray<styleTable>>(), window->GetWindowHandle());
+
+	changeControl->addAttribute(TString(L"|MediaSource"), TrecPointerKey::GetNewTrecPointer<TString>(targetFile->GetPath()));
+	window->submitPlayer(changeControl);
+	rootLayout->addChild(changeControl, 1, 0);
+	page->CreateLayout();
 }
 
 bool SwitchHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
