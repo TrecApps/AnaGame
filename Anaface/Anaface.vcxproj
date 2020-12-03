@@ -205,6 +205,7 @@
     <ClInclude Include="TTabBar.h" />
     <ClInclude Include="TTextField.h" />
     <ClInclude Include="TTreeDataBind.h" />
+    <ClInclude Include="TVideo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnafaceParser.cpp" />
@@ -255,6 +256,7 @@
     <ClCompile Include="TTabBar.cpp" />
     <ClCompile Include="TTextField.cpp" />
     <ClCompile Include="TTreeDataBind.cpp" />
+    <ClCompile Include="TVideo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
