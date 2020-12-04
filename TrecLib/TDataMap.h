@@ -109,7 +109,7 @@ public:
 		bool found = false;
 		for (target = 0; target < fields.Size(); target++)
 		{
-			if (str.Compare(fields[target].key))
+			if (!str.Compare(fields[target].key))
 			{
 				found = true;
 				break;

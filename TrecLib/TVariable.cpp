@@ -73,7 +73,7 @@ void TVariableMarker::operator=(const TVariableMarker& orig)
 bool TVariableMarker::SetVariable(TrecPointer<TVariable> var)
 {
 	if (mutableVar)
-		var = var;
+		this->var = var;
 	return mutableVar;
 }
 
