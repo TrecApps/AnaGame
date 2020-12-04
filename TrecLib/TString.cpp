@@ -1776,7 +1776,7 @@ int TString::Compare(const WCHAR* other) const
  * Parameters: const TString& other - the string to compare this string to
  * Returns: int - 0 if they are the same
  */
-int TString::CompareNoCase(const TString& other)
+int TString::CompareNoCase(const TString& other) const
 {
 	TString _this(this);
 	TString _other(other);

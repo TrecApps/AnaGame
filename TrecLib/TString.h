@@ -537,7 +537,7 @@ public:
 	 * Parameters: const TString& other - the string to compare this string to
 	 * Returns: int - 0 if they are the same
 	 */
-	int CompareNoCase(const TString& other) ;
+	int CompareNoCase(const TString& other) const;
 	/**
 	 * static Method: TString::Compare
 	 * Purpose: Compares two strings for equality

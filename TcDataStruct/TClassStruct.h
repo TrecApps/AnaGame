@@ -40,10 +40,17 @@ public:
 class TClassStruct :
     public TObject
 {
+public:
+    TClassStruct();
+    bool AddAttribute(const TClassAttribute& att);
+    TClassAttribute GetAttributeByName(TString& name);
 
+    void SetCaseInsensitive();
 
+    
 protected:
     TDataArray<TClassAttribute> attributes;
-    
+    TDataArray<TrecPointer<TInterpretor>> constructors;
+    bool caseSensitive;
 };
 
