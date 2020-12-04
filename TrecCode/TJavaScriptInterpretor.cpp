@@ -734,6 +734,110 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
             {
                 statements.push_back(JavaScriptStatement(js_statement_type::js_break));
             }
+            else if (startStatement.StartsWith(L"try", false, true) || startStatement.StartsWith(L"try{"))
+            {
+                if (!startStatement.SubString(3).GetTrim().StartsWith(L'{'))
+                {
+                    ro.returnCode = ReportObject::incomplete_block;
+                    ro.errorMessage.Set(L"Unexpected Token found between 'try' keyword and '{' token");
+                    return;
+                }
+
+                JavaScriptStatement statement(js_statement_type::js_try);
+
+                statement.contents.Set(ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition();
+
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"try-block does not have a complete block");
+
+
+
+                    return;
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"catch", false, true) || startStatement.StartsWith(L"catch("))
+            {
+                if (startParenth == -1 || startStatement.SubString(5, startParenth).GetTrim().GetSize())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Set(L"Unexpected token after 'catch' statement!");
+
+                // To-Do: Add Stack code
+
+
+                    return;
+                }
+
+
+                ProcessParenthBlock(ro, startStatement.SubString(5), line);
+    
+                if (ro.returnCode)
+                    return;
+
+
+                JavaScriptStatement statement(js_statement_type::js_catch);
+
+                statement.contents.Set(ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition();
+                   
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"Catch-block does not have a complete block");
+
+
+
+                    return;
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"finally", false, true) || startStatement.StartsWith(L"finally{"))
+            {
+                if (!startStatement.SubString(7).GetTrim().StartsWith(L'{'))
+                {
+                    ro.returnCode = ReportObject::incomplete_block;
+                    ro.errorMessage.Set(L"Unexpected Token found between 'finally' keyword and '{' token");
+                    return;
+                }
+
+                JavaScriptStatement statement(js_statement_type::js_finally);
+
+                statement.contents.Set(ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition();
+
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"finally-block does not have a complete block");
+
+
+
+                    return;
+                }
+                statements.push_back(statement);
+            }
             else if (startStatement.StartsWith(L"continue", false, true) || startStatement.StartsWith(L"continue;"))
             {
                 statements.push_back(JavaScriptStatement(js_statement_type::js_continue));
