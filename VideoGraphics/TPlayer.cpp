@@ -109,7 +109,7 @@ TPlayer::~TPlayer()
 
 HRESULT TPlayer::OpenURL(const TString& url)
 {
-	assert(m_pSession);
+	// assert(m_pSession);
 	IMFTopology* top = nullptr;
 	IMFPresentationDescriptor* present = nullptr;
 

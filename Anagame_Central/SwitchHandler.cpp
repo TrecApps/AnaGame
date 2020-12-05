@@ -962,7 +962,7 @@ void SwitchHandler::OnSelectVid(TrecPointer<TControl> tc, EventArgs ea)
 	auto window = page->GetWindowHandle();
 	window->SetUp3D();
 	TrecPointer<DrawingBoard> rtb = window->GetDrawingBoard();
-	TrecPointer<TFileShell> directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Documents));
+	TrecPointer<TFileShell> directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Videos));
 	auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app),
 		window->GetWindowHandle(),
 		directory,

@@ -68,10 +68,10 @@ TrecPointer<TFileShell> BrowseForFile(TrecPointer<TInstance> in, HWND parent, Tr
 	handler->SetAttributes(directory, extensions, allowCreateFile, filter_mode);
 
 	auto dialog = TrecPointerKey::GetNewSelfTrecSubPointer<TWindow, FileDialog>(name, winClass, style, parent, 10, in, TDialogMode::dialog_mode_hard_model, handler);
-
+	dialog->PrepareWindow();
 	dialog->CompileView(in->GetFactory());
 
-	dialog->PrepareWindow();
+
 
 	dialog->Run();
 

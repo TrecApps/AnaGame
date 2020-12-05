@@ -74,7 +74,7 @@ TInstance::~TInstance()
 LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	TWindow* win = nullptr;
-	if (message == WM_LBUTTONDOWN)
+	if (message == WM_LBUTTONUP)
 		int e = 4;
 	int windowIndex = -1;
 
@@ -194,6 +194,7 @@ int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<Event
 	case t_window_type::t_window_type_plain:
 		mainWindow = TrecPointerKey::GetNewSelfTrecPointer<TWindow>(mainWindowName, mainWindowClass, mainStyle, mainWindowHandle, command, 
 			TrecPointerKey::GetTrecPointerFromSoft(self));
+		break;
 	case t_window_type::t_window_type_web:
 		mainWindow = TrecPointerKey::GetNewSelfTrecPointerAlt<TWindow, TWebWindow>(mainWindowName, mainWindowClass, mainStyle, mainWindowHandle, command,
 			TrecPointerKey::GetTrecPointerFromSoft(self), 75, 30);

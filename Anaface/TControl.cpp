@@ -4928,7 +4928,7 @@ int TText::onCreate(D2D1_RECT_F loc)
 
 	writeFact = rawFact.Extract();
 
-	if(fontSize <= 0.0)
+	if (fontSize <= 0.0)
 		fontSize = 12.0;
 
 	format.Nullify();
@@ -4943,7 +4943,7 @@ int TText::onCreate(D2D1_RECT_F loc)
 		locale.GetConstantBuffer(),
 		wtf.GetPointerAddress());
 	format = wtf.Extract();
-	
+
 	if (!SUCCEEDED(results))
 		return 3;
 
@@ -4964,14 +4964,21 @@ int TText::onCreate(D2D1_RECT_F loc)
 	if (!SUCCEEDED(results))
 		return 5;
 
-	
+
 	TrecComPointer<IDWriteTextLayout>::TrecComHolder wtl;
 	results = writeFact->CreateTextLayout(text.GetConstantBuffer(), text.GetSize(), format.Get(), loc.right - loc.left, loc.bottom - loc.top, wtl.GetPointerAddress());
-	fontLayout = wtl.Extract();
+	
 
-	if(SUCCEEDED(results))
-	return 0;
-	else return 6;
+	if (SUCCEEDED(results))
+	{
+		fontLayout = wtl.Extract();
+		return 0;
+	}
+	else
+	{
+		int e = GetLastError();
+		return 6;
+	}
 }
 
 /*

@@ -123,6 +123,11 @@ int TWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 
 	if (!mainPage.Get())
 		return 2;
+	RECT loc;
+	GetClientRect(currentWindow, &loc);
+
+
+	mainPage->SetArea(convertRECTToD2DRectF(loc));
 
 	mainPage->SetAnaface(aFile, eh);
 
