@@ -198,10 +198,14 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
  * Purpose: Updates an existing Variable
  * Parameters: const TString& name - the name to update
  *              TrecPointer<TVariable> value - value to update it with
- * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable)
+ *              bool addLocally - If true, then tf the variable is not found, go ahead and add it to 'this' interpretor (false by default)
+ *              bool makeConst - whether the variable added should be const or not (ignored if 'addLocally' is false) (false by Default)
+ * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable, 3 for no name Provided)
  */
-UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value)
+UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally, bool makeConst)
 {
+	if (!name.GetSize())
+		return 3;
 	for (UINT Rust = 0; Rust < variables.count(); Rust++)
 	{
 		TDataEntry<TVariableMarker> varMarker;
@@ -219,7 +223,13 @@ UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> va
 			}
 		}
 	}
-	return parent.Get() ? parent->UpdateVariable(name, value) : 1;
+	UINT res = parent.Get() ? parent->UpdateVariable(name, value) : 1;
+	if (res == 1 && addLocally)
+	{
+		variables.addEntry(name, TVariableMarker(!makeConst, value));
+		return 0;
+	}
+	return res;
 }
 
 

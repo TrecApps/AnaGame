@@ -263,19 +263,19 @@ ReportObject TJavaScriptInterpretor::Run()
             break;
         case js_statement_type::js_for:
             ProcessFor(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_function:
             ProcessFunction(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_if:
             ProcessIf(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_let:
             ProcessLet(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_regular:
             ProcessReg(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_var:
             ProcessVar(statements, Rust, statements[Rust], ret);
             break;
@@ -298,7 +298,10 @@ ReportObject TJavaScriptInterpretor::Run()
 
         if (ret.returnCode || ret.mode == report_mode::report_mode_break ||
             ret.mode == report_mode::report_mode_continue || ret.mode == report_mode::report_mode_return)
+        {
+
             return ret;
+        }
     }
 
 
@@ -745,7 +748,6 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
 
                 JavaScriptStatement statement(js_statement_type::js_try);
 
-                statement.contents.Set(ro.errorMessage);
                 statement.lineStart = beginLine;
                 statement.lineEnd = line;
 
@@ -1552,15 +1554,7 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
         TDataArray<TString> varNames;
         TDataArray<TrecPointer<TVariable>> varValues;
 
-        for (UINT Rust = 0; Rust < vars.count(); Rust++)
-        {
-            TDataEntry<TVariableMarker> mark;
-            if (!vars.GetEntryAt(Rust, mark))
-                continue;
 
-            varNames.push_back(mark.key);
-            varValues.push_back(mark.object.GetVariable());
-        }
 
         auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
         TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
@@ -1572,11 +1566,19 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
             dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
         }
         dynamic_cast<TInterpretor*>(block.Get())->SetParamNames(varNames);
-        ProcessExpression(statements, cur, condition, statement.lineStart, ro);
+        for (UINT Rust = 0; Rust < vars.count(); Rust++)
+        {
+            TDataEntry<TVariableMarker> mark;
+            if (!vars.GetEntryAt(Rust, mark))
+                continue;
+
+            block->UpdateVariable(mark.key, mark.object.GetVariable(),true);
+        }
+        block->ProcessExpression(statements, cur, condition, statement.lineStart, ro);
 
         while (!ro.returnCode && IsTruthful(ro.errorObject))
         {
-            ro = block->Run(varValues);
+            ro = block->Run();
 
             if (ro.returnCode)return;
 
@@ -1596,10 +1598,10 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
             }
 
             // Process the 
-            ProcessExpression(statements, cur, update, statement.lineStart, ro);
+            block->ProcessExpression(statements, cur, update, statement.lineStart, ro);
             if (ro.returnCode)return;
 
-            ProcessExpression(statements, cur, condition, statement.lineStart, ro);
+            block->ProcessExpression(statements, cur, condition, statement.lineStart, ro);
         }
     }
     else
@@ -1696,7 +1698,7 @@ void TJavaScriptInterpretor::ProcessTry(TDataArray<JavaScriptStatement>& stateme
         return;
     }
 
-    if (statements[cur + 1].type != js_statement_type::js_catch || statements[cur + 1].type != js_statement_type::js_finally)
+    if (statements[cur + 1].type != js_statement_type::js_catch && statements[cur + 1].type != js_statement_type::js_finally)
     {
         ro.incomplete_statement;
         ro.errorMessage.Set(L"Try must be followed by a catch or finally block!");
@@ -1742,6 +1744,22 @@ void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& state
     TString erName(statement.contents.GetTrim());
 
     ReportObject ro2;
+
+    if (erName.EndsWith(L'{'))
+        erName.Delete(erName.GetSize() - 1);
+
+    if (erName.CountFinds(L'(') != erName.CountFinds(L')'))
+    {
+        ro.returnCode = ro.mismatched_parehtnesis;
+        ro.errorMessage.Set(L"Mismatched Paremthesis detected at catch block!");
+        return;
+    }
+    erName.Trim();
+    while (erName.StartsWith(L'('))
+        erName.Delete(0);
+    while (erName.EndsWith(L')'))
+        erName.Delete(erName.GetSize() - 1);
+
     CheckVarName(erName, ro2, statement.lineStart);
 
     if (ro2.returnCode)
@@ -1760,7 +1778,7 @@ void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& state
     TDataArray<TString> erParamName;
     erParamName.push_back(erName);
     TDataArray<TrecPointer<TVariable>> erObject;
-    erObject.push_back(ro.errorObject);
+    erObject.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(ro.errorMessage));
 
 
     auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
@@ -2182,6 +2200,9 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
     if (ro.returnCode) return;
 
     HandleConditional(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
+    HandleAssignment(statements, cur, expresions, operators, ro);
     if (ro.returnCode) return;
 
     HandleComma(statements, cur, expresions, operators, ro);
@@ -2769,7 +2790,7 @@ void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>&
         {
             if (expressions[Rust + 1].value->GetVarType() == var_type::primitive)
                 shift = expressions[Rust + 1].value->Get4Value();
-            else if (expressions[Rust + 1].value->GetVarType() == var_type::primitive)
+            else if (expressions[Rust + 1].value->GetVarType() == var_type::string)
             {
                 int iShift;
                 if (expressions[Rust + 1].value->GetString().ConvertToInt(iShift))
@@ -3160,8 +3181,216 @@ void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& 
     }
 }
 
-void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-Assignment handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (int Rust = ops.Size() - 1; Rust > -1; Rust--)
+    {
+        // Whether or not an assignment operator was found
+        bool found = false;
+
+        // Details on whether a bitwise shift assignment operator was found
+        bool doBit = false;
+        bool doRightBit = false;
+        UINT shift = 0;
+        USHORT flag = 0;
+
+        auto left = expressions[Rust].value;
+        auto right = expressions[Rust + 1].value;
+
+        bool canDo = true;
+
+        TrecSubPointer<TVariable, TPrimitiveVariable> operand =
+            TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(left);
+        if (canDo = (operand.Get() != nullptr))
+        {
+            canDo = right.Get() != nullptr;
+        }
+        if (canDo)
+        {
+            if (right->GetVarType() == var_type::primitive)
+                shift = right->Get4Value();
+            else if (right->GetVarType() == var_type::string)
+            {
+                int iShift;
+                if (right->GetString().ConvertToInt(iShift))
+                    canDo = false;
+                else
+                    shift = iShift;
+            }
+        }
+
+        if (!ops[Rust].Compare(L"="))
+        {
+            found = true;
+            ro.errorObject = right;
+        }
+        else if (!ops[Rust].Compare(L"+="))
+        {
+            found = true;
+            ProcessAddition(left, right);
+        }
+        else if(!ops[Rust].Compare(L"-="))
+        {
+            found = true;
+            ProcessSubtraction(left, right);
+        }
+        else if (!ops[Rust].Compare(L"**="))
+        {
+            found = true;
+            ProcessExponent(left, right);
+        }
+        else if (!ops[Rust].Compare(L"*="))
+        {
+            ProcessMultiplication(left, right);
+            found = true;
+        }
+        else if (!ops[Rust].Compare(L"/="))
+        {
+            ProcessDivision(left, right);
+            found = true;
+        }
+        else if (!ops[Rust].Compare(L"%="))
+        {
+            ProcessModDivision(left, right);
+            found = true;
+        }
+        else if (!ops[Rust].Compare(L"<<="))
+        {
+            found = true;
+            if (!canDo)
+            {
+                ro.returnCode = ReportObject::broken_reference;
+
+                return;
+            }
+            doBit = true;
+            flag = TPrimitiveVariable::bit_float;
+        }
+        else if (!ops[Rust].Compare(L">>="))
+        {
+        found = true;
+        if (!canDo)
+        {
+            ro.returnCode = ReportObject::broken_reference;
+
+            return;
+        }
+        doBit = doRightBit = true;
+        flag = TPrimitiveVariable::bit_float;
+        }
+        else if (!ops[Rust].Compare(L">>>="))
+        {
+        found = true;
+        if (!canDo)
+        {
+            ro.returnCode = ReportObject::broken_reference;
+
+            return;
+        }
+        doBit = doRightBit = true;
+        flag = TPrimitiveVariable::bit_float | TPrimitiveVariable::bit_replenish | TPrimitiveVariable::bit_to_32 | TPrimitiveVariable::bit_to_un_f;
+        }
+        else if (!ops[Rust].Compare(L"&="))
+        {
+        found = true;
+        DoubleLong dl1 = GetValueFromPrimitive(left);
+        DoubleLong dl2 = GetValueFromPrimitive(right);
+
+        if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+        {
+            ro.returnCode = ro.improper_type;
+
+            return;
+        }
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitAnd(dl2));
+        }
+        else if (!ops[Rust].Compare(L"^="))
+        {
+        found = true;
+        DoubleLong dl1 = GetValueFromPrimitive(left);
+        DoubleLong dl2 = GetValueFromPrimitive(right);
+
+        if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+        {
+            ro.returnCode = ro.improper_type;
+
+            return;
+        }
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitXor(dl2));
+        }
+        else if (!ops[Rust].Compare(L"|="))
+        {
+        found = true;
+        DoubleLong dl1 = GetValueFromPrimitive(left);
+        DoubleLong dl2 = GetValueFromPrimitive(right);
+
+        if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+        {
+            ro.returnCode = ro.improper_type;
+
+            return;
+        }
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitOr(dl2));
+        }
+        else if (!ops[Rust].Compare(L"&&="))
+        {
+        found = true;
+        ro.errorObject = IsTruthful(left) ? right : left;
+        }
+        else if (!ops[Rust].Compare(L"||="))
+        {
+        found = true;
+        ro.errorObject = IsTruthful(left) ? left : right;
+        }
+        else if (!ops[Rust].Compare(L"??="))
+        {
+        found = true;
+        ro.errorObject = left.Get() ? left : right;
+        }
+
+        if (found)
+        {
+            if (!expressions[Rust].varName.GetSize())
+            {
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Format(L"Error! %ws operator must have a named variable as the left hand expression!", ops[Rust].GetConstantBuffer());
+                return;
+            }
+            if (doBit)
+            {
+                if (!operand->BitShift(doRightBit, shift, flag))
+                {
+                    ro.returnCode = ReportObject::broken_reference;
+                    ro.errorMessage.Set(L"Internal Error Attempting to Perform Bitwise manipulation!");
+                    return;
+                }
+                ro.errorObject = left;
+            }
+
+            switch (UpdateVariable(expressions[Rust].varName, ro.errorObject))
+            {
+            case 1:
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Format(L"Assignment to non-existant variable '%ws' occured!", expressions[Rust].varName.GetConstantBuffer());
+                return;
+            case 2:
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Format(L"Assignment to const variable '%ws' was attempted!", expressions[Rust].varName.GetConstantBuffer());
+                return;
+            }
+            expressions[Rust].value = ro.errorObject;
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+
+        }
+    }
 }
 
 void TJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)

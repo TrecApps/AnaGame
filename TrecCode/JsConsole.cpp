@@ -22,7 +22,8 @@ namespace JsConsole
 
 			if (message->GetVarType() == var_type::string)
 			{
-				TString initialMessage(message->GetString());
+				int replacements = 0;
+				TString initialMessage(message->GetString().GetReplace(replacements, L"\\\\", L"\\"));
 
 
 
