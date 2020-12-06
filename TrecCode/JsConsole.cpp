@@ -23,8 +23,12 @@ namespace JsConsole
 			if (message->GetVarType() == var_type::string)
 			{
 				int replacements = 0;
-				TString initialMessage(message->GetString().GetReplace(replacements, L"\\\\", L"\\"));
-
+				TString initialMessage(message->GetString());
+				initialMessage.Replace(L"\\\\", L"\\");
+				initialMessage.Replace(L"\\t", L"\t");
+				initialMessage.Replace(L"\\s", L"\s");
+				initialMessage.Replace(L"\\n", L"\n");
+				initialMessage.Replace(L"\\r", L"\r");
 
 
 				finalMessage.Set(initialMessage);

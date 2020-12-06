@@ -1770,16 +1770,16 @@ void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& state
 
     ro.returnCode = 0;
 
-    // To-Do: Set up errorObject
 
-    ro.errorMessage.Empty();
 
     // Set up error parameter
     TDataArray<TString> erParamName;
     erParamName.push_back(erName);
     TDataArray<TrecPointer<TVariable>> erObject;
     erObject.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(ro.errorMessage));
+    // To-Do: Set up errorObject
 
+    ro.errorMessage.Empty();
 
     auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
     TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
