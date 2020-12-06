@@ -3,6 +3,7 @@
 #include <TString.h>
 
 #include "TInterpretor.h"
+#include "TVariableType.h"
 
 #define ACCESS_PUBLIC      0b00000000  // Access is allowed from any-where
 #define ACCESS_PROTECTED   0b00000001  // Access is allowed only from within class and subclass 
@@ -38,7 +39,7 @@ public:
 
 
 class TClassStruct :
-    public TObject
+    public TVariableType
 {
 public:
     TClassStruct();
@@ -47,7 +48,7 @@ public:
 
     void SetCaseInsensitive();
 
-    
+    virtual var_category GetVarGategory() override;
 protected:
     TDataArray<TClassAttribute> attributes;
     TDataArray<TrecPointer<TInterpretor>> constructors;

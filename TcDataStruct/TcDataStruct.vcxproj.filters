@@ -51,6 +51,12 @@
     <ClInclude Include="TClassStruct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TVariableType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TPrimitiveType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -81,6 +87,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TClassStruct.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TVariableType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TPrimitiveType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

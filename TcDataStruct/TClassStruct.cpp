@@ -54,3 +54,8 @@ void TClassStruct::SetCaseInsensitive()
 {
 	caseSensitive = false;
 }
+
+var_category TClassStruct::GetVarGategory()
+{
+	return var_category::vc_class;
+}

@@ -164,8 +164,10 @@
     <ClInclude Include="TInterpretor.h" />
     <ClInclude Include="TNativeInterpretor.h" />
     <ClInclude Include="TObjectVariable.h" />
+    <ClInclude Include="TPrimitiveType.h" />
     <ClInclude Include="TPrimitiveVariable.h" />
     <ClInclude Include="TStringVariable.h" />
+    <ClInclude Include="TVariableType.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -181,8 +183,10 @@
     <ClCompile Include="TInterpretor.cpp" />
     <ClCompile Include="TNativeInterpretor.cpp" />
     <ClCompile Include="TObjectVariable.cpp" />
+    <ClCompile Include="TPrimitiveType.cpp" />
     <ClCompile Include="TPrimitiveVariable.cpp" />
     <ClCompile Include="TStringVariable.cpp" />
+    <ClCompile Include="TVariableType.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
