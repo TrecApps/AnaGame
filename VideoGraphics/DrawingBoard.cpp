@@ -25,7 +25,6 @@ TString DrawingBoard::GetType()
  */
 DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 {
-	is3D = false;
 	if (!fact.Get())
 		throw L"Error! Factory Object MUST be initialized!";
 	this->fact = fact;
@@ -34,195 +33,48 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 	ZeroMemory(&props, sizeof(props));
 
 	props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
-	props.pixelFormat = D2D1::PixelFormat();
+	props.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM,
+		D2D1_ALPHA_MODE_STRAIGHT);
 
-	props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
 	props.dpiX = props.dpiY = 0.0f;
 	props.usage = D2D1_RENDER_TARGET_USAGE_NONE;
 	props.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 
 	RECT area;
+	
+	HDC copy = GetDC(window);
+	dc = CreateCompatibleDC(copy);
 
-	GetClientRect(window, &area);
+	TrecComPointer<ID2D1DCRenderTarget>::TrecComHolder renderDc;
 
-	D2D1_HWND_RENDER_TARGET_PROPERTIES hProps;
-	ZeroMemory(&hProps, sizeof(hProps));
-
-	hProps.hwnd = window;
-	hProps.pixelSize = D2D1::SizeU(area.right - area.left,
-		area.bottom - area.top);
-
-
-
-	TrecComPointer<ID2D1HwndRenderTarget>::TrecComHolder renderHw;
-	HRESULT res = fact->CreateHwndRenderTarget(props, hProps, renderHw.GetPointerAddress());
-
+	HRESULT res = fact->CreateDCRenderTarget(&props, renderDc.GetPointerAddress());
 	if (FAILED(res))
-		throw L"Error! Failed to Create Window Render Target!";
+		throw L"Error! Failed to Create DC Render Target!";
 
-	renderer = TrecPointerKey::GetComPointer<ID2D1RenderTarget, ID2D1HwndRenderTarget>(renderHw);
+	renderer = renderDc.Extract();
 	layersPushed = 0;
 	this->window = window;
+
+	Resize(window);
 }
 
-/**
- * Method: DrawingBoard::DrawingBoard
- * Purpose: Constructor that sets the mode to 3D
- * Parameters: TrecComPointer<ID2D1Factory1> fact - the Direct2D Factory associated with the intance
- *				TrecPointer<TWindowEngine> engine - the set of resources that enable integration with Direct3D
- * Returns: New DrawingBoard that works with the TWindowEngine to allow 3D rendering
- */
-DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, TrecPointer<TWindowEngine> engine)
+DrawingBoard::~DrawingBoard()
 {
-	if (!fact.Get())
-		throw L"Error! Factory Object MUST be initialized!";
-	this->fact = fact;
-	if (!engine.Get())
-		throw L"Error! ArenaEngine Object MUST be initialized for a 3D enabled Page";
-	//if (!eh.Get())
-	//	throw L"Error! Event Handler MUST be instantiated!";
-
-
-	TrecComPointer<IDXGISurface1> surf = engine->GetSurface();
-	if (!surf.Get())
-		throw L"Error! Provided 3D Engine does not have a Surface to create a 2D Render Target with!";
-
-	TrecComPointer<IDXGIDevice> dev = engine->getDeviceD_U();
-
-	TrecComPointer<ID2D1Device>::TrecComHolder d2dDevHolder;
-
-	HRESULT res = fact->CreateDevice(dev.Get(), d2dDevHolder.GetPointerAddress());
-	if (FAILED(res))
-		throw L"Error! 2D Device Creation failed!";
-	TrecComPointer<ID2D1Device> d2dDev = d2dDevHolder.Extract();
-
-	TrecComPointer<ID2D1DeviceContext>::TrecComHolder contextRenderHolder;
-	res = d2dDev->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, contextRenderHolder.GetPointerAddress());
-
-	if (FAILED(res))
-		throw L"ERROR! Failed to Generate 3D Compatiblie Render Target!";
-
-	D2D1_BITMAP_PROPERTIES1 bmp1;
-	bmp1.colorContext = nullptr;
-	bmp1.dpiX = bmp1.dpiY = 0;
-	bmp1.pixelFormat = D2D1::PixelFormat(
-		DXGI_FORMAT_B8G8R8A8_UNORM,
-		D2D1_ALPHA_MODE_IGNORE
-	);
-	bmp1.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_GDI_COMPATIBLE
-		| D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
-
-	renderer = TrecPointerKey::GetComPointer<ID2D1RenderTarget, ID2D1DeviceContext>(contextRenderHolder);
-
-	TrecComPointer<ID2D1Bitmap1>::TrecComHolder bitHolder;
-	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->CreateBitmapFromDxgiSurface(surf.Get(), bmp1, bitHolder.GetPointerAddress());
-
-	if (FAILED(res))
-		throw L"ERROR! Could Not retrieve Bitmap from Device Context!";
-
-	bit = bitHolder.Extract();
-	reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->SetTarget(bit.Get());
-	TrecComPointer< ID2D1GdiInteropRenderTarget>::TrecComHolder gdiRenderHolder;
-	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->QueryInterface(__uuidof(ID2D1GdiInteropRenderTarget), (void**)gdiRenderHolder.GetPointerAddress());
-	gdiRender = gdiRenderHolder.Extract();
-	is3D = true;
-	this->engine = engine;
-
-	layersPushed = 0;
-	this->window = engine->GetWindowHandle();
+	if (dc)
+		DeleteDC(dc);
+	dc = nullptr;
 }
 
 
-/**
- * Method: DrawingBoard::Set3D
- * Purpose: Enables the Drawing Board to switch from only 2D support to 3D support
- * Parameters: TrecPointer<TWindowEngine> engine - the set of resources needed to jump from 2D to 3D
- * Returns: void
- *
- * Note: this method effectively does noting if the DrawingBoard is already set to 3D
- */
-void DrawingBoard::Set3D(TrecPointer<TWindowEngine> engine)
-{
-	// If already at 3D, just return
-	if (is3D && this->engine.Get())
-		return;
-
-	if (!renderer.Get())
-		return;
-	
-
-	ID2D1Factory1* tempFact = nullptr;
-	ID2D1Factory* tempBaseFact = nullptr;
-	renderer->GetFactory(&tempBaseFact);
-	tempFact = reinterpret_cast<ID2D1Factory1*>(tempBaseFact);
-
-	
-	Set3D(engine, tempFact);
 
 
-
-	tempFact->Release();
-
-}
-
-
-/**
- * Method: DrawingBoard::Resize
- * Purpose: Resets the Underlying Rendertarget should the window size be changed
- * Parameters: HWND window -  the window to get the size from
- * Returns: void
- */
 void DrawingBoard::Resize(HWND window)
 {
-	RECT area;
-	GetClientRect(window, &area);
-	if (is3D)
-	{
+	RECT r{ 0,0,0,0 };
+	GetClientRect(window, &r);
 
-		this->bit.Delete();
-		this->gdiRender.Delete();
-
-	
-
-
-		reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->SetTarget(nullptr);
-	this->engine->Resize(area.right - area.left,
-			area.bottom - area.top);
-		
-	auto surf = engine->GetSurface();
-	TrecComPointer<ID2D1Bitmap1>::TrecComHolder bitHolder;
-
-	D2D1_BITMAP_PROPERTIES1 bmp1;
-	bmp1.colorContext = nullptr;
-	bmp1.dpiX = bmp1.dpiY = 0;
-	bmp1.pixelFormat = D2D1::PixelFormat(
-		DXGI_FORMAT_B8G8R8A8_UNORM,
-		D2D1_ALPHA_MODE_IGNORE
-	);
-	bmp1.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_GDI_COMPATIBLE
-		| D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
-
-	auto res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->CreateBitmapFromDxgiSurface(surf.Get(), bmp1, bitHolder.GetPointerAddress());
-
-	if (FAILED(res))
-		throw L"ERROR! Could Not retrieve Bitmap from Device Context!";
-
-	bit = bitHolder.Extract();
-	reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->SetTarget(bit.Get());
-	TrecComPointer< ID2D1GdiInteropRenderTarget>::TrecComHolder gdiRenderHolder;
-	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->QueryInterface(__uuidof(ID2D1GdiInteropRenderTarget), (void**)gdiRenderHolder.GetPointerAddress());
-	gdiRender = gdiRenderHolder.Extract();
-
-
-	}
-	else if(renderer.Get())
-	{
-		
-		reinterpret_cast<ID2D1HwndRenderTarget*>(renderer.Get())->Resize(D2D1::SizeU(area.right - area.left,
-			area.bottom - area.top));
-	}
+	renderer->BindDC(dc, &r);
 }
-
 
 /**
  * Method: DrawingBoard::GetBrush
@@ -282,24 +134,11 @@ TrecSubPointer<TBrush, TBitmapBrush> DrawingBoard::GetBrush(TrecPointer<TFileShe
  * Parameters: void
  * Returns: TrecComPointer<ID2D1RenderTarget> - the underlying Render Target
  */
-TrecComPointer<ID2D1RenderTarget> DrawingBoard::GetRenderer()
+TrecComPointer<ID2D1DCRenderTarget> DrawingBoard::GetRenderer()
 {
 	return renderer;
 }
 
-/**
- * Method: DrawingBoard::GetGdiRenderer
- * Purpose: Retrieves the GDI-RenderTarget
- * Parameters: void
- * Returns: TrecComPointer<ID2D1GdiInteropRenderTarget> the 3D RenderTarget
- *
- * Note: Retrieving this value and performing a null check is a good way of seeing if this DrawingBoard
- *		is 3D enabled. If it is null, then only 2D is supported
- */
-TrecComPointer<ID2D1GdiInteropRenderTarget> DrawingBoard::GetGdiRenderer()
-{
-	return gdiRender;
-}
 
 /**
  * Method: DrawingBoard::SetSelf
@@ -563,52 +402,8 @@ UINT DrawingBoard::GetLayerCount()
 	return layers.Size();
 }
 
-void DrawingBoard::Set3D(TrecPointer<TWindowEngine> engine, ID2D1Factory1* fact)
+HDC DrawingBoard::GetDc()
 {
-	TrecComPointer<IDXGISurface1> surf = engine->GetSurface();
-	if (!surf.Get())
-		throw L"Error! Provided 3D Engine does not have a Surface to create a 2D Render Target with!";
-
-	TrecComPointer<IDXGIDevice> dev = engine->getDeviceD_U();
-
-	TrecComPointer<ID2D1Device>::TrecComHolder d2dDevHolder;
-
-	HRESULT res = fact->CreateDevice(dev.Get(), d2dDevHolder.GetPointerAddress());
-	if (FAILED(res))
-		throw L"Error! 2D Device Creation failed!";
-	TrecComPointer<ID2D1Device> d2dDev = d2dDevHolder.Extract();
-
-	TrecComPointer<ID2D1DeviceContext>::TrecComHolder contextRenderHolder;
-	res = d2dDev->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, contextRenderHolder.GetPointerAddress());
-
-	if (FAILED(res))
-		throw L"ERROR! Failed to Generate 3D Compatiblie Render Target!";
-
-	D2D1_BITMAP_PROPERTIES1 bmp1;
-	bmp1.colorContext = nullptr;
-	bmp1.dpiX = bmp1.dpiY = 0;
-	bmp1.pixelFormat = D2D1::PixelFormat(
-		DXGI_FORMAT_B8G8R8A8_UNORM,
-		D2D1_ALPHA_MODE_IGNORE
-	);
-	bmp1.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_GDI_COMPATIBLE
-		| D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
-	renderer.Delete();
-	renderer = TrecPointerKey::GetComPointer<ID2D1RenderTarget, ID2D1DeviceContext>(contextRenderHolder);
-
-	TrecComPointer<ID2D1Bitmap1>::TrecComHolder bitHolder;
-	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->CreateBitmapFromDxgiSurface(surf.Get(), bmp1, bitHolder.GetPointerAddress());
-
-	if (FAILED(res))
-		throw L"ERROR! Could Not retrieve Bitmap from Device Context!";
-
-	bit = bitHolder.Extract();
-	reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->SetTarget(bit.Get());
-	TrecComPointer< ID2D1GdiInteropRenderTarget>::TrecComHolder gdiRenderHolder;
-	res = reinterpret_cast<ID2D1DeviceContext*>(renderer.Get())->QueryInterface(__uuidof(ID2D1GdiInteropRenderTarget), (void**)gdiRenderHolder.GetPointerAddress());
-	gdiRender = gdiRenderHolder.Extract();
-	is3D = true;
-	this->engine = engine;
-
-	is3D = true;
+	return dc;
 }
+

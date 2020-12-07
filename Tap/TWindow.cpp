@@ -211,62 +211,35 @@ TString TWindow::GetWinName()
 void TWindow::Draw()
 {
 	if (mainPage.Get() && safeToDraw)
-	{
-		UCHAR tempSafe = safeToDraw;
+	{	UCHAR tempSafe = safeToDraw;
 		safeToDraw = 0;
-		TrecComPointer<ID2D1RenderTarget> rt = drawingBoard->GetRenderer();
+		if (d3dEngine.Get())
+		{
+			d3dEngine->PrepareScene(D2D1::ColorF(D2D1::ColorF::Wheat));
+		}
+
+		drawingBoard->GetRenderer()->BeginDraw();
+
+
+		mainPage->Draw();
+		DrawOtherPages();
+
+		if (d3dEngine.Get())
+			d3dEngine->FinalizeScene();
+		if (flyout.Get())
+			flyout->AfterDraw();
+
+		drawingBoard->GetRenderer()->EndDraw();
+
+		HDC dc = drawingBoard->GetDc();
+		HDC windDC = GetDC(currentWindow);
+
+		RECT r{ 0,0,0,0 };
+		GetClientRect(currentWindow, &r);
+		int err = 0;
+		if (!BitBlt(windDC, r.left, r.top, r.right - r.left, r.bottom - r.top, dc, 0, 0, SRCCOPY))
+			err = GetLastError();
 		
-		TWindowEngine* d3d = d3dEngine.Get();
-		if (!rt.Get()) return;
-
-		TrecComPointer<ID2D1GdiInteropRenderTarget> gdi = drawingBoard->GetGdiRenderer();
-		if (gdi.Get()  && d3d)
-		{
-			rt->BeginDraw();
-			rt->Clear(D2D1::ColorF(D2D1::ColorF::White));
-			d3d->PrepareScene(D2D1::ColorF(D2D1::ColorF::Wheat));
-
-			mainPage->Draw();
-			DrawOtherPages();
-
-			HDC contDC = 0;
-			
-			if (SUCCEEDED(gdi->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &contDC)))
-			{
-				HDC windDC = GetDC(currentWindow);
-				SelectObject(windDC, GetStockObject(DC_BRUSH));
-				SetDCBrushColor(windDC, RGB(0, 0, 0));
-
-				
-				D2D1_RECT_F loc = mainPage->GetArea();
-
-				int width = loc.right - loc.left, height = loc.bottom - loc.top;
-
-				//InvertRect(contDC, &loc);
-				int err = 0;
-				if (!BitBlt(windDC, 0, 0, width, height, contDC, 0, 0, SRCCOPY))
-					err = GetLastError();
-				gdi->ReleaseDC(nullptr);
-				d3d->FinalizeScene();
-				
-			}
-			if (flyout.Get())
-				flyout->AfterDraw();
-
-			rt->EndDraw();
-		}
-		else
-		{
-			rt->BeginDraw();
-			rt->Clear(D2D1::ColorF(D2D1::ColorF::White));
-			mainPage->Draw(d3d);
-			DrawOtherPages();
-
-			if (flyout.Get())
-				flyout->AfterDraw();
-			rt->EndDraw();
-		}
-		safeToDraw = tempSafe;
 	}
 	if (!hasDrawn)
 	{
@@ -725,13 +698,7 @@ bool TWindow::SetUp3D()
 		return false;
 	}
 
-	drawingBoard->Set3D(d3dEngine);
-
-	if (drawingBoard->GetGdiRenderer().Get())
-	{
-		return true;
-	}
-	return false;
+	return true;
 }
 
 /**

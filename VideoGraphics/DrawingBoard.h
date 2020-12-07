@@ -40,27 +40,12 @@ public:
 	DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window);
 
 	/**
-	 * Method: DrawingBoard::DrawingBoard
-	 * Purpose: Constructor that sets the mode to 3D
-	 * Parameters: TrecComPointer<ID2D1Factory1> fact - the Direct2D Factory associated with the intance
-	 *				TrecPointer<TWindowEngine> engine - the set of resources that enable integration with Direct3D
-	 * Returns: New DrawingBoard that works with the TWindowEngine to allow 3D rendering
-	 */
-	DrawingBoard(TrecComPointer<ID2D1Factory1> fact, TrecPointer<TWindowEngine> engine);
-
-
-	/**
-	 * Method: DrawingBoard::Set3D
-	 * Purpose: Enables the Drawing Board to switch from only 2D support to 3D support
-	 * Parameters: TrecPointer<TWindowEngine> engine - the set of resources needed to jump from 2D to 3D
+	 * Method: DrawingBoard::~DrawingBoard
+	 * Purpose: Destructor
+	 * Parameters: void
 	 * Returns: void
-	 *
-	 * Note: this method effectively does noting if the DrawingBoard is already set to 3D
 	 */
-	void Set3D(TrecPointer<TWindowEngine> engine);
-
-
-
+	~DrawingBoard();
 
 	/**
 	 * Method: DrawingBoard::Resize
@@ -116,18 +101,7 @@ public:
 	 * Parameters: void
 	 * Returns: TrecComPointer<ID2D1RenderTarget> - the underlying Render Target
 	 */
-	TrecComPointer<ID2D1RenderTarget> GetRenderer();
-
-	/**
-	 * Method: DrawingBoard::GetGdiRenderer
-	 * Purpose: Retrieves the GDI-RenderTarget
-	 * Parameters: void
-	 * Returns: TrecComPointer<ID2D1GdiInteropRenderTarget> the 3D RenderTarget
-	 *
-	 * Note: Retrieving this value and performing a null check is a good way of seeing if this DrawingBoard
-	 *		is 3D enabled. If it is null, then only 2D is supported
-	 */
-	TrecComPointer<ID2D1GdiInteropRenderTarget> GetGdiRenderer();
+	TrecComPointer<ID2D1DCRenderTarget> GetRenderer();
 
 
 	/**
@@ -257,6 +231,8 @@ public:
 	 */
 	UINT GetLayerCount();
 
+	HDC GetDc();
+
 private:
 	/**
 	 * the factory object the Board is working with, used to retieve Geometries
@@ -266,7 +242,7 @@ private:
 	/**
 	 * The Render Target to work with
 	 */
-	TrecComPointer<ID2D1RenderTarget> renderer;
+	TrecComPointer<ID2D1DCRenderTarget> renderer;
 
 	/**
 	 * Reference to the self, used for initializing TBrush's
@@ -274,33 +250,11 @@ private:
 	TrecPointerSoft<DrawingBoard> self;
 
 	/**
-	 * keeps track of whether 3D is set
-	 */
-	bool is3D;
-
-	/**
 	 * Handle to the window operating on
 	 */
 	HWND window;
 
-	/**
-	 * Used to enable 3D
-	 */
-	TrecComPointer<ID2D1Device> device;
-	/**
-	 * used to support 3D operations
-	 */
-	TrecComPointer<ID2D1GdiInteropRenderTarget> gdiRender;
-	
-	/**
-	 * Used to help link Direct2D and Direct3D resources
-	 */
-	TrecComPointer<ID2D1Bitmap1> bit;
-
-	/**
-	 * the Object holding Direct3D resources
-	 */
-	TrecPointer<TWindowEngine> engine;
+	HDC dc;
 
 	/**
 	 * heeps track of the number of layers pushed
@@ -317,15 +271,5 @@ private:
 	 */
 	TDataArray<TrecPointer<TGeometry>> geometries;
 
-	/**
-	 * Method: DrawingBoard::Set3D
-	 * Purpose: Enables the Drawing Board to switch from only 2D support to 3D support
-	 * Parameters: TrecPointer<TWindowEngine> engine - the set of resources needed to jump from 2D to 3D
-	 *				
-	 * Returns: void
-	 *
-	 * Note: this method effectively does noting if the DrawingBoard is already set to 3D
-	 */
-	void Set3D(TrecPointer<TWindowEngine> engine, ID2D1Factory1* fact);
 };
 

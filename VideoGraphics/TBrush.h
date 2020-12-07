@@ -260,7 +260,7 @@ protected:
 	/**
 	 * The RenderTarget to draw against
 	 */
-	TrecComPointer<ID2D1RenderTarget> currentRenderer;
+	TrecComPointer<ID2D1DCRenderTarget> currentRenderer;
 
 	/**
 	 * The Drawing Board that holds the Render Target, allows Brushes to insect their ender Target and make necessary changes before drawing
