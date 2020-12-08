@@ -193,6 +193,11 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 	ro.returnCode = 0;
 }
 
+TrecPointer<TVariable> TInterpretor::Clone()
+{
+	return TrecPointerKey::GetTrecPointerFromSub<TVariable,TInterpretor>(TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+}
+
 /**
  * Method: TInterpretor::UpdateVariable
  * Purpose: Updates an existing Variable

@@ -26,7 +26,10 @@ typedef enum class ContainerType
 class TC_DATA_STRUCT TContainerVariable :
     public TVariable
 {
+    friend class TContainerVariable;
 public:
+
+    virtual TrecPointer<TVariable> Clone();
 
     /**
      * Method: TContainerVariable
@@ -206,5 +209,6 @@ public:
       * Restructions on the container
       */
      ContainerType type;
+
 };
 

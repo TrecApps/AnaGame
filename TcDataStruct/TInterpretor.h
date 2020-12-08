@@ -145,6 +145,8 @@ class TC_DATA_STRUCT TInterpretor : public TVariable
 {
 public:
 
+    virtual TrecPointer<TVariable> Clone()override;
+
     /**
      * Method: TInterpretor::UpdateVariable
      * Purpose: Updates an existing Variable

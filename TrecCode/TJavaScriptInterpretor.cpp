@@ -1939,7 +1939,7 @@ void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>
     }
 }
 
-void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& expParam, UINT line, ReportObject& ro)
+void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT& cur, TString& expParam, UINT line, ReportObject& ro)
 {
     TString exp(expParam.GetTrim());
 
@@ -1961,7 +1961,8 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
     UINT curSize;
 
-    while ((curSize = exp.GetSize()) && exp.GetTrim().Compare(L";"))
+    while ((curSize = exp.GetSize()) && exp.GetTrim().Compare(L";") &&
+        exp.GetTrim().Compare(L"{") && exp.GetTrim().Compare(L"}"))
     {
         if (exp[0] == L'(')
         {
@@ -2240,7 +2241,7 @@ void TJavaScriptInterpretor::ProcessArrayExpression(TDataArray<JavaScriptStateme
     ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(array_);
 }
 
-void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+UINT TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
 {
     TString trimmed(exp.GetTrim());
 
@@ -2249,7 +2250,7 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
         ro.returnCode = ro.broken_reference;
 
 
-        return;
+        return 0;
     }
 
     if (!trimmed.StartsWith(L'('))
@@ -2258,7 +2259,7 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
 
 
 
-        return;
+        return 0;
     }
 
     int endParam = trimmed.FindLast(L')');
@@ -2268,7 +2269,7 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
         ro.returnCode = ro.incomplete_statement;
 
 
-        return;
+        return 0;
     }
 
     ULONG64 start = file->GetPosition() + 1;
@@ -2288,7 +2289,7 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
         TString paramName(paramsList->at(Rust));
         CheckVarName(paramName, ro, line);
         if (ro.returnCode)
-            return;
+            return 0;
         paramNames.push_back(paramName);
     }
 
@@ -2297,8 +2298,47 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
 
     dynamic_cast<TInterpretor*>(function.Get())->SetCode(file, start, end);
     function->SetParamNames(paramNames);
+    UINT ret = 0;
+    for (UINT Rust = cur + 1; Rust < statements.Size(); Rust++)
+    {
+        ret++;
+        // Check to see if we are closing the function
+        TString state(statements.at(Rust).contents.GetTrim());
+
+        if (state.EndsWith(L';'))
+            state.Delete(state.GetSize() - 1);
+
+        bool end = state.EndsWith(L'}');
+
+        if (!end || !state.StartsWith(L'}'))
+            function->statements.push_back(statements.at(Rust));
+        if (end)
+            break;
+    }
+
+    if (!ret)
+    {
+        ro.returnCode = ReportObject::incomplete_block;
+        ro.errorMessage.Set(L"Unexpected End of File!");
+    }
+
+    for (UINT Rust = 0; Rust < variables.count(); Rust++)
+    {
+        TDataEntry<TVariableMarker> entry;
+        if (!variables.GetEntryAt(Rust, entry))
+            continue;
+
+        if (entry.key.GetSize())
+        {
+            auto tempVar = entry.object.GetVariable();
+            TVariableMarker mark(entry.object.IsMutable(), (tempVar.Get()? tempVar->Clone() : tempVar));
+            function->variables.addEntry(entry.key, mark);
+        }
+    }
 
     ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(function);
+    exp.Empty();
+    return ret;
 }
 
 void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject& ro)
@@ -2382,7 +2422,7 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
     exp.Set(exp.SubString(frontDifference + end));
 }
 
-bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT& cur, TString& exp, UINT line, ReportObject& ro)
 {
     exp.TrimRight();
 
@@ -2416,7 +2456,10 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
         exp.Delete(0, 8);
         exp.TrimRight();
 
-        ProcessFunctionDef(statements, cur, exp, line, ro);
+        UINT skip = ProcessFunctionDef(statements, cur, exp, line, ro);
+        if (!skip)
+            return false;
+        cur += skip;
         return true;
     }
     objVar = curVar;

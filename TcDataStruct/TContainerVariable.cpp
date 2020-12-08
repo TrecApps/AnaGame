@@ -1,6 +1,33 @@
 #include "pch.h"
 #include "TContainerVariable.h"
 
+TrecPointer<TVariable> TContainerVariable::Clone()
+{
+    TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(type);
+
+    for (UINT Rust = 0; Rust < values.count(); Rust++)
+    {
+        auto entry = values.GetEntryAt(Rust);
+
+        if (!entry.Get())
+            continue;
+        if (entry->key.GetSize())
+        {
+            TrecPointer<TVariable> var;
+            if (entry->object.Get())
+            {
+                // Don't clone if we have a circular reference, else we'll get "infinite" recursion
+                if (entry->object.Get() == this)
+                    var = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
+                else
+                    var = entry->object->Clone();
+            }
+            ret->values.addEntry(entry->key, var);
+        }
+    }
+    return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
+}
+
 /**
  * Method: TContainerVariable
  * Purpose: Constructor
