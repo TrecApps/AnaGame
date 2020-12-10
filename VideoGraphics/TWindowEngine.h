@@ -149,6 +149,9 @@ public:
 	 */
 	HWND GetWindowHandle();
 
+	HDC GetDC();
+	void ClearDC();
+
 protected:
 	
 	// Methods that external AnaGame Components don't need to interat with directly

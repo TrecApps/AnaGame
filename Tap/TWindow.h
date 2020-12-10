@@ -410,6 +410,11 @@ public:
 
 	void submitPlayer(TrecPointer<TControl> play);
 
+	HDC GetTWindowDc();
+
+	void FlushDc();
+
+
 protected:
 
 	TrecSubPointer<TControl, TVideo> videoPlayer;
@@ -451,6 +456,7 @@ protected:
 	 */
 	bool hasDrawn;
 
+	HDC windDC;
 
 	/**
 	 * Main content of the window

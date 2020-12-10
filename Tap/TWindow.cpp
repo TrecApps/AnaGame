@@ -57,6 +57,7 @@ TWindow::TWindow(TString& name, TString& winClass, UINT style, HWND parent, int 
 TWindow::~TWindow()
 {
 	CleanUp();
+
 	mainPage.Delete();
 
 	for (UINT Rust = 0; Rust < pages.Size(); Rust++)
@@ -91,7 +92,7 @@ int TWindow::PrepareWindow()
 	assert(windowInstance.Get());
 
 	TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->RegisterDialog(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
-
+	windDC = GetDC(currentWindow);
 	ShowWindow(currentWindow, command);
 	UpdateWindow(currentWindow);
 
@@ -215,11 +216,11 @@ void TWindow::Draw()
 		safeToDraw = 0;
 		if (d3dEngine.Get())
 		{
-			d3dEngine->PrepareScene(D2D1::ColorF(D2D1::ColorF::Wheat));
+			// d3dEngine->PrepareScene(D2D1::ColorF(D2D1::ColorF::Wheat));
 		}
-
+		
 		drawingBoard->GetRenderer()->BeginDraw();
-
+		drawingBoard->GetRenderer()->Clear(D2D1::ColorF(1.0f,1.0f,1.0f,1.0f));
 
 		mainPage->Draw();
 		DrawOtherPages();
@@ -232,14 +233,15 @@ void TWindow::Draw()
 		drawingBoard->GetRenderer()->EndDraw();
 
 		HDC dc = drawingBoard->GetDc();
-		HDC windDC = GetDC(currentWindow);
 
 		RECT r{ 0,0,0,0 };
-		GetClientRect(currentWindow, &r);
 		int err = 0;
-		if (!BitBlt(windDC, r.left, r.top, r.right - r.left, r.bottom - r.top, dc, 0, 0, SRCCOPY))
+		if(!GetClientRect(currentWindow, &r))
 			err = GetLastError();
-		
+		if (!BitBlt(GetTWindowDc(), r.left, r.top, r.right - r.left, r.bottom - r.top, dc, 0, 0, SRCCOPY))
+			err = GetLastError();
+		FlushDc();
+		safeToDraw = tempSafe;
 	}
 	if (!hasDrawn)
 	{
@@ -698,6 +700,8 @@ bool TWindow::SetUp3D()
 		return false;
 	}
 
+
+
 	return true;
 }
 
@@ -824,6 +828,19 @@ void TWindow::submitPlayer(TrecPointer<TControl> play)
 {
 	videoPlayer = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TVideo>(play);
 	assert(videoPlayer.Get());
+}
+
+HDC TWindow::GetTWindowDc()
+{
+	if (d3dEngine.Get())
+		return d3dEngine->GetDC();
+	return GetDC(currentWindow);
+}
+
+void TWindow::FlushDc()
+{
+	if (d3dEngine.Get())
+		d3dEngine->ClearDC();
 }
 
 /**

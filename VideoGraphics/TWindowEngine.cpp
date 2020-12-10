@@ -450,6 +450,21 @@ HWND TWindowEngine::GetWindowHandle()
 	return window;
 }
 
+HDC TWindowEngine::GetDC()
+{
+	if (!surface.Get())
+		return 0;
+	HDC dc;
+	assert(SUCCEEDED(surface->GetDC(FALSE, &dc)));
+	return dc;
+}
+
+void TWindowEngine::ClearDC()
+{
+	if (surface.Get())
+		surface->ReleaseDC(nullptr);
+}
+
 
 
 /**

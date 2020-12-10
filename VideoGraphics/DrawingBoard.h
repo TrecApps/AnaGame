@@ -256,6 +256,8 @@ private:
 
 	HDC dc;
 
+	HBITMAP hMap;
+
 	/**
 	 * heeps track of the number of layers pushed
 	 */

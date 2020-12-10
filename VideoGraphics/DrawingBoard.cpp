@@ -25,6 +25,7 @@ TString DrawingBoard::GetType()
  */
 DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 {
+	hMap = 0;
 	if (!fact.Get())
 		throw L"Error! Factory Object MUST be initialized!";
 	this->fact = fact;
@@ -33,11 +34,11 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 	ZeroMemory(&props, sizeof(props));
 
 	props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
-	props.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM,
-		D2D1_ALPHA_MODE_STRAIGHT);
+	props.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,
+		D2D1_ALPHA_MODE_PREMULTIPLIED);
 
 	props.dpiX = props.dpiY = 0.0f;
-	props.usage = D2D1_RENDER_TARGET_USAGE_NONE;
+	props.usage = D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE;
 	props.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 
 	RECT area;
@@ -63,6 +64,9 @@ DrawingBoard::~DrawingBoard()
 	if (dc)
 		DeleteDC(dc);
 	dc = nullptr;
+	if (hMap)
+		DeleteObject(hMap);
+	hMap = nullptr;
 }
 
 
@@ -72,6 +76,13 @@ void DrawingBoard::Resize(HWND window)
 {
 	RECT r{ 0,0,0,0 };
 	GetClientRect(window, &r);
+
+	hMap = CreateCompatibleBitmap(GetDC(window), r.right - r.left, r.bottom - r.top);
+	int err = 0;
+	if (!hMap)
+		err = GetLastError();
+	assert(hMap);
+	SelectObject(dc, hMap);
 
 	renderer->BindDC(dc, &r);
 }

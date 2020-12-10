@@ -11,6 +11,7 @@
 -|RowHeight:75
 -|InternalBorderColor:0.0,0.0,0.0,1.0
 -|InternalBorderThickness:2
+-|ContentColor:1.0,1.0,1.0,1.0
 
 # Report Current Directory
 -->TGallery(0,0)
