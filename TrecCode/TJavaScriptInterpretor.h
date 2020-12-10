@@ -108,13 +108,14 @@ public:
      * Method: TJavaScriptInterpretor::Run
      * Purpose: Runs the interpretor with the following parameters
      * Parameters: TDataArray<TVariable> params - list of parameters to provide
+     *              bool clearVariables - whether to clrear any exising Variables the Interpretor might hold
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that represent specific methods or functions
      * 
      * Attributes: override
      */
-    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params)override;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables = true)override;
 
     void ProcessStatements(ReportObject& ro);
 

@@ -236,7 +236,7 @@ public:
      * 
      * Attributes: abstract
      */
-    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) = 0;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables = true) = 0;
 
 
     /**

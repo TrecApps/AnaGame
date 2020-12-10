@@ -306,84 +306,10 @@ ReportObject TJavaScriptInterpretor::Run()
 
 
 
-
-
-    //for (currentPoint = start; currentPoint < end; currentPoint += file->ReadString(code, TString(L";\n{"), TFile::t_file_include_terminator))
-    //{
-    //    int firstQuote;
-
-    //    
-
-    //    while ((firstQuote = code.FindOneOf(L"\"'`", startQuoteSearch)) != -1)
-    //    {
-    //        // We have a String in our statement and need to make sure we have the whole statement
-    //        WCHAR quoteType = code[firstQuote];
-
-    //        int secondQuote = code.FindOneOf(L" \t", firstQuote + 1);
-
-    //        if (secondQuote == -1)
-    //        {
-    //            TString code2;
-    //            currentPoint += file->ReadString(code2, TString(quoteType), TFile::t_file_include_terminator);
-    //            TString code3;
-    //            currentPoint += file->ReadString(code3, TString(L";\n{"), TFile::t_file_include_terminator);
-
-    //            code.Append(code2);
-    //            startQuoteSearch = code.GetSize() + 1;
-    //            code.Append(code3);
-    //        }
-    //    }
-
-    //    TDataArray<TString> tokens;
-    //    TString tok;
-    //    WCHAR quoteMode = L'\0';
-    //    for (UINT Rust = 0; Rust < code.GetSize(); Rust++)
-    //    {
-    //        WCHAR curChar = code[Rust];
-
-    //        if (quoteMode)
-    //        {
-    //            tok.AppendChar(curChar);
-    //            if (curChar == quoteMode)
-    //                quoteMode = L'\0';
-
-    //            continue;
-    //        }
-
-    //        if (curChar == L' ' || curChar == L'\t')
-    //        {
-    //            if (tok.GetSize())
-    //            {
-    //                tokens.push_back(tok);
-    //                tok.Empty();
-    //            }
-    //            continue;
-    //        }
-
-    //        if (curChar == L'\'' || curChar == L'\"' || curChar == L'`')
-    //            quoteMode = curChar;
-
-    //        tok.AppendChar(curChar);
-    //    }
-
-
-    //    // Now Parse the Statement we got
-    //    if (tokenLog.IsOpen())
-    //    {
-    //        for (UINT Rust = 0; Rust < tokens.Size(); Rust++)
-    //        {
-    //            tokenLog.WriteString(tokens[Rust] + L'\n');
-    //        }
-
-    //        tokenLog.WriteString(L"\n\n");
-    //    }
-    //}
-
-
     return ReportObject();
 }
 
-ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params)
+ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables)
 {
     ReportObject ret;
     if (!file.Get() || !file->IsOpen())
@@ -392,7 +318,8 @@ ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& par
         ret.errorMessage.Set(L"Error! No access to the JavaScript file!");
         return ret;
     }
-    variables.clear();
+    if(clearVariables)
+        variables.clear();
 
     for (UINT Rust = 0; Rust < params.Size() && Rust < paramNames.Size(); Rust++)
     {
@@ -854,6 +781,22 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
 
                 statements.push_back(statement);
             }
+
+
+            // Catch scenario where a statement ends with an open bracket and bracket data is not set
+            if (statements.Size())
+            {
+                UINT index = statements.Size() - 1;
+                TString tempContents(statements[index].contents);
+
+                if (tempContents.EndsWith(L"{") && !statements[index].fileStart)
+                {
+                    statements[index].fileStart = file->GetPosition();
+                    statements[index].fileEnd = GetBlockEnd();
+                    file->Seek(statements[index].fileStart, 0);
+                }
+            }
+
 
         }
     }
@@ -2061,6 +2004,8 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
         {
             int loc = exp.Find(exp[0], 1, false);
 
+            bool isTemplated = exp[0] == L'\`';
+
             if (loc == -1)
             {
                 ro.returnCode = ro.incomplete_statement;
@@ -2072,8 +2017,34 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
                 return;
             }
+            TString theString(exp.SubString(1, loc));
 
-            expresions.push_back(JavaScriptExpression(L"", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(exp.SubString(1, loc))));
+            if (isTemplated)
+            {
+                UINT startIndex = 0;
+                while ((startIndex = theString.FindOutOfQuotes(L"${", startIndex)) != -1)
+                {
+                    UINT closeBracket = theString.FindOutOfQuotes(L'}', startIndex);
+                    if (closeBracket == -1)
+                        break;
+
+                    TString var(theString.SubString(startIndex + 2, closeBracket));
+
+                    ProcessExpression(statements, cur, var, line, ro);
+
+                    if (ro.returnCode)
+                    {
+                        ro.returnCode = 0;
+                        continue;
+                    }
+
+                    TString res = ro.errorObject.Get() ? ro.errorObject->GetString() : TString(L"undefined");
+
+                    theString.Replace(TString(L"${") + var + L'}', res);
+                }
+            }
+
+            expresions.push_back(JavaScriptExpression(L"", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(theString)));
 
             exp.Set(exp.SubString(loc + 1));
         }
@@ -2272,9 +2243,6 @@ UINT TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
         return 0;
     }
 
-    ULONG64 start = file->GetPosition() + 1;
-    ULONG64 end = GetBlockEnd();
-
     TString parametersString(trimmed.SubString(1, endParam));
 
     auto paramsList = parametersString.split(L',');
@@ -2296,7 +2264,7 @@ UINT TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
     TrecSubPointer<TVariable, TJavaScriptInterpretor> function = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
         TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
 
-    dynamic_cast<TInterpretor*>(function.Get())->SetCode(file, start, end);
+    dynamic_cast<TInterpretor*>(function.Get())->SetCode(file, statements[cur].fileStart, statements[cur].fileEnd);
     function->SetParamNames(paramNames);
     UINT ret = 0;
     for (UINT Rust = cur + 1; Rust < statements.Size(); Rust++)
@@ -2635,7 +2603,7 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
         vars.push_back(ro.errorObject);
     }
 
-    ro = func->Run(vars);
+    ro = func->Run(vars, false);
 
     if (!ro.returnCode && ro.mode == report_mode::report_mode_return)
         ro.mode = report_mode::report_mode_regular;
