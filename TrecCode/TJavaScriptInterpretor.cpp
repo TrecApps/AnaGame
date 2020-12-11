@@ -320,6 +320,14 @@ ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& par
     }
     if(clearVariables)
         variables.clear();
+    else
+    {
+        for (UINT Rust = 0; Rust < paramNames.Size(); Rust++)
+        {
+            TVariableMarker mark;
+            variables.removeEntry(paramNames[Rust], mark);
+        }
+    }
 
     for (UINT Rust = 0; Rust < params.Size() && Rust < paramNames.Size(); Rust++)
     {
