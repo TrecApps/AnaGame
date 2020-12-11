@@ -235,11 +235,9 @@ void TWindow::Draw()
 
 		HDC dc = drawingBoard->GetDc();
 
-		RECT r{ 0,0,0,0 };
 		int err = 0;
-		if(!GetClientRect(currentWindow, &r))
-			err = GetLastError();
-		if (!BitBlt(GetTWindowDc(), r.left, r.top, r.right - r.left, r.bottom - r.top, dc, 0, 0, SRCCOPY))
+
+		if (!BitBlt(GetTWindowDc(), size.left, size.top, size.right - size.left, size.bottom - size.top, dc, 0, 0, SRCCOPY))
 			err = GetLastError();
 		FlushDc();
 		safeToDraw = tempSafe;
