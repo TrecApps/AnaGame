@@ -91,6 +91,8 @@ int TIdeWindow::PrepareWindow()
 
 void TIdeWindow::OnWindowResize(UINT width, UINT height)
 {
+	if (!mainPage.Get())
+		return;
 	size.top = size.left = 0;
 	size.right = width;
 	size.left = height;
@@ -109,8 +111,6 @@ void TIdeWindow::OnWindowResize(UINT width, UINT height)
 	D2D1_RECT_F right = curArea;
 	D2D1_RECT_F bottom = curArea;
 
-	int width = curArea.right - curArea.left;
-	int height = curArea.bottom - curArea.top;
 
 	left.right = width / 5;
 	right.left = width - (width / 5);
