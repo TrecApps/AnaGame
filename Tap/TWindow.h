@@ -221,7 +221,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg void OnWindowResize(UINT width, UINT height);
+	afx_msg virtual void OnWindowResize(UINT width, UINT height);
 
 	/**
 	 * Method: TWindow::OnDestroy
@@ -456,7 +456,7 @@ protected:
 	 */
 	bool hasDrawn;
 
-	HDC windDC;
+	RECT size;
 
 	/**
 	 * Main content of the window

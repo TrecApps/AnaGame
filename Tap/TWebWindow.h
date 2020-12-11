@@ -65,6 +65,17 @@ public:
 	virtual int PrepareWindow()override;
 
 	/**
+	 * Method: TWebWindow::OnWindowResize
+	 * Purpose: Resizes the Window
+	 * Parameters: UINT width - the new width of the window
+	 *				UINT height - the new height of the Window
+	 * Returns: void
+	 *
+	 * Attributes: message, override
+	 */
+	afx_msg virtual void OnWindowResize(UINT width, UINT height)override;
+
+	/**
 	 * Method: TWebWindow::AddNewTab
 	 * Purpose: Adds a New Tab to the Window
 	 * Parameters: void

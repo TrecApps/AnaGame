@@ -92,7 +92,8 @@ int TWindow::PrepareWindow()
 	assert(windowInstance.Get());
 
 	TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->RegisterDialog(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
-	windDC = GetDC(currentWindow);
+
+	GetClientRect(currentWindow, &size);
 	ShowWindow(currentWindow, command);
 	UpdateWindow(currentWindow);
 

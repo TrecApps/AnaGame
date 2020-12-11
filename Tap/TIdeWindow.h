@@ -93,6 +93,18 @@ public:
 	 */
 	virtual int PrepareWindow()override;
 
+
+	/**
+	 * Method: TIdeWindow::OnWindowResize
+	 * Purpose: Resizes the Window
+	 * Parameters: UINT width - the new width of the window
+	 *				UINT height - the new height of the Window
+	 * Returns: void
+	 *
+	 * Attributes: message, override
+	 */
+	afx_msg virtual void OnWindowResize(UINT width, UINT height)override;
+
 	/**
 	 * Method: TIdeWindow::OnLButtonUp
 	 * Purpose: Manages the Left Button Up Message

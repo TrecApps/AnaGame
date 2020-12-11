@@ -44,6 +44,30 @@ int TWebWindow::PrepareWindow()
     return 0;
 }
 
+void TWebWindow::OnWindowResize(UINT width, UINT height)
+{
+    size.right = width;
+    size.bottom = height;
+    size.left = size.top = 0;
+    mainPageSpace.left = size.left;
+    mainPageSpace.right = size.right;
+    mainPageSpace.top = size.top;
+    mainPageSpace.bottom = mainPageSpace.top + mainViewSpace;
+
+    tabs.left = mainPageSpace.left;
+    tabs.right = mainPageSpace.right;
+    tabs.top = mainPageSpace.bottom;
+    tabs.bottom = tabs.top + pageBarSpace;
+
+    webPage.left = tabs.left;
+    webPage.right = tabs.right;
+    webPage.top = tabs.bottom;
+    webPage.bottom = size.bottom;
+    if (mainPage.Get())
+        mainPage->OnResize(mainPageSpace, 0, d3dEngine);
+
+}
+
 void TWebWindow::AddNewTab()
 {
     AddNewTab(L"Anagame://NewTab");

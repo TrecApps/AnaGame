@@ -89,6 +89,49 @@ int TIdeWindow::PrepareWindow()
 	return TWindow::PrepareWindow();
 }
 
+void TIdeWindow::OnWindowResize(UINT width, UINT height)
+{
+	size.top = size.left = 0;
+	size.right = width;
+	size.left = height;
+
+	D2D1_RECT_F curArea = convertRECTToD2DRectF(size);
+	curArea.bottom = curArea.top + this->mainViewSpace;
+
+	mainPage->OnResize(curArea, 0, d3dEngine);
+
+
+	curArea.top += this->mainViewSpace;
+
+
+	D2D1_RECT_F left = curArea;
+	D2D1_RECT_F middle = curArea;
+	D2D1_RECT_F right = curArea;
+	D2D1_RECT_F bottom = curArea;
+
+	int width = curArea.right - curArea.left;
+	int height = curArea.bottom - curArea.top;
+
+	left.right = width / 5;
+	right.left = width - (width / 5);
+	middle.left = left.right;
+	middle.right = right.left;
+
+	bottom.top = height * 2 / 3 + mainViewSpace;
+
+	left.bottom = right.bottom = middle.bottom = bottom.top;
+
+	D2D1_RECT_F zeroRec{ 0,0,0,0 };
+
+	body->OnResize(middle, 0, d3dEngine);
+	upperLeft->OnResize(left, 0, d3dEngine);
+	upperRight->OnResize(right, 0, d3dEngine);
+	basicConsole->OnResize(zeroRec, 0, d3dEngine);
+	lowerLeft->OnResize(zeroRec, 0, d3dEngine);
+	lowerRight->OnResize(zeroRec, 0, d3dEngine);
+	deepConsole->OnResize(bottom, 0, d3dEngine);
+}
+
 /**
  * Method: TIdeWindow::OnLButtonUp
  * Purpose: Manages the Left Button Up Message
@@ -544,9 +587,9 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 		return 2;
 
 	mainPage->SetAnaface(aFile, eh);
-	RECT lArea;
-	GetClientRect(GetWindowHandle(), &lArea);
-	curArea = convertRECTToD2DRectF(lArea);
+	;
+	GetClientRect(GetWindowHandle(), &size);
+	curArea = convertRECTToD2DRectF(size);
 	curArea.top += this->mainViewSpace;
 
 
