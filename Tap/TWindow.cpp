@@ -481,6 +481,7 @@ void TWindow::OnWindowResize(UINT width, UINT height)
 	newLoc.top = newLoc.left = 0;
 	newLoc.bottom = height;
 	newLoc.right = width;
+	size = convertD2DRectToRECT(newLoc);
 	if (mainPage.Get())
 		mainPage->OnResize(newLoc, 0, d3dEngine);
 

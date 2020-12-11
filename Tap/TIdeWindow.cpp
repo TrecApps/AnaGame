@@ -130,6 +130,9 @@ void TIdeWindow::OnWindowResize(UINT width, UINT height)
 	lowerLeft->OnResize(zeroRec, 0, d3dEngine);
 	lowerRight->OnResize(zeroRec, 0, d3dEngine);
 	deepConsole->OnResize(bottom, 0, d3dEngine);
+
+	if (drawingBoard.Get())
+		drawingBoard->Resize(this->currentWindow);
 }
 
 /**
