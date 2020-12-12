@@ -939,7 +939,7 @@ void TTextField::AppendBoldText(const TString & t)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_NORMAL;
 	fd.weight = DWRITE_FONT_WEIGHT_BOLD;
@@ -962,7 +962,7 @@ void TTextField::AppendItalicText(const TString & t)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_ITALIC;
 	fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
@@ -985,7 +985,7 @@ void TTextField::AppendBoldItalicText(const TString & t)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_ITALIC;
 	fd.weight = DWRITE_FONT_WEIGHT_BOLD;
@@ -1008,7 +1008,7 @@ void TTextField::AppendNormalText(const TString & t)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_NORMAL;
 	fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
@@ -1016,6 +1016,16 @@ void TTextField::AppendNormalText(const TString & t)
 
 	text += t;
 	updateTextString();
+}
+
+bool TTextField::ApplyFormatting(FormattingDetails ds)
+{
+	if((ds.range.startPosition + ds.range.length) >= text.GetSize())
+		return false;
+
+	this->details.push_back(ds);
+	updateTextString();
+	return true;
 }
 
 /*

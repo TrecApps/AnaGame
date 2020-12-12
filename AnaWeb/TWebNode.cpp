@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TWebNode.h"
+#include <TPromptControl.h>
 
 TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 {
@@ -128,6 +129,11 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start)
 	return 2;
 }
 
+UINT TWebNode::SetInnerHtml(TStringSliceManager& html)
+{
+	return 0;
+}
+
 
 void TWebNode::GetElementsByName(const TString& name, TDataArray<TrecPointer<TWebNode>>& nodes)
 {
@@ -200,4 +206,86 @@ void TWebNode::SetSelf(TrecPointer<TWebNode> s)
 TString TWebNode::GetType()
 {
 	return TString(L"TWebNode;TObject");
+}
+
+UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window)
+{
+	if (!tagName.Compare(L"p"))
+	{
+		// We are dealing with a paragraph block
+		control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), window);
+
+		TString text(innerHtml->GetStringCopy());
+
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust)
+		{
+			if (!childNodes[Rust].Get())
+				continue;
+			int found = -1, innerFound = -1,endFound = -1, outerEnd = -1;
+
+			FormattingDetails fd;
+			fd.style = DWRITE_FONT_STYLE_NORMAL;
+			fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
+
+			if (!childNodes[Rust]->tagName.Compare(L"b"))
+			{
+				found = text.Find(L"<b");
+				innerFound = text.Find(L">", found);
+				endFound = text.Find(L"</b>",innerFound);
+				outerEnd = 4;
+				fd.weight = DWRITE_FONT_WEIGHT_BOLD;
+			}
+			else if (!childNodes[Rust]->tagName.Compare(L"strong"))
+			{
+				found = text.Find(L"<strong");
+				innerFound = text.Find(L">", found);
+				endFound = text.Find(L"</string>", innerFound);
+				outerEnd = 9;
+				fd.weight = DWRITE_FONT_WEIGHT_BOLD;
+			}
+			else if (!childNodes[Rust]->tagName.Compare(L"i"))
+			{
+				found = text.Find(L"<i");
+				innerFound = text.Find(L">", found);
+				endFound = text.Find(L"</i>", innerFound);
+				outerEnd = 4;
+				fd.style = DWRITE_FONT_STYLE_ITALIC;
+			}
+			else if (!childNodes[Rust]->tagName.Compare(L"em"))
+			{
+				found = text.Find(L"<em");
+				innerFound = text.Find(L">", found);
+				endFound = text.Find(L"</em>", innerFound);
+				outerEnd = 5;
+				fd.style = DWRITE_FONT_STYLE_ITALIC;
+			}
+
+			if (found == -1 || innerFound == -1 || endFound == -1)
+				continue;
+			if (innerFound > endFound)
+				continue;
+
+			fd.range.startPosition = found;
+			fd.range.length = endFound - innerFound;
+			
+
+			text.Delete(endFound, outerEnd);
+			text.Delete(found, innerFound - found + 1);
+
+			formattingDetails.push_back(fd);
+		}
+
+
+		control->onCreate(location, d3dEngine);
+		TrecSubPointer<TControl, TTextField> tControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(control);
+
+		tControl->SetText(text);
+		for (UINT Rust = 0; Rust < formattingDetails.Size(); Rust++)
+		{
+			tControl->ApplyFormatting(formattingDetails[Rust]);
+		}
+	}
+
+
+	return 0;
 }

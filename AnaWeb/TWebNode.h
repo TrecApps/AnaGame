@@ -98,6 +98,9 @@ public:
      * Returns: TString - the string representation of this objects type
      */
     virtual TString GetType() override;
+
+
+    UINT CreateWebNode(D2D1_RECT_F, TrecPointer<TWindowEngine> d3dEngine, HWND window);
 protected:
     /**
      * represents the Element Node's innerHTML attribute
@@ -133,5 +136,7 @@ protected:
      * Self reference
      */
     TrecPointerSoft<TWebNode> self;
+
+    TDataArray<formattingDetails> formattingDetails;
 };
 

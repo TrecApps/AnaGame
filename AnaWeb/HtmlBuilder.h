@@ -6,7 +6,7 @@
 class ANA_WEB_DLL HtmlBuilder : public TObject
 {
 public:
-	HtmlBuilder(TrecPointer<TEnvironment> env);
+	HtmlBuilder(TrecPointer<TEnvironment> env, TrecPointer<DrawingBoard> board);
 
 	TString BuildPage(TrecPointer<TFile> file);
 
@@ -16,5 +16,6 @@ private:
 	TString topLine;
 	TrecPointer<TEnvironment> environment;
 	TrecPointer<TFileShell> directory;
+	TrecPointer<DrawingBoard> board;
 };
 

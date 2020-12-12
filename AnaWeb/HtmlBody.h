@@ -3,6 +3,7 @@
 #include <TFile.h>
 #include <TEnvironment.h>
 #include "AnaWeb.h"
+#include "TWebNode.h"
 
 class ANA_WEB_DLL HtmlBody : public TObject
 {
@@ -13,7 +14,7 @@ public:
      * Parameters: TrecPointer<TEnvironment> env - the environment to work with
      * Returns: New HtmlHeaderObject
      */
-    HtmlBody(TrecPointer<TEnvironment> env);
+    HtmlBody(TrecPointer<TEnvironment> env, TrecPointer<DrawingBoard> board);
 
     /**
      * Method: HtmlBody::ProcessHtml
@@ -26,5 +27,10 @@ public:
 
 private:
     TrecPointer<TEnvironment> env;
+
+    TrecPointer<TWebNode> rootNode;
+
+    TrecSubPointer<TSliceManager,TStringSliceManager> bodyContents;
+    TrecPointer<DrawingBoard> board;
 };
 

@@ -30,7 +30,7 @@ typedef struct _ANAFACE_DLL incrimentControl
 
 // Allows Anaface to format the text at different sections, used by Web-Tuors
 // To support the <b> and <i> tags in HTML
-typedef struct formattingDetails
+typedef struct FormattingDetails
 {
 	DWRITE_FONT_WEIGHT weight; // For handling boldness
 	DWRITE_FONT_STYLE style;   // For handling italics
@@ -568,6 +568,14 @@ public:
 	* Returns: void
 	*/
 	void AppendNormalText(const TString& t);
+
+	/**
+	 * Method: TTextField::ApplyFormatting
+	 * Purpose: Applies formatting to a portion of the String
+	 * Parameters: formattingDetails details
+	 * Returns: bool - true if no issue was found, false otherwise
+	 */
+	bool ApplyFormatting(formattingDetails details);
 
 	/*
 	* Method: TTextField::isOnFocus
