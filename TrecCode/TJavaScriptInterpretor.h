@@ -117,7 +117,7 @@ public:
      */
     virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables = true)override;
 
-    void ProcessStatements(ReportObject& ro);
+    virtual void ProcessStatements(ReportObject& ro);
 
     void setLine(UINT line);
 
@@ -133,7 +133,7 @@ protected:
      * Attributes: virtual
      */
     virtual ReportObject ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2) override;
-private:
+protected:
     UINT line;
 
     TDataArray<JavaScriptStatement> statements;
@@ -172,6 +172,8 @@ private:
     void InspectNumber(TString& exp, UINT line, ReportObject& ro);
     bool InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT& cur, TString& exp, UINT line, ReportObject& ro);
     void ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> obj);
+
+    bool InspectVariable(const TString& exp);
 
     // Operator Handler Methods
     void HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro);

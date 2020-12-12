@@ -2617,6 +2617,26 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
         ro.mode = report_mode::report_mode_regular;
 }
 
+bool TJavaScriptInterpretor::InspectVariable(const TString& exp)
+{
+    bool foundBad = false;
+
+    for (end = 0; end < exp.GetSize(); end++)
+    {
+        WCHAR letter = exp[end];
+
+        if ((letter >= L'0' && letter <= L'9') ||
+            (letter >= L'a' && letter <= L'z') ||
+            (letter >= L'A' && letter <= L'Z') ||
+            letter == L'_')
+            continue;
+        foundBad = true;
+        break;
+    }
+
+    return foundBad;
+}
+
 void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)
 {
     for (UINT Rust = 0; Rust < operators.Size(); Rust++)
