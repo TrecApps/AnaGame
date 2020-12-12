@@ -30,12 +30,16 @@ typedef struct _ANAFACE_DLL incrimentControl
 
 // Allows Anaface to format the text at different sections, used by Web-Tuors
 // To support the <b> and <i> tags in HTML
-typedef struct FormattingDetails
+class _ANAFACE_DLL FormattingDetails
 {
+public:
+	FormattingDetails();
+	FormattingDetails(const FormattingDetails& copy);
+
 	DWRITE_FONT_WEIGHT weight; // For handling boldness
 	DWRITE_FONT_STYLE style;   // For handling italics
 	DWRITE_TEXT_RANGE range;   // the Range through which it should be done
-}formattingDetails;
+};
 
 
 /*
@@ -575,7 +579,7 @@ public:
 	 * Parameters: formattingDetails details
 	 * Returns: bool - true if no issue was found, false otherwise
 	 */
-	bool ApplyFormatting(formattingDetails details);
+	bool ApplyFormatting(FormattingDetails details);
 
 	/*
 	* Method: TTextField::isOnFocus
@@ -787,7 +791,7 @@ protected:
 	/**
 	 * List for details such as weight
 	 */
-	TDataArray<formattingDetails> details;
+	TDataArray<FormattingDetails> details;
 	/**
 	 * List of colors affecting the text
 	 */

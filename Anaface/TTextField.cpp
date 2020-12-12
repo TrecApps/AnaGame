@@ -1978,6 +1978,20 @@ void incrimentControl::operator=(float f)
 	value.f = f;
 }
 
+FormattingDetails::FormattingDetails()
+{
+	this->style = DWRITE_FONT_STYLE_NORMAL;
+	this->weight = DWRITE_FONT_WEIGHT_NORMAL;
+	this->range = { 0,0 };
+}
+
+FormattingDetails::FormattingDetails(const FormattingDetails& copy)
+{
+	this->style = copy.style;
+	this->weight = copy.weight;
+	this->range = copy.range;
+}
+
 /*
  * Method: TextHighlighter::TextHighlighter
  * Purpose: Constructor

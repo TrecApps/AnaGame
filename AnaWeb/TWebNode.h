@@ -1,7 +1,7 @@
 #pragma once
 #include <TObject.h>
 #include <DrawingBoard.h>
-#include <TControl.h>
+#include <TPromptControl.h>
 #include <TStringSlice.h>
 #include <TDataMap.h>
 
@@ -137,6 +137,6 @@ protected:
      */
     TrecPointerSoft<TWebNode> self;
 
-    TDataArray<formattingDetails> formattingDetails;
+    TDataArray<FormattingDetails> formattingDetails;
 };
 
