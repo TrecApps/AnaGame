@@ -24,7 +24,7 @@
 #define ATTRIBUTE_OVERRIDE 0b00100000  // For Methods, needs to Override a base method
 #define ATTRIBUTE_ABSTRACT 0b01000000  // For Methods, must be abstract
 
-class TClassAttribute
+class TC_DATA_STRUCT TClassAttribute
 {
 public:
     TClassAttribute(const TString& n, const TString& t);
@@ -38,7 +38,7 @@ public:
 };
 
 
-class TClassStruct :
+class TC_DATA_STRUCT TClassStruct :
     public TVariableType
 {
 public:

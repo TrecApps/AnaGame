@@ -31,7 +31,7 @@ void WebPage::SetEnvironment(TrecPointer<TEnvironment> env)
 			TrecPointerKey::GetTrecObjectPointer<TWindow>(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle))));
 
 
-		htmlBuilder = TrecPointerKey::GetNewTrecPointer<HtmlBuilder>(environment);
+		htmlBuilder = TrecPointerKey::GetNewTrecPointer<HtmlBuilder>(environment, this->drawingBoard);
 
 	}
 
