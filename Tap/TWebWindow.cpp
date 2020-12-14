@@ -65,8 +65,15 @@ void TWebWindow::OnWindowResize(UINT width, UINT height)
     webPage.bottom = size.bottom;
     if (mainPage.Get())
         mainPage->OnResize(mainPageSpace, 0, d3dEngine);
+
+    if (d3dEngine.Get())
+        d3dEngine->Resize(width, height);
     if (drawingBoard.Get())
-        drawingBoard->Resize(this->currentWindow);
+    {
+        drawingBoard->Resize(GetTWindowDc(), size);
+        if (d3dEngine.Get())
+            d3dEngine->ClearDC();
+    }
 }
 
 void TWebWindow::AddNewTab()

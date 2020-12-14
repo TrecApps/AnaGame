@@ -220,7 +220,7 @@ void TWindow::Draw()
 			// d3dEngine->PrepareScene(D2D1::ColorF(D2D1::ColorF::Wheat));
 		}
 		
-		drawingBoard->GetRenderer()->BeginDraw();
+		drawingBoard->BeginDraw();
 		drawingBoard->GetRenderer()->Clear(D2D1::ColorF(1.0f,1.0f,1.0f,1.0f));
 
 		mainPage->Draw();
@@ -231,7 +231,7 @@ void TWindow::Draw()
 		if (flyout.Get())
 			flyout->AfterDraw();
 
-		drawingBoard->GetRenderer()->EndDraw();
+		drawingBoard->EndDraw();
 
 		HDC dc = drawingBoard->GetDc();
 
@@ -483,12 +483,15 @@ void TWindow::OnWindowResize(UINT width, UINT height)
 	if (mainPage.Get())
 		mainPage->OnResize(newLoc, 0, d3dEngine);
 
-	//if (d3dEngine.Get())
-	//	d3dEngine->Resize(width, height);
+	if (d3dEngine.Get())
+		d3dEngine->Resize(width, height);
 
-	if(drawingBoard.Get())
-		drawingBoard->Resize(this->currentWindow);
-
+	if (drawingBoard.Get())
+	{
+		drawingBoard->Resize(GetTWindowDc(), size);
+		if (d3dEngine.Get())
+			d3dEngine->ClearDC();
+	}
 
 	//safeToDraw = safeToDraw & 0b11111101;
 }

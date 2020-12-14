@@ -36,9 +36,11 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 	dc = dc2 = nullptr;
 
 	usePrimaryDc = true;
+	GetClientRect(window, &area);
 
+	Resize(GetDC(window), area);
 
-	Resize(window);
+	this->window = window;
 }
 
 DrawingBoard::~DrawingBoard()
@@ -58,8 +60,10 @@ DrawingBoard::~DrawingBoard()
 
 
 
-void DrawingBoard::Resize(HWND window)
+void DrawingBoard::Resize(HDC window, RECT size)
 {
+
+	r = size;
 	D2D1_RENDER_TARGET_PROPERTIES props;
 	ZeroMemory(&props, sizeof(props));
 
@@ -78,13 +82,9 @@ void DrawingBoard::Resize(HWND window)
 	if (hMap)
 		DeleteObject(hMap);
 
-
-	
-	GetClientRect(window, &r);
-	HDC copy = GetDC(window);
-	dc = CreateCompatibleDC(copy);
-	dc2 = CreateCompatibleDC(copy);
-	hMap = CreateCompatibleBitmap(GetDC(window), r.right - r.left, r.bottom - r.top);
+	dc = CreateCompatibleDC(window);
+	dc2 = CreateCompatibleDC(window);
+	hMap = CreateCompatibleBitmap(window, r.right - r.left, r.bottom - r.top);
 
 	SelectObjectDc();
 
@@ -107,7 +107,6 @@ void DrawingBoard::Resize(HWND window)
 
 
 	layersPushed = 0;
-	this->window = window;
 
 
 	
@@ -501,6 +500,18 @@ void DrawingBoard::SetToSecondaryTarget()
 void DrawingBoard::SetToPromaryTarget()
 {
 	usePrimaryDc = true;
+}
+
+void DrawingBoard::BeginDraw()
+{
+	renderer->BeginDraw();
+	renderer2->BeginDraw();
+}
+
+void DrawingBoard::EndDraw()
+{
+	renderer->EndDraw();
+	renderer2->EndDraw();
 }
 
 void DrawingBoard::SelectObjectDc()

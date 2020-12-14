@@ -53,7 +53,7 @@ public:
 	 * Parameters: HWND window -  the window to get the size from
 	 * Returns: void
 	 */
-	void Resize(HWND window);
+	void Resize(HDC window, RECT size);
 
 	/**
 	 * Method: DrawingBoard::GetBrush
@@ -237,6 +237,9 @@ public:
 
 	void SetToSecondaryTarget();
 	void SetToPromaryTarget();
+
+	void BeginDraw();
+	void EndDraw();
 
 private:
 

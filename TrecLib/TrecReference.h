@@ -1136,7 +1136,7 @@ public:
 	 */
 	t* operator->()
 	{
-		if (!pointer)return nullptr;
+		if (!pointer || !pointer->Get())throw L"Attempt to Access a null object!";
 		return pointer->Get();
 	}
 
