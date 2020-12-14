@@ -30,39 +30,25 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 		throw L"Error! Factory Object MUST be initialized!";
 	this->fact = fact;
 
-	D2D1_RENDER_TARGET_PROPERTIES props;
-	ZeroMemory(&props, sizeof(props));
-
-	props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
-	props.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,
-		D2D1_ALPHA_MODE_PREMULTIPLIED);
-
-	props.dpiX = props.dpiY = 0.0f;
-	props.usage = D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE;
-	props.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
+	ZeroMemory(&r, sizeof(r));
 
 	RECT area;
-	
-	HDC copy = GetDC(window);
-	dc = CreateCompatibleDC(copy);
+	dc = dc2 = nullptr;
 
-	TrecComPointer<ID2D1DCRenderTarget>::TrecComHolder renderDc;
+	usePrimaryDc = true;
 
-	HRESULT res = fact->CreateDCRenderTarget(&props, renderDc.GetPointerAddress());
-	if (FAILED(res))
-		throw L"Error! Failed to Create DC Render Target!";
-
-	renderer = renderDc.Extract();
-	layersPushed = 0;
-	this->window = window;
 
 	Resize(window);
 }
 
 DrawingBoard::~DrawingBoard()
 {
+
 	if (dc)
 		DeleteDC(dc);
+	if (dc2)
+		DeleteDC(dc2);
+
 	dc = nullptr;
 	if (hMap)
 		DeleteObject(hMap);
@@ -74,17 +60,62 @@ DrawingBoard::~DrawingBoard()
 
 void DrawingBoard::Resize(HWND window)
 {
-	RECT r{ 0,0,0,0 };
-	GetClientRect(window, &r);
+	D2D1_RENDER_TARGET_PROPERTIES props;
+	ZeroMemory(&props, sizeof(props));
 
+	props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+	props.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,
+		D2D1_ALPHA_MODE_PREMULTIPLIED);
+
+	props.dpiX = props.dpiY = 0.0f;
+	props.usage = D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE;
+	props.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
+
+	if (dc)
+		DeleteDC(dc);
+	if (dc2)
+		DeleteDC(dc2);
+	if (hMap)
+		DeleteObject(hMap);
+
+
+	
+	GetClientRect(window, &r);
+	HDC copy = GetDC(window);
+	dc = CreateCompatibleDC(copy);
+	dc2 = CreateCompatibleDC(copy);
 	hMap = CreateCompatibleBitmap(GetDC(window), r.right - r.left, r.bottom - r.top);
+
+	SelectObjectDc();
+
+
+	TrecComPointer<ID2D1DCRenderTarget>::TrecComHolder renderDc;
+
+	// Create the Primary RenderTarget
+	HRESULT res = fact->CreateDCRenderTarget(&props, renderDc.GetPointerAddress());
+	if (FAILED(res))
+		throw L"Error! Failed to Create DC Render Target!";
+	renderer = renderDc.Extract();
+	renderer->BindDC(dc, &r);
+
+	// Now create the Secondary RenderTarget
+	res = fact->CreateDCRenderTarget(&props, renderDc.GetPointerAddress());
+	if (FAILED(res))
+		throw L"Error! Failed to Create DC Render Target!";
+	renderer2 = renderDc.Extract();
+	renderer2->BindDC(dc2, &r);
+
+
+	layersPushed = 0;
+	this->window = window;
+
+
+	
 	int err = 0;
 	if (!hMap)
 		err = GetLastError();
 	assert(hMap);
-	SelectObject(dc, hMap);
 
-	renderer->BindDC(dc, &r);
 }
 
 /**
@@ -147,7 +178,7 @@ TrecSubPointer<TBrush, TBitmapBrush> DrawingBoard::GetBrush(TrecPointer<TFileShe
  */
 TrecComPointer<ID2D1DCRenderTarget> DrawingBoard::GetRenderer()
 {
-	return renderer;
+	return (usePrimaryDc) ? renderer : renderer2;
 }
 
 
@@ -174,10 +205,11 @@ void DrawingBoard::SetSelf(TrecPointer<DrawingBoard> self)
  */
 bool DrawingBoard::SetTransform(const TRANSFORM_2D& matrix)
 {
-	if (!renderer.Get())
+	if (!renderer.Get() || renderer2.Get())
 		return false;
 
 	renderer->SetTransform(matrix);
+	renderer2->SetTransform(matrix);
 	return true;
 }
 
@@ -204,10 +236,12 @@ bool DrawingBoard::GetTransform(TRANSFORM_2D& matrix)
  */
 void DrawingBoard::PopLayer()
 {
-	if (renderer.Get() && layers.Size() && geometries.Size())
+	if (renderer.Get() && renderer2.Get() && layers.Size() && geometries.Size())
 	{
 		renderer->PopLayer();
+		renderer2->PopLayer();
 		layers.RemoveAt(layers.Size() - 1);
+		layers2.RemoveAt(layers2.Size() - 1);
 		geometries.RemoveAt(geometries.Size() - 1);
 	}
 }
@@ -224,12 +258,19 @@ bool DrawingBoard::AddLayer(const RECT_2D& ret)
 	{
 		TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, ret);
 		TrecComPointer<ID2D1Layer>::TrecComHolder layerHolder;
+
+		// Apply to Primary Target
 		renderer->CreateLayer(layerHolder.GetPointerAddress());
 		TrecComPointer<ID2D1Layer> layer = layerHolder.Extract();
-
 		renderer->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
-
 		layers.push_back(layer);
+
+		// Apply to Secondary Target
+		renderer2->CreateLayer(layerHolder.GetPointerAddress());
+		layer = layerHolder.Extract();
+		renderer2->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
+		layers2.push_back(layer);
+
 		geometries.push_back(geo);
 
 		return true;
@@ -249,12 +290,19 @@ bool DrawingBoard::AddLayer(const ELLIPSE_2D& ellipse)
 	{
 		TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, ellipse);
 		TrecComPointer<ID2D1Layer>::TrecComHolder layerHolder;
+
+		// Apply to Primary Target
 		renderer->CreateLayer(layerHolder.GetPointerAddress());
 		TrecComPointer<ID2D1Layer> layer = layerHolder.Extract();
-
 		renderer->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
-
 		layers.push_back(layer);
+
+		// Apply to Secondary Target
+		renderer2->CreateLayer(layerHolder.GetPointerAddress());
+		layer = layerHolder.Extract();
+		renderer2->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
+		layers2.push_back(layer);
+
 		geometries.push_back(geo);
 
 		return true;
@@ -274,12 +322,19 @@ bool DrawingBoard::AddLayer(const ROUNDED_RECT_2D& rRect)
 	{
 		TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, rRect);
 		TrecComPointer<ID2D1Layer>::TrecComHolder layerHolder;
+
+		// Apply to Primary Target
 		renderer->CreateLayer(layerHolder.GetPointerAddress());
 		TrecComPointer<ID2D1Layer> layer = layerHolder.Extract();
-
 		renderer->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
-
 		layers.push_back(layer);
+
+		// Apply to Secondary Target
+		renderer2->CreateLayer(layerHolder.GetPointerAddress());
+		layer = layerHolder.Extract();
+		renderer2->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
+		layers2.push_back(layer);
+
 		geometries.push_back(geo);
 
 		return true;
@@ -299,12 +354,19 @@ bool DrawingBoard::AddLayer(const TDataArray<POINT_2D>& points)
 	{
 		TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, points);
 		TrecComPointer<ID2D1Layer>::TrecComHolder layerHolder;
+
+		// Apply to Primary Target
 		renderer->CreateLayer(layerHolder.GetPointerAddress());
 		TrecComPointer<ID2D1Layer> layer = layerHolder.Extract();
-
 		renderer->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
-
 		layers.push_back(layer);
+
+		// Apply to Secondary Target
+		renderer2->CreateLayer(layerHolder.GetPointerAddress());
+		layer = layerHolder.Extract();
+		renderer2->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
+		layers2.push_back(layer);
+
 		geometries.push_back(geo);
 
 		return true;
@@ -324,11 +386,19 @@ bool DrawingBoard::AddLayer(TrecPointer<TGeometry> geo)
 	{
 		TrecComPointer<ID2D1Layer>::TrecComHolder layerHolder;
 		renderer->CreateLayer(layerHolder.GetPointerAddress());
+
+		// Apply to Primary Target
+		renderer->CreateLayer(layerHolder.GetPointerAddress());
 		TrecComPointer<ID2D1Layer> layer = layerHolder.Extract();
-
 		renderer->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
-
 		layers.push_back(layer);
+
+		// Apply to Secondary Target
+		renderer2->CreateLayer(layerHolder.GetPointerAddress());
+		layer = layerHolder.Extract();
+		renderer2->PushLayer(D2D1::LayerParameters(D2D1::InfiniteRect(), geo->GetUnderlyingGeometry().Get()), layer.Get());
+		layers2.push_back(layer);
+
 		geometries.push_back(geo);
 		return true;
 	}
@@ -416,5 +486,29 @@ UINT DrawingBoard::GetLayerCount()
 HDC DrawingBoard::GetDc()
 {
 	return dc;
+}
+
+HDC DrawingBoard::GetDc2()
+{
+	return dc2;
+}
+
+void DrawingBoard::SetToSecondaryTarget()
+{
+	usePrimaryDc = false;
+}
+
+void DrawingBoard::SetToPromaryTarget()
+{
+	usePrimaryDc = true;
+}
+
+void DrawingBoard::SelectObjectDc()
+{
+	SelectObject(dc, hMap);
+
+	SelectObject(dc2, hMap);
+
+
 }
 

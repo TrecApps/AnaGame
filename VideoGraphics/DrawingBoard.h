@@ -233,7 +233,20 @@ public:
 
 	HDC GetDc();
 
+	HDC GetDc2();
+
+	void SetToSecondaryTarget();
+	void SetToPromaryTarget();
+
 private:
+
+	void SelectObjectDc();
+
+	/**
+	 * whether to use the pimary Device Context or Secondary Context
+	 */
+	bool usePrimaryDc;
+
 	/**
 	 * the factory object the Board is working with, used to retieve Geometries
 	 */
@@ -242,7 +255,7 @@ private:
 	/**
 	 * The Render Target to work with
 	 */
-	TrecComPointer<ID2D1DCRenderTarget> renderer;
+	TrecComPointer<ID2D1DCRenderTarget> renderer, renderer2;
 
 	/**
 	 * Reference to the self, used for initializing TBrush's
@@ -254,9 +267,11 @@ private:
 	 */
 	HWND window;
 
-	HDC dc;
+	HDC dc, dc2;
 
 	HBITMAP hMap;
+
+	RECT r;
 
 	/**
 	 * heeps track of the number of layers pushed
@@ -266,7 +281,7 @@ private:
 	/**
 	 * holds the layers pushed
 	 */
-	TDataArray<TrecComPointer<ID2D1Layer>> layers;
+	TDataArray<TrecComPointer<ID2D1Layer>> layers, layers2;
 
 	/**
 	 * Keeps track of the Geometries that exist
