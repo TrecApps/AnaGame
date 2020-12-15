@@ -44,7 +44,9 @@ class TC_DATA_STRUCT TClassStruct :
 public:
     TClassStruct();
     bool AddAttribute(const TClassAttribute& att);
-    TClassAttribute GetAttributeByName(TString& name);
+    TClassAttribute GetAttributeByName(const TString& name);
+
+    bool GetAttributeByIndex(UINT index, TClassAttribute& att);
 
     void SetCaseInsensitive();
 

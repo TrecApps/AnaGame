@@ -4,6 +4,7 @@
 #include <cassert>
 #include <TPrimitiveVariable.h>
 #include "JsConsole.h"
+#include "TJavaScriptClassInterpretor.h"
 
 
 static TDataArray<WCHAR> noSemiColonEnd;
@@ -246,6 +247,16 @@ ReportObject TJavaScriptInterpretor::Run()
                 dynamic_cast<TJavaScriptInterpretor*>(statements[Rust].body.Get())->ProcessStatements(ret);
                 if (ret.returnCode)
                     return ret;
+
+                break;
+            case js_statement_type::js_class:
+                statements[Rust].body = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(
+                    TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptClassInterpretor>(TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptClassInterpretor>(
+                        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment)));
+                dynamic_cast<TInterpretor*>(statements[Rust].body.Get())->SetCode(
+                    file, statements[Rust].fileStart, statements[Rust].fileEnd);
+                break;
+                
             }
         }
     }
@@ -655,6 +666,16 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
             else if (startStatement.StartsWith(L"class", false, true))
             {
                 JavaScriptStatement statement(js_statement_type::js_class);
+                statement.contents.Set(startStatement.SubString(5, startStatement.GetSize() - 1).GetTrim());
+                statement.fileStart = file->GetPosition();
+                statement.fileEnd = GetBlockEnd();
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"Class-block does not have a complete block");
+                    return;
+                }
+                statements.push_back(statement);
             }
             else if (startStatement.StartsWith(L"return", false, true) || startStatement.StartsWith(L"return;"))
             {
@@ -799,6 +820,8 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
 
                 if (tempContents.EndsWith(L"{") && !statements[index].fileStart)
                 {
+                    // bool possibleArray = tempContents.SubString(0, tempContents.GetSize() - 1).GetTrim().EndsWith(L','); //
+
                     statements[index].fileStart = file->GetPosition();
                     statements[index].fileEnd = GetBlockEnd();
                     file->Seek(statements[index].fileStart, 0);
@@ -1621,6 +1644,22 @@ void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& st
 
 void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
+    TrecSubPointer<TVariable, TJavaScriptClassInterpretor> classInt = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptClassInterpretor>(
+        TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body));
+    assert(classInt.Get());
+
+    classInt->SetClassName(statement.contents);
+    classInt->ProcessStatements(ro);
+    if (ro.returnCode)
+        return;
+    TClassStruct classInfo = classInt->GetClassData();
+
+    if (!SubmitClassType(statement.contents, classInfo))
+    {
+        ro.returnCode = ro.invalid_name;
+        ro.errorMessage.Format(L"Class %ws already defined in this scope!", statement.contents.GetConstantBuffer());
+        return;
+    }
 }
 
 void TJavaScriptInterpretor::ProcessReg(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
@@ -1999,6 +2038,102 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
             if (ro.returnCode)
                 return;
             expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
+        }
+        else if (exp.StartsWith(L"new", false, true))
+        {
+            exp.Delete(0, 3);
+            exp.Trim();
+            int openParenth = exp.Find(L'(');
+            TString name(exp.SubString(0, openParenth));
+
+            TDataArray<TrecPointer<TVariable>> expressions;
+            TrecSubPointer<TVariable, TContainerVariable> newObj = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+
+            // this new container object becomes "this"
+            expressions.push_back(TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(newObj));
+
+            if (openParenth != -1)
+            {
+                int closeParenth = exp.FindOutOfQuotes(L')');
+                if (closeParenth == -1 || closeParenth < openParenth)
+                {
+                    ro.returnCode = ro.mismatched_parehtnesis;
+
+                    return;
+                }
+
+                TString strParams(exp.SubString(openParenth + 1, closeParenth));
+
+                auto strParamsSplit = strParams.split(L',', 3);
+
+                for (UINT Rust = 0; Rust < strParamsSplit->Size(); Rust++)
+                {
+                    TString data = strParamsSplit->at(Rust).GetTrim();
+                    if (!data.GetSize())
+                        continue;
+                    ProcessExpression(statements, cur, data, line, ro);
+                    if (ro.returnCode)
+                        return;
+                    expressions.push_back(ro.errorObject);
+                }
+                exp.Set(exp.SubString(closeParenth + 1));
+            }
+            else
+            {
+                exp.Delete(0, name.GetSize());
+            }
+
+            
+
+            TClassStruct classType;
+            if (classes.retrieveEntry(name, classType))
+            {
+                TClassAttribute att = classType.GetAttributeByName(L"constructor");
+
+                TrecSubPointer<TVariable, TInterpretor> function = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(att.def);
+
+                if (function.Get())
+                {
+                    ro = function->Run(expressions);
+                    if (ro.returnCode)return;
+                    ro.errorObject = expressions[0];
+                }
+                else
+                {
+                    // No constructor, just simply go through attributes and recreate their attributes
+                    UINT index = 0;
+                    while (classType.GetAttributeByIndex(index++, att))
+                    {
+                        if ((att.other & ATTRIBUTE_STATIC) || !att.name.GetSize())
+                            continue;
+
+                        newObj->SetValue(att.name, att.def);
+                    }
+                    ro.errorObject = expressions[0];
+                }
+            }
+            else
+            {
+                // Search for a function with the name
+                bool present;
+                TrecSubPointer<TVariable, TInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>( GetVariable(name, present));
+
+                if (!func.Get())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Format(L"Error! No Such Class or Function name %ws in new declaration!", name.GetConstantBuffer());
+                    return;
+                }
+
+                func->SetFirstParamName(L"this");
+
+                ro = func->Run(expressions);
+
+                if (ro.returnCode)
+                    return;
+                ro.errorObject = expressions[0];
+            }
+
         }
         else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
         {

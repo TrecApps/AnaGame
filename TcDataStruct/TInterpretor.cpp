@@ -193,6 +193,37 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 	ro.returnCode = 0;
 }
 
+bool TInterpretor::SubmitClassType(const TString& className, TClassStruct& classStruct)
+{
+	TClassStruct s;
+	if(classes.retrieveEntry(className,s))
+		return false;
+
+	classes.addEntry(className, classStruct);
+	return true;
+}
+
+void TInterpretor::SetFirstParamName(const TString& iParam)
+{
+	if (!paramNames.Size())
+	{
+		paramNames.push_back(iParam);
+		return;
+	}
+
+	if (!iParam.Compare(paramNames[0]))
+		return;
+
+	paramNames.push_back(paramNames[paramNames.Size() - 1]);
+
+	for (UINT Rust = paramNames.Size() - 2; Rust < paramNames.Size(); Rust--)
+	{
+		paramNames[Rust + 1].Set(paramNames[Rust]);
+	}
+
+	paramNames[0].Set(iParam);
+}
+
 TrecPointer<TVariable> TInterpretor::Clone()
 {
 	return TrecPointerKey::GetTrecPointerFromSub<TVariable,TInterpretor>(TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));

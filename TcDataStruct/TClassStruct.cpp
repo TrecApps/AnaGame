@@ -40,7 +40,7 @@ bool TClassStruct::AddAttribute(const TClassAttribute& att)
 	return true;
 }
 
-TClassAttribute TClassStruct::GetAttributeByName(TString& name)
+TClassAttribute TClassStruct::GetAttributeByName(const TString& name)
 {
 	for (UINT Rust = 0; Rust < attributes.Size(); Rust)
 	{
@@ -48,6 +48,14 @@ TClassAttribute TClassStruct::GetAttributeByName(TString& name)
 			return attributes[Rust];
 	}
 	return TClassAttribute();
+}
+
+bool TClassStruct::GetAttributeByIndex(UINT index, TClassAttribute& att)
+{
+	if (index >= this->attributes.Size())
+		return false;
+	att = attributes[index];
+	return true;
 }
 
 void TClassStruct::SetCaseInsensitive()

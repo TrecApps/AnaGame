@@ -5,6 +5,7 @@
 #include <TDataMap.h>
 #include <TFile.h>
 #include <TEnvironment.h>
+#include "TClassStruct.h"
 
 
     /**
@@ -348,7 +349,17 @@ public:
      */
     void CheckVarName(TString& varname, ReportObject& ro, UINT line);
 
+    bool SubmitClassType(const TString& className, TClassStruct& classStruct);
+
+    void SetFirstParamName(const TString& iParam);
+
 protected:
+    /**
+     * The list of Types held by the Interpretor
+     */
+    TDataMap<TClassStruct> classes;
+
+
     /**
      * The Interpretor that created this interpretor 
      */
