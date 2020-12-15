@@ -274,7 +274,11 @@ int Page::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 
 		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
 		rootControl->setParent(selfHolder);
+		rootControl->QueryMediaControl(mediaControls);
 	}
+	if (windowHandle.Get())
+		TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->RefreshMediaControls();
+
 	persistentStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetPersistentStoryBoards();
 	basicStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetStoryBoards();
 	animations = dynamic_cast<AnafaceParser*>(parser.Get())->GetAnimations();
@@ -321,7 +325,13 @@ int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
 		}
 		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
 		rootControl->setParent(selfHolder);
+
+		rootControl->QueryMediaControl(mediaControls);
 	}
+	if (windowHandle.Get())
+		TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->RefreshMediaControls();
+
+
 	if(handler.Get())
 		handler->Initialize(TrecPointerKey::GetTrecPointerFromSoft<Page>(self));
 
@@ -974,6 +984,14 @@ void Page::OnFocus()
 		handler->OnFocus();
 }
 
+void Page::QueryMediaControls(TDataArray<TrecPointer<TControl>>& mediaControls)
+{
+	for (UINT Rust = 0; Rust < this->mediaControls.Size(); Rust++)
+	{
+		mediaControls.push_back(this->mediaControls[Rust]);
+	}
+}
+
 
 
 
@@ -1024,6 +1042,9 @@ void Page::CreateLayout()
 	if (rootControl.Get() && windowHandle.Get())
 	{
 		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
+		mediaControls.RemoveAll();
+		rootControl->QueryMediaControl(mediaControls);
+		TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->RefreshMediaControls();
 	}
 }
 

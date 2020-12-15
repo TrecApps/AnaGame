@@ -7,6 +7,19 @@ bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float differ
 #include "TAnimationManager.h"
 #include <TVideo.h>
 
+
+
+class _TAP_DLL MediaControlLoc
+{
+public:
+	MediaControlLoc();
+	MediaControlLoc(const MediaControlLoc& copy);
+
+	TrecPointer<TControl> control;
+	RECT loc;
+};
+
+
 /**
  * Class: TWindow
  * Purpose: Base class for managing a Window in ANagame
@@ -120,6 +133,9 @@ public:
 	 * Attributes: deprecated
 	 */
 	void Draw(Page& draw);
+
+	virtual void RefreshMediaControls();
+
 
 	/**
 	 * Method: TWindow::InduceDraw
@@ -416,6 +432,7 @@ public:
 
 
 protected:
+	TDataArray<MediaControlLoc> mediaControls;
 
 	TrecSubPointer<TControl, TVideo> videoPlayer;
 

@@ -560,7 +560,11 @@ public:
 	 */
 	void OnFocus();
 
+	virtual void QueryMediaControls(TDataArray<TrecPointer<TControl>>& mediaControls);
+
 protected:
+
+	TDataArray<TrecPointer<TControl>> mediaControls;
 
 	/**
 	 * Reports whether the Drawing has commenced

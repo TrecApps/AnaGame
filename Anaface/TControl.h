@@ -1746,6 +1746,8 @@ public:
 	 */
 	virtual TrecPointer<TControl> QueryVideoControl();
 
+	virtual void QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls);
+
 protected:
 	//CMap<CString, CString, CString, CString> styles;
 	TDataArray<TrecPointer<AnimationData>> animateData;

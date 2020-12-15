@@ -60,6 +60,7 @@ bool TVideo::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
 	if (!player.Get())
 		return false;
+
 	bool returnable = TControl::onCreate(r,d3d);
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|MediaSource"));
 	if (valpoint.Get())
@@ -98,4 +99,10 @@ TrecPointer<TControl> TVideo::QueryVideoControl()
 TrecComPointer<TPlayer> TVideo::GetPlayer()
 {
 	return player;
+}
+
+void TVideo::QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)
+{
+	mediaControls.push_back(TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
+	TControl::QueryMediaControl(mediaControls);
 }

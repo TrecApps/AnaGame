@@ -1113,6 +1113,16 @@ TrecPointer<TControl> TControl::QueryVideoControl()
 	return ret;
 }
 
+void TControl::QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)
+{
+	for (UINT Rust = 0; Rust < children.Count(); Rust++)
+	{
+		if (children.ElementAt(Rust).Get())
+			children.ElementAt(Rust)->QueryMediaControl(mediaControls);
+
+	}
+}
+
 /**
  * Method: TControl::GetMultiData
  * Purpose: Retireves the Attribute[s] of the Control by the key

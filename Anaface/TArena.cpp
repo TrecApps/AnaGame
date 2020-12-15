@@ -218,6 +218,7 @@ TrecPointer<TArenaEngine> TArena::getEngine()
 */
 void TArena::onDraw(TObject* obj)
 {
+
 	//TControl::onDraw();
 	if (content1.Get())
 		content1->onDraw(TControl::location);
@@ -281,4 +282,10 @@ void TArena::Resize(D2D1_RECT_F& r)
 	viewport->TopLeftY = r.top;
 	viewport->Height = r.bottom - r.top;
 	viewport->Width = r.right - r.left;
+}
+
+void TArena::QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)
+{
+	mediaControls.push_back(TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
+	TControl::QueryMediaControl(mediaControls);
 }

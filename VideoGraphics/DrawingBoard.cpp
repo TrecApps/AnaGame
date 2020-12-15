@@ -25,7 +25,7 @@ TString DrawingBoard::GetType()
  */
 DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 {
-	hMap = 0;
+	hMap = hMap2 = 0;
 	if (!fact.Get())
 		throw L"Error! Factory Object MUST be initialized!";
 	this->fact = fact;
@@ -51,10 +51,12 @@ DrawingBoard::~DrawingBoard()
 	if (dc2)
 		DeleteDC(dc2);
 
-	dc = nullptr;
+	dc = dc2 = nullptr;
 	if (hMap)
 		DeleteObject(hMap);
-	hMap = nullptr;
+	if (hMap2)
+		DeleteObject(hMap2);
+	hMap = hMap2 = nullptr;
 }
 
 
@@ -81,11 +83,13 @@ void DrawingBoard::Resize(HDC window, RECT size)
 		DeleteDC(dc2);
 	if (hMap)
 		DeleteObject(hMap);
+	if (hMap2)
+		DeleteObject(hMap2);
 
 	dc = CreateCompatibleDC(window);
 	dc2 = CreateCompatibleDC(window);
 	hMap = CreateCompatibleBitmap(window, r.right - r.left, r.bottom - r.top);
-
+	hMap2 = CreateCompatibleBitmap(window, r.right - r.left, r.bottom - r.top);
 	SelectObjectDc();
 
 
@@ -510,15 +514,20 @@ void DrawingBoard::BeginDraw()
 
 void DrawingBoard::EndDraw()
 {
-	renderer->EndDraw();
-	renderer2->EndDraw();
+	int err = 0;
+
+	if(FAILED(renderer->EndDraw()))
+		err = GetLastError();
+	if (FAILED(renderer2->EndDraw()))
+		err = GetLastError();
+	int e = 0;
 }
 
 void DrawingBoard::SelectObjectDc()
 {
 	SelectObject(dc, hMap);
 
-	SelectObject(dc2, hMap);
+	SelectObject(dc2, hMap2);
 
 
 }

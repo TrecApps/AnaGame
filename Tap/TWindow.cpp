@@ -10,6 +10,15 @@ bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float differ
 		(abs(r1.top - r2.top) <= difference);
 }
 
+static BLENDFUNCTION blendFunc = {
+	AC_SRC_OVER,
+	0,
+	255,
+	AC_SRC_ALPHA
+};
+
+
+
 
 /**
  * Method: TWindow::TWindow
@@ -219,15 +228,32 @@ void TWindow::Draw()
 		{
 			// d3dEngine->PrepareScene(D2D1::ColorF(D2D1::ColorF::Wheat));
 		}
+
+		// Get Whatever is on the window already
+		HDC backup = drawingBoard->GetDc2();
+		int err = 0;
+		HDC winDc = GetTWindowDc();
+		for (UINT Rust = 0; Rust < mediaControls.Size(); Rust++)
+		{
+			RECT loc = mediaControls[Rust].loc;
+			if(!AlphaBlend(backup, loc.left, loc.top, loc.right - loc.left, loc.bottom - loc.top,
+				winDc, loc.left, loc.top, loc.right - loc.left, loc.bottom - loc.top, blendFunc))
+				err = GetLastError();
+		}
+
 		
 		drawingBoard->BeginDraw();
-		drawingBoard->GetRenderer()->Clear(D2D1::ColorF(1.0f,1.0f,1.0f,1.0f));
+		drawingBoard->GetRenderer()->Clear(D2D1::ColorF(.8f,.8f,.80f,1.0f));
 
 		mainPage->Draw();
 		DrawOtherPages();
 
 		if (d3dEngine.Get())
+		{
+			d3dEngine->ClearDC();
 			d3dEngine->FinalizeScene();
+			winDc = GetTWindowDc();
+		}
 		if (flyout.Get())
 			flyout->AfterDraw();
 
@@ -235,10 +261,19 @@ void TWindow::Draw()
 
 		HDC dc = drawingBoard->GetDc();
 
-		int err = 0;
+		err = 0;
 
-		if (!BitBlt(GetTWindowDc(), size.left, size.top, size.right - size.left, size.bottom - size.top, dc, 0, 0, SRCCOPY))
+		if (!BitBlt(winDc, size.left, size.top, size.right - size.left, size.bottom - size.top, dc, 0, 0, SRCCOPY))
 			err = GetLastError();
+		for (UINT Rust = 0; Rust < mediaControls.Size(); Rust++)
+		{
+			RECT loc = mediaControls[Rust].loc;
+			if (!AlphaBlend(winDc, loc.left, loc.top, loc.right - loc.left, loc.bottom - loc.top,
+				backup, loc.left, loc.top, loc.right - loc.left, loc.bottom - loc.top, blendFunc))
+			{
+				err = GetLastError();
+			}
+		}
 		FlushDc();
 		safeToDraw = tempSafe;
 	}
@@ -265,6 +300,26 @@ void TWindow::Draw()
 void TWindow::Draw(Page& draw)
 {
 	draw.Draw();
+}
+
+void TWindow::RefreshMediaControls()
+{
+	mediaControls.RemoveAll();
+
+	TDataArray<TrecPointer<TControl>> controls;
+	if (mainPage.Get())
+		mainPage->QueryMediaControls(controls);
+
+	for (UINT Rust = 0; Rust < controls.Size(); Rust++)
+	{
+		MediaControlLoc mLoc;
+		mLoc.control = controls[Rust];
+		if (!mLoc.control.Get())
+			continue;
+		mLoc.loc = convertD2DRectToRECT(mLoc.control->getLocation());
+		mediaControls.push_back(mLoc);
+	}
+
 }
 
 /**
@@ -703,6 +758,8 @@ bool TWindow::SetUp3D()
 		return false;
 	}
 
+	drawingBoard->Resize(GetTWindowDc(), size);
+	d3dEngine->ClearDC();
 
 
 	return true;
@@ -856,4 +913,13 @@ void TWindow::DrawOtherPages()
 {
 }
 
+MediaControlLoc::MediaControlLoc()
+{
+	loc = { 0,0,0,0 };
+}
 
+MediaControlLoc::MediaControlLoc(const MediaControlLoc& copy)
+{
+	control = copy.control;
+	loc = copy.loc;
+}

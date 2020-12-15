@@ -37,6 +37,8 @@ public:
 
 	TrecComPointer<TPlayer> GetPlayer();
 
+	virtual void QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)override;
+
 private:
 	TrecComPointer<TPlayer> player;
 	HWND window;

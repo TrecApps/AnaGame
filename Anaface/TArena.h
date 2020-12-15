@@ -94,6 +94,6 @@ public:
 	 */
 	void Resize(D2D1_RECT_F& r) override;
 
-
+	virtual void QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)override;
 };
 

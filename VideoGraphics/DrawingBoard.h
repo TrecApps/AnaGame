@@ -272,7 +272,7 @@ private:
 
 	HDC dc, dc2;
 
-	HBITMAP hMap;
+	HBITMAP hMap, hMap2;
 
 	RECT r;
 
