@@ -171,7 +171,7 @@ protected:
     UINT ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
     void InspectNumber(TString& exp, UINT line, ReportObject& ro);
     bool InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT& cur, TString& exp, UINT line, ReportObject& ro);
-    void ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> obj);
+    UINT ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> obj);
     void ProcessJsonExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
 
     bool InspectVariable(const TString& exp);

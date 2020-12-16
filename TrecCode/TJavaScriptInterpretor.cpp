@@ -2587,7 +2587,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
 {
     exp.TrimRight();
 
-
+    ro.errorMessage.Empty();
 
     _ASSERT(exp.GetSize());
 
@@ -2612,6 +2612,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
 
     // See if it a "function" expression
     varName.Set(exp.SubString(0, end));
+    TString fullVarName;
     if (!varName.Compare(L"function"))
     {
         exp.Delete(0, 8);
@@ -2624,6 +2625,8 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
         return true;
     }
     objVar = curVar;
+
+    fullVarName.Append(varName);
 
     if (curVar.Get())
     {
@@ -2652,6 +2655,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     }
     if (exp.StartsWith(L"?.") || exp.StartsWith(L"."))
     {
+        fullVarName.Append(exp[0] == L'?' ? L"?." : L".");
         exp.Delete(0, exp[0] == L'?' ? 2 : 1);
         exp.Trim();
         goto getNextVar;
@@ -2677,11 +2681,14 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
             break;
     }
 
-
     if (procedureCall)
     {
         ro.errorObject = curVar;
-        ProcessProcedureCall(statements, cur, exp, line, ro, objVar);
+        TString tempExp(exp);
+        UINT addChars = ProcessProcedureCall(statements, cur, exp, line, ro, objVar);
+
+        if (!ro.returnCode)
+            fullVarName.Append(tempExp.SubString(0, addChars + 1));
     }
     //else 
     //{
@@ -2699,7 +2706,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     if (!procedureCall)
     {
         ro.errorObject = curVar;
-        ro.errorMessage.Set(varName);
+        ro.errorMessage.Set(fullVarName);
     }
     if (exp.StartsWith(L"?.") && !curVar.Get())
     {
@@ -2718,20 +2725,20 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     return true;
 }
 
-void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> objVar)
+UINT TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> objVar)
 {
     if (!ro.errorObject.Get())
     {
         ro.returnCode = ro.broken_reference;
         ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got nul/undefined!");
-        return;
+        return 0;
     }
 
     if (ro.errorObject->GetVarType() != var_type::interpretor)
     {
         ro.returnCode = ro.improper_type;
         ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got non-procedure object!");
-        return;
+        return 0;
     }
 
     TDataArray<TrecPointer<TVariable>> vars;
@@ -2780,7 +2787,7 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
     {
         ro.returnCode = ReportObject::mismatched_parehtnesis;
         ro.errorMessage.Set(L"Mismatched parenthesis when processing expressions for function call");
-        return;
+        return 0;
     }
     expressions.push_back(exp.SubString(0, Rust).GetTrim());
     exp.Delete(0, Rust + 1);
@@ -2791,7 +2798,7 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
     {
         ProcessExpression(statements, cur, expressions[Rust], line, ro);
         if (ro.returnCode)
-            return;
+            return Rust+1;
 
         vars.push_back(ro.errorObject);
     }
@@ -2800,6 +2807,8 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
 
     if (!ro.returnCode && ro.mode == report_mode::report_mode_return)
         ro.mode = report_mode::report_mode_regular;
+
+    return Rust + 1;
 }
 
 void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
@@ -3676,7 +3685,9 @@ void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& s
             if (expressions[Rust].varName.CountFinds(L'.'))
             {
                 auto holdVal = ro.errorObject;
-                ProcessExpression(statements, cur, expressions[Rust].varName, line, ro);
+                int finalDot = expressions[Rust].varName.FindLast(L'.');
+                TString initExp(expressions[Rust].varName.SubString(0, finalDot));
+                ProcessExpression(statements, cur, iitExp, line, ro);
 
                 if (ro.returnCode)
                     return;
@@ -3695,7 +3706,7 @@ void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& s
                     return;
                 }
                 
-                dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetValue(expressions[Rust].varName.SubString(expressions[Rust].varName.FindLast(L'.')), holdVal);
+                dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetValue(expressions[Rust].varName.SubString(finalDot+1), holdVal);
 
                 ro.errorObject = holdVal;
             }
