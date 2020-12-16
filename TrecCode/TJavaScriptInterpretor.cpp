@@ -3687,7 +3687,7 @@ void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& s
                 auto holdVal = ro.errorObject;
                 int finalDot = expressions[Rust].varName.FindLast(L'.');
                 TString initExp(expressions[Rust].varName.SubString(0, finalDot));
-                ProcessExpression(statements, cur, iitExp, line, ro);
+                ProcessExpression(statements, cur, initExp, line, ro);
 
                 if (ro.returnCode)
                     return;
