@@ -3673,16 +3673,45 @@ void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& s
                 ro.errorObject = left;
             }
 
-            switch (UpdateVariable(expressions[Rust].varName, ro.errorObject))
+            if (expressions[Rust].varName.CountFinds(L'.'))
             {
-            case 1:
-                ro.returnCode = ro.broken_reference;
-                ro.errorMessage.Format(L"Assignment to non-existant variable '%ws' occured!", expressions[Rust].varName.GetConstantBuffer());
-                return;
-            case 2:
-                ro.returnCode = ro.broken_reference;
-                ro.errorMessage.Format(L"Assignment to const variable '%ws' was attempted!", expressions[Rust].varName.GetConstantBuffer());
-                return;
+                auto holdVal = ro.errorObject;
+                ProcessExpression(statements, cur, expressions[Rust].varName, line, ro);
+
+                if (ro.returnCode)
+                    return;
+
+                if (!ro.errorObject.Get())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Set(L"Found Broken reference in Assignment operation!");
+                    return;
+                }
+
+                if (ro.errorObject->GetVarType() != var_type::collection)
+                {
+                    ro.returnCode = ro.improper_type;
+                    ro.errorMessage.Format(L"Expected collection type for expression `%ws`", expressions[Rust].varName);
+                    return;
+                }
+                
+                dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetValue(expressions[Rust].varName.SubString(expressions[Rust].varName.FindLast(L'.')), holdVal);
+
+                ro.errorObject = holdVal;
+            }
+            else
+            {
+                switch (UpdateVariable(expressions[Rust].varName, ro.errorObject))
+                {
+                case 1:
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Format(L"Assignment to non-existant variable '%ws' occured!", expressions[Rust].varName.GetConstantBuffer());
+                    return;
+                case 2:
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Format(L"Assignment to const variable '%ws' was attempted!", expressions[Rust].varName.GetConstantBuffer());
+                    return;
+                }
             }
             expressions[Rust].value = ro.errorObject;
             expressions.RemoveAt(Rust + 1);

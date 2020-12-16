@@ -157,7 +157,7 @@ public:
      *              bool makeConst - whether the variable added should be const or not (ignored if 'addLocally' is false) (false by Default)
      * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable)
      */
-    UINT UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally = false, bool makeConst = false);
+    virtual UINT UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally = false, bool makeConst = false);
 
     /**
      * Method: TInterpretor::TInterpretor

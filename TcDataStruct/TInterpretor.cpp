@@ -242,6 +242,8 @@ UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> va
 {
 	if (!name.GetSize())
 		return 3;
+
+
 	for (UINT Rust = 0; Rust < variables.count(); Rust++)
 	{
 		TDataEntry<TVariableMarker> varMarker;
