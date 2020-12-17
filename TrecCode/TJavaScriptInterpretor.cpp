@@ -2094,25 +2094,24 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
                 TrecSubPointer<TVariable, TInterpretor> function = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(att.def);
 
+                // No constructor, just simply go through attributes and recreate their attributes
+                UINT index = 0;
+                while (classType.GetAttributeByIndex(index++, att))
+                {
+                    if ((att.other & ATTRIBUTE_STATIC) || !att.name.GetSize())
+                        continue;
+
+                    newObj->SetValue(att.name, att.def);
+                }
+                ro.errorObject = expressions[0];
+
                 if (function.Get())
                 {
                     ro = function->Run(expressions);
                     if (ro.returnCode)return;
                     ro.errorObject = expressions[0];
                 }
-                else
-                {
-                    // No constructor, just simply go through attributes and recreate their attributes
-                    UINT index = 0;
-                    while (classType.GetAttributeByIndex(index++, att))
-                    {
-                        if ((att.other & ATTRIBUTE_STATIC) || !att.name.GetSize())
-                            continue;
 
-                        newObj->SetValue(att.name, att.def);
-                    }
-                    ro.errorObject = expressions[0];
-                }
             }
             else
             {
@@ -2135,7 +2134,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                     return;
                 ro.errorObject = expressions[0];
             }
-
+            expresions.push_back(JavaScriptExpression(ro.errorMessage, ro.errorObject));
         }
         else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
         {
@@ -2180,7 +2179,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                     if (ro.returnCode)
                     {
                         ro.returnCode = 0;
-                        continue;
+                        ro.errorObject.Nullify();
                     }
 
                     TString res = ro.errorObject.Get() ? ro.errorObject->GetString() : TString(L"undefined");
@@ -2597,7 +2596,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     bool present, procedureCall;
     TString varName;
     TrecPointer<TVariable> curVar, objVar;
-
+    TString fullVarName;
     // Get Next Variable title
     getNextVar:
     for (endt = 0; endt < exp.GetSize(); endt++)
@@ -2614,7 +2613,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
 
     // See if it a "function" expression
     varName.Set(exp.SubString(0, endt));
-    TString fullVarName;
+
     if (!varName.Compare(L"function"))
     {
         exp.Delete(0, 8);

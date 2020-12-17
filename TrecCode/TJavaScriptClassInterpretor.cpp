@@ -82,7 +82,7 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
 
             TString startStatement(code.GetTrimLeft());
 
-            if (!startStatement.GetSize())
+            if (!startStatement.GetSize() || !startStatement.Compare(L';'))
                 continue;
 
             int startParenth = startStatement.Find(L'(');
@@ -199,7 +199,8 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
                 }
 
                 TClassAttribute constructor;
-                constructor.name.Set(name);
+                int i; 
+                constructor.name.Set(name.GetReplace(i, L";", L""));
                 constructor.def = var;
                 constructor.other = attributes;
                 classData.AddAttribute(constructor);
