@@ -252,7 +252,7 @@ ReportObject TJavaScriptInterpretor::Run()
             case js_statement_type::js_class:
                 statements[Rust].body = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(
                     TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptClassInterpretor>(TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptClassInterpretor>(
-                        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment)));
+                        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment, JsClassBlockType::jscbt_base)));
                 dynamic_cast<TInterpretor*>(statements[Rust].body.Get())->SetCode(
                     file, statements[Rust].fileStart, statements[Rust].fileEnd);
                 break;
@@ -1812,6 +1812,8 @@ void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>
 {
     auto toks = statement.contents.split(L',', 2);
 
+    TInterpretor::CorrectSplitStringForParenthesis(toks, L',');
+
     UINT newLines = 0;
 
     TString statementType;
@@ -1958,13 +1960,13 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
         {
             UINT stack = 1;
 
-            UINT end;
+            UINT endt;
 
-            for (end = 1; end < exp.GetSize() && stack; end++)
+            for (endt = 1; endt < exp.GetSize() && stack; endt++)
             {
-                if (exp[end] == L'(')
+                if (exp[endt] == L'(')
                     stack++;
-                else if (exp[end] == L')')
+                else if (exp[endt] == L')')
                     stack--;
             }
 
@@ -1978,10 +1980,10 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
                 return;
             }
-            if (exp[end] != L')')
-                end--;
+            if (exp[endt] != L')')
+                endt--;
 
-            TString smallExp(exp.SubString(1, end));
+            TString smallExp(exp.SubString(1, endt));
 
             ProcessExpression(statements, cur, smallExp, line, ro);
 
@@ -1992,19 +1994,19 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
             expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
 
-            exp.Set(exp.SubString(end + 1).GetTrim());
+            exp.Set(exp.SubString(endt+ 1).GetTrim());
         }
         else if (exp[0] == L'[')
         {
             UINT stack = 1;
 
-            UINT end;
+            UINT endt;
 
-            for (end = 1; end < exp.GetSize() && stack; end++)
+            for (endt = 1; endt < exp.GetSize() && stack; endt++)
             {
-                if (exp[end] == L'[')
+                if (exp[endt] == L'[')
                     stack++;
-                else if (exp[end] == L']')
+                else if (exp[endt] == L']')
                     stack--;
             }
 
@@ -2019,7 +2021,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 return;
             }
 
-            TString smallExp(exp.SubString(1, end));
+            TString smallExp(exp.SubString(1, endt));
 
             ProcessArrayExpression(statements, cur, smallExp, line, ro);
 
@@ -2030,7 +2032,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
             expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
 
-            exp.Set(exp.SubString(end + 1).GetTrim());
+            exp.Set(exp.SubString(endt + 1).GetTrim());
         }
         else if (exp[0] >= L'0' && exp[0] <= L'9')
         {
@@ -2469,11 +2471,11 @@ UINT TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
         if (state.EndsWith(L';'))
             state.Delete(state.GetSize() - 1);
 
-        bool end = state.EndsWith(L'}');
+        bool endt = state.EndsWith(L'}');
 
-        if (!end || !state.StartsWith(L'}'))
+        if (!endt || !state.StartsWith(L'}'))
             function->statements.push_back(statements.at(Rust));
-        if (end)
+        if (endt)
             break;
     }
 
@@ -2510,13 +2512,13 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
 
     _ASSERT(tExp.GetSize());
 
-    UINT start = 0, end;
+    UINT start = 0, endt;
 
     if (tExp.StartsWith(L"0x", true))
     {
-        for (end = 2; end < tExp.GetSize(); end++)
+        for (endt = 2; endt < tExp.GetSize(); endt++)
         {
-            WCHAR letter = tExp[end];
+            WCHAR letter = tExp[endt];
 
             if ((letter >= L'0' && letter <= L'9') ||
                 (letter >= L'a' && letter <= L'f') ||
@@ -2528,9 +2530,9 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
     }
     else if (tExp.StartsWith(L"0b", true))
     {
-        for (end = 2; end < tExp.GetSize(); end++)
+        for (endt = 2; endt < tExp.GetSize(); endt++)
         {
-            WCHAR letter = tExp[end];
+            WCHAR letter = tExp[endt];
 
             if (letter == L'0' || letter == L'1' || letter == L'_')
                 continue;
@@ -2539,9 +2541,9 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
     }
     else
     {
-        for (end = (tExp[0] == L'-') ? 1 : 0; end < tExp.GetSize(); end++)
+        for (endt = (tExp[0] == L'-') ? 1 : 0; endt < tExp.GetSize(); endt++)
         {
-            WCHAR letter = tExp[end];
+            WCHAR letter = tExp[endt];
 
             if ((letter >= L'0' && letter <= L'9') ||
                 letter == L'.' || letter == L'_')
@@ -2550,7 +2552,7 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
         }
     }
 
-    tExp.Set(tExp.SubString(start, end));
+    tExp.Set(tExp.SubString(start, endt));
 
     if (tExp.Find(L'.') != -1)
     {
@@ -2580,7 +2582,7 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
         ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(l);
     }
 
-    exp.Set(exp.SubString(frontDifference + end));
+    exp.Set(exp.SubString(frontDifference + endt));
 }
 
 bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT& cur, TString& exp, UINT line, ReportObject& ro)
@@ -2591,16 +2593,16 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
 
     _ASSERT(exp.GetSize());
 
-    UINT start = 0, end;
+    UINT start = 0, endt;
     bool present, procedureCall;
     TString varName;
     TrecPointer<TVariable> curVar, objVar;
 
     // Get Next Variable title
     getNextVar:
-    for (end = 0; end < exp.GetSize(); end++)
+    for (endt = 0; endt < exp.GetSize(); endt++)
     {
-        WCHAR letter = exp[end];
+        WCHAR letter = exp[endt];
 
         if ((letter >= L'0' && letter <= L'9') ||
             (letter >= L'a' && letter <= L'z') ||
@@ -2611,7 +2613,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     }
 
     // See if it a "function" expression
-    varName.Set(exp.SubString(0, end));
+    varName.Set(exp.SubString(0, endt));
     TString fullVarName;
     if (!varName.Compare(L"function"))
     {
@@ -2646,7 +2648,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
         curVar = GetVariable(varName, present);
     }
 
-    exp.Set(exp.SubString(end).GetTrim());
+    exp.Set(exp.SubString(endt).GetTrim());
 
     if (exp.StartsWith(L"?.") && !curVar.Get())
     {
@@ -2890,9 +2892,9 @@ bool TJavaScriptInterpretor::InspectVariable(const TString& exp)
 {
     bool foundBad = false;
 
-    for (end = 0; end < exp.GetSize(); end++)
+    for (UINT endt = 0; endt < exp.GetSize(); endt++)
     {
-        WCHAR letter = exp[end];
+        WCHAR letter = exp[endt];
 
         if ((letter >= L'0' && letter <= L'9') ||
             (letter >= L'a' && letter <= L'z') ||
@@ -2903,7 +2905,7 @@ bool TJavaScriptInterpretor::InspectVariable(const TString& exp)
         break;
     }
 
-    return foundBad;
+    return !foundBad;
 }
 
 void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)

@@ -2,8 +2,11 @@
 #include <TObject.h>
 #include <TString.h>
 
-#include "TInterpretor.h"
+#include "TVariable.h"
+#include "TcDataStruct.h"
 #include "TVariableType.h"
+
+class TInterpretor;
 
 #define ACCESS_PUBLIC      0b00000000  // Access is allowed from any-where
 #define ACCESS_PROTECTED   0b00000001  // Access is allowed only from within class and subclass 
@@ -53,7 +56,7 @@ public:
     virtual var_category GetVarGategory() override;
 protected:
     TDataArray<TClassAttribute> attributes;
-    TDataArray<TrecPointer<TInterpretor>> constructors;
+    TDataArray<TrecSubPointer<TVariable, TInterpretor>> constructors;
     bool caseSensitive;
 };
 

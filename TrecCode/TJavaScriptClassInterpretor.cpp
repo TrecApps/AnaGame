@@ -82,6 +82,9 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
 
             TString startStatement(code.GetTrimLeft());
 
+            if (!startStatement.GetSize())
+                continue;
+
             int startParenth = startStatement.Find(L'(');
 
             if (startStatement.StartsWith(L"constructor", false, true) || startStatement.StartsWith(L"constructor("))
@@ -212,7 +215,7 @@ TClassStruct TJavaScriptClassInterpretor::GetClassData()
 
 void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TString& startStatement, int startParenth, ReportObject& ro, UCHAR att)
 {
-    ProcessParenthBlock(ro, startStatement.SubString(11), line);
+    ProcessParenthBlock(ro, startStatement.SubString(startParenth), line);
 
     if (ro.returnCode)
         return;
@@ -231,8 +234,14 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
         return;
     }
 
+    if (statement.contents.EndsWith(L'{'))
+    {
+        statement.contents.Delete(statement.contents.GetSize() - 1);
+        statement.contents.Trim();
+    }
+
     if (statement.contents.StartsWith(L'(') && statement.contents.EndsWith(L')'))
-        statement.contents.Set(statement.contents.SubString(0, statement.contents.GetSize() - 2));
+        statement.contents.Set(statement.contents.SubString(1, statement.contents.GetSize() - 1));
 
     auto params = statement.contents.split(L",");
     TDataArray<TString> paramNames;

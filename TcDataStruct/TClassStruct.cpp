@@ -42,7 +42,7 @@ bool TClassStruct::AddAttribute(const TClassAttribute& att)
 
 TClassAttribute TClassStruct::GetAttributeByName(const TString& name)
 {
-	for (UINT Rust = 0; Rust < attributes.Size(); Rust)
+	for (UINT Rust = 0; Rust < attributes.Size(); Rust++)
 	{
 		if ((caseSensitive) ? (!name.Compare(attributes[Rust].name)) : (!name.CompareNoCase(attributes[Rust].name)))
 			return attributes[Rust];

@@ -5,6 +5,8 @@
 #include <TDataMap.h>
 #include <TFile.h>
 #include <TEnvironment.h>
+
+
 #include "TClassStruct.h"
 
 
@@ -145,6 +147,8 @@ public:
 class TC_DATA_STRUCT TInterpretor : public TVariable
 {
 public:
+
+    static void CorrectSplitStringForParenthesis(TrecPointer<TDataArray<TString>> splitString, WCHAR join);
 
     virtual TrecPointer<TVariable> Clone()override;
 

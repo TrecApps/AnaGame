@@ -224,6 +224,33 @@ void TInterpretor::SetFirstParamName(const TString& iParam)
 	paramNames[0].Set(iParam);
 }
 
+void TInterpretor::CorrectSplitStringForParenthesis(TrecPointer<TDataArray<TString>> splitString, WCHAR join)
+{
+	for (UINT Rust = 1; Rust < splitString->Size(); Rust++)
+	{
+		TString first(splitString->at(Rust - 1));
+		TString second(splitString->at(Rust));
+
+		if (first.CountFinds(L'(') > first.CountFinds(L')'))
+		{
+			first.AppendChar(join);
+			first.Append(second);
+
+			splitString->at(Rust - 1).Set(first);
+			splitString->RemoveAt(Rust--);
+			continue;
+		}
+		if (first.CountFinds(L'[') > first.CountFinds(L']'))
+		{
+			first.AppendChar(join);
+			first.Append(second);
+
+			splitString->at(Rust - 1).Set(first);
+			splitString->RemoveAt(Rust--);
+		}
+	}
+}
+
 TrecPointer<TVariable> TInterpretor::Clone()
 {
 	return TrecPointerKey::GetTrecPointerFromSub<TVariable,TInterpretor>(TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
