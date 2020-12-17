@@ -141,3 +141,13 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
 
     return ret;
 }
+
+TrecPointer<HtmlHeader> HtmlBuilder::RetrieveHeader()
+{
+    return header;
+}
+
+TrecPointer<HtmlBody> HtmlBuilder::RetrieveBody()
+{
+    return body;
+}

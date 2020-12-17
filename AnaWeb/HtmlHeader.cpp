@@ -211,6 +211,24 @@ TString HtmlHeader::ProcessHtml(TrecPointer<TFile> file, const TString& data)
     return TString();
 }
 
+TString HtmlHeader::RetrieveCss()
+{
+	return css;
+}
+
+TString HtmlHeader::RetrieveTitle()
+{
+	return title;
+}
+
+TrecPointer<HtmlLink> HtmlHeader::GetLink(UINT index)
+{
+	if (index >= links.Size())
+		return TrecPointer<HtmlLink>();
+
+	return links[index];
+}
+
 void HtmlHeader::getBaseElement(const TString& att, const TString& val)
 {
 	if (!att.Compare(L"href"))

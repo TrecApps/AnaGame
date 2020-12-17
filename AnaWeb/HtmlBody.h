@@ -25,6 +25,8 @@ public:
      */
     TString ProcessHtml(TrecPointer<TFile> file, const TString& data);
 
+    TrecPointer<TWebNode> RetrieveWebNode();
+
 private:
     TrecPointer<TEnvironment> env;
 

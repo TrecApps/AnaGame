@@ -208,7 +208,7 @@ TString TWebNode::GetType()
 	return TString(L"TWebNode;TObject");
 }
 
-UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window)
+UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window)
 {
 	if (!tagName.Compare(L"p"))
 	{

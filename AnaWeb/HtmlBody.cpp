@@ -36,3 +36,9 @@ TString HtmlBody::ProcessHtml(TrecPointer<TFile> file, const TString& data)
         return L"Error Processing Web Nodes!";
     return TString();
 }
+
+
+TrecPointer<TWebNode> HtmlBody::RetrieveWebNode()
+{
+    return rootNode;
+}

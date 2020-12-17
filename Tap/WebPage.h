@@ -235,6 +235,9 @@ public:
 
 
 protected:
+	TString SetUpCSS();
+
+	TrecPointer<TArray<styleTable>> styles;
 
 	TrecPointer<HtmlBuilder> htmlBuilder;
 

@@ -100,7 +100,7 @@ public:
     virtual TString GetType() override;
 
 
-    UINT CreateWebNode(D2D1_RECT_F, TrecPointer<TWindowEngine> d3dEngine, HWND window);
+    UINT CreateWebNode(D2D1_RECT_F, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window);
 protected:
     /**
      * represents the Element Node's innerHTML attribute

@@ -10,6 +10,10 @@ public:
 
 	TString BuildPage(TrecPointer<TFile> file);
 
+	TrecPointer<HtmlHeader> RetrieveHeader();
+
+	TrecPointer<HtmlBody> RetrieveBody();
+
 private:
 	TrecPointer<HtmlHeader> header;
 	TrecPointer<HtmlBody> body;

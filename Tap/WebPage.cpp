@@ -1,6 +1,7 @@
 #include "WebPage.h"
 #include <TObjectVariable.h>
 #include "TWindow.h"
+#include <SSGenerator.h>
 
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): Page(board)
 {
@@ -60,6 +61,23 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 			MessageBoxExW(win->GetWindowHandle(), res.GetConstantBuffer(), L"Error Creating WebPage", 0, 0);
 			return 4;
 		}
+
+		res.Set(SetUpCSS());
+
+		TrecPointer<HtmlBody> hBody = htmlBuilder->RetrieveBody();
+
+		rootNode = hBody.Get() ? hBody->RetrieveWebNode(): TrecPointer<TWebNode>();
+		
+		if (!rootNode.Get())
+		{
+			TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
+
+			MessageBoxExW(win->GetWindowHandle(), L"No Web Page Body Detected after attempted Generation!", L"Error Creating WebPage", 0, 0);
+			return 5;
+		}
+		TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
+		UINT createResult = rootNode->CreateWebNode(area, win->GetWindowEngine(), styles, win->GetWindowHandle());
+		
 	}
 	else if (file->GetFileName().EndsWith(L".tml"))
 		return Page::SetAnaface(file, eh);
@@ -96,6 +114,70 @@ void WebPage::Write(const TString& markup)
 
 void WebPage::Close()
 {
+}
+
+TString WebPage::SetUpCSS()
+{
+	TrecPointer<HtmlHeader> header = htmlBuilder->RetrieveHeader();
+
+	TDataArray<TrecPointer<TFileShell>> cssFiles;
+
+	if (header.Get())
+	{
+		TFile cssFile(environment->GetRootDirectory()->GetName() + L"/Anagame_Internal.css", TFile::t_file_share_write | TFile::t_file_open_always);
+		if (cssFile.IsOpen())
+		{
+			cssFiles.push_back(TFileShell::GetFileInfo(cssFile.GetFilePath()));
+
+			cssFile.WriteString(header->RetrieveCss());
+			cssFile.Close();
+		}
+
+		UINT linkIndex = 0;
+		for (TrecPointer<HtmlLink> link = header->GetLink(linkIndex++); link.Get(); link = header->GetLink(linkIndex++))
+		{
+			TString relation(link->getVariableValueStr(L"rel"));
+
+			if (!relation.CompareNoCase(L"stylesheet"))
+			{
+				// To-Do: Manage retrieval of Stylesheets in a URL
+			}
+		}
+
+	}
+
+	// To Do: Add File held to manage default attributes
+
+
+	// Now Read the CSS Files into a Stylesheet table
+	styles = TrecPointerKey::GetNewTrecPointer<TArray<styleTable>>();
+	for (UINT Rust = 0; Rust < cssFiles.Size(); Rust++)
+	{
+		if (!cssFiles[Rust].Get())
+			continue;
+		TrecPointer<TArray<styleTable>> tempStyles;
+		TFile cssFile(cssFiles[Rust]->GetPath(), TFile::t_file_open_always | TFile::t_file_read);
+		if (cssFile.IsOpen())
+		{
+			CSSGenerator gen(cssFile);
+			if (gen.Parse())
+			{
+				tempStyles = gen.GetStyles();
+				if (tempStyles.Get())
+				{
+					for (UINT Rust = 0; Rust < tempStyles->Count(); Rust++)
+					{
+						if (tempStyles->ElementAt(Rust).Get())
+							styles->Add(tempStyles->ElementAt(Rust));
+					}
+				}
+			}
+		}
+	}
+
+
+
+	return TString();
 }
 
 
