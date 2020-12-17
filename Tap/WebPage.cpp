@@ -2,6 +2,7 @@
 #include <TObjectVariable.h>
 #include "TWindow.h"
 #include <SSGenerator.h>
+#include <DirectoryInterface.h>
 
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): Page(board)
 {
@@ -147,7 +148,8 @@ TString WebPage::SetUpCSS()
 	}
 
 	// To Do: Add File held to manage default attributes
-
+	TString defaultCssFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\Web-Tours\\DefaultStyles.css");
+	cssFiles.push_back(TFileShell::GetFileInfo(defaultCssFile));
 
 	// Now Read the CSS Files into a Stylesheet table
 	styles = TrecPointerKey::GetNewTrecPointer<TArray<styleTable>>();
