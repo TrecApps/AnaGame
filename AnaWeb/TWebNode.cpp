@@ -62,6 +62,12 @@ static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
 
 
 
+/**
+ * Method: TWebNode::TWebNode
+ * Purpose: Constructor
+ * Parameters: TrecPointer<DrawingBoard> board - the board to draw on
+ * Returns: new Html Node
+ */
 TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 {
 	this->board = board;
@@ -69,6 +75,13 @@ TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 
 
 
+/**
+ * Method: TWebNode::ProcessHtml
+ * Purpose: Processes new HTML code from a file
+ * Parameters: TStringSliceManager& html the string to process
+ *              UINT start - the index to start at
+ * Returns: UINT - error code (0 for success)
+ */
 UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start)
 {
 	while (start < html->GetSize() && (!tagName.GetSize() || !IsWhitespace(html->GetAt(start))))
@@ -145,6 +158,12 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start)
 	return ProcessInnerHtml(html, start);
 }
 
+/**
+ * Method: TWebNode::ProcessInnerHtml
+ * Purpose: Compiles the html the node has been given
+ * Parameters: void
+ * Returns: UINT - error code (0 for success)
+ */
 UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start)
 {
 	UINT currentStart = start;
@@ -189,12 +208,25 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start)
 	return 2;
 }
 
+/**
+ * Method: TWebNode::SetInnerHtml
+ * Purpose: Allows the Node to have it's contents changed dynamically
+ * Parameters: const TString& html - the html to set the insides of this node to
+ * Returns: UINT - error code (0 for success)
+ */
 UINT TWebNode::SetInnerHtml(TStringSliceManager& html)
 {
 	return 0;
 }
 
 
+/**
+ * Method: TWebNode::GetElementsByName
+ * Purpose: Retrieves a list of elements with the given name
+ * Parameters: const TString& name - the name of the nodes to collect
+ *              TDataArray<TrecPointer<TWebNode>>& nodes - the structure to hold the nodes in
+ * Returns: void
+ */
 void TWebNode::GetElementsByName(const TString& name, TDataArray<TrecPointer<TWebNode>>& nodes)
 {
 	if (!name.GetSize())
@@ -209,6 +241,13 @@ void TWebNode::GetElementsByName(const TString& name, TDataArray<TrecPointer<TWe
 	}
 }
 
+/**
+ * Method: TWebNode::GetElementsByTag
+ * Purpose: Retrieves a list of elements with the given tag type
+ * Parameters: const TString& tag - the tag type of the nodes to collect
+ *              TDataArray<TrecPointer<TWebNode>>& nodes - the structure to hold the nodes in
+ * Returns: void
+ */
 void TWebNode::GetElementsByTag(const TString& tag, TDataArray<TrecPointer<TWebNode>>& nodes)
 {
 	if (!tag.GetSize())
@@ -222,6 +261,13 @@ void TWebNode::GetElementsByTag(const TString& tag, TDataArray<TrecPointer<TWebN
 	}
 }
 
+/**
+ * Method: TWebNode::GetElementsByClass
+ * Purpose: Retrieves a list of elements with the given class type
+ * Parameters: const TString& nodeClass - the class type of the nodes to collect
+ *              TDataArray<TrecPointer<TWebNode>>& nodes - the structure to hold the nodes in
+ * Returns: void
+ */
 void TWebNode::GetElementsByClass(const TString& nodeClass, TDataArray<TrecPointer<TWebNode>>& nodes)
 {
 	if (!nodeClass.GetSize())
@@ -235,6 +281,12 @@ void TWebNode::GetElementsByClass(const TString& nodeClass, TDataArray<TrecPoint
 	}
 }
 
+/**
+ * Method: TWebNode::GetElementById
+ * Purpose: Retrieves the
+ * Parameters: const TString& id - the id to seek out
+ * Returns: TrecPointer<TWebNode> - the first node with the given id, or noll if the node was not found
+ */
 TrecPointer<TWebNode> TWebNode::GetElementById(const TString& id)
 {
 	// If an empty string, just return
@@ -256,6 +308,12 @@ TrecPointer<TWebNode> TWebNode::GetElementById(const TString& id)
 	return ret;
 }
 
+/**
+ * Method: TWebNode::SetSelf
+ * Purpose: Supports the Self Trait of this class
+ * Parameters: TrecPointer<TWebNode> s - the pointer to use to set self to
+ * Returns: void
+ */
 void TWebNode::SetSelf(TrecPointer<TWebNode> s)
 {
 	if (s.Get() != this)
@@ -263,11 +321,25 @@ void TWebNode::SetSelf(TrecPointer<TWebNode> s)
 	self = TrecPointerKey::GetSoftPointerFromTrec<TWebNode>(s);
 }
 
+/**
+ * Method: TWebNode::GetType
+ * Purpose: Reports the Type of this object
+ * Parameters: void
+ * Returns: TString - the string representation of this objects type
+ */
 TString TWebNode::GetType()
 {
 	return TString(L"TWebNode;TObject");
 }
 
+/**
+ * Method: TWebNode::CreateWebNode
+ * Purpose: Sets up the Web Node for Rendering, same purpose as TControl::onCreate()
+ * Parameters: D2D1_RECT_F location - the location within the Window the Node is expected to operate in
+ *              TrecPointer<TWindowEngine> d3dEngine - Pointer to the 3D manager, for controls with a 3D component to them
+ *              TrecPointer<TArray<styleTable>> styles - list of CSS styles that the node should adhere to
+ *              HWND window - handle to the window the node is operating in
+ */
 UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window)
 {
 	// This is done to ensure that when events are activated, the node has a smaller map to retireve
@@ -277,9 +349,10 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 		TString handlerValue;
 		if (attributes.retrieveEntry(eventHandlers[Rust], handlerValue))
 		{
-			// Add the handler attribute to the handler map, and add a semi-colon in case
-			// multiple statements are added
-			handlers.addEntry(eventHandlers[Rust], handlerValue + L';');
+			// Add the handler attribute to the handler map
+			EventPropagater prop;
+			prop.event = handlerValue;
+			handlers.addEntry(eventHandlers[Rust], prop);
 
 			// Remove the handler data from attributes to same some memory
 			attributes.removeEntry(eventHandlers[Rust], handlerValue);
@@ -366,4 +439,388 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 
 
 	return 0;
+}
+
+/**
+ * Method: TWebNode::OnLButtonDown
+ * Purpose: Allows the Node to react to the Button down event
+ * Parameters: TDataArray<TString>& script - the script to append to if the node has a relevent event attribute and deems it necessary to append it
+ *              TDataArray<TrecObjectPointer>& thisCollection - the collection of objects to use as 'this' when handler is run
+ *              TDataArray<TrecPointer<TWebNode>>& nodeCollection - the collection of nodes that could have this handler apply
+ *              const TPoint& point - the point in the window where the mouse was clicked
+ * Returns: void
+ */
+void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectPointer>& thisCollection, TDataArray<TrecPointer<TWebNode>>& nodeCollection, const TPoint& point)
+{
+	if (!control.Get())
+	{
+		// To-Do: Handle scenario
+	}
+	else
+	{
+		auto loc = control->getLocation();
+		if (isContained(point, loc))
+		{
+			messageOutput mo = messageOutput::negative;
+			TDataArray<EventID_Cred> cred;
+			TDataArray<TControl*> cl;
+			control->OnLButtonDown(0, point, &mo, cred, cl);
+
+			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
+
+			nodeCollection.push_back(activeSelf);
+			EventPropagater prop;
+			if (handlers.retrieveEntry(L"onmousedown", prop))
+			{
+				if (prop.useCapture)
+				{
+					script.push_back(prop.event);
+					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+					{
+						if (childNodes[Rust].Get())
+							childNodes[Rust]->OnLButtonDown(script, thisCollection, nodeCollection, point);
+					}
+					
+				}
+				else
+				{
+					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+					{
+						if (childNodes[Rust].Get())
+							childNodes[Rust]->OnLButtonDown(script, thisCollection, nodeCollection, point);
+					}
+					script.push_back(prop.event);
+					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+				}
+			}
+			else
+			{
+				for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+				{
+					if (childNodes[Rust].Get())
+						childNodes[Rust]->OnLButtonDown(script, thisCollection, nodeCollection, point);
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Method: TWebNode::OnLButtonUp
+ * Purpose: Allows the Node to react to the Button Up event
+ * Parameters: TDataArray<TString>& script - the script to append to if the node has a relevent event attribute and deems it necessary to append it
+ *              TDataArray<TrecObjectPointer>& thisCollection - the collection of objects to use as 'this' when handler is run
+ *              TDataArray<TrecPointer<TWebNode>>& nodeCollection - the collection of nodes that could have this handler apply
+ *              TrecPointer<TWebNode>& focusNode - the node that has current user focus
+ *              const TPoint& point - the point in the window where the mouse was clicked
+ * Returns: void
+ */
+void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPointer>& thisCollection, TDataArray<TrecPointer<TWebNode>>& nodeCollection, TrecPointer<TWebNode>& focusNode, const TPoint& point)
+{
+	bool found = false;
+
+	// Check to see if we are eligable for an on click event
+	for (UINT Rust = 0; Rust < nodeCollection.Size(); Rust++)
+	{
+		if (nodeCollection[Rust].Get() == this)
+		{
+			found = true;
+			nodeCollection.RemoveAt(Rust);
+			break;
+		}
+	}
+
+	if (!control.Get())
+	{
+		// To-Do: Handle scenario
+	}
+	else
+	{
+		auto loc = control->getLocation();
+		if (isContained(point, loc))
+		{
+			messageOutput mo = messageOutput::negative;
+			TDataArray<EventID_Cred> cred;
+			TDataArray<TControl*> cl;
+			control->OnLButtonUp(0, point, &mo, cred);
+
+			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
+
+			nodeCollection.push_back(activeSelf);
+			EventPropagater prop, clickProp;
+
+			bool hasClick =  found && handlers.retrieveEntry(L"onclick", prop);
+
+			if (handlers.retrieveEntry(L"onmouseup", prop))
+			{
+				if (prop.useCapture)
+				{
+					script.push_back(prop.event);
+					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+
+					if (hasClick && clickProp.useCapture)
+					{
+						script.push_back(clickProp.event);
+						thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					}
+
+					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+					{
+						if (childNodes[Rust].Get())
+							childNodes[Rust]->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
+					}
+
+					if (hasClick && !clickProp.useCapture)
+					{
+						script.push_back(clickProp.event);
+						thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					}
+					
+				}
+				else
+				{
+					if (hasClick && clickProp.useCapture)
+					{
+						script.push_back(clickProp.event);
+						thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					}
+
+					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+					{
+						if (childNodes[Rust].Get())
+							childNodes[Rust]->OnLButtonUp(script, thisCollection, nodeCollection,focusNode, point);
+					}
+					
+					script.push_back(prop.event);
+					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					if (hasClick && !clickProp.useCapture)
+					{
+						script.push_back(clickProp.event);
+						thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					}
+				}
+			}
+			else
+			{
+				for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+				{
+					if (childNodes[Rust].Get())
+						childNodes[Rust]->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Method: TWebNode::OnLButtonDblClck
+ * Purpose: Allows the Node to react to the Button down event
+ * Parameters: TDataArray<TString>& script - the script to append to if the node has a relevent event attribute and deems it necessary to append it
+ *              TDataArray<TrecObjectPointer>& thisCollection - the collection of objects to use as 'this' when handler is run
+ *              TDataArray<TrecPointer<TWebNode>>& nodeCollection - the collection of nodes that could have this handler apply
+ *              const TPoint& point - the point in the window where the mouse was clicked
+ * Returns: void
+ */
+void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObjectPointer>& thisCollection, const TPoint& point)
+{
+	if (!control.Get())
+	{
+		// To-Do: Handle scenario
+	}
+	else
+	{
+		auto loc = control->getLocation();
+		if (isContained(point, loc))
+		{
+			messageOutput mo = messageOutput::negative;
+			TDataArray<EventID_Cred> cred;
+			TDataArray<TControl*> cl;
+			control->OnLButtonDblClk(0, point, &mo, cred);
+
+			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
+
+			EventPropagater prop;
+			if (handlers.retrieveEntry(L"ondblclick", prop))
+			{
+				if (prop.useCapture)
+				{
+					script.push_back(prop.event);
+					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+					{
+						if (childNodes[Rust].Get())
+							childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+					}
+					
+				}
+				else
+				{
+					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+					{
+						if (childNodes[Rust].Get())
+							childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+					}
+					script.push_back(prop.event);
+					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+				}
+			}
+			else
+			{
+				for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+				{
+					if (childNodes[Rust].Get())
+						childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Method: TWebNode::OnLButtonDown
+ * Purpose: Allows the Node to react to the Button down event
+ * Parameters: TDataArray<TString>& script - the script to append to if the node has a relevent event attribute and deems it necessary to append it
+ *              TDataArray<TrecObjectPointer>& thisCollection - the collection of objects to use as 'this' when handler is run
+ *              TDataArray<TrecPointer<TWebNode>>& nodeCollection - the collection of nodes that could have this handler apply
+ *              const TPoint& point - the point in the window where the mouse was clicked
+ * Returns: void
+ */
+void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPointer>& thisCollection, TDataArray<TrecPointer<TWebNode>>& nodeCollection, const TPoint& point)
+{
+	int found = -1;
+	for (int Rust = 0; Rust < nodeCollection.Size(); Rust++)
+	{
+		if (nodeCollection[Rust].Get() == this)
+		{
+			found = Rust;
+			break;
+		}
+	}
+
+
+	if (!control.Get())
+	{
+		// To-Do: Handle scenario
+	}
+	else
+	{
+		auto loc = control->getLocation();
+		if (isContained(point, loc))
+		{
+			
+
+			messageOutput mo = messageOutput::negative;
+			TDataArray<EventID_Cred> cred;
+			TDataArray<TControl*> cl;
+			control->OnLButtonDblClk(0, point, &mo, cred);
+
+			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
+			if (found == -1)
+				nodeCollection.push_back(activeSelf);
+			EventPropagater prop, statProp;
+
+			bool hasStat = (found == -1) && handlers.retrieveEntry(L"onmouseover", statProp);
+
+			if (handlers.retrieveEntry(L"ondblclick", prop))
+			{
+				if (prop.useCapture)
+				{
+					if (hasStat && statProp.useCapture)
+					{
+						script.push_back(statProp.event);
+						thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					}
+
+					script.push_back(prop.event);
+					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+
+					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+					{
+						if (childNodes[Rust].Get())
+							childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+					}
+
+					if (hasStat && !statProp.useCapture)
+					{
+						script.push_back(statProp.event);
+						thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					}
+				}
+				else
+				{
+					if (hasStat && statProp.useCapture)
+					{
+						script.push_back(statProp.event);
+						thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					}
+					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+					{
+						if (childNodes[Rust].Get())
+							childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+					}
+
+					script.push_back(prop.event);
+					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					if (hasStat && !statProp.useCapture)
+					{
+						script.push_back(statProp.event);
+						thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
+					}
+				}
+			}
+			else
+			{
+				for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+				{
+					if (childNodes[Rust].Get())
+						childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+				}
+			}
+		}
+		else
+		{
+			if (found != -1)
+			{
+				EventPropagater statProp;
+				if (handlers.retrieveEntry(L"onmouseover", statProp))
+				{
+					script.push_back(statProp.event);
+					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self)));
+				}
+				nodeCollection.RemoveAt(found);
+			}
+		}
+	}
+}
+
+/**
+ * Method: TWebNode::OnLoseFocus
+ * Purpose: Alert the WebNode that it has lost focus
+ * Parameters: void
+ * Returns: the script to run (empty if no script is found)
+ */
+TString TWebNode::OnLoseFocus()
+{
+	EventPropagater prop;
+	if (handlers.retrieveEntry(L"onblur", prop))
+		return prop.event;
+	return TString();
+}
+
+EventPropagater::EventPropagater()
+{
+	useCapture = false;
+}
+
+EventPropagater::EventPropagater(const EventPropagater& orig)
+{
+	this->event.Set(orig.event);
+	this->useCapture = orig.useCapture;
+}
+
+EventPropagater::EventPropagater(const TString& e, bool useCapture)
+{
+	event.Set(e);
+	this->useCapture = useCapture;
 }
