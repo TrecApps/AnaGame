@@ -2,6 +2,66 @@
 #include "TWebNode.h"
 #include <TPromptControl.h>
 
+#define WEB_EVENT_HANDLER_COUNT 71
+
+static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
+	// Window Events
+	TString(L"onafterprint"),		TString(L"onbeforeprint"),
+	TString(L"onbeforeunload"),		TString(L"onerror"),
+	TString(L"onhashchange"),		TString(L"onload"),
+	TString(L"onmessage"),			TString(L"onoffline"),
+	TString(L"ononline"),			TString(L"onpagehide"),
+	TString(L"onpageshow"),			TString(L"onpopstate"),
+	TString(L"onresize"),			TString(L"onstorage"),
+	TString(L"onunload"),
+
+	// Form Events
+	TString(L"onblur"),				TString(L"onchange"),
+	TString(L"oncontextmenu"),		TString(L"onfocus"),
+	TString(L"oninput"),			TString(L"oninvalid"),
+	TString(L"onreset"),			TString(L"onsearch"),
+	TString(L"onselect"),			TString(L"onsubmit"),
+
+	// Keyboard Events
+	TString(L"onkeydown"),			TString(L"onkeypress"),
+	TString(L"onkeyup"),
+	
+	// Mouse Events
+	TString(L"onclick"),			TString(L"ondblclick"),
+	TString(L"onmousedown"),		TString(L"onmousemove"),
+	TString(L"onmouseout"),			TString(L"onmouseover"),
+	TString(L"onmouseup"),			TString(L"onwheel"),
+
+	// Drag Events
+	TString(L"ondrag"),				TString(L"ondragend"),
+	TString(L"ondragenter"),		TString(L"ondragleave"),
+	TString(L"ondragover"),			TString(L"ondragstart"),
+	TString(L"ondrop"),				TString(L"onscroll"),
+
+	// Clipboard Events
+	TString(L"oncopy"), TString(L"oncut"),
+	TString(L"onpaste"),
+
+	// Media Events
+	TString(L"onabort"), TString(L"oncanplay"),
+	TString(L"oncanplaythrough"), TString(L"oncuechange"),
+	TString(L"ondurationchange"), TString(L"onemptied"),
+	TString(L"onended"), TString(L"onerror"),
+	TString(L"onloadeddata"), TString(L"onloadedmetadata"),
+	TString(L"onloadstart"), TString(L"onpause"),
+	TString(L"onplay"), TString(L"onplaying"),
+	TString(L"onprogress"), TString(L"onratechange"),
+	TString(L"onseeked"), TString(L"onseeking"),
+	TString(L"onstalled"), TString(L"onsuspend"),
+	TString(L"ontimeupdate"), TString(L"onvolumechange"),
+	TString(L"onwaiting"),
+	
+	// Toggle
+	TString(L"ontoggle")
+};
+
+
+
 TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 {
 	this->board = board;
@@ -210,6 +270,24 @@ TString TWebNode::GetType()
 
 UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window)
 {
+	// This is done to ensure that when events are activated, the node has a smaller map to retireve
+	// data from, thus boosting response times
+	for (UINT Rust = 0; Rust < WEB_EVENT_HANDLER_COUNT; Rust++)
+	{
+		TString handlerValue;
+		if (attributes.retrieveEntry(eventHandlers[Rust], handlerValue))
+		{
+			// Add the handler attribute to the handler map, and add a semi-colon in case
+			// multiple statements are added
+			handlers.addEntry(eventHandlers[Rust], handlerValue + L';');
+
+			// Remove the handler data from attributes to same some memory
+			attributes.removeEntry(eventHandlers[Rust], handlerValue);
+		}
+	}
+
+
+
 	if (!tagName.Compare(L"p"))
 	{
 		// We are dealing with a paragraph block

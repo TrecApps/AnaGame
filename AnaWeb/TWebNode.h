@@ -102,6 +102,12 @@ public:
 
     UINT CreateWebNode(D2D1_RECT_F, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window);
 protected:
+
+    /**
+     * Represents the handlers that are meant to Run 
+     */
+    TDataMap<TString> handlers;
+
     /**
      * represents the Element Node's innerHTML attribute
      */
