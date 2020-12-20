@@ -117,6 +117,72 @@ void WebPage::Close()
 {
 }
 
+void WebPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
+{
+	if (rootNode.Get())
+	{
+		TDataArray<TString> script;
+		TDataArray<TrecObjectPointer> objects;
+
+		rootNode->OnLButtonDown(script, objects, clickNodes, point);
+
+	}
+}
+
+void WebPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
+{
+	if (rootNode.Get())
+	{
+		TDataArray<TString> script;
+		TDataArray<TrecObjectPointer> objects;
+
+		rootNode->OnMouseMove(script, objects, moveNodes, point);
+
+
+		for (UINT Rust = 0; Rust < moveNodes.Size(); Rust++)
+		{
+			auto node = moveNodes[Rust];
+			if (!node.Get())
+				continue;
+			node->OnMouseMove(script, objects, moveNodes, point);
+		}
+	}
+}
+
+void WebPage::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
+{
+	if (rootNode.Get())
+	{
+		TDataArray<TString> script;
+		TDataArray<TrecObjectPointer> objects;
+
+		rootNode->OnLButtonDblClck(script, objects, point);
+
+	}
+}
+
+void WebPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
+{
+	if (rootNode.Get())
+	{
+		TDataArray<TString> script;
+		TDataArray<TrecObjectPointer> objects;
+
+		TrecPointer<TWebNode> newFocus;
+
+		rootNode->OnLButtonUp(script, objects, clickNodes, newFocus, point);
+
+		if (newFocus.Get() != focusNode.Get())
+		{
+			if (focusNode.Get())
+			{
+				TString script(focusNode->OnLoseFocus());
+			}
+			focusNode = newFocus;
+		}
+	}
+}
+
 TString WebPage::SetUpCSS()
 {
 	TrecPointer<HtmlHeader> header = htmlBuilder->RetrieveHeader();
