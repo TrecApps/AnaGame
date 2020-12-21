@@ -6,6 +6,19 @@
 #include <TDataMap.h>
 
 /**
+ * Enum Class: WebNodeDisplay
+ * Purpose: Easy means of managing how the Node is supposed to appear
+ */
+typedef enum class WebNodeDisplay
+{
+    pure_inline, // Lean on parent, ignore any width/height attributes
+    pure_block,  // Tell the Parent to treat this element like a block
+    contents
+
+}WebNodeDisplay;
+
+
+/**
  * Class: EventPropagater
  * Purpose: Helps determine if a web node should report it's event first or let any child nodes report
  * 
@@ -146,12 +159,23 @@ public:
     virtual TString GetType() override;
 
     /**
+     * Method: TWebNode::PreCreate
+     * Purpose: Allows Node to predict ahead of time what space it will need and how it will be shown
+     * Parameters: TrecPointerSoft<TWebNode> parent - the Web Node that called the method
+     * Returns: void
+     */
+    void PreCreate(TrecPointerSoft<TWebNode> parent);
+
+
+    /**
      * Method: TWebNode::CreateWebNode
      * Purpose: Sets up the Web Node for Rendering, same purpose as TControl::onCreate()
      * Parameters: D2D1_RECT_F location - the location within the Window the Node is expected to operate in
      *              TrecPointer<TWindowEngine> d3dEngine - Pointer to the 3D manager, for controls with a 3D component to them
      *              TrecPointer<TArray<styleTable>> styles - list of CSS styles that the node should adhere to
      *              HWND window - handle to the window the node is operating in
+     *              TrecPointerSoft<TWebNode> parent - the node that called this method
+     * Returns: UINT - Error Code
      */
     UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window);
 
@@ -246,7 +270,7 @@ protected:
     /**
      * Self reference
      */
-    TrecPointerSoft<TWebNode> self;
+    TrecPointerSoft<TWebNode> self, parent;
 
     TDataArray<FormattingDetails> formattingDetails;
 };

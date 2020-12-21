@@ -77,6 +77,7 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 			return 5;
 		}
 		TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
+		rootNode->PreCreate(TrecPointerSoft<TWebNode>());
 		UINT createResult = rootNode->CreateWebNode(area, win->GetWindowEngine(), styles, win->GetWindowHandle());
 		
 	}

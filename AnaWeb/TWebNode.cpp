@@ -333,12 +333,27 @@ TString TWebNode::GetType()
 }
 
 /**
+ * Method: TWebNode::PreCreate
+ * Purpose: Allows Node to predict ahead of time what space it will need and how it will be shown
+ * Parameters: TrecPointerSoft<TWebNode> parent - the Web Node that called the method
+ * Returns: void
+ */
+void TWebNode::PreCreate(TrecPointerSoft<TWebNode> parent)
+{
+	this->parent = parent;
+
+	// Figure out how to set the location based off of the display CSS Atribute
+}
+
+/**
  * Method: TWebNode::CreateWebNode
  * Purpose: Sets up the Web Node for Rendering, same purpose as TControl::onCreate()
  * Parameters: D2D1_RECT_F location - the location within the Window the Node is expected to operate in
  *              TrecPointer<TWindowEngine> d3dEngine - Pointer to the 3D manager, for controls with a 3D component to them
  *              TrecPointer<TArray<styleTable>> styles - list of CSS styles that the node should adhere to
  *              HWND window - handle to the window the node is operating in
+ *              TrecPointerSoft<TWebNode> parent - the node that called this method
+ * Returns: UINT - Error Code
  */
 UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window)
 {
@@ -358,6 +373,9 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 			attributes.removeEntry(eventHandlers[Rust], handlerValue);
 		}
 	}
+
+
+
 
 
 
