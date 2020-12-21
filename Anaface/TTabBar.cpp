@@ -229,6 +229,7 @@ Tab::Tab()
 {
 	draw1 = true;
 	isAdd = false;
+	location = { 0.0f,0.0f,0.0f,0.0f };
 }
 
 void Tab::SetBrush(TrecPointer<TBrush> brush)
@@ -274,5 +275,13 @@ void Tab::Draw()
 }
 
 void Tab::MovePoint(float x, float y)
+{
+}
+
+TabContent::TabContent()
+{
+}
+
+TabContent::~TabContent()
 {
 }
