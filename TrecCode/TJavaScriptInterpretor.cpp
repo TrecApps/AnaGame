@@ -2766,7 +2766,9 @@ UINT TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
         {
             if (exp[Rust] == L',' && closeParenth == 1)
             {
-                expressions.push_back(exp.SubString(0, Rust).GetTrim());
+                TString newExp(exp.SubString(0, Rust).GetTrim());
+                if(newExp.GetSize())
+                    expressions.push_back(newExp);
                 exp.Delete(0, Rust + 1);
                 Rust = 0;
                 goto startFor;
@@ -2790,7 +2792,9 @@ UINT TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
         ro.errorMessage.Set(L"Mismatched parenthesis when processing expressions for function call");
         return 0;
     }
-    expressions.push_back(exp.SubString(0, Rust).GetTrim());
+    TString newExp(exp.SubString(0, Rust).GetTrim());
+    if(newExp.GetSize())
+        expressions.push_back(newExp);
     exp.Delete(0, Rust + 1);
 
     TrecSubPointer<TVariable, TInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(ro.errorObject);
