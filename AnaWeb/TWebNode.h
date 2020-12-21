@@ -4,6 +4,7 @@
 #include <TPromptControl.h>
 #include <TStringSlice.h>
 #include <TDataMap.h>
+#include "AnaWeb.h"
 
 /**
  * Enum Class: WebNodeDisplay
@@ -25,7 +26,7 @@ typedef enum class WebNodeDisplay
  * Note: Information related to event propagation could be found here:
  *   https://stackoverflow.com/questions/4616694/what-is-event-bubbling-and-capturing#:~:text=Event%20bubbling%20and%20capturing%20are%20two%20ways%20of,in%20which%20order%20the%20elements%20receive%20the%20event.
  */
-class EventPropagater {
+class ANA_WEB_DLL EventPropagater {
 public:
     /**
      * Method: EventPropagater::EventPropagater
@@ -70,7 +71,7 @@ public:
  * 
  * SuperClass: TObject
  */
-class TWebNode :
+class ANA_WEB_DLL TWebNode :
     public TObject
 {
 public:
