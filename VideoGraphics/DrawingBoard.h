@@ -53,7 +53,7 @@ public:
 	 * Parameters: HWND window -  the window to get the size from
 	 * Returns: void
 	 */
-	void Resize(HDC window, RECT size);
+	void Resize(HWND window, RECT size, TrecComPointer<IDXGISurface1> surface);
 
 	/**
 	 * Method: DrawingBoard::GetBrush
@@ -101,7 +101,7 @@ public:
 	 * Parameters: void
 	 * Returns: TrecComPointer<ID2D1RenderTarget> - the underlying Render Target
 	 */
-	TrecComPointer<ID2D1DCRenderTarget> GetRenderer();
+	TrecComPointer<ID2D1BitmapRenderTarget> GetRenderer();
 
 
 	/**
@@ -231,9 +231,6 @@ public:
 	 */
 	UINT GetLayerCount();
 
-	HDC GetDc();
-
-	HDC GetDc2();
 
 	void SetToSecondaryTarget();
 	void SetToPromaryTarget();
@@ -243,12 +240,15 @@ public:
 
 private:
 
-	void SelectObjectDc();
-
 	/**
 	 * whether to use the pimary Device Context or Secondary Context
 	 */
 	bool usePrimaryDc;
+
+	/**
+	 * Whether we are in 3D mode or not
+	 */
+	TrecComPointer<IDXGISurface1> surface3D;
 
 	/**
 	 * the factory object the Board is working with, used to retieve Geometries
@@ -256,9 +256,19 @@ private:
 	TrecComPointer<ID2D1Factory1> fact;
 
 	/**
-	 * The Render Target to work with
+	 * The Offscreen Render Target to work with
 	 */
-	TrecComPointer<ID2D1DCRenderTarget> renderer, renderer2;
+	TrecComPointer<ID2D1BitmapRenderTarget> renderer, renderer2;
+
+	/**
+	 * The OnScreen RenderTarget to copy the contents to in 2D mode
+	 */
+	TrecComPointer<ID2D1HwndRenderTarget> windowTarget;
+
+	/**
+	 * The OnScreen RenderTarget to copy the contents to in 3D mode
+	 */
+	TrecComPointer<ID2D1RenderTarget> dxgiTarget;
 
 	/**
 	 * Reference to the self, used for initializing TBrush's
@@ -269,10 +279,6 @@ private:
 	 * Handle to the window operating on
 	 */
 	HWND window;
-
-	HDC dc, dc2;
-
-	HBITMAP hMap, hMap2;
 
 	RECT r;
 

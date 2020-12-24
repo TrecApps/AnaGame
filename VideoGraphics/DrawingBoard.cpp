@@ -25,7 +25,6 @@ TString DrawingBoard::GetType()
  */
 DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 {
-	hMap = hMap2 = 0;
 	if (!fact.Get())
 		throw L"Error! Factory Object MUST be initialized!";
 	this->fact = fact;
@@ -33,12 +32,11 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 	ZeroMemory(&r, sizeof(r));
 
 	RECT area;
-	dc = dc2 = nullptr;
 
 	usePrimaryDc = true;
 	GetClientRect(window, &area);
 
-	Resize(GetDC(window), area);
+	Resize(window, area, TrecComPointer<IDXGISurface1>());
 
 	this->window = window;
 }
@@ -46,26 +44,18 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 DrawingBoard::~DrawingBoard()
 {
 
-	if (dc)
-		DeleteDC(dc);
-	if (dc2)
-		DeleteDC(dc2);
-
-	dc = dc2 = nullptr;
-	if (hMap)
-		DeleteObject(hMap);
-	if (hMap2)
-		DeleteObject(hMap2);
-	hMap = hMap2 = nullptr;
 }
 
 
 
 
-void DrawingBoard::Resize(HDC window, RECT size)
+void DrawingBoard::Resize(HWND window, RECT size, TrecComPointer<IDXGISurface1> surface)
 {
 
 	r = size;
+
+	surface3D = surface;
+
 	D2D1_RENDER_TARGET_PROPERTIES props;
 	ZeroMemory(&props, sizeof(props));
 
@@ -74,50 +64,52 @@ void DrawingBoard::Resize(HDC window, RECT size)
 		D2D1_ALPHA_MODE_PREMULTIPLIED);
 
 	props.dpiX = props.dpiY = 0.0f;
-	props.usage = D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE;
+	props.usage = D2D1_RENDER_TARGET_USAGE_NONE;
 	props.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 
-	if (dc)
-		DeleteDC(dc);
-	if (dc2)
-		DeleteDC(dc2);
-	if (hMap)
-		DeleteObject(hMap);
-	if (hMap2)
-		DeleteObject(hMap2);
+	TrecComPointer<ID2D1BitmapRenderTarget>::TrecComHolder bitHolder;
 
-	dc = CreateCompatibleDC(window);
-	dc2 = CreateCompatibleDC(window);
-	hMap = CreateCompatibleBitmap(window, r.right - r.left, r.bottom - r.top);
-	hMap2 = CreateCompatibleBitmap(window, r.right - r.left, r.bottom - r.top);
-	SelectObjectDc();
+	if (surface3D.Get())
+	{
+		windowTarget.Delete();
+		dxgiTarget.Delete();
 
+		TrecComPointer<ID2D1RenderTarget>::TrecComHolder renderTargetHolder;
 
-	TrecComPointer<ID2D1DCRenderTarget>::TrecComHolder renderDc;
+		fact->CreateDxgiSurfaceRenderTarget(surface3D.Get(), props, renderTargetHolder.GetPointerAddress());
 
-	// Create the Primary RenderTarget
-	HRESULT res = fact->CreateDCRenderTarget(&props, renderDc.GetPointerAddress());
-	if (FAILED(res))
-		throw L"Error! Failed to Create DC Render Target!";
-	renderer = renderDc.Extract();
-	renderer->BindDC(dc, &r);
+		dxgiTarget = renderTargetHolder.Extract();
 
-	// Now create the Secondary RenderTarget
-	res = fact->CreateDCRenderTarget(&props, renderDc.GetPointerAddress());
-	if (FAILED(res))
-		throw L"Error! Failed to Create DC Render Target!";
-	renderer2 = renderDc.Extract();
-	renderer2->BindDC(dc2, &r);
+		dxgiTarget->CreateCompatibleRenderTarget(bitHolder.GetPointerAddress());
 
+		renderer = bitHolder.Extract();
 
-	layersPushed = 0;
+		dxgiTarget->CreateCompatibleRenderTarget(bitHolder.GetPointerAddress());
 
+		renderer2 = bitHolder.Extract();
+	}
+	else
+	{
+		windowTarget.Delete();
+		TrecComPointer<ID2D1HwndRenderTarget>::TrecComHolder renderTargetHolder;
 
-	
-	int err = 0;
-	if (!hMap)
-		err = GetLastError();
-	assert(hMap);
+		D2D1_HWND_RENDER_TARGET_PROPERTIES hProps;
+		hProps.hwnd = window;
+		hProps.pixelSize = D2D1::SizeU(size.right - size.left, size.bottom - size.top);
+		hProps.presentOptions = D2D1_PRESENT_OPTIONS_NONE;
+
+		fact->CreateHwndRenderTarget(props, hProps, renderTargetHolder.GetPointerAddress());
+
+		windowTarget = renderTargetHolder.Extract();
+
+		windowTarget->CreateCompatibleRenderTarget(bitHolder.GetPointerAddress());
+
+		renderer = bitHolder.Extract();
+
+		windowTarget->CreateCompatibleRenderTarget(bitHolder.GetPointerAddress());
+
+		renderer2 = bitHolder.Extract();
+	}
 
 }
 
@@ -179,7 +171,7 @@ TrecSubPointer<TBrush, TBitmapBrush> DrawingBoard::GetBrush(TrecPointer<TFileShe
  * Parameters: void
  * Returns: TrecComPointer<ID2D1RenderTarget> - the underlying Render Target
  */
-TrecComPointer<ID2D1DCRenderTarget> DrawingBoard::GetRenderer()
+TrecComPointer<ID2D1BitmapRenderTarget> DrawingBoard::GetRenderer()
 {
 	return (usePrimaryDc) ? renderer : renderer2;
 }
@@ -486,15 +478,6 @@ UINT DrawingBoard::GetLayerCount()
 	return layers.Size();
 }
 
-HDC DrawingBoard::GetDc()
-{
-	return dc;
-}
-
-HDC DrawingBoard::GetDc2()
-{
-	return dc2;
-}
 
 void DrawingBoard::SetToSecondaryTarget()
 {
@@ -508,27 +491,41 @@ void DrawingBoard::SetToPromaryTarget()
 
 void DrawingBoard::BeginDraw()
 {
+
+
 	renderer->BeginDraw();
+	renderer->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 	renderer2->BeginDraw();
+	renderer2->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 }
 
 void DrawingBoard::EndDraw()
 {
 	int err = 0;
-
+	if (!renderer.Get() || !renderer2.Get())
+		return;
 	if(FAILED(renderer->EndDraw()))
 		err = GetLastError();
 	if (FAILED(renderer2->EndDraw()))
 		err = GetLastError();
 	int e = 0;
+
+	if (dxgiTarget.Get())
+	{
+		dxgiTarget->BeginDraw();
+		ID2D1Bitmap* map = nullptr;
+		if (SUCCEEDED(renderer->GetBitmap(&map)))
+			dxgiTarget->DrawBitmap(map);
+		dxgiTarget->EndDraw();
+	}
+	else if (windowTarget.Get())
+	{
+		windowTarget->BeginDraw();
+		ID2D1Bitmap* map = nullptr;
+		if (SUCCEEDED(renderer->GetBitmap(&map)))
+			windowTarget->DrawBitmap(map);
+		windowTarget->EndDraw();
+	}
 }
 
-void DrawingBoard::SelectObjectDc()
-{
-	SelectObject(dc, hMap);
-
-	SelectObject(dc2, hMap2);
-
-
-}
 

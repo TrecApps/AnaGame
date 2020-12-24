@@ -960,7 +960,7 @@ void SwitchHandler::OnSelectGif(TrecPointer<TControl> tc, EventArgs ea)
 void SwitchHandler::OnSelectVid(TrecPointer<TControl> tc, EventArgs ea)
 {
 	auto window = page->GetWindowHandle();
-	window->SetUp3D();
+	
 	TrecPointer<DrawingBoard> rtb = window->GetDrawingBoard();
 	TrecPointer<TFileShell> directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Videos));
 	auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app),
@@ -977,6 +977,7 @@ void SwitchHandler::OnSelectVid(TrecPointer<TControl> tc, EventArgs ea)
 	window->submitPlayer(changeControl);
 	rootLayout->addChild(changeControl, 1, 0);
 	page->CreateLayout();
+	window->SetUp3D();
 }
 
 bool SwitchHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)

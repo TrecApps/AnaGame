@@ -229,52 +229,21 @@ void TWindow::Draw()
 			// d3dEngine->PrepareScene(D2D1::ColorF(D2D1::ColorF::Wheat));
 		}
 
-		// Get Whatever is on the window already
-		HDC backup = drawingBoard->GetDc2();
-		int err = 0;
-		HDC winDc = GetTWindowDc();
-		for (UINT Rust = 0; Rust < mediaControls.Size(); Rust++)
-		{
-			RECT loc = mediaControls[Rust].loc;
-			if(!AlphaBlend(backup, loc.left, loc.top, loc.right - loc.left, loc.bottom - loc.top,
-				winDc, loc.left, loc.top, loc.right - loc.left, loc.bottom - loc.top, blendFunc))
-				err = GetLastError();
-		}
-
-		
+		// New Mechanism tht uses bitmaps
 		drawingBoard->BeginDraw();
-		drawingBoard->GetRenderer()->Clear(D2D1::ColorF(.8f,.8f,.80f,1.0f));
-
 		mainPage->Draw();
 		DrawOtherPages();
 
 		if (d3dEngine.Get())
 		{
-			d3dEngine->ClearDC();
 			d3dEngine->FinalizeScene();
-			winDc = GetTWindowDc();
 		}
 		if (flyout.Get())
 			flyout->AfterDraw();
 
 		drawingBoard->EndDraw();
 
-		HDC dc = drawingBoard->GetDc();
-
-		err = 0;
-
-		if (!BitBlt(winDc, size.left, size.top, size.right - size.left, size.bottom - size.top, dc, 0, 0, SRCCOPY))
-			err = GetLastError();
-		for (UINT Rust = 0; Rust < mediaControls.Size(); Rust++)
-		{
-			RECT loc = mediaControls[Rust].loc;
-			if (!AlphaBlend(winDc, loc.left, loc.top, loc.right - loc.left, loc.bottom - loc.top,
-				backup, loc.left, loc.top, loc.right - loc.left, loc.bottom - loc.top, blendFunc))
-			{
-				err = GetLastError();
-			}
-		}
-		FlushDc();
+		// Get Whatever is on the window already
 		safeToDraw = tempSafe;
 	}
 	if (!hasDrawn)
@@ -538,14 +507,15 @@ void TWindow::OnWindowResize(UINT width, UINT height)
 	if (mainPage.Get())
 		mainPage->OnResize(newLoc, 0, d3dEngine);
 
+	TrecComPointer<IDXGISurface1> surf;
 	if (d3dEngine.Get())
+	{
 		d3dEngine->Resize(width, height);
-
+		surf = d3dEngine->GetSurface();
+	}
 	if (drawingBoard.Get())
 	{
-		drawingBoard->Resize(GetTWindowDc(), size);
-		if (d3dEngine.Get())
-			d3dEngine->ClearDC();
+		drawingBoard->Resize(currentWindow, size, surf);
 	}
 
 	//safeToDraw = safeToDraw & 0b11111101;
@@ -758,8 +728,7 @@ bool TWindow::SetUp3D()
 		return false;
 	}
 
-	drawingBoard->Resize(GetTWindowDc(), size);
-	d3dEngine->ClearDC();
+	drawingBoard->Resize(currentWindow, size, d3dEngine->GetSurface());
 
 
 	return true;

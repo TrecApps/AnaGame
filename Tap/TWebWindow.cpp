@@ -66,13 +66,15 @@ void TWebWindow::OnWindowResize(UINT width, UINT height)
     if (mainPage.Get())
         mainPage->OnResize(mainPageSpace, 0, d3dEngine);
 
+    TrecComPointer<IDXGISurface1> surf;
     if (d3dEngine.Get())
+    {
         d3dEngine->Resize(width, height);
+        surf = d3dEngine->GetSurface();
+    }
     if (drawingBoard.Get())
     {
-        drawingBoard->Resize(GetTWindowDc(), size);
-        if (d3dEngine.Get())
-            d3dEngine->ClearDC();
+        drawingBoard->Resize(currentWindow, size, surf);
     }
 }
 
