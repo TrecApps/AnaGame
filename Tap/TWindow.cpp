@@ -226,7 +226,7 @@ void TWindow::Draw()
 		safeToDraw = 0;
 		if (d3dEngine.Get())
 		{
-			// d3dEngine->PrepareScene(D2D1::ColorF(D2D1::ColorF::Wheat));
+			d3dEngine->PrepareScene(D2D1::ColorF(D2D1::ColorF::Wheat, 0.0f));
 		}
 
 		// New Mechanism tht uses bitmaps
@@ -234,15 +234,15 @@ void TWindow::Draw()
 		mainPage->Draw();
 		DrawOtherPages();
 
-		if (d3dEngine.Get())
-		{
-			d3dEngine->FinalizeScene();
-		}
 		if (flyout.Get())
 			flyout->AfterDraw();
 
 		drawingBoard->EndDraw();
 
+		if (d3dEngine.Get())
+		{
+			d3dEngine->FinalizeScene();
+		}
 		// Get Whatever is on the window already
 		safeToDraw = tempSafe;
 	}

@@ -117,7 +117,7 @@ int TWindowEngine::Initialize()
 	swapChainDescription.SampleDesc.Quality = 0;
 	swapChainDescription.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	swapChainDescription.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapChainDescription.Flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
+	swapChainDescription.Flags = 0;
 	swapChainDescription.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;// DXGI_SWAP_EFFECT_DISCARD;
 
 	unsigned int flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
@@ -280,7 +280,7 @@ void TWindowEngine::Resize(UINT x, UINT y)
 	UINT height = y;
 
 	DXGI_FORMAT NewFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
-	UINT flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
+	// UINT flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
 
 	renderTarget.Delete();
 	surface.Delete();
@@ -289,7 +289,7 @@ void TWindowEngine::Resize(UINT x, UINT y)
 
 	//ReportLiveObjects();
 
-	HRESULT res = swapper->ResizeBuffers(buffCount, width, height, NewFormat, flags);
+	HRESULT res = swapper->ResizeBuffers(buffCount, width, height, NewFormat, 0);
 	if (FAILED(res))
 		int e = 0;
 
@@ -407,7 +407,7 @@ void TWindowEngine::PrepareScene(D2D1::ColorF color)
 		return;
 	float clearColor[4] = { color.r, color.g ,color.b,color.a };
 
-	contextDevice->ClearRenderTargetView(renderTarget.Get(), clearColor);
+	//contextDevice->ClearRenderTargetView(renderTarget.Get(), clearColor);
 	ID3D11RenderTargetView* const renderer = renderTarget.Get();
 	contextDevice->OMSetRenderTargets(1, &renderer, nullptr);
 }

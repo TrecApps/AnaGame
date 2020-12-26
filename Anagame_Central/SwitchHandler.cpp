@@ -977,7 +977,7 @@ void SwitchHandler::OnSelectVid(TrecPointer<TControl> tc, EventArgs ea)
 	window->submitPlayer(changeControl);
 	rootLayout->addChild(changeControl, 1, 0);
 	page->CreateLayout();
-	window->SetUp3D();
+	//window->SetUp3D();
 }
 
 bool SwitchHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)

@@ -96,7 +96,7 @@ void DrawingBoard::Resize(HWND window, RECT size, TrecComPointer<IDXGISurface1> 
 		D2D1_HWND_RENDER_TARGET_PROPERTIES hProps;
 		hProps.hwnd = window;
 		hProps.pixelSize = D2D1::SizeU(size.right - size.left, size.bottom - size.top);
-		hProps.presentOptions = D2D1_PRESENT_OPTIONS_NONE;
+		hProps.presentOptions = D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS;
 
 		fact->CreateHwndRenderTarget(props, hProps, renderTargetHolder.GetPointerAddress());
 
@@ -521,6 +521,7 @@ void DrawingBoard::EndDraw()
 	else if (windowTarget.Get())
 	{
 		windowTarget->BeginDraw();
+		windowTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 		ID2D1Bitmap* map = nullptr;
 		if (SUCCEEDED(renderer->GetBitmap(&map)))
 			windowTarget->DrawBitmap(map);
