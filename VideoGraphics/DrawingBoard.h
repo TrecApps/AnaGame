@@ -67,6 +67,9 @@ public:
 	 */
 	void Resize(HWND window, RECT size, TrecComPointer<IDXGISurface1> surface);
 
+
+	void Prep3DResize();
+
 	/**
 	 * Method: DrawingBoard::GetBrush
 	 * Purpose: Produces a Solid Color-enabled TBrush

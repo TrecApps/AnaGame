@@ -116,6 +116,11 @@ void DrawingBoard::Resize(HWND window, RECT size, TrecComPointer<IDXGISurface1> 
 
 }
 
+void DrawingBoard::Prep3DResize()
+{
+	dxgiTarget.Delete();
+}
+
 /**
  * Method: DrawingBoard::GetBrush
  * Purpose: Produces a Solid Color-enabled TBrush
@@ -549,7 +554,10 @@ void DrawingBoard::EndDraw()
 		dxgiTarget->BeginDraw();
 		ID2D1Bitmap* map = nullptr;
 		if (SUCCEEDED(renderer->GetBitmap(&map)))
+		{
 			dxgiTarget->DrawBitmap(map);
+			map->Release();
+		}
 		dxgiTarget->EndDraw();
 	}
 	else if (windowTarget.Get())
@@ -558,7 +566,10 @@ void DrawingBoard::EndDraw()
 		windowTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 		ID2D1Bitmap* map = nullptr;
 		if (SUCCEEDED(renderer->GetBitmap(&map)))
+		{
 			windowTarget->DrawBitmap(map);
+			map->Release();
+		}
 		windowTarget->EndDraw();
 	}
 }

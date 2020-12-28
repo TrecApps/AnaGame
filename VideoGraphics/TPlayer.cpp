@@ -1,4 +1,5 @@
 #include "TPlayer.h"
+#include <mfreadwrite.h>
 
 #define SafeRelease(value) if(value) value->Release(); value = nullptr;
 
@@ -107,13 +108,13 @@ TPlayer::~TPlayer()
 	Shutdown();
 }
 
-HRESULT TPlayer::OpenURL(const TString& url)
+HRESULT TPlayer::OpenURL(const TString& url, TrecPointer<TWindowEngine> en)
 {
 	// assert(m_pSession);
 	IMFTopology* top = nullptr;
 	IMFPresentationDescriptor* present = nullptr;
 
-	HRESULT hr = CreateSession();
+	HRESULT hr = CreateSession(en);
 	if (FAILED(hr))
 		goto done;
 	hr = CreateMediaSource(url.GetConstantBuffer(), &m_pSource);
@@ -141,14 +142,48 @@ HRESULT TPlayer::OpenURL(const TString& url)
 	return hr;
 }
 
-HRESULT TPlayer::CreateSession()
+HRESULT TPlayer::CreateSession(TrecPointer<TWindowEngine> en)
 {
 	HRESULT hr = CloseSession();
 
 	if (FAILED(hr))
 		return hr;
 
-	hr = MFCreateMediaSession(nullptr, &m_pSession);
+	if (en.Get() && en->getDeviceD().Get())
+	{
+		TrecComPointer<IMFAttributes>::TrecComHolder attsHolder;
+		MFCreateAttributes(attsHolder.GetPointerAddress(), 5);
+		TrecComPointer<IMFAttributes> atts = attsHolder.Extract();
+
+		UINT token = 0;
+		TrecComPointer<IMFDXGIDeviceManager>::TrecComHolder manHolder;
+		MFCreateDXGIDeviceManager(&token, manHolder.GetPointerAddress());
+		TrecComPointer<IMFDXGIDeviceManager> man = manHolder.Extract();
+
+
+		TrecComPointer<ID3D11Device> dev = en->getDeviceD();
+		ID3D10Multithread* multi = nullptr;
+		if (SUCCEEDED(dev->QueryInterface(__uuidof(ID3D10Multithread), (void**)&multi)))
+		{
+			multi->SetMultithreadProtected(TRUE);
+			multi->Release();
+		}
+
+		man->ResetDevice(dev.Get(), token);
+		atts->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
+		atts->SetUnknown(MF_SOURCE_READER_D3D_MANAGER, man.Get());
+		atts->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE);
+		atts->SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, TRUE);
+		atts->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
+		
+
+
+
+		hr = MFCreateMediaSession(atts.Get(), &m_pSession);
+
+	}
+	else
+		hr = MFCreateMediaSession(nullptr, &m_pSession);
 	if (FAILED(hr))
 		return hr;
 
@@ -615,6 +650,7 @@ HRESULT AddBranchToPartialTopology(
 
 	if (fSelected)
 	{
+		LockWindowUpdate(nullptr);
 		// Create the media sink activation object.
 		hr = CreateMediaSinkActivate(pSD, hVideoWnd, &pSinkActivate);
 		if (FAILED(hr))

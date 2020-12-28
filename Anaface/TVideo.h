@@ -41,6 +41,7 @@ public:
 
 private:
 	TrecComPointer<TPlayer> player;
+	TrecPointer<TWindowEngine> windowEngine;
 	HWND window;
 };
 

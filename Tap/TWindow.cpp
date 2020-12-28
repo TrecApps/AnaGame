@@ -510,6 +510,8 @@ void TWindow::OnWindowResize(UINT width, UINT height)
 	TrecComPointer<IDXGISurface1> surf;
 	if (d3dEngine.Get())
 	{
+		if (drawingBoard.Get())
+			drawingBoard->Prep3DResize();
 		d3dEngine->Resize(width, height);
 		surf = d3dEngine->GetSurface();
 	}

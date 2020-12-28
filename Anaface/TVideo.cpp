@@ -19,7 +19,7 @@ bool TVideo::setVideo(const WCHAR* str)
 {
 	if (!player.Get())
 		return false;
-	if (FAILED(player->OpenURL(str)))
+	if (FAILED(player->OpenURL(str, windowEngine)))
 		return false;
 	return true;
 }
@@ -60,6 +60,8 @@ bool TVideo::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
 	if (!player.Get())
 		return false;
+
+	windowEngine = d3d;
 
 	// Don't want to override non-direct 2D Content
 	drawBackground = false;

@@ -120,7 +120,7 @@ int TWindowEngine::Initialize()
 	swapChainDescription.Flags = 0;
 	swapChainDescription.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;// DXGI_SWAP_EFFECT_DISCARD;
 
-	unsigned int flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	unsigned int flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
 
 #if _DEBUG
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
