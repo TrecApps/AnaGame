@@ -121,55 +121,7 @@ bool TLayout::addColunm(int x, bool markDetected)
 	case orgLayout::VMix:
 	case orgLayout::VStack:
 		return false; // these have rows
-		//To-Do: continue rest
-	case orgLayout::grid:
-
-		if (rows == 0)
-		{
-			rows++;
-			updateRow = false;
-		}
-		D2D1_RECT_F tempRect2 = D2D1_RECT_F{ 0,0,0,0 };
-		tempRect.left = returnMinX(true);
-		tempRect.right = tempRect.left + x;
-		for (int c = 0; c < rows;c++)
-		{
-			tempRect2 = returnRectY(c);
-			tempRect.top = tempRect2.top;
-			tempRect.bottom = tempRect2.bottom;
-			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
-			tempContC->x = colunms;
-			tempContC->y = c;
-			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
-			
-			tempContC->contain->setLocation(tempRect);
-
-			lChildren.Add(tempContC);
-		}
-		if (updateColumn)
-			colunms++;
-		else
-			updateColumn = true;
-		columnLines.push_back(x);
-		AddToColFlex(AcceptMark);
-		return true;
 	default:
-
-		if (lChildren.Count() > 0)
-			tempRect.left = returnMinX(colunms);
-		else
-			tempRect.left = this->location.left;
-		tempRect.right = tempRect.left + x;
-		tempRect.bottom = location.bottom;
-		tempRect.top = location.top;
-		tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
-		tempContC->x = colunms++;
-		tempContC->y = 0;
-		tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
-
-		tempContC->contain->setLocation(tempRect);
-
-		lChildren.Add(tempContC);
 		columnLines.push_back(x);
 		AddToColFlex(AcceptMark);
 		return true;
@@ -209,59 +161,70 @@ bool TLayout::addRow(int y, bool markDetected)
 	case orgLayout::HMix:
 	case orgLayout::HStack:
 		return false;    // These go by colunms
-		//To-Do: the rest
-	case orgLayout::grid:
-		if (colunms == 0)
-		{
-			colunms++;
-			updateColumn = false;
-		}
-		D2D1_RECT_F tempRect2 = D2D1_RECT_F{ 0,0,0,0 };
-		tempRect.top = returnMinY(rows);
-		tempRect.bottom = tempRect.top + y;
-		for (int c = 0; c < colunms;c++)
-		{
-			tempRect2 = returnRectX(c);
-			tempRect.left = tempRect2.left;
-			tempRect.right = tempRect2.right;
-			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
-			tempContC->x = c;
-			tempContC->y = rows;
-			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
 
-			tempContC->contain->setLocation(tempRect);
-
-			lChildren.Add(tempContC);
-		}
-		if (updateRow)
-			rows++;
-		else
-			updateRow = true;
-		rowLines.push_back(y);
-		AddToRowFlex(AcceptMark);
-		return true;
 	default:
-
-		if (lChildren.Count() > 0)
-			tempRect.top = returnMinY(rows);
-		else
-			tempRect.top = this->location.top;
-		tempRect.bottom = tempRect.top + y;
-		tempRect.left = location.left;
-		tempRect.right = location.right;
-		tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
-		tempContC->x = 0;
-		tempContC->y = rows++;
-		tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
-
-		tempContC->contain->setLocation(tempRect);
-
-		lChildren.Add(tempContC);
 		rowLines.push_back(y);
 		AddToRowFlex(AcceptMark);
 		return true;
 	}
 	return false;
+}
+
+void TLayout::CompileLayout()
+{
+	switch (organization)
+	{
+	case orgLayout::HBuff:
+	case orgLayout::HMix:
+	case orgLayout::HStack:
+		for (UINT x = 0; x < columnLines.Size(); x++)
+		{
+			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
+			tempContC->x = tempContC->x2 = x;
+			tempContC->extend = false;
+			tempContC->y = tempContC->y2 = 0;
+			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
+
+			tempContC->contain->setLocation(getRawSectionLocation(0, x));
+
+			lChildren.Add(tempContC);
+		}
+		break;
+	case orgLayout::VBuff:
+	case orgLayout::VMix:
+	case orgLayout::VStack:
+
+		for (UINT y = 0; y < rowLines.Size(); y++)
+		{
+			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
+			tempContC->x = tempContC->x2 = 0;
+			tempContC->extend = false;
+			tempContC->y = tempContC->y2 = y;
+			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
+
+			tempContC->contain->setLocation(getRawSectionLocation(y, 0));
+
+			lChildren.Add(tempContC);
+		}
+		break;
+	case orgLayout::grid:
+
+		for (UINT x = 0; x < columnLines.Size(); x++)
+		{
+			for (UINT y = 0; y < rowLines.Size(); y++)
+			{
+				tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
+				tempContC->x = tempContC->x2 = x;
+				tempContC->extend = false;
+				tempContC->y = tempContC->y2 = y;
+				tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
+
+				tempContC->contain->setLocation(getRawSectionLocation(y, x));
+
+				lChildren.Add(tempContC);
+			}
+		}
+	}
 }
 
 /*
@@ -585,11 +548,11 @@ void TLayout::onDraw(TObject* obj)
 		return;
 	TControl::onDraw(obj);
 
-	for (int c = 0; c < lChildren.Count(); c++)
+	/*for (int c = 0; c < lChildren.Count(); c++)
 	{
 		if(lChildren.ElementAt(c)->contain.Get())
 		lChildren.ElementAt(c)->contain->onDraw(obj);
-	}
+	}*/
 	if (internalBrush.Get())
 	{
 		for (int c = 0; c < rowLines.Size();c++)
@@ -602,7 +565,7 @@ void TLayout::onDraw(TObject* obj)
 		{
 			int add = columnLines[c];
 			internalBrush->DrawLine(D2D1::Point2F(location.left + add, location.top),
-				D2D1::Point2F(location.left, location.bottom), thickness);
+				D2D1::Point2F(location.left + add, location.bottom), thickness);
 		}
 	}
 }

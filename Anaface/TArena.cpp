@@ -64,6 +64,8 @@ TArena::~TArena()
 */
 bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	// Don't want 3D content automatically overriden by 2D Background
+	drawBackground = false;
 	TControl::onCreate(r,d3d);
 
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|EngineID"));

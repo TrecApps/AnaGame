@@ -63,8 +63,7 @@ void TTreeDataBind::onDraw(TObject* obj)
 	
 	for (UINT c = 0; curNode.Get(); c++)
 	{
-		if (nodeBrush.Get() && c == highlightNodeSelected)
-			nodeBrush->FillRectangle(cLoc);
+		
 
 		bool ext = curNode->IsExtended();
 		bool extDraw = curNode->IsExtendable();
@@ -93,7 +92,7 @@ void TTreeDataBind::onDraw(TObject* obj)
 				points.push_back(D2D1::Point2F(triLoc.left, triLoc.top));
 				points.push_back(D2D1::Point2F(triLoc.right, (triLoc.top + triLoc.bottom) / 2.0f));
 			}
-			
+
 			auto path = drawingBoard->GetGeometry(points);
 
 			if (path.Get())
@@ -117,6 +116,9 @@ void TTreeDataBind::onDraw(TObject* obj)
 		cont->setLocation(triLoc);
 		cont->onDraw(curNode.Get());
 
+		if (nodeBrush.Get() && c == highlightNodeSelected)
+			nodeBrush->FillRectangle(cLoc);
+		
 		// Prepare for the next draw
 		cLoc.bottom += 30;
 		cLoc.top += 30;
@@ -142,6 +144,7 @@ UCHAR* TTreeDataBind::GetAnaGameType()
  */
 bool TTreeDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	drawBackground = false;
 	TControl::onCreate(r, d3d);
 	if (drawingBoard.Get())
 	{

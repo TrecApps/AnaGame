@@ -34,6 +34,7 @@ TString TControl::GetType()
 */
 TControl::TControl(TrecPointer<DrawingBoard> db,TrecPointer<TArray<styleTable>> styTab)
 {
+	drawBackground = true;
 	arrayID = -1;
 	eventHandler = NULL;
 	isActive = true;
@@ -79,6 +80,7 @@ TControl::TControl(TrecPointer<DrawingBoard> db,TrecPointer<TArray<styleTable>> 
 */
 TControl::TControl(TControl & rCont)
 {
+	drawBackground = rCont.drawBackground;
 	isLClick = isRClick = false;
 
 	arrayID = rCont.arrayID;
@@ -187,7 +189,7 @@ TControl::TControl()
 	arrayID = -1;
 
 	eventHandler = NULL;
-	isActive = true;
+	isActive = drawBackground = true;
 
 	treeLevel = 0;
 
@@ -486,6 +488,16 @@ bool TControl::onCreate(D2D1_RECT_F contain, TrecPointer<TWindowEngine> d3d)
 		if (!valpoint->Compare(L"true"))
 			fixWidth = true;
 	}
+
+	valpoint = attributes.retrieveEntry(TString(L"|DrawingBoardContentFallback"));
+	if (valpoint.Get())
+	{
+		if (!valpoint->CompareNoCase(L"true"))
+			drawBackground = true;
+		else if (!valpoint->CompareNoCase(L"false"))
+			drawBackground = false;
+	}
+
 
 	valpoint = attributes.retrieveEntry(TString(L"|ArrayID"));
 	if (valpoint.Get())
@@ -1248,6 +1260,8 @@ void TControl::onDraw(TObject* obj)
 			content3->onDraw(location);
 		else if (content1.Get())
 			content1->onDraw(location);
+		else if (!children.Count() && drawBackground)
+			drawingBoard->FillControlBackground(location);
 		if (border3.Get())
 			border3->onDraw(location);
 		else if (border1.Get())
@@ -1263,6 +1277,8 @@ void TControl::onDraw(TObject* obj)
 			content2->onDraw(location);
 		else if (content1.Get())
 			content1->onDraw(location);
+		else if (!children.Count() && drawBackground)
+			drawingBoard->FillControlBackground(location);
 		if (border2.Get())
 			border2->onDraw(location);
 		else if (border1.Get())
@@ -1276,6 +1292,8 @@ void TControl::onDraw(TObject* obj)
 	{
 		if (content1.Get())
 			content1->onDraw(location);
+		else if (!children.Count() && drawBackground)
+			drawingBoard->FillControlBackground(location);
 		if (border1.Get())
 			border1->onDraw(location);
 		if (text1.Get())
@@ -1922,13 +1940,7 @@ bool TControl::onCreate(TMap<TString>* att, D2D1_RECT_F loc)
 	}
 
 	// 
-	valpoint = att->retrieveEntry(TString(L"|FontColor"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		text1->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
-	}
+
 
 	// 
 	valpoint = att->retrieveEntry(TString(L"|FontSize"));
@@ -2041,6 +2053,18 @@ bool TControl::onCreate(TMap<TString>* att, D2D1_RECT_F loc)
 			content1 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, (this));
 		valpoint->Replace(L"/", L"\\");
 		int res = generateImage(content1, valpoint, loc);
+	}
+
+	valpoint = att->retrieveEntry(TString(L"|FontColor"));
+	if (valpoint.Get())
+	{
+		if (!text1.Get())
+			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
+		text1->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
+	}
+	else if (text1.Get())
+	{
+		text1->stopCollection.AddGradient(TGradientStop(TColor(drawingBoard->GetDefaultTextColor()), 0.0f));
 	}
 
 	if (border1.Get())
@@ -2264,20 +2288,6 @@ bool TControl::onCreate2(TMap<TString>* att, D2D1_RECT_F loc)
 	}
 
 	// 
-	valpoint = att->retrieveEntry(TString(L"|HoverFontColor"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text2->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
-	}
-
-	// 
 	valpoint = att->retrieveEntry(TString(L"|HoverFontSize"));
 	if (valpoint.Get())
 	{
@@ -2441,6 +2451,19 @@ bool TControl::onCreate2(TMap<TString>* att, D2D1_RECT_F loc)
 				content2 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, (this));
 		}
 		generateImage(content2, valpoint, loc);
+	}
+
+
+	valpoint = att->retrieveEntry(TString(L"|HoverFontColor"));
+	if (valpoint.Get())
+	{
+		if (!text2.Get())
+			text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
+		text2->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
+	}
+	else if (text2.Get())
+	{
+		text2->stopCollection.AddGradient(TGradientStop(TColor(drawingBoard->GetDefaultTextColor()), 0.0f));
 	}
 
 	if (border2.Get())
@@ -2752,19 +2775,6 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 		text3->font = valpoint.Get();
 	}
 
-	// 
-	valpoint = att->retrieveEntry(TString(L"|ClickFontColor"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-		{
-			if (text1.Get())
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text3->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
-	}
 
 	// 
 	valpoint = att->retrieveEntry(TString(L"|ClickFontSize"));
@@ -2817,7 +2827,17 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 		generateImage(content3, valpoint,loc);
 	}
 
-
+	valpoint = att->retrieveEntry(TString(L"|FontColor"));
+	if (valpoint.Get())
+	{
+		if (!text3.Get())
+			text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
+		text3->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
+	}
+	else if (text3.Get())
+	{
+		text3->stopCollection.AddGradient(TGradientStop(TColor(drawingBoard->GetDefaultTextColor()), 0.0f));
+	}
 
 	if (border3.Get())
 	{

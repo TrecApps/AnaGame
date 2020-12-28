@@ -158,17 +158,7 @@ typedef struct sizeControl
 	int maxHeight;
 }sizeControl;
 
-/**
- * Enum Class: TShape
- * Purpose: Determines the basic size of the TControl
- * NOTE: Feature is unstable, stick with T_Rect for now
- */
-typedef enum class TShape {
-	T_Rect,
-	T_Rounded_Rect,
-	T_Ellipse,
-	T_Custom_shape
-}TShape;
+
 
 /**
  * Enum Class: BrushMarker
@@ -1749,6 +1739,12 @@ public:
 	virtual void QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls);
 
 protected:
+
+	/**
+	 * If no children and a content is not being drawn, draw the color using the DrawingBoard
+	 */
+	bool drawBackground;
+
 	//CMap<CString, CString, CString, CString> styles;
 	TDataArray<TrecPointer<AnimationData>> animateData;
 

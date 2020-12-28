@@ -211,6 +211,16 @@ public:
 	* Returns: whether the method call was compatible with the layout mode
 	*/
 	bool addRow(int, bool markDetected);
+
+	/**
+	 * Method: TLayout::CompileLayout
+	 * Purpose: Takes the Rows and Columns added and sets up a skeleton of the lChildren attribute
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void CompileLayout();
+
+
 	/*
 	* Method: TLayout::addChild
 	* Purpose: Adds a new Child Control to the layout at the specified location

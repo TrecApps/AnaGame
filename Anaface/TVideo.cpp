@@ -61,6 +61,9 @@ bool TVideo::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	if (!player.Get())
 		return false;
 
+	// Don't want to override non-direct 2D Content
+	drawBackground = false;
+
 	bool returnable = TControl::onCreate(r,d3d);
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|MediaSource"));
 	if (valpoint.Get())

@@ -9,6 +9,18 @@
 class TWindow;
 
 /**
+ * Enum Class: TShape
+ * Purpose: Determines the basic size of the TControl
+ * NOTE: Feature is unstable, stick with T_Rect for now
+ */
+typedef enum class TShape {
+	T_Rect,
+	T_Rounded_Rect,
+	T_Ellipse,
+	T_Custom_shape
+}TShape;
+
+/**
  * Class: DrawingBoard
  * Purpose: Holds the Direct2D RenderTarget and provides methods on manipulatingit and retrieving Brushes to draw upon it
  * 
@@ -231,14 +243,93 @@ public:
 	 */
 	UINT GetLayerCount();
 
-
+	/**
+	 * Method: DrawingBoard::SetToSecondaryTarget
+	 * Purpose: Have the Drawing board draw to the secondary Render Target
+	 * Parameters: void
+	 * Returns: void
+	 * 
+	 * Note: May be depricated soon if secondary target is deemed unecessary
+	 */
 	void SetToSecondaryTarget();
-	void SetToPromaryTarget();
+	/**
+	 * Method: DrawingBoard::SetToPrimaryTarget
+	 * Purpose: Have the Drawing board draw to the primary Render Target
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Note: May be depricated soon if secondary target is deemed unecessary
+	 */
+	void SetToPrimaryTarget();
 
+	/**
+	 * Method: DrawingBoard::BeginDraw
+	 * Purpose: Have the Drawing Board commence the drawing Process
+	 * Parameters: void
+	 * Returns: void
+	 */
 	void BeginDraw();
+
+	/**
+	 * Method: DrawingBoard::EndDraw
+	 * Purpose: Have the drawing board finalize the drawing procedure, by copying the contents of the Bitmap targets over to the
+	 *	main one
+	 * Parameters: void
+	 * Return: void
+	 */
 	void EndDraw();
 
+	/**
+	 * Method: DrawingBoard::GetDefaultColor
+	 * Purpose: Reports the default color for drawing basic content if a control has no content to draw itself
+	 * Parameters: void
+	 * Returns: D2D1_COLOR_F - the default content color to draw
+	 */
+	D2D1_COLOR_F GetDefaultColor();
+
+	/**
+	 * Method: DrawingBoard::GetDefaultTextColor
+	 * Purpose: Reports the default color for drawing basic content if a control has no content to draw itself
+	 * Parameters: void
+	 * Returns: D2D1_COLOR_F - the default content color to draw
+	 */
+	D2D1_COLOR_F GetDefaultTextColor();
+
+	/**
+	 * Method: DrawingBoard::SetDefaultColor
+	 * Purpose: Sets the default color to use
+	 * Parameters: const D2D1_COLOR_F& color - the color to set the default background color to
+	 * Returns: void
+	 */
+	void SetDefaultColor(const D2D1_COLOR_F& color);
+
+	/**
+	 * Method: DrawingBoard::SetDefaultTextColor
+	 * Purpose: Sets the default text color to use
+	 * Parameters: const D2D1_COLOR_F& color - the color to set the default background color to
+	 * Returns: void
+	 */
+	void SetDefaultTextColor(const D2D1_COLOR_F& color);
+
+	/**
+	 * Method: DrawingBoard::FillControlBackground
+	 * Purpose: Enables controls to easily draw to the drawing board without holding a brush object themselves
+	 * Parameters: const D2D1_RECT_F& location - where to draw
+	 *				TShape shape - the default chape to draw
+	 * Returns: void
+	 * 
+	 * Note: Initially, the only shapes supported are RECT and ELLIPSE as an elipse can easily be calculated from the rect param.
+	 * However other shapes need more data to properly articulate
+	 */
+	void FillControlBackground(const D2D1_RECT_F& location, TShape shape = TShape::T_Rect);
+
 private:
+	TrecPointer<TBrush> defaultBrush;
+
+	/**
+	 * Default colors for controls to use if no color is specified
+	 */
+	D2D1_COLOR_F defaultColor, defaultTextColor;
 
 	/**
 	 * whether to use the pimary Device Context or Secondary Context

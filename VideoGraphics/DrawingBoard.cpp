@@ -39,6 +39,9 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 	Resize(window, area, TrecComPointer<IDXGISurface1>());
 
 	this->window = window;
+
+	SetDefaultColor(D2D1::ColorF::ColorF(0.15f, 0.0f, 0.0f));
+	SetDefaultTextColor(D2D1::ColorF::ColorF(1.0f, 0.9f, 0.9f));
 }
 
 DrawingBoard::~DrawingBoard()
@@ -189,6 +192,7 @@ void DrawingBoard::SetSelf(TrecPointer<DrawingBoard> self)
 		throw L"ERROR! Self needed to be a real reference to this object";
 
 	this->self = TrecPointerKey::GetSoftPointerFromTrec<DrawingBoard>(self);
+	defaultBrush = TrecPointerKey::GetNewTrecPointer<TBrush>(defaultColor, self);
 }
 
 
@@ -479,16 +483,39 @@ UINT DrawingBoard::GetLayerCount()
 }
 
 
+/**
+ * Method: DrawingBoard::SetToSecondaryTarget
+ * Purpose: Have the Drawing board draw to the secondary Render Target
+ * Parameters: void
+ * Returns: void
+ *
+ * Note: May be depricated soon if secondary target is deemed unecessary
+ */
 void DrawingBoard::SetToSecondaryTarget()
 {
 	usePrimaryDc = false;
 }
 
-void DrawingBoard::SetToPromaryTarget()
+
+/**
+ * Method: DrawingBoard::SetToPrimaryTarget
+ * Purpose: Have the Drawing board draw to the primary Render Target
+ * Parameters: void
+ * Returns: void
+ *
+ * Note: May be depricated soon if secondary target is deemed unecessary
+ */
+void DrawingBoard::SetToPrimaryTarget()
 {
 	usePrimaryDc = true;
 }
 
+/**
+ * Method: DrawingBoard::BeginDraw
+ * Purpose: Have the Drawing Board commence the drawing Process
+ * Parameters: void
+ * Returns: void
+ */
 void DrawingBoard::BeginDraw()
 {
 
@@ -499,6 +526,13 @@ void DrawingBoard::BeginDraw()
 	renderer2->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 }
 
+/**
+ * Method: DrawingBoard::EndDraw
+ * Purpose: Have the drawing board finalize the drawing procedure, by copying the contents of the Bitmap targets over to the
+ *	main one
+ * Parameters: void
+ * Return: void
+ */
 void DrawingBoard::EndDraw()
 {
 	int err = 0;
@@ -526,6 +560,80 @@ void DrawingBoard::EndDraw()
 		if (SUCCEEDED(renderer->GetBitmap(&map)))
 			windowTarget->DrawBitmap(map);
 		windowTarget->EndDraw();
+	}
+}
+
+/**
+ * Method: DrawingBoard::GetDefaultColor
+ * Purpose: Reports the default color for drawing basic content if a control has no content to draw itself
+ * Parameters: void
+ * Returns: D2D1_COLOR_F - the default content color to draw
+ */
+D2D1_COLOR_F DrawingBoard::GetDefaultColor()
+{
+	return defaultColor;
+}
+
+/**
+ * Method: DrawingBoard::GetDefaultTextColor
+ * Purpose: Reports the default color for drawing basic content if a control has no content to draw itself
+ * Parameters: void
+ * Returns: D2D1_COLOR_F - the default content color to draw
+ */
+D2D1_COLOR_F DrawingBoard::GetDefaultTextColor()
+{
+	return defaultTextColor;
+}
+
+/**
+ * Method: DrawingBoard::SetDefaultColor
+ * Purpose: Sets the default color to use
+ * Parameters: const D2D1_COLOR_F& color - the color to set the default background color to
+ * Returns: void
+ */
+void DrawingBoard::SetDefaultColor(const D2D1_COLOR_F& color)
+{
+	defaultColor = color;
+	if(self.Get())
+		defaultBrush = TrecPointerKey::GetNewTrecPointer<TBrush>(defaultColor, TrecPointerKey::GetTrecPointerFromSoft<DrawingBoard>(self));
+}
+
+/**
+ * Method: DrawingBoard::SetDefaultTextColor
+ * Purpose: Sets the default text color to use
+ * Parameters: const D2D1_COLOR_F& color - the color to set the default background color to
+ * Returns: void
+ */
+void DrawingBoard::SetDefaultTextColor(const D2D1_COLOR_F& color)
+{
+	defaultTextColor = color;
+}
+
+/**
+ * Method: DrawingBoard::FillControlBackground
+ * Purpose: Enables controls to easily draw to the drawing board without holding a brush object themselves
+ * Parameters: const D2D1_RECT_F& location - where to draw
+ *				TShape shape - the default chape to draw
+ * Returns: void
+ *
+ * Note: Initially, the only shapes supported are RECT and ELLIPSE as an elipse can easily be calculated from the rect param.
+ * However other shapes need more data to properly articulate
+ */
+void DrawingBoard::FillControlBackground(const D2D1_RECT_F& location, TShape shape)
+{
+	assert(defaultBrush.Get());
+	ELLIPSE_2D ell;
+	switch (shape)
+	{
+	case TShape::T_Ellipse:
+		ell.point.x = location.left / 2 + location.right / 2;
+		ell.point.y = location.bottom / 2 + location.top / 2;
+		ell.radiusX = location.right - location.left;
+		ell.radiusY = location.bottom - location.top;
+		defaultBrush->FillEllipse(ell);
+		break;
+	default:
+		defaultBrush->FillRectangle(location);
 	}
 }
 
