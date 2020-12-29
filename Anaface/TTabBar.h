@@ -1,6 +1,7 @@
 #pragma once
 #include "TControl.h"
 #include <Dragable.h>
+#include "Anaface.h"
 
 class TTabBar;
 
@@ -20,13 +21,24 @@ typedef enum class TabContentType
 	tct_third_p3  // Used by third party projects that introduce a third new content type
 }TabContentType;
 
+typedef enum class TabClickMode
+{
+	tcm_not_clicked,   // Tab was not clicked
+	tcm_exit,          // Tab's exit section was clicked
+	tcm_regular_click, // Tab was clicked
+	tcm_new_tab,       // the New Tab was clicked
+	tcm_right_tab,     // Right Tab was Clicked
+	tcm_left_tab       // Left Tab was Clicked
+}TabClickMode;
+
+
 /**
  * Class TabContent
  * Purpose: Abstract Class meant to hold the contents of a given tab
  * 
  * Attributes: Abstract as the tab content could be a TControl, Page, Web Node, or something else
  */
-class TabContent
+class _ANAFACE_DLL TabContent
 {
 public:
 	/**
@@ -56,6 +68,15 @@ public:
 	virtual void Resize(const D2D1_RECT_F& loc) = 0;
 
 	/**
+	 * Method: TabContent::Draw
+	 * Purpose: Applies the Draw Operation to the content
+	 * Parameters: TObject* obj - any data associated with the draw
+	 * Returns: void
+	 * Attributes: Abstract
+	 */
+	virtual void Draw(TObject* obj) = 0;
+
+	/**
 	 * Method: TabContent::GetContentType
 	 * Purpose: Returns the Content Type, allowing users of this object to cast it into the right sub-type and take it from there
 	 * Parameters: void
@@ -64,6 +85,128 @@ public:
 	 * Attributes: Abstract
 	 */
 	virtual TabContentType GetContentType() = 0;
+
+	/**
+	 * Method: TabContent::HasContent
+	 * Purpose: Reports whether this object has the desired content
+	 * Parameters: void
+	 * Returns: bool - whether the Tab Content is populated or not
+	 * 
+	 * Attributes: Abstract
+	 */
+	virtual bool HasContent() = 0;
+
+	/*
+	 * Method: TabContent::OnRButtonUp
+	 * Purpose: Allows Control to catch the RightmessageState::mouse button release event and act accordingly
+	 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	 *				TPoint point - the point on screen where the event occured
+	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	 * Returns: void
+	 *
+	 * Attributes: virtual; message
+	 */
+	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)=0;
+
+	/*
+	* Method: TabContent::OnLButtonDown
+	* Purpose: Allows Control to catch the LeftmessageState::mouse Button Down event and act accordingly
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+	* Returns: void
+	*
+	* Attributes: virtual; message
+	*/
+	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)=0;
+
+	/*
+	* Method: TabContent::OnRButtonDown
+	* Purpose: Allows Control to catch the RightmessageState::mouse button down event and act accordingly
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+	* Returns: void
+	*
+	* Attributes: virtual; message
+	*/
+	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)=0;
+
+	/*
+	* Method: TabContent::OnMouseMove
+	* Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+	* Returns: void
+	*
+	* Attributes: virtual; message
+	*/
+	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)=0;
+
+
+
+	/**
+	 * Method: TabContent::OnMouseLeave
+	 * Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
+	 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	 *				TPoint point - the point on screen where the event occured
+	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+	 * Returns: bool - whether the leave occured
+	*
+	* Attributes: virtual; message
+	 */
+	afx_msg virtual bool OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)=0;
+
+	/*
+	* Method: TabContent::OnLButtonDblClk
+	* Purpose: Allows control to catch the DOuble Click event and act accordingly
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	* Returns: void
+	*
+	* Attributes: virtual; message
+	*/
+	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)=0;
+
+	/*
+	* Method: TabContent::OnLButtonUp
+	* Purpose: Allows control to catch the Left Button Up event and act accordingly
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	* Returns: void
+	*
+	* Attributes: virtual; message
+	*/
+	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)=0;
+
+	/*
+	* Method: TabContent::OnChar
+	* Purpose: Allows Controls to repond to character input
+	* Parameters: bool fromChar - can be called either from on Key Down or OnChar
+	*				UINT nChar - The ID of the character that was pressed
+	*				UINT nRepCnt - how many times the character was processed for this event
+	*				UINT nFlags - flags provided by MFC's Message system, not used
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	* Returns: void
+	*
+	* Attributes: virtual; message
+	*/
+	afx_msg virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)=0;
 };
 
 /**
@@ -71,7 +214,7 @@ public:
  * Purpose: Renders a basic Tab in a Tab Bar, responding to clicks and holding the contents of the tab for presentation
  *	by what ever object is holding the Tab-Bar
  */
-class Tab 
+class _ANAFACE_DLL Tab
 {
 	friend class TTabBar;
 public:
@@ -124,7 +267,37 @@ public:
 	 */
 	virtual void MovePoint(float x, float y);
 
+	/**
+	 * Method: Tab::GetContent
+	 * Purpose: Retireves the Content relevant to this tab
+	 * Parameters: void
+	 * Returns: TrecPointer<TabContent> - the content this tab holds
+	 */
+	TrecPointer<TabContent> GetContent();
+
+	/**
+	 * Method: Tab::SetContent
+	 * Purpose: Sets the Content of the Tab
+	 * Parameters: TrecPointer<TabContent> cont - the content to store
+	 * Returns: void
+	 */
+	void SetContent(TrecPointer<TabContent> cont);
+
+	/**
+	 * Method: Tab::AttemptClick
+	 * Purpose: Allows the tab to report the click status
+	 * Parameters: const TPoint& point - the click point to test
+	 * Returns: TabClickMode - the results of the attempted Click
+	 */
+	TabClickMode AttemptClick(const TPoint& point);
+
 private:
+
+	/**
+	 * Holds a reference to the actual content to present
+	 */
+	TrecPointer<TabContent> fContent;
+
 	/**
 	 * The Text Object to Render
 	 */
@@ -162,7 +335,7 @@ private:
  * 
  * SuperClass: TControl
  */
-class TTabBar :
+class _ANAFACE_DLL TTabBar :
 	public TControl
 {
 public:
@@ -183,7 +356,7 @@ public:
 	~TTabBar();
 
 	/**
-	 * Method: TControl::onCreate
+	 * Method: TTabBar::onCreate
 	 * Purpose: Allows the Control To contstruct itself based off of the location it has and the
 	 *		screen space it is given
 	 * Parameters: RECT contain - the area it can use
@@ -194,7 +367,7 @@ public:
 	 */
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d)override;
 	/*
-	 * Method: TControl::Resize
+	 * Method: TTabBar::Resize
 	 * Purpose: Resizes the control upon the window being resized
 	 * Parameters: RECT r - the new location for the control
 	 * Returns: void
@@ -204,7 +377,7 @@ public:
 	virtual void Resize(D2D1_RECT_F&)override;
 
 	/**
-	 * Method: TControl::onDraw
+	 * Method: TTabBar::onDraw
 	 * Purpose: Draws the control
 	 * Parameters: TObject* obj - Raw reference to a TObject that might have specific text to say
 	 * Returns: void
@@ -214,7 +387,7 @@ public:
 	virtual void onDraw(TObject* obj = nullptr) override;
 
 	/*
-	* Method: TControl::OnMouseMove
+	* Method: TTabBar::OnMouseMove
 	* Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
 	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	*				TPoint point - the point on screen where the event occured
@@ -227,7 +400,7 @@ public:
 	*/
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)override;
 	/*
-	* Method: TControl::OnLButtonDown
+	* Method: TTabBar::OnLButtonDown
 	* Purpose: Allows Control to catch the LeftmessageState::mouse Button Down event and act accordingly
 	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	*				TPoint point - the point on screen where the event occured
@@ -240,7 +413,7 @@ public:
 	*/
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)override;
 	/*
-	* Method: TControl::OnLButtonUp
+	* Method: TTabBar::OnLButtonUp
 	* Purpose: Allows control to catch the Left Button Up event and act accordingly
 	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	*				TPoint point - the point on screen where the event occured
@@ -259,7 +432,23 @@ public:
 	 * Parameters: const TString& text - The text to add to the tab
 	 * Returns: void
 	 */
-	void AddTab(const TString& text);
+	TrecPointer<Tab> AddTab(const TString& text);
+
+	/**
+	 * Method: TTabBar::GetContentSize
+	 * Purpose: Reports the number of tabs (presumably) with content
+	 * Parameters: void
+	 * Returns: UINT - number of content tabs available
+	 */
+	UINT GetContentSize();
+
+	/**
+	 * Method: TTabBar::GetTabAt
+	 * Purpose: Retrieves the Tab at the given index or null if out of bounds
+	 * Parameters: UINT index - the index to get
+	 * Returns: TrecPointer<Tab> - the requested tab
+	 */
+	TrecPointer<Tab> GetTabAt(UINT index);
 
 protected:
 
@@ -296,5 +485,15 @@ protected:
 	 * Whether a tab is currently being clicked
 	 */
 	bool onClick;
+
+	/**
+	 * The Tab currently being Clicked
+	 */
+	TrecPointer<Tab> currentlyClickedTab;
+
+	/**
+	 * Keeps track of the Tab Click data
+	 */
+	TabClickMode clickMode;
 };
 

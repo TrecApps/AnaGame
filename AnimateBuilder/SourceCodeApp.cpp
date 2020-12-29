@@ -39,7 +39,9 @@ SourceCodeApp::SourceCodeApp(TrecPointer<TControl> m, TrecPointer<TControl> o, T
 
 	if (!mainControl.Get())
 		return;
-	dynamic_cast<AnafaceUI*>(m.Get())->addControl(mainControl, TString());
+	TrecSubPointer<TabContent, TabControlContent> content = TrecPointerKey::GetNewTrecSubPointer<TabContent, TabControlContent>();
+	content->SetControl(mainControl);
+	dynamic_cast<AnafaceUI*>(m.Get())->addControl(TrecPointerKey::GetTrecPointerFromSub<TabContent, TabControlContent>(content), TString());
 
 
 	if (!o.Get() || !dynamic_cast<AnafaceUI*>(o.Get()))

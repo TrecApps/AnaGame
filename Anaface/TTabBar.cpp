@@ -118,8 +118,34 @@ void TTabBar::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
 	if (isContained(point, location))
+	{
 		onClick = true;
-	TControl::OnLButtonDown(nFlags, point, mOut, eventAr, clickedButtons);
+		for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+		{
+			auto tab = tabs[Rust];
+			if (!tab.Get())
+				continue;
+			
+			TabClickMode cMode = tab->AttemptClick(point);
+
+			if (cMode == TabClickMode::tcm_not_clicked)
+				continue;
+
+			clickMode = cMode;
+			currentlyClickedTab = tab;
+			break;
+		}
+
+		if (currentlyClickedTab.Get() && currentlyClickedTab->isAdd)
+			clickMode = TabClickMode::tcm_new_tab;
+		else if (clickMode == TabClickMode::tcm_not_clicked)
+		{
+			if (rightTab.AttemptClick(point) != TabClickMode::tcm_not_clicked)
+				clickMode = TabClickMode::tcm_right_tab;
+			else if (leftTab.AttemptClick(point) != TabClickMode::tcm_not_clicked)
+				clickMode = TabClickMode::tcm_left_tab;
+		}
+	}
 }
 
 void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
@@ -161,7 +187,7 @@ void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 	onClick = false;
 }
 
-void TTabBar::AddTab(const TString& text)
+TrecPointer<Tab> TTabBar::AddTab(const TString& text)
 {
 	TrecPointer<Tab> newTab = TrecPointerKey::GetNewTrecPointer<Tab>();
 
@@ -184,6 +210,34 @@ void TTabBar::AddTab(const TString& text)
 	}
 
 	SetTabSizes();
+	return newTab;
+}
+
+/**
+ * Method: TTabBar::GetContentSize
+ * Purpose: Reports the number of tabs (presumably) with content
+ * Parameters: void
+ * Returns: UINT - number of content tabs available
+ */
+UINT TTabBar::GetContentSize()
+{
+	if (haveAdd && tabs.Size())
+		return tabs.Size() - 1;
+	return tabs.Size();
+}
+
+
+/**
+ * Method: TTabBar::GetTabAt
+ * Purpose: Retrieves the Tab at the given index or null if out of bounds
+ * Parameters: UINT index - the index to get
+ * Returns: TrecPointer<Tab> - the requested tab
+ */
+TrecPointer<Tab> TTabBar::GetTabAt(UINT index)
+{
+	if (index < tabs.Size())
+		return tabs[index];
+	return TrecPointer<Tab>();
 }
 
 void TTabBar::SetTabSizes()
@@ -276,6 +330,21 @@ void Tab::Draw()
 
 void Tab::MovePoint(float x, float y)
 {
+}
+
+TrecPointer<TabContent> Tab::GetContent()
+{
+	return fContent;
+}
+
+void Tab::SetContent(TrecPointer<TabContent> cont)
+{
+	fContent = cont;
+}
+
+TabClickMode Tab::AttemptClick(const TPoint& point)
+{
+	return isContained(point, location) ? TabClickMode::tcm_regular_click : TabClickMode::tcm_not_clicked;
 }
 
 TabContent::TabContent()
