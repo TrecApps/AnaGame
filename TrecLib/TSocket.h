@@ -5,7 +5,7 @@
 #include "TString.h"
 
 
-class TSocket :
+class _TREC_LIB_DLL TSocket :
 	public TObject
 {
 public:

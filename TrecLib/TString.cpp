@@ -2503,7 +2503,7 @@ int TString::Replace(const TString& oldStr, const TString& newStr)
  *				const TString& newStr - the String to replace the old string with
  * Returns: TString::The Copy with the Replace operation applied
  */
-TString TString::GetReplace(int& ret, const TString& oldStr, const TString& newStr)
+TString TString::GetReplace(int& ret, const TString& oldStr, const TString& newStr) const 
 {
 	TString retStr(this);
 	ret = retStr.Replace(oldStr, newStr);

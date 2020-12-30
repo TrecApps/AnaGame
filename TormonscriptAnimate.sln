@@ -86,6 +86,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnaWeb", "AnaWeb\AnaWeb.vcx
 		{D51F30ED-A597-4CB8-9BEB-7EC42AECE350} = {D51F30ED-A597-4CB8-9BEB-7EC42AECE350}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnaSock", "AnaSock\AnaSock.vcxproj", "{77791411-0826-4B55-8DC2-8AD4D564FD8A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D51F30ED-A597-4CB8-9BEB-7EC42AECE350} = {D51F30ED-A597-4CB8-9BEB-7EC42AECE350}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -190,6 +195,14 @@ Global
 		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Release|x64.Build.0 = Release|x64
 		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Release|x86.ActiveCfg = Release|Win32
 		{490158CB-94DE-40E0-AD69-CFCB6C3D8F0C}.Release|x86.Build.0 = Release|Win32
+		{77791411-0826-4B55-8DC2-8AD4D564FD8A}.Debug|x64.ActiveCfg = Debug|x64
+		{77791411-0826-4B55-8DC2-8AD4D564FD8A}.Debug|x64.Build.0 = Debug|x64
+		{77791411-0826-4B55-8DC2-8AD4D564FD8A}.Debug|x86.ActiveCfg = Debug|Win32
+		{77791411-0826-4B55-8DC2-8AD4D564FD8A}.Debug|x86.Build.0 = Debug|Win32
+		{77791411-0826-4B55-8DC2-8AD4D564FD8A}.Release|x64.ActiveCfg = Release|x64
+		{77791411-0826-4B55-8DC2-8AD4D564FD8A}.Release|x64.Build.0 = Release|x64
+		{77791411-0826-4B55-8DC2-8AD4D564FD8A}.Release|x86.ActiveCfg = Release|Win32
+		{77791411-0826-4B55-8DC2-8AD4D564FD8A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

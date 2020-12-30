@@ -1,6 +1,6 @@
 #pragma once
 #include "TSocket.h"
-class TClientSocket :
+class _TREC_LIB_DLL TClientSocket :
 	public TSocket
 {
 public:
