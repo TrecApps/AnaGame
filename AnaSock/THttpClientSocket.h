@@ -1,6 +1,7 @@
 #pragma once
 #include <TClientSocket.h>
 #include <TDataMap.h>
+#include "AnaSock.h"
 
 typedef enum class THttpMethod
 {
@@ -15,7 +16,7 @@ typedef enum class THttpMethod
     http_patch
 }THttpMethod;
 
-class THttpRequest : public TObject
+class _ANA_SOCK_DLL THttpRequest : public TObject
 {
 public:
     THttpRequest(THttpMethod method);
@@ -42,7 +43,7 @@ private:
     TString endpoint;
 };
 
-class THttpResponse : public TObject
+class _ANA_SOCK_DLL THttpResponse : public TObject
 {
 public:
     THttpResponse(const std::string& data);
@@ -65,13 +66,13 @@ private:
 };
 
 
-class THttpClientSocket :
+class _ANA_SOCK_DLL THttpClientSocket :
     public TClientSocket
 {
 public:
     THttpClientSocket();
     ~THttpClientSocket();
 
-
+    THttpResponse Transmit(THttpRequest& req, TString& error);
 };
 

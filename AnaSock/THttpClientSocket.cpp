@@ -9,6 +9,36 @@ THttpClientSocket::~THttpClientSocket()
 {
 }
 
+THttpResponse THttpClientSocket::Transmit(THttpRequest& req, TString& error)
+{
+	error.Empty();
+	std::string cReq;
+	req.CompileRequest(cReq);
+
+	TDataArray<char> data;
+	for (UINT Rust = 0; Rust < cReq.size(); Rust++)
+		data.push_back(cReq[Rust]);
+
+	error = Send(data);
+
+	if (error.GetSize())
+	{
+		return THttpResponse("HTTP/1.1 0 ERROR");
+	}
+
+	error = Recieve(data);
+
+	if (error.GetSize())
+	{
+		return THttpResponse("HTTP/1.1 0 ERROR");
+	}
+	cReq.clear();
+	for (UINT Rust = 0; Rust < data.Size(); Rust++)
+		cReq += data[Rust];
+
+	return THttpResponse(cReq);
+}
+
 THttpRequest::THttpRequest(THttpMethod method)
 {
 	UpdateMethod(method);
