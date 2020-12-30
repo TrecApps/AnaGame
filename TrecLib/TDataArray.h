@@ -61,7 +61,7 @@ public:
 	* Parameters: size_t c - index to target
 	* Returns: T& - element at index
 	*/
-	T& operator[](size_t c)
+	T& operator[](size_t c)const
 	{
 		if (c >= size)
 			throw L"IndexOutOfBounds";

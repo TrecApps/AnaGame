@@ -42,6 +42,28 @@ private:
     TString endpoint;
 };
 
+class THttpResponse : public TObject
+{
+public:
+    THttpResponse(const std::string& data);
+    THttpResponse(const THttpResponse& copy);
+
+    short GetStatusCode();
+    TString GetFullStatus();
+    TString GetHttpMode();
+
+    bool GetHeader(const TString& key, TString& value);
+    bool GetHeader(UINT index, TString& key, TString& value);
+
+    TString GetBody();
+
+
+private:
+    TString httpType, status;
+    TDataMap<TString> headers;
+    TString body;
+};
+
 
 class THttpClientSocket :
     public TClientSocket

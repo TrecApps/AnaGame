@@ -175,3 +175,124 @@ void THttpRequest::CompileRequest(std::string& request)
 		request.append(uBody);
 	}
 }
+
+THttpResponse::THttpResponse(const std::string& data)
+{
+	std::string piece;
+
+	// Parse the Http Section
+	UINT Rust;
+	for (Rust = 0; Rust < data.size(); Rust++)
+	{
+		char ch = data[Rust];
+		if (ch == ' ')
+			break;
+		piece += ch;
+	}
+
+	this->httpType.Set(piece);
+	piece.clear();
+
+	// Parse the Status
+
+	for (; Rust < data.size(); Rust++)
+	{
+		char ch = data[Rust];
+		if (ch == '\r')
+			break;
+		piece += ch;
+	}
+
+	this->status.Set(piece);
+	piece.clear();
+
+	// Prepare to parse the  headers
+	Rust += 2;
+
+	TString headerPiece;
+
+	int headerEnd = data.find("\r\n\r\n");
+
+	for (; Rust < (headerEnd == 1 ? data.size() : headerEnd); Rust++)
+	{
+		char ch = data[Rust];
+		if (ch == '\r')
+		{
+			headerPiece.Set(piece);
+			headerPiece.Trim();
+			piece.clear();
+			auto keyValue = headerPiece.splitn(L':', 2);
+
+			if (keyValue->Size() != 2)
+			{
+				// To-Do: Handle scenario
+			}
+
+			headers.addEntry(keyValue->at(0), keyValue->at(1));
+		}
+	}
+
+	if (headerEnd != -1)
+	{
+		// We have a body to parse
+		Rust = headerEnd + 4;
+
+		body.Set(data.substr(Rust).c_str());
+	}
+
+	// To-Do: Validate Data recieved and Parsed
+}
+
+THttpResponse::THttpResponse(const THttpResponse& copy) : headers(copy.headers)
+{
+	this->body.Set(copy.body);
+	this->httpType.Set(copy.httpType);
+	this->status.Set(copy.status);
+}
+
+short THttpResponse::GetStatusCode()
+{
+	auto pieces = status.splitn(L' ', 2);
+
+	if (pieces->Size())
+	{
+		int ret = 0;
+		if (pieces->at(0).ConvertToInt(ret))
+			return 0;
+		return ret;
+	}
+	return 0;
+}
+
+TString THttpResponse::GetFullStatus()
+{
+	return status;
+}
+
+TString THttpResponse::GetHttpMode()
+{
+	return httpType;
+}
+
+bool THttpResponse::GetHeader(const TString& key, TString& value)
+{
+	return headers.retrieveEntry(key, value);
+}
+
+bool THttpResponse::GetHeader(UINT index, TString& key, TString& value)
+{
+	TDataEntry<TString> entry;
+	bool ret = headers.GetEntryAt(index, entry);
+
+	if (ret)
+	{
+		key.Set(entry.key);
+		value.Set(entry.object);
+	}
+	return ret;
+}
+
+TString THttpResponse::GetBody()
+{
+	return body;
+}
