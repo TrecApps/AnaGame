@@ -1283,3 +1283,111 @@ void IDEPageHolder::SetPage(TrecSubPointer<Page, IDEPage> p)
 {
 	page = p;
 }
+
+TabPageContent::TabPageContent()
+{
+}
+
+TabPageContent::~TabPageContent()
+{
+}
+
+void TabPageContent::Resize(const D2D1_RECT_F& loc)
+{
+	if (page.Get())
+	{
+		page->OnResize(loc, 0, TrecPointer<TWindowEngine>());
+	}
+}
+
+TabContentType TabPageContent::GetContentType()
+{
+	return TabContentType::tct_reg_page;
+}
+
+void TabPageContent::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (page.Get())
+	{
+		page->OnRButtonUp(nFlags, point, mOut);
+	}
+}
+
+void TabPageContent::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
+{
+	if (page.Get())
+	{
+		page->OnLButtonDown(nFlags, point, mOut, TrecPointer<TFlyout>());
+		auto clicked = page->GetClickedControls();
+		for (UINT Rust = 0; Rust < clicked.Size(); Rust++)
+		{
+			if (clicked[Rust])
+				clickedButtons.push_back(clicked[Rust]);
+		}
+	}
+}
+
+void TabPageContent::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
+{
+	if (page.Get())
+	{
+		page->OnRButtonDown(nFlags, point, mOut);
+		auto clicked = page->GetRightClickedControls();
+		for (UINT Rust = 0; Rust < clicked.Size(); Rust++)
+		{
+			if (clicked[Rust])
+				clickedControls.push_back(clicked[Rust]);
+		}
+	}
+}
+
+void TabPageContent::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
+{
+	if (page.Get())
+		page->OnMouseMove(nFlags, point, mOut, TrecPointer<TFlyout>());
+}
+
+bool TabPageContent::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	return false;
+}
+
+void TabPageContent::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (page.Get())
+		page->OnLButtonDblClk(nFlags, point, mOut);
+}
+
+void TabPageContent::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (page.Get())
+		page->OnLButtonUp(nFlags, point, mOut, TrecPointer<TFlyout>());
+}
+
+bool TabPageContent::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (page.Get())
+		return page->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut);
+	return false;
+}
+
+void TabPageContent::SetPage(TrecPointer<Page> page)
+{
+	this->page = page;
+}
+
+TrecPointer<Page> TabPageContent::GetPage()
+{
+	return page;
+}
+
+bool TabPageContent::HasContent()
+{
+	return page.Get() != nullptr;
+}
+
+void TabPageContent::Draw(TObject* obj)
+{
+	if (page.Get())
+		page->Draw(nullptr);
+}
