@@ -72,8 +72,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\DirectXTex\DirectXTex;..\TrecLib;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\DirectXTex\DirectXTex\Bin\Desktop_2019\Win32\Debug;../Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\Windows-classic-samples\Samples\DX11VideoRenderer\cpp;..\..\DirectXTex\DirectXTex;..\TrecLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\Windows-classic-samples\Samples\DX11VideoRenderer\cpp\Debug\DX11VideoRenderer.dll\debug;..\..\DirectXTex\DirectXTex\Bin\Desktop_2019\Win32\Debug;../Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

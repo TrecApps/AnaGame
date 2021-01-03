@@ -1,5 +1,6 @@
 #include "TPlayer.h"
 #include <mfreadwrite.h>
+#include <DX11VideoRenderer.h>
 
 #define SafeRelease(value) if(value) value->Release(); value = nullptr;
 
@@ -29,6 +30,8 @@ HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource);
 
 HRESULT CreatePlaybackTopology(IMFMediaSource* pSource,
 	IMFPresentationDescriptor* pPD, HWND hVideoWnd, IMFTopology** ppTopology);
+
+
 
 
 HRESULT TPlayer::QueryInterface(REFIID riid, void** ppv)
