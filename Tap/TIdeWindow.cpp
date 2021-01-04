@@ -98,72 +98,101 @@ int TIdeWindow::PrepareWindow()
  */
 void TIdeWindow::OnLButtonUp(UINT nFlags, TPoint point)
 {
-	if (dynamic_cast<IDEPage*>(body.Get())->OnLButtonUp(point) && currentHolder.Get())
+	if (dynamic_cast<IDEPage*>(body.Get())->OnLButtonUp(point) && currentHolder.Get() &&
+		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
 	{
 		if (focusPage.Get() && body.Get() != focusPage.Get())
 		{
 			focusPage->RemovePage(currentHolder);
 		}
-		body->AddNewPage(currentHolder);
+		if (currentHolder->GetContent()->HasContent())
+		{
+			body->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
+		}
 		currentHolder.Nullify();
 	}
-	if (dynamic_cast<IDEPage*>(basicConsole.Get())->OnLButtonUp(point) && currentHolder.Get())
+	if (dynamic_cast<IDEPage*>(basicConsole.Get())->OnLButtonUp(point) && currentHolder.Get() &&
+		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
 	{
 		if (focusPage.Get() && basicConsole.Get() != focusPage.Get())
 		{
 			focusPage->RemovePage(currentHolder);
 		}
-		basicConsole->AddNewPage(currentHolder);
+		if (currentHolder->GetContent()->HasContent())
+		{
+			basicConsole->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
+		}
 		currentHolder.Nullify();
 	}
-	if (dynamic_cast<IDEPage*>(deepConsole.Get())->OnLButtonUp(point) && currentHolder.Get())
+	if (dynamic_cast<IDEPage*>(deepConsole.Get())->OnLButtonUp(point) && currentHolder.Get() &&
+		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
 	{
 		if (focusPage.Get() && deepConsole.Get() != focusPage.Get())
 		{
 			focusPage->RemovePage(currentHolder);
 		}
-		deepConsole->AddNewPage(currentHolder);
+		if (currentHolder->GetContent()->HasContent())
+		{
+			deepConsole->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
+		}
 		currentHolder.Nullify();
 	}
-	if (dynamic_cast<IDEPage*>(upperRight.Get())->OnLButtonUp(point) && currentHolder.Get())
+	if (dynamic_cast<IDEPage*>(upperRight.Get())->OnLButtonUp(point) && currentHolder.Get() &&
+		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
 	{  
 		if (focusPage.Get() && upperRight.Get() != focusPage.Get())
 		{
 			focusPage->RemovePage(currentHolder);
 		}
-		upperRight->AddNewPage(currentHolder);
+		if (currentHolder->GetContent()->HasContent())
+		{
+			upperRight->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
+		}
 		currentHolder.Nullify();
 	}
-	if (dynamic_cast<IDEPage*>(lowerRight.Get())->OnLButtonUp(point) && currentHolder.Get())
+	if (dynamic_cast<IDEPage*>(lowerRight.Get())->OnLButtonUp(point) && currentHolder.Get() &&
+		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
 	{
 		if (focusPage.Get() && lowerRight.Get() != focusPage.Get())
 		{
 			focusPage->RemovePage(currentHolder);
 		}
-		lowerRight->AddNewPage(currentHolder);
+		if (currentHolder->GetContent()->HasContent())
+		{
+			lowerRight->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
+		}
 		currentHolder.Nullify();
 	}
-	if (dynamic_cast<IDEPage*>(upperLeft.Get())->OnLButtonUp(point) && currentHolder.Get())
+	if (dynamic_cast<IDEPage*>(upperLeft.Get())->OnLButtonUp(point) && currentHolder.Get() &&
+		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
 	{
 		if (focusPage.Get() && upperLeft.Get() != focusPage.Get())
 		{
 			focusPage->RemovePage(currentHolder);
 		}
-		upperLeft->AddNewPage(currentHolder);
+		if (currentHolder->GetContent()->HasContent())
+		{
+			upperLeft->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
+		}
 		currentHolder.Nullify();
 	}
-	if (dynamic_cast<IDEPage*>(lowerLeft.Get())->OnLButtonUp(point) && currentHolder.Get())
+	if (dynamic_cast<IDEPage*>(lowerLeft.Get())->OnLButtonUp(point) && currentHolder.Get() &&
+		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
 	{
 		if (focusPage.Get() && lowerLeft.Get() != focusPage.Get())
 		{
 			focusPage->RemovePage(currentHolder);
 		}
-		lowerLeft->AddNewPage(currentHolder);
+		if (currentHolder->GetContent()->HasContent())
+		{
+			lowerLeft->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
+		}
 		currentHolder.Nullify();
 	}
-	if (focusPage.Get() && currentHolder.Get())
+	if (focusPage.Get() && currentHolder.Get() &&
+		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page && currentHolder->GetContent()->HasContent())
 	{
-		focusPage->AddNewPage(currentHolder);
+		focusPage->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
 	}
 	currentHolder.Nullify();
 
@@ -251,7 +280,7 @@ finish:
 
 	if (currentHolder.Get())
 	{
-		currentHolder->Move(point);
+		currentHolder->MovePoint(point.x, point.y);
 	}
 
 
@@ -593,10 +622,10 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 /**
  * Method: TIdeWindow::SetCurrentHolder
  * Purpose: Marks a Page Holder as being dragged by the User
- * Parameters: TrecPointer<IDEPageHolder> holder - the Page holder believed to be dragged
+ * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
  * Returns: void
  */
-void TIdeWindow::SetCurrentHolder(TrecPointer<IDEPageHolder> holder)
+void TIdeWindow::SetCurrentHolder(TrecPointer<Tab> holder)
 {
 	currentHolder = holder;
 }

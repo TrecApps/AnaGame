@@ -506,7 +506,7 @@ protected:
 	 * 
 	 * Attributes: message; override
 	 */
-	afx_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>) override;
+	afx_msg virtual void OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>) override;
 
 public:
 
@@ -587,10 +587,11 @@ public:
 	/**
 	 * Method: IDEPage::AddNewPage
 	 * Purpose: Add an Existing Page holder to THIS page
-	 * Parameters: TrecPointer<IDEPageHolder> pageHolder - The Tab and Page to add to
+	 * Parameters: TrecPointer<Page> pageHolder - The Tab and Page to add to
+	 *				 const TString& name - name of the tab
 	 * Returns: void
 	 */
-	void AddNewPage(TrecPointer<IDEPageHolder> pageHolder);
+	void AddNewPage(TrecPointer<Page> pageHolder, const TString& name);
 	/**
 	 * Method: IDEPage::AddNewPage
 	 * Purpose: Submits a new Page to the IDE Page to be tabbed
@@ -604,10 +605,10 @@ public:
 	/**
 	 * Method: IDEPage::RemovePage
 	 * Purpose: Removes the Page Holder and page from this IDE Page
-	 * Parameters: TrecPointer<IDEPageHolder> pageHolder - The Page Holder to Remove
+	 * Parameters: TrecPointer<Page> pageHolder - The Page Holder to Remove
 	 * Returns: void
 	 */
-	void RemovePage(TrecPointer<IDEPageHolder> pageHolder);
+	void RemovePage(TrecPointer<Tab> pageHolder);
 
 	/**
 	 * Method: IDEPage::IsDrawing
@@ -657,7 +658,8 @@ protected:
 	/**
 	 * List of pages held by this page
 	 */
-	TDataArray<TrecPointer<IDEPageHolder>> pages;
+	// TDataArray<TrecPointer<IDEPageHolder>> pages;
+	TTabBar pages;
 	
 	/**
 	 * Current Page to draw
@@ -665,16 +667,17 @@ protected:
 	TrecPointer<Page> currentPage;
 
 	/**
-	 * the Page referenced by the click of the tab 
+	 * Tabs
 	 */
-	TrecPointer<IDEPageHolder> focusPage;
+	TrecPointer<Tab> focusTab;
+
 	/**
 	 * Method: IDEPage::GetFocusPage
 	 * Purpose: Retrieves the Page to set the focus to if the User Clicks on the Tab Bar
 	 * Parameters:TPoint& point
 	 * Returns: TrecPointer<IDEPageHolder> - the Holder referenced by the Tab
 	 */
-	TrecPointer<IDEPageHolder> GetFocusPage(TPoint& point);
+	TrecPointer<Tab> GetFocusPage(TPoint& point);
 
 	/**
 	 * Window hoding this page

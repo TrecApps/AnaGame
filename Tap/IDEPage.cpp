@@ -11,7 +11,7 @@
  *				TrecPointer<DrawingBoard> board - The Drawing Board to draw on
  * Returns: New IDEPage object
  */
-IDEPage::IDEPage(ide_page_type type, UINT barSpace, TrecPointer<DrawingBoard> board): Page(board)
+IDEPage::IDEPage(ide_page_type type, UINT barSpace, TrecPointer<DrawingBoard> board): Page(board), pages(board, TrecPointer<TArray<styleTable>>())
 {
 	this->type = type;
 	this->barSpace = barSpace;
@@ -37,10 +37,10 @@ TString IDEPage::GetType()
 
 IDEPage::~IDEPage()
 {
-	for (UINT Rust = 0; Rust < pages.Size(); Rust++)
+	for (UINT Rust = 0; Rust < pages.GetContentSize(); Rust++)
 	{
-		if (pages[Rust].Get())
-			pages[Rust].Delete();
+		if (pages.GetTabAt(Rust).Get())
+			pages.GetTabAt(Rust).Delete();
 	}
 }
 
@@ -129,9 +129,13 @@ void IDEPage::MoveBorder(float& magnitude, page_move_mode mode)
 
 	if (currentPage.Get())
 	{
-		for (UINT Rust = 0; Rust < pages.Size(); Rust++)
-			if (pages[Rust].Get() && pages[Rust]->GetPage().Get())
-				pages[Rust]->GetPage()->SetArea(topBorder);
+		for (UINT Rust = 0; Rust < pages.GetContentSize(); Rust++)
+		{
+			if (pages.GetTabAt(Rust).Get() && pages.GetTabAt(Rust)->GetContent().Get())
+			{
+				pages.GetTabAt(Rust)->GetContent()->Resize(topBorder);
+			}
+		}
 	}
 	else if (rootControl.Get())
 		rootControl->Resize(topBorder);
@@ -163,24 +167,28 @@ void IDEPage::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
-	focusPage = GetFocusPage(point);
+	focusTab = GetFocusPage(point);
 
-	if (focusPage.Get() && parentWindow.Get())
+	if (focusTab.Get() && parentWindow.Get())
 	{
-		TrecPointerKey::GetSubPointerFromSoft<TWindow, TIdeWindow>(parentWindow)->SetCurrentHolder(focusPage);
-		focusPage->curPoint = point;
+		TrecPointerKey::GetSubPointerFromSoft<TWindow, TIdeWindow>(parentWindow)->SetCurrentHolder(focusTab);
+		focusTab->MovePoint(point.x, point.y);
 	}
 
 	if (isContained(point, area))
 	{
-		if (focusPage.Get())
+		if (focusTab.Get())
 		{
-			auto targetPage = focusPage->GetPage();
+			auto targetPage = focusTab->GetContent();
 
-			auto hand = targetPage->GetHandler();
+			if (targetPage.Get() && targetPage->GetContentType() == TabContentType::tct_reg_page && targetPage->HasContent())
+			{
+				TrecPointer<Page> page = dynamic_cast<TabPageContent*>(targetPage.Get())->GetPage();
+				auto hand =page.Get() ? page->GetHandler() : TrecPointer<EventHandler>();
 
-			if (hand.Get())
-				hand->OnFocus();
+				if (hand.Get())
+					hand->OnFocus();
+			}
 		}
 		else if (handler.Get())
 			handler->OnFocus();
@@ -251,23 +259,27 @@ void IDEPage::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
 void IDEPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
 	auto upPage = GetFocusPage(point);
-	if (focusPage.Get() && focusPage.Get() == upPage.Get())
+	if (focusTab.Get() && focusTab.Get() == upPage.Get())
 	{
-		currentPage = focusPage->GetBasePage();
-		switch (*mOut)
+		TrecPointer<TabContent> content = focusTab->GetContent();
+		if (content.Get() && content->GetContentType() == TabContentType::tct_reg_page && content->HasContent())
 		{
-		case messageOutput::negative:
-			*mOut = messageOutput::negativeUpdate;
-			break;
-		case messageOutput::positiveContinue:
-			*mOut = messageOutput::positiveContinueUpdate;
-			break;
-		case messageOutput::positiveOverride:
-			*mOut = messageOutput::positiveOverrideUpdate;
+			currentPage = dynamic_cast<TabPageContent*>(content.Get())->GetPage();
+			switch (*mOut)
+			{
+			case messageOutput::negative:
+				*mOut = messageOutput::negativeUpdate;
+				break;
+			case messageOutput::positiveContinue:
+				*mOut = messageOutput::positiveContinueUpdate;
+				break;
+			case messageOutput::positiveOverride:
+				*mOut = messageOutput::positiveOverrideUpdate;
+			}
 		}
 
 	}
-	focusPage.Nullify();
+	focusTab.Nullify();
 
 	if (currentPage.Get())
 		currentPage->OnLButtonUp(nFlags, point, mOut, fly);
@@ -301,12 +313,12 @@ bool IDEPage::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messa
  *				TrecPointer<TWindowEngine> - the 3D Engine to work with
  * Returns: void
  */
-void IDEPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine> e)
+void IDEPage::OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine> e)
 {
-	if (currentPage.Get())
-		currentPage->OnResize(newLoc, nFlags, e);
-	else
-		Page::OnResize(newLoc, nFlags, e);
+	auto tabsLoc = newLoc;
+	tabsLoc.bottom = tabsLoc.top + barSpace;
+	pages.Resize(tabsLoc);
+	Page::OnResize(newLoc, nFlags, e);
 }
 
 /**
@@ -342,7 +354,7 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 			return;
 		}
 
-		if (area.bottom - point.y < 1.5)
+		if ((area.bottom - point.y) < 1.5f)
 		{
 			moveMode = page_move_mode::page_move_mode_bottom;
 			// To-Do: Set Cursor
@@ -350,7 +362,7 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 			return;
 		}
 
-		if (area.right - point.x < 1.5)
+		if ((area.right - point.x) < 1.5f)
 		{
 			moveMode = page_move_mode::page_move_mode_right;
 			// To-Do: Set Cursor
@@ -358,7 +370,7 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 			return;
 		}
 
-		if (point.x - area.left < 1.5)
+		if ((point.x - area.left) < 1.5f)
 		{
 			moveMode = page_move_mode::page_move_mode_left;
 			// To-Do: Set Cursor
@@ -450,11 +462,11 @@ void IDEPage::Draw(TrecPointer<TBrush> color, TWindowEngine* twe)
 		color->FillRectangle(topBorder);
 	if (type != ide_page_type::ide_page_type_drag)
 	{
-		for (UINT C = 0; C < pages.Size(); C++)
+		for (UINT C = 0; C < pages.GetContentSize(); C++)
 		{
-			if (pages[C].Get())
+			if (pages.GetTabAt(C).Get() && pages.GetTabAt(C)->GetContent().Get())
 			{
-				pages[C]->Draw();
+				pages.GetTabAt(C)->GetContent()->Draw(nullptr);
 			}
 		}
 
@@ -530,70 +542,29 @@ void IDEPage::SetNewParentPage(TrecPointer<Page> p)
 /**
  * Method: IDEPage::AddNewPage
  * Purpose: Add an Existing Page holder to THIS page
- * Parameters: TrecPointer<IDEPageHolder> pageHolder - The Tab and Page to add to
+ * Parameters: TrecPointer<Page> pageHolder - The Tab and Page to add to
  * Returns: void
  */
-void IDEPage::AddNewPage(TrecPointer<IDEPageHolder> pageHolder)
+void IDEPage::AddNewPage(TrecPointer<Page> pageHolder, const TString& name)
 {
-	if (!pageHolder.Get() || !pageHolder->GetPage().Get()) return;
-	for (UINT c = 0; c < pages.Size(); c++)
+	if (!pageHolder.Get()) return;
+
+	for (UINT c = 0; c < pages.GetContentSize(); c++)
 	{
-		if (pages[c].Get() == pageHolder.Get())
+		auto curPage = dynamic_cast<TabPageContent*>(pages.GetTabAt(c)->GetContent().Get())->GetPage();
+		if (curPage.Get())
 		{
-			// First, return the location if need be
-			D2D1_RECT_F loc{ 0.0f,0.0f,0.0f,0.0f };
-			loc.top = area.top;
-			loc.bottom = area.top + barSpace;
-
-			if (c == 0)
-				loc.left = area.left;
-			else
-				loc.left = pages[c - 1]->GetLocation().right;
-
-			if (c + 1 == pages.Size())
-			{
-				loc.right = area.right;
-			}
-			else
-				loc.right = pages[c + 1]->GetLocation().left;
-
-			pageHolder->SetLocation(loc);
-
 			return;
 		}
 	}
+	auto tab = pages.AddTab(name);
 
-	D2D1_RECT_F loc{ 0.0f,0.0f,0.0f,0.0f };
-	if (pages.Size())
-	{
-		loc = pages[pages.Size() - 1]->GetLocation();
-		if (loc.right > 0.0f)
-		{
-			D2D1_RECT_F l = pageHolder->GetLocation();
-			float leftBounds = loc.right + (l.right - l.left);
-			if (leftBounds > area.right)
-				loc.bottom = loc.left = loc.right = loc.top = 0.0f;
-			else
-			{
-				loc.left = loc.right;
-				loc.right = area.right;
-			}
-		}
-		else 
-			loc.bottom = loc.left = loc.right = loc.top = 0.0f;
-	}
-	else
-	{
-		loc = area;
-		loc.bottom = loc.top + barSpace;
-	}
-
-	pageHolder->SetLocation(loc);
-	pages.push_back(pageHolder);
-
-	loc = area;
-	loc.top += barSpace;
-	pageHolder->GetPage()->SetArea(loc);
+	TrecPointer<TabContent> content = TrecPointerKey::GetNewTrecPointerAlt<TabContent, TabPageContent>();
+	dynamic_cast<TabPageContent*>(content.Get())->SetPage(pageHolder);
+	auto tempLoc = this->area;
+	tempLoc.top += barSpace;
+	dynamic_cast<TabPageContent*>(content.Get())->Resize(tempLoc);
+	tab->SetContent(content);
 }
 
 /**
@@ -607,32 +578,9 @@ void IDEPage::AddNewPage(TrecPointer<IDEPageHolder> pageHolder)
  */
 TrecPointer<Page> IDEPage::AddNewPage(TrecPointer<TInstance> ins, TrecPointer<TWindow> win, TString name, TrecPointer<EventHandler> h)
 {
-	TrecSubPointer<Page, IDEPage> newPage = TrecPointerKey::GetNewSelfTrecSubPointer<Page, IDEPage>(ide_page_type::ide_page_type_drag, 0, this->drawingBoard);
-
-	newPage->SetResources(ins, win, win->GetWindowEngine());
-	D2D1_RECT_F curArea = area;
-	curArea.top += barSpace;
-	newPage->SetArea(curArea);
-
-	curArea = area;
-	curArea.bottom = curArea.top + barSpace;
-
-
-	for (UINT c = pages.Size() - 1; c < pages.Size(); c--)
-	{
-		if (pages[c].Get() && pages[c]->GetLocation().right)
-		{
-			curArea.left = pages[c]->GetLocation().right;
-			break;
-		}
-	}
-	
-
-	TrecPointer<IDEPageHolder> newHolder = TrecPointerKey::GetNewTrecPointer<IDEPageHolder>(name, drawingBoard, barSpace, h, win, curArea);
-	newHolder->SetPage(newPage);
-	pages.push_back(newHolder);
-	currentPage = TrecPointerKey::GetTrecPointerFromSub<Page, IDEPage>(newPage);
-	return newHolder->GetBasePage();
+	TrecPointer<Page> page = Page::GetWindowPage(ins, win, h);
+	AddNewPage(page, name);
+	return page;
 }
 
 /**
@@ -641,12 +589,12 @@ TrecPointer<Page> IDEPage::AddNewPage(TrecPointer<TInstance> ins, TrecPointer<TW
  * Parameters: TrecPointer<IDEPageHolder> pageHolder - The Page Holder to Remove
  * Returns: void
  */
-void IDEPage::RemovePage(TrecPointer<IDEPageHolder> pageHolder)
+void IDEPage::RemovePage(TrecPointer<Tab> pageHolder)
 {
 	int index = -1;
-	for (UINT C = 0; C < pages.Size(); C++)
+	for (UINT C = 0; C < pages.GetContentSize(); C++)
 	{
-		if (pageHolder.Get() == pages[C].Get())
+		if (pageHolder.Get() == pages.GetTabAt(C).Get())
 		{
 			index = C;
 			break;
@@ -656,18 +604,8 @@ void IDEPage::RemovePage(TrecPointer<IDEPageHolder> pageHolder)
 	if (index == -1)
 		return;
 
-	D2D1_RECT_F holdLoc = pageHolder->GetLocation();
-	float width = holdLoc.right - holdLoc.left;
+	pages.RemoveTabAt(index);
 
-	for (UINT i = index + 1; i < pages.Size(); i++)
-	{
-		holdLoc = pages[i]->GetLocation();
-		holdLoc.left -= width;
-		holdLoc.right -= width;
-		pages[i]->SetLocation(holdLoc);
-	}
-
-	pages.RemoveAt(index);
 }
 
 /**
@@ -685,20 +623,20 @@ bool IDEPage::IsDrawing()
  * Method: IDEPage::GetFocusPage
  * Purpose: Retrieves the Page to set the focus to if the User Clicks on the Tab Bar
  * Parameters:TPoint& point
- * Returns: TrecPointer<IDEPageHolder> - the Holder referenced by the Tab
+ * Returns: TrecPointer<Tab> - the Holder referenced by the Tab
  */
-TrecPointer<IDEPageHolder> IDEPage::GetFocusPage(TPoint& point)
+TrecPointer<Tab> IDEPage::GetFocusPage(TPoint& point)
 {
-	for (UINT c = 0; c < pages.Size(); c++)
+	for (UINT c = 0; c < pages.GetContentSize(); c++)
 	{
-		if (pages[c].Get() && isContained(point, pages[c]->GetLocation()))
+		if (pages.GetTabAt(c).Get() && (pages.GetTabAt(c)->AttemptClick(point) == TabClickMode::tcm_regular_click))
 		{
 
 
-			return pages[c];
+			return pages.GetTabAt(c);
 		}
 	}
-	return TrecPointer<IDEPageHolder>();
+	return TrecPointer<Tab>();
 }
 
 /**

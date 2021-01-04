@@ -291,6 +291,15 @@ public:
 	 */
 	TabClickMode AttemptClick(const TPoint& point);
 
+	/**
+	 * Method: Tab::GetText
+	 * Purpose: Retireves the Text of the Tab
+	 * Parameters: void
+	 * Returns: TString - the text of the tab
+	 */
+	TString GetText();
+
+
 private:
 
 	/**
@@ -449,6 +458,14 @@ public:
 	 * Returns: TrecPointer<Tab> - the requested tab
 	 */
 	TrecPointer<Tab> GetTabAt(UINT index);
+
+	/**
+	 * Method: TTabBar::RemoveTabAt
+	 * Purpose: Removes a tab
+	 * Parameters: UINT Index - index of the tab to remove
+	 * Returns: void
+	 */
+	void RemoveTabAt(UINT index);
 
 protected:
 

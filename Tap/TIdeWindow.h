@@ -175,10 +175,10 @@ public:
 	/**
 	 * Method: TIdeWindow::SetCurrentHolder
 	 * Purpose: Marks a Page Holder as being dragged by the User
-	 * Parameters: TrecPointer<IDEPageHolder> holder - the Page holder believed to be dragged
+	 * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
 	 * Returns: void
 	 */
-	void SetCurrentHolder(TrecPointer<IDEPageHolder> holder);
+	void SetCurrentHolder(TrecPointer<Tab> holder);
 
 	/**
 	 * Method: TIdeWindow::SetEnvironment
@@ -254,7 +254,7 @@ protected:
 	/**
 	 * Holder being dragged
 	 */
-	TrecPointer<IDEPageHolder> currentHolder;
+	TrecPointer<Tab> currentHolder;
 
 	/**
 	 * the Environment to manage a Project

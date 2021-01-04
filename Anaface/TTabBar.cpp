@@ -240,6 +240,23 @@ TrecPointer<Tab> TTabBar::GetTabAt(UINT index)
 	return TrecPointer<Tab>();
 }
 
+/**
+ * Method: TTabBar::RemoveTabAt
+ * Purpose: Removes a tab
+ * Parameters: UINT Index - index of the tab to remove
+ * Returns: void
+ */
+void TTabBar::RemoveTabAt(UINT index)
+{
+	if (index < tabs.Size())
+	{
+		TrecPointer<Tab> tab = tabs.RemoveAt(index);
+
+		// To-Do: Figure out ho to move the tabs
+		SetTabSizes();
+	}
+}
+
 void TTabBar::SetTabSizes()
 {
 	UINT limit = location.right - selectionSize;
@@ -345,6 +362,17 @@ void Tab::SetContent(TrecPointer<TabContent> cont)
 TabClickMode Tab::AttemptClick(const TPoint& point)
 {
 	return isContained(point, location) ? TabClickMode::tcm_regular_click : TabClickMode::tcm_not_clicked;
+}
+
+/**
+ * Method: Tab::GetText
+ * Purpose: Retireves the Text of the Tab
+ * Parameters: void
+ * Returns: TString - the text of the tab
+ */
+TString Tab::GetText()
+{
+	return text.Get() ? text->getCaption() : L"";
 }
 
 TabContent::TabContent()
