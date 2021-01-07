@@ -19,7 +19,7 @@ private:
 	static bool InitializeSockets();
 
 protected:
-	virtual UINT InitializeSocket() = 0;
+	// virtual UINT InitializeSocket() = 0;
 	UCHAR networkType;
 	TString port;
 };

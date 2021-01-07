@@ -71,6 +71,17 @@ SwitchHandler::SwitchHandler(TrecPointer<TInstance> ins): EventHandler(ins)
 	events.push_back(enid);
 	handlers[enid.eventID] = &SwitchHandler::OnSelectGif;
 
+	enid.eventID = 12;
+	enid.name.Set(L"OnSelectSocket");
+	events.push_back(enid);
+	handlers[enid.eventID] = &SwitchHandler::OnSelectSocket;
+
+	enid.eventID = 13;
+	enid.name.Set(L"OnSubmitSocketCall");
+	events.push_back(enid);
+	handlers[enid.eventID] = &SwitchHandler::OnSubmitSocketCall;
+
+
 }
 
 SwitchHandler::~SwitchHandler()
@@ -950,6 +961,16 @@ void SwitchHandler::OnSelectGif(TrecPointer<TControl> tc, EventArgs ea)
 	page->CreateLayout();
 
 	window->PrepAnimations(page);
+}
+
+void SwitchHandler::OnSelectSocket(TrecPointer<TControl> tc, EventArgs ea)
+{
+	
+}
+
+void SwitchHandler::OnSubmitSocketCall(TrecPointer<TControl> tc, EventArgs ea)
+{
+
 }
 
 bool SwitchHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)

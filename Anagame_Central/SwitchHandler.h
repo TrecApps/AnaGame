@@ -2,7 +2,7 @@
 #include <EventHandler.h>
 
 
-#define SWITCH_HANDLER_METHOD_COUNT 12
+#define SWITCH_HANDLER_METHOD_COUNT 14
 
 class SwitchHandler;
 
@@ -25,6 +25,7 @@ protected:
 	TLayout* rootLayout;
 
 	TrecPointer<TControl> changeControl;
+	TrecSubPointer<TControl, TTextField> urlField;
 
 	void OnSelect1(TrecPointer<TControl> tc, EventArgs ea);
 	void OnSelect2(TrecPointer<TControl> tc, EventArgs ea);
@@ -38,6 +39,10 @@ protected:
 	void OnSelectCombo(TrecPointer<TControl> tc, EventArgs ea);
 	void OnSelectScroll(TrecPointer<TControl> tc, EventArgs ea);
 	void OnSelectGif(TrecPointer<TControl> tc, EventArgs ea);
+
+
+	void OnSelectSocket(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSubmitSocketCall(TrecPointer<TControl> tc, EventArgs ea);
 
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 
