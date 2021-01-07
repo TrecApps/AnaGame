@@ -98,6 +98,8 @@ int TIdeWindow::PrepareWindow()
  */
 void TIdeWindow::OnLButtonUp(UINT nFlags, TPoint point)
 {
+
+
 	if (dynamic_cast<IDEPage*>(body.Get())->OnLButtonUp(point) && currentHolder.Get() &&
 		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
 	{
@@ -499,6 +501,8 @@ TrecPointer<Page> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type pa
 	uiFile->Close();
 
 	newPage->SetHandler(pageHandler);
+
+	targetPage->currentPage = newPage;
 
 
 	return newPage;

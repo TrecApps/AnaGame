@@ -438,8 +438,8 @@ void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
 
 	auto fly = flyout;
 	flyout.Nullify();
-
-	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
+	UINT c = 0;
+	for(c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
 	{
 		if(pages[c].Get())
 			pages[c]->OnLButtonUp(nFlags, point, &mOut, fly);

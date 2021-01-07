@@ -259,9 +259,9 @@ void IDEPage::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
 void IDEPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
 	auto upPage = GetFocusPage(point);
-	if (focusTab.Get() && focusTab.Get() == upPage.Get())
+	if (upPage.Get() && focusTab.Get() != upPage.Get())
 	{
-		TrecPointer<TabContent> content = focusTab->GetContent();
+		TrecPointer<TabContent> content = upPage->GetContent();
 		if (content.Get() && content->GetContentType() == TabContentType::tct_reg_page && content->HasContent())
 		{
 			currentPage = dynamic_cast<TabPageContent*>(content.Get())->GetPage();
