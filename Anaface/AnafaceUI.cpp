@@ -217,6 +217,9 @@ void AnafaceUI::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 	if (isContained(point, location))
 	{
 		bar.OnLButtonUp(nFlags, point, mOut, eventAr);
+		auto curTab = bar.GetCurrentTab();
+		if (curTab.Get())
+			currentContent = curTab->GetContent();
 		if (currentContent.Get())
 			currentContent->OnLButtonUp(nFlags, point, mOut, eventAr);
 	}
@@ -302,7 +305,11 @@ bool AnafaceUI::onCreate(D2D1_RECT_F container, TrecPointer<TWindowEngine> d3d)
 			tabText.Format(L"Unknown %d", unknownTab++);
 
 		TrecPointer<Tab> tab = bar.AddTab(tabText);
-		tab->SetContent(TrecPointerKey::GetTrecPointerFromSub<TabContent, TabControlContent>(controlCont));
+		TrecPointer<TabContent> cContent = TrecPointerKey::GetTrecPointerFromSub<TabContent, TabControlContent>(controlCont);
+		tab->SetContent(cContent);
+
+		if (!c)
+			currentContent = cContent;
 	}
 
 	return false;
@@ -468,6 +475,7 @@ D2D1_RECT_F AnafaceUI::GetControlArea()
  */
 void AnafaceUI::Resize(D2D1_RECT_F& r)
 {
+	TControl::Resize(r);
 	auto clientRect = CalculateClientSpace();
 
 	for (UINT Rust = 0; Rust < bar.GetContentSize(); Rust++)

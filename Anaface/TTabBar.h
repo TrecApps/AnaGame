@@ -467,6 +467,14 @@ public:
 	 */
 	void RemoveTabAt(UINT index);
 
+	/**
+	 * Method: TTabBar::GetCurrentTab
+	 * Purpose: Retrieves the Tab currently considered "Selected"
+	 * Parameters: void
+	 * Returns: TrecPointer<Tab> - te current tab selected
+	 */
+	TrecPointer<Tab> GetCurrentTab();
+
 protected:
 
 	/**

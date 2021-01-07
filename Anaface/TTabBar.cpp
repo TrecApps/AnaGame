@@ -71,6 +71,7 @@ bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 	rightTab.draw1 = true;
 	rightTab.SetText(TString(L">"));
 
+	SetTabSizes();
 
 	return ret;
 }
@@ -178,7 +179,7 @@ void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 					}
 					else
 					{
-
+						currentlyClickedTab = tabs[Rust];
 					}
 				}
 			}
@@ -255,6 +256,11 @@ void TTabBar::RemoveTabAt(UINT index)
 		// To-Do: Figure out ho to move the tabs
 		SetTabSizes();
 	}
+}
+
+TrecPointer<Tab> TTabBar::GetCurrentTab()
+{
+	return this->currentlyClickedTab;
 }
 
 void TTabBar::SetTabSizes()

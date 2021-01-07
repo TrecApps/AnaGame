@@ -147,7 +147,7 @@ public:
 	 *				bool pageTypeStrict - whether the caller is strict when it comes to the location of the Page
 	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
 	 */
-	TrecSubPointer<Page, IDEPage> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict = false);
+	TrecPointer<Page> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict = false);
 
 	/**
 	 * Method: TIdeWindow::AddPage
@@ -157,7 +157,7 @@ public:
 	 *				TString name - name of the page to write on the Tab
 	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
 	 */
-	TrecSubPointer<Page, IDEPage> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
+	TrecPointer<Page> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
 
 
 	/**

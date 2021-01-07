@@ -99,7 +99,7 @@ protected:
 	/**
 	 * the Main page and therefore reson for the MiniApp object to be created
 	 */
-	TrecSubPointer<Page, IDEPage> mainPage;
+	TrecPointer<Page> mainPage;
 
 	/**
 	 * The TInstance underwhich this miniApp is created

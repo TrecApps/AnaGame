@@ -392,10 +392,10 @@ void TIdeWindow::AddNewMiniApp(TrecPointer<MiniApp> app)
  *				bool pageTypeStrict - whether the caller is strict when it comes to the location of the Page
  * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
  */
-TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict)
+TrecPointer<Page> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict)
 {
 	if (!mainPage.Get())
-		return TrecSubPointer<Page, IDEPage>();
+		return TrecPointer<Page>();
 
 	TrecPointer<EventHandler> pageHandler;
 	TrecPointer<TFile> uiFile = TrecPointerKey::GetNewTrecPointer<TFile>();
@@ -454,20 +454,20 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
 		break;
 	case anagame_page::anagame_page_custom:
 		if (!handler.Get())
-			return TrecSubPointer<Page, IDEPage>();
+			return TrecPointer<Page>();
 		pageHandler = handler;
 		uiFile->Open(tmlLoc, TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 
 	}
 
 	if (!uiFile->IsOpen())
-		return TrecSubPointer<Page, IDEPage>();
+		return TrecPointer<Page>();
 
 	if (!pageHandler.Get())
-		return TrecSubPointer<Page, IDEPage>();
+		return TrecPointer<Page>();
 
 	if (!name.GetSize())
-		return TrecSubPointer<Page, IDEPage>();
+		return TrecPointer<Page>();
 
 
 	TrecSubPointer<Page, IDEPage> targetPage = body;
@@ -499,10 +499,9 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
 	uiFile->Close();
 
 	newPage->SetHandler(pageHandler);
-	if (pageHandler.Get())
-		pageHandler->Initialize(newPage);
 
-	return TrecPointerKey::GetTrecSubPointerFromTrec<Page, IDEPage>(newPage);
+
+	return newPage;
 }
 
 /**
@@ -513,9 +512,9 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
  *				TString name - name of the page to write on the Tab
  * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
  */
-TrecSubPointer<Page, IDEPage> TIdeWindow::AddPage(anagame_page pageType, ide_page_type pageLoc, TString name)
+TrecPointer<Page> TIdeWindow::AddPage(anagame_page pageType, ide_page_type pageLoc, TString name)
 {
-	TrecSubPointer<Page, IDEPage> ret;
+	TrecPointer<Page> ret;
 	if (!this->windowInstance.Get())
 		return ret;
 
@@ -524,7 +523,7 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddPage(anagame_page pageType, ide_pag
 
 
 	if (handler.Get())
-		ret = TrecPointerKey::GetTrecSubPointerFromTrec<Page, IDEPage>(handler->GetPage());
+		ret = (handler->GetPage());
 
 	if (ret.Get())
 		return ret;
