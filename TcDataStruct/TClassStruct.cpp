@@ -25,6 +25,7 @@ TClassAttribute::TClassAttribute(const TClassAttribute& copy)
 TClassStruct::TClassStruct()
 {
 	caseSensitive = true;
+	classType = tc_class_type::tct_class;
 }
 
 bool TClassStruct::AddAttribute(const TClassAttribute& att)
@@ -66,4 +67,35 @@ void TClassStruct::SetCaseInsensitive()
 var_category TClassStruct::GetVarGategory()
 {
 	return var_category::vc_class;
+}
+
+void TClassStruct::SetClassType(tc_class_type classType)
+{
+}
+
+tc_class_type TClassStruct::GetClassType()
+{
+	return classType;
+}
+
+UINT TClassStruct::AddParentClass(const TString& className, tc_class_type cType)
+{
+	for (UINT Rust = 0; Rust < parentClasses.Size(); Rust++)
+	{
+		if (!className.Compare(parentClasses[Rust]))
+			return 1;
+	}
+	parentClasses.push_back(className);
+
+	return 0;
+}
+
+bool TClassStruct::GetParentClass(UINT index, TString& className)
+{
+	if (index < parentClasses.Size())
+	{
+		className.Set(parentClasses[index]);
+		return true;
+	}
+	return false;
 }

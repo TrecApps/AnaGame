@@ -40,6 +40,15 @@ public:
     TrecPointer<TVariable> def;
 };
 
+typedef enum class tc_class_type
+{
+    tct_class,
+    tct_interface,
+    tct_union,
+    tct_struct,
+    tct_any
+}tc_class_type;
+
 
 class TC_DATA_STRUCT TClassStruct :
     public TVariableType
@@ -54,7 +63,17 @@ public:
     void SetCaseInsensitive();
 
     virtual var_category GetVarGategory() override;
+
+    void SetClassType(tc_class_type classType);
+    tc_class_type GetClassType();
+
+    UINT AddParentClass(const TString& className, tc_class_type cType = tc_class_type::tct_class);
+    bool GetParentClass(UINT index, TString& className);
+
 protected:
+    TDataArray<TString> parentClasses;
+
+    tc_class_type classType;
     TDataArray<TClassAttribute> attributes;
     TDataArray<TrecSubPointer<TVariable, TInterpretor>> constructors;
     bool caseSensitive;
