@@ -299,8 +299,34 @@ public:
 	 */
 	TString GetText();
 
+	/**
+	 * Method: Tab::MovedOutside
+	 * Purpose: Reports whether the tab would have been moved outside of the original location
+	 * Parameters: void
+	 * Returns: bool - whether the Tab would have been moved outside the original location
+	 */
+	bool MovedOutside();
+
+	/**
+	 * Method: Tab::ResetTabMovementVars
+	 * Purpose: Resets the Resources used to track Tab movement
+	 * Parameters: bool resetLoc - whether to reset the location variable (if it moved)
+	 * Returns: void
+	 */
+	void ResetTabMovementVars(bool resetLoc);
+
+	/**
+	 * Method: Tab::GetCurrentPoint
+	 * Purpose: Retrieves the current point held by the Tab
+	 * Parameters: void
+	 * Returns: TPoint - the current point
+	 */
+	TPoint GetCurrentPoint();
 
 private:
+
+	TPoint initial, current;
+	bool movedOutside;
 
 	/**
 	 * Holds a reference to the actual content to present
@@ -442,6 +468,16 @@ public:
 	 * Returns: void
 	 */
 	TrecPointer<Tab> AddTab(const TString& text);
+
+	/**
+	 * Method: TTabBar::AddTab
+	 * Purpose: Adds an Existig tab to this tab bar
+	 * Parameters: TrecPointer<Tab> tab - the tab to Add
+	 * Returns: bool - whether it worked
+	 * 
+	 * Note: The tab to be added must already exist (so not null), and it's point must be in the region of the Tab bar
+	 */
+	bool AddTab(TrecPointer<Tab> tab);
 
 	/**
 	 * Method: TTabBar::GetContentSize

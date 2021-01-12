@@ -118,7 +118,18 @@ void TTabBar::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 		tabs[Rust]->draw1 = !isContained(point, tabs[Rust]->location);
 	}
 }
-
+/**
+ * Method: TTabBar::OnLButtonDown
+ * Purpose: Allows Control to catch the LeftmessageState::mouse Button Down event and act accordingly
+ * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+ *				TPoint point - the point on screen where the event occured
+ *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+ *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+ *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+ * Returns: void
+ *
+ * Attributes: override; message
+ */
 void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
 	if (isContained(point, location))
@@ -152,6 +163,17 @@ void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 	}
 }
 
+/**
+ * Method: TTabBar::OnLButtonUp
+ * Purpose: Allows control to catch the Left Button Up event and act accordingly
+ * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+ *				TPoint point - the point on screen where the event occured
+ *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+ *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+ * Returns: void
+ *
+ * Attributes: override; message
+ */
 void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	if (onClick && isContained(point, location))
@@ -191,6 +213,13 @@ void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 	onClick = false;
 }
 
+
+/**
+ * Method: TTabBar::AddTab
+ * Purpose: Adds a new Tab with the given text
+ * Parameters: const TString& text - The text to add to the tab
+ * Returns: void
+ */
 TrecPointer<Tab> TTabBar::AddTab(const TString& text)
 {
 	TrecPointer<Tab> newTab = TrecPointerKey::GetNewTrecPointer<Tab>();
@@ -218,6 +247,48 @@ TrecPointer<Tab> TTabBar::AddTab(const TString& text)
 
 	SetTabSizes();
 	return newTab;
+}
+
+bool TTabBar::AddTab(TrecPointer<Tab> tab)
+{
+	if(!tab.Get())
+		return false;
+
+	TPoint tabPoint = tab->GetCurrentPoint();
+
+	if (!isContained(tabPoint, location))
+		return false;
+
+	bool inserted = false;
+	for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+	{
+		TrecPointer<Tab> curTab = tabs[Rust];
+		if (!curTab.Get())
+		{
+			tabs.RemoveAt(Rust--);
+			continue;
+		}
+
+		if (isContained(tabPoint, curTab->location))
+		{
+			tabs.push_back(tabs[tabs.Size() - 1]);
+
+			for (UINT C = tabs.Size() - 2; C > Rust; C--)
+			{
+				tabs[C] = tabs[C - 1];
+			}
+			tabs[Rust] = tab;
+			inserted = true;
+			break;
+		}
+	}
+
+	if (!inserted)
+		tabs.push_back(tab);
+	tab->ResetTabMovementVars(false);
+
+	SetTabSizes();
+	return true;
 }
 
 /**
@@ -311,7 +382,7 @@ void TTabBar::SetTabSizes()
 Tab::Tab()
 {
 	draw1 = true;
-	isAdd = false;
+	isAdd = movedOutside = false;
 	location = { 0.0f,0.0f,0.0f,0.0f };
 }
 
@@ -370,6 +441,29 @@ void Tab::Draw()
 
 void Tab::MovePoint(float x, float y)
 {
+	if (!initial.x && !initial.y)
+	{
+		initial.x = x;
+		initial.y = y;
+	}
+
+	auto tempCurrent = current;
+
+	current.x = x;
+	current.y = y;
+
+	if (movedOutside = MovedOutside())
+	{
+		if (!tempCurrent.x && !tempCurrent.y)
+			tempCurrent = initial;
+		float deltaX = x - tempCurrent.x;
+		float deltaY = y - tempCurrent.y;
+
+		location.bottom += deltaY;
+		location.top += deltaY;
+		location.right += deltaX;
+		location.left += deltaX;
+	}
 }
 
 TrecPointer<TabContent> Tab::GetContent()
@@ -396,6 +490,45 @@ TabClickMode Tab::AttemptClick(const TPoint& point)
 TString Tab::GetText()
 {
 	return text.Get() ? text->getCaption() : L"";
+}
+
+bool Tab::MovedOutside()
+{
+	if (movedOutside)
+		return true;
+	float deltaX = current.x - initial.x;
+	float deltaY = current.y - initial.y;
+
+	auto tempLoc = location;
+	tempLoc.top += deltaY;
+	tempLoc.bottom += deltaY;
+	tempLoc.left += deltaX;
+	tempLoc.right += deltaX;
+
+	return movedOutside = ((tempLoc.top > location.bottom) || (tempLoc.bottom < location.top) 
+		|| (tempLoc.right < location.left) || (tempLoc.left > location.right));
+}
+
+void Tab::ResetTabMovementVars(bool resetLoc)
+{
+	if (movedOutside && resetLoc)
+	{
+		float deltaY = initial.y - current.y;
+		float deltaX = initial.x - current.x;
+
+		location.bottom += deltaY;
+		location.top += deltaY;
+		location.right += deltaX;
+		location.left += deltaX;
+	}
+
+	movedOutside = false;
+	initial = current = TPoint();
+}
+
+TPoint Tab::GetCurrentPoint()
+{
+	return current;
 }
 
 TabContent::TabContent()
