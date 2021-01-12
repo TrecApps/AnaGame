@@ -210,6 +210,7 @@ public:
 	virtual void Draw(TObject* obj) override;
 
 
+
 protected:
 	/**
 	 * The TControl to Hold
@@ -416,6 +417,14 @@ protected:
 	 */
 	void MoveBorder(float& magnitude, page_move_mode mode);
 
+
+	/**
+	 * Method: IDEPage::SetArea
+	 * Purpose: Sets the Region of the Page
+	 * Parameters: const D2D1_RECT_F& loc -  the location to provide this Page
+	 * Returns: void
+	 */
+	virtual void SetArea(const D2D1_RECT_F& loc) override;
 
 	/**
 	 * Method: IDEPage::OnRButtonUp

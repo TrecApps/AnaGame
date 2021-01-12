@@ -5023,12 +5023,6 @@ bool TText::onDraw(D2D1_RECT_F& loc, TObject* obj)
 		}
 		
 	
-	/*
-	rt->DrawTextW(text,
-		(UINT32)wcslen(text),
-		format,
-		bounds,
-		penBrush);*/
 	return true;
 }
 

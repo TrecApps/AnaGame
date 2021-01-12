@@ -22,21 +22,24 @@ bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 	if (!content1.Get())
 	{
 		content1 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, this);
-		content1->stopCollection.AddGradient(TGradientStop(TColor(t_color::Aqua), 0.0f));
-		content1->onCreate(location);
 	}
+	content1->stopCollection.AddGradient(TGradientStop(TColor(t_color::Aqua), 0.0f));
+	content1->onCreate(location);
+	
 	if (!content2.Get())
 	{
 		content2 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, this);
-		content2->stopCollection.AddGradient(TGradientStop(TColor(t_color::Azure), 0.0f));
-		content2->onCreate(location);
 	}
+	content2->stopCollection.AddGradient(TGradientStop(TColor(t_color::Azure), 0.0f));
+	content2->onCreate(location);
+	
 	if (!text1.Get())
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
-		text1->stopCollection.AddGradient(TGradientStop(TColor(), 0.0f));
-		text1->onCreate(location);
 	}
+	text1->stopCollection.AddGradient(TGradientStop(TColor(), 0.0f));
+	text1->onCreate(location);
+	
 
 	if (valpoint.Get())
 	{
@@ -195,11 +198,14 @@ TrecPointer<Tab> TTabBar::AddTab(const TString& text)
 	newTab->content1 = content1;
 	newTab->content2 = content2;
 
-	newTab->text = TrecPointerKey::GetNewTrecPointer<TText>(text1, this);
+	newTab->text = text1.Get() ? TrecPointerKey::GetNewTrecPointer<TText>(text1, this) :
+		TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 
 	newTab->isAdd = false;
 	newTab->draw1 = true;
 	newTab->SetText(text);
+
+	newTab->text->onCreate(location);
 
 	tabs.push_back(newTab);
 
@@ -317,7 +323,10 @@ void Tab::SetBrush(TrecPointer<TBrush> brush)
 void Tab::SetText(const TString& text)
 {
 	if (this->text.Get())
+	{
 		this->text->setCaption(text);
+		// this->text->onCreate(location);
+	}
 }
 
 D2D1_RECT_F Tab::SetLocation(const D2D1_RECT_F& newLoc)
@@ -333,6 +342,14 @@ D2D1_RECT_F Tab::SetLocation(const D2D1_RECT_F& newLoc)
 		text->SetLocation(location);
 
 	}
+
+	if (content1.Get())
+		content1->onCreate(location);
+	if (content2.Get())
+		content2->onCreate(location);
+	if (text.Get())
+		text->onCreate(location);
+
 	return location;
 }
 

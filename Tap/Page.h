@@ -256,7 +256,7 @@ public:
 	 * Parameters: const D2D1_RECT_F& loc -  the location to provide this Page
 	 * Returns: void
 	 */
-	void SetArea(const D2D1_RECT_F& loc);
+	virtual void SetArea(const D2D1_RECT_F& loc);
 
 
 	/**

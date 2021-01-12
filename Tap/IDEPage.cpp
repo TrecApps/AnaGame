@@ -125,7 +125,12 @@ void IDEPage::MoveBorder(float& magnitude, page_move_mode mode)
 		draw = true;
 
 	D2D1_RECT_F topBorder = area;
-	topBorder.top = topBorder.top + barSpace;
+
+	topBorder.bottom = topBorder.top + barSpace;
+	pages.Resize(topBorder);
+
+	topBorder.top = topBorder.bottom;
+	topBorder.bottom = area.bottom;
 
 	if (currentPage.Get())
 	{
@@ -139,6 +144,15 @@ void IDEPage::MoveBorder(float& magnitude, page_move_mode mode)
 	}
 	else if (rootControl.Get())
 		rootControl->Resize(topBorder);
+	
+}
+
+void IDEPage::SetArea(const D2D1_RECT_F& loc)
+{
+	Page::SetArea(loc);
+	auto tempLoc = loc;
+	tempLoc.bottom = tempLoc.top + barSpace;
+	pages.Resize(tempLoc);
 }
 
 /**
@@ -455,6 +469,10 @@ bool IDEPage::OnLButtonUp(TPoint& point)
  */
 void IDEPage::Draw(TrecPointer<TBrush> color, TWindowEngine* twe)
 {
+	if (!draw)
+		return;
+
+
 	D2D1_RECT_F topBorder = area;
 	topBorder.bottom = topBorder.top + barSpace;
 
@@ -476,6 +494,7 @@ void IDEPage::Draw(TrecPointer<TBrush> color, TWindowEngine* twe)
 	}
 	else
 		Page::Draw(twe);
+	pages.onDraw();
 	if (color.Get())
 		color->DrawRectangle(area, 1.5F);
 }
@@ -552,7 +571,7 @@ void IDEPage::AddNewPage(TrecPointer<Page> pageHolder, const TString& name)
 	for (UINT c = 0; c < pages.GetContentSize(); c++)
 	{
 		auto curPage = dynamic_cast<TabPageContent*>(pages.GetTabAt(c)->GetContent().Get())->GetPage();
-		if (curPage.Get())
+		if (curPage.Get() == pageHolder.Get())
 		{
 			return;
 		}
