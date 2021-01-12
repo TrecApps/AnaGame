@@ -224,6 +224,16 @@ void TInterpretor::SetFirstParamName(const TString& iParam)
 	paramNames[0].Set(iParam);
 }
 
+bool TInterpretor::GetClass(const TString& className, TClassStruct& classStruct)
+{
+	if (classes.retrieveEntry(className, classStruct))
+		return true;
+
+	if (parent.Get())
+		parent->GetClass(className, classStruct);
+	return false;
+}
+
 void TInterpretor::CorrectSplitStringForParenthesis(TrecPointer<TDataArray<TString>> splitString, WCHAR join)
 {
 	for (UINT Rust = 1; Rust < splitString->Size(); Rust++)

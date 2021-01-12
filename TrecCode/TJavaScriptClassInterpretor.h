@@ -24,6 +24,8 @@ class TJavaScriptClassInterpretor :
 
     void SetClassName(const TString& name);
 
+    bool SetSuperClassName(const TString& name);
+
     TString GetJsClassName();
 
     virtual void ProcessStatements(ReportObject& ro)override;
@@ -31,9 +33,9 @@ class TJavaScriptClassInterpretor :
     TClassStruct GetClassData();
 
 protected:
-    TString className;
+    TString className, superName;
     JsClassBlockType blockType;
-    TClassStruct classData;
+    TClassStruct classData, superData;
 
     void ProcessMethod(const TString& methodName, TString& statement, int startParenth, ReportObject& ro, UCHAR att = 0);
 };

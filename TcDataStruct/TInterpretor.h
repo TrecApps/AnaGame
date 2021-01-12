@@ -357,6 +357,8 @@ public:
 
     void SetFirstParamName(const TString& iParam);
 
+    bool GetClass(const TString& className, TClassStruct& classStruct);
+
 protected:
     /**
      * The list of Types held by the Interpretor

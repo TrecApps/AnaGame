@@ -14,6 +14,14 @@ void TJavaScriptClassInterpretor::SetClassName(const TString& name)
 	className.Set(name);
 }
 
+bool TJavaScriptClassInterpretor::SetSuperClassName(const TString& name)
+{
+    bool ret = parent.Get() ? parent->GetClass(name, superData) : false;
+    if (ret)
+        superName.Set(name);
+    return ret;
+}
+
 TString TJavaScriptClassInterpretor::GetJsClassName()
 {
 	return className;
@@ -211,6 +219,8 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
 
 TClassStruct TJavaScriptClassInterpretor::GetClassData()
 {
+    if (superName.GetSize())
+        classData.AddParentClass(superName);
     return classData;
 }
 

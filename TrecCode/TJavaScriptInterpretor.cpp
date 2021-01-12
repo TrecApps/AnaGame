@@ -1648,7 +1648,35 @@ void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& state
         TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body));
     assert(classInt.Get());
 
-    classInt->SetClassName(statement.contents);
+    auto pieces = statement.contents.split(L" ");
+
+    assert(pieces->Size());
+
+    
+
+    classInt->SetClassName(pieces->at(0));
+
+    if (pieces->Size() > 1)
+    {
+        if (pieces->Size() != 3 || pieces->at(1).Compare(L"extends"))
+        {
+            ro.returnCode = ro.incomplete_statement;
+            ro.errorMessage.Format(L"Expected class statement with inheritence to follow format '[className] extends [superClassName]', found %ws", statement.contents.GetConstantBuffer());
+
+            return;
+        }
+
+        if (!classInt->SetSuperClassName(pieces->at(2)))
+        {
+            ro.returnCode = ro.incomplete_statement;
+            ro.errorMessage.Format(L"Class %ws attempted to inherit from non-existant class %ws",
+                pieces->at(0).GetConstantBuffer(), pieces->at(2).GetConstantBuffer());
+
+            return;
+        }
+    }
+
+
     classInt->ProcessStatements(ro);
     if (ro.returnCode)
         return;
