@@ -193,14 +193,27 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 	ro.returnCode = 0;
 }
 
-bool TInterpretor::SubmitClassType(const TString& className, TClassStruct& classStruct)
+bool TInterpretor::SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating)
 {
-	TClassStruct s;
-	if(classes.retrieveEntry(className,s))
-		return false;
+	if (!updating)
+	{
+		TClassStruct s;
+		if (classes.retrieveEntry(className, s))
+			return false;
 
-	classes.addEntry(className, classStruct);
-	return true;
+		classes.addEntry(className, classStruct);
+		return true;
+	}
+	else
+	{
+		TClassStruct s;
+		if (classes.retrieveEntry(className, s))
+		{
+			classes.setEntry(className, classStruct);
+			return true;
+		}
+		return parent.Get() && parent->SubmitClassType(className, classStruct, updating);
+	}
 }
 
 void TInterpretor::SetFirstParamName(const TString& iParam)

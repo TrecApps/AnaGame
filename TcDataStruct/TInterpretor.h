@@ -353,7 +353,7 @@ public:
      */
     void CheckVarName(TString& varname, ReportObject& ro, UINT line);
 
-    bool SubmitClassType(const TString& className, TClassStruct& classStruct);
+    bool SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating);
 
     void SetFirstParamName(const TString& iParam);
 

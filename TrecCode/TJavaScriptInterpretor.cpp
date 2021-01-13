@@ -285,6 +285,7 @@ ReportObject TJavaScriptInterpretor::Run()
             ProcessLet(statements, Rust, statements[Rust], ret);
             break;
         case js_statement_type::js_regular:
+        case js_statement_type::js_proto_add:
             ProcessReg(statements, Rust, statements[Rust], ret);
             break;
         case js_statement_type::js_var:
@@ -838,6 +839,15 @@ void TJavaScriptInterpretor::setLine(UINT line)
     this->line = line;
 }
 
+void TJavaScriptInterpretor::AddAssignStatement(const TString& expression, TrecPointer<TVariable> var)
+{
+    JavaScriptStatement statement;
+    statement.contents = expression;
+    statement.type = js_statement_type::js_proto_add;
+    statement.var = var;
+    statements.push_back(statement);
+}
+
 ReportObject TJavaScriptInterpretor::ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
 {
     ReportObject ret;
@@ -914,6 +924,56 @@ ReportObject TJavaScriptInterpretor::ProcessAddition(TrecPointer<TVariable> var1
 
 
     return TInterpretor::ProcessAddition(var1, var2);
+}
+
+ReportObject TJavaScriptInterpretor::ProcessPrototypeOperation(const TString& className, const TString& attName, const TrecPointer<TVariable> value, JS_Prototype_Op operation)
+{
+    TClassStruct classStruct;
+    bool classExists = this->GetClass(className, classStruct);
+
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> jsFunc;
+    TString classNameCopy(className);
+    bool present;
+    if (!classExists)
+        jsFunc = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(GetVariable(classNameCopy, present));
+
+    if (!classExists && !jsFunc.Get())
+    {
+        ReportObject ro;
+        ro.returnCode = ReportObject::invalid_name;
+        ro.errorMessage.Format(L"Class %ws does not exist!", className.GetConstantBuffer());
+        return;
+    }
+
+    switch (operation)
+    {
+    case JS_Prototype_Op::jpo_add_const:
+        if (classExists)
+        {
+            TClassAttribute att;
+            att.def = value;
+            att.name.Set(attName);
+            classStruct.AddAttribute(att);
+            att = classStruct.GetAttributeByName(L"constructor");
+            if (att.name.GetSize() && att.def.Get() && dynamic_cast<TJavaScriptInterpretor*>(att.def.Get()))
+            {
+                auto jsConst = dynamic_cast<TJavaScriptInterpretor*>(att.def.Get());
+                jsConst->AddAssignStatement(attName, value);
+            }
+            SubmitClassType(className, classStruct, true);
+        }
+        else
+        {
+            if (dynamic_cast<TJavaScriptInterpretor*>(jsFunc.Get()))
+            {
+                auto jsFunctP = dynamic_cast<TJavaScriptInterpretor*>(jsFunc.Get());
+                jsFunctP->AddAssignStatement(attName, value);
+            }
+        }
+        break;
+    }
+
+    return ReportObject();
 }
 
 bool TJavaScriptInterpretor::hasOddMiltiLineStrMarkers(const TString& str)
@@ -1682,7 +1742,7 @@ void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& state
         return;
     TClassStruct classInfo = classInt->GetClassData();
 
-    if (!SubmitClassType(statement.contents, classInfo))
+    if (!SubmitClassType(statement.contents, classInfo, false))
     {
         ro.returnCode = ro.invalid_name;
         ro.errorMessage.Format(L"Class %ws already defined in this scope!", statement.contents.GetConstantBuffer());
@@ -1693,7 +1753,20 @@ void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& state
 void TJavaScriptInterpretor::ProcessReg(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
     TString exp(statement.contents);
-    ProcessExpression(statements, cur, exp, statement.lineStart,ro);
+
+    if (statement.type == js_statement_type::js_proto_add)
+    {
+        TString strThis(L"this");
+        bool present;
+        auto jsThis = GetVariable(strThis, present);
+        if (jsThis.Get() && jsThis->GetVarType() == var_type::collection)
+        {
+            auto newVar = statement.var;
+            dynamic_cast<TContainerVariable*>(jsThis.Get())->SetValue(exp, newVar.Get() ? newVar->Clone() : newVar);
+        }
+    }
+    else
+        ProcessExpression(statements, cur, exp, statement.lineStart,ro);
 }
 
 void TJavaScriptInterpretor::ProcessReturn(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
@@ -2162,6 +2235,13 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                     return;
                 ro.errorObject = expressions[0];
             }
+
+            // Set the type since we have an idea on what it is
+            if (ro.errorObject.Get() && ro.errorObject->GetVarType() == var_type::collection)
+            {
+                dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetClassName(name);
+            }
+
             expresions.push_back(JavaScriptExpression(ro.errorMessage, ro.errorObject));
         }
         else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
@@ -3545,7 +3625,7 @@ void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& s
         auto left = expressions[Rust].value;
         auto right = expressions[Rust + 1].value;
 
-        bool canDo = true;
+        bool canDo = true, possibleProto = false;
 
         TrecSubPointer<TVariable, TPrimitiveVariable> operand =
             TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(left);
@@ -3571,6 +3651,15 @@ void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& s
         {
             found = true;
             ro.errorObject = right;
+
+            // Check for a Prototype call
+            auto pieces = expressions[Rust].varName.split(L'.', 3);
+
+            if (pieces->Size() == 3 && !pieces->at(1).Compare(L"prototype"))
+            {
+                ro = ProcessPrototypeOperation(pieces->at(0), pieces->at(2), left, JS_Prototype_Op::jpo_add_const);
+                return;
+            }
         }
         else if (!ops[Rust].Compare(L"+="))
         {

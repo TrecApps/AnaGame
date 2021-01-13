@@ -322,3 +322,16 @@ TrecPointer<TVariable> TContainerVariable::GetValueAt(UINT index)
         return TrecPointer<TVariable>();
     return entry->object;
 }
+
+TString TContainerVariable::GetTClassName()
+{
+    return className;
+}
+
+bool TContainerVariable::SetClassName(const TString& name)
+{
+    if(className.GetSize() || !name.GetSize())
+        return false;
+    className.Set(name);
+    return true;
+}

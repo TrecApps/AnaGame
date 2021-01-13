@@ -21,8 +21,8 @@ typedef enum class js_statement_type
     js_regular,
     js_continue,
     js_break,
-    js_return
-
+    js_return,
+    js_proto_add
 }js_statement_type;
 
 
@@ -36,6 +36,8 @@ public:
     void operator=(const JavaScriptStatement& other);
 
     TrecSubPointer<TVariable, TInterpretor> body;
+
+    TrecPointer<TVariable> var;
 
     js_statement_type type;
 
@@ -58,6 +60,17 @@ public:
     TString varName;
     TrecPointer<TVariable> value;
 };
+
+/**
+ * Enum Class: JS_Prototype_Op
+ * Purpose: What Operation is being performed on the Prototype
+ */
+typedef enum class JS_Prototype_Op
+{
+    jpo_add_const,
+    jpo_add_objs,
+    jpo_delete
+}JS_Prototype_Op;
 
 
 /**
@@ -121,8 +134,10 @@ public:
 
     void setLine(UINT line);
 
-protected:
+    
 
+protected:
+    void AddAssignStatement(const TString& expression, TrecPointer<TVariable> var);
     /**
      * Method: TInterpretor::ProcessAddition
      * Purpose: Filters variables in preparation for performing an addition operation
@@ -133,6 +148,17 @@ protected:
      * Attributes: virtual
      */
     virtual ReportObject ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2) override;
+
+    /**
+     * Method: TInterpretor::ProcessPrototypeOperation
+     * Purpose: Enables operations dealing with prototypes
+     * Parameters: const TString& className - the name of the type to apply the operation to
+     *              const TString& attName - the name of the attribute on the type
+     *              const TrecPointer<TVariable> value - value to assign
+     *              JS_Prototype_Op operation - the operation to performed
+     * Returns: ReportObject - the results of the operation
+     */
+    ReportObject ProcessPrototypeOperation(const TString& className, const TString& attName, const TrecPointer<TVariable> value, JS_Prototype_Op operation);
 protected:
     UINT line;
 

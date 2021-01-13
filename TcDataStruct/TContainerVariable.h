@@ -199,6 +199,25 @@ public:
      */
     TrecPointer<TVariable> GetValueAt(UINT index);
 
+    /**
+     * Method: TContainerVariable::GetClassName
+     * Purpose: Retrieves the Class Name of this object (if applicable)
+     * Parameters: void
+     * Returns: TString - the class name
+     */
+    TString GetTClassName();
+
+    /**
+     * Method: TContainerVariable::SetClassName
+     * Purpose: Sets the name of the class that this object is based off of
+     * Parameters: TString name - the class name to base this object off of
+     * Returns: bool - whether the name was set or not
+     * 
+     * Note: This Method call will only work once
+     */
+    bool SetClassName(const TString& name);
+
+
  private:
     /**
      * The map holding the values
@@ -210,5 +229,9 @@ public:
       */
      ContainerType type;
 
+     /**
+      * The class name used to generate this object (if applicable)
+      */
+     TString className;
 };
 
