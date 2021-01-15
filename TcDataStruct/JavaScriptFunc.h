@@ -51,7 +51,7 @@ namespace JavaScriptFunc{
 	TC_DATA_STRUCT void parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
 
 
-
+	TC_DATA_STRUCT TrecPointer<TVariable> GetJSObectVariable(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env);
 
 
 	// Helper Functions

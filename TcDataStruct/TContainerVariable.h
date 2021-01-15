@@ -200,6 +200,16 @@ public:
     TrecPointer<TVariable> GetValueAt(UINT index);
 
     /**
+     * Method: TContainerVariable::GetValueAt
+     * Purpose: Retirevs the variable and key by index
+     * Parameters: UINT index - the index to check
+     *              TString& key - the key to use
+     *              TrecPointer<TVariable>& value - reference to the variable to store value at
+     * Returns: bool - whether content was found
+     */
+    bool GetValueAt(UINT index, TString& key, TrecPointer<TVariable>& value);
+
+    /**
      * Method: TContainerVariable::GetClassName
      * Purpose: Retrieves the Class Name of this object (if applicable)
      * Parameters: void

@@ -5,6 +5,7 @@
 #include <TPrimitiveVariable.h>
 #include "JsConsole.h"
 #include "TJavaScriptClassInterpretor.h"
+#include <JavaScriptFunc.h>
 
 
 static TDataArray<WCHAR> noSemiColonEnd;
@@ -192,8 +193,11 @@ UINT TJavaScriptInterpretor::SetCode(TFile& file)
         this->end = newFile->GetLength();
         this->start = 0LL;
 
+        // Initialize Objects meant for the main Interpretor
+
         // Intitialize a Console Object
-        variables.addEntry(L"console", TVariableMarker(false, GetJsConsole()));
+        variables.addEntry(L"console", TVariableMarker(false, GetJsConsole())); // Console Object
+        variables.addEntry(L"Object", TVariableMarker(false, JavaScriptFunc::GetJSObectVariable(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
 
 
         return InsertSemiColons();
@@ -942,7 +946,7 @@ ReportObject TJavaScriptInterpretor::ProcessPrototypeOperation(const TString& cl
         ReportObject ro;
         ro.returnCode = ReportObject::invalid_name;
         ro.errorMessage.Format(L"Class %ws does not exist!", className.GetConstantBuffer());
-        return;
+        return ro;
     }
 
     switch (operation)

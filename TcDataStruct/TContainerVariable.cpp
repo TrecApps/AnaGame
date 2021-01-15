@@ -323,6 +323,21 @@ TrecPointer<TVariable> TContainerVariable::GetValueAt(UINT index)
     return entry->object;
 }
 
+bool TContainerVariable::GetValueAt(UINT index, TString& key, TrecPointer<TVariable>& value)
+{
+    if(index >= values.count())
+        return false;
+
+    TrecPointer<tEntry<TVariable>> entry = values.GetEntryAt(index);
+    if (entry.Get())
+    {
+        key.Set(entry->key);
+        value = entry->object->Clone();
+        return true;
+    }
+    return false;
+}
+
 TString TContainerVariable::GetTClassName()
 {
     return className;
