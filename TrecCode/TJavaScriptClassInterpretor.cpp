@@ -277,6 +277,15 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
         paramNames.push_back(param);
     }
 
+    TrecPointer<TVariable> superConstructor;
+    if (!methodName.Compare(L"constructor") && this->superName.GetSize())
+    {
+        TClassAttribute att = superData.GetAttributeByName(L"constructor");
+        if (!att.name.Compare(L"constructor"))
+        {
+            superConstructor = att.def;
+        }
+    }
 
 
     auto block = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
@@ -284,6 +293,13 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
     dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
 
     block->SetParamNames(paramNames);
+
+    if (dynamic_cast<TJavaScriptInterpretor*>(superConstructor.Get()))
+    {
+        superConstructor = superConstructor->Clone();
+        block->variables.addEntry(L"super", TVariableMarker(false, superConstructor));
+        // dynamic_cast<TJavaScriptInterpretor*>(superConstructor.Get())->variables.addEntry(L"this", TVariableMarker(false, ))
+    }
 
     TClassAttribute constructor;
     constructor.name.Set(methodName);

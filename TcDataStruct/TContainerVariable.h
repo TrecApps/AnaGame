@@ -77,6 +77,17 @@ public:
     TrecPointer<TVariable> GetValue(const TString& key, bool& present);
 
     /**
+     * Method: TContainerVariable::GetValue
+     * Purpose: Retrieves the value by Key, taking into account prototypeing 
+     * Parameters: const TString& key - the key of the value to look for
+     *              bool& present - whether the index was found. This can be used by JavaScript to distinguish between NULL and UNDEFINED
+     *              const TString& super - keys to use as part of the chain
+     * Returns: TrecPointer<TVariable> - the value at the provided index, or null if the index was not found
+     */
+    TrecPointer<TVariable> GetValue(const TString& key, bool& present, const TString& super);
+
+
+    /**
      * Method: TContainerVariable::SetValue
      * Purpose: Sets the value of the given index
      * Parameters: int index - index to set

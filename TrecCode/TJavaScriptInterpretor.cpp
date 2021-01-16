@@ -196,7 +196,9 @@ UINT TJavaScriptInterpretor::SetCode(TFile& file)
         // Initialize Objects meant for the main Interpretor
 
         // Intitialize a Console Object
-        variables.addEntry(L"console", TVariableMarker(false, GetJsConsole())); // Console Object
+        // Console Object
+        variables.addEntry(L"console", TVariableMarker(false, GetJsConsole())); 
+        // Object Object
         variables.addEntry(L"Object", TVariableMarker(false, JavaScriptFunc::GetJSObectVariable(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
 
 
@@ -2745,7 +2747,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     {
         if (curVar->GetVarType() == var_type::collection)
         {
-            curVar = dynamic_cast<TContainerVariable*>(curVar.Get())->GetValue(varName, present);
+            curVar = dynamic_cast<TContainerVariable*>(curVar.Get())->GetValue(varName, present, L"__proto__");
         }
         else
         {
@@ -2910,6 +2912,14 @@ UINT TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
     exp.Delete(0, Rust + 1);
 
     TrecSubPointer<TVariable, TInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(ro.errorObject);
+    bool pres;
+    TString strThis(L"this");
+    auto jsThis = GetVariable(strThis, pres);
+
+    if (!ro.errorMessage.Compare(L"super") && jsThis.Get())
+    {
+        dynamic_cast<TJavaScriptInterpretor*>(func.Get())->variables.addEntry(L"this", TVariableMarker(false, jsThis));
+    }
 
     for (Rust = 0; Rust < expressions.Size(); Rust++)
     {
@@ -3305,7 +3315,7 @@ void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatem
             else
             {
                 
-                dynamic_cast<TContainerVariable*>(right.Get())->GetValue(left->GetString(), val);
+                dynamic_cast<TContainerVariable*>(right.Get())->GetValue(left->GetString(), val, L"__proto__");
                 
             }
 

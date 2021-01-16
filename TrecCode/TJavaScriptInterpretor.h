@@ -83,6 +83,7 @@ class _TREC_CODE_DLL TJavaScriptInterpretor :
     public TInterpretor
 {
     friend class TJavaScriptInterpretor;
+    friend class TJavaScriptClassInterpretor;
 public:
     /**
      * Method: TJavaScriptInterpretor::TInterpretor

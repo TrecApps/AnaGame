@@ -126,6 +126,28 @@ TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& pr
     
 }
 
+TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present, const TString& super)
+{
+    auto supers = super.split(L";");
+    auto ret = GetValue(key, present);
+    if (present)
+        return ret;
+    for (UINT Rust = 0; Rust < supers->Size(); Rust++)
+    {
+        ret = GetValue(supers->at(Rust), present);
+        if (ret.Get() && ret->GetVarType() == var_type::collection)
+        {
+            ret = dynamic_cast<TContainerVariable*>(ret.Get())->GetValue(key, present);
+            if (present)
+                return ret;
+        }
+    }
+
+    present = false;
+    return ret;
+    return TrecPointer<TVariable>();
+}
+
 /**
  * Method: TContainerVariable::SetValue
  * Purpose: Sets the value of the given index
