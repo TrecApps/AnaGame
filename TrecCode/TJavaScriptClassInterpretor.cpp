@@ -1,5 +1,18 @@
 #include "TJavaScriptClassInterpretor.h"
 
+/**
+ * Function: GetJsObjectInstance
+ * Purpose: Creates an instance of the JavaScript Object class
+ * Parameters: void
+ * Returns: TrecPointer<TVariable> - variable representing an instance of the JS Object
+ */
+TrecPointer<TVariable> GetJsObjectInstance()
+{
+    auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+
+
+    return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
+}
 
 
 
@@ -18,7 +31,9 @@ bool TJavaScriptClassInterpretor::SetSuperClassName(const TString& name)
 {
     bool ret = parent.Get() ? parent->GetClass(name, superData) : false;
     if (ret)
+    {
         superName.Set(name);
+    }
     return ret;
 }
 
@@ -221,6 +236,8 @@ TClassStruct TJavaScriptClassInterpretor::GetClassData()
 {
     if (superName.GetSize())
         classData.AddParentClass(superName);
+    else
+        classData.AddParentClass(L"Object");
     return classData;
 }
 

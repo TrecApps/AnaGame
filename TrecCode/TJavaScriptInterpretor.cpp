@@ -2160,7 +2160,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
             // this new container object becomes "this"
             expressions.push_back(TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(newObj));
-
+            dynamic_cast<TContainerVariable*>(expressions[0].Get())->SetValue(L"__proto__", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj));
             if (openParenth != -1)
             {
                 int closeParenth = exp.FindOutOfQuotes(L')');
@@ -2234,6 +2234,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 }
 
                 func->SetFirstParamName(L"this");
+                
 
                 ro = func->Run(expressions);
 
