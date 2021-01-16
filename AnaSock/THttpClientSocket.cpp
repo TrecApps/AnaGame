@@ -132,7 +132,7 @@ void THttpRequest::CompileRequest(std::string& request)
 		break;
 	}
 
-	top.AppendFormat(L" %ws", endpoint.GetSize() ? endpoint.GetConstantBuffer() : L"/", L"HTTP/1.1");
+	top.AppendFormat(L" %ws %ws", endpoint.GetSize() ? endpoint.GetConstantBuffer() : L"/", L"HTTP/1.1");
 
 	std::string uBody;
 
@@ -243,7 +243,7 @@ THttpResponse::THttpResponse(const std::string& data)
 
 	int headerEnd = data.find("\r\n\r\n");
 
-	for (; Rust < (headerEnd == 1 ? data.size() : headerEnd); Rust++)
+	for (; Rust < (headerEnd == -1 ? data.size() : headerEnd); Rust++)
 	{
 		char ch = data[Rust];
 		if (ch == '\r')
@@ -260,6 +260,23 @@ THttpResponse::THttpResponse(const std::string& data)
 
 			headers.addEntry(keyValue->at(0), keyValue->at(1));
 		}
+		else if (ch != '\n')
+			piece += ch;
+	}
+
+	if (piece.size())
+	{
+		headerPiece.Set(piece);
+		headerPiece.Trim();
+		piece.clear();
+		auto keyValue = headerPiece.splitn(L':', 2);
+
+		if (keyValue->Size() != 2)
+		{
+			// To-Do: Handle scenario
+		}
+
+		headers.addEntry(keyValue->at(0), keyValue->at(1));
 	}
 
 	if (headerEnd != -1)

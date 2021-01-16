@@ -191,6 +191,7 @@ int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<Event
 	case t_window_type::t_window_type_plain:
 		mainWindow = TrecPointerKey::GetNewSelfTrecPointer<TWindow>(mainWindowName, mainWindowClass, mainStyle, mainWindowHandle, command, 
 			TrecPointerKey::GetTrecPointerFromSoft(self));
+		break;
 	case t_window_type::t_window_type_web:
 		mainWindow = TrecPointerKey::GetNewSelfTrecPointerAlt<TWindow, TWebWindow>(mainWindowName, mainWindowClass, mainStyle, mainWindowHandle, command,
 			TrecPointerKey::GetTrecPointerFromSoft(self), 75, 30);

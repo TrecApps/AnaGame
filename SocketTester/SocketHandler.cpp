@@ -5,6 +5,18 @@ SocketHandler::SocketHandler(TrecPointer<TInstance> ins): EventHandler(ins)
 {
 	method = THttpMethod::http_get;
 	window = 0;
+
+	eventNameID enid;
+
+	enid.eventID = 0;
+	enid.name.Set(L"OnSubmitEndpoint");
+	events.push_back(enid);
+	sockHandlers.push_back(&SocketHandler::OnSubmitEndpoint);
+
+	enid.eventID = 1;
+	enid.name.Set(L"SetMethod");
+	events.push_back(enid);
+	sockHandlers.push_back(&SocketHandler::SetMethod);
 }
 
 SocketHandler::~SocketHandler()
@@ -63,6 +75,11 @@ void SocketHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 void SocketHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
 
+}
+
+bool SocketHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
+{
+	return false;
 }
 
 void SocketHandler::OnSubmitEndpoint(TrecPointer<TControl> tc, EventArgs ea)

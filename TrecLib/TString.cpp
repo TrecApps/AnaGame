@@ -1,5 +1,6 @@
 #include "TString.h"
 #include "TDataArray.h"
+#include <cassert>
 
 UCHAR TStringType[] = { 2, 0b10000000, 1 };
 
@@ -156,11 +157,25 @@ TString::TString(const TString & c)
 TString::TString(std::string & str)
 {
 	fillWhiteChar();
-	size = str.size();
-	capacity = size + 1;
+
+	int sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, 0, 0);
+	int e = 0;
+	if (!sizeNeeded)
+	{
+		e = GetLastError();
+	}
+
+	assert(sizeNeeded > 0);
+
+	capacity = sizeNeeded + 1;
+
 	string = new WCHAR[capacity];
-	memcpy(string, str.c_str(), size * sizeof(WCHAR));
-	string[capacity - 1] = L'\0';
+
+	string[sizeNeeded] = string[sizeNeeded - 1] = '\0';
+
+	size = str.size();
+
+	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, string, capacity);
 }
 
 /*

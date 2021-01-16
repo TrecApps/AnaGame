@@ -2019,6 +2019,8 @@ void TextHighlighter::SetFirstPosition(UINT f)
  */
 void TextHighlighter::SetSecondPosition(UINT s)
 {
+	if (!layout.Get())
+		return;
 	if (isActive && layout.Get())
 	{
 		layout->SetDrawingEffect(nullptr, DWRITE_TEXT_RANGE{ beginningPosition, endingPosition - beginningPosition });

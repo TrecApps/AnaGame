@@ -28,6 +28,9 @@ UINT TClientSocket::InitializeSocket(TString& address)
 {
 	ADDRINFOW hint4, hint6;
 
+	ZeroMemory(&hint4, sizeof(hint4));
+	ZeroMemory(&hint6, sizeof(hint6));
+
 	hint4.ai_addr = hint6.ai_addr = nullptr;
 	hint4.ai_addrlen = hint6.ai_addrlen = 0;
 	hint4.ai_canonname = hint6.ai_canonname = nullptr;
@@ -35,7 +38,7 @@ UINT TClientSocket::InitializeSocket(TString& address)
 	hint6.ai_family = AF_INET6;
 	hint4.ai_flags = hint6.ai_flags = AI_PASSIVE;
 	hint4.ai_next = nullptr;
-	hint6.ai_next = &hint4;
+	hint6.ai_next = nullptr;
 
 	results = nullptr;
 
@@ -51,11 +54,13 @@ UINT TClientSocket::InitializeSocket(TString& address)
 		hint4.ai_socktype = hint6.ai_socktype = SOCK_DGRAM;
 	}
 
-	int intResults = GetAddrInfoW(address.GetConstantBuffer(), port.GetConstantBuffer(), &hint6, &results);
+	int intResults = GetAddrInfoW(address.GetConstantBuffer(), port.GetConstantBuffer(), &hint4, &results);
 
 	if (intResults != 0)
+	{
+		int e = WSAGetLastError();
 		return intResults;
-
+	}
 	sock = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
 
 	if (sock == INVALID_SOCKET)

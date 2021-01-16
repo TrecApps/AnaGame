@@ -129,6 +129,15 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    if (message == WM_GETMINMAXINFO)
+    {
+        PMINMAXINFO info = reinterpret_cast<LPMINMAXINFO>(lParam);
+
+        info->ptMinTrackSize.x = 800;
+        info->ptMinTrackSize.y = 650;
+        return 0;
+    }
+
     if (mainInstance.Get())
         return mainInstance->Proc(hWnd, message, wParam, lParam);
 
