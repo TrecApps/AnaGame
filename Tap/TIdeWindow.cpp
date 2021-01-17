@@ -492,9 +492,6 @@ TrecPointer<Page> TIdeWindow::AddPage(anagame_page pageType, ide_page_type pageL
 
 
 	if (handler.Get())
-		ret = (handler->GetPage());
-
-	if (ret.Get())
 		return ret;
 
 	switch (pageType)

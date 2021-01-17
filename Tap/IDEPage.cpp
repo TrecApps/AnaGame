@@ -623,6 +623,11 @@ void IDEPage::AddNewPage(TrecPointer<Page> pageHolder, const TString& name)
 TrecPointer<Page> IDEPage::AddNewPage(TrecPointer<TInstance> ins, TrecPointer<TWindow> win, TString name, TrecPointer<EventHandler> h)
 {
 	TrecPointer<Page> page = Page::GetWindowPage(ins, win, h);
+	if (ins.Get() && h.Get())
+	{
+		h->name.Set(name);
+		ins->RegisterHandler(h);
+	}
 	AddNewPage(page, name);
 	return page;
 }
