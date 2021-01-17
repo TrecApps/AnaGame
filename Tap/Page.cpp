@@ -601,7 +601,7 @@ bool Page::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOu
  *				TrecPointer<TWindowEngine> - the 3D Engine to work with
  * Returns: void
  */
-void Page::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine> engine)
+void Page::OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine> engine)
 {
 	// Only Resize if basic resources are in order
 	if (!instance.Get() || !windowHandle.Get())
@@ -960,6 +960,20 @@ void Page::OnFocus()
 		handler->OnFocus();
 }
 
+TDataArray<TControl*> Page::GetClickedControls()
+{
+	TDataArray<TControl*> ret = clickedControl;
+	clickedControl.RemoveAll();
+	return ret;
+}
+
+TDataArray<TControl*> Page::GetRightClickedControls()
+{
+	TDataArray<TControl*> ret = rClickedControl;
+	rClickedControl.RemoveAll();
+	return ret;
+}
+
 
 
 
@@ -1059,6 +1073,13 @@ void Page::SetArea(const D2D1_RECT_F& loc)
 	area = loc;
 	if (rootControl.Get())
 		rootControl->Resize(area);
+}
+
+bool Page::TookTab(TrecPointer<Tab> tab)
+{
+	if(!rootControl.Get())
+		return false;
+	return rootControl->TookTab(tab);
 }
 
 /**

@@ -463,6 +463,20 @@ void TControl::storeInHTML(TFile * ar)
 	
 }
 
+bool TControl::TookTab(TrecPointer<Tab> tab)
+{
+	if(!tab.Get())
+		return false;
+
+	for (UINT Rust = 0; Rust < children.Count(); Rust++)
+	{
+		auto ch = children.ElementAt(Rust);
+		if (ch.Get() && ch->TookTab(tab))
+			return true;
+	}
+	return false;
+}
+
 /*
 * Method: TControl::onCreate
 * Purpose: Allows the Control To contstruct itself based off of the location it has and the
@@ -5023,12 +5037,6 @@ bool TText::onDraw(D2D1_RECT_F& loc, TObject* obj)
 		}
 		
 	
-	/*
-	rt->DrawTextW(text,
-		(UINT32)wcslen(text),
-		format,
-		bounds,
-		penBrush);*/
 	return true;
 }
 

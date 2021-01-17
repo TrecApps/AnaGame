@@ -153,7 +153,11 @@ ArenaApp::ArenaApp(TrecPointer<TControl> m, TrecPointer<TControl> o, TrecPointer
 
 	TString name;
 	name.Format(L"Arena %d", arenaCount++);
-	dynamic_cast<AnafaceUI*>(m.Get())->addControl(mainControl, name);
+
+	TrecSubPointer<TabContent, TabControlContent> content = TrecPointerKey::GetNewTrecSubPointer<TabContent, TabControlContent>();
+	content->SetControl(mainControl);
+
+	dynamic_cast<AnafaceUI*>(m.Get())->addControl(TrecPointerKey::GetTrecPointerFromSub<TabContent, TabControlContent>(content), name);
 
 	// Now Set up the View Panel
 	
@@ -173,8 +177,10 @@ ArenaApp::ArenaApp(TrecPointer<TControl> m, TrecPointer<TControl> o, TrecPointer
 
 	if (!outputControl.Get())
 		return;
+	content = TrecPointerKey::GetNewTrecSubPointer<TabContent, TabControlContent>();
+	content->SetControl(outputControl);
 
-	dynamic_cast<AnafaceUI*>(o.Get())->addControl(outputControl, TString());
+	dynamic_cast<AnafaceUI*>(o.Get())->addControl(TrecPointerKey::GetTrecPointerFromSub<TabContent, TabControlContent>(content), TString());
 
 	//Now Do the View Bar
 	
@@ -194,8 +200,10 @@ ArenaApp::ArenaApp(TrecPointer<TControl> m, TrecPointer<TControl> o, TrecPointer
 
 	if (!explorerControl.Get())
 		return;
+	content = TrecPointerKey::GetNewTrecSubPointer<TabContent, TabControlContent>();
+	content->SetControl(explorerControl);
 
-	dynamic_cast<AnafaceUI*>(e.Get())->addControl(explorerControl, TString());
+	dynamic_cast<AnafaceUI*>(e.Get())->addControl(TrecPointerKey::GetTrecPointerFromSub<TabContent, TabControlContent>(content), TString());
 }
 
 ArenaApp::~ArenaApp()
