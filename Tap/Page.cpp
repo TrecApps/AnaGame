@@ -1075,6 +1075,13 @@ void Page::SetArea(const D2D1_RECT_F& loc)
 		rootControl->Resize(area);
 }
 
+bool Page::TookTab(TrecPointer<Tab> tab)
+{
+	if(!rootControl.Get())
+		return false;
+	return rootControl->TookTab(tab);
+}
+
 /**
  * Method: TPageParentHolder::TPageParentHolder
  * Purpose: Constructor

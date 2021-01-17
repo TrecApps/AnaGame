@@ -62,6 +62,15 @@ public:
 	 */
 	virtual TabContentType GetContentType() override;
 
+
+	/**
+	 * Method: TabPageContent::TookTab
+	 * Purpose: Allows Tab Content with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab) override;
+
 	/*
 	 * Method: TabPageContent::OnRButtonUp
 	 * Purpose: Allows Control to catch the RightmessageState::mouse button release event and act accordingly
@@ -425,6 +434,15 @@ protected:
 	 * Returns: void
 	 */
 	virtual void SetArea(const D2D1_RECT_F& loc) override;
+
+
+	/**
+	 * Method: IDEPage::TookTab
+	 * Purpose: Allows Page with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab)override;
 
 	/**
 	 * Method: IDEPage::OnRButtonUp

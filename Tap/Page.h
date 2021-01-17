@@ -260,6 +260,14 @@ public:
 
 
 	/**
+	 * Method: Page::TookTab
+	 * Purpose: Allows Page with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab);
+
+	/**
 	 * Method: Page::OnRButtonUp
 	 * Purpose: Responds to the Right Button Up Message
 	 * Parameters: UINT nFlags - flags associated with the message

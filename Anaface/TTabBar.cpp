@@ -134,6 +134,7 @@ void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 {
 	if (isContained(point, location))
 	{
+		*mOut = messageOutput::positiveContinue;
 		onClick = true;
 		for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
 		{
@@ -253,8 +254,14 @@ bool TTabBar::AddTab(TrecPointer<Tab> tab)
 {
 	if(!tab.Get())
 		return false;
-
+	if (tab.Get() == removedTab.Get())
+	{
+		tab->MovePoint(removedTabPoint.x, removedTabPoint.y);
+		removedTab.Nullify();
+	}
 	TPoint tabPoint = tab->GetCurrentPoint();
+
+
 
 	if (!isContained(tabPoint, location))
 		return false;
@@ -268,6 +275,8 @@ bool TTabBar::AddTab(TrecPointer<Tab> tab)
 			tabs.RemoveAt(Rust--);
 			continue;
 		}
+		if (curTab.Get() == tab.Get())
+			return true;
 
 		if (isContained(tabPoint, curTab->location))
 		{
@@ -328,16 +337,66 @@ void TTabBar::RemoveTabAt(UINT index)
 {
 	if (index < tabs.Size())
 	{
-		TrecPointer<Tab> tab = tabs.RemoveAt(index);
+		removedTab = tabs.RemoveAt(index);
+
+		if (removedTab.Get())
+		{
+			float width = removedTab->location.right - removedTab->location.left;
+			float height = removedTab->location.bottom - removedTab->location.top;
+
+			removedTabPoint.x = removedTab->location.left + (width / 2);
+			removedTabPoint.y = removedTab->location.top + (height / 2);
+
+			if (!isContained(removedTabPoint, location))
+			{
+				width = location.right - location.left;
+				height = location.bottom - location.top;
+				removedTabPoint.x = location.left + (width / 2);
+				removedTabPoint.y = location.top + (height / 2);
+			}
+		}
 
 		// To-Do: Figure out ho to move the tabs
 		SetTabSizes();
 	}
 }
 
+void TTabBar::RemoveTab(TrecPointer<Tab> tab)
+{
+	for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+	{
+		if (tabs[Rust].Get() == tab.Get())
+		{
+			tabs.RemoveAt(Rust);
+			if (Rust < tabs.Size())
+				currentlyClickedTab = tabs[Rust];
+			else if (tabs.Size())
+				currentlyClickedTab = tabs[Rust - 1];
+			else currentlyClickedTab.Nullify();
+			return;
+		}
+	}
+}
+
 TrecPointer<Tab> TTabBar::GetCurrentTab()
 {
 	return this->currentlyClickedTab;
+}
+
+bool TTabBar::SetCurrentTab(TrecPointer<Tab> tab)
+{
+	if (tab.Get())
+	{
+		for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+		{
+			if (tab.Get() == tabs[Rust].Get())
+			{
+				currentlyClickedTab = tab;
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void TTabBar::SetTabSizes()

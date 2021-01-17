@@ -98,105 +98,69 @@ int TIdeWindow::PrepareWindow()
  */
 void TIdeWindow::OnLButtonUp(UINT nFlags, TPoint point)
 {
+	if (currentHolder.Get())
+	{
+		TrecSubPointer<Page, IDEPage> recievedPage;
 
+		if (body->TookTab(currentHolder))
+		{
+			recievedPage = body;
+			goto doneCheckingTab;
+		}
+		if (basicConsole->TookTab(currentHolder))
+		{
+			recievedPage = basicConsole;
+			goto doneCheckingTab;
+		}
+		if (upperLeft->TookTab(currentHolder))
+		{
+			recievedPage = upperLeft;
+			goto doneCheckingTab;
+		}
+		if (upperRight->TookTab(currentHolder))
+		{
+			recievedPage = upperRight;
+			goto doneCheckingTab;
+		}
+		if (lowerLeft->TookTab(currentHolder))
+		{
+			recievedPage = lowerLeft;
+			goto doneCheckingTab;
+		}
+		if (lowerRight->TookTab(currentHolder))
+		{
+			recievedPage = lowerRight;
+			goto doneCheckingTab;
+		}
+		if (deepConsole->TookTab(currentHolder))
+		{
+			recievedPage = deepConsole;
+			goto doneCheckingTab;
+		}
+		if (basicConsole->TookTab(currentHolder))
+		{
+			recievedPage = basicConsole;
+			goto doneCheckingTab;
+		}
+	doneCheckingTab:
 
-	if (dynamic_cast<IDEPage*>(body.Get())->OnLButtonUp(point) && currentHolder.Get() &&
-		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
-	{
-		if (focusPage.Get() && body.Get() != focusPage.Get())
+		if (!recievedPage.Get() && tabPage.Get() && tabPage->TookTab(currentHolder))
 		{
-			focusPage->RemovePage(currentHolder);
+			recievedPage = tabPage;
 		}
-		if (currentHolder->GetContent()->HasContent())
+
+		if (recievedPage.Get() && recievedPage.Get() != tabPage.Get() && tabPage.Get())
 		{
-			body->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
+			tabPage->RemovePage(currentHolder);
 		}
-		currentHolder.Nullify();
+
+		if (recievedPage.Get())
+		{
+			tabPage.Nullify();
+			currentHolder.Nullify();
+		}
+
 	}
-	if (dynamic_cast<IDEPage*>(basicConsole.Get())->OnLButtonUp(point) && currentHolder.Get() &&
-		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
-	{
-		if (focusPage.Get() && basicConsole.Get() != focusPage.Get())
-		{
-			focusPage->RemovePage(currentHolder);
-		}
-		if (currentHolder->GetContent()->HasContent())
-		{
-			basicConsole->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
-		}
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(deepConsole.Get())->OnLButtonUp(point) && currentHolder.Get() &&
-		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
-	{
-		if (focusPage.Get() && deepConsole.Get() != focusPage.Get())
-		{
-			focusPage->RemovePage(currentHolder);
-		}
-		if (currentHolder->GetContent()->HasContent())
-		{
-			deepConsole->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
-		}
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(upperRight.Get())->OnLButtonUp(point) && currentHolder.Get() &&
-		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
-	{  
-		if (focusPage.Get() && upperRight.Get() != focusPage.Get())
-		{
-			focusPage->RemovePage(currentHolder);
-		}
-		if (currentHolder->GetContent()->HasContent())
-		{
-			upperRight->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
-		}
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(lowerRight.Get())->OnLButtonUp(point) && currentHolder.Get() &&
-		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
-	{
-		if (focusPage.Get() && lowerRight.Get() != focusPage.Get())
-		{
-			focusPage->RemovePage(currentHolder);
-		}
-		if (currentHolder->GetContent()->HasContent())
-		{
-			lowerRight->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
-		}
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(upperLeft.Get())->OnLButtonUp(point) && currentHolder.Get() &&
-		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
-	{
-		if (focusPage.Get() && upperLeft.Get() != focusPage.Get())
-		{
-			focusPage->RemovePage(currentHolder);
-		}
-		if (currentHolder->GetContent()->HasContent())
-		{
-			upperLeft->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
-		}
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(lowerLeft.Get())->OnLButtonUp(point) && currentHolder.Get() &&
-		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page)
-	{
-		if (focusPage.Get() && lowerLeft.Get() != focusPage.Get())
-		{
-			focusPage->RemovePage(currentHolder);
-		}
-		if (currentHolder->GetContent()->HasContent())
-		{
-			lowerLeft->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
-		}
-		currentHolder.Nullify();
-	}
-	if (focusPage.Get() && currentHolder.Get() &&
-		currentHolder->GetContent().Get() && currentHolder->GetContent()->GetContentType() == TabContentType::tct_reg_page && currentHolder->GetContent()->HasContent())
-	{
-		focusPage->AddNewPage(dynamic_cast<TabPageContent*>(currentHolder->GetContent().Get())->GetPage(), currentHolder->GetText());
-	}
-	currentHolder.Nullify();
 
 	TWindow::OnLButtonUp(nFlags, point);
 	focusPage.Nullify();
@@ -282,6 +246,7 @@ finish:
 
 	if (currentHolder.Get())
 	{
+		ATLTRACE2(L"Moving IDE Current Tab\n");
 		currentHolder->MovePoint(point.x, point.y);
 	}
 
@@ -628,9 +593,10 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
  * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
  * Returns: void
  */
-void TIdeWindow::SetCurrentHolder(TrecPointer<Tab> holder)
+void TIdeWindow::SetCurrentHolder(TrecPointer<Tab> holder, TrecPointer<Page> page)
 {
 	currentHolder = holder;
+	tabPage = TrecPointerKey::GetTrecSubPointerFromTrec<Page, IDEPage>(page);
 }
 
 /**

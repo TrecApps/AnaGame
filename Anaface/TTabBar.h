@@ -96,6 +96,15 @@ public:
 	 */
 	virtual bool HasContent() = 0;
 
+
+	/**
+	 * Method: TabControlContent::TookTab
+	 * Purpose: Allows Tab Content with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab) = 0;
+
 	/*
 	 * Method: TabContent::OnRButtonUp
 	 * Purpose: Allows Control to catch the RightmessageState::mouse button release event and act accordingly
@@ -504,12 +513,30 @@ public:
 	void RemoveTabAt(UINT index);
 
 	/**
+	 * Method: TTabBar::RemoveTab
+	 * Purpose: Removes a Tab
+	 * Parameters: TrecPointer<Tab> - tb to remove
+	 * Returns: void
+	 */
+	void RemoveTab(TrecPointer<Tab> tab);
+
+	/**
 	 * Method: TTabBar::GetCurrentTab
 	 * Purpose: Retrieves the Tab currently considered "Selected"
 	 * Parameters: void
 	 * Returns: TrecPointer<Tab> - te current tab selected
 	 */
 	TrecPointer<Tab> GetCurrentTab();
+
+	/**
+	 * Method: TTabBar::SetCurrentTab
+	 * Purpose: Sets the Tab to be the CurrentTab
+	 * Parameters: TrecPointer<Tab> tab - the tab to set to
+	 * Returns: bool - whether it iwas set
+	 * 
+	 * Note: This method returns false if the tab was not Already in the Tab Bar, and fails
+	 */
+	bool SetCurrentTab(TrecPointer<Tab> tab);
 
 protected:
 
@@ -550,7 +577,12 @@ protected:
 	/**
 	 * The Tab currently being Clicked
 	 */
-	TrecPointer<Tab> currentlyClickedTab;
+	TrecPointer<Tab> currentlyClickedTab, removedTab;
+
+	/**
+	 * The point of the removed tab
+	 */
+	TPoint removedTabPoint;
 
 	/**
 	 * Keeps track of the Tab Click data

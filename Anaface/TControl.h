@@ -35,6 +35,7 @@
 class TControl;
 class TFlyout;
 class TContextMenu;
+class Tab;
 //using namespace ControlTypeSafety;
 
 // Declare existance of classes so that they can be attributes
@@ -1190,6 +1191,15 @@ public:
 	* Returns: void
 	*/
 	virtual void storeInHTML(TFile* ar);
+
+
+	/**
+	 * Method: TControl::TookTab
+	 * Purpose: Allows TControls with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab);
 
 	// Normal running messages
 

@@ -40,6 +40,30 @@ AnafaceUI::~AnafaceUI()
 
 }
 
+/**
+ * Method: AnafaceUI::TookTab
+ * Purpose: Allows TControls with Tab Bars to take in a tab
+ * Parameters: TrecPointer<Tab> tab - the tab to take
+ * Returns: bool - whether the tab was taken in
+ */
+bool AnafaceUI::TookTab(TrecPointer<Tab> tab)
+{
+	if (bar.AddTab(tab))
+		return true;
+
+	for (UINT Rust = 0; Rust < bar.GetContentSize(); Rust++)
+	{
+		auto curTab = bar.GetCurrentTab();
+		if (curTab.Get() && curTab->GetContent().Get())
+		{
+			if (curTab->GetContent()->TookTab(tab))
+				return true;
+		}
+	}
+
+	return false;
+}
+
 /*
 * Method: AnafaceUI::switchView
 * Purpose: Switches the view towards the specified Content
@@ -550,6 +574,13 @@ void TabControlContent::Resize(const D2D1_RECT_F& loc)
 TabContentType TabControlContent::GetContentType()
 {
 	return TabContentType::tct_control;
+}
+
+bool TabControlContent::TookTab(TrecPointer<Tab> tab)
+{
+	if(!tab.Get() || !this->control.Get())	
+		return false;
+	return control->TookTab(tab);
 }
 
 /*

@@ -155,6 +155,36 @@ void IDEPage::SetArea(const D2D1_RECT_F& loc)
 	pages.Resize(tempLoc);
 }
 
+bool IDEPage::TookTab(TrecPointer<Tab> tab)
+{
+	if (pages.AddTab(tab) && tab->GetContent().Get())
+	{
+		auto pageSpace = area;
+		pageSpace.top += barSpace;
+		tab->GetContent()->Resize(pageSpace);
+
+		if (tab->GetContent()->GetContentType() == TabContentType::tct_reg_page)
+		{
+			auto p = dynamic_cast<TabPageContent*>(tab->GetContent().Get())->GetPage();
+			if (p.Get())
+				currentPage = p;
+		}
+		pages.SetCurrentTab(tab);
+
+		return true;
+	}
+	if (currentPage.Get() && tab.Get())
+	{
+		if (tab->GetContent().Get() && tab->GetContent()->GetContentType() == TabContentType::tct_reg_page)
+		{
+			if (dynamic_cast<TabPageContent*>(tab->GetContent().Get())->GetPage().Get() == currentPage.Get())
+				return false;
+		}
+		return currentPage->TookTab(tab);
+	}
+	return false;
+}
+
 /**
  * Method: IDEPage::OnRButtonUp
  * Purpose: Responds to the Right Button Up Message
@@ -181,11 +211,12 @@ void IDEPage::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+
 	focusTab = GetFocusPage(point);
 
 	if (focusTab.Get() && parentWindow.Get())
 	{
-		TrecPointerKey::GetSubPointerFromSoft<TWindow, TIdeWindow>(parentWindow)->SetCurrentHolder(focusTab);
+		TrecPointerKey::GetSubPointerFromSoft<TWindow, TIdeWindow>(parentWindow)->SetCurrentHolder(focusTab, TrecPointerKey::GetTrecPointerFromSoft<Page>(self));
 		focusTab->MovePoint(point.x, point.y);
 	}
 
@@ -208,10 +239,10 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, Trec
 			handler->OnFocus();
 	}
 
+	Page::OnLButtonDown(nFlags, point, mOut, fly);
 	if (currentPage.Get())
 		currentPage->OnLButtonDown(nFlags, point, mOut, fly);
-	else
-		Page::OnLButtonDown(nFlags, point, mOut, fly);
+		
 }
 
 /**
@@ -240,10 +271,9 @@ void IDEPage::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void IDEPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	Page::OnMouseMove(nFlags, point, mOut, fly);
 	if (currentPage.Get())
 		currentPage->OnMouseMove(nFlags, point, mOut, fly);
-	else
-		Page::OnMouseMove(nFlags, point, mOut, fly);
 }
 
 /**
@@ -256,10 +286,9 @@ void IDEPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
  */
 void IDEPage::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
 {
+	Page::OnLButtonDblClk(nFlags, point, mOut);
 	if (currentPage.Get())
 		currentPage->OnLButtonDblClk(nFlags, point, mOut);
-	else
-		Page::OnLButtonDblClk(nFlags, point, mOut);
 }
 
 /**
@@ -294,11 +323,10 @@ void IDEPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
 
 	}
 	focusTab.Nullify();
-
+	Page::OnLButtonUp(nFlags, point, mOut, fly);
 	if (currentPage.Get())
 		currentPage->OnLButtonUp(nFlags, point, mOut, fly);
-	else
-		Page::OnLButtonUp(nFlags, point, mOut, fly);
+		
 }
 
 /**
@@ -392,7 +420,10 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 			return;
 		}
 
-		regular_click_mode:
+	regular_click_mode:
+
+		TDataArray<TControl*> clicked;
+		pages.OnLButtonDown(nFlags, point, mOut, eventAr, clicked);
 		Page::OnLButtonDown(nFlags, point, mOut, eventAr, fly);
 	}
 }
@@ -480,17 +511,9 @@ void IDEPage::Draw(TrecPointer<TBrush> color, TWindowEngine* twe)
 		color->FillRectangle(topBorder);
 	if (type != ide_page_type::ide_page_type_drag)
 	{
-		for (UINT C = 0; C < pages.GetContentSize(); C++)
-		{
-			if (pages.GetTabAt(C).Get() && pages.GetTabAt(C)->GetContent().Get())
-			{
-				pages.GetTabAt(C)->GetContent()->Draw(nullptr);
-			}
-		}
-
-
-		if (dynamic_cast<IDEPage*>(currentPage.Get()))
-			dynamic_cast<IDEPage*>(currentPage.Get())->Draw(color, twe);
+		auto curTab = pages.GetCurrentTab();
+		if (curTab.Get() && curTab->GetContent().Get())
+			curTab->GetContent()->Draw(nullptr);
 	}
 	else
 		Page::Draw(twe);
@@ -584,6 +607,8 @@ void IDEPage::AddNewPage(TrecPointer<Page> pageHolder, const TString& name)
 	tempLoc.top += barSpace;
 	dynamic_cast<TabPageContent*>(content.Get())->Resize(tempLoc);
 	tab->SetContent(content);
+
+	pages.SetCurrentTab(tab);
 }
 
 /**
@@ -650,9 +675,9 @@ TrecPointer<Tab> IDEPage::GetFocusPage(TPoint& point)
 	{
 		if (pages.GetTabAt(c).Get() && (pages.GetTabAt(c)->AttemptClick(point) == TabClickMode::tcm_regular_click))
 		{
-
-
-			return pages.GetTabAt(c);
+			auto ret = pages.GetTabAt(c);
+			//pages.RemoveTabAt(c);
+			return ret;
 		}
 	}
 	return TrecPointer<Tab>();
@@ -1260,6 +1285,12 @@ void TabPageContent::Resize(const D2D1_RECT_F& loc)
 TabContentType TabPageContent::GetContentType()
 {
 	return TabContentType::tct_reg_page;
+}
+
+bool TabPageContent::TookTab(TrecPointer<Tab> tab)
+{
+	if(!page.Get() && !page.Get())
+	return false;
 }
 
 void TabPageContent::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)

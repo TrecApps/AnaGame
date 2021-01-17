@@ -79,6 +79,15 @@ public:
 	 */
 	virtual TabContentType GetContentType() override;
 
+
+	/**
+	 * Method: TabControlContent::TookTab
+	 * Purpose: Allows Tab Content with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab) override;
+
 	/*
 	 * Method: TabControlContent::OnRButtonUp
 	 * Purpose: Allows Control to catch the RightmessageState::mouse button release event and act accordingly
@@ -271,6 +280,9 @@ public:
 	* Returns: void
 	*/
 	virtual ~AnafaceUI();
+
+	
+	virtual bool TookTab(TrecPointer<Tab> tab)override;
 
 	/*
 	 * Method: AnafaceUI::OnRButtonUp

@@ -178,7 +178,7 @@ public:
 	 * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
 	 * Returns: void
 	 */
-	void SetCurrentHolder(TrecPointer<Tab> holder);
+	void SetCurrentHolder(TrecPointer<Tab> holder, TrecPointer<Page> page);
 
 	/**
 	 * Method: TIdeWindow::SetEnvironment
@@ -311,7 +311,7 @@ protected:
 	/**
 	 * Page to focus on (used when shifting the boundaries between two or three pages)
 	 */
-	TrecSubPointer<Page, IDEPage> focusPage;
+	TrecSubPointer<Page, IDEPage> focusPage, tabPage;
 
 
 	/**
