@@ -71,6 +71,11 @@ static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
 TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 {
 	this->board = board;
+	outsideDisplay = WebNodeDisplayOutside::wndo_block;
+	insideDisplay = WebNodeDisplayInside::wndi_flex;
+	internalDisplay = WebNodeDisplayInternal::wndi_not_set;
+	doDisplay = true;
+	isListItem = false;
 }
 
 
@@ -167,12 +172,23 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start)
 UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start)
 {
 	UINT currentStart = start;
+	TString printableText;
 	while (start < html->GetSize())
 	{
 		WCHAR ch = html->GetAt(start++);
 
 		if (ch == L'<')
 		{
+			if (printableText.GetSize())
+			{
+				TrecSubPointer<TControl, TTextField> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>());
+				textEle->SetText(printableText);
+				printableText.Empty();
+
+				childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNodeContainer>(textEle));
+			}
+
+
 			try
 			{
 				if (html->GetAt(start) == L'/')
@@ -190,13 +206,17 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start)
 			}
 			// We have a new HTML element to process
 			TrecPointer<TWebNode> newNode = TrecPointerKey::GetNewSelfTrecPointer<TWebNode>(board);
-			childNodes.push_back(newNode);
+			childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNodeContainer>(newNode));
 
 			UINT result = newNode->ProcessHtml(html, start);
 
 			if (result) return result;
 
 			if (!start)break;
+		}
+		else
+		{
+			printableText.AppendChar(ch);
 		}
 		
 	}
@@ -237,7 +257,9 @@ void TWebNode::GetElementsByName(const TString& name, TDataArray<TrecPointer<TWe
 
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
-		childNodes[Rust]->GetElementsByName(name, nodes);
+		auto node = childNodes[Rust];
+		if(node.Get() && node->type == NodeContainerType::nct_web && node->webNode.Get())
+		node->webNode->GetElementsByName(name, nodes);
 	}
 }
 
@@ -257,7 +279,9 @@ void TWebNode::GetElementsByTag(const TString& tag, TDataArray<TrecPointer<TWebN
 
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
-		childNodes[Rust]->GetElementsByTag(name, nodes);
+		auto node = childNodes[Rust];
+		if (node.Get() && node->type == NodeContainerType::nct_web && node->webNode.Get())
+			node->webNode->GetElementsByTag(name, nodes);
 	}
 }
 
@@ -277,7 +301,9 @@ void TWebNode::GetElementsByClass(const TString& nodeClass, TDataArray<TrecPoint
 
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
-		childNodes[Rust]->GetElementsByClass(name, nodes);
+		auto node = childNodes[Rust];
+		if (node.Get() && node->type == NodeContainerType::nct_web && node->webNode.Get())
+			node->webNode->GetElementsByClass(name, nodes);
 	}
 }
 
@@ -301,7 +327,9 @@ TrecPointer<TWebNode> TWebNode::GetElementById(const TString& id)
 
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
-		ret = childNodes.at(Rust)->GetElementById(id);
+		auto node = childNodes[Rust];
+		if (node.Get() && node->type == NodeContainerType::nct_web && node->webNode.Get())
+			ret = node->webNode->GetElementById(id);
 		if (ret.Get())
 			break;
 	}
@@ -343,6 +371,78 @@ void TWebNode::PreCreate(TrecPointerSoft<TWebNode> parent)
 	this->parent = parent;
 
 	// Figure out how to set the location based off of the display CSS Atribute
+	TString cssDisplay;
+	if (attributes.retrieveEntry(L"display", cssDisplay))
+	{
+		SetDisplay(cssDisplay);
+	}
+}
+
+/**
+ * Method: TWebNode::SetDisplay
+ * Purpose: Sets up the display attributes of the web node according to the string provided
+ * Parameters: const TString& display - the string holding display info
+ * Return: void
+ */
+void TWebNode::SetDisplay(const TString& display)
+{
+	doDisplay = true;
+	if (display.CountFinds(L"none"))
+	{
+		doDisplay = false;
+		return;
+	}
+
+	// Look For legacy attributes (from CSS 2)
+	// While The Mozilla Developer Network lists for such values,
+	// here: https://developer.mozilla.org/en-US/docs/Web/CSS/display
+	// We only check for the first as the other three will be detected when checking css 3 values
+	if (display.CountFinds(L"inline-block"))
+	{
+		insideDisplay = WebNodeDisplayInside::wndi_flow_root;
+		outsideDisplay = WebNodeDisplayOutside::wndo_inline;
+	}
+
+	// Outside Display
+	if (display.CountFinds(L"inline"))
+		outsideDisplay = WebNodeDisplayOutside::wndo_inline;
+	else outsideDisplay = WebNodeDisplayOutside::wndo_block;
+
+	// Inside Display
+	if (display.CountFinds(L"flow-root"))
+		insideDisplay = WebNodeDisplayInside::wndi_flow_root;
+	else if (display.CountFinds(L"flex"))
+		insideDisplay = WebNodeDisplayInside::wndi_flex;
+	if (display.CountFinds(L"table"))
+		insideDisplay = WebNodeDisplayInside::wndi_table;
+	else if (display.CountFinds(L"grid"))
+		insideDisplay = WebNodeDisplayInside::wndi_grid;
+	if (display.CountFinds(L"ruby"))
+		insideDisplay = WebNodeDisplayInside::wndi_ruby;
+	else
+		insideDisplay = WebNodeDisplayInside::wndi_flow;
+
+	// Handle List item
+	isListItem = display.CountFinds(L"list-item") > 0;
+
+	if (display.CountFinds(L"table-row-group"))
+		internalDisplay = WebNodeDisplayInternal::wndi_row_group;
+	else if (display.CountFinds(L"table-header-group"))
+		internalDisplay = WebNodeDisplayInternal::wndi_header_group;
+	if (display.CountFinds(L"table-footer-group"))
+		internalDisplay = WebNodeDisplayInternal::wndi_footer_group;
+	else if (display.CountFinds(L"table-row"))
+		internalDisplay = WebNodeDisplayInternal::wndi_row;
+	if (display.CountFinds(L"table-cell"))
+		internalDisplay = WebNodeDisplayInternal::wndi_cell;
+	else if (display.CountFinds(L"table-column-group"))
+		internalDisplay = WebNodeDisplayInternal::wndi_column_group;
+	if (display.CountFinds(L"table-column"))
+		internalDisplay = WebNodeDisplayInternal::wndi_column;
+	else if (display.CountFinds(L"table-caption"))
+		internalDisplay = WebNodeDisplayInternal::wndi_caption;
+	else // To Do: Add support for ruby values
+		internalDisplay = WebNodeDisplayInternal::wndi_not_set;
 }
 
 /**
@@ -375,87 +475,6 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 	}
 
 
-
-
-
-
-	if (!tagName.Compare(L"p"))
-	{
-		// We are dealing with a paragraph block
-		control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), window);
-
-		TString text(innerHtml->GetStringCopy());
-
-		for (UINT Rust = 0; Rust < childNodes.Size(); Rust)
-		{
-			if (!childNodes[Rust].Get())
-				continue;
-			int found = -1, innerFound = -1,endFound = -1, outerEnd = -1;
-
-			FormattingDetails fd;
-			fd.style = DWRITE_FONT_STYLE_NORMAL;
-			fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
-
-			if (!childNodes[Rust]->tagName.Compare(L"b"))
-			{
-				found = text.Find(L"<b");
-				innerFound = text.Find(L">", found);
-				endFound = text.Find(L"</b>",innerFound);
-				outerEnd = 4;
-				fd.weight = DWRITE_FONT_WEIGHT_BOLD;
-			}
-			else if (!childNodes[Rust]->tagName.Compare(L"strong"))
-			{
-				found = text.Find(L"<strong");
-				innerFound = text.Find(L">", found);
-				endFound = text.Find(L"</string>", innerFound);
-				outerEnd = 9;
-				fd.weight = DWRITE_FONT_WEIGHT_BOLD;
-			}
-			else if (!childNodes[Rust]->tagName.Compare(L"i"))
-			{
-				found = text.Find(L"<i");
-				innerFound = text.Find(L">", found);
-				endFound = text.Find(L"</i>", innerFound);
-				outerEnd = 4;
-				fd.style = DWRITE_FONT_STYLE_ITALIC;
-			}
-			else if (!childNodes[Rust]->tagName.Compare(L"em"))
-			{
-				found = text.Find(L"<em");
-				innerFound = text.Find(L">", found);
-				endFound = text.Find(L"</em>", innerFound);
-				outerEnd = 5;
-				fd.style = DWRITE_FONT_STYLE_ITALIC;
-			}
-
-			if (found == -1 || innerFound == -1 || endFound == -1)
-				continue;
-			if (innerFound > endFound)
-				continue;
-
-			fd.range.startPosition = found;
-			fd.range.length = endFound - innerFound;
-			
-
-			text.Delete(endFound, outerEnd);
-			text.Delete(found, innerFound - found + 1);
-
-			formattingDetails.push_back(fd);
-		}
-
-
-		control->onCreate(location, d3dEngine);
-		TrecSubPointer<TControl, TTextField> tControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(control);
-
-		tControl->SetText(text);
-		for (UINT Rust = 0; Rust < formattingDetails.Size(); Rust++)
-		{
-			tControl->ApplyFormatting(formattingDetails[Rust]);
-		}
-	}
-
-
 	return 0;
 }
 
@@ -477,6 +496,7 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 	else
 	{
 		auto loc = control->getLocation();
+
 		if (isContained(point, loc))
 		{
 			messageOutput mo = messageOutput::negative;
@@ -497,7 +517,18 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 					{
 						if (childNodes[Rust].Get())
-							childNodes[Rust]->OnLButtonDown(script, thisCollection, nodeCollection, point);
+						{
+							switch (childNodes[Rust]->type)
+							{
+							case NodeContainerType::nct_control:
+							case NodeContainerType::nct_text:
+								childNodes[Rust]->control->OnLButtonDown(0, point, &mo,cred, cl);
+								break;
+							case NodeContainerType::nct_web:
+								childNodes[Rust]->webNode->OnLButtonDown(script, thisCollection, nodeCollection, point);
+							}
+						}
+							
 					}
 					
 				}
@@ -506,7 +537,17 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 					{
 						if (childNodes[Rust].Get())
-							childNodes[Rust]->OnLButtonDown(script, thisCollection, nodeCollection, point);
+						{
+							switch (childNodes[Rust]->type)
+							{
+							case NodeContainerType::nct_control:
+							case NodeContainerType::nct_text:
+								childNodes[Rust]->control->OnLButtonDown(0, point, &mo, cred, cl);
+								break;
+							case NodeContainerType::nct_web:
+								childNodes[Rust]->webNode->OnLButtonDown(script, thisCollection, nodeCollection, point);
+							}
+						}
 					}
 					script.push_back(prop.event);
 					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
@@ -517,7 +558,17 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 				for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 				{
 					if (childNodes[Rust].Get())
-						childNodes[Rust]->OnLButtonDown(script, thisCollection, nodeCollection, point);
+					{
+						switch (childNodes[Rust]->type)
+						{
+						case NodeContainerType::nct_control:
+						case NodeContainerType::nct_text:
+							childNodes[Rust]->control->OnLButtonDown(0, point, &mo, cred, cl);
+							break;
+						case NodeContainerType::nct_web:
+							childNodes[Rust]->webNode->OnLButtonDown(script, thisCollection, nodeCollection, point);
+						}
+					}
 				}
 			}
 		}
@@ -586,7 +637,17 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 					{
 						if (childNodes[Rust].Get())
-							childNodes[Rust]->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
+						{
+							switch (childNodes[Rust]->type)
+							{
+							case NodeContainerType::nct_control:
+							case NodeContainerType::nct_text:
+								childNodes[Rust]->control->OnLButtonUp(0, point, &mo, cred);
+								break;
+							case NodeContainerType::nct_web:
+								childNodes[Rust]->webNode->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
+							}
+						}
 					}
 
 					if (hasClick && !clickProp.useCapture)
@@ -607,7 +668,17 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 					{
 						if (childNodes[Rust].Get())
-							childNodes[Rust]->OnLButtonUp(script, thisCollection, nodeCollection,focusNode, point);
+						{
+							switch (childNodes[Rust]->type)
+							{
+							case NodeContainerType::nct_control:
+							case NodeContainerType::nct_text:
+								childNodes[Rust]->control->OnLButtonUp(0, point, &mo, cred);
+								break;
+							case NodeContainerType::nct_web:
+								childNodes[Rust]->webNode->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
+							}
+						}
 					}
 					
 					script.push_back(prop.event);
@@ -624,7 +695,17 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 				for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 				{
 					if (childNodes[Rust].Get())
-						childNodes[Rust]->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
+					{
+						switch (childNodes[Rust]->type)
+						{
+						case NodeContainerType::nct_control:
+						case NodeContainerType::nct_text:
+							childNodes[Rust]->control->OnLButtonUp(0, point, &mo, cred);
+							break;
+						case NodeContainerType::nct_web:
+							childNodes[Rust]->webNode->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
+						}
+					}
 				}
 			}
 		}
@@ -668,7 +749,17 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 					{
 						if (childNodes[Rust].Get())
-							childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+						{
+							switch (childNodes[Rust]->type)
+							{
+							case NodeContainerType::nct_control:
+							case NodeContainerType::nct_text:
+								childNodes[Rust]->control->OnLButtonDblClk(0, point, &mo, cred);
+								break;
+							case NodeContainerType::nct_web:
+								childNodes[Rust]->webNode->OnLButtonDblClck(script, thisCollection, point);
+							}
+						}
 					}
 					
 				}
@@ -677,7 +768,17 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 					{
 						if (childNodes[Rust].Get())
-							childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+						{
+							switch (childNodes[Rust]->type)
+							{
+							case NodeContainerType::nct_control:
+							case NodeContainerType::nct_text:
+								childNodes[Rust]->control->OnLButtonDblClk(0, point, &mo, cred);
+								break;
+							case NodeContainerType::nct_web:
+								childNodes[Rust]->webNode->OnLButtonDblClck(script, thisCollection, point);
+							}
+						}
 					}
 					script.push_back(prop.event);
 					thisCollection.push_back(TrecPointerKey::GetTrecObjectPointer<TWebNode>(activeSelf));
@@ -688,7 +789,17 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 				for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 				{
 					if (childNodes[Rust].Get())
-						childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+					{
+						switch (childNodes[Rust]->type)
+						{
+						case NodeContainerType::nct_control:
+						case NodeContainerType::nct_text:
+							childNodes[Rust]->control->OnLButtonDblClk(0, point, &mo, cred);
+							break;
+						case NodeContainerType::nct_web:
+							childNodes[Rust]->webNode->OnLButtonDblClck(script, thisCollection, point);
+						}
+					}
 				}
 			}
 		}
@@ -756,7 +867,17 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 					{
 						if (childNodes[Rust].Get())
-							childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+						{
+							switch (childNodes[Rust]->type)
+							{
+							case NodeContainerType::nct_control:
+							case NodeContainerType::nct_text:
+								childNodes[Rust]->control->OnMouseMove(0, point, &mo, cred, cl);
+								break;
+							case NodeContainerType::nct_web:
+								childNodes[Rust]->webNode->OnMouseMove(script, thisCollection, nodeCollection, point);
+							}
+						}
 					}
 
 					if (hasStat && !statProp.useCapture)
@@ -775,7 +896,17 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 					for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 					{
 						if (childNodes[Rust].Get())
-							childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+						{
+							switch (childNodes[Rust]->type)
+							{
+							case NodeContainerType::nct_control:
+							case NodeContainerType::nct_text:
+								childNodes[Rust]->control->OnMouseMove(0, point, &mo, cred, cl);
+								break;
+							case NodeContainerType::nct_web:
+								childNodes[Rust]->webNode->OnMouseMove(script, thisCollection, nodeCollection, point);
+							}
+						}
 					}
 
 					script.push_back(prop.event);
@@ -792,7 +923,17 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 				for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 				{
 					if (childNodes[Rust].Get())
-						childNodes[Rust]->OnLButtonDblClck(script, thisCollection, point);
+					{
+						switch (childNodes[Rust]->type)
+						{
+						case NodeContainerType::nct_control:
+						case NodeContainerType::nct_text:
+							childNodes[Rust]->control->OnMouseMove(0, point, &mo, cred, cl);
+							break;
+						case NodeContainerType::nct_web:
+							childNodes[Rust]->webNode->OnMouseMove(script, thisCollection, nodeCollection, point);
+						}
+					}
 				}
 			}
 		}
@@ -841,4 +982,37 @@ EventPropagater::EventPropagater(const TString& e, bool useCapture)
 {
 	event.Set(e);
 	this->useCapture = useCapture;
+}
+
+TWebNode::TWebNodeContainer::TWebNodeContainer(TrecSubPointer<TControl, TTextField> text)
+{
+	if (text.Get())
+	{
+		type = NodeContainerType::nct_text;
+		this->control = TrecPointerKey::GetTrecPointerFromSub<TControl, TTextField>(text);
+	}
+	else
+		type = NodeContainerType::ntc_null;
+}
+
+TWebNode::TWebNodeContainer::TWebNodeContainer(TrecPointer<TControl> control)
+{
+	if (control.Get())
+	{
+		type = NodeContainerType::nct_control;
+		this->control = control;
+	}
+	else
+		type = NodeContainerType::ntc_null;
+}
+
+TWebNode::TWebNodeContainer::TWebNodeContainer(TrecPointer<TWebNode> webNode)
+{
+	if (webNode.Get())
+	{
+		type = NodeContainerType::nct_web;
+		this->webNode = webNode;
+	}
+	else
+		type = NodeContainerType::ntc_null;
 }

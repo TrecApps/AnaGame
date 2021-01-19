@@ -294,6 +294,16 @@ public:
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
 
+	/**
+	 * Method: WebPage::GetTitle
+	 * Purpose: Retirves the title of this web page
+	 * Parameters: void
+	 * Returns TString - the title of the web page
+	 * 
+	 * Note: This value could be an empty String. It is up to the caller to check for that and handle it accordingly
+	 */
+	TString GetTitle();
+
 protected:
 	TString SetUpCSS();
 

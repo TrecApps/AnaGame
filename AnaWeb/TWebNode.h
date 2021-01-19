@@ -7,16 +7,41 @@
 #include "AnaWeb.h"
 
 /**
- * Enum Class: WebNodeDisplay
+ * Enum Class: WebNodeDisplayOutside
  * Purpose: Easy means of managing how the Node is supposed to appear
  */
-typedef enum class WebNodeDisplay
+typedef enum class WebNodeDisplayOutside
 {
-    pure_inline, // Lean on parent, ignore any width/height attributes
-    pure_block,  // Tell the Parent to treat this element like a block
-    contents
-
+    wndo_inline,
+    wndo_block
 }WebNodeDisplay;
+
+/**
+ * Enum Class: WebNodeDisplayInside
+ * Purpose:
+ */
+typedef enum class WebNodeDisplayInside
+{
+    wndi_flow,
+    wndi_flow_root,
+    wndi_table,
+    wndi_flex,
+    wndi_grid,
+    wndi_ruby
+}WebNodeDisplayInside;
+
+typedef enum class WebNodeDisplayInternal
+{
+    wndi_not_set,
+    wndi_row_group,
+    wndi_header_group,
+    wndi_footer_group,
+    wndi_row,
+    wndi_cell,
+    wndi_column_group,
+    wndi_column,
+    wndi_caption
+};
 
 
 /**
@@ -74,6 +99,28 @@ public:
 class ANA_WEB_DLL TWebNode :
     public TObject
 {
+protected:
+
+    typedef enum class NodeContainerType
+    {
+        nct_text,
+        nct_control,
+        nct_web,
+        ntc_null
+    };
+
+    class TWebNodeContainer : public TObject
+    {
+    public:
+        TWebNodeContainer(TrecSubPointer<TControl, TTextField> text);
+        TWebNodeContainer(TrecPointer<TControl> control);
+        TWebNodeContainer(TrecPointer<TWebNode> webNode);
+        TrecPointer<TControl> control;
+        TrecPointer<TWebNode> webNode;
+        NodeContainerType type;
+    };
+
+
 public:
     /**
      * Method: TWebNode::TWebNode
@@ -167,6 +214,14 @@ public:
      */
     void PreCreate(TrecPointerSoft<TWebNode> parent);
 
+    /**
+     * Method: TWebNode::SetDisplay
+     * Purpose: Sets up the display attributes of the web node according to the string provided
+     * Parameters: const TString& display - the string holding display info
+     * Return: void
+     */
+    void SetDisplay(const TString& display);
+
 
     /**
      * Method: TWebNode::CreateWebNode
@@ -232,6 +287,30 @@ public:
      */
     TString OnLoseFocus();
 protected:
+    /// Display Properties
+    
+    /**
+     * Whether to display at all
+     */
+    bool doDisplay;
+
+    /**
+     * The Display outside Property
+     */
+    WebNodeDisplayOutside outsideDisplay;
+    /**
+     * The Display Inside Property
+     */
+    WebNodeDisplayInside insideDisplay;
+    /**
+     * Whether it is a List item
+     */
+    bool isListItem;
+    /**
+     * The internal dispay to use (applies to table and (eventually) ruby)
+     */
+    WebNodeDisplayInternal internalDisplay;
+
 
     /**
      * Represents the handlers that are meant to Run 
@@ -246,7 +325,7 @@ protected:
     /**
      * Holds on to all child Elements underneath it
      */
-    TDataArray<TrecPointer<TWebNode>> childNodes;
+    TDataArray<TrecPointer<TWebNodeContainer>> childNodes;
 
     /**
      * Represents the actual control, if need be

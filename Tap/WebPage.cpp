@@ -184,6 +184,25 @@ void WebPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
 	}
 }
 
+/**
+ * Method: WebPage::GetTitle
+ * Purpose: Retirves the title of this web page
+ * Parameters: void
+ * Returns TString - the title of the web page
+ *
+ * Note: This value could be an empty String. It is up to the caller to check for that and handle it accordingly
+ */
+TString WebPage::GetTitle()
+{
+	if (htmlBuilder.Get())
+	{
+		TrecPointer<HtmlHeader> head = htmlBuilder->RetrieveHeader();
+		if (head.Get())
+			return head->RetrieveTitle();
+	}
+	return TString();
+}
+
 TString WebPage::SetUpCSS()
 {
 	TrecPointer<HtmlHeader> header = htmlBuilder->RetrieveHeader();
