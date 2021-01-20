@@ -152,7 +152,11 @@ void IDEPage::SetArea(const D2D1_RECT_F& loc)
 	Page::SetArea(loc);
 	auto tempLoc = loc;
 	tempLoc.bottom = tempLoc.top + barSpace;
-	pages.Resize(tempLoc);
+
+	pages.addAttribute(L"|TextBuffer", TrecPointerKey::GetNewTrecPointer<TString>(L"10"));
+	pages.addAttribute(L"|EnableExit", TrecPointerKey::GetNewTrecPointer<TString>(L"true"));
+
+	pages.onCreate(tempLoc, TrecPointer<TWindowEngine>());
 }
 
 bool IDEPage::TookTab(TrecPointer<Tab> tab)
@@ -211,7 +215,9 @@ void IDEPage::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
-
+	TDataArray<EventID_Cred> cred;
+	TDataArray<TControl*> cl;
+	pages.OnLButtonDown(nFlags, point, mOut, cred, cl);
 	focusTab = GetFocusPage(point);
 
 	if (focusTab.Get() && parentWindow.Get())
@@ -301,6 +307,10 @@ void IDEPage::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void IDEPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	TDataArray<EventID_Cred> cred;
+	pages.OnLButtonUp(nFlags, point, mOut, cred);
+
+
 	auto upPage = GetFocusPage(point);
 	if (upPage.Get() && focusTab.Get() != upPage.Get())
 	{
@@ -360,7 +370,16 @@ void IDEPage::OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWind
 	auto tabsLoc = newLoc;
 	tabsLoc.bottom = tabsLoc.top + barSpace;
 	pages.Resize(tabsLoc);
-	Page::OnResize(newLoc, nFlags, e);
+
+	tabsLoc = newLoc;
+	tabsLoc.top += barSpace;
+	for (UINT Rust = 0; Rust < pages.GetContentSize(); Rust++)
+	{
+		auto cTab = pages.GetTabAt(Rust);
+		if (cTab.Get() && cTab->GetContent().Get())
+			cTab->GetContent()->Resize(tabsLoc);
+	}
+	Page::OnResize(tabsLoc, nFlags, e);
 }
 
 /**
@@ -439,6 +458,9 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
  */
 void IDEPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)
 {
+	TDataArray<TControl*> cl;
+	pages.OnMouseMove(nFlags, point, mOut, eventAr, cl);
+
 	if (moveMode == page_move_mode::page_move_mode_normal)
 		return Page::OnMouseMove(nFlags, point, mOut, eventAr, fly);
 

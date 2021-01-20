@@ -257,7 +257,7 @@ public:
 	 * Parameters: const D2D1_RECT_F& location - 
 	 * Returns:
 	 */
-	D2D1_RECT_F SetLocation(const D2D1_RECT_F& location);
+	D2D1_RECT_F SetLocation(const D2D1_RECT_F& location, UINT buffer);
 
 	/**
 	 * Method: Tab::Draw
@@ -354,10 +354,16 @@ private:
 	 * Any extra brush to work with
 	 */
 	TrecPointer<TBrush> brush;
+
+	/**
+	 * Brushes for painting the exit button
+	 */
+	TrecSubPointer<TBrush, TBitmapBrush> exitReg, exitHover;
+
 	/**
 	 * The location that the tab is expected to draw in
 	 */
-	D2D1_RECT_F location;
+	D2D1_RECT_F location, xLocation;
 	/**
 	 * The Tab Bar holding the tab
 	 */
@@ -365,7 +371,7 @@ private:
 	/**
 	 * Whether to Draw the first content or the second
 	 */
-	bool draw1;
+	bool draw1, xReg;
 	/**
 	 * Whether this is the "Add" tab
 	 */
@@ -588,5 +594,13 @@ protected:
 	 * Keeps track of the Tab Click data
 	 */
 	TabClickMode clickMode;
+
+
+	/**
+	 * Brushes for painting the exit button
+	 */
+	TrecSubPointer<TBrush, TBitmapBrush> exitReg, exitHover;
+
+	int textBuffer;
 };
 
