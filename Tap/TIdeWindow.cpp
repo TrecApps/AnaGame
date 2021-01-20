@@ -585,7 +585,7 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 /**
  * Method: TIdeWindow::SetCurrentHolder
  * Purpose: Marks a Page Holder as being dragged by the User
- * Parameters: TrecPointer<IDEPageHolder> holder - the Page holder believed to be dragged
+ * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
  * Returns: void
  */
 void TIdeWindow::SetCurrentHolder(TrecPointer<Tab> holder, TrecPointer<Page> page)

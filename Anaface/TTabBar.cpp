@@ -1,10 +1,12 @@
 #include "TTabBar.h"
+#include <DirectoryInterface.h>
 
 TTabBar::TTabBar(TrecPointer<DrawingBoard> db, TrecPointer<TArray<styleTable>> styles): TControl(db, styles)
 {
 	startTab = 0;
 	selectionSize = 30;
 	haveAdd = false;
+	textBuffer = 10;
 }
 
 TTabBar::~TTabBar()
@@ -14,8 +16,27 @@ TTabBar::~TTabBar()
 bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 {
 	bool ret = TControl::onCreate(loc, d3d);
+	
 
-	auto valpoint = attributes.retrieveEntry(TString(L"|HaveAddTab"));
+	auto valpoint = attributes.retrieveEntry(TString(L"|EnableExit"));
+
+	if (valpoint.Get() && !valpoint->CompareNoCase(L"true") && drawingBoard.Get())
+	{
+		TString direct = GetDirectoryWithSlash(CentralDirectories::cd_Executable);
+
+		exitReg = drawingBoard->GetBrush(TFileShell::GetFileInfo(direct + L"Resources\\DefaultImages\\RegularX.png"), loc);
+		exitHover = drawingBoard->GetBrush(TFileShell::GetFileInfo(direct + L"Resources\\DefaultImages\\HoverX.png"), loc);
+	}
+
+	valpoint = attributes.retrieveEntry(L"|TextBuffer");
+	if (valpoint.Get())
+	{
+		valpoint->ConvertToInt(textBuffer);
+		if (textBuffer < 0)
+			textBuffer = 0;
+		if (textBuffer > 60)
+			textBuffer = 60;
+	}
 
 
 
@@ -40,6 +61,8 @@ bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 	text1->stopCollection.AddGradient(TGradientStop(TColor(), 0.0f));
 	text1->onCreate(location);
 	
+
+	valpoint = attributes.retrieveEntry(TString(L"|HaveAddTab"));
 
 	if (valpoint.Get())
 	{
@@ -116,6 +139,7 @@ void TTabBar::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 			continue;
 		
 		tabs[Rust]->draw1 = !isContained(point, tabs[Rust]->location);
+		tabs[Rust]->xReg = !isContained(point, tabs[Rust]->xLocation);
 	}
 }
 /**
@@ -136,7 +160,8 @@ void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 	{
 		*mOut = messageOutput::positiveContinue;
 		onClick = true;
-		for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+		UINT Rust = 0;
+		for (; Rust < tabs.Size(); Rust++)
 		{
 			auto tab = tabs[Rust];
 			if (!tab.Get())
@@ -154,6 +179,12 @@ void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 
 		if (currentlyClickedTab.Get() && currentlyClickedTab->isAdd)
 			clickMode = TabClickMode::tcm_new_tab;
+		else if (currentlyClickedTab.Get() && clickMode == TabClickMode::tcm_exit)
+		{
+			auto deleteTab = currentlyClickedTab;
+			RemoveTab(currentlyClickedTab);
+			deleteTab.Delete();
+		}
 		else if (clickMode == TabClickMode::tcm_not_clicked)
 		{
 			if (rightTab.AttemptClick(point) != TabClickMode::tcm_not_clicked)
@@ -225,6 +256,9 @@ TrecPointer<Tab> TTabBar::AddTab(const TString& text)
 {
 	TrecPointer<Tab> newTab = TrecPointerKey::GetNewTrecPointer<Tab>();
 
+	newTab->exitReg = exitReg;
+	newTab->exitHover = exitHover;
+
 	newTab->content1 = content1;
 	newTab->content2 = content2;
 
@@ -295,6 +329,9 @@ bool TTabBar::AddTab(TrecPointer<Tab> tab)
 	if (!inserted)
 		tabs.push_back(tab);
 	tab->ResetTabMovementVars(false);
+
+	tab->exitHover = exitHover;
+	tab->exitReg = exitReg;
 
 	SetTabSizes();
 	return true;
@@ -412,12 +449,12 @@ void TTabBar::SetTabSizes()
 		if (!tabs[Rust].Get())
 			continue;
 
-		auto newLoc = tabs[Rust]->SetLocation(D2D1::RectF(leftBounds, location.top, location.right, location.bottom));
+		auto newLoc = tabs[Rust]->SetLocation(D2D1::RectF(leftBounds, location.top, location.right, location.bottom), textBuffer);
 
 
 		if (newLoc.right > limit)
 		{
-			tabs[Rust]->SetLocation(D2D1::RectF());
+			tabs[Rust]->SetLocation(D2D1::RectF(), textBuffer);
 			showSelection = true;
 			break;
 		}
@@ -428,21 +465,21 @@ void TTabBar::SetTabSizes()
 	if (showSelection)
 	{
 		UINT half = (limit + location.right) / 2;
-		leftTab.SetLocation(D2D1::RectF(limit, location.top, half, location.bottom));
-		rightTab.SetLocation(D2D1::RectF(half, location.top, location.right, location.bottom));
+		leftTab.SetLocation(D2D1::RectF(limit, location.top, half, location.bottom), textBuffer);
+		rightTab.SetLocation(D2D1::RectF(half, location.top, location.right, location.bottom), textBuffer);
 	}
 	else
 	{
-		leftTab.SetLocation(D2D1::RectF());
-		rightTab.SetLocation(D2D1::RectF());
+		leftTab.SetLocation(D2D1::RectF(), textBuffer);
+		rightTab.SetLocation(D2D1::RectF(), textBuffer);
 	}
 }
 
 Tab::Tab()
 {
-	draw1 = true;
+	draw1 = xReg =  true;
 	isAdd = movedOutside = false;
-	location = { 0.0f,0.0f,0.0f,0.0f };
+	location = xLocation = { 0.0f,0.0f,0.0f,0.0f };
 }
 
 void Tab::SetBrush(TrecPointer<TBrush> brush)
@@ -459,11 +496,12 @@ void Tab::SetText(const TString& text)
 	}
 }
 
-D2D1_RECT_F Tab::SetLocation(const D2D1_RECT_F& newLoc)
+D2D1_RECT_F Tab::SetLocation(const D2D1_RECT_F& newLoc, UINT buffer)
 {
 	location = newLoc;
 	if (text.Get())
 	{
+		location.left += buffer;
 		text->SetLocation(newLoc);
 		bool w;
 		float width = text->GetMinWidth(w);
@@ -472,13 +510,27 @@ D2D1_RECT_F Tab::SetLocation(const D2D1_RECT_F& newLoc)
 		text->SetLocation(location);
 
 	}
+	UINT height = 0;
+	if (exitHover.Get() || exitReg.Get())
+	{
+		height = location.bottom - location.top;
+		location.right += height;
+
+		xLocation.right = location.right - (height / 4);
+		xLocation.left = xLocation.right - (height / 2);
+		xLocation.bottom = location.bottom - (height / 4);
+		xLocation.top = location.top + (height / 4);
+	}
 
 	if (content1.Get())
 		content1->onCreate(location);
 	if (content2.Get())
 		content2->onCreate(location);
+	location.right -= height;
 	if (text.Get())
 		text->onCreate(location);
+
+	location.right += height;
 
 	return location;
 }
@@ -494,8 +546,20 @@ void Tab::Draw()
 	else if (content1.Get())
 		content1->onDraw(location);
 
+	if (exitHover.Get() || exitReg.Get())
+	{
+		auto exitBursh = xReg ? (exitReg.Get() ? exitReg : exitHover) :
+			(exitHover.Get() ? exitHover : exitReg);
+
+		exitBursh->FillRectangle(xLocation);
+
+		location.right -= (location.bottom - location.top);
+	}
 	if (text.Get())
 		text->onDraw(location);
+
+	if(exitHover.Get() || exitReg.Get())
+		location.right += (location.bottom - location.top);
 }
 
 void Tab::MovePoint(float x, float y)
@@ -537,6 +601,8 @@ void Tab::SetContent(TrecPointer<TabContent> cont)
 
 TabClickMode Tab::AttemptClick(const TPoint& point)
 {
+	if (isContained(point, xLocation))
+		return TabClickMode::tcm_exit;
 	return isContained(point, location) ? TabClickMode::tcm_regular_click : TabClickMode::tcm_not_clicked;
 }
 
