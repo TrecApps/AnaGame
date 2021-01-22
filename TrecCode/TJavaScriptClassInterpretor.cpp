@@ -287,7 +287,7 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
         if (!InspectVariable(param))
         {
             ro.returnCode = ro.invalid_name;
-            ro.errorMessage.Format(L"Improper Paramater name %ws found in constructor or %ws class!", param.GetConstantBuffer(), className.GetConstantBuffer());
+            ro.errorMessage.Format(L"Improper Parameter name %ws found in constructor or %ws class!", param.GetConstantBuffer(), className.GetConstantBuffer());
             return;
         }
 
@@ -313,8 +313,12 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
 
     if (dynamic_cast<TJavaScriptInterpretor*>(superConstructor.Get()))
     {
-        superConstructor = superConstructor->Clone();
-        block->variables.addEntry(L"super", TVariableMarker(false, superConstructor));
+        TClassAttribute super;
+        super.name.Set(L"super");
+        super.def = superConstructor;
+        classData.AddAttribute(super);
+
+        //block->variables.addEntry(L"super", TVariableMarker(false, superConstructor));
         // dynamic_cast<TJavaScriptInterpretor*>(superConstructor.Get())->variables.addEntry(L"this", TVariableMarker(false, ))
     }
 

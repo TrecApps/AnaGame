@@ -48,12 +48,15 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 	if (!environment.Get())
 		return 2;
 
+	if (!windowHandle.Get())
+		return 5;
+
 	if (file->GetFileName().EndsWith(L".html") || file->GetFileName().EndsWith(L".htm"))
 	{
 		if (!htmlBuilder.Get())
 			return 3;
 
-		TString res(htmlBuilder->BuildPage(file));
+		TString res(htmlBuilder->BuildPage(file, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowHandle()));
 
 		if (res.GetSize())
 		{

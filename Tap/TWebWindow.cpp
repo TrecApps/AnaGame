@@ -115,6 +115,17 @@ void TWebWindow::SetEnvironmentGenerator(TrecPointer<EnvironmentGenerator> gen)
     envGenerator = gen;
 }
 
+void TWebWindow::DrawOtherPages()
+{
+    if (webPages.Get())
+    {
+        webPages->onDraw();
+        TrecPointer<Tab> tab = webPages->GetCurrentTab();
+        if (tab.Get() && tab->GetContent().Get())
+            tab->GetContent()->Draw(nullptr);
+    }
+}
+
 TString TWebWindow::FixUrl(const TString& url)
 {
     if(url.StartsWith(L"Anagame://") || url.StartsWith(L"File://") || url.StartsWith(L"http://") || url.StartsWith(L"https://") || url.StartsWith(L"ftp://"))

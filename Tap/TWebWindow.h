@@ -306,7 +306,15 @@ public:
 	 */
 	void SetEnvironmentGenerator(TrecPointer<EnvironmentGenerator> gen);
 
-
+	/**
+	 * Method: TWebWindow::DrawOtherPages
+	 * Purpose: Draws the tab page and the Current Web Page
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: virtual
+	 */
+	virtual void DrawOtherPages();
 protected:
 
 	TrecSubPointer<TControl, TTabBar> webPages;

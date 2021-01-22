@@ -137,7 +137,7 @@ public:
      *              UINT start - the index to start at
      * Returns: UINT - error code (0 for success)
      */
-    UINT ProcessHtml(TStringSliceManager& html, UINT& start);
+    UINT ProcessHtml(TStringSliceManager& html, UINT& start, HWND win);
 
     /**
      * Method: TWebNode::ProcessInnerHtml
@@ -145,7 +145,7 @@ public:
      * Parameters: void
      * Returns: UINT - error code (0 for success)
      */
-    UINT ProcessInnerHtml(TStringSliceManager& html, UINT& start);
+    UINT ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win);
 
     /**
      * Method: TWebNode::SetInnerHtml

@@ -23,7 +23,7 @@ public:
      *              const TString& data - The line that was already read
      * Returns: UINT - error code (0 for success)
      */
-    TString ProcessHtml(TrecPointer<TFile> file, const TString& data);
+    TString ProcessHtml(TrecPointer<TFile> file, const TString& data, HWND win);
 
     TrecPointer<TWebNode> RetrieveWebNode();
 

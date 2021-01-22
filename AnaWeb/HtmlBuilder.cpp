@@ -18,7 +18,7 @@ HtmlBuilder::HtmlBuilder(TrecPointer<TEnvironment> env, TrecPointer<DrawingBoard
     this->board = board;
 }
 
-TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
+TString HtmlBuilder::BuildPage(TrecPointer<TFile> file, HWND win)
 {
     TString ret;
 
@@ -69,7 +69,7 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
     if (topLine.StartsWith(L"<") && topLine.GetLower().Find(L"body") != -1)
     {
         body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment, board);
-        ret.Set(body->ProcessHtml(file, topLine));
+        ret.Set(body->ProcessHtml(file, topLine, win));
         if (ret.GetSize()) return ret;
     }
 
@@ -102,7 +102,7 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
     else if (line.StartsWith(L"<") && line.GetLower().Find(L"body") != -1)
     {
         body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment, board);
-        ret.Set(body->ProcessHtml(file, line));
+        ret.Set(body->ProcessHtml(file, line, win));
         if (ret.GetSize()) return ret;
     }
     else
@@ -134,7 +134,7 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
     else if (line.StartsWith(L"<") && line.GetLower().Find(L"body") != -1)
     {
         body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment, board);
-        ret.Set(body->ProcessHtml(file, line));
+        ret.Set(body->ProcessHtml(file, line,win));
         if (ret.GetSize()) return ret;
     }
     else goto processBlock2;

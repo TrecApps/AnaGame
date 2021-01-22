@@ -301,7 +301,7 @@ void EventHandler::OnFocus()
 	{
 		auto realApp = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app);
 
-		auto message = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name, handler_type::handler_type_main, 0, message_transmission::message_transmission_name_type, 0, onFocusString);
+		auto message = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name, handler_type::handler_type_main, 0, message_transmission::message_transmission_by_type, 0, onFocusString);
 
 		realApp->DispatchAnagameMessage(message);
 	}

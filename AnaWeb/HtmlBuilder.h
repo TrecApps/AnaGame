@@ -8,7 +8,7 @@ class ANA_WEB_DLL HtmlBuilder : public TObject
 public:
 	HtmlBuilder(TrecPointer<TEnvironment> env, TrecPointer<DrawingBoard> board);
 
-	TString BuildPage(TrecPointer<TFile> file);
+	TString BuildPage(TrecPointer<TFile> file, HWND win);
 
 	TrecPointer<HtmlHeader> RetrieveHeader();
 

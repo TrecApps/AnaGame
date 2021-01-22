@@ -1718,7 +1718,6 @@ void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& state
 
     assert(pieces->Size());
 
-    
 
     classInt->SetClassName(pieces->at(0));
 
@@ -1748,7 +1747,7 @@ void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& state
         return;
     TClassStruct classInfo = classInt->GetClassData();
 
-    if (!SubmitClassType(statement.contents, classInfo, false))
+    if (!SubmitClassType(pieces->at(0), classInfo, false))
     {
         ro.returnCode = ro.invalid_name;
         ro.errorMessage.Format(L"Class %ws already defined in this scope!", statement.contents.GetConstantBuffer());
@@ -2224,7 +2223,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
             {
                 // Search for a function with the name
                 bool present;
-                TrecSubPointer<TVariable, TInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>( GetVariable(name, present));
+                TrecSubPointer<TVariable, TInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(GetVariable(name, present));
 
                 if (!func.Get())
                 {
@@ -2800,6 +2799,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     if (procedureCall)
     {
         ro.errorObject = curVar;
+        ro.errorMessage.Set(varName);
         TString tempExp(exp);
         UINT addChars = ProcessProcedureCall(statements, cur, exp, line, ro, objVar);
 
@@ -2845,9 +2845,48 @@ UINT TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
 {
     if (!ro.errorObject.Get())
     {
-        ro.returnCode = ro.broken_reference;
-        ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got nul/undefined!");
-        return 0;
+        // Check for call to Super
+        if (!ro.errorMessage.Compare(L"super"))
+        {
+            bool pesent = false;
+            TString strThis(L"this");
+            auto tThis = GetVariable(strThis, pesent);
+            if (!pesent && !tThis.Get())
+            {
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got null/undefined!");
+                return 0;
+            }
+
+            if (tThis->GetVarType() != var_type::collection)
+            {
+                ro.returnCode = ro.improper_type;
+                ro.errorMessage.Set(L"Variable 'this' did not amount to a class Object!");
+                return 0;
+            }
+            objVar = tThis;
+
+            ro.errorObject = dynamic_cast<TContainerVariable*>(tThis.Get())->GetValue(ro.errorMessage, pesent, L"__proto__");
+            if (!ro.errorObject.Get())
+            {
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Set(L"Expected Valid Procedure Object to call at method name 'super', got null/undefined!");
+                return 0;
+            }
+            if (ro.errorObject->GetVarType() != var_type::interpretor)
+            {
+                ro.returnCode = ro.improper_type;
+                ro.errorMessage.Set(L"Variable 'super' did not amount to a method call Object!");
+                return 0;
+            }
+
+        }
+        else
+        {
+            ro.returnCode = ro.broken_reference;
+            ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got nul/undefined!");
+            return 0;
+        }
     }
 
     if (ro.errorObject->GetVarType() != var_type::interpretor)

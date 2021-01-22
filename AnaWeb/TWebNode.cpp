@@ -87,7 +87,7 @@ TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
  *              UINT start - the index to start at
  * Returns: UINT - error code (0 for success)
  */
-UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start)
+UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win)
 {
 	while (start < html->GetSize() && (!tagName.GetSize() || !IsWhitespace(html->GetAt(start))))
 	{
@@ -160,7 +160,7 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start)
 		start++;
 	}
 
-	return ProcessInnerHtml(html, start);
+	return ProcessInnerHtml(html, start, win);
 }
 
 /**
@@ -169,7 +169,7 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start)
  * Parameters: void
  * Returns: UINT - error code (0 for success)
  */
-UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start)
+UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win)
 {
 	UINT currentStart = start;
 	TString printableText;
@@ -181,7 +181,7 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start)
 		{
 			if (printableText.GetSize())
 			{
-				TrecSubPointer<TControl, TTextField> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>());
+				TrecSubPointer<TControl, TTextField> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), win);
 				textEle->SetText(printableText);
 				printableText.Empty();
 
@@ -208,7 +208,7 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start)
 			TrecPointer<TWebNode> newNode = TrecPointerKey::GetNewSelfTrecPointer<TWebNode>(board);
 			childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNodeContainer>(newNode));
 
-			UINT result = newNode->ProcessHtml(html, start);
+			UINT result = newNode->ProcessHtml(html, start, win);
 
 			if (result) return result;
 
