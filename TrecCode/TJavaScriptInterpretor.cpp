@@ -2749,7 +2749,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
         {
             curVar = dynamic_cast<TContainerVariable*>(curVar.Get())->GetValue(varName, present, L"__proto__");
         }
-        else
+        else if(fullVarName.Find(L"prototype") == -1)
         {
             ro.returnCode = ro.improper_type;
             ro.errorMessage.Format(L"Variable not a collection variable. Could not get Member name %ws", varName.GetConstantBuffer());
