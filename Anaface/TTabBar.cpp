@@ -161,6 +161,7 @@ void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 		*mOut = messageOutput::positiveContinue;
 		onClick = true;
 		UINT Rust = 0;
+		clickMode = TabClickMode::tcm_not_clicked;
 		for (; Rust < tabs.Size(); Rust++)
 		{
 			auto tab = tabs[Rust];
@@ -173,18 +174,12 @@ void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 				continue;
 
 			clickMode = cMode;
-			currentlyClickedTab = tab;
+			clickDownTab = tab;
 			break;
 		}
 
-		if (currentlyClickedTab.Get() && currentlyClickedTab->isAdd)
+		if (clickDownTab.Get() && clickDownTab->isAdd)
 			clickMode = TabClickMode::tcm_new_tab;
-		else if (currentlyClickedTab.Get() && clickMode == TabClickMode::tcm_exit)
-		{
-			auto deleteTab = currentlyClickedTab;
-			RemoveTab(currentlyClickedTab);
-			deleteTab.Delete();
-		}
 		else if (clickMode == TabClickMode::tcm_not_clicked)
 		{
 			if (rightTab.AttemptClick(point) != TabClickMode::tcm_not_clicked)
@@ -210,13 +205,13 @@ void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 {
 	if (onClick && isContained(point, location))
 	{
-		if (isContained(point, leftTab.location) && startTab > 0)
+		if (isContained(point, leftTab.location) && startTab > 0 && clickMode == TabClickMode::tcm_left_tab)
 		{
 			startTab--;
 			SetTabSizes();
 			*mOut = messageOutput::positiveOverrideUpdate;
 		}
-		else if (isContained(point, rightTab.location))
+		else if (isContained(point, rightTab.location) && clickMode == TabClickMode::tcm_right_tab)
 		{
 			startTab++;
 			SetTabSizes();
@@ -230,19 +225,28 @@ void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 					continue;
 				if (isContained(point, tabs[Rust]->location))
 				{
-					if (tabs[Rust]->isAdd)
+					if (!tabs[Rust]->isAdd)
 					{
-
+						if (tabs[Rust].Get() == clickDownTab.Get())
+						{
+							TabClickMode tcm = tabs[Rust]->AttemptClick(point);
+							if (tcm != clickMode)
+								clickMode = TabClickMode::tcm_not_clicked;
+							currentlyClickedTab = clickDownTab;
+							
+						}
 					}
-					else
+					if (tabs[Rust].Get() != clickDownTab.Get())
 					{
-						currentlyClickedTab = tabs[Rust];
+						clickMode = TabClickMode::tcm_not_clicked;
 					}
+					break;
 				}
 			}
 		}
 	}
 	onClick = false;
+	clickDownTab.Nullify();
 }
 
 
@@ -420,6 +424,17 @@ TrecPointer<Tab> TTabBar::GetCurrentTab()
 	return this->currentlyClickedTab;
 }
 
+/**
+ * Method: TTabBar::GetCurrentDownTab
+ * Purpose: Retireves the Tab currently clicked on
+ * Parameters: void
+ * Returns: TrecPointer<Tab> - the current tab selected
+ */
+TrecPointer<Tab> TTabBar::GetCurrentDownTab()
+{
+	return this->clickDownTab;
+}
+
 bool TTabBar::SetCurrentTab(TrecPointer<Tab> tab)
 {
 	if (tab.Get())
@@ -434,6 +449,17 @@ bool TTabBar::SetCurrentTab(TrecPointer<Tab> tab)
 		}
 	}
 	return false;
+}
+
+/**
+ * Method: TTabBar::GetClickMode
+ * Purpose: Retrieves the Click Mode of the Tab
+ * Parameters: void
+ * Returns: TabClickMode - the click mode of the tab
+ */
+TabClickMode TTabBar::GetClickMode()
+{
+	return clickMode;
 }
 
 void TTabBar::SetTabSizes()

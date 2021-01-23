@@ -127,6 +127,90 @@ void TWebWindow::DrawOtherPages()
     }
 }
 
+void TWebWindow::OnLButtonDown(UINT nFlags, TPoint point)
+{
+    if (webPages.Get())
+    {
+        messageOutput mOut = messageOutput::negative;
+        TDataArray<EventID_Cred> cred;
+        TDataArray<TControl*> co;
+        webPages->OnLButtonDown(nFlags, point, &mOut, cred,co);
+
+        if (mOut != messageOutput::negative && mOut != messageOutput::negativeUpdate)
+        {
+            return;
+        }
+
+        TrecPointer<Tab> tab = webPages->GetCurrentTab();
+
+        if (tab.Get())
+        {
+            auto tabCont = tab->GetContent();
+            if (tabCont.Get())
+                tabCont->OnLButtonDown(nFlags, point, &mOut, cred, co);
+        }
+    }
+
+    TWindow::OnLButtonDown(nFlags, point);
+}
+
+void TWebWindow::OnMouseMove(UINT nFlags, TPoint point)
+{
+    if (webPages.Get())
+    {
+        messageOutput mOut = messageOutput::negative;
+        TDataArray<EventID_Cred> cred;
+        TDataArray<TControl*> co;
+        webPages->OnMouseMove(nFlags, point, &mOut, cred, co);
+
+        if (mOut != messageOutput::negative && mOut != messageOutput::negativeUpdate)
+        {
+            return;
+        }
+
+        TrecPointer<Tab> tab = webPages->GetCurrentTab();
+
+        if (tab.Get())
+        {
+            auto tabCont = tab->GetContent();
+            if (tabCont.Get())
+                tabCont->OnMouseMove(nFlags, point, &mOut, cred, co);
+        }
+    }
+
+    TWindow::OnMouseMove(nFlags, point);
+}
+
+void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
+{
+    if (webPages.Get())
+    {
+        messageOutput mOut = messageOutput::negative;
+        TDataArray<EventID_Cred> cred;
+        TDataArray<TControl*> co;
+        webPages->OnLButtonUp(nFlags, point, &mOut, cred);
+
+        if (mOut != messageOutput::negative && mOut != messageOutput::negativeUpdate)
+        {
+            TabClickMode tcm = webPages->GetClickMode();
+            if (tcm == TabClickMode::tcm_new_tab)
+                AddNewTab();
+            return;
+        }
+
+        TrecPointer<Tab> tab = webPages->GetCurrentTab();
+
+        if (tab.Get())
+        {
+            auto tabCont = tab->GetContent();
+            if (tabCont.Get())
+                tabCont->OnLButtonUp(nFlags, point, &mOut, cred);
+        }
+    }
+
+    TWindow::OnLButtonDown(nFlags, point);
+}
+
 TString TWebWindow::FixUrl(const TString& url)
 {
     if(url.StartsWith(L"Anagame://") || url.StartsWith(L"File://") || url.StartsWith(L"http://") || url.StartsWith(L"https://") || url.StartsWith(L"ftp://"))

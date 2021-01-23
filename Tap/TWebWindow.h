@@ -318,6 +318,41 @@ public:
 	 * Attributes: virtual
 	 */
 	virtual void DrawOtherPages();
+
+	/**
+	 * Method: TWebWindow::OnLButtonDown
+	 * Purpose: Manages the Left Button Down Message
+	 * Parameters: UINT nFlags - the flags associated with the message
+	 *				TPoint point - the point that was clicked
+	 * Returns: void
+	 *
+	 * Attributes: message; override
+	 */
+	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point);
+
+
+	/**
+	 * Method: TWindow::OnMouseMove
+	 * Purpose: Manages the Mouse Move Message
+	 * Parameters: UINT nFlags - the flags associated with the message
+	 *				TPoint point - the point that was clicked
+	 * Returns: void
+	 *
+	 * Attributes: message
+	 */
+	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point);
+
+	/**
+	 * Method: TWindow::OnLButtonUp
+	 * Purpose: Manages the Left Button Up Message
+	 * Parameters: UINT nFlags - the flags associated with the message
+	 *				TPoint point - the point that was clicked
+	 * Returns: void
+	 *
+	 * Attributes: message; virtual
+	 */
+	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point);
+
 protected:
 
 	TrecSubPointer<TControl, TTabBar> webPages;

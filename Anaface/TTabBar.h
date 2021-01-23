@@ -530,9 +530,17 @@ public:
 	 * Method: TTabBar::GetCurrentTab
 	 * Purpose: Retrieves the Tab currently considered "Selected"
 	 * Parameters: void
-	 * Returns: TrecPointer<Tab> - te current tab selected
+	 * Returns: TrecPointer<Tab> - the current tab selected
 	 */
 	TrecPointer<Tab> GetCurrentTab();
+
+	/**
+	 * Method: TTabBar::GetCurrentDownTab
+	 * Purpose: Retireves the Tab currently clicked on
+	 * Parameters: void
+	 * Returns: TrecPointer<Tab> - the current tab selected
+	 */
+	TrecPointer<Tab> GetCurrentDownTab();
 
 	/**
 	 * Method: TTabBar::SetCurrentTab
@@ -543,6 +551,14 @@ public:
 	 * Note: This method returns false if the tab was not Already in the Tab Bar, and fails
 	 */
 	bool SetCurrentTab(TrecPointer<Tab> tab);
+
+	/**
+	 * Method: TTabBar::GetClickMode
+	 * Purpose: Retrieves the Click Mode of the Tab
+	 * Parameters: void
+	 * Returns: TabClickMode - the click mode of the tab
+	 */
+	TabClickMode GetClickMode();
 
 protected:
 
@@ -583,7 +599,7 @@ protected:
 	/**
 	 * The Tab currently being Clicked
 	 */
-	TrecPointer<Tab> currentlyClickedTab, removedTab;
+	TrecPointer<Tab> currentlyClickedTab, removedTab, clickDownTab;
 
 	/**
 	 * The point of the removed tab
