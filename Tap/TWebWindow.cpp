@@ -12,6 +12,7 @@ TWebWindow::TWebWindow(TString& name, TString& winClass, UINT style, HWND parent
 {
     this->mainViewSpace = mainViewSpace;
     this->pageBarSpace = pageBarSpace;
+    mainPageSpace = tabs = webPage = { 0.0f,0.0f,0.0f,0.0f };
 }
 
 TWebWindow::~TWebWindow()
