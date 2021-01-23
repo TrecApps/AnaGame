@@ -48,7 +48,7 @@ int TWebWindow::PrepareWindow()
     webPages->addAttribute(L"|HaveAddTab", TrecPointerKey::GetNewTrecPointer<TString>(L"true"));
     webPages->onCreate(tabs, d3dEngine);
 
-    AddNewTab();
+    // AddNewTab();
 
     return 0;
 }
@@ -76,6 +76,7 @@ void TWebWindow::AddNewTab(const TString& url, bool createTab)
         TrecSubPointer<TabContent, TabWebPageContent> pageContent = TrecPointerKey::GetNewTrecSubPointer<TabContent, TabWebPageContent>();
         pageContent->SetWebPage(newWebPage);
         tab->SetContent(TrecPointerKey::GetTrecPointerFromSub<TabContent, TabWebPageContent>(pageContent));
+        webPages->SetCurrentTab(tab);
     }
 }
 
@@ -151,6 +152,8 @@ void TWebWindow::OnLButtonDown(UINT nFlags, TPoint point)
         }
     }
 
+
+
     TWindow::OnLButtonDown(nFlags, point);
 }
 
@@ -195,6 +198,7 @@ void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
             TabClickMode tcm = webPages->GetClickMode();
             if (tcm == TabClickMode::tcm_new_tab)
                 AddNewTab();
+            Draw();
             return;
         }
 
@@ -209,6 +213,7 @@ void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
     }
 
     TWindow::OnLButtonDown(nFlags, point);
+    Draw();
 }
 
 TString TWebWindow::FixUrl(const TString& url)
@@ -257,7 +262,7 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
         TrecPointer<TFile> file = TrecPointerKey::GetNewTrecPointer<TFile>(index->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
 
         ret->SetEnvironment(envGenerator->GetEnvironment(TFileShell::GetFileInfo(file->GetFileDirectory())));
-
+        ret->SetArea(this->webPage);
         ret->SetAnaface(file, TrecPointer < EventHandler>());
 
     }

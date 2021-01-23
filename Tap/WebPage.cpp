@@ -92,6 +92,12 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 
 void WebPage::Draw(TWindowEngine* twe)
 {
+	if (rootNode.Get())
+	{
+
+	}
+	else
+		Page::Draw(twe);
 }
 
 TrecPointer<TWebNode> WebPage::GetElementById(const TString& id)

@@ -240,6 +240,7 @@ void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 					{
 						clickMode = TabClickMode::tcm_not_clicked;
 					}
+					*mOut = messageOutput::positiveOverrideUpdate;
 					break;
 				}
 			}

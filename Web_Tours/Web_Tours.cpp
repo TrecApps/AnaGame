@@ -66,7 +66,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         // Web Based Initialization here
         webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>());
-
+        webWindow->AddNewTab();
     }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WEBTOURS));
