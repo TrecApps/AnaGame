@@ -281,10 +281,13 @@ public:
 	/**
 	 * Method: TWebWindow::AddNewTab
 	 * Purpose: Adds a New Tab to the Window
-	 * Parameters: void
+	 * Parameters: const TString& url - the URL of the resources to present
+	 *			bool createTab - whether to create a new tab to hold the results (true is default)
 	 * Returns: void
+	 * 
+	 * Note: A New Tab will be created if 'createTab' is true or if there is no current Tab to do it with
 	 */
-	void AddNewTab(const TString& url);
+	void AddNewTab(const TString& url, bool createTab = true);
 
 
 	/**

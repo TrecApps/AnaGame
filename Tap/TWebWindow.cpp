@@ -48,7 +48,7 @@ int TWebWindow::PrepareWindow()
     webPages->addAttribute(L"|HaveAddTab", TrecPointerKey::GetNewTrecPointer<TString>(L"true"));
     webPages->onCreate(tabs, d3dEngine);
 
-
+    AddNewTab();
 
     return 0;
 }
@@ -58,7 +58,7 @@ void TWebWindow::AddNewTab()
     AddNewTab(L"Anagame://NewTab");
 }
 
-void TWebWindow::AddNewTab(const TString& url)
+void TWebWindow::AddNewTab(const TString& url, bool createTab)
 {
     TString fixedUrl(FixUrl(url));
 
@@ -72,7 +72,7 @@ void TWebWindow::AddNewTab(const TString& url)
         TString title(newWebPage->GetTitle());
         if (!title.GetSize())
             title.Set(L"Untitled Tab");
-        TrecPointer<Tab> tab = webPages->AddTab(title);
+        TrecPointer<Tab> tab = (createTab || !webPages->GetCurrentTab().Get()) ?  webPages->AddTab(title) : webPages->GetCurrentTab();
         TrecSubPointer<TabContent, TabWebPageContent> pageContent = TrecPointerKey::GetNewTrecSubPointer<TabContent, TabWebPageContent>();
         pageContent->SetWebPage(newWebPage);
         tab->SetContent(TrecPointerKey::GetTrecPointerFromSub<TabContent, TabWebPageContent>(pageContent));
