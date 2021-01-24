@@ -41,6 +41,10 @@ public:
 	DWRITE_TEXT_RANGE range;   // the Range through which it should be done
 };
 
+/**
+ * Class: LineMetrics
+ * Purpose: Structure holding line Metrics of a text
+ */
 class _ANAFACE_DLL LineMetrics
 {
 public:
