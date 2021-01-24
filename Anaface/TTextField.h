@@ -41,6 +41,18 @@ public:
 	DWRITE_TEXT_RANGE range;   // the Range through which it should be done
 };
 
+class _ANAFACE_DLL LineMetrics
+{
+public:
+	LineMetrics();
+	LineMetrics(const LineMetrics& orig);
+	LineMetrics(USHORT i);
+
+	void SetSize(UINT i, bool fromConstructor = false);
+
+	TDataArray<DWRITE_LINE_METRICS> metrics;
+	UINT sizeNeeded;
+};
 
 /*
 * Function: operator>
@@ -648,6 +660,9 @@ public:
 	 * Returns: void
 	 */
 	static void RemoveFocus();
+
+	TrecPointer<LineMetrics> GetLineMetrics();
+
 protected:
 
 

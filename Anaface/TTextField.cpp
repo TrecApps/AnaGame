@@ -1317,6 +1317,22 @@ void TTextField::RemoveFocus()
 	}
 }
 
+TrecPointer<LineMetrics> TTextField::GetLineMetrics()
+{
+	if (text1.Get() && text1->fontLayout.Get())
+	{
+		TrecPointer<LineMetrics> ret = TrecPointerKey::GetNewTrecPointer<LineMetrics>(5);
+		HRESULT res = text1->fontLayout->GetLineMetrics(ret->metrics.data(), ret->metrics.Size(), &ret->sizeNeeded);
+		if (res == E_NOT_SUFFICIENT_BUFFER)
+		{
+			ret->SetSize(ret->sizeNeeded);
+			text1->fontLayout->GetLineMetrics(ret->metrics.data(), ret->metrics.Size(), &ret->sizeNeeded);
+			return ret;
+		}
+	}
+	return TrecPointer<LineMetrics>();
+}
+
 /*
 * Method: TTextField::updateTextString
 * Purpose: Refreshes the Text string formating
@@ -2125,4 +2141,34 @@ void TextHighlighter::ResetUp(UINT cLocation)
 bool TextHighlighter::IsActive()
 {
 	return isActive;
+}
+
+LineMetrics::LineMetrics()
+{
+	sizeNeeded = 0;
+}
+
+LineMetrics::LineMetrics(const LineMetrics& orig)
+{
+	UINT size = sizeNeeded ? sizeNeeded : orig.metrics.Size();
+	for (UINT Rust = 0; Rust < size; Rust++)
+	{
+		auto met = orig.metrics.data()[Rust];
+		metrics.push_back(met);
+	}
+}
+
+LineMetrics::LineMetrics(USHORT i)
+{
+	SetSize(true);
+}
+
+void LineMetrics::SetSize(UINT i, bool fromConstructor = false)
+{
+	DWRITE_LINE_METRICS met;
+	sizeNeeded = fromConstructor ? 0 : i;
+	ZeroMemory(&met, sizeof(met));
+	metrics.RemoveAll();
+	for (UINT Rust = 0; Rust < i; Rust++)
+		metrics.push_back(met);
 }
