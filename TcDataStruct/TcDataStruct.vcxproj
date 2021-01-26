@@ -166,6 +166,7 @@
     <ClInclude Include="TObjectVariable.h" />
     <ClInclude Include="TPrimitiveType.h" />
     <ClInclude Include="TPrimitiveVariable.h" />
+    <ClInclude Include="TSpecialVariable.h" />
     <ClInclude Include="TStringVariable.h" />
     <ClInclude Include="TVariableType.h" />
   </ItemGroup>
@@ -185,6 +186,7 @@
     <ClCompile Include="TObjectVariable.cpp" />
     <ClCompile Include="TPrimitiveType.cpp" />
     <ClCompile Include="TPrimitiveVariable.cpp" />
+    <ClCompile Include="TSpecialVariable.cpp" />
     <ClCompile Include="TStringVariable.cpp" />
     <ClCompile Include="TVariableType.cpp" />
   </ItemGroup>

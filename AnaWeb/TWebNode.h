@@ -236,6 +236,14 @@ public:
     UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window);
 
     /**
+     * Method: TWebNode::GetLocation
+     * Purpose: Retrieves the current Location of the WebNode
+     * Parameters: void
+     * Returns: D2D1_RECT_F - the location of the node
+     */
+    D2D1_RECT_F GetLocation();
+
+    /**
      * Method: TWebNode::OnLButtonDown
      * Purpose: Allows the Node to react to the Button down event
      * Parameters: TDataArray<TString>& script - the script to append to if the node has a relevent event attribute and deems it necessary to append it
@@ -331,6 +339,11 @@ protected:
      * Represents the actual control, if need be
      */
     TrecPointer<TControl> control;
+
+    /**
+     * Location of the Web Node
+     */
+    D2D1_RECT_F location;
 
     /**
      * Basic string attributes

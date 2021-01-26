@@ -76,6 +76,7 @@ TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 	internalDisplay = WebNodeDisplayInternal::wndi_not_set;
 	doDisplay = true;
 	isListItem = false;
+	location = D2D1::RectF();
 }
 
 
@@ -474,8 +475,60 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 		}
 	}
 
+	// Go through each bit of the child elements, determining where they lay
+	this->location = location;
+	
+	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	{
+		TrecPointer<TWebNode::TWebNodeContainer> ch = childNodes[Rust];
+		if (!ch.Get() || ch->type == TWebNode::NodeContainerType::ntc_null)
+		{
+			// Take care of null elements
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+
+		if (ch->type == TWebNode::NodeContainerType::nct_web)
+		{
+			if (!ch->webNode.Get())
+			{
+				// Take care of null elements
+				childNodes.RemoveAt(Rust--);
+				continue;
+			}
+
+			UINT ret = ch->webNode->CreateWebNode(location, d3dEngine, styles, window);
+			if (ret)
+				return ret;
+
+			D2D1_RECT_F loc = ch->webNode->GetLocation();
+
+			if()
+
+			continue;
+		}
+
+		if (ch->type == TWebNode::NodeContainerType::nct_text)
+		{
+			TrecSubPointer<TControl, TTextField> t = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(ch->control);
+			if(!t.Get())
+			{
+				// Take care of null elements
+				childNodes.RemoveAt(Rust--);
+				continue;
+			}
+
+			
+		}
+	}
+
 
 	return 0;
+}
+
+D2D1_RECT_F TWebNode::GetLocation()
+{
+	return location;
 }
 
 /**
