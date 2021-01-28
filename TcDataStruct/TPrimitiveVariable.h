@@ -358,6 +358,10 @@ private:
 
     TPrimitiveVariable();
 
+protected:
+
+    TString GetString(TString format);
+    
 
 public:
     /**

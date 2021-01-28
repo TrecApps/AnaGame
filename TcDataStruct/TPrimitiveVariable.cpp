@@ -137,6 +137,47 @@ TPrimitiveVariable::TPrimitiveVariable()
     Set(0ull);
 }
 
+TString TPrimitiveVariable::GetString(TString format)
+{
+    TString ret;
+    if (type & TPrimitiveVariable::type_bool)
+    {
+        if (value)
+            ret.Set("true");
+        else
+            ret.Set("false");
+    }
+    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_one)
+    {
+        char v = static_cast<char>(value);
+        ret.Format(format + L"c", v);
+    }
+    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_two)
+    {
+        WCHAR v[2] = { static_cast<WCHAR>(value), L'\0' };
+        ret.Format(format + L"ls", v);
+    }
+    else if (type & TPrimitiveVariable::type_float)
+    {
+        double d;
+
+        memcpy_s(&d, sizeof(d), &value, sizeof(value));
+
+        ret.Format(format + L"f", d);
+    }
+    else if (type & TPrimitiveVariable::type_unsigned)
+    {
+        ret.Format(format + L"llu", value);
+    }
+    else
+    {
+        LONG64 l = static_cast<LONG64>(value);
+
+        ret.Format(format + L"lld", l);
+    }
+    return ret;
+}
+
 
 /**
  * Method: TPrimitiveVariable::TPrimitiveVariable
@@ -530,43 +571,7 @@ var_type TPrimitiveVariable::GetVarType()
  */
 TString TPrimitiveVariable::GetString()
 {
-    TString ret;
-    if (type & TPrimitiveVariable::type_bool)
-    {
-        if (value)
-            ret.Set("true");
-        else
-            ret.Set("false");
-    }
-    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_one)
-    {
-        char v = static_cast<char>(value);
-        ret.Format(L"%c", v);
-    }
-    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_two)
-    {
-        WCHAR v[2] = { static_cast<WCHAR>(value), L'\0' };
-        ret.Format(L"%ls", v);
-    }
-    else if (type & TPrimitiveVariable::type_float)
-    {
-        double d;
-
-        memcpy_s(&d, sizeof(d), &value, sizeof(value));
-
-        ret.Format(L"%f", d);
-    }
-    else if (type & TPrimitiveVariable::type_unsigned)
-    {
-        ret.Format(L"%llu", value);
-    }
-    else
-    {
-        LONG64 l = static_cast<LONG64>(value);
-
-        ret.Format(L"%lld", l);
-    }
-    return ret;
+    return GetString(TString(L"%"));
 }
 
 /**

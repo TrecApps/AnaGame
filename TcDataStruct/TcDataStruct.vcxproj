@@ -164,6 +164,7 @@
     <ClInclude Include="TInterpretor.h" />
     <ClInclude Include="TNativeInterpretor.h" />
     <ClInclude Include="TObjectVariable.h" />
+    <ClInclude Include="TPrimitiveFormatVariable.h" />
     <ClInclude Include="TPrimitiveType.h" />
     <ClInclude Include="TPrimitiveVariable.h" />
     <ClInclude Include="TSpecialVariable.h" />
@@ -184,6 +185,7 @@
     <ClCompile Include="TInterpretor.cpp" />
     <ClCompile Include="TNativeInterpretor.cpp" />
     <ClCompile Include="TObjectVariable.cpp" />
+    <ClCompile Include="TPrimitiveFormatVariable.cpp" />
     <ClCompile Include="TPrimitiveType.cpp" />
     <ClCompile Include="TPrimitiveVariable.cpp" />
     <ClCompile Include="TSpecialVariable.cpp" />
