@@ -6,6 +6,7 @@
 #include <DirectoryInterface.h>
 #include <TInstance.h>
 #include "MainLayoutHandler.h"
+#include <TThread.h>
 
 #define MAX_LOADSTRING 100
 
@@ -37,6 +38,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     TString title(L"Anagame Builder");
     TString winClass(L"BuilderWindow");
+
+    TThread::SetMainThread();
 
     mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
 

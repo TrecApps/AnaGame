@@ -39,6 +39,7 @@ TThread::TThread()
 	details.handle = 0;
 	details.threadId = 0;
 	details.sleep = false;
+	details.type = ThreadType::tt_regular;
 }
 
 TThread::TThread(LPTHREAD_START_ROUTINE routine, LPVOID params)
@@ -72,6 +73,21 @@ bool TThread::Run()
 
 
 
+
+void TThread::SetMainThread()
+{
+	if (threadList.Size())
+	{
+		throw L"Attempt to set second Main thread detected!";
+	}
+
+	TThread thread;
+	thread.details.handle = GetCurrentThread();
+	thread.details.threadId = GetCurrentThreadId();
+	thread.details.type = ThreadType::tt_main;
+
+	threadList.push_back(thread);
+}
 
 bool TThread::Suspend(DWORD id)
 {
@@ -109,6 +125,9 @@ DWORD TThread::Sleep(DWORD dwMilliseconds)
 
 DWORD TThread::CreateTThread(LPTHREAD_START_ROUTINE routine, LPVOID params)
 {
+	if (!threadList.Size())
+		throw L"No Main Thread Set up!";
+
 	for (UINT Rust = 0; Rust < threadList.Size(); Rust++)
 	{
 		if (!threadList[Rust].details.handle)
