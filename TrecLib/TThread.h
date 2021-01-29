@@ -22,6 +22,7 @@ typedef struct ThreadDetails
 class _TREC_LIB_DLL TThread :
     public TObject
 {
+    friend class TObject;
 public:
     TThread();
     TThread(LPTHREAD_START_ROUTINE routine, LPVOID params);
@@ -46,12 +47,20 @@ public:
     static DWORD Sleep(DWORD dwMilliseconds);
     static DWORD CreateTThread(LPTHREAD_START_ROUTINE routine, LPVOID params);
     static HANDLE GetHandleFromId(DWORD id);
-    static void WakableSleep();
+    static void WakableSleep(TObject* obj);
     static void WakeFromSleep(DWORD id);
+
+    static void Suspend(TObject* obj);
+    static void Resume(TObject* obj);
 
 private:
 
     void Initialize();
 
     ThreadDetails details;
+
+    /**
+     * If Suspended, the TObject responsible for suspending it
+     */
+    TObject* object;
 };

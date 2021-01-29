@@ -1,5 +1,6 @@
 #include "TObject.h"
 #include "TString.h"
+#include "TThread.h"
 
 UCHAR TObjectType[] = { 1, 0b10000000 };
 
@@ -16,6 +17,7 @@ WCHAR str_false[] = L"false";
 TObject::TObject()
 {
 	//sys_Type = new LPCTSTR((LPCTSTR)"SYS_TOBJECT");
+	thread = 0;
 }
 
 /*
@@ -96,6 +98,53 @@ TObject* TObject::ProcessPointer(int* obj)
 TObject* TObject::ProcessPointer(float* obj)
 {
 	return nullptr;
+}
+
+/**
+ * Method: TObject::ThreadLock
+ * Purpose: Allows any Object that can claim TObject as a type to restrict access to the Current Thread being called
+ * Parameters: void
+ * Returns: bool - whether the locking mechanism worked
+ *
+ * Note: In order for this method and ThreadRelease to work properly, you must hold on to the boo that is returned and pass it into ThreadRelease.
+ *		Since methods can call each other, Only the first method called should be the one that actually unlocks the object
+ */
+bool TObject::ThreadLock()
+{
+	DWORD curThread = GetCurrentThreadId();
+	if (thread)
+	{
+		// Object is already locked by a thread. Check to see if it is locked by this thread. if it is
+		// Return false to let the caller know that the ReleaseMethod shoudl do nothing. Otherwise, sleep until unlocked
+		if (thread == curThread)
+			return false;
+		// Go to sleep until this object unlocks it from the owner thread
+		TThread::WakableSleep(this);
+	}
+
+	thread = curThread;
+
+	for (UINT Rust = 0; Rust < 10; Rust++);
+
+	if (thread != curThread)
+		TThread::WakableSleep(this);
+	thread = curThread;
+
+	return true;
+}
+
+/**
+ * Method: TObject::ThreadRelease
+ * Purpose: Allows the TObject to release any thread that may have previously been restricted, assuming that true is passed
+ * Parameters: bool key - whether the unlocking mechanism should actually proceed
+ * Returns: void
+ */
+void TObject::ThreadRelease(bool key)
+{
+	if (!key)
+		return;
+	thread = 0;
+	TThread::Resume(this);
 }
 
 /*

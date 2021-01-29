@@ -2,6 +2,7 @@
 
 #include "TThread.h"
 #include "TDataArray.h"
+#include <cassert>
 
 static SECURITY_ATTRIBUTES att{
 	sizeof(SECURITY_ATTRIBUTES),
@@ -40,6 +41,7 @@ TThread::TThread()
 	details.threadId = 0;
 	details.sleep = false;
 	details.type = ThreadType::tt_regular;
+	object = nullptr;
 }
 
 TThread::TThread(LPTHREAD_START_ROUTINE routine, LPVOID params)
@@ -50,6 +52,8 @@ TThread::TThread(LPTHREAD_START_ROUTINE routine, LPVOID params)
 	details.threadId = 0;
 	details.handle = 0;
 	details.sleep = false;
+
+	object = nullptr;
 }
 
 TThread::TThread(const TThread& orig)
@@ -59,6 +63,7 @@ TThread::TThread(const TThread& orig)
 	details.function = orig.details.function;
 	details.functionParams = orig.details.functionParams;
 	details.sleep = orig.details.sleep;
+	object = orig.object;
 }
 
 bool TThread::Run()
@@ -156,7 +161,7 @@ HANDLE TThread::GetHandleFromId(DWORD id)
 	return nullptr;
 }
 
-void TThread::WakableSleep()
+void TThread::WakableSleep(TObject* obj)
 {
 	DWORD id = GetCurrentThreadId();
 	for (UINT Rust = 0; Rust < threadList.Size(); Rust++)
@@ -165,8 +170,9 @@ void TThread::WakableSleep()
 		{
 			threadList[Rust].details.sleep = true;
 
-			while (threadList[Rust].details.sleep)
-				Sleep(50);
+			while (threadList[Rust].details.sleep && (!obj || threadList[Rust].object == obj))
+				Sleep(20);
+			threadList[Rust].details.sleep = false;
 			return;
 		}
 	}
@@ -180,6 +186,37 @@ void TThread::WakeFromSleep(DWORD id)
 		{
 			threadList[Rust].details.sleep = false;
 			Sleep(60);
+		}
+	}
+}
+
+void TThread::Suspend(TObject* obj)
+{
+	DWORD id = GetCurrentThreadId();
+	for (UINT Rust = 0; Rust < threadList.Size(); Rust++)
+	{
+		if (threadList[Rust].details.threadId == id)
+		{
+			threadList[Rust].object = obj;
+			WakableSleep(obj);
+			return;
+		}
+	}
+	// We should never reach this point
+	assert(false);
+}
+
+void TThread::Resume(TObject* obj)
+{
+	if (!obj)
+		return;
+	for (UINT Rust = 0; Rust < threadList.Size(); Rust++)
+	{
+		if (threadList[Rust].object == obj)
+		{
+			threadList[Rust].object = nullptr;
+			// ResumeThread(threadList[Rust].details.handle);
+			return;
 		}
 	}
 }
