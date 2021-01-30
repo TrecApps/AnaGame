@@ -180,6 +180,28 @@ public:
 		return size - 1;
 	}
 
+	/**
+	 * Method: TDataArray::InsertAt
+	 * Purpose: Adds element at the specified location
+	 * Parameters: T element - the data to insert
+	 *				UINT index - the index of th array to insert at
+	 * Returns: UINT - the new size of the array
+	 */
+	UINT InsertAt(T element, UINT index)
+	{
+		if (index >= size)
+			return push_back(element);
+		UINT ret = push_back(element);
+
+		for (UINT Rust = size - 1; Rust > index; Rust--)
+		{
+			array[Rust] = array[Rust - 1];
+		}
+		array[index] = element;
+
+		return ret;
+	}
+
 	/*
 	* Method: TDataArray::RemoveAt
 	* Purpose: Removes an element at a certain location

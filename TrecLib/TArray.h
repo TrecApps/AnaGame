@@ -132,7 +132,7 @@ public:
 		count--;
 		if (loc > 99)
 		{
-			if (!extension)
+			if (!extension.Get())
 				return false;
 			return extension->DeleteAt(loc - 100);
 		}

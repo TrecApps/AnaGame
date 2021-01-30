@@ -89,6 +89,26 @@ public:
     bool useCapture;
 };
 
+/**
+ * Class: TextData
+ * Purpose: Holds data about the text provided, enabling child nodes to inject text into parent nodes if they are inline
+ */
+class TextData
+{
+public:
+    TextData();
+    TextData(const TextData&);
+
+    TString text;
+    USHORT fontSize;
+    DWRITE_FLOW_DIRECTION flowDirection;
+    DWRITE_FONT_STRETCH fontStretch;
+    DWRITE_FONT_STYLE fontStyle;
+    DWRITE_FONT_WEIGHT fontWeight;
+    DWRITE_LINE_SPACING_METHOD lineSpacing;
+    D2D1_COLOR_F textColor, backgroundColor;
+    bool hasBackgroundColor;
+};
 
 /**
  * Class: TWebNode
@@ -115,9 +135,14 @@ protected:
         TWebNodeContainer(TrecSubPointer<TControl, TTextField> text);
         TWebNodeContainer(TrecPointer<TControl> control);
         TWebNodeContainer(TrecPointer<TWebNode> webNode);
+
+        D2D1_RECT_F GetLocation();
+
         TrecPointer<TControl> control;
         TrecPointer<TWebNode> webNode;
         NodeContainerType type;
+        UINT initTextSize;                  // Text From this Node
+        TDataArray<TextData> textDataList;
     };
 
 
@@ -228,12 +253,12 @@ public:
      * Purpose: Sets up the Web Node for Rendering, same purpose as TControl::onCreate()
      * Parameters: D2D1_RECT_F location - the location within the Window the Node is expected to operate in
      *              TrecPointer<TWindowEngine> d3dEngine - Pointer to the 3D manager, for controls with a 3D component to them
-     *              TrecPointer<TArray<styleTable>> styles - list of CSS styles that the node should adhere to
+     *              TrecPointer<TArray<styleTable>>& styles - list of CSS styles that the node should adhere to
      *              HWND window - handle to the window the node is operating in
      *              TrecPointerSoft<TWebNode> parent - the node that called this method
      * Returns: UINT - Error Code
      */
-    UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window);
+    UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>>& styles, HWND window);
 
     /**
      * Method: TWebNode::GetLocation
@@ -294,8 +319,43 @@ public:
      * Returns: the script to run (empty if no script is found)
      */
     TString OnLoseFocus();
+
+
 protected:
     /// Display Properties
+
+    /**
+     * Method: TWebNode::CompileProperties
+     * Purpose: Takes CSS Attributes this node has and generates them into styling data
+     * Parameters: const TrecPointer<TArray<styleTable>>& styles - list of CSS styles to look at
+     * Returns: void
+     */
+    void CompileProperties(TrecPointer<TArray<styleTable>>& styles);
+
+    /**
+     * Method: TWebNode::IsText
+     * Purpose: Reports whether this Node chiefly holds Text that can be inserted into parent text
+     * Parameters: void
+     * Returns: bool - whether the Node can be treated as text that can be inserted into parent text
+     */
+    bool IsText();
+
+    /**
+     * Method: TWebNode::RetrieveText
+     * Purpose: Retrieves Text Data for the Parent Node, allowing the root Text node to compile text
+     * Parameters: TDataArray<TextData>& textDataList - List of Data to create
+     * Returns: void
+     */
+    void RetrieveText(TDataArray<TextData>& textDataList);
+
+    /**
+     * Method: TWebNode::CompileText
+     * Purpose: Compiles Text Nodes according to the text Data it contains
+     * Parameters: TrecPointer<TWebNode::TWebNodeContainer> textNode - the text node to compile
+     *              D2D1_RECT_F loc - the space the text has been allocated
+     * Returns: void
+     */
+    void CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2D1_RECT_F loc);
     
     /**
      * Whether to display at all
@@ -366,5 +426,9 @@ protected:
     TrecPointerSoft<TWebNode> self, parent;
 
     TDataArray<FormattingDetails> formattingDetails;
+
+    TextData thisTextData;
+
+    HWND win;
 };
 

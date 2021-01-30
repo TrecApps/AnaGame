@@ -172,6 +172,7 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win)
  */
 UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win)
 {
+	this->win = win;
 	UINT currentStart = start;
 	TString printableText;
 	while (start < html->GetSize())
@@ -186,7 +187,7 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 				textEle->SetText(printableText);
 				printableText.Empty();
 
-				childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNodeContainer>(textEle));
+				childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNode::TWebNodeContainer>(textEle));
 			}
 
 
@@ -207,7 +208,7 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 			}
 			// We have a new HTML element to process
 			TrecPointer<TWebNode> newNode = TrecPointerKey::GetNewSelfTrecPointer<TWebNode>(board);
-			childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNodeContainer>(newNode));
+			childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNode::TWebNodeContainer>(newNode));
 
 			UINT result = newNode->ProcessHtml(html, start, win);
 
@@ -225,6 +226,9 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 	innerHtml = html.GetSlice(currentStart, html->GetSize() -1);
 
 	start = html->Find(L'>', start) + 1;
+
+	attributes.retrieveEntry(L"class", this->nodeClass);
+	attributes.retrieveEntry(L"id", this->id);
 
 	return 2;
 }
@@ -456,27 +460,14 @@ void TWebNode::SetDisplay(const TString& display)
  *              TrecPointerSoft<TWebNode> parent - the node that called this method
  * Returns: UINT - Error Code
  */
-UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window)
+UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>>& styles, HWND window)
 {
-	// This is done to ensure that when events are activated, the node has a smaller map to retireve
-	// data from, thus boosting response times
-	for (UINT Rust = 0; Rust < WEB_EVENT_HANDLER_COUNT; Rust++)
-	{
-		TString handlerValue;
-		if (attributes.retrieveEntry(eventHandlers[Rust], handlerValue))
-		{
-			// Add the handler attribute to the handler map
-			EventPropagater prop;
-			prop.event = handlerValue;
-			handlers.addEntry(eventHandlers[Rust], prop);
-
-			// Remove the handler data from attributes to same some memory
-			attributes.removeEntry(eventHandlers[Rust], handlerValue);
-		}
-	}
-
 	// Go through each bit of the child elements, determining where they lay
 	this->location = location;
+	// First Compile this nodes own CSS properties
+	CompileProperties(styles);
+
+	TrecPointer<TWebNode::TWebNodeContainer> currentTextNode, nonTextNode;
 	
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
@@ -496,14 +487,49 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 				childNodes.RemoveAt(Rust--);
 				continue;
 			}
+			if (ch->webNode->IsText() && (insideDisplay == WebNodeDisplayInside::wndi_flow || insideDisplay == WebNodeDisplayInside::wndi_flow_root))
+			{
+				ch->webNode->CompileProperties(styles);
+				if (nonTextNode.Get())
+				{
+					auto tLoc = nonTextNode->GetLocation();
 
-			UINT ret = ch->webNode->CreateWebNode(location, d3dEngine, styles, window);
-			if (ret)
-				return ret;
+					location.top = tLoc.bottom;
+					nonTextNode.Nullify();
+				}
+				if (!currentTextNode.Get())
+				{
+					TrecSubPointer<TControl, TTextField> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), win);
+					currentTextNode = TrecPointerKey::GetNewTrecPointer<TWebNode::TWebNodeContainer>(textEle);
+				}
 
-			D2D1_RECT_F loc = ch->webNode->GetLocation();
+				ch->webNode->RetrieveText(currentTextNode->textDataList);
 
-			if()
+			}
+			else
+			{
+				if (currentTextNode.Get())
+				{
+					CompileText(currentTextNode, location);
+					auto tLoc = currentTextNode->GetLocation();
+
+					location.top = tLoc.bottom;
+					currentTextNode.Nullify();
+				}
+				if (nonTextNode.Get())
+				{
+					auto tLoc = nonTextNode->GetLocation();
+
+					location.top = tLoc.bottom;
+					nonTextNode.Nullify();
+				}
+				
+				UINT ret = ch->webNode->CreateWebNode(location, d3dEngine, styles, window);
+				if (ret)
+					return ret;
+				nonTextNode = ch;
+			}
+			
 
 			continue;
 		}
@@ -517,9 +543,40 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 				childNodes.RemoveAt(Rust--);
 				continue;
 			}
+			TextData tempTextData(thisTextData);
+			tempTextData.text.Set(t->GetText());
+			if (nonTextNode.Get())
+			{
+				auto tLoc = nonTextNode->GetLocation();
 
+				location.top = tLoc.bottom;
+				nonTextNode.Nullify();
+			}
+			if (!currentTextNode.Get())
+			{
+				currentTextNode = ch;
+				currentTextNode->initTextSize = tempTextData.text.GetSize();
+			}
 			
+			currentTextNode->textDataList.push_back(thisTextData);
 		}
+
+	}
+
+	if (currentTextNode.Get())
+	{
+		CompileText(currentTextNode, location);
+		auto tLoc = currentTextNode->GetLocation();
+
+		location.top = tLoc.bottom;
+		currentTextNode.Nullify();
+	}
+	if (nonTextNode.Get())
+	{
+		auto tLoc = nonTextNode->GetLocation();
+
+		location.top = tLoc.bottom;
+		nonTextNode.Nullify();
 	}
 
 
@@ -1020,6 +1077,310 @@ TString TWebNode::OnLoseFocus()
 	return TString();
 }
 
+void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
+{
+	// A Good Metric to assess whether CSS Compilation is necessary
+	if (handlers.count())
+		return;
+
+	// This is done to ensure that when events are activated, the node has a smaller map to retireve
+	// data from, thus boosting response times
+	for (UINT Rust = 0; Rust < WEB_EVENT_HANDLER_COUNT; Rust++)
+	{
+		TString handlerValue;
+		if (attributes.retrieveEntry(eventHandlers[Rust], handlerValue))
+		{
+			// Add the handler attribute to the handler map
+			EventPropagater prop;
+			prop.event = handlerValue;
+			handlers.addEntry(eventHandlers[Rust], prop);
+
+			// Remove the handler data from attributes to same some memory
+			attributes.removeEntry(eventHandlers[Rust], handlerValue);
+		}
+	}
+
+	TDataMap<TString> atts;
+	for (UINT Rust = 0; Rust < styles->Count(); Rust++)
+	{
+		TrecPointer<styleTable> style = styles->ElementAt(Rust);
+		if (!style.Get())
+		{
+			styles->DeleteAt(Rust--);
+			continue;
+		}
+
+		// Start with the Node type
+		if (style->style.Find(tagName) != -1)
+		{
+			for (UINT C = 0; C < style->names.count(); C++)
+			{
+				auto styleEntry = style->names.GetEntryAt(C);
+				atts.addEntry(styleEntry->key, styleEntry->object.Get());
+			}
+			continue;
+		}
+
+		// Next check the ID type
+		if (id.GetSize() && style->style.Find(TString(L"#") + id) != -1)
+		{
+			for (UINT C = 0; C < style->names.count(); C++)
+			{
+				auto styleEntry = style->names.GetEntryAt(C);
+				atts.addEntry(styleEntry->key, styleEntry->object.Get());
+			}
+			continue;
+		}
+
+		// Next get attributes for classes
+		auto classes = nodeClass.split(L"\s\n\r\t");
+		for (UINT c = 0; c < classes->Size(); c++)
+		{
+			TString cl = classes->at(c).GetTrim();
+			if (cl.GetSize() && style->style.Find(tagName + L"." + cl) != -1)
+			{
+				for (UINT C = 0; C < style->names.count(); C++)
+				{
+					auto styleEntry = style->names.GetEntryAt(C);
+					atts.addEntry(styleEntry->key, styleEntry->object.Get());
+				}
+				continue;
+			}
+			else if (cl.GetSize() && style->style.Find(TString(L".") + cl) != -1)
+			{
+				for (UINT C = 0; C < style->names.count(); C++)
+				{
+					auto styleEntry = style->names.GetEntryAt(C);
+					atts.addEntry(styleEntry->key, styleEntry->object.Get());
+				}
+				continue;
+			}
+		}
+	}
+
+	for (UINT Rust = 0; Rust < attributes.count(); Rust++)
+	{
+		TDataEntry<TString> entry;
+		if (attributes.GetEntryAt(Rust, entry))
+			atts.addEntry(entry.key, entry.object);
+	}
+
+	TString val;
+
+	// take care of text attributes
+	if (atts.retrieveEntry(L"color", val))
+	{
+
+	}
+
+	if (atts.retrieveEntry(L"font-style", val))
+	{
+		if (!val.Compare(L"italic"))
+			thisTextData.fontStyle = DWRITE_FONT_STYLE_ITALIC;
+		else if (!val.Compare(L"oblique"))
+			thisTextData.fontStyle = DWRITE_FONT_STYLE_OBLIQUE;
+		// Default is normal
+	}
+
+
+	if (atts.retrieveEntry(L"font-weight", val))
+	{
+		if (!val.Compare(L"100"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_THIN;
+		}
+		else if (!val.Compare(L"200"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_EXTRA_LIGHT;
+		}
+		else if (!val.Compare(L"300") || !val.Compare(L"lighter"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_LIGHT;
+		}
+		else if (!val.Compare(L"400"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_NORMAL;
+		}
+		else if (!val.Compare(L"500"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_MEDIUM;
+		}
+		else if (!val.Compare(L"600"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_DEMI_BOLD;
+		}
+		else if (!val.Compare(L"700") || !val.Compare(L"bold"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_BOLD;
+		}
+		else if (!val.Compare(L"800"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_ULTRA_BOLD;
+		}
+		else if (!val.Compare(L"900"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_BLACK;
+		}
+		else if (!val.Compare(L"950"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_EXTRA_BLACK;
+		}
+		else if (!val.Compare(L"350"))
+		{
+			thisTextData.fontWeight = DWRITE_FONT_WEIGHT_SEMI_LIGHT;
+		}
+		else if (!val.Compare(L"inherit"))
+		{
+			// To-Do:
+		}
+
+	}
+
+
+	if (atts.retrieveEntry(L"", val))
+	{
+
+	}
+
+
+	if (atts.retrieveEntry(L"", val))
+	{
+
+	}
+
+
+	if (atts.retrieveEntry(L"", val))
+	{
+
+	}
+
+	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	{
+		auto ch = childNodes[Rust];
+		if (!ch.Get() || ch->type == NodeContainerType::ntc_null)
+		{
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+
+		if (ch->type == NodeContainerType::nct_web)
+		{
+			if(!ch->webNode.Get())
+			{
+				childNodes.RemoveAt(Rust--);
+				continue;
+			}
+
+			ch->webNode->CompileProperties(styles);
+		}
+	}
+	
+}
+
+bool TWebNode::IsText()
+{
+	if(this->outsideDisplay != WebNodeDisplayOutside::wndo_inline)
+		return false; // In this case, text generated here cannot be injected into a parent Node
+
+	// Assume true until discovered Otherwise
+
+	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	{
+		auto childNode = childNodes[Rust];
+		if (!childNode.Get())
+		{
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+		switch (childNode->type)
+		{
+		case NodeContainerType::nct_text:
+			if (!dynamic_cast<TTextField*>(childNode->control.Get()))
+				throw L"Unexpected Null TextField detected in IsText Method Call";
+			continue;
+		case NodeContainerType::nct_control:
+			return false;
+		case NodeContainerType::ntc_null:
+			childNodes.RemoveAt(Rust--);
+			continue;
+		case NodeContainerType::nct_web:
+			if (!childNode->webNode.Get())
+				throw L"Unexpected Null Web Node detected in IsText Method Call";
+			if (!childNode->webNode->IsText())
+				return false;
+		}
+
+	}
+	return true;
+}
+
+void TWebNode::RetrieveText(TDataArray<TextData>& textDataList)
+{
+	if (!IsText())
+		return;
+
+	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	{
+		auto childNode = childNodes[Rust];
+		if (!childNode.Get())
+		{
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+		if (childNode->type == NodeContainerType::nct_text)
+		{
+			// ThisTextData should be initialized in a create call prior to this method being called
+			TextData submitData(thisTextData);
+			submitData.text.Set(dynamic_cast<TTextField*>(childNode.Get())->GetText());
+		}
+		else
+		{
+			// We Are dealing with a WebNode, as the other options would have been detected by Call to IsText and we would not reach here
+			childNode->webNode->RetrieveText(textDataList);
+		}
+
+	}
+}
+
+/**
+ * Method: TWebNode::CompileText
+ * Purpose: Compiles Text Nodes according to the text Data it contains
+ * Parameters: TrecPointer<TWebNode::TWebNodeContainer> textNode - the text node to compile
+ *              D2D1_RECT_F loc - the space the text has been allocated
+ * Returns: void
+ */
+void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2D1_RECT_F loc)
+{
+	if (!textNode.Get() || textNode->type != NodeContainerType::nct_text || !dynamic_cast<TTextField*>(textNode->control.Get()))
+		return;
+
+	TTextField* textField = dynamic_cast<TTextField*>(textNode->control.Get());
+	textField->Resize(loc);
+	FormattingDetails det;
+	TString theText;
+	for (UINT Rust = 0; Rust < textNode->textDataList.Size(); Rust++)
+	{
+		theText.Append(textNode->textDataList[Rust].text);
+	}
+	textField->SetText(theText);
+	UINT beginningIndex = 0;
+	for (UINT Rust = 0; Rust < textNode->textDataList.Size(); Rust++)
+	{
+		det.range.startPosition = beginningIndex;
+		det.range.length = textNode->textDataList[Rust].text.GetSize();
+		beginningIndex = det.range.length + 1;
+
+		det.style = textNode->textDataList[Rust].fontStyle;
+		det.weight = textNode->textDataList[Rust].fontWeight;
+
+		// Do-To: Add more fields to the FormattingDetails object and transfer dditional fields over to it
+
+
+		// End to-do
+		textField->ApplyFormatting(det);
+	}
+}
+
 EventPropagater::EventPropagater()
 {
 	useCapture = false;
@@ -1046,6 +1407,7 @@ TWebNode::TWebNodeContainer::TWebNodeContainer(TrecSubPointer<TControl, TTextFie
 	}
 	else
 		type = NodeContainerType::ntc_null;
+	initTextSize = 0;
 }
 
 TWebNode::TWebNodeContainer::TWebNodeContainer(TrecPointer<TControl> control)
@@ -1057,6 +1419,7 @@ TWebNode::TWebNodeContainer::TWebNodeContainer(TrecPointer<TControl> control)
 	}
 	else
 		type = NodeContainerType::ntc_null;
+	initTextSize = 0;
 }
 
 TWebNode::TWebNodeContainer::TWebNodeContainer(TrecPointer<TWebNode> webNode)
@@ -1068,4 +1431,39 @@ TWebNode::TWebNodeContainer::TWebNodeContainer(TrecPointer<TWebNode> webNode)
 	}
 	else
 		type = NodeContainerType::ntc_null;
+	initTextSize = 0;
+}
+
+D2D1_RECT_F TWebNode::TWebNodeContainer::GetLocation()
+{
+	if (webNode.Get())
+		return webNode->GetLocation();
+	else if (control.Get())
+		return control->getLocation();
+	return { 0,0,0,0 };
+}
+
+TextData::TextData()
+{
+	fontSize = 12;
+	flowDirection = DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM;
+	fontStretch = DWRITE_FONT_STRETCH_NORMAL;
+	fontStyle = DWRITE_FONT_STYLE_NORMAL;
+	fontWeight = DWRITE_FONT_WEIGHT_NORMAL;
+	lineSpacing = DWRITE_LINE_SPACING_METHOD_DEFAULT;
+	textColor = backgroundColor = D2D1::ColorF(D2D1::ColorF::Black);
+	hasBackgroundColor = false;
+}
+
+TextData::TextData(const TextData& data)
+{
+	fontSize = data.fontSize;
+	flowDirection = data.flowDirection;
+	fontStretch = data.fontStretch;
+	fontStyle = data.fontStyle;
+	fontWeight = data.fontWeight;
+	lineSpacing = data.lineSpacing;
+	textColor = data.textColor;
+	backgroundColor = data.backgroundColor;
+	hasBackgroundColor = data.hasBackgroundColor;
 }
