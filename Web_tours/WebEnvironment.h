@@ -7,12 +7,27 @@
 
 class WebEnvGenerator: public EnvironmentGenerator
 {
+public:
+	WebEnvGenerator(TrecPointer<TInstance> i, TrecPointer<TWindow> w);
+
 	virtual TrecPointer<TEnvironment> GetEnvironment(TrecPointer<TFileShell> shell) override;
+
+private:
+	/**
+	 * The TInstance holding this environment
+	 */
+	TrecPointer<TInstance> instance;
+
+	/**
+	 * The Window this is running in
+	 */
+	TrecPointer<TWindow> window;
 };
 
 
 class WebEnvironment : public TEnvironment
 {
+	friend class WebEnvGenerator;
 public:
 
 
@@ -146,6 +161,23 @@ public:
 	 */
 	virtual void SupportsFileExt(TDataArray<TString>& ext) override;
 
+	/** 
+	 * Method: WebEnvironment::GetWindow
+	 * Purpose: Retrieves the main window
+	 * Parameters: void
+	 * Returns: TrecPointer<TWindow> - the window requested
+	 */
+	TrecPointer<TWindow> GetWindow();
+
+
+	/**
+	 * Method: WebEnvironment::GetInstance
+	 * Purpose: Retrieves the instance
+	 * Parameters: void
+	 * Returns: TrecPointer<TInstance> - the instance requested
+	 */
+	TrecPointer<TInstance> GetInstance();
+
 private:
 
 	/*
@@ -158,5 +190,25 @@ private:
 	 */
 	TrecSubPointer<TVariable, TAnascriptInterpretor> mainAnaScript;
 
+	/**
+	 * The TInstance holding this environment
+	 */
+	TrecPointer<TInstance> instance;
+
+	/**
+	 * The Window this is running in
+	 */
+	TrecPointer<TWindow> window;
+
+	/**
+	 * Method: WebEnvironment::SetResources
+	 * Purpose: Allows Generators to provide this environment with the instance and window objects
+	 * Parameters: TrecPointer<TInstance> instance - the instance
+	 *				TrecPointer<TWindow> window -  the window held
+	 * Returns: void
+	 * 
+	 * Note: both parameters must have active objects. Otherwise, an exception will be thrown
+	 */
+	void SetResources(TrecPointer<TInstance> instance, TrecPointer<TWindow> window);
 };
 

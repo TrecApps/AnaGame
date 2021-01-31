@@ -9,6 +9,7 @@
  */
 class TC_DATA_STRUCT TAccessorVariable : public TVariable
 {
+public:
     virtual TrecPointer<TVariable> Clone();
 
     /**

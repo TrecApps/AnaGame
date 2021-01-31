@@ -93,7 +93,7 @@ public:
  * Class: TextData
  * Purpose: Holds data about the text provided, enabling child nodes to inject text into parent nodes if they are inline
  */
-class TextData
+class ANA_WEB_DLL TextData
 {
 public:
     TextData();
