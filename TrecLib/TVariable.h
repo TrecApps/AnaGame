@@ -16,6 +16,7 @@ typedef enum class var_type
     native_object,       // Variable references a C++ level native Anagame object
     string,              // References a String
     interpretor,         // References an Interpretor (i.e. procedures/functions that are stored as variables
+    accessor,            // Type of variable that holds a Getter and Setter method
     special_value        // Holds a special value that doesn't fit in any of the other categories
 }var_type;
 

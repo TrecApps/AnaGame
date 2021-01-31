@@ -155,6 +155,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="TAccessorVariable.h" />
     <ClInclude Include="TcDataStruct.h" />
     <ClInclude Include="JavaScriptFunc.h" />
     <ClInclude Include="Operator.h" />
@@ -180,6 +181,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TAccessorVariable.cpp" />
     <ClCompile Include="TClassStruct.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
     <ClCompile Include="TInterpretor.cpp" />
