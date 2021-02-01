@@ -9,7 +9,7 @@ HtmlBody::HtmlBody(TrecPointer<TEnvironment> env, TrecPointer<DrawingBoard> boar
 
 TString HtmlBody::ProcessHtml(TrecPointer<TFile> file, const TString& data, HWND win)
 {
-    if (!file.Get() || file->IsOpen())
+    if (!file.Get() || !file->IsOpen())
     {
         return L"File Not available!";
     }
