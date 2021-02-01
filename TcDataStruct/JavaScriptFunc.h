@@ -26,7 +26,7 @@ namespace JavaScriptFunc{
 	 *
 	 * Note: This Function is intended to fulfill the "isNan" function in JavaScript
 	 */
-	TC_DATA_STRUCT void isNan(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
+	TC_DATA_STRUCT void isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
 
 	/**
 	 * Function: parseFloat

@@ -2,13 +2,15 @@
 #include "JavaScriptFunc.h"
 #include "TPrimitiveVariable.h"
 #include "TContainerVariable.h"
+#include "TObjectVariable.h"
+#include "TSpecialVariable.h"
 
 TMap<TNativeInterpretor> GetJavaScriptFunctions()
 {
     TMap<TNativeInterpretor> jsFunctions;
 
     jsFunctions.addEntry(L"isFinite", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isFinite, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"isNan", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isNan, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"isNaN", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isNaN, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
     jsFunctions.addEntry(L"parseFloat", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseFloat, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
     jsFunctions.addEntry(L"parseInt", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseInt, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
 
@@ -98,18 +100,41 @@ void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPo
     {
         parseFloat(params, env, ret);
     }
-    if (ret.returnCode == ReportObject::not_number)
+    if (ret.returnCode)
     {
         ret.returnCode = 0;
-        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(false);
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(true);
     }
     else if (ret.returnCode == 0)
     {
+        ULONG64 rawValue;
 
+        auto prim = dynamic_cast<TPrimitiveVariable*>(ret.errorObject.Get());
+
+        if (!(prim->GetType() & TPrimitiveVariable::type_float))
+        {
+            // Only a floa can hold infinite
+            ret.returnCode = 0;
+            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(true);
+        }
+        rawValue = prim->Get8Value();
+        bool foundInf = false;
+        switch (prim->GetSize())
+        {
+        case 8:
+            foundInf = rawValue == 0xFFFFFFFFFFFFFFFF;
+            break;
+        case 4:
+            foundInf = rawValue == INFINITY;
+            break;
+        }
+
+        ret.returnCode = 0;
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(!foundInf);
     }
 }
 
-void JavaScriptFunc::isNan(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
 {
     ReportObject r1, r2;
 
@@ -134,44 +159,33 @@ void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, Trec
 
     auto var = params[0];
 
-    if (var->GetVarType() == var_type::native_object)
+    TString strNum(var.Get() ? var->GetString().GetTrim() : L"null");
+
+    float f = 0.0f;
+    if (!strNum.ConvertToFloat(f))
     {
-        // To-Do: Attempt to convert to string
-        ret.returnCode = ReportObject::not_number;
+        ret.returnCode = 0;
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(f);
         return;
     }
 
-    if (var->GetVarType() == var_type::string)
+    double d = 0.0;
+    if (!strNum.ConvertToDouble(d))
     {
-        auto str = var->GetString();
-        float f = 0.0f;
-        if (!str.ConvertToFloat(f))
-        {
-            ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(f);
-            return;
-        }
-
-        double d = 0.0;
-        if (!str.ConvertToDouble(d))
-        {
-            ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
-            return;
-        }
-
-        if (IsInfinity(str))
-        {
-            ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(INFINITY);
-            return;
-        }
-
+        ret.returnCode = 0;
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
+        return;
     }
 
-
+    if (IsInfinity(strNum))
+    {
+        ret.returnCode = 0;
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(INFINITY);
+        return;
+    }
 
     ret.returnCode = ReportObject::not_number;
+    ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
 }
 
 void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
@@ -179,55 +193,53 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPo
     if (!params.Size())
     {
         ret.returnCode = ReportObject::too_few_params;
-        ret.errorMessage.Set(L"'parseInt' expected 1 parameter!");
+        ret.errorMessage.Set(L"'parseFloat' expected 1 parameter!");
         return;
     }
 
     auto var = params[0];
 
-    if (var->GetVarType() == var_type::native_object)
+    TString strNum(var.Get() ? var->GetString().GetTrim() : L"null");
+
+    float f = 0.0f;
+    if (!strNum.ConvertToFloat(f))
     {
-        // To-Do: Attempt to convert to string
-        ret.returnCode = ReportObject::not_number;
+        ret.returnCode = 0;
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(f);
         return;
     }
 
-    if (var->GetVarType() == var_type::string)
+    double d = 0.0;
+    if (!strNum.ConvertToDouble(d))
     {
-        auto str = var->GetString();
-        float f = 0.0f;
-        if (!str.ConvertToFloat(f))
-        {
-            ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<int>(f));
-            return;
-        }
-
-        double d = 0.0;
-        if (!str.ConvertToDouble(d))
-        {
-            ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<LONG64>(d));
-            return;
-        }
-
-        int i = 0;
-        if (!str.ConvertToInt(i))
-        {
-            ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(i);
-            return;
-        }
-
-        long long l = 0l;
-        if (!str.ConvertToLong(l))
-        {
-            ret.returnCode = 0;
-            ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(l);
-            return;
-        }
+        ret.returnCode = 0;
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
+        return;
     }
+    int i = 0;
+    if (!strNum.ConvertToInt(i))
+    {
+        ret.returnCode = 0;
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(i);
+        return;
+    }
+    long long l = 0l;
+    if (!strNum.ConvertToLong(l))
+    {
+        ret.returnCode = 0;
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(l);
+        return;
+    }
+    if (IsInfinity(strNum))
+    {
+        ret.returnCode = 0;
+        ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(INFINITY);
+        return;
+    }
+
     ret.returnCode = ReportObject::not_number;
+    ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
+
 }
 
 TrecPointer<TVariable> JavaScriptFunc::GetJSObectVariable(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
