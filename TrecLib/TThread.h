@@ -47,11 +47,11 @@ public:
     static DWORD Sleep(DWORD dwMilliseconds);
     static DWORD CreateTThread(LPTHREAD_START_ROUTINE routine, LPVOID params);
     static HANDLE GetHandleFromId(DWORD id);
-    static void WakableSleep(TObject* obj);
+    static void WakableSleep(const TObject* obj);
     static void WakeFromSleep(DWORD id);
 
     static void Suspend(TObject* obj);
-    static void Resume(TObject* obj);
+    static void Resume(const TObject* obj);
 
 private:
 

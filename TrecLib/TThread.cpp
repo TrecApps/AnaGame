@@ -161,7 +161,7 @@ HANDLE TThread::GetHandleFromId(DWORD id)
 	return nullptr;
 }
 
-void TThread::WakableSleep(TObject* obj)
+void TThread::WakableSleep(const TObject* obj)
 {
 	DWORD id = GetCurrentThreadId();
 	for (UINT Rust = 0; Rust < threadList.Size(); Rust++)
@@ -206,7 +206,7 @@ void TThread::Suspend(TObject* obj)
 	assert(false);
 }
 
-void TThread::Resume(TObject* obj)
+void TThread::Resume(const TObject* obj)
 {
 	if (!obj)
 		return;
