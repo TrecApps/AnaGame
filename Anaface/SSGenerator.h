@@ -16,7 +16,6 @@ public:
 	~CSSGenerator();
 
 	bool Parse();
-	void DeduceCharType(unsigned char * bytes);
 	WCHAR ReturnWCharType(char c);
 	bool isWhiteSpace(WCHAR c);
 
@@ -29,9 +28,6 @@ private:
 	TString parsable;
 	TString piece;
 	TrecPointer<TArray<styleTable>> styleList;
-
-	bool charDeduced;
-	bool usingWide;
 
 	bool ParseArchive();
 	bool ParseString();
