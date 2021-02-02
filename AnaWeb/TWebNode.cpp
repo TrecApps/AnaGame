@@ -93,16 +93,19 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win)
 	while (start < html->GetSize() && (!tagName.GetSize() || !IsWhitespace(html->GetAt(start))))
 	{
 		if (!IsWhitespace(html->GetAt(start)))
-			tagName.AppendChar(!IsWhitespace(html->GetAt(start)));
+			tagName.AppendChar(html->GetAt(start));
 		start++;
 	}
 
 	bool getAtts = true;
 
+	if (tagName.StartsWith(L"<"))
+		tagName.Set(tagName.SubString(1));
+
 	if (tagName.EndsWith(L'>'))
 	{
 		getAtts = false;
-		tagName.Set(tagName.SubString(tagName.Find(L'>')));
+		tagName.Set(tagName.SubString(0, tagName.Find(L'>')));
 	}
 
 	if (getAtts)
@@ -181,6 +184,7 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 
 		if (ch == L'<')
 		{
+			printableText.Trim();
 			if (printableText.GetSize())
 			{
 				TrecSubPointer<TControl, TTextField> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), win);

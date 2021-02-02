@@ -233,6 +233,8 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
 {
     auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<Page, WebPage>(drawingBoard, self);
 
+    ret->SetArea(webPage);
+
     // ret->SetEnvironment(envGenerator->GetEnvironment(TrecPointer<TFileShell>()));
 
     if (url.StartsWith(L"Anagame://"))
