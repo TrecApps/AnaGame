@@ -72,8 +72,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\John Jacko\Source\Repos\AnaGame\TrecLib;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\John Jacko\Source\Repos\AnaGame\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\TrecLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -162,6 +162,7 @@
     <ClInclude Include="TestRunner.h" />
     <ClInclude Include="TFileTester.h" />
     <ClInclude Include="TStringTester.h" />
+    <ClInclude Include="TThreadTester.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnaGameTester.cpp" />
@@ -169,6 +170,7 @@
     <ClCompile Include="TestRunner.cpp" />
     <ClCompile Include="TFileTester.cpp" />
     <ClCompile Include="TStringTester.cpp" />
+    <ClCompile Include="TThreadTester.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AnaGameTester.rc" />
