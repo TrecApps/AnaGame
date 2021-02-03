@@ -5,6 +5,9 @@
 TMap<TNativeInterpretor> GetJavaScriptFunctions();
 
 
+
+
+
 namespace JavaScriptFunc{
 	/**
 	 * Function: isFinite
@@ -50,10 +53,50 @@ namespace JavaScriptFunc{
 	 */
 	TC_DATA_STRUCT void parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
 
+	/**
+	 * Function: EncodeURI
+	 * Purpose: Implements the encodeURI JavaScript Function
+	 * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters given to the native function
+	 *				ReportObject& ret - object to report the results to
+	 * Returns: void
+	 */
+	TC_DATA_STRUCT void EncodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
+
+	/**
+	 * Function: EncodeURIComponent
+	 * Purpose: Implements the encodeURIComponent JavaScript Function
+	 * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters given to the native function
+	 *				ReportObject& ret - object to report the results to
+	 * Returns: void
+	 */
+	TC_DATA_STRUCT void EncodeURIComponent(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
+
+	/**
+	 * Function: DecodeURI
+	 * Purpose: Implements the encodeURI JavaScript Function
+	 * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters given to the native function
+	 *				ReportObject& ret - object to report the results to
+	 * Returns: void
+	 */
+	TC_DATA_STRUCT void DecodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
+
+	/**
+	 * Function: DecodeURIComponent
+	 * Purpose: Implements the encodeURIComponent JavaScript Function
+	 * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters given to the native function
+	 *				ReportObject& ret - object to report the results to
+	 * Returns: void
+	 */
+	TC_DATA_STRUCT void DecodeURIComponent(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
+
 
 	TC_DATA_STRUCT TrecPointer<TVariable> GetJSObectVariable(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env);
 
 
 	// Helper Functions
 	bool IsInfinity(TString& str);
+
+	bool IsURLEscaped(WCHAR c, bool regular);
+
+	bool ConvertParamOneToString(TString& value, TDataArray<TrecPointer<TVariable>>& params);
 }

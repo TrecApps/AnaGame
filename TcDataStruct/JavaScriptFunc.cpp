@@ -4,6 +4,16 @@
 #include "TContainerVariable.h"
 #include "TObjectVariable.h"
 #include "TSpecialVariable.h"
+#include "TStringVariable.h"
+
+/**
+ * Characters excempt from encoding by encodeURL
+ */
+const TString regularEscapeExempt(L";,/?:@&=+$-_.!~*'()#");
+/**
+ * Characters excempt from encoding by encodeURLComponent
+ */
+const TString componentEscapeExempt(L"-_.!~*'()");
 
 TMap<TNativeInterpretor> GetJavaScriptFunctions()
 {
@@ -242,6 +252,140 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 
 }
 
+void JavaScriptFunc::EncodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+{
+    TString val;
+    if (!ConvertParamOneToString(val, params))
+    {
+        ret.returnCode = ReportObject::too_few_params;
+
+        return;
+    }
+    TString val2;
+    for (UINT Rust = 0; Rust < val.GetSize(); Rust++)
+    {
+        WCHAR ch = val[Rust];
+        if (IsURLEscaped(ch, true))
+        {
+            val2.AppendFormat(L"\%%X", (UINT)ch);
+        }
+        else
+            val2.AppendChar(ch);
+    }
+    ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val2);
+}
+
+void JavaScriptFunc::EncodeURIComponent(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+{
+    TString val;
+    if (!ConvertParamOneToString(val, params))
+    {
+        ret.returnCode = ReportObject::too_few_params;
+
+        return;
+    }
+    TString val2;
+    for (UINT Rust = 0; Rust < val.GetSize(); Rust++)
+    {
+        WCHAR ch = val[Rust];
+        if (IsURLEscaped(ch, false))
+        {
+            val2.AppendFormat(L"\%%X", (UINT)ch);
+        }
+        else
+            val2.AppendChar(ch);
+    }
+    ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val2);
+}
+
+void JavaScriptFunc::DecodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+{
+    TString val;
+    if (!ConvertParamOneToString(val, params))
+    {
+        ret.returnCode = ReportObject::too_few_params;
+
+        return;
+    }
+    TString val2;
+    long int charVal = 0;
+
+    for (int Rust = 0; Rust < val.GetSize(); Rust++)
+    {
+        switch (val2.GetSize())
+        {
+        case 1:
+        case 2:
+            val2.AppendChar(val[Rust]);
+            break;
+        case 3:
+            charVal = wcstol(val2.GetConstantBuffer(), nullptr, 16);
+            if (!charVal)
+            {
+                ret.returnCode = ReportObject::invalid_name;
+
+                return;
+            }
+            if (IsURLEscaped(static_cast<WCHAR>(charVal), true))
+            {
+                val.Replace(val2, TString(static_cast<WCHAR>(charVal)));
+                Rust = -1;
+                continue;
+            }
+            val2.Empty();
+            break;
+        case 0:
+            if(val[Rust] == L'%')
+                val2.AppendChar(val[Rust]);
+        }
+    }
+    ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val);
+}
+
+void JavaScriptFunc::DecodeURIComponent(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+{
+    TString val;
+    if (!ConvertParamOneToString(val, params))
+    {
+        ret.returnCode = ReportObject::too_few_params;
+
+        return;
+    }
+    TString val2;
+    long int charVal = 0;
+
+    for (int Rust = 0; Rust < val.GetSize(); Rust++)
+    {
+        switch (val2.GetSize())
+        {
+        case 1:
+        case 2:
+            val2.AppendChar(val[Rust]);
+            break;
+        case 3:
+            charVal = wcstol(val2.GetConstantBuffer(), nullptr, 16);
+            if (!charVal)
+            {
+                ret.returnCode = ReportObject::invalid_name;
+
+                return;
+            }
+            if (IsURLEscaped(static_cast<WCHAR>(charVal), false))
+            {
+                val.Replace(val2, TString(static_cast<WCHAR>(charVal)));
+                Rust = -1;
+                continue;
+            }
+            val2.Empty();
+            break;
+        case 0:
+            if (val[Rust] == L'%')
+                val2.AppendChar(val[Rust]);
+        }
+    }
+    ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val);
+}
+
 TrecPointer<TVariable> JavaScriptFunc::GetJSObectVariable(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 {
     auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
@@ -256,4 +400,25 @@ TrecPointer<TVariable> JavaScriptFunc::GetJSObectVariable(TrecSubPointer<TVariab
 bool JavaScriptFunc::IsInfinity(TString& str)
 {
     return !str.CompareNoCase(L"Infinity");
+}
+
+bool JavaScriptFunc::IsURLEscaped(WCHAR c, bool regular)
+{
+    bool ret = ((c >= L'a' && c <= L'z') ||
+        (c >= L'A' && c <=L'Z') ||
+        (c >= L'0' && c <=L'9'));
+
+    if (ret)
+        return false;
+    return regular ? regularEscapeExempt.Find(c) == -1 :
+        componentEscapeExempt.Find(c) == -1;
+}
+
+bool JavaScriptFunc::ConvertParamOneToString(TString& value, TDataArray<TrecPointer<TVariable>>& params)
+{
+    if(!params.Size() || !params[0].Get())
+        return false;
+
+    value.Set(params[0]->GetString());
+    return true;
 }
