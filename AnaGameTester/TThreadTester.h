@@ -28,6 +28,6 @@ protected:
 	virtual void Before() override;
 	virtual void After() override;
 
-
+	ThreadData data1, data2;
 	void multiThreaded(std::string& output);
 };

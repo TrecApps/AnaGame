@@ -10,7 +10,7 @@ static SECURITY_ATTRIBUTES att{
 	TRUE
 };
 
-static TDataArray<TThread> threadList;
+TDataArray<TThread> threadList;
 
 
 

@@ -23,7 +23,7 @@ void TThreadTester::multiThreaded(std::string& output)
 {
 	TrecPointer<TString> str = TrecPointerKey::GetNewTrecPointer<TString>(L"This string!");
 
-	ThreadData data1, data2;
+
 
 	data1.string = str;
 	data2.string = str;

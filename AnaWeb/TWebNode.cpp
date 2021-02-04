@@ -503,7 +503,6 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 
 			D2D1_RECT_F loc = ch->webNode->GetLocation();
 
-			if()
 
 			continue;
 		}

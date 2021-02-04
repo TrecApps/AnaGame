@@ -1770,6 +1770,21 @@ WCHAR ReturnCharType(char c)
 	return w[0];
 }
 
+/*
+* Function: ReturnWCharType
+* Purpose: Returns the WCHAR representation of the char
+* Parameters: char c - the chaacter to convert
+* Returns: WCHAR - the wide version of the character
+*/
+WCHAR ReturnWCharType(char c)
+{
+	WCHAR w[] = { L'0',L'\0' };
+	size_t conv = 0;
+	char charTo[] = { c, '\0' };
+	mbstowcs_s(&conv, w, 2, charTo, 1);
+	return w[0];
+}
+
 bool _TREC_LIB_DLL IndexComesFirst(int focusIndex, int checkIndex)
 {
 	if(focusIndex == -1)
