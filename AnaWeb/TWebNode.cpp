@@ -1253,7 +1253,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	// take care of text attributes
 	if (atts.retrieveEntry(L"color", val))
 	{
-
+		thisTextData.textColor.SetColor(val);
 	}
 
 	if (atts.retrieveEntry(L"font-style", val))
@@ -1456,6 +1456,7 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 
 		det.style = textNode->textDataList[Rust].fontStyle;
 		det.weight = textNode->textDataList[Rust].fontWeight;
+		det.color = board->GetBrush(textNode->textDataList[Rust].textColor);
 
 		// Do-To: Add more fields to the FormattingDetails object and transfer dditional fields over to it
 

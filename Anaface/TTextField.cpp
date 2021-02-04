@@ -438,6 +438,9 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
+
+		if (details[c].color.Get())
+			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
 
 	return true;
@@ -544,6 +547,8 @@ void TTextField::SetNewLocation(const D2D1_RECT_F& r)
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
+		if (details[c].color.Get())
+			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
 }
 
@@ -1355,6 +1360,9 @@ void TTextField::updateTextString()
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
+
+		if (details[c].color.Get())
+			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
 
 	highlighter.SetLayout(text1->fontLayout);
@@ -2006,6 +2014,7 @@ FormattingDetails::FormattingDetails(const FormattingDetails& copy)
 	this->style = copy.style;
 	this->weight = copy.weight;
 	this->range = copy.range;
+	this->color = copy.color;
 }
 
 /*

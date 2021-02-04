@@ -106,7 +106,7 @@ public:
     DWRITE_FONT_STYLE fontStyle;
     DWRITE_FONT_WEIGHT fontWeight;
     DWRITE_LINE_SPACING_METHOD lineSpacing;
-    D2D1_COLOR_F textColor, backgroundColor;
+    TColor textColor, backgroundColor;
     bool hasBackgroundColor;
 };
 

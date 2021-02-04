@@ -39,6 +39,7 @@ public:
 	DWRITE_FONT_WEIGHT weight; // For handling boldness
 	DWRITE_FONT_STYLE style;   // For handling italics
 	DWRITE_TEXT_RANGE range;   // the Range through which it should be done
+	TrecPointer<TBrush> color; // The color of the Text
 };
 
 /**

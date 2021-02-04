@@ -81,6 +81,14 @@ public:
 	 */
 	TColor(const color_struct& color);
 
+	/**
+	 * Method: TColor::TColor
+	 * Purpose: String Constructor
+	 * Parameters: const TString& colorStr - the Color in String form
+	 * Returns: new TColor Object
+	 */
+	TColor(const TString& colorStr);
+
 
 	/**
 	 * Method: TColor::SetColor
@@ -89,6 +97,15 @@ public:
 	 * Returns: void
 	 */
 	void SetColor(t_color::Enum);
+
+
+	/**
+	 * Method: TColor::SetColor
+	 * Purpose: Sets the color based off of the Enumeration for the color
+	 * Parameters: const TString& colorStr - the Color in String form
+	 * Returns: void
+	 */
+	void SetColor(const TString& colorStr);
 
 	/**
 	 * Method: TColor::SetColor

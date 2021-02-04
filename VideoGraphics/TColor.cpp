@@ -87,6 +87,17 @@ TColor::TColor(const color_struct& color)
 }
 
 /**
+ * Method: TColor::TColor
+ * Purpose: String Constructor
+ * Parameters: const TString& colorStr - the Color in String form
+ * Returns: new TColor Object
+ */
+TColor::TColor(const TString& colorStr)
+{
+	SetColor(colorStr);
+}
+
+/**
  * Method: TColor::SetColor
  * Purpose: Sets the color based off of the Enumeration for the color
  * Parameters: t_color::Enum - the Direct2D provided enum for the color
@@ -95,6 +106,19 @@ TColor::TColor(const color_struct& color)
 void TColor::SetColor(t_color::Enum en)
 {
 	color = t_color(en);
+}
+
+
+/**
+ * Method: TColor::SetColor
+ * Purpose: Sets the color based off of the Enumeration for the color
+ * Parameters: const TString& colorStr - the Color in String form
+ * Returns: void
+ */
+void TColor::SetColor(const TString& colorStr)
+{
+	// To-Do - parse the String
+	color = t_color(t_color::Black);
 }
 
 /**
