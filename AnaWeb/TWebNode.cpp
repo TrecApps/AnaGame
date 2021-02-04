@@ -95,7 +95,10 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win)
 	{
 		if (!IsWhitespace(html->GetAt(start)))
 			tagName.AppendChar(html->GetAt(start));
+		bool doBreak = html->GetAt(start) == L'>';
 		start++;
+		if (doBreak)
+			break;
 	}
 
 	bool getAtts = true;
