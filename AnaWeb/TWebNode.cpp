@@ -77,6 +77,7 @@ TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 	doDisplay = true;
 	isListItem = false;
 	location = D2D1::RectF();
+	columnSpan = rowSpan = 1;
 }
 
 
@@ -472,7 +473,49 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 	CompileProperties(styles);
 
 	TrecPointer<TWebNode::TWebNodeContainer> currentTextNode, nonTextNode;
+
+	// Handle Scenario where this Element is a table
+	if (insideDisplay == WebNodeDisplayInside::wndi_table)
+	{
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		{
+			TrecPointer<TWebNode::TWebNodeContainer> ch = childNodes[Rust];
+			if (!ch.Get() || ch->type == TWebNode::NodeContainerType::ntc_null)
+			{
+				// Take care of null elements
+				childNodes.RemoveAt(Rust--);
+				continue;
+			}
+
+			if (ch->type == TWebNode::NodeContainerType::nct_web && ch->webNode.Get())
+			{
+				ch->webNode->PreEstablishTable();
+			}
+		}
+
+		// To-Do: Figure out the actual sizes of the columns. 
+		
+		// For the time being, assume that all columns are the same
+		float totalWidth = location.right - location.left;
+		for (UINT Rust = 0; Rust < columnSizes.Size(); Rust++)
+		{
+			columnSizes[Rust] = totalWidth / columnSizes.Size();
+		}
+
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		{
+			TrecPointer<TWebNode::TWebNodeContainer> ch = childNodes[Rust];
+
+			if (ch->type == TWebNode::NodeContainerType::nct_web && ch->webNode.Get())
+			{
+				ch->webNode->SetColumnsAndRows(columnSizes, rowSizes);
+			}
+			
+		}
+	}
 	
+	UINT cellLeft = 0;
+
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
 		TrecPointer<TWebNode::TWebNodeContainer> ch = childNodes[Rust];
@@ -527,10 +570,24 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 					location.top = tLoc.bottom;
 					nonTextNode.Nullify();
 				}
-				
-				UINT ret = ch->webNode->CreateWebNode(location, d3dEngine, styles, window);
-				if (ret)
-					return ret;
+				if (internalDisplay == WebNodeDisplayInternal::wndi_row && Rust < columnSizes.Size())
+				{
+					// Specific code for Table Rows
+					auto tempLoc = location;
+					tempLoc.left = cellLeft;
+					tempLoc.right = cellLeft + columnSizes[Rust];
+					cellLeft = tempLoc.right;
+					UINT ret = ch->webNode->CreateWebNode(tempLoc, d3dEngine, styles, window);
+					if (ret)
+						return ret;
+				}
+				else
+				{
+					// COde for every other element type
+					UINT ret = ch->webNode->CreateWebNode(location, d3dEngine, styles, window);
+					if (ret)
+						return ret;
+				}
 				nonTextNode = ch;
 			}
 			
@@ -1383,6 +1440,90 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 		// End to-do
 		textField->ApplyFormatting(det);
 	}
+}
+
+void TWebNode::AddColumn(UCHAR count)
+{
+	if (insideDisplay == WebNodeDisplayInside::wndi_table)
+	{
+		while (columnSizes.Size() < count)
+		{
+			columnSizes.push_back(0);
+		}
+	}
+	else if (internalDisplay != WebNodeDisplayInternal::wndi_row && parent.Get())
+	{
+		auto fullParent = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(parent);
+		if (fullParent.Get())
+			fullParent->AddColumn(count);
+	}
+}
+
+void TWebNode::AddRow()
+{
+	if (insideDisplay == WebNodeDisplayInside::wndi_table)
+		rowSizes.push_back(0);
+	else
+	{
+		auto fullParent = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(parent);
+		if (fullParent.Get())
+			fullParent->AddRow();
+	}
+}
+
+void TWebNode::SetColumnsAndRows(TDataArray<UINT>& cols, TDataArray<UINT>& rows)
+{
+	columnSizes.RemoveAll();
+	for (UINT Rust = 0; Rust < cols.Size(); Rust++)
+	{
+		columnSizes.push_back(cols[Rust]);
+	}
+	rowSizes.RemoveAll();
+	for (UINT Rust = 0; Rust < rows.Size(); Rust++)
+	{
+		rowSizes.push_back(rows[Rust]);
+	}
+
+	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	{
+		if (!childNodes[Rust].Get() || childNodes[Rust]->type == NodeContainerType::ntc_null)
+		{
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+
+		if (childNodes[Rust]->type == NodeContainerType::nct_web && childNodes[Rust]->webNode.Get())
+			childNodes[Rust]->webNode->SetColumnsAndRows(cols, rows);
+	}
+}
+
+void TWebNode::PreEstablishTable()
+{
+	switch (internalDisplay)
+	{
+	case WebNodeDisplayInternal::wndi_row:
+		// To-Do: Call Add Row once Available
+		AddRow();
+	case WebNodeDisplayInternal::wndi_footer_group:
+	case WebNodeDisplayInternal::wndi_header_group:
+	case WebNodeDisplayInternal::wndi_row_group:
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		{
+			if (!childNodes[Rust].Get() || childNodes[Rust]->type == NodeContainerType::ntc_null)
+			{
+				childNodes.RemoveAt(Rust--);
+				continue;
+			}
+
+			if (childNodes[Rust]->type == NodeContainerType::nct_web && childNodes[Rust]->webNode.Get())
+				childNodes[Rust]->webNode->PreEstablishTable();
+		}
+	}
+
+	auto fullParent = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(parent);
+	if (fullParent.Get())
+		fullParent->AddColumn(columnSizes.Size());
+
 }
 
 EventPropagater::EventPropagater()

@@ -119,6 +119,7 @@ public:
 class ANA_WEB_DLL TWebNode :
     public TObject
 {
+    friend class TWebNode;
 protected:
 
     typedef enum class NodeContainerType
@@ -356,6 +357,46 @@ protected:
      * Returns: void
      */
     void CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2D1_RECT_F loc);
+
+    // Methods for Inter-Node Communication
+
+    /**
+     * Method: TWebNode::AddColumn
+     * Purpose: Adds a Column to the table, if there is one
+     * Parameters: UCHAR count - number of columns to add
+     * Returns: void
+     * 
+     * Note: 
+     */
+    void AddColumn(UCHAR count = 1);
+
+    /**
+     * Method: TWebNode::AddRow
+     * Purpose: Adds a Row to the table, if there is one
+     * Parameters: void
+     * Returns: void
+     */
+    void AddRow();
+
+    /**
+     * Method: TWebNode::SetColumnsAndRows
+     * Purpose: Sets the attributes for the Columns and rows
+     * Parameters: TDataArray<UINT>& cols - set of columns
+     *              TDataArray<UINT>& rows - set of rows
+     * Returns: void
+     */
+    void SetColumnsAndRows(TDataArray<UINT>& cols, TDataArray<UINT>& rows);
+
+    /**
+     * Method: TWebNode::PreEstablishTable
+     * Purpose: Allows Table Elements to establish their elements and determine the dimensions they have
+     * Parameters: void
+     * Returns: void
+     */
+    void PreEstablishTable();
+
+
+    // Basic Core atributes of the node
     
     /**
      * Whether to display at all
@@ -430,5 +471,17 @@ protected:
     TextData thisTextData;
 
     HWND win;
+
+    /// Table resources
+
+    /**
+     * Column and Row Data
+     */
+    TDataArray<UINT> columnSizes, rowSizes;
+
+    /**
+     * Column and Row Spans
+     */
+    UCHAR columnSpan, rowSpan;
 };
 
