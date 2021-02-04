@@ -1,6 +1,23 @@
 
 #include "SSGenerator.h"
 
+
+
+void ClearCSSComment(TString& text)
+{
+	while (true)
+	{
+		int beginLoc = text.Find(L"/*");
+		int endLoc = text.Find(L"*/");
+
+		if (beginLoc == -1 || endLoc == -1)
+			return;
+		if (endLoc < beginLoc)
+			return;
+		text.Delete(beginLoc, (endLoc + 2) - beginLoc);
+	}
+}
+
 /*
 * Method: (CSSGenerator) (Constructor) 
 * Purpose: Sets up a CSSGenerator with a file to read
@@ -111,7 +128,7 @@ bool CSSGenerator::ParseArchive()
 {
 	if(!Arch)
 		return false;
-	while (Arch->ReadString(parsable, L'}'))
+	while (Arch->ReadString(piece, L'}'))
 	{
 		if (!ParseGroup())
 			return false;
@@ -148,6 +165,7 @@ bool CSSGenerator::ParseString()
 */
 bool CSSGenerator::ParseGroup()
 {
+	ClearCSSComment(piece);
 	TrecPointer<styleTable> st = TrecPointerKey::GetNewTrecPointer<styleTable>();
 
 	

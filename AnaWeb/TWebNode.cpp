@@ -60,6 +60,8 @@ static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
 	TString(L"ontoggle")
 };
 
+// False string
+TrecPointer<TString> falseString = TrecPointerKey::GetNewTrecPointer<TString>(L"false");
 
 
 /**
@@ -377,17 +379,37 @@ TString TWebNode::GetType()
  * Method: TWebNode::PreCreate
  * Purpose: Allows Node to predict ahead of time what space it will need and how it will be shown
  * Parameters: TrecPointerSoft<TWebNode> parent - the Web Node that called the method
+ *              TrecPointer<TArray<styleTable>> styles - list of CSS styles that the node should adhere to
  * Returns: void
  */
-void TWebNode::PreCreate(TrecPointerSoft<TWebNode> parent)
+void TWebNode::PreCreate(TrecPointerSoft<TWebNode> parent, TrecPointer<TArray<styleTable>>& styles)
 {
 	this->parent = parent;
+	// First Compile this nodes own CSS properties
+	CompileProperties(styles);
+
 
 	// Figure out how to set the location based off of the display CSS Atribute
 	TString cssDisplay;
 	if (attributes.retrieveEntry(L"display", cssDisplay))
 	{
 		SetDisplay(cssDisplay);
+	}
+
+	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	{
+		TrecPointer<TWebNode::TWebNodeContainer> ch = childNodes[Rust];
+		if (!ch.Get() || ch->type == TWebNode::NodeContainerType::ntc_null)
+		{
+			// Take care of null elements
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+
+		if (ch->type == TWebNode::NodeContainerType::nct_web && ch->webNode.Get())
+		{
+			ch->webNode->PreCreate(self, styles);
+		}
 	}
 }
 
@@ -463,17 +485,15 @@ void TWebNode::SetDisplay(const TString& display)
  * Purpose: Sets up the Web Node for Rendering, same purpose as TControl::onCreate()
  * Parameters: D2D1_RECT_F location - the location within the Window the Node is expected to operate in
  *              TrecPointer<TWindowEngine> d3dEngine - Pointer to the 3D manager, for controls with a 3D component to them
- *              TrecPointer<TArray<styleTable>> styles - list of CSS styles that the node should adhere to
  *              HWND window - handle to the window the node is operating in
  *              TrecPointerSoft<TWebNode> parent - the node that called this method
  * Returns: UINT - Error Code
  */
-UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>>& styles, HWND window)
+UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window)
 {
 	// Go through each bit of the child elements, determining where they lay
 	this->location = location;
-	// First Compile this nodes own CSS properties
-	CompileProperties(styles);
+
 
 	TrecPointer<TWebNode::TWebNodeContainer> currentTextNode, nonTextNode;
 
@@ -539,7 +559,6 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 			}
 			if (ch->webNode->IsText() && (insideDisplay == WebNodeDisplayInside::wndi_flow || insideDisplay == WebNodeDisplayInside::wndi_flow_root))
 			{
-				ch->webNode->CompileProperties(styles);
 				if (nonTextNode.Get())
 				{
 					auto tLoc = nonTextNode->GetLocation();
@@ -580,14 +599,14 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 					tempLoc.left = cellLeft;
 					tempLoc.right = cellLeft + columnSizes[Rust];
 					cellLeft = tempLoc.right;
-					UINT ret = ch->webNode->CreateWebNode(tempLoc, d3dEngine, styles, window);
+					UINT ret = ch->webNode->CreateWebNode(tempLoc, d3dEngine, window);
 					if (ret)
 						return ret;
 				}
 				else
 				{
 					// COde for every other element type
-					UINT ret = ch->webNode->CreateWebNode(location, d3dEngine, styles, window);
+					UINT ret = ch->webNode->CreateWebNode(location, d3dEngine, window);
 					if (ret)
 						return ret;
 				}
@@ -1419,7 +1438,8 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 		return;
 
 	TTextField* textField = dynamic_cast<TTextField*>(textNode->control.Get());
-	textField->Resize(loc);
+	textField->addAttribute(L"|CanEdit", falseString);
+	textField->onCreate(loc, TrecPointer<TWindowEngine>());
 	FormattingDetails det;
 	TString theText;
 	for (UINT Rust = 0; Rust < textNode->textDataList.Size(); Rust++)

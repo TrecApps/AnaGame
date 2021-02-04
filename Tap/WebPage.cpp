@@ -4,6 +4,7 @@
 #include <SSGenerator.h>
 #include <DirectoryInterface.h>
 
+
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): Page(board)
 {
 	windowHandle = win;
@@ -80,8 +81,8 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 			return 5;
 		}
 		TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
-		rootNode->PreCreate(TrecPointerSoft<TWebNode>());
-		UINT createResult = rootNode->CreateWebNode(area, win->GetWindowEngine(), styles, win->GetWindowHandle());
+		rootNode->PreCreate(TrecPointerSoft<TWebNode>(), styles);
+		UINT createResult = rootNode->CreateWebNode(area, win->GetWindowEngine(), win->GetWindowHandle());
 		
 	}
 	else if (file->GetFileName().EndsWith(L".tml"))
