@@ -29,7 +29,8 @@ TObject::TObject()
 */
 TObject::~TObject()
 {
-	delete thread;
+	if(thread)
+		delete thread;
 	thread = nullptr;
 }
 
@@ -114,14 +115,14 @@ TObject* TObject::ProcessPointer(float* obj)
 bool TObject::ThreadLock() const
 {
 	DWORD curThread = GetCurrentThreadId();
-	if (thread)
+	if (*thread)
 	{
 		// Object is already locked by a thread. Check to see if it is locked by this thread. if it is
 		// Return false to let the caller know that the ReleaseMethod shoudl do nothing. Otherwise, sleep until unlocked
 		if (*thread == curThread)
 			return false;
 		// Go to sleep until this object unlocks it from the owner thread
-		TThread::WakableSleep(this);
+		TThread::Suspend(this);
 	}
 
 	*thread = curThread;
@@ -129,7 +130,7 @@ bool TObject::ThreadLock() const
 	for (UINT Rust = 0; Rust < 10; Rust++);
 
 	if (*thread != curThread)
-		TThread::WakableSleep(this);
+		TThread::Suspend(this);
 	*thread = curThread;
 
 	return true;
@@ -143,7 +144,7 @@ bool TObject::ThreadLock() const
  */
 void TObject::ThreadRelease(bool key) const
 {
-	if (!key)
+	if (!key || !thread)
 		return;
 	*thread = 0;
 	TThread::Resume(this);

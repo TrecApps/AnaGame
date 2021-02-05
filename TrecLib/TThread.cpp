@@ -1,10 +1,8 @@
 #include "TThread.h"
-
-#include "TThread.h"
 #include "TDataArray.h"
 #include <cassert>
 
-static SECURITY_ATTRIBUTES att{
+SECURITY_ATTRIBUTES att{
 	sizeof(SECURITY_ATTRIBUTES),
 	nullptr,
 	TRUE
@@ -53,6 +51,8 @@ TThread::TThread(LPTHREAD_START_ROUTINE routine, LPVOID params)
 	details.handle = 0;
 	details.sleep = false;
 
+	details.type = ThreadType::tt_regular;
+
 	object = nullptr;
 }
 
@@ -63,6 +63,7 @@ TThread::TThread(const TThread& orig)
 	details.function = orig.details.function;
 	details.functionParams = orig.details.functionParams;
 	details.sleep = orig.details.sleep;
+	details.type = orig.details.type;
 	object = orig.object;
 }
 
@@ -141,6 +142,7 @@ DWORD TThread::CreateTThread(LPTHREAD_START_ROUTINE routine, LPVOID params)
 			threadList[Rust].details.functionParams = params;
 			threadList[Rust].details.handle = CreateThread(&att, 0, RunThread,
 				&threadList[Rust].details, CREATE_SUSPENDED, &threadList[Rust].details.threadId);
+			threadList[Rust].details.type = ThreadType::tt_regular;
 			return threadList[Rust].details.threadId;
 		}
 	}
@@ -190,15 +192,15 @@ void TThread::WakeFromSleep(DWORD id)
 	}
 }
 
-void TThread::Suspend(TObject* obj)
+void TThread::Suspend(const TObject* obj)
 {
 	DWORD id = GetCurrentThreadId();
 	for (UINT Rust = 0; Rust < threadList.Size(); Rust++)
 	{
 		if (threadList[Rust].details.threadId == id)
 		{
-			threadList[Rust].object = obj;
-			WakableSleep(obj);
+			memcpy_s(&threadList[Rust].object, sizeof(TObject*), obj, sizeof(TObject*));
+			SuspendThread(threadList[Rust].details.handle);
 			return;
 		}
 	}
@@ -215,7 +217,7 @@ void TThread::Resume(const TObject* obj)
 		if (threadList[Rust].object == obj)
 		{
 			threadList[Rust].object = nullptr;
-			// ResumeThread(threadList[Rust].details.handle);
+			ResumeThread(threadList[Rust].details.handle);
 			return;
 		}
 	}

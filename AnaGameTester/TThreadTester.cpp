@@ -50,7 +50,7 @@ void TThreadTester::multiThreaded(std::string& output)
 
 	HANDLE handles[2] = { data1.handle, data2.handle };
 
-	HANDLE thisThread = OpenThread(SYNCHRONIZE | THREAD_SUSPEND_RESUME, 0, GetCurrentThreadId());
+	//HANDLE thisThread = OpenThread(SYNCHRONIZE | THREAD_SUSPEND_RESUME, 0, GetCurrentThreadId());
 
 	WaitForMultipleObjects(2, handles, TRUE, INFINITE);
 

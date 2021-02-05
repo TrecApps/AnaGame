@@ -50,7 +50,7 @@ public:
     static void WakableSleep(const TObject* obj);
     static void WakeFromSleep(DWORD id);
 
-    static void Suspend(TObject* obj);
+    static void Suspend(const TObject* obj);
     static void Resume(const TObject* obj);
 
 private:
