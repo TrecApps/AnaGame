@@ -89,6 +89,25 @@ namespace JavaScriptFunc{
 	 */
 	TC_DATA_STRUCT void DecodeURIComponent(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
 
+	/**
+	 * Function: JsEscape
+	 * Purpose: Implements the escape JavaScript Function
+	 * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters given to the native function
+	 *				ReportObject& ret - object to report the results to
+	 * Returns: void
+	 */
+	TC_DATA_STRUCT void JsEscape(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
+
+	/**
+	 * Function: JsUnEscape
+	 * Purpose: Implements the unescape JavaScript Function
+	 * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters given to the native function
+	 *				ReportObject& ret - object to report the results to
+	 * Returns: void
+	 */
+	TC_DATA_STRUCT void JsUnEscape(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
+
+
 
 	TC_DATA_STRUCT TrecPointer<TVariable> GetJSObectVariable(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env);
 
@@ -96,7 +115,7 @@ namespace JavaScriptFunc{
 	// Helper Functions
 	bool IsInfinity(TString& str);
 
-	bool IsURLEscaped(WCHAR c, bool regular);
+	bool IsURLEscaped(WCHAR c, UCHAR regular);
 
 	bool ConvertParamOneToString(TString& value, TDataArray<TrecPointer<TVariable>>& params);
 }
