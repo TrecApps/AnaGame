@@ -142,7 +142,7 @@ protected:
 	/**
 	 * Thread that currently has a claim on this Object
 	 */
-	DWORD* thread;
+	mutable DWORD thread;
 };
 
 
