@@ -175,6 +175,7 @@
     <ClInclude Include="TGeometry.h" />
     <ClInclude Include="TGradientStop.h" />
     <ClInclude Include="TGradientStopCollection.h" />
+    <ClInclude Include="TMediaSink.h" />
     <ClInclude Include="TPlayer.h" />
     <ClInclude Include="TShaderHost.h" />
     <ClInclude Include="TShaderParser.h" />
@@ -199,6 +200,7 @@
     <ClCompile Include="TGeometry.cpp" />
     <ClCompile Include="TGradientStop.cpp" />
     <ClCompile Include="TGradientStopCollection.cpp" />
+    <ClCompile Include="TMediaSink.cpp" />
     <ClCompile Include="TPlayer.cpp" />
     <ClCompile Include="TShaderHost.cpp" />
     <ClCompile Include="TShaderParser.cpp" />
