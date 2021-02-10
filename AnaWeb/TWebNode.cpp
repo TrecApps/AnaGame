@@ -1163,7 +1163,7 @@ TString TWebNode::OnLoseFocus()
 void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 {
 	// A Good Metric to assess whether CSS Compilation is necessary
-	if (handlers.count())
+	if (attributes.count())
 		return;
 
 	// This is done to ensure that when events are activated, the node has a smaller map to retireve
@@ -1194,7 +1194,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 		}
 
 		// Start with the Node type
-		if (style->style.Find(tagName) != -1)
+		if (style->style.Find(tagName, 0, true, true) != -1)
 		{
 			for (UINT C = 0; C < style->names.count(); C++)
 			{
@@ -1205,7 +1205,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 		}
 
 		// Next check the ID type
-		if (id.GetSize() && style->style.Find(TString(L"#") + id) != -1)
+		if (id.GetSize() && style->style.Find(TString(L"#") + id, 0, true, true) != -1)
 		{
 			for (UINT C = 0; C < style->names.count(); C++)
 			{
@@ -1220,7 +1220,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 		for (UINT c = 0; c < classes->Size(); c++)
 		{
 			TString cl = classes->at(c).GetTrim();
-			if (cl.GetSize() && style->style.Find(tagName + L"." + cl) != -1)
+			if (cl.GetSize() && style->style.Find(tagName + L"." + cl, 0, true, true) != -1)
 			{
 				for (UINT C = 0; C < style->names.count(); C++)
 				{
@@ -1229,7 +1229,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 				}
 				continue;
 			}
-			else if (cl.GetSize() && style->style.Find(TString(L".") + cl) != -1)
+			else if (cl.GetSize() && style->style.Find(TString(L".") + cl, 0, true, true) != -1)
 			{
 				for (UINT C = 0; C < style->names.count(); C++)
 				{
@@ -1249,6 +1249,11 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	}
 
 	TString val;
+
+	if (attributes.retrieveEntry(L"display", val))
+	{
+		SetDisplay(val);
+	}
 
 	// take care of text attributes
 	if (atts.retrieveEntry(L"color", val))

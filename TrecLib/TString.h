@@ -599,11 +599,12 @@ public:
 	 * Parameters: const TString& sub - the string to search for
 	 *				int start - the index to begin the search from
 	 *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
+	 *				bool notAlphaNum - false if you don't care if entry is surrounded by alpha-numberic characters, true if you want it isolated from alphanumeric characters
 	 * Returns: int - the index of the string found
 	 * 
 	 * Attributes: const
 	 */
-	int Find(const TString& sub, int start = 0, bool ignoreEscape = true) const;
+	int Find(const TString& sub, int start = 0, bool ignoreEscape = true, bool notAlphaNum = false) const;
 	/**
 	 * Method: TString::Find
 	 * Purpose: Finds the first instance of the specified character

@@ -1938,9 +1938,10 @@ bool TString::EndsWith(const TString& seq, bool ignoreCase)const
  * Parameters: const TString& sub - the string to search for
  *				int start - the index to begin the search from 
  *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
+	 *				bool notAlphaNum - false if you don't care if entry is surrounded by alpha-numberic characters, true if you want it isolated from alphanumeric characters
  * Returns: int - the index of the string found
  */
-int TString::Find(const TString& sub, int start, bool ignoreEscape) const
+int TString::Find(const TString& sub, int start, bool ignoreEscape, bool notAlphaNum) const
 {
 	int indexStart = start;
 
@@ -1968,7 +1969,18 @@ int TString::Find(const TString& sub, int start, bool ignoreEscape) const
 
 		if (works)
 		{
-			return indexStart;
+			if(!notAlphaNum) // If we don't care about what surrounds our entry, go ahead and return it
+				return indexStart;
+			// Otherwise, check to see if it is isolated from other alpha numeric characters
+			// Use this to track the ends. 1 = clear from beginning, 2 means clear from end, need three to return
+			UCHAR uWorks = 0;
+			if (indexStart == 0 || !isalnum(string[indexStart - 1]))
+				uWorks += 1;
+			int indexEnd = indexStart + sub.GetSize();
+			if (indexEnd >= size || !isalnum(string[indexEnd]))
+				uWorks += 2;
+			if (uWorks == 3)
+				return indexStart;
 		}
 		indexStart++;
 	}
