@@ -35,8 +35,8 @@ TMap<TNativeInterpretor> GetJavaScriptFunctions()
 
     jsFunctions.addEntry(L"escape", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::JsEscape, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
     jsFunctions.addEntry(L"unescape", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::JsUnEscape, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    // jsFunctions.addEntry(L"parseFloat", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseFloat, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    // jsFunctions.addEntry(L"parseInt", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseInt, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"Number", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::Number, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"String", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::String, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
 
     return jsFunctions;
 }
@@ -464,6 +464,33 @@ TC_DATA_STRUCT void JavaScriptFunc::JsUnEscape(TDataArray<TrecPointer<TVariable>
         }
     }
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val);
+}
+
+void JavaScriptFunc::Number(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+{
+    if (!params.Size() || !params[0].Get())
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(0);
+    else
+    {
+        parseInt(params, env, ret);
+        if (ret.returnCode)
+        {
+            ret.returnCode = 0;
+            parseFloat(params, env, ret);
+        }
+    }
+}
+
+void JavaScriptFunc::String(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+{
+    if (params.Size())
+    {
+        if (params[0].Get())
+            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(params[0]->GetString());
+        else
+            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(L"null");
+    }
+    else ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(L"undefined");
 }
 
 TrecPointer<TVariable> JavaScriptFunc::GetJSObectVariable(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)

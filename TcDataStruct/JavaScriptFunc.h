@@ -107,6 +107,26 @@ namespace JavaScriptFunc{
 	 */
 	TC_DATA_STRUCT void JsUnEscape(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
 
+	// Number Related Functions
+
+	/**
+	 * Function: Number
+	 * Purpose: Implements the Number Function
+	 * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters given to the native function
+	 *				ReportObject& ret - object to report the results to
+	 * Returns: void
+	 */
+	TC_DATA_STRUCT void Number(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
+
+	/**
+	 * Function: String
+	 * Purpose: Implements the String Function
+	 * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters given to the native function
+	 *				ReportObject& ret - object to report the results to
+	 * Returns: void
+	 */
+	TC_DATA_STRUCT void String(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
+
 
 
 	TC_DATA_STRUCT TrecPointer<TVariable> GetJSObectVariable(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env);
