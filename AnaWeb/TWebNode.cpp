@@ -1422,7 +1422,7 @@ void TWebNode::RetrieveText(TDataArray<TextData>& textDataList)
 		{
 			// ThisTextData should be initialized in a create call prior to this method being called
 			TextData submitData(thisTextData);
-			submitData.text.Set(dynamic_cast<TTextField*>(childNode.Get())->GetText());
+			submitData.text.Set(dynamic_cast<TTextField*>(childNode->control.Get())->GetText());
 		}
 		else
 		{
