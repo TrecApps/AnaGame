@@ -1033,45 +1033,7 @@ DoubleLong TInterpretor::Exponent(const DoubleLong& v1, const DoubleLong& v2)
  */
 DoubleLong TInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
 {
-	if(!var.Get() || var->GetVarType() != var_type::primitive)
-		return DoubleLong();
-
-	double f_value = 0.0;
-	ULONG64 u_value = 0ULL;
-	LONG64 s_value = 0LL;
-
-	switch (var->GetType())
-	{
-	case (TPrimitiveVariable::type_bool):
-		return DoubleLong( 1ULL);
-
-	case (0b00110010):						// Indicates a four-byte float
-		u_value = var->Get4Value();
-		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
-		return DoubleLong( f_value);
-
-	case (0b01000010):						// Indicates an eight-byte float
-		u_value = var->Get8Value();
-		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
-		return DoubleLong( f_value);
-
-	case (0b00010000):						// Indicates a 1-byte int
-	case (0b00100000):						// Indicates a 2-byte int
-	case (0b00110000):						// Indicates a 4-byte int
-	case (0b01000000):						// Indicates an 8-byte int
-		u_value = var->Get8Value();
-		memcpy_s(&s_value, sizeof(s_value), &u_value, sizeof(u_value));
-		return DoubleLong( s_value);
-
-	case (0b00011000):						// Indicates a 1-byte uint
-	case (0b00101000):						// Indicates a 2-byte uint
-	case (0b00111000):						// Indicates a 4-byte uint
-	case (0b01001000):						// Indicates an 8-byte uint
-		return DoubleLong( static_cast<ULONG64>(u_value));
-
-
-	}
-	return DoubleLong();
+	return DoubleLong::GetValueFromPrimitive(var);
 }
 
 /**
@@ -1256,6 +1218,49 @@ ULONG64 DoubleLong::GetBitOr(const DoubleLong& o)
 ULONG64 DoubleLong::GetBitXor(const DoubleLong& o)
 {
 	return ToUnsignedLong() ^ o.ToUnsignedLong();
+}
+
+DoubleLong DoubleLong::GetValueFromPrimitive(TrecPointer<TVariable> var)
+{
+	if (!var.Get() || var->GetVarType() != var_type::primitive)
+		return DoubleLong();
+
+	double f_value = 0.0;
+	ULONG64 u_value = 0ULL;
+	LONG64 s_value = 0LL;
+
+	switch (var->GetType())
+	{
+	case (TPrimitiveVariable::type_bool):
+		return DoubleLong(1ULL);
+
+	case (0b00110010):						// Indicates a four-byte float
+		u_value = var->Get4Value();
+		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
+		return DoubleLong(f_value);
+
+	case (0b01000010):						// Indicates an eight-byte float
+		u_value = var->Get8Value();
+		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
+		return DoubleLong(f_value);
+
+	case (0b00010000):						// Indicates a 1-byte int
+	case (0b00100000):						// Indicates a 2-byte int
+	case (0b00110000):						// Indicates a 4-byte int
+	case (0b01000000):						// Indicates an 8-byte int
+		u_value = var->Get8Value();
+		memcpy_s(&s_value, sizeof(s_value), &u_value, sizeof(u_value));
+		return DoubleLong(s_value);
+
+	case (0b00011000):						// Indicates a 1-byte uint
+	case (0b00101000):						// Indicates a 2-byte uint
+	case (0b00111000):						// Indicates a 4-byte uint
+	case (0b01001000):						// Indicates an 8-byte uint
+		return DoubleLong(static_cast<ULONG64>(u_value));
+
+
+	}
+	return DoubleLong();
 }
 
 bool DoubleLong::operator<=(const DoubleLong& o)

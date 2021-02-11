@@ -65,6 +65,14 @@ public:
     ULONG64 GetBitAnd(const DoubleLong& o);
     ULONG64 GetBitOr(const DoubleLong& o);
     ULONG64 GetBitXor(const DoubleLong& o);
+
+    /**
+     * Method: TInterpretor::GetValueFromPrimitive
+     * Purpose: Helper method for interpreting arithmetic operations by extracting the value from the variable
+     * Parameters: TrecPointer<TVariable> var - the variable believed holding the primitive value
+     * Returns: DoubleLong - the value held by the variable
+     */
+    static DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var);
 };
 
 typedef enum class report_mode
