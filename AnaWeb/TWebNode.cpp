@@ -1162,6 +1162,9 @@ TString TWebNode::OnLoseFocus()
 
 void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 {
+	TString empty;
+	attributes.removeEntry(empty, empty);
+
 	// A Good Metric to assess whether CSS Compilation is necessary
 	if (attributes.count())
 		return;
@@ -1250,7 +1253,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 
 	TString val;
 
-	if (attributes.retrieveEntry(L"display", val))
+	if (atts.retrieveEntry(L"display", val))
 	{
 		SetDisplay(val);
 	}
