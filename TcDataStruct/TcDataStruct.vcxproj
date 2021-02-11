@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="JsMath.h" />
+    <ClInclude Include="JsNumber.h" />
     <ClInclude Include="TAccessorVariable.h" />
     <ClInclude Include="TcDataStruct.h" />
     <ClInclude Include="JavaScriptFunc.h" />
@@ -177,6 +178,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="JavaScriptFunc.cpp" />
     <ClCompile Include="JsMath.cpp" />
+    <ClCompile Include="JsNumber.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
