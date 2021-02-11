@@ -66,6 +66,9 @@
     <ClInclude Include="TAccessorVariable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="JsMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -111,6 +114,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TAccessorVariable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JsMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
