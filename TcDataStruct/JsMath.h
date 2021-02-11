@@ -9,7 +9,7 @@ namespace JsMath
 	 * Parameters: void
 	 * Returns: TrecPointer<TVariable> - the Math Object
 	 */
-	TC_DATA_STRUCT TrecPointer<TVariable> GetJsMathObject();
+	TC_DATA_STRUCT TrecPointer<TVariable> GetJsMathObject(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env);
 
 	TC_DATA_STRUCT void abs(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
 	TC_DATA_STRUCT void acos(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);

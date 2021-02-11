@@ -10,7 +10,7 @@ namespace JsNumber
 	 * Parameters: void
 	 * Returns: TrecPointer<TVariable> - the Math Object
 	 */
-	TC_DATA_STRUCT TrecPointer<TVariable> GetJsNumberObject();
+	TC_DATA_STRUCT TrecPointer<TVariable> GetJsNumberObject(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env);
 
 	TC_DATA_STRUCT void isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
 	TC_DATA_STRUCT void isInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret);
