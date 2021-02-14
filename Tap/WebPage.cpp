@@ -95,7 +95,7 @@ void WebPage::Draw(TWindowEngine* twe)
 {
 	if (rootNode.Get())
 	{
-
+		rootNode->OnDraw();
 	}
 	else
 		Page::Draw(twe);

@@ -99,6 +99,8 @@ public:
     TextData();
     TextData(const TextData&);
 
+    void Update(const TextData& copy);
+
     TString text;
     USHORT fontSize;
     DWRITE_FLOW_DIRECTION flowDirection;
@@ -108,6 +110,9 @@ public:
     DWRITE_LINE_SPACING_METHOD lineSpacing;
     TColor textColor, backgroundColor;
     bool hasBackgroundColor;
+
+    bool fontSizeUpdated, flowDirectionUpdated, fontStretchUpdated, 
+        fontStyleUpdated, fontWeightUpdated, lineSpacingUpdated, textColorUpdated;
 };
 
 /**
@@ -321,6 +326,14 @@ public:
      */
     TString OnLoseFocus();
 
+    /**
+     * Method: TWebNode::OnDraw
+     * Purpose: Draws the Node
+     * Parameters: void
+     * Returns: void
+     */
+    void OnDraw();
+
 
 protected:
     /// Display Properties
@@ -401,7 +414,7 @@ protected:
     /**
      * Whether to display at all
      */
-    bool doDisplay;
+    bool doDisplay, shouldDraw;
 
     /**
      * The Display outside Property

@@ -1025,7 +1025,7 @@ void TTextField::AppendNormalText(const TString & t)
 
 bool TTextField::ApplyFormatting(FormattingDetails ds)
 {
-	if((ds.range.startPosition + ds.range.length) >= text.GetSize())
+	if((ds.range.startPosition + ds.range.length) > text.GetSize())
 		return false;
 
 	this->details.push_back(ds);
@@ -1360,6 +1360,7 @@ void TTextField::updateTextString()
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
+		layout->SetFontSize(details[c].fontSize, details[c].range);
 
 		if (details[c].color.Get())
 			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
@@ -2006,6 +2007,7 @@ FormattingDetails::FormattingDetails()
 {
 	this->style = DWRITE_FONT_STYLE_NORMAL;
 	this->weight = DWRITE_FONT_WEIGHT_NORMAL;
+	this->fontSize = 12.0f;
 	this->range = { 0,0 };
 }
 
@@ -2015,6 +2017,7 @@ FormattingDetails::FormattingDetails(const FormattingDetails& copy)
 	this->weight = copy.weight;
 	this->range = copy.range;
 	this->color = copy.color;
+	this->fontSize = copy.fontSize;
 }
 
 /*

@@ -76,7 +76,7 @@ TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 	outsideDisplay = WebNodeDisplayOutside::wndo_block;
 	insideDisplay = WebNodeDisplayInside::wndi_flex;
 	internalDisplay = WebNodeDisplayInternal::wndi_not_set;
-	doDisplay = true;
+	doDisplay = shouldDraw = true;
 	isListItem = false;
 	location = D2D1::RectF();
 	columnSpan = rowSpan = 1;
@@ -190,14 +190,16 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 
 		if (ch == L'<')
 		{
-			printableText.Trim();
-			if (printableText.GetSize())
+			// printableText.Trim();
+			if (printableText.GetTrim().GetSize())
 			{
 				TrecSubPointer<TControl, TTextField> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), win);
+				
 				textEle->SetText(printableText);
+				TrecPointer<TWebNode::TWebNodeContainer> newNode = TrecPointerKey::GetNewTrecPointer<TWebNode::TWebNodeContainer>(textEle);
+				
+				childNodes.push_back(newNode);
 				printableText.Empty();
-
-				childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNode::TWebNodeContainer>(textEle));
 			}
 
 
@@ -640,8 +642,9 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 				currentTextNode = ch;
 				currentTextNode->initTextSize = tempTextData.text.GetSize();
 			}
-			
-			currentTextNode->textDataList.push_back(thisTextData);
+
+			if(tempTextData.text.GetTrim().GetSize())
+				currentTextNode->textDataList.push_back(tempTextData);
 		}
 
 	}
@@ -1160,6 +1163,36 @@ TString TWebNode::OnLoseFocus()
 	return TString();
 }
 
+/**
+ * Method: TWebNode::OnDraw
+ * Purpose: Draws the Node
+ * Parameters: void
+ * Returns: void
+ */
+void TWebNode::OnDraw()
+{
+	if (!shouldDraw)
+		return;
+	// To-Do: Draw Self Content once such resources are added to the node
+
+
+	// Now draw the ChildNodes
+	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	{
+		if (!childNodes[Rust].Get() || childNodes[Rust]->type == NodeContainerType::ntc_null)
+		{
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+
+		if (childNodes[Rust]->webNode.Get())
+			childNodes[Rust]->webNode->OnDraw();
+		else if (childNodes[Rust]->control.Get())
+			childNodes[Rust]->control->onDraw();
+	}
+}
+
+
 void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 {
 	TString empty;
@@ -1262,6 +1295,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	if (atts.retrieveEntry(L"color", val))
 	{
 		thisTextData.textColor.SetColor(val);
+		thisTextData.textColorUpdated = true;
 	}
 
 	if (atts.retrieveEntry(L"font-style", val))
@@ -1271,6 +1305,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 		else if (!val.Compare(L"oblique"))
 			thisTextData.fontStyle = DWRITE_FONT_STYLE_OBLIQUE;
 		// Default is normal
+		thisTextData.fontStyleUpdated = true;
 	}
 
 
@@ -1325,6 +1360,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 			// To-Do:
 		}
 
+		thisTextData.fontWeightUpdated = true;
 	}
 
 
@@ -1370,6 +1406,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 
 bool TWebNode::IsText()
 {
+	shouldDraw = true;
 	if(this->outsideDisplay != WebNodeDisplayOutside::wndo_inline)
 		return false; // In this case, text generated here cannot be injected into a parent Node
 
@@ -1402,6 +1439,7 @@ bool TWebNode::IsText()
 		}
 
 	}
+	shouldDraw = false;
 	return true;
 }
 
@@ -1409,6 +1447,8 @@ void TWebNode::RetrieveText(TDataArray<TextData>& textDataList)
 {
 	if (!IsText())
 		return;
+
+	UINT curListSize = textDataList.Size();
 
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
@@ -1423,6 +1463,8 @@ void TWebNode::RetrieveText(TDataArray<TextData>& textDataList)
 			// ThisTextData should be initialized in a create call prior to this method being called
 			TextData submitData(thisTextData);
 			submitData.text.Set(dynamic_cast<TTextField*>(childNode->control.Get())->GetText());
+			if(submitData.text.GetTrim().GetSize())
+				textDataList.push_back(submitData);
 		}
 		else
 		{
@@ -1430,6 +1472,11 @@ void TWebNode::RetrieveText(TDataArray<TextData>& textDataList)
 			childNode->webNode->RetrieveText(textDataList);
 		}
 
+	}
+	// Now to Update all sections added with this Nodes Text Data
+	for (UINT Rust = curListSize + 1; Rust < textDataList.Size(); Rust++)
+	{
+		textDataList[Rust].Update(thisTextData);
 	}
 }
 
@@ -1460,11 +1507,12 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 	{
 		det.range.startPosition = beginningIndex;
 		det.range.length = textNode->textDataList[Rust].text.GetSize();
-		beginningIndex = det.range.length + 1;
+		beginningIndex += det.range.length;
 
 		det.style = textNode->textDataList[Rust].fontStyle;
 		det.weight = textNode->textDataList[Rust].fontWeight;
 		det.color = board->GetBrush(textNode->textDataList[Rust].textColor);
+		det.fontSize = textNode->textDataList[Rust].fontSize;
 
 		// Do-To: Add more fields to the FormattingDetails object and transfer dditional fields over to it
 
@@ -1622,7 +1670,7 @@ D2D1_RECT_F TWebNode::TWebNodeContainer::GetLocation()
 
 TextData::TextData()
 {
-	fontSize = 12;
+	fontSize = 16;
 	flowDirection = DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM;
 	fontStretch = DWRITE_FONT_STRETCH_NORMAL;
 	fontStyle = DWRITE_FONT_STYLE_NORMAL;
@@ -1630,17 +1678,77 @@ TextData::TextData()
 	lineSpacing = DWRITE_LINE_SPACING_METHOD_DEFAULT;
 	textColor = backgroundColor = D2D1::ColorF(D2D1::ColorF::Black);
 	hasBackgroundColor = false;
+
+	fontSizeUpdated = flowDirectionUpdated = fontStretchUpdated =
+		fontStyleUpdated = fontWeightUpdated = lineSpacingUpdated = textColorUpdated = false;
 }
 
 TextData::TextData(const TextData& data)
 {
 	fontSize = data.fontSize;
+	fontSizeUpdated = data.fontSizeUpdated;
+
 	flowDirection = data.flowDirection;
+	flowDirectionUpdated = data.flowDirectionUpdated;
+
 	fontStretch = data.fontStretch;
+	fontStretchUpdated = data.fontStretchUpdated;
+
 	fontStyle = data.fontStyle;
+	fontStyleUpdated = data.fontStyleUpdated;
+
 	fontWeight = data.fontWeight;
+	fontWeightUpdated = data.fontWeightUpdated;
+	
 	lineSpacing = data.lineSpacing;
+	lineSpacingUpdated = data.lineSpacingUpdated;
+
 	textColor = data.textColor;
+	textColorUpdated = data.textColorUpdated;
+
 	backgroundColor = data.backgroundColor;
+
 	hasBackgroundColor = data.hasBackgroundColor;
+	text.Set(data.text);
+
+}
+
+void TextData::Update(const TextData& copy)
+{
+	if (copy.flowDirectionUpdated && !flowDirectionUpdated)
+	{
+		flowDirection = copy.flowDirection;
+		flowDirectionUpdated = true;
+	}
+	if (copy.fontSizeUpdated && !fontSizeUpdated)
+	{
+		fontSize = copy.fontSize;
+		fontSizeUpdated = true;
+	}
+	if (copy.fontStretchUpdated && !fontStretchUpdated)
+	{
+		fontStretch = copy.fontStretch;
+		fontStretchUpdated = true;
+	}
+	if (copy.fontStyleUpdated && !fontStyleUpdated)
+	{
+		fontStyle = copy.fontStyle;
+		fontStyleUpdated = true;
+	}
+	if (copy.fontWeightUpdated && !fontWeightUpdated)
+	{
+		fontWeight = copy.fontWeight;
+		fontWeightUpdated = true;
+	}
+	if (copy.lineSpacingUpdated && !lineSpacingUpdated)
+	{
+		lineSpacing = copy.lineSpacing;
+		lineSpacingUpdated = true;
+	}
+	if (copy.textColorUpdated && !textColorUpdated)
+	{
+		textColor = copy.textColor;
+		textColorUpdated = true;
+	}
+
 }
