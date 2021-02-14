@@ -6,6 +6,7 @@
 #include "JsConsole.h"
 #include "TJavaScriptClassInterpretor.h"
 #include <JavaScriptFunc.h>
+#include <TAccessorVariable.h>
 
 
 static TDataArray<WCHAR> noSemiColonEnd;
@@ -3030,27 +3031,123 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
     }
 
     TrecSubPointer<TVariable, TContainerVariable> retVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
-
+    TrecSubPointer<TVariable, TAccessorVariable> accessVar;
     for (UINT Rust = 0; Rust < sections.Size(); Rust++)
     {
         auto pieces = sections[Rust].splitn(L':', 2, 3);
 
-        if (!InspectVariable(pieces->at(0)))
+        // Check for Set and Get
+        UCHAR getSet = 0;
+
+        if (pieces->at(0).StartsWith(L"get", false, true))
+        {
+            getSet = 1;
+            pieces->at(0).Delete(0, 3);
+            pieces->at(0).Trim();
+        }
+        else if (pieces->at(0).StartsWith(L"set", false, true))
+        {
+            getSet = 2;
+            pieces->at(0).Delete(0, 3);
+            pieces->at(0).Trim();
+        }
+
+        // Now We need to check for cases where the code is 
+        //  get : function() { ... } , likely in calls to Object.defineProperty(...)
+        //
+        // As a result, the name can be blank if the getSet variable has been set to 1 or 2
+
+        if (getSet && !pieces->at(0).GetSize())
+        {
+            pieces->at(0).Set(getSet == 1 ? L"get" : L"set");
+        }
+        else if (!InspectVariable(pieces->at(0)))
         {
             ro.returnCode = ro.invalid_name;
             return;
         }
+
+ 
 
         if (pieces->Size() == 2 && pieces->at(1).GetSize())
         {
             ProcessExpression(statements, cur, pieces->at(1), line, ro);
             if (ro.returnCode)
                 return;
-            retVar->SetValue(pieces->at(0), ro.errorObject);
+
+            if (getSet)
+            {
+                if (!ro.errorObject.Get() || ro.errorObject->GetVarType() != var_type::interpretor)
+                {
+                    ro.returnCode = ReportObject::improper_type;
+                    ro.errorMessage.Set("Get/Set Attribute must be a non-null function/method!");
+                    return;
+                }
+            }
+            bool pres;
+            // Now check to see if we are dealing with a setter and getter
+            switch (getSet)
+            {
+            case 1: // getter
+                if (!pieces->at(0).Compare(L"get"))
+                    goto default_;
+
+                accessVar = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TAccessorVariable>(retVar->GetValue(pieces->at(0), pres));
+                if (!accessVar.Get())
+                    accessVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAccessorVariable>();
+
+                if (accessVar->GetGetter().Get())
+                {
+                    ro.returnCode = ReportObject::existing_var;
+                    ro.errorMessage.Format(L"Error! %ws variable already has a getter!", pieces->at(0).GetConstantBuffer());
+                    return;
+                }
+                accessVar->SetGetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(ro.errorObject));
+                retVar->SetValue(pieces->at(0), TrecPointerKey::GetTrecPointerFromSub<TVariable, TAccessorVariable>(accessVar));
+                accessVar.Nullify();
+                break;
+            case 2: // setter
+                if (!pieces->at(0).Compare(L"set"))
+                    goto default_;
+
+                accessVar = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TAccessorVariable>(retVar->GetValue(pieces->at(0), pres));
+                if (!accessVar.Get())
+                    accessVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAccessorVariable>();
+
+                if (accessVar->GetSetter().Get())
+                {
+                    ro.returnCode = ReportObject::existing_var;
+                    ro.errorMessage.Format(L"Error! %ws variable already has a setter!", pieces->at(0).GetConstantBuffer());
+                    return;
+                }
+                accessVar->SetSetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(ro.errorObject));
+                retVar->SetValue(pieces->at(0), TrecPointerKey::GetTrecPointerFromSub<TVariable, TAccessorVariable>(accessVar));
+                accessVar.Nullify();
+                
+                break;
+            default_:
+            default: // regular
+                retVar->SetValue(pieces->at(0), ro.errorObject);
+            }
         }
     }
+    bool pres;
+    TrecPointer<TVariable> g = retVar->GetValue(L"get", pres), s = retVar->GetValue(L"set", pres);
 
-    ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(retVar);
+    if (g.Get() || s.Get())
+    {
+        // In this case, the variable to return is an accessor variable, not a container one.
+        // To-Do: if error messages are warrented for more attributes, check for those attributes and return and error
+
+
+        // End To-Do:
+        accessVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAccessorVariable>();
+        accessVar->SetSetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(s));
+        accessVar->SetGetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(g));
+        ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(accessVar);
+    }
+    else
+        ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(retVar);
 }
 
 bool TJavaScriptInterpretor::InspectVariable(const TString& exp)

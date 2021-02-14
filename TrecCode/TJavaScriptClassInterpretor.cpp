@@ -1,4 +1,5 @@
 #include "TJavaScriptClassInterpretor.h"
+#include <TAccessorVariable.h>
 
 /**
  * Function: GetJsObjectInstance
@@ -152,6 +153,22 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
                 {
                     attributes |= ATTRIBUTE_CONST;
                     startStatement.Delete(0, 5);
+                    startStatement.Trim();
+                    inspectAtts = true;
+                }
+
+                if (startStatement.StartsWith(L"get", false, true))
+                {
+                    attributes |= ATTRIBUTE_GETTER;
+                    startStatement.Delete(0, 3);
+                    startStatement.Trim();
+                    inspectAtts = true;
+                }
+
+                if (startStatement.StartsWith(L"set", false, true))
+                {
+                    attributes |= ATTRIBUTE_SETTER;
+                    startStatement.Delete(0, 3);
                     startStatement.Trim();
                     inspectAtts = true;
                 }
@@ -320,6 +337,81 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
 
         //block->variables.addEntry(L"super", TVariableMarker(false, superConstructor));
         // dynamic_cast<TJavaScriptInterpretor*>(superConstructor.Get())->variables.addEntry(L"this", TVariableMarker(false, ))
+    }
+
+    // Handle Get Vs Set
+    if (att & ATTRIBUTE_GETTER)
+    {
+        // dealing with a getter
+        TClassAttribute accessAtt = classData.GetAttributeByName(methodName);
+
+        if (accessAtt.name.GetSize())
+        {
+            if (!accessAtt.def.Get() || accessAtt.def->GetVarType() != var_type::accessor)
+            {
+                ro.returnCode = ReportObject::existing_var;
+                ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+                return;
+            }
+        }
+        else
+        {
+            // This attribute has not previously been encountered
+            accessAtt.name.Set(methodName);
+            accessAtt.def = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAccessorVariable>();
+        }
+
+        auto g = dynamic_cast<TAccessorVariable*>(accessAtt.def.Get())->GetGetter();
+        if (g.Get())
+        {
+            ro.returnCode = ReportObject::existing_var;
+            ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already has a getter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+            return;
+        }
+
+        dynamic_cast<TAccessorVariable*>(accessAtt.def.Get())->SetGetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(
+            TrecPointerKey::GetTrecPointerFromSub<>(block)));
+
+        accessAtt.other = att;
+        classData.AddAttribute(accessAtt, true);
+        return;
+    }
+
+    if (att & ATTRIBUTE_SETTER)
+    {
+        // dealing with a setter
+        TClassAttribute accessAtt = classData.GetAttributeByName(methodName);
+
+        if (accessAtt.name.GetSize())
+        {
+            if (!accessAtt.def.Get() || accessAtt.def->GetVarType() != var_type::accessor)
+            {
+                ro.returnCode = ReportObject::existing_var;
+                ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+                return;
+            }
+        }
+        else
+        {
+            // This attribute has not previously been encountered
+            accessAtt.name.Set(methodName);
+            accessAtt.def = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAccessorVariable>();
+        }
+
+        auto s = dynamic_cast<TAccessorVariable*>(accessAtt.def.Get())->GetSetter();
+        if (s.Get())
+        {
+            ro.returnCode = ReportObject::existing_var;
+            ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already has a setter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+            return;
+        }
+
+        dynamic_cast<TAccessorVariable*>(accessAtt.def.Get())->SetSetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(
+            TrecPointerKey::GetTrecPointerFromSub<>(block)));
+
+        accessAtt.other = att;
+        classData.AddAttribute(accessAtt, true);
+        return;
     }
 
     TClassAttribute constructor;

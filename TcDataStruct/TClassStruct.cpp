@@ -28,14 +28,19 @@ TClassStruct::TClassStruct()
 	classType = tc_class_type::tct_class;
 }
 
-bool TClassStruct::AddAttribute(const TClassAttribute& att)
+bool TClassStruct::AddAttribute(const TClassAttribute& att, bool doOverride)
 {
 	if(!att.name.GetSize())
 		return false;
 	for (UINT Rust = 0; Rust < attributes.Size(); Rust++)
 	{
 		if ((caseSensitive) ? (!att.name.Compare(attributes[Rust].name)) : (!att.name.CompareNoCase(attributes[Rust].name)))
-			return false;
+		{
+			if (!doOverride)
+				return false;
+			attributes[Rust] = att;
+			return true;
+		}
 	}
 	attributes.push_back(att);
 	return true;
