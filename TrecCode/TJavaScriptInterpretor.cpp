@@ -2746,15 +2746,36 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
 
     if (curVar.Get())
     {
-        if (curVar->GetVarType() == var_type::collection)
+        // Check to see if we have a number and should prepare to call
+        bool notNumber = true;
+        if (curVar->GetVarType() == var_type::primitive || curVar->GetVarType() == var_type::primitive_formatted)
         {
-            curVar = dynamic_cast<TContainerVariable*>(curVar.Get())->GetValue(varName, present, L"__proto__");
+            auto varPieces = fullVarName.split(L'.');
+            TString numClassString(L"Number");
+            auto NumberClass = GetVariable(numClassString, present);
+            if (NumberClass.Get() && NumberClass->GetVarType() == var_type::collection)
+            {
+                auto numFunc = dynamic_cast<TContainerVariable*>(NumberClass.Get())->GetValue(varPieces->at(varPieces->Size() - 1), present);
+                if (numFunc.Get() && numFunc->GetVarType() == var_type::interpretor)
+                {
+                    notNumber = false;
+                    curVar = numFunc;
+                }
+            }
         }
-        else if(fullVarName.Find(L"prototype") == -1)
+
+        if (notNumber)
         {
-            ro.returnCode = ro.improper_type;
-            ro.errorMessage.Format(L"Variable not a collection variable. Could not get Member name %ws", varName.GetConstantBuffer());
-            return false;
+            if (curVar->GetVarType() == var_type::collection)
+            {
+                curVar = dynamic_cast<TContainerVariable*>(curVar.Get())->GetValue(varName, present, L"__proto__");
+            }
+            else if (fullVarName.Find(L"prototype") == -1)
+            {
+                ro.returnCode = ro.improper_type;
+                ro.errorMessage.Format(L"Variable not a collection variable. Could not get Member name %ws", varName.GetConstantBuffer());
+                return false;
+            }
         }
     }
     else
