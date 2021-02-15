@@ -179,6 +179,7 @@
     <ClInclude Include="TPlayer.h" />
     <ClInclude Include="TShaderHost.h" />
     <ClInclude Include="TShaderParser.h" />
+    <ClInclude Include="TStreamSink.h" />
     <ClInclude Include="TWindowEngine.h" />
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +205,7 @@
     <ClCompile Include="TPlayer.cpp" />
     <ClCompile Include="TShaderHost.cpp" />
     <ClCompile Include="TShaderParser.cpp" />
+    <ClCompile Include="TStreamSink.cpp" />
     <ClCompile Include="TWindowEngine.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

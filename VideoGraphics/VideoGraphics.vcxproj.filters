@@ -72,6 +72,9 @@
     <ClInclude Include="TMediaSink.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TStreamSink.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -126,6 +129,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TMediaSink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TStreamSink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,6 +2,7 @@
 #include <TObject.h>
 #include <mfidl.h>
 #include <TrecReference.h>
+#include <TDataArray.h> 
 
 /**
  * Class: TMediaSink
@@ -16,9 +17,9 @@ public:
     static TrecComPointer<TMediaSink> CreateInstance();
 
     // IUnknown
-    STDMETHODIMP_(ULONG) AddRef(void);
-    STDMETHODIMP QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv);
-    STDMETHODIMP_(ULONG) Release(void);
+    STDMETHODIMP_(ULONG) AddRef(void) override;
+    STDMETHODIMP QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv) override;
+    STDMETHODIMP_(ULONG) Release(void) override;
 
     // IMFMediaSink methods
     STDMETHODIMP AddStreamSink(DWORD dwStreamSinkIdentifier, __RPC__in_opt IMFMediaType* pMediaType, __RPC__deref_out_opt IMFStreamSink** ppStreamSink);
@@ -31,10 +32,15 @@ public:
     STDMETHODIMP SetPresentationClock(__RPC__in_opt IMFPresentationClock* pPresentationClock);
     STDMETHODIMP Shutdown(void);
 
-private:
+    // Anagame Alternative Methods
+    
 
+private:
+    bool AddStreamSink(TrecComPointer<IMFStreamSink> sink);
     TMediaSink();
 
     long m_nRefCount;
+    bool isShutdown;
+    TDataArray<TrecComPointer<IMFStreamSink>> streamSinks;
 };
 

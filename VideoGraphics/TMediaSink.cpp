@@ -1,9 +1,11 @@
 #include "TMediaSink.h"
 #include <Shlwapi.h>
+#include <Mferror.h>
 
 TMediaSink::TMediaSink()
 {
     this->m_nRefCount = 1;
+    this->isShutdown = false;
 }
 
 ULONG TMediaSink::AddRef(void)
@@ -29,9 +31,9 @@ ULONG TMediaSink::Release(void)
     return c;
 }
 
-HRESULT TMediaSink::AddStreamSink(DWORD dwStreamSinkIdentifier, IMFMediaType* pMediaType, IMFStreamSink** ppStreamSink)
+HRESULT TMediaSink::AddStreamSink(DWORD dwStreamSinkIdentifier, __RPC__in_opt IMFMediaType* pMediaType, __RPC__deref_out_opt IMFStreamSink** ppStreamSink)
 {
-    return E_NOTIMPL;
+    return MF_E_STREAMSINKS_FIXED;
 }
 
 HRESULT TMediaSink::GetCharacteristics(DWORD* pdwCharacteristics)
@@ -72,4 +74,18 @@ HRESULT TMediaSink::SetPresentationClock(IMFPresentationClock* pPresentationCloc
 HRESULT TMediaSink::Shutdown(void)
 {
     return E_NOTIMPL;
+}
+
+bool TMediaSink::AddStreamSink(TrecComPointer<IMFStreamSink> sink)
+{
+    if(!sink.Get())
+        return false;
+
+    for (UINT Rust = 0; Rust < streamSinks.Size(); Rust++)
+    {
+        if (sink.Get() == streamSinks[Rust].Get())
+            return false;
+    }
+    streamSinks.push_back(sink);
+    return true;
 }
