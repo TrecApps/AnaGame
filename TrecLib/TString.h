@@ -40,7 +40,37 @@ typedef struct IndexRange {
  */
 class _TREC_LIB_DLL TString : public TObject
 {
+	friend class TConstBuffer;
 public:
+
+
+	/**
+	 * Class: TConstBuffer
+	 * Purpose: Provides Thread Protection to calls to GetConstBuffer
+	 */
+	class TConstBuffer
+	{
+	public:
+		TConstBuffer(TString* string);
+		TConstBuffer(const TConstBuffer& buff);
+		~TConstBuffer();
+
+		const WCHAR* getBuffer();
+	private:
+		TString* string;
+	};
+
+private:
+	mutable bool shouldUnlock;
+
+	UCHAR BufferCounter;
+
+	void IncrementBuffer();
+
+	void DecrementBuffer();
+
+public:
+
 
 	/**
 	 * Method: TString::GetType
@@ -212,11 +242,11 @@ public:
 	 * Mehtod: TString::GetConstantBuffer
 	 * Purpose: Returns the underlying String
 	 * Parameters: void
-	 * Returns: const WCHAR* - a constant pointer of the underlying string buffer
+	 * Returns: TConstBuffer - a constant pointer of the underlying string buffer
 	* 
 	* Attributes: const
 	 */
-	const WCHAR* GetConstantBuffer() const;
+	TConstBuffer GetConstantBuffer();
 
 	/*
 	* Method: TString::SubString

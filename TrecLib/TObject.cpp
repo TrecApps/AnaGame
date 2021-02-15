@@ -17,7 +17,8 @@ WCHAR str_false[] = L"false";
 TObject::TObject()
 {
 	//sys_Type = new LPCTSTR((LPCTSTR)"SYS_TOBJECT");
-	thread = 0;
+	InitializeCriticalSection(&thread);
+	isInSection = false;
 }
 
 /*
@@ -28,8 +29,7 @@ TObject::TObject()
 */
 TObject::~TObject()
 {
-	
-	thread = 0;
+	DeleteCriticalSection(&thread);
 }
 
 /*
@@ -112,26 +112,11 @@ TObject* TObject::ProcessPointer(float* obj)
  */
 bool TObject::ThreadLock() const
 {
-	DWORD curThread = GetCurrentThreadId();
-	if (thread)
-	{
-		// Object is already locked by a thread. Check to see if it is locked by this thread. if it is
-		// Return false to let the caller know that the ReleaseMethod shoudl do nothing. Otherwise, sleep until unlocked
-		if (thread == curThread)
-			return false;
-		// Go to sleep until this object unlocks it from the owner thread
-		TThread::Suspend(this);
-	}
-
-	thread = curThread;
-
-	for (UINT Rust = 0; Rust < 10; Rust++);
-
-	if (thread != curThread)
-		TThread::Suspend(this);
-	thread = curThread;
-
-	return true;
+	if (isInSection)
+		return false;
+	
+	EnterCriticalSection(&thread);
+	isInSection = true;
 }
 
 /**
@@ -144,8 +129,9 @@ void TObject::ThreadRelease(bool key) const
 {
 	if (!key)
 		return;
-	thread = 0;
-	TThread::Resume(this);
+	isInSection = false;
+	LeaveCriticalSection(&thread);
+	
 }
 
 /*

@@ -66,7 +66,7 @@ void SetOSProperty(TString& prop, TString& val)
 	{
 		prop.Replace(L'.', L'_');
 		prop.SetUpper();
-		SetEnvironmentVariableW(prop.GetConstantBuffer(), val.GetConstantBuffer());
+		SetEnvironmentVariableW(prop.GetConstantBuffer().getBuffer(), val.GetConstantBuffer().getBuffer());
 	}
 }
 
@@ -123,7 +123,7 @@ TString GetOSPropery(TString& prop)
 	{
 		buffer = new WCHAR[alloc];
 		ZeroMemory(buffer, alloc * sizeof(WCHAR));
-		result = GetEnvironmentVariableW(prop.GetConstantBuffer(), buffer, alloc - 1);
+		result = GetEnvironmentVariableW(prop.GetConstantBuffer().getBuffer(), buffer, alloc - 1);
 
 		if (result > alloc)
 		{

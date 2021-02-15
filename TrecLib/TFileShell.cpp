@@ -73,7 +73,8 @@ TString TFileShell::GetName()
 */
 TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 {
-	DWORD ftyp = GetFileAttributesW(path.GetConstantBuffer());
+	TString newPath(path);
+	DWORD ftyp = GetFileAttributesW(newPath.GetConstantBuffer().getBuffer());
 
 	if (ftyp == INVALID_FILE_ATTRIBUTES)
 		return TrecPointer<TFileShell>(); // if Invalid, simply return a Null
@@ -190,7 +191,8 @@ bool TFileShell::IsReadOnly()
 */
 TFileShell::TFileShell(const TString& path)
 {
-	if (GetFileAttributesExW(path.GetConstantBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
+	TString newPath(path);
+	if (GetFileAttributesExW(newPath.GetConstantBuffer().getBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
 		this->path.Set(path);
 
 
@@ -205,7 +207,7 @@ TFileShell::TFileShell(const TString& path)
 */
 void TFileShell::Refresh()
 {
-	if (!GetFileAttributesExW(path.GetConstantBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
+	if (!GetFileAttributesExW(path.GetConstantBuffer().getBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
 	{
 		if (path.GetSize())
 			deleted = true;

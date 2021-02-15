@@ -140,9 +140,14 @@ protected:
 	void ThreadRelease(bool key)const;
 
 	/**
-	 * Thread that currently has a claim on this Object
+	 * Critical Section
 	 */
-	mutable DWORD thread;
+	mutable CRITICAL_SECTION thread;
+
+	/**
+	 * Whether we are currently in a critical section
+	 */
+	mutable bool isInSection;
 };
 
 

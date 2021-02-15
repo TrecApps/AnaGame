@@ -47,7 +47,7 @@ TDataArray<TrecPointer<TFileShell>> TDirectory::GetFileListing()
 	HANDLE fileBrowser = 0;
 	WIN32_FIND_DATAW data;
 
-	fileBrowser = FindFirstFileExW(path.GetConstantBuffer(),
+	fileBrowser = FindFirstFileExW(path.GetConstantBuffer().getBuffer(),
 		FindExInfoStandard,
 		&data,
 		FindExSearchNameMatch,
@@ -85,7 +85,7 @@ void TDirectory::GetFileListing(TDataArray<TrecPointer<TFileShell>>& files)
 
 	TString searchPath(path + L"\\*");
 
-	fileBrowser = FindFirstFileExW(searchPath.GetConstantBuffer(),
+	fileBrowser = FindFirstFileExW(searchPath.GetConstantBuffer().getBuffer(),
 		FindExInfoStandard,
 		&data,
 		FindExSearchNameMatch,

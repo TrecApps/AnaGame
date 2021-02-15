@@ -71,7 +71,8 @@ bool TFile::Open(const TString& lpszFileName, UINT nOpenFlags)
 	// If no attribute for opening is specified, use the value most likely to succeed
 	if (!atts)
 		atts = OPEN_ALWAYS;
-	fileHandle = CreateFileW(lpszFileName.GetConstantBuffer(), readWrite, sharing, nullptr, atts, FILE_ATTRIBUTE_NORMAL, nullptr);
+	TString newFileName(lpszFileName);
+	fileHandle = CreateFileW(newFileName.GetConstantBuffer().getBuffer(), readWrite, sharing, nullptr, atts, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 	
 	if (fileHandle == INVALID_HANDLE_VALUE)
@@ -778,6 +779,9 @@ void TFile::WriteString(const TString& lpsz)
 	WCHAR cLetter = L'\0';
 	UCHAR bytes[2];
 	UCHAR temp = 0;
+
+	TString newParam(lpsz);
+
 	if (fileEncode == FileEncodingType::fet_unknown)
 		fileEncode = FileEncodingType::fet_unicode_little;
 	switch (fileEncode)
@@ -787,7 +791,7 @@ void TFile::WriteString(const TString& lpsz)
 		size = lpsz.GetSize();
 		acsiiText = new CHAR[size * 2 + 1];
 		wBytes = WideCharToMultiByte(CP_ACP,
-			0, lpsz.GetConstantBuffer(), -1,
+			0, newParam.GetConstantBuffer().getBuffer(), -1,
 			acsiiText, size * 2, NULL,
 			NULL);
 		Write(acsiiText, wBytes);
@@ -806,7 +810,7 @@ void TFile::WriteString(const TString& lpsz)
 		break;
 	case FileEncodingType::fet_unicode_little:
 		
-		Write(lpsz.GetConstantBuffer(), lpsz.GetSize() * sizeof(WCHAR));
+		Write(newParam.GetConstantBuffer().getBuffer(), lpsz.GetSize() * sizeof(WCHAR));
 		
 	}
 
@@ -1124,7 +1128,8 @@ TString TFile::GetFileTitle() const
 	ZeroMemory(cTitle, sizeof(WCHAR) * (filePath.GetSize() + 1));
 
 	TString ret;
-	if (!::GetFileTitleW(filePath.GetConstantBuffer(), cTitle, filePath.GetSize()))
+	TString newPath(filePath);
+	if (!::GetFileTitleW(newPath.GetConstantBuffer().getBuffer(), cTitle, filePath.GetSize()))
 	{
 		ret.Set(cTitle);
 	}

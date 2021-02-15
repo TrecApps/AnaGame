@@ -34,12 +34,25 @@ TString::TString()
 	fillWhiteChar();
 }
 
+void TString::IncrementBuffer()
+{
+	BufferCounter++;
+}
+
+void TString::DecrementBuffer()
+{
+	BufferCounter--;
+	if (!BufferCounter)
+		TObject::ThreadRelease(shouldUnlock);
+}
+
 /**
  * Method: TString::GetType
  * Purpose: returns a String Representation of the object type
  * Parameters: void
  * Returns: TString - representation of the object type
  */
+
 TString TString::GetType()
 {
 	return TString(L"TString;") + TObject::GetType();
@@ -539,9 +552,11 @@ WCHAR * TString::GetBufferCopy() const
  * Parameters: void
  * Returns: const WCHAR* - a constant pointer of the underlying string buffer
  */
-const WCHAR* TString::GetConstantBuffer() const
+TString::TConstBuffer TString::GetConstantBuffer()
 {
-	return string;
+	if(!BufferCounter)
+		shouldUnlock = TObject::ThreadLock();
+	return TConstBuffer(this);
 }
 
 /*
@@ -2694,4 +2709,27 @@ TString TString::Tokenize(TString& tokens, int& start, bool outOfQuotes) const
 
 
 	RETURN_THREAD_UNLOCK ret;
+}
+
+TString::TConstBuffer::TConstBuffer(TString* string)
+{
+	if (!string)
+		throw L"Null Pointer Exception";
+	this->string = string;
+}
+
+TString::TConstBuffer::TConstBuffer(const TConstBuffer& buff)
+{
+	this->string = buff.string;
+	string->IncrementBuffer();
+}
+
+TString::TConstBuffer::~TConstBuffer()
+{
+	string->DecrementBuffer();
+}
+
+const WCHAR* TString::TConstBuffer::getBuffer()
+{
+	return string->string;
 }

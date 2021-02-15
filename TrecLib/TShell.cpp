@@ -387,7 +387,7 @@ void TShell::ProcessBackgroundProcess(TString& command)
 		FALSE,			// no need to inherite handles since this process is background and we don't ned to track it
 		0,				// No special flags
 		nullptr,		// No special environment settings
-		workingDirectory.GetConstantBuffer(), // the Working Directory to use
+		workingDirectory.GetConstantBuffer().getBuffer(), // the Working Directory to use
 		&start,			// the start info object we created
 		&processInfo	// Get information about our process
 	);
@@ -491,7 +491,7 @@ void TShell::ProcessFrontCommand(TString& command)
 		TRUE,									// Make sure process get our handles so we can communicate with it
 		CREATE_NO_WINDOW,						// We're presenting the output in our window so don't create a new one
 		nullptr,								// no special environment
-		workingDirectory.GetConstantBuffer(),	// Provide the working directory to use
+		workingDirectory.GetConstantBuffer().getBuffer(),	// Provide the working directory to use
 		&start,									// Default  start info
 		&processInfo							// Information about the process being created (out param)
 	);
