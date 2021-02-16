@@ -1,7 +1,6 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TThread.h"
-#include <atltrace.h>
 
 UCHAR TObjectType[] = { 1, 0b10000000 };
 
@@ -115,7 +114,6 @@ bool TObject::ThreadLock() const
 {
 	
 	EnterCriticalSection(&thread);
-	ATLTRACE(L"Entering Critical Section\n");
 	return true;
 }
 
@@ -129,7 +127,6 @@ void TObject::ThreadRelease(bool key) const
 {
 
 	LeaveCriticalSection(&thread);
-	ATLTRACE(L"Exiting Critical Section\n");
 	
 }
 

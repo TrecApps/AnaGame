@@ -1,6 +1,5 @@
 #include "TString.h"
 #include "TDataArray.h"
-#include <atltrace.h>
 
 UCHAR TStringType[] = { 2, 0b10000000, 1 };
 
@@ -1453,9 +1452,6 @@ void TString::AppendFormat(const WCHAR* format, ...)
 	TString tFormat(format);
 
 	WCHAR* formatedString = new WCHAR[tFormat.capacity * 2 + 100];
-
-	ATLTRACE(string);
-	ATLTRACE(L"\n");
 
 	int result = vswprintf(formatedString, (tFormat.capacity * 2) + 99, tFormat.string, vList);
 
