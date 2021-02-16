@@ -1,5 +1,6 @@
 #include "TThreadTester.h"
 #include <TThread.h>
+#include <atltrace.h>
 
 void TThreadTester::RunTests(std::string& output)
 {
@@ -41,14 +42,16 @@ void TThreadTester::multiThreaded(std::string& output)
 	std::string testName("Multi-Threaded");
 
 	ExpectTrue(output, testName, data1.handle && data2.handle);
-
-	if (data1.handle > 0)
-		TThread::Resume(data1.id);
-
-	if (data2.handle > 0)
-		TThread::Resume(data2.id);
-
 	HANDLE handles[2] = { data1.handle, data2.handle };
+
+	if (data1.handle > 0 && data2.handle > 0)
+	{
+		// TString tracer;
+		// tracer.Format(L"Thread 1: ID = %i, handler = %x\nThread 1: ID = %i, handler = %x\n", data1.id, data1.handle, data2.id, data2.handle);
+		//ATLTRACE(tracer.GetConstantBuffer().getBuffer());
+		TThread::Resume(data2.id);
+		TThread::Resume(data1.id);
+	}
 
 	//HANDLE thisThread = OpenThread(SYNCHRONIZE | THREAD_SUSPEND_RESUME, 0, GetCurrentThreadId());
 
@@ -69,7 +72,7 @@ DWORD __stdcall TestThread(LPVOID param)
 {
 	ThreadData* data = reinterpret_cast<ThreadData*>(param);
 
-	//Sleep(1000);
+	ATLTRACE(L"Entering new thread!\n");
 
 	TrecPointer<TString> str = data->string;
 
@@ -80,6 +83,8 @@ DWORD __stdcall TestThread(LPVOID param)
 
 		str->AppendFormat(L" %i ", data->value);
 	}
+
+	ATLTRACE(L"Exiting thread!\n");
 
 	return 0;
 }

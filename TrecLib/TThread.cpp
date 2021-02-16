@@ -21,7 +21,7 @@ DWORD __stdcall RunThread(LPVOID param)
 		!threadParam->handle)
 		throw L"Null Value detected in Thread Management!";
 
-
+	Sleep(20);
 
 	DWORD res = threadParam->function(threadParam->functionParams);
 
@@ -110,7 +110,6 @@ bool TThread::Suspend(DWORD id)
 
 bool TThread::Resume(DWORD id)
 {
-	Sleep(100);
 
 	for (UINT Rust = 0; Rust < threadList.Size(); Rust++)
 	{

@@ -48,7 +48,7 @@ public:
 	 * Class: TConstBuffer
 	 * Purpose: Provides Thread Protection to calls to GetConstBuffer
 	 */
-	class TConstBuffer
+	class _TREC_LIB_DLL TConstBuffer
 	{
 	public:
 		TConstBuffer(TString* string);

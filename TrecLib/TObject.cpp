@@ -1,6 +1,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TThread.h"
+#include <atltrace.h>
 
 UCHAR TObjectType[] = { 1, 0b10000000 };
 
@@ -112,11 +113,10 @@ TObject* TObject::ProcessPointer(float* obj)
  */
 bool TObject::ThreadLock() const
 {
-	if (isInSection)
-		return false;
 	
 	EnterCriticalSection(&thread);
-	isInSection = true;
+	ATLTRACE(L"Entering Critical Section\n");
+	return true;
 }
 
 /**
@@ -127,10 +127,9 @@ bool TObject::ThreadLock() const
  */
 void TObject::ThreadRelease(bool key) const
 {
-	if (!key)
-		return;
-	isInSection = false;
+
 	LeaveCriticalSection(&thread);
+	ATLTRACE(L"Exiting Critical Section\n");
 	
 }
 
