@@ -58,6 +58,9 @@ ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params,
 		result.errorMessage.Set(L"Null Reference to Native Function!\n");
 	}
 	else
+	{
+		result.caller = caller;
 		nativeFunction(params, environment, result);
+	}
 	return result;
 }

@@ -247,6 +247,11 @@ bool TInterpretor::GetClass(const TString& className, TClassStruct& classStruct)
 	return false;
 }
 
+void TInterpretor::SetCaller(TrecSubPointer<TVariable, TInterpretor> caller)
+{
+	this->caller = caller;
+}
+
 void TInterpretor::CorrectSplitStringForParenthesis(TrecPointer<TDataArray<TString>> splitString, WCHAR join)
 {
 	for (UINT Rust = 1; Rust < splitString->Size(); Rust++)

@@ -9,6 +9,7 @@
 TPrimitiveFormatVariable::TPrimitiveFormatVariable(TPrimitiveVariable& var) : TPrimitiveVariable(var)
 {
 	flags = width = precision = 0;
+	useExponent = false;
 }
 
 /**
@@ -22,6 +23,7 @@ TPrimitiveFormatVariable::TPrimitiveFormatVariable(const TPrimitiveFormatVariabl
 	this->flags = var.flags;
 	this->precision = var.precision;
 	this->width = var.width;
+	this->useExponent = var.useExponent;
 }
 
 /**
@@ -177,4 +179,14 @@ TString TPrimitiveFormatVariable::GetString()
 		format.AppendFormat(L".%i", precision);
 
 	return TPrimitiveVariable::GetString(format);
+}
+
+bool TPrimitiveFormatVariable::GetUseExponent()
+{
+	return useExponent;
+}
+
+void TPrimitiveFormatVariable::SetUseExponent(bool useExponent)
+{
+	this->useExponent = useExponent;
 }

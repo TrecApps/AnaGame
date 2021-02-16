@@ -1,8 +1,10 @@
 #include "JsNumber.h"
 #include "TContainerVariable.h"
 #include "TPrimitiveVariable.h"
+#include "TPrimitiveFormatVariable.h"
 #include "TSpecialVariable.h"
 #include "JavaScriptFunc.h"
+#include "TStringVariable.h"
 
 const LONG64 MAX_SAFE_INT = 9007199254740991;
 const LONG64 MIN_SAFE_INT = -9007199254740991;
@@ -107,11 +109,171 @@ void JsNumber::isSafeInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 }
 void JsNumber::toExponential(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
 {
+    if (!params.Size())
+    {
+        ret.returnCode = ReportObject::broken_reference;
+        ret.errorMessage.Set(L"Zero parameters provided to Number.toExponential method!");
+        return;
+    }
 
+    auto number = params[0];
+
+    if (!number.Get())
+    {
+        ret.returnCode = ReportObject::broken_reference;
+        ret.errorMessage.Set(L"Attempted to call Number.toExponential method on a null variable!");
+        return;
+    }
+    bool needsUpdating = false;
+    if (number->GetVarType() == var_type::primitive)
+    {
+        number = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveFormatVariable>(*dynamic_cast<TPrimitiveVariable*>(number.Get()));
+        needsUpdating = true;
+    }
+
+    if (number->GetVarType() != var_type::primitive_formatted)
+    {
+        ret.returnCode = ReportObject::improper_type;
+        ret.errorMessage.Set(L"Attempted to call Number.toExponential method on a non-number variable!");
+        return;
+    }
+
+    dynamic_cast<TPrimitiveFormatVariable*>(number.Get())->SetUseExponent(true);
+
+    if (params.Size() > 1 && params[1].Get() && (params[1]->GetVarType() == var_type::primitive || params[1]->GetVarType() == var_type::primitive_formatted))
+    {
+        UINT value = params[1]->Get4Value();
+        if (value > 100)
+        {
+            ret.returnCode = ReportObject::improper_type;
+            ret.errorMessage.Format(L"Error in call to Number.toExponential: number provided was %i, needs to be from 0 to 100!", value);
+            return;
+        }
+
+        dynamic_cast<TPrimitiveFormatVariable*>(number.Get())->SetFormattingPrecision(value);
+    }
+
+
+    TDataArray<TrecPointer<TVariable>> newParams;
+    newParams.push_back(number);
+    toString(newParams, env, ret);
 }
 
-void JsNumber::toFixed(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) {  }
-void JsNumber::toLocaleString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) {  }
-void JsNumber::toPrecision(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) {  }
-void JsNumber::toString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) {  }
+void JsNumber::toFixed(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+{
+    if (!params.Size())
+    {
+        ret.returnCode = ReportObject::broken_reference;
+        ret.errorMessage.Set(L"Zero parameters provided to Number.toFixed method!");
+        return;
+    }
+
+    auto number = params[0];
+
+    if (!number.Get())
+    {
+        ret.returnCode = ReportObject::broken_reference;
+        ret.errorMessage.Set(L"Attempted to call Number.toFixed method on a null variable!");
+        return;
+    }
+    bool needsUpdating = false;
+    if (number->GetVarType() == var_type::primitive)
+    {
+        number = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveFormatVariable>(*dynamic_cast<TPrimitiveVariable*>(number.Get()));
+        needsUpdating = true;
+    }
+
+    if (number->GetVarType() != var_type::primitive_formatted)
+    {
+        ret.returnCode = ReportObject::improper_type;
+        ret.errorMessage.Set(L"Attempted to call Number.toFixed method on a non-number variable!");
+        return;
+    }
+
+    dynamic_cast<TPrimitiveFormatVariable*>(number.Get())->SetUseExponent(false);
+
+    if (params.Size() > 1 && params[1].Get() && (params[1]->GetVarType() == var_type::primitive || params[1]->GetVarType() == var_type::primitive_formatted))
+    {
+        UINT value = params[1]->Get4Value();
+        if (value > 100)
+        {
+            ret.returnCode = ReportObject::improper_type;
+            ret.errorMessage.Format(L"Error in call to Number.toFixed: number provided was %i, needs to be from 0 to 100!", value);
+            return;
+        }
+
+        dynamic_cast<TPrimitiveFormatVariable*>(number.Get())->SetFormattingPrecision(value);
+    }
+
+    TDataArray<TrecPointer<TVariable>> newParams;
+    newParams.push_back(number);
+    toString(newParams, env, ret);
+}
+void JsNumber::toLocaleString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+{
+
+}
+void JsNumber::toPrecision(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+{
+    if (!params.Size())
+    {
+        ret.returnCode = ReportObject::broken_reference;
+        ret.errorMessage.Set(L"Zero parameters provided to Number.toPrecision method!");
+        return;
+    }
+
+    auto number = params[0];
+
+    if (!number.Get())
+    {
+        ret.returnCode = ReportObject::broken_reference;
+        ret.errorMessage.Set(L"Attempted to call Number.toPrecision method on a null variable!");
+        return;
+    }
+    bool needsUpdating = false;
+    if (number->GetVarType() == var_type::primitive)
+    {
+        number = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveFormatVariable>(*dynamic_cast<TPrimitiveVariable*>(number.Get()));
+        needsUpdating = true;
+    }
+
+    if (number->GetVarType() != var_type::primitive_formatted)
+    {
+        ret.returnCode = ReportObject::improper_type;
+        ret.errorMessage.Set(L"Attempted to call Number.toPrecision method on a non-number variable!");
+        return;
+    }
+
+
+    if (params.Size() > 1 && params[1].Get() && (params[1]->GetVarType() == var_type::primitive || params[1]->GetVarType() == var_type::primitive_formatted))
+    {
+        UINT value = params[1]->Get4Value();
+        if (value > 100)
+        {
+            ret.returnCode = ReportObject::improper_type;
+            ret.errorMessage.Format(L"Error in call to Number.toPrecision: number provided was %i, needs to be from 0 to 100!", value);
+            return;
+        }
+
+        dynamic_cast<TPrimitiveFormatVariable*>(number.Get())->SetFormattingPrecision(value);
+    }
+
+    TDataArray<TrecPointer<TVariable>> newParams;
+    newParams.push_back(number);
+    toString(newParams, env, ret);
+}
+void JsNumber::toString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+{
+    if (!params.Size())
+    {
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(L"undefined");
+        return;
+    }
+    if (!params[0].Get())
+    {
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(L"null");
+        return;
+    }
+    ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(params[0]->GetString());
+}
 void JsNumber::valueOf(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) {  }

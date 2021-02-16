@@ -2761,6 +2761,12 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
                     notNumber = false;
                     curVar = numFunc;
                 }
+
+                ro.errorMessage.Set(varPieces->at(0));
+                for (UINT Rust = 1; Rust < varPieces->Size() - 1; Rust++)
+                {
+                    ro.errorMessage.AppendFormat(L".%ws", varPieces->at(Rust).GetConstantBuffer());
+                }
             }
         }
 

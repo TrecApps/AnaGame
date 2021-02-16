@@ -129,6 +129,11 @@ public:
     TrecPointer<TVariable> errorObject;
 
     /**
+     * The Interpretor that made the call
+     */
+    TrecSubPointer<TVariable, TInterpretor> caller;
+
+    /**
      * What happens when the Interpreter has to return due to a command such as return, break, or continue
      */
     report_mode mode;
@@ -367,12 +372,18 @@ public:
 
     bool GetClass(const TString& className, TClassStruct& classStruct);
 
+    void SetCaller(TrecSubPointer<TVariable, TInterpretor> caller);
+
 protected:
     /**
      * The list of Types held by the Interpretor
      */
     TDataMap<TClassStruct> classes;
 
+    /**
+     * The Interpretor that called ths one
+     */
+    TrecSubPointer<TVariable, TInterpretor> caller;
 
     /**
      * The Interpretor that created this interpretor 
