@@ -990,6 +990,7 @@ void Page::QueryMediaControls(TDataArray<TrecPointer<TControl>>& mediaControls)
 	{
 		mediaControls.push_back(this->mediaControls[Rust]);
 	}
+}
 TDataArray<TControl*> Page::GetClickedControls()
 {
 	TDataArray<TControl*> ret = clickedControl;
