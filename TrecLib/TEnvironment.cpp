@@ -17,7 +17,9 @@ static TDataArray<LangNames> languageList;
  */
 TrecPointer<TFileShell> TEnvironment::GetRootDirectory()
 {
-	return rootDirectory;
+	AG_THREAD_LOCK
+		auto ret = rootDirectory;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -29,23 +31,24 @@ TrecPointer<TFileShell> TEnvironment::GetRootDirectory()
  */
 TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present)
 {
+	AG_THREAD_LOCK
 	for (UINT Rust = 0; Rust < envVariables.count(); Rust++)
 	{
 		auto entry = envVariables.GetEntryAt(Rust);
 		if (!entry.Get())
 		{
 			present = false;
-			return TrecPointer<TVariable>();
+			RETURN_THREAD_UNLOCK TrecPointer<TVariable>();
 		}
 
 		if (!entry->key.Compare(var))
 		{
 			present = true;
-			return entry->object;
+			RETURN_THREAD_UNLOCK entry->object;
 		}
 	}
 	present = false;
-	return TrecPointer<TVariable>();
+	RETURN_THREAD_UNLOCK TrecPointer<TVariable>();
 }
 
 /**
@@ -70,7 +73,9 @@ void TEnvironment::SetSelf(TrecPointer<TEnvironment> self)
  */
 void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
 {
+	AG_THREAD_LOCK
 	envVariables.addEntry(name, var);
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -81,13 +86,14 @@ void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
  */
 void TEnvironment::SetUpLanguageExtensionMapping()
 {
+	AG_THREAD_LOCK
 	if (languagesMapped)
-		return;
+		RETURN_THREAD_UNLOCK;
 
 	TString languageFolder = GetDirectoryWithSlash(CentralDirectories::cd_Executable) + TString(L"Languages");
 
 	if (languageList.Size())
-		return;
+		RETURN_THREAD_UNLOCK;
 
 	TFile languageLister;
 
@@ -97,7 +103,7 @@ void TEnvironment::SetUpLanguageExtensionMapping()
 	{
 		//char errorBuf[100];
 		//ex.GetErrorMessage((LPTSTR)errorBuf, 99);
-		return;
+		RETURN_THREAD_UNLOCK;
 	}
 	TString line;
 	while (languageLister.ReadString(line))
@@ -122,10 +128,12 @@ void TEnvironment::SetUpLanguageExtensionMapping()
 	}
 
 	languageLister.Close();
+	RETURN_THREAD_UNLOCK;
 }
 
 TString retrieveLanguageByExtension(TString ext)
 {
+
 	for (UINT c = 0; c < languageList.Size(); c++)
 	{
 		for (UINT Rust = 0; Rust < languageList[c].fileExtensions.Size(); Rust++)
@@ -145,7 +153,9 @@ TString retrieveLanguageByExtension(TString ext)
  */
 TString TEnvironment::GetUrl()
 {
-	return url;
+	AG_THREAD_LOCK
+		TString ret(url);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**

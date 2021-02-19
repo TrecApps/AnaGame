@@ -41,7 +41,9 @@ TBlankNode::~TBlankNode()
  */
 TString TBlankNode::GetContent()
 {
-	return content;
+	AG_THREAD_LOCK
+	TString ret(content);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -95,16 +97,17 @@ TrecPointer<TObjectNode> TBlankNode::GetNodeAt(UINT target, UINT current)
 	TrecPointer<TObjectNode> ret;
 
 	current++;
-
+	AG_THREAD_LOCK
 	for (UINT rust = 0; rust < nodes.Size(); rust++)
 	{
 		ret = nodes[rust]->GetNodeAt(target, current);
 		if (ret.Get())
-			return ret;
-
+		{
+			RETURN_THREAD_UNLOCK ret;
+		}
 		current += nodes[rust]->TotalChildren() + 1;
 	}
-	return TrecPointer<TObjectNode>();
+	RETURN_THREAD_UNLOCK TrecPointer<TObjectNode>();
 }
 
 
@@ -116,10 +119,11 @@ TrecPointer<TObjectNode> TBlankNode::GetNodeAt(UINT target, UINT current)
  */
 bool TBlankNode::Initialize(TString& value)
 {
+	AG_THREAD_LOCK
 	if (content.GetSize())
-		return false;
+		RETURN_THREAD_UNLOCK false;
 	content.Set(value);
-	return true;
+	RETURN_THREAD_UNLOCK true;
 }
 
 /**
@@ -141,9 +145,13 @@ void TBlankNode::Extend()
  */
 TrecPointer<TObjectNode> TBlankNode::GetChildNodes(UINT index)
 {
-	if (index < nodes.Size())
-		return nodes[index];
-	return TrecPointer<TObjectNode>();
+	AG_THREAD_LOCK
+		if (index < nodes.Size())
+		{
+			TrecPointer<TObjectNode> ret = nodes[index];
+			RETURN_THREAD_UNLOCK ret;
+		}
+	RETURN_THREAD_UNLOCK TrecPointer<TObjectNode>();
 }
 
 /**
@@ -165,8 +173,10 @@ void TBlankNode::DropChildNodes()
  */
 void TBlankNode::AddNode(TrecPointer<TObjectNode> node)
 {
+	AG_THREAD_LOCK
 	if(node.Get())
 		nodes.push_back(node);
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -181,7 +191,7 @@ bool TBlankNode::RemoveNode(TrecPointer<TObjectNode> obj)
 {
 	if (!obj.Get())
 		return false;
-
+	AG_THREAD_LOCK
 	for (UINT Rust = 0; Rust < nodes.Size(); Rust++)
 	{
 		auto f = nodes[Rust].Get();
@@ -191,13 +201,13 @@ bool TBlankNode::RemoveNode(TrecPointer<TObjectNode> obj)
 		if (f == obj.Get())
 		{
 			nodes.RemoveAt(Rust);
-			return true;
+			RETURN_THREAD_UNLOCK true;
 		}
 
 		if (f->RemoveNode(obj))
-			return true;
+			RETURN_THREAD_UNLOCK true;
 	}
-	return false;
+	RETURN_THREAD_UNLOCK false;
 }
 
 /*
@@ -209,9 +219,10 @@ bool TBlankNode::RemoveNode(TrecPointer<TObjectNode> obj)
 UINT TBlankNode::TotalChildren()
 {
 	UINT ret = 0;
+	AG_THREAD_LOCK
 	for (UINT rust = 0; rust < nodes.Size(); rust++)
 	{
 		ret += nodes[rust]->TotalChildren() + 1;
 	}
-	return ret;
+	RETURN_THREAD_UNLOCK ret;
 }

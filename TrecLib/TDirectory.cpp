@@ -42,6 +42,7 @@ bool TDirectory::IsDirectory()
 */
 TDataArray<TrecPointer<TFileShell>> TDirectory::GetFileListing()
 {
+	AG_THREAD_LOCK
 	TDataArray<TrecPointer<TFileShell>> ret;
 
 	HANDLE fileBrowser = 0;
@@ -55,8 +56,9 @@ TDataArray<TrecPointer<TFileShell>> TDirectory::GetFileListing()
 		0);
 
 	if (fileBrowser == INVALID_HANDLE_VALUE)
-		return ret;
-
+	{
+		RETURN_THREAD_UNLOCK ret;
+	}
 	TString newPath;
 
 	do
@@ -68,7 +70,7 @@ TDataArray<TrecPointer<TFileShell>> TDirectory::GetFileListing()
 	FindClose(fileBrowser);
 	fileBrowser = 0;
 
-	return ret;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -79,6 +81,7 @@ TDataArray<TrecPointer<TFileShell>> TDirectory::GetFileListing()
 */
 void TDirectory::GetFileListing(TDataArray<TrecPointer<TFileShell>>& files)
 {
+	AG_THREAD_LOCK
 	files.RemoveAll();
 	HANDLE fileBrowser = 0;
 	WIN32_FIND_DATAW data;
@@ -95,7 +98,7 @@ void TDirectory::GetFileListing(TDataArray<TrecPointer<TFileShell>>& files)
 	if (fileBrowser == INVALID_HANDLE_VALUE)
 	{
 		int e = GetLastError();
-		return;
+		RETURN_THREAD_UNLOCK;
 	}
 		
 
@@ -112,4 +115,5 @@ void TDirectory::GetFileListing(TDataArray<TrecPointer<TFileShell>>& files)
 
 	FindClose(fileBrowser);
 	fileBrowser = 0;
+	RETURN_THREAD_UNLOCK;
 }
