@@ -6,8 +6,8 @@
 
 #include "AnagameDef.h"
 
-#define AG_THREAD_LOCK bool threadKey = ThreadLock();
-#define RETURN_THREAD_UNLOCK ThreadRelease(threadKey); return 
+#define AG_THREAD_LOCK ThreadLock();
+#define RETURN_THREAD_UNLOCK ThreadRelease(); return 
 
 extern UCHAR TArrayType[];
 extern UCHAR TDataArrayType[];
@@ -129,7 +129,7 @@ protected:
 	 * Note: In order for this method and ThreadRelease to work properly, you must hold on to the boo that is returned and pass it into ThreadRelease.
 	 *		Since methods can call each other, Only the first method called should be the one that actually unlocks the object
 	 */
-	bool ThreadLock() const;
+	void ThreadLock() const;
 
 	/**
 	 * Method: TObject::ThreadRelease
@@ -137,12 +137,14 @@ protected:
 	 * Parameters: bool key - whether the unlocking mechanism should actually proceed
 	 * Returns: void
 	 */
-	void ThreadRelease(bool key)const;
+	void ThreadRelease()const;
 
 	/**
 	 * Critical Section
 	 */
 	mutable CRITICAL_SECTION thread;
+
+	mutable UCHAR threadCounter;
 
 	/**
 	 * Whether we are currently in a critical section

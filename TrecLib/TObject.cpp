@@ -19,6 +19,7 @@ TObject::TObject()
 	//sys_Type = new LPCTSTR((LPCTSTR)"SYS_TOBJECT");
 	InitializeCriticalSection(&thread);
 	isInSection = false;
+	threadCounter = 0;
 }
 
 /*
@@ -110,11 +111,11 @@ TObject* TObject::ProcessPointer(float* obj)
  * Note: In order for this method and ThreadRelease to work properly, you must hold on to the boo that is returned and pass it into ThreadRelease.
  *		Since methods can call each other, Only the first method called should be the one that actually unlocks the object
  */
-bool TObject::ThreadLock() const
+void TObject::ThreadLock() const
 {
 	
 	EnterCriticalSection(&thread);
-	return true;
+	threadCounter++;
 }
 
 /**
@@ -123,10 +124,11 @@ bool TObject::ThreadLock() const
  * Parameters: bool key - whether the unlocking mechanism should actually proceed
  * Returns: void
  */
-void TObject::ThreadRelease(bool key) const
+void TObject::ThreadRelease() const
 {
-
-	LeaveCriticalSection(&thread);
+	threadCounter--;
+	if(!threadCounter)
+		LeaveCriticalSection(&thread);
 	
 }
 
