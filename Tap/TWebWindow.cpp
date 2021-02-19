@@ -12,6 +12,7 @@ TWebWindow::TWebWindow(TString& name, TString& winClass, UINT style, HWND parent
 {
     this->mainViewSpace = mainViewSpace;
     this->pageBarSpace = pageBarSpace;
+    mainPageSpace = tabs = webPage = { 0.0f,0.0f,0.0f,0.0f };
 }
 
 TWebWindow::~TWebWindow()
@@ -40,6 +41,14 @@ int TWebWindow::PrepareWindow()
     webPage.right = tabs.right;
     webPage.top = tabs.bottom;
     webPage.bottom = location.bottom;
+
+    webPages = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TTabBar>(drawingBoard, TrecPointer<TArray<styleTable>>());
+    // Set the attributes of this Tab Bar
+
+    webPages->addAttribute(L"|HaveAddTab", TrecPointerKey::GetNewTrecPointer<TString>(L"true"));
+    webPages->onCreate(tabs, d3dEngine);
+
+    // AddNewTab();
 
     return 0;
 }
@@ -83,7 +92,7 @@ void TWebWindow::AddNewTab()
     AddNewTab(L"Anagame://NewTab");
 }
 
-void TWebWindow::AddNewTab(const TString& url)
+void TWebWindow::AddNewTab(const TString& url, bool createTab)
 {
     TString fixedUrl(FixUrl(url));
 
@@ -93,30 +102,15 @@ void TWebWindow::AddNewTab(const TString& url)
 
     if (newWebPage.Get())
     {
-        D2D1_RECT_F initLoc;
-        initLoc.bottom = tabs.bottom;
-        initLoc.top = tabs.top;
-        initLoc.right = tabs.right;
-
-        if (tabList.Size())
-        {
-            initLoc.left = tabList[tabList.Size() - 1]->GetLocation().right;
-        }
-        else
-            initLoc.left = tabs.left;
-
-        TrecPointer<WebPageHolder> newHolder = TrecPointerKey::GetNewTrecPointer<WebPageHolder>(
-            L"Placeholder",
-            this->drawingBoard,
-            pageBarSpace,
-            newWebPage->GetHandler(),
-            TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self),
-            initLoc);
-
-        newHolder->SetPage(TrecPointerKey::GetTrecPointerFromSub<Page, WebPage>(newWebPage));
-        tabList.push_back(newHolder);
-
-        newWebPage->tab = newHolder;
+        newWebPage->SetArea(webPage);
+        TString title(newWebPage->GetTitle());
+        if (!title.GetSize())
+            title.Set(L"Untitled Tab");
+        TrecPointer<Tab> tab = (createTab || !webPages->GetCurrentTab().Get()) ?  webPages->AddTab(title) : webPages->GetCurrentTab();
+        TrecSubPointer<TabContent, TabWebPageContent> pageContent = TrecPointerKey::GetNewTrecSubPointer<TabContent, TabWebPageContent>();
+        pageContent->SetWebPage(newWebPage);
+        tab->SetContent(TrecPointerKey::GetTrecPointerFromSub<TabContent, TabWebPageContent>(pageContent));
+        webPages->SetCurrentTab(tab);
     }
 }
 
@@ -155,6 +149,105 @@ int TWebWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 void TWebWindow::SetEnvironmentGenerator(TrecPointer<EnvironmentGenerator> gen)
 {
     envGenerator = gen;
+}
+
+void TWebWindow::DrawOtherPages()
+{
+    if (webPages.Get())
+    {
+        webPages->onDraw();
+        TrecPointer<Tab> tab = webPages->GetCurrentTab();
+        if (tab.Get() && tab->GetContent().Get())
+            tab->GetContent()->Draw(nullptr);
+    }
+}
+
+void TWebWindow::OnLButtonDown(UINT nFlags, TPoint point)
+{
+    if (webPages.Get())
+    {
+        messageOutput mOut = messageOutput::negative;
+        TDataArray<EventID_Cred> cred;
+        TDataArray<TControl*> co;
+        webPages->OnLButtonDown(nFlags, point, &mOut, cred,co);
+
+        if (mOut != messageOutput::negative && mOut != messageOutput::negativeUpdate)
+        {
+            return;
+        }
+
+        TrecPointer<Tab> tab = webPages->GetCurrentTab();
+
+        if (tab.Get())
+        {
+            auto tabCont = tab->GetContent();
+            if (tabCont.Get())
+                tabCont->OnLButtonDown(nFlags, point, &mOut, cred, co);
+        }
+    }
+
+
+
+    TWindow::OnLButtonDown(nFlags, point);
+}
+
+void TWebWindow::OnMouseMove(UINT nFlags, TPoint point)
+{
+    if (webPages.Get())
+    {
+        messageOutput mOut = messageOutput::negative;
+        TDataArray<EventID_Cred> cred;
+        TDataArray<TControl*> co;
+        webPages->OnMouseMove(nFlags, point, &mOut, cred, co);
+
+        if (mOut != messageOutput::negative && mOut != messageOutput::negativeUpdate)
+        {
+            return;
+        }
+
+        TrecPointer<Tab> tab = webPages->GetCurrentTab();
+
+        if (tab.Get())
+        {
+            auto tabCont = tab->GetContent();
+            if (tabCont.Get())
+                tabCont->OnMouseMove(nFlags, point, &mOut, cred, co);
+        }
+    }
+
+    TWindow::OnMouseMove(nFlags, point);
+}
+
+void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
+{
+    if (webPages.Get())
+    {
+        messageOutput mOut = messageOutput::negative;
+        TDataArray<EventID_Cred> cred;
+        TDataArray<TControl*> co;
+        webPages->OnLButtonUp(nFlags, point, &mOut, cred);
+
+        if (mOut != messageOutput::negative && mOut != messageOutput::negativeUpdate)
+        {
+            TabClickMode tcm = webPages->GetClickMode();
+            if (tcm == TabClickMode::tcm_new_tab)
+                AddNewTab();
+            Draw();
+            return;
+        }
+
+        TrecPointer<Tab> tab = webPages->GetCurrentTab();
+
+        if (tab.Get())
+        {
+            auto tabCont = tab->GetContent();
+            if (tabCont.Get())
+                tabCont->OnLButtonUp(nFlags, point, &mOut, cred);
+        }
+    }
+
+    TWindow::OnLButtonDown(nFlags, point);
+    Draw();
 }
 
 TString TWebWindow::FixUrl(const TString& url)
@@ -203,7 +296,7 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
         TrecPointer<TFile> file = TrecPointerKey::GetNewTrecPointer<TFile>(index->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
 
         ret->SetEnvironment(envGenerator->GetEnvironment(TFileShell::GetFileInfo(file->GetFileDirectory())));
-
+        ret->SetArea(this->webPage);
         ret->SetAnaface(file, TrecPointer < EventHandler>());
 
     }
@@ -245,4 +338,99 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
 
     }
     return ret;
+}
+
+TabWebPageContent::TabWebPageContent()
+{
+}
+
+TabWebPageContent::~TabWebPageContent()
+{
+}
+
+void TabWebPageContent::Resize(const D2D1_RECT_F& loc)
+{
+    if (webPage.Get())
+        webPage->OnResize(loc, 0, TrecPointer<TWindowEngine>());
+}
+
+void TabWebPageContent::Draw(TObject* obj)
+{
+    if (webPage.Get())
+        webPage->Draw(nullptr);
+}
+
+TabContentType TabWebPageContent::GetContentType()
+{
+    return TabContentType::tct_web_page;
+}
+
+bool TabWebPageContent::HasContent()
+{
+    return webPage.Get() != nullptr;
+}
+
+bool TabWebPageContent::TookTab(TrecPointer<Tab> tab)
+{
+    if(!webPage.Get())
+        return false;
+    return webPage->TookTab(tab);
+}
+
+void TabWebPageContent::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+    if (webPage.Get())
+        webPage->OnRButtonUp(nFlags, point, mOut);
+}
+
+void TabWebPageContent::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
+{
+    if (webPage.Get())
+        webPage->OnLButtonDown(nFlags, point, mOut, TrecPointer<TFlyout>());
+}
+
+void TabWebPageContent::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
+{
+    if (webPage.Get())
+        webPage->OnRButtonDown(nFlags, point, mOut);
+}
+
+void TabWebPageContent::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
+{
+    if (webPage.Get())
+        webPage->OnMouseMove(nFlags, point, mOut, TrecPointer<TFlyout>());
+}
+
+bool TabWebPageContent::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+    return false;
+}
+
+void TabWebPageContent::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+    if (webPage.Get())
+        webPage->OnLButtonDblClk(nFlags, point, mOut);
+}
+
+void TabWebPageContent::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+    if (webPage.Get())
+        webPage->OnLButtonUp(nFlags, point, mOut, TrecPointer<TFlyout>());
+}
+
+bool TabWebPageContent::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+{
+    if (webPage.Get())
+        webPage->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut);
+    return false;
+}
+
+TrecSubPointer<Page, WebPage> TabWebPageContent::GetWebPage()
+{
+    return webPage;
+}
+
+void TabWebPageContent::SetWebPage(TrecSubPointer<Page, WebPage> webPage)
+{
+    this->webPage = webPage;
 }

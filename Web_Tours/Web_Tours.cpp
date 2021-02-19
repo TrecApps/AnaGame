@@ -8,6 +8,7 @@
 #include "WebToursHandler.h"
 #include <TWebWindow.h>
 #include "WebEnvironment.h"
+#include <TThread.h>
 
 #define MAX_LOADSTRING 100
 
@@ -40,6 +41,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     TString title(L"Web-Tours");
     TString winClass(L"WebToursWindow");
 
+    TThread::SetMainThread();
+
     mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
 
     WNDCLASSEXW wcex;
@@ -66,7 +69,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         // Web Based Initialization here
         webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>());
-
+        webWindow->AddNewTab();
     }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WEBTOURS));

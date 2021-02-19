@@ -16,6 +16,7 @@ class MiniApp;
 class _TAP_DLL EventHandler: public TObject
 {
 	friend class TInstance;
+	friend class IDEPage;
 public:
 
 	/**

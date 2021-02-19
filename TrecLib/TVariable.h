@@ -10,11 +10,13 @@
  */
 typedef enum class var_type
 {
-    primitive, // Primitive variable is being held
-    collection, // A collection type variable is being held, whether an array, JavaScript style object, tuple, dictionary, etc.
-    native_object, // Variable references a C++ level native Anagame object
-    string, // References a String
-    interpretor // References an Interpretor (i.e. procedures/functions that are stored as variables
+    primitive,           // Primitive variable is being held
+    primitive_formatted, // Primitive variable with formatting data
+    collection,          // A collection type variable is being held, whether an array, JavaScript style object, tuple, dictionary, etc.
+    native_object,       // Variable references a C++ level native Anagame object
+    string,              // References a String
+    interpretor,         // References an Interpretor (i.e. procedures/functions that are stored as variables
+    special_value        // Holds a special value that doesn't fit in any of the other categories
 }var_type;
 
 

@@ -30,6 +30,16 @@ public:
 	 * Returns: void
 	 */
 	void Invalidate();
+
+	/**
+	 * Method: TStringSlice::GetStringCopy
+	 * Purpose: Retrieves the sliced contentes of the underlying string
+	 * Parameters: void
+	 * Returns: TString - string representing what was in the slice
+	 * 
+	 * Note: The returned string is a copy of the sliced string. Changes made to the copy have no impact on the source string
+	 */
+	TString GetStringCopy();
 protected:
 	/**
 	 * the string to manipulate

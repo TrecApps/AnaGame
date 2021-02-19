@@ -161,6 +161,7 @@
     <ClInclude Include="TDataMap.h" />
     <ClInclude Include="TSliceManager.h" />
     <ClInclude Include="TStringSlice.h" />
+    <ClInclude Include="TThread.h" />
     <ClInclude Include="TVariable.h" />
     <ClInclude Include="TEnvironment.h" />
     <ClInclude Include="AnagameDef.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="TBlankNode.cpp" />
     <ClCompile Include="TSliceManager.cpp" />
     <ClCompile Include="TStringSlice.cpp" />
+    <ClCompile Include="TThread.cpp" />
     <ClCompile Include="TVariable.cpp" />
     <ClCompile Include="TEnvironment.cpp" />
     <ClCompile Include="Animation.cpp" />

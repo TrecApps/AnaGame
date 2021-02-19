@@ -166,6 +166,7 @@
     <ClInclude Include="TAnascriptInterpretor.h" />
     <ClInclude Include="TEnvironmentBuilder.h" />
     <ClInclude Include="TGradleEnvironment.h" />
+    <ClInclude Include="TJavaScriptClassInterpretor.h" />
     <ClInclude Include="TJavaScriptInterpretor.h" />
     <ClInclude Include="TLanguage.h" />
     <ClInclude Include="TMavenEnvironment.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="TAnascriptInterpretor.cpp" />
     <ClCompile Include="TEnvironmentBuilder.cpp" />
     <ClCompile Include="TGradleEnvironment.cpp" />
+    <ClCompile Include="TJavaScriptClassInterpretor.cpp" />
     <ClCompile Include="TJavaScriptInterpretor.cpp" />
     <ClCompile Include="TLanguage.cpp" />
     <ClCompile Include="TMavenEnvironment.cpp" />

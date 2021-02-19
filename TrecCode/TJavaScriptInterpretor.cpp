@@ -4,6 +4,8 @@
 #include <cassert>
 #include <TPrimitiveVariable.h>
 #include "JsConsole.h"
+#include "TJavaScriptClassInterpretor.h"
+#include <JavaScriptFunc.h>
 
 
 static TDataArray<WCHAR> noSemiColonEnd;
@@ -191,8 +193,13 @@ UINT TJavaScriptInterpretor::SetCode(TFile& file)
         this->end = newFile->GetLength();
         this->start = 0LL;
 
+        // Initialize Objects meant for the main Interpretor
+
         // Intitialize a Console Object
-        variables.addEntry(L"console", TVariableMarker(false, GetJsConsole()));
+        // Console Object
+        variables.addEntry(L"console", TVariableMarker(false, GetJsConsole())); 
+        // Object Object
+        variables.addEntry(L"Object", TVariableMarker(false, JavaScriptFunc::GetJSObectVariable(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
 
 
         return InsertSemiColons();
@@ -223,9 +230,6 @@ ReportObject TJavaScriptInterpretor::Run()
         if (ret.returnCode)
             return ret;
 
-        auto subInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
-            TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
-
         // Prep Sub-Blocks
         for (UINT Rust = 0; Rust < statements.Size(); Rust++)
         {
@@ -241,13 +245,24 @@ ReportObject TJavaScriptInterpretor::Run()
             case js_statement_type::js_while:
 
                 statements[Rust].body = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(
-                    TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(subInterpretor));
+                    TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
+                        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment)));
                 dynamic_cast<TInterpretor*>(statements[Rust].body.Get())->SetCode(
                     file, statements[Rust].fileStart, statements[Rust].fileEnd);
 
                 dynamic_cast<TJavaScriptInterpretor*>(statements[Rust].body.Get())->ProcessStatements(ret);
                 if (ret.returnCode)
                     return ret;
+
+                break;
+            case js_statement_type::js_class:
+                statements[Rust].body = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(
+                    TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptClassInterpretor>(TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptClassInterpretor>(
+                        TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment, JsClassBlockType::jscbt_base)));
+                dynamic_cast<TInterpretor*>(statements[Rust].body.Get())->SetCode(
+                    file, statements[Rust].fileStart, statements[Rust].fileEnd);
+                break;
+                
             }
         }
     }
@@ -265,19 +280,20 @@ ReportObject TJavaScriptInterpretor::Run()
             break;
         case js_statement_type::js_for:
             ProcessFor(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_function:
             ProcessFunction(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_if:
             ProcessIf(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_let:
             ProcessLet(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_regular:
+        case js_statement_type::js_proto_add:
             ProcessReg(statements, Rust, statements[Rust], ret);
-            break; 
+            break;
         case js_statement_type::js_var:
             ProcessVar(statements, Rust, statements[Rust], ret);
             break;
@@ -300,89 +316,18 @@ ReportObject TJavaScriptInterpretor::Run()
 
         if (ret.returnCode || ret.mode == report_mode::report_mode_break ||
             ret.mode == report_mode::report_mode_continue || ret.mode == report_mode::report_mode_return)
+        {
+
             return ret;
+        }
     }
 
-
-
-
-
-    //for (currentPoint = start; currentPoint < end; currentPoint += file->ReadString(code, TString(L";\n{"), TFile::t_file_include_terminator))
-    //{
-    //    int firstQuote;
-
-    //    
-
-    //    while ((firstQuote = code.FindOneOf(L"\"'`", startQuoteSearch)) != -1)
-    //    {
-    //        // We have a String in our statement and need to make sure we have the whole statement
-    //        WCHAR quoteType = code[firstQuote];
-
-    //        int secondQuote = code.FindOneOf(L" \t", firstQuote + 1);
-
-    //        if (secondQuote == -1)
-    //        {
-    //            TString code2;
-    //            currentPoint += file->ReadString(code2, TString(quoteType), TFile::t_file_include_terminator);
-    //            TString code3;
-    //            currentPoint += file->ReadString(code3, TString(L";\n{"), TFile::t_file_include_terminator);
-
-    //            code.Append(code2);
-    //            startQuoteSearch = code.GetSize() + 1;
-    //            code.Append(code3);
-    //        }
-    //    }
-
-    //    TDataArray<TString> tokens;
-    //    TString tok;
-    //    WCHAR quoteMode = L'\0';
-    //    for (UINT Rust = 0; Rust < code.GetSize(); Rust++)
-    //    {
-    //        WCHAR curChar = code[Rust];
-
-    //        if (quoteMode)
-    //        {
-    //            tok.AppendChar(curChar);
-    //            if (curChar == quoteMode)
-    //                quoteMode = L'\0';
-
-    //            continue;
-    //        }
-
-    //        if (curChar == L' ' || curChar == L'\t')
-    //        {
-    //            if (tok.GetSize())
-    //            {
-    //                tokens.push_back(tok);
-    //                tok.Empty();
-    //            }
-    //            continue;
-    //        }
-
-    //        if (curChar == L'\'' || curChar == L'\"' || curChar == L'`')
-    //            quoteMode = curChar;
-
-    //        tok.AppendChar(curChar);
-    //    }
-
-
-    //    // Now Parse the Statement we got
-    //    if (tokenLog.IsOpen())
-    //    {
-    //        for (UINT Rust = 0; Rust < tokens.Size(); Rust++)
-    //        {
-    //            tokenLog.WriteString(tokens[Rust] + L'\n');
-    //        }
-
-    //        tokenLog.WriteString(L"\n\n");
-    //    }
-    //}
 
 
     return ReportObject();
 }
 
-ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params)
+ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables)
 {
     ReportObject ret;
     if (!file.Get() || !file->IsOpen())
@@ -391,7 +336,16 @@ ReportObject TJavaScriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& par
         ret.errorMessage.Set(L"Error! No access to the JavaScript file!");
         return ret;
     }
-    variables.clear();
+    if(clearVariables)
+        variables.clear();
+    else
+    {
+        for (UINT Rust = 0; Rust < paramNames.Size(); Rust++)
+        {
+            TVariableMarker mark;
+            variables.removeEntry(paramNames[Rust], mark);
+        }
+    }
 
     for (UINT Rust = 0; Rust < params.Size() && Rust < paramNames.Size(); Rust++)
     {
@@ -719,6 +673,16 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
             else if (startStatement.StartsWith(L"class", false, true))
             {
                 JavaScriptStatement statement(js_statement_type::js_class);
+                statement.contents.Set(startStatement.SubString(5, startStatement.GetSize() - 1).GetTrim());
+                statement.fileStart = file->GetPosition();
+                statement.fileEnd = GetBlockEnd();
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"Class-block does not have a complete block");
+                    return;
+                }
+                statements.push_back(statement);
             }
             else if (startStatement.StartsWith(L"return", false, true) || startStatement.StartsWith(L"return;"))
             {
@@ -736,6 +700,109 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
             {
                 statements.push_back(JavaScriptStatement(js_statement_type::js_break));
             }
+            else if (startStatement.StartsWith(L"try", false, true) || startStatement.StartsWith(L"try{"))
+            {
+                if (!startStatement.SubString(3).GetTrim().StartsWith(L'{'))
+                {
+                    ro.returnCode = ReportObject::incomplete_block;
+                    ro.errorMessage.Set(L"Unexpected Token found between 'try' keyword and '{' token");
+                    return;
+                }
+
+                JavaScriptStatement statement(js_statement_type::js_try);
+
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition();
+
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"try-block does not have a complete block");
+
+
+
+                    return;
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"catch", false, true) || startStatement.StartsWith(L"catch("))
+            {
+                if (startParenth == -1 || startStatement.SubString(5, startParenth).GetTrim().GetSize())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Set(L"Unexpected token after 'catch' statement!");
+
+                // To-Do: Add Stack code
+
+
+                    return;
+                }
+
+
+                ProcessParenthBlock(ro, startStatement.SubString(5), line);
+    
+                if (ro.returnCode)
+                    return;
+
+
+                JavaScriptStatement statement(js_statement_type::js_catch);
+
+                statement.contents.Set(ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition();
+                   
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"Catch-block does not have a complete block");
+
+
+
+                    return;
+                }
+                statements.push_back(statement);
+            }
+            else if (startStatement.StartsWith(L"finally", false, true) || startStatement.StartsWith(L"finally{"))
+            {
+                if (!startStatement.SubString(7).GetTrim().StartsWith(L'{'))
+                {
+                    ro.returnCode = ReportObject::incomplete_block;
+                    ro.errorMessage.Set(L"Unexpected Token found between 'finally' keyword and '{' token");
+                    return;
+                }
+
+                JavaScriptStatement statement(js_statement_type::js_finally);
+
+                statement.contents.Set(ro.errorMessage);
+                statement.lineStart = beginLine;
+                statement.lineEnd = line;
+
+
+                statement.fileStart = file->GetPosition();
+
+                statement.fileEnd = GetBlockEnd();
+
+                if (!statement.fileEnd)
+                {
+                    ro.returnCode = ro.incomplete_block;
+                    ro.errorMessage.Set(L"finally-block does not have a complete block");
+
+
+
+                    return;
+                }
+                statements.push_back(statement);
+            }
             else if (startStatement.StartsWith(L"continue", false, true) || startStatement.StartsWith(L"continue;"))
             {
                 statements.push_back(JavaScriptStatement(js_statement_type::js_continue));
@@ -751,6 +818,24 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                 statements.push_back(statement);
             }
 
+
+            // Catch scenario where a statement ends with an open bracket and bracket data is not set
+            if (statements.Size())
+            {
+                UINT index = statements.Size() - 1;
+                TString tempContents(statements[index].contents);
+
+                if (tempContents.EndsWith(L"{") && !statements[index].fileStart)
+                {
+                    // bool possibleArray = tempContents.SubString(0, tempContents.GetSize() - 1).GetTrim().EndsWith(L','); //
+
+                    statements[index].fileStart = file->GetPosition();
+                    statements[index].fileEnd = GetBlockEnd();
+                    file->Seek(statements[index].fileStart, 0);
+                }
+            }
+
+
         }
     }
 }
@@ -758,6 +843,143 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
 void TJavaScriptInterpretor::setLine(UINT line)
 {
     this->line = line;
+}
+
+void TJavaScriptInterpretor::AddAssignStatement(const TString& expression, TrecPointer<TVariable> var)
+{
+    JavaScriptStatement statement;
+    statement.contents = expression;
+    statement.type = js_statement_type::js_proto_add;
+    statement.var = var;
+    statements.push_back(statement);
+}
+
+ReportObject TJavaScriptInterpretor::ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
+{
+    ReportObject ret;
+
+    if (!var1.Get() && !var2.Get())
+    {
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(0ULL);
+        return ret;
+    }
+
+    if (var1.Get() && var1->GetVarType() == var_type::string)
+    {
+        TString value(var1->GetString());
+        value.Append(var2.Get() ? var2->GetString() : L"null");
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+        return ret;
+    }
+    else if (var2.Get() && var2->GetVarType() == var_type::string)
+    {
+        TString value(var1.Get() ? var1->GetString() : L"null");
+        value.Append(var2->GetString());
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+        return ret;
+    }
+
+    if (var1.Get() && !var2.Get())
+    {
+        if (var1->GetVarType() == var_type::collection)
+        {
+            auto varColl = dynamic_cast<TContainerVariable*>(var1.Get());
+            TString value;
+            for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
+            {
+                auto val = varColl->GetValueAt(Rust);
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer(): L"null");
+            }
+            if (value.StartsWith(L","))
+                value.Delete(0);
+            value.Append(L"null");
+            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+            return ret;
+        }
+        if (var1->GetVarType() == var_type::primitive)
+        {
+            ret.errorObject = var1;
+            return ret;
+        }
+    }
+
+    if (var2.Get() && !var1.Get())
+    {
+        if (var2->GetVarType() == var_type::collection)
+        {
+            auto varColl = dynamic_cast<TContainerVariable*>(var2.Get());
+            TString value;
+            for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
+            {
+                auto val = varColl->GetValueAt(Rust);
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer() : L"null");
+            }
+            if (value.StartsWith(L","))
+                value.Delete(0);
+            value.Set(TString(L"null") + value);
+            ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+            return ret;
+        }
+        if (var2->GetVarType() == var_type::primitive)
+        {
+            ret.errorObject = var2;
+            return ret;
+        }
+    }
+
+
+
+    return TInterpretor::ProcessAddition(var1, var2);
+}
+
+ReportObject TJavaScriptInterpretor::ProcessPrototypeOperation(const TString& className, const TString& attName, const TrecPointer<TVariable> value, JS_Prototype_Op operation)
+{
+    TClassStruct classStruct;
+    bool classExists = this->GetClass(className, classStruct);
+
+    TrecSubPointer<TVariable, TJavaScriptInterpretor> jsFunc;
+    TString classNameCopy(className);
+    bool present;
+    if (!classExists)
+        jsFunc = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(GetVariable(classNameCopy, present));
+
+    if (!classExists && !jsFunc.Get())
+    {
+        ReportObject ro;
+        ro.returnCode = ReportObject::invalid_name;
+        ro.errorMessage.Format(L"Class %ws does not exist!", className.GetConstantBuffer());
+        return ro;
+    }
+
+    switch (operation)
+    {
+    case JS_Prototype_Op::jpo_add_const:
+        if (classExists)
+        {
+            TClassAttribute att;
+            att.def = value;
+            att.name.Set(attName);
+            classStruct.AddAttribute(att);
+            att = classStruct.GetAttributeByName(L"constructor");
+            if (att.name.GetSize() && att.def.Get() && dynamic_cast<TJavaScriptInterpretor*>(att.def.Get()))
+            {
+                auto jsConst = dynamic_cast<TJavaScriptInterpretor*>(att.def.Get());
+                jsConst->AddAssignStatement(attName, value);
+            }
+            SubmitClassType(className, classStruct, true);
+        }
+        else
+        {
+            if (dynamic_cast<TJavaScriptInterpretor*>(jsFunc.Get()))
+            {
+                auto jsFunctP = dynamic_cast<TJavaScriptInterpretor*>(jsFunc.Get());
+                jsFunctP->AddAssignStatement(attName, value);
+            }
+        }
+        break;
+    }
+
+    return ReportObject();
 }
 
 bool TJavaScriptInterpretor::hasOddMiltiLineStrMarkers(const TString& str)
@@ -1372,15 +1594,7 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
         TDataArray<TString> varNames;
         TDataArray<TrecPointer<TVariable>> varValues;
 
-        for (UINT Rust = 0; Rust < vars.count(); Rust++)
-        {
-            TDataEntry<TVariableMarker> mark;
-            if (!vars.GetEntryAt(Rust, mark))
-                continue;
 
-            varNames.push_back(mark.key);
-            varValues.push_back(mark.object.GetVariable());
-        }
 
         auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
         TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
@@ -1392,11 +1606,19 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
             dynamic_cast<TInterpretor*>(block.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
         }
         dynamic_cast<TInterpretor*>(block.Get())->SetParamNames(varNames);
-        ProcessExpression(statements, cur, condition, statement.lineStart, ro);
+        for (UINT Rust = 0; Rust < vars.count(); Rust++)
+        {
+            TDataEntry<TVariableMarker> mark;
+            if (!vars.GetEntryAt(Rust, mark))
+                continue;
+
+            block->UpdateVariable(mark.key, mark.object.GetVariable(),true);
+        }
+        block->ProcessExpression(statements, cur, condition, statement.lineStart, ro);
 
         while (!ro.returnCode && IsTruthful(ro.errorObject))
         {
-            ro = block->Run(varValues);
+            ro = block->Run();
 
             if (ro.returnCode)return;
 
@@ -1416,10 +1638,10 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
             }
 
             // Process the 
-            ProcessExpression(statements, cur, update, statement.lineStart, ro);
+            block->ProcessExpression(statements, cur, update, statement.lineStart, ro);
             if (ro.returnCode)return;
 
-            ProcessExpression(statements, cur, condition, statement.lineStart, ro);
+            block->ProcessExpression(statements, cur, condition, statement.lineStart, ro);
         }
     }
     else
@@ -1488,12 +1710,68 @@ void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& st
 
 void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
+    TrecSubPointer<TVariable, TJavaScriptClassInterpretor> classInt = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptClassInterpretor>(
+        TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body));
+    assert(classInt.Get());
+
+    auto pieces = statement.contents.split(L" ");
+
+    assert(pieces->Size());
+
+
+    classInt->SetClassName(pieces->at(0));
+
+    if (pieces->Size() > 1)
+    {
+        if (pieces->Size() != 3 || pieces->at(1).Compare(L"extends"))
+        {
+            ro.returnCode = ro.incomplete_statement;
+            ro.errorMessage.Format(L"Expected class statement with inheritence to follow format '[className] extends [superClassName]', found %ws", statement.contents.GetConstantBuffer());
+
+            return;
+        }
+
+        if (!classInt->SetSuperClassName(pieces->at(2)))
+        {
+            ro.returnCode = ro.incomplete_statement;
+            ro.errorMessage.Format(L"Class %ws attempted to inherit from non-existant class %ws",
+                pieces->at(0).GetConstantBuffer(), pieces->at(2).GetConstantBuffer());
+
+            return;
+        }
+    }
+
+
+    classInt->ProcessStatements(ro);
+    if (ro.returnCode)
+        return;
+    TClassStruct classInfo = classInt->GetClassData();
+
+    if (!SubmitClassType(pieces->at(0), classInfo, false))
+    {
+        ro.returnCode = ro.invalid_name;
+        ro.errorMessage.Format(L"Class %ws already defined in this scope!", statement.contents.GetConstantBuffer());
+        return;
+    }
 }
 
 void TJavaScriptInterpretor::ProcessReg(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
 {
     TString exp(statement.contents);
-    ProcessExpression(statements, cur, exp, statement.lineStart,ro);
+
+    if (statement.type == js_statement_type::js_proto_add)
+    {
+        TString strThis(L"this");
+        bool present;
+        auto jsThis = GetVariable(strThis, present);
+        if (jsThis.Get() && jsThis->GetVarType() == var_type::collection)
+        {
+            auto newVar = statement.var;
+            dynamic_cast<TContainerVariable*>(jsThis.Get())->SetValue(exp, newVar.Get() ? newVar->Clone() : newVar);
+        }
+    }
+    else
+        ProcessExpression(statements, cur, exp, statement.lineStart,ro);
 }
 
 void TJavaScriptInterpretor::ProcessReturn(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
@@ -1516,7 +1794,7 @@ void TJavaScriptInterpretor::ProcessTry(TDataArray<JavaScriptStatement>& stateme
         return;
     }
 
-    if (statements[cur + 1].type != js_statement_type::js_catch || statements[cur + 1].type != js_statement_type::js_finally)
+    if (statements[cur + 1].type != js_statement_type::js_catch && statements[cur + 1].type != js_statement_type::js_finally)
     {
         ro.incomplete_statement;
         ro.errorMessage.Set(L"Try must be followed by a catch or finally block!");
@@ -1562,6 +1840,22 @@ void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& state
     TString erName(statement.contents.GetTrim());
 
     ReportObject ro2;
+
+    if (erName.EndsWith(L'{'))
+        erName.Delete(erName.GetSize() - 1);
+
+    if (erName.CountFinds(L'(') != erName.CountFinds(L')'))
+    {
+        ro.returnCode = ro.mismatched_parehtnesis;
+        ro.errorMessage.Set(L"Mismatched Paremthesis detected at catch block!");
+        return;
+    }
+    erName.Trim();
+    while (erName.StartsWith(L'('))
+        erName.Delete(0);
+    while (erName.EndsWith(L')'))
+        erName.Delete(erName.GetSize() - 1);
+
     CheckVarName(erName, ro2, statement.lineStart);
 
     if (ro2.returnCode)
@@ -1572,16 +1866,16 @@ void TJavaScriptInterpretor::ProcessCatch(TDataArray<JavaScriptStatement>& state
 
     ro.returnCode = 0;
 
-    // To-Do: Set up errorObject
 
-    ro.errorMessage.Empty();
 
     // Set up error parameter
     TDataArray<TString> erParamName;
     erParamName.push_back(erName);
     TDataArray<TrecPointer<TVariable>> erObject;
-    erObject.push_back(ro.errorObject);
+    erObject.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(ro.errorMessage));
+    // To-Do: Set up errorObject
 
+    ro.errorMessage.Empty();
 
     auto tempInt = TrecPointerKey::GetTrecPointerFromSub<TVariable, TInterpretor>(statement.body);
     TrecSubPointer<TVariable, TJavaScriptInterpretor> block = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TJavaScriptInterpretor>(tempInt);
@@ -1623,6 +1917,8 @@ void TJavaScriptInterpretor::ProcessFinally(TDataArray<JavaScriptStatement>& sta
 void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro, TDataMap<TVariableMarker>& variables)
 {
     auto toks = statement.contents.split(L',', 2);
+
+    TInterpretor::CorrectSplitStringForParenthesis(toks, L',');
 
     UINT newLines = 0;
 
@@ -1741,7 +2037,7 @@ void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>
     }
 }
 
-void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& expParam, UINT line, ReportObject& ro)
+void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT& cur, TString& expParam, UINT line, ReportObject& ro)
 {
     TString exp(expParam.GetTrim());
 
@@ -1763,19 +2059,20 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
     UINT curSize;
 
-    while ((curSize = exp.GetSize()) && exp.GetTrim().Compare(L";"))
+    while ((curSize = exp.GetSize()) && exp.GetTrim().Compare(L";") &&
+        exp.GetTrim().Compare(L"{") && exp.GetTrim().Compare(L"}"))
     {
         if (exp[0] == L'(')
         {
             UINT stack = 1;
 
-            UINT end;
+            UINT endt;
 
-            for (end = 1; end < exp.GetSize() && stack; end++)
+            for (endt = 1; endt < exp.GetSize() && stack; endt++)
             {
-                if (exp[end] == L'(')
+                if (exp[endt] == L'(')
                     stack++;
-                else if (exp[end] == L')')
+                else if (exp[endt] == L')')
                     stack--;
             }
 
@@ -1789,10 +2086,10 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
                 return;
             }
-            if (exp[end] != L')')
-                end--;
+            if (exp[endt] != L')')
+                endt--;
 
-            TString smallExp(exp.SubString(1, end));
+            TString smallExp(exp.SubString(1, endt));
 
             ProcessExpression(statements, cur, smallExp, line, ro);
 
@@ -1803,19 +2100,19 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
             expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
 
-            exp.Set(exp.SubString(end + 1).GetTrim());
+            exp.Set(exp.SubString(endt+ 1).GetTrim());
         }
         else if (exp[0] == L'[')
         {
             UINT stack = 1;
 
-            UINT end;
+            UINT endt;
 
-            for (end = 1; end < exp.GetSize() && stack; end++)
+            for (endt = 1; endt < exp.GetSize() && stack; endt++)
             {
-                if (exp[end] == L'[')
+                if (exp[endt] == L'[')
                     stack++;
-                else if (exp[end] == L']')
+                else if (exp[endt] == L']')
                     stack--;
             }
 
@@ -1830,7 +2127,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 return;
             }
 
-            TString smallExp(exp.SubString(1, end));
+            TString smallExp(exp.SubString(1, endt));
 
             ProcessArrayExpression(statements, cur, smallExp, line, ro);
 
@@ -1841,7 +2138,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
             expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
 
-            exp.Set(exp.SubString(end + 1).GetTrim());
+            exp.Set(exp.SubString(endt + 1).GetTrim());
         }
         else if (exp[0] >= L'0' && exp[0] <= L'9')
         {
@@ -1849,6 +2146,109 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
             if (ro.returnCode)
                 return;
             expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
+        }
+        else if (exp.StartsWith(L"new", false, true))
+        {
+            exp.Delete(0, 3);
+            exp.Trim();
+            int openParenth = exp.Find(L'(');
+            TString name(exp.SubString(0, openParenth));
+
+            TDataArray<TrecPointer<TVariable>> expressions;
+            TrecSubPointer<TVariable, TContainerVariable> newObj = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+
+            // this new container object becomes "this"
+            expressions.push_back(TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(newObj));
+            dynamic_cast<TContainerVariable*>(expressions[0].Get())->SetValue(L"__proto__", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj));
+            if (openParenth != -1)
+            {
+                int closeParenth = exp.FindOutOfQuotes(L')');
+                if (closeParenth == -1 || closeParenth < openParenth)
+                {
+                    ro.returnCode = ro.mismatched_parehtnesis;
+
+                    return;
+                }
+
+                TString strParams(exp.SubString(openParenth + 1, closeParenth));
+
+                auto strParamsSplit = strParams.split(L',', 3);
+
+                for (UINT Rust = 0; Rust < strParamsSplit->Size(); Rust++)
+                {
+                    TString data = strParamsSplit->at(Rust).GetTrim();
+                    if (!data.GetSize())
+                        continue;
+                    ProcessExpression(statements, cur, data, line, ro);
+                    if (ro.returnCode)
+                        return;
+                    expressions.push_back(ro.errorObject);
+                }
+                exp.Set(exp.SubString(closeParenth + 1));
+            }
+            else
+            {
+                exp.Delete(0, name.GetSize());
+            }
+
+            
+
+            TClassStruct classType;
+            if (classes.retrieveEntry(name, classType))
+            {
+                TClassAttribute att = classType.GetAttributeByName(L"constructor");
+
+                TrecSubPointer<TVariable, TInterpretor> function = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(att.def);
+
+                // No constructor, just simply go through attributes and recreate their attributes
+                UINT index = 0;
+                while (classType.GetAttributeByIndex(index++, att))
+                {
+                    if ((att.other & ATTRIBUTE_STATIC) || !att.name.GetSize())
+                        continue;
+
+                    newObj->SetValue(att.name, att.def);
+                }
+                ro.errorObject = expressions[0];
+
+                if (function.Get())
+                {
+                    ro = function->Run(expressions);
+                    if (ro.returnCode)return;
+                    ro.errorObject = expressions[0];
+                }
+
+            }
+            else
+            {
+                // Search for a function with the name
+                bool present;
+                TrecSubPointer<TVariable, TInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(GetVariable(name, present));
+
+                if (!func.Get())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Format(L"Error! No Such Class or Function name %ws in new declaration!", name.GetConstantBuffer());
+                    return;
+                }
+
+                func->SetFirstParamName(L"this");
+                
+
+                ro = func->Run(expressions);
+
+                if (ro.returnCode)
+                    return;
+                ro.errorObject = expressions[0];
+            }
+
+            // Set the type since we have an idea on what it is
+            if (ro.errorObject.Get() && ro.errorObject->GetVarType() == var_type::collection)
+            {
+                dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetClassName(name);
+            }
+
+            expresions.push_back(JavaScriptExpression(ro.errorMessage, ro.errorObject));
         }
         else if ((exp[0] == L'_') || (exp[0] >= L'a' && exp[0] <= L'z') || (exp[0] >= L'A' && exp[0] <= L'Z'))
         {
@@ -1862,6 +2262,8 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
         {
             int loc = exp.Find(exp[0], 1, false);
 
+            bool isTemplated = exp[0] == L'\`';
+
             if (loc == -1)
             {
                 ro.returnCode = ro.incomplete_statement;
@@ -1873,10 +2275,78 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
                 return;
             }
+            TString theString(exp.SubString(1, loc));
 
-            expresions.push_back(JavaScriptExpression(L"", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(exp.SubString(1, loc))));
+            if (isTemplated)
+            {
+                UINT startIndex = 0;
+                while ((startIndex = theString.FindOutOfQuotes(L"${", startIndex)) != -1)
+                {
+                    UINT closeBracket = theString.FindOutOfQuotes(L'}', startIndex);
+                    if (closeBracket == -1)
+                        break;
+
+                    TString var(theString.SubString(startIndex + 2, closeBracket));
+
+                    ProcessExpression(statements, cur, var, line, ro);
+
+                    if (ro.returnCode)
+                    {
+                        ro.returnCode = 0;
+                        ro.errorObject.Nullify();
+                    }
+
+                    TString res = ro.errorObject.Get() ? ro.errorObject->GetString() : TString(L"undefined");
+
+                    theString.Replace(TString(L"${") + var + L'}', res);
+                }
+            }
+
+            expresions.push_back(JavaScriptExpression(L"", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(theString)));
 
             exp.Set(exp.SubString(loc + 1));
+        }
+        else if (exp[0] == L'{')
+        {
+            // Here, we are starting a JSON Object. but it has meat afterwards and is assumed that we are already in another JSON Object
+
+            // need to find the boundaries of this bracket
+            UINT brack = 1;
+            WCHAR quote = L'\0';
+            TString jExp;
+            for (UINT Rust = 1; Rust < exp.GetSize(); Rust++)
+            {
+                WCHAR ch = exp[Rust];
+                switch (ch)
+                {
+                case L'{':
+                    if (!quote)
+                        brack++;
+                    break;
+                case L'}':
+                    if (!quote)
+                        brack--;
+                    break;
+                case L'`':
+                case L'\'':
+                case L'\"':
+                    if (!quote)
+                        quote = ch;
+                    else if (quote == ch)
+                        quote = L'\0';
+                }
+
+                if (!brack)
+                {
+                    jExp.SubString(0, Rust);
+                    exp.Delete(0, Rust);
+                    break;
+                }
+            }
+
+            ProcessJsonExpression(statements, cur, jExp, line, ro);
+            if (ro.returnCode)return;
+            expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
         }
 
         // Now Check for an operator
@@ -1887,7 +2357,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
 
 
         // Handle Post-Increment/Decrement
-        if (expresions.Size() && expresions[expresions.Size() - 1].varName.GetSize() && (exp.StartsWith(L"++") || exp.StartsWith(L"--")))
+        if (expresions.Size() && expresions[expresions.Size() - 1].varName.GetSize() && ((exp.StartsWith(L"++") || exp.StartsWith(L"--"))))
         {
             bool inc = exp.StartsWith(L"++");
 
@@ -1962,6 +2432,14 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
         exp.Trim();
     }
 
+    // Check to see if we have an open bracket. If we do, then attempt to define a JSON object
+    if (!exp.Compare(L"{"))
+    {
+        ProcessJsonExpression(statements, cur, exp, line, ro);
+        if (ro.returnCode)return;
+        expresions.push_back(JavaScriptExpression(L"", ro.errorObject));
+    }
+
     HandlePreExpr(statements, cur, expresions, operators, ro);
     if (ro.returnCode) return;
 
@@ -2004,6 +2482,9 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
     HandleConditional(statements, cur, expresions, operators, ro);
     if (ro.returnCode) return;
 
+    HandleAssignment(statements, cur, expresions, operators, ro);
+    if (ro.returnCode) return;
+
     HandleComma(statements, cur, expresions, operators, ro);
     if (ro.returnCode) return;
 
@@ -2039,7 +2520,7 @@ void TJavaScriptInterpretor::ProcessArrayExpression(TDataArray<JavaScriptStateme
     ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(array_);
 }
 
-void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+UINT TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
 {
     TString trimmed(exp.GetTrim());
 
@@ -2048,7 +2529,7 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
         ro.returnCode = ro.broken_reference;
 
 
-        return;
+        return 0;
     }
 
     if (!trimmed.StartsWith(L'('))
@@ -2057,7 +2538,7 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
 
 
 
-        return;
+        return 0;
     }
 
     int endParam = trimmed.FindLast(L')');
@@ -2067,11 +2548,8 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
         ro.returnCode = ro.incomplete_statement;
 
 
-        return;
+        return 0;
     }
-
-    ULONG64 start = file->GetPosition() + 1;
-    ULONG64 end = GetBlockEnd();
 
     TString parametersString(trimmed.SubString(1, endParam));
 
@@ -2087,17 +2565,56 @@ void TJavaScriptInterpretor::ProcessFunctionDef(TDataArray<JavaScriptStatement>&
         TString paramName(paramsList->at(Rust));
         CheckVarName(paramName, ro, line);
         if (ro.returnCode)
-            return;
+            return 0;
         paramNames.push_back(paramName);
     }
 
     TrecSubPointer<TVariable, TJavaScriptInterpretor> function = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(
         TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self), environment);
 
-    dynamic_cast<TInterpretor*>(function.Get())->SetCode(file, start, end);
+    dynamic_cast<TInterpretor*>(function.Get())->SetCode(file, statements[cur].fileStart, statements[cur].fileEnd);
     function->SetParamNames(paramNames);
+    UINT ret = 0;
+    for (UINT Rust = cur + 1; Rust < statements.Size(); Rust++)
+    {
+        ret++;
+        // Check to see if we are closing the function
+        TString state(statements.at(Rust).contents.GetTrim());
+
+        if (state.EndsWith(L';'))
+            state.Delete(state.GetSize() - 1);
+
+        bool endt = state.EndsWith(L'}');
+
+        if (!endt || !state.StartsWith(L'}'))
+            function->statements.push_back(statements.at(Rust));
+        if (endt)
+            break;
+    }
+
+    if (!ret)
+    {
+        ro.returnCode = ReportObject::incomplete_block;
+        ro.errorMessage.Set(L"Unexpected End of File!");
+    }
+
+    for (UINT Rust = 0; Rust < variables.count(); Rust++)
+    {
+        TDataEntry<TVariableMarker> entry;
+        if (!variables.GetEntryAt(Rust, entry))
+            continue;
+
+        if (entry.key.GetSize())
+        {
+            auto tempVar = entry.object.GetVariable();
+            TVariableMarker mark(entry.object.IsMutable(), (tempVar.Get()? tempVar->Clone() : tempVar));
+            function->variables.addEntry(entry.key, mark);
+        }
+    }
 
     ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(function);
+    exp.Empty();
+    return ret;
 }
 
 void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject& ro)
@@ -2108,13 +2625,13 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
 
     _ASSERT(tExp.GetSize());
 
-    UINT start = 0, end;
+    UINT start = 0, endt;
 
     if (tExp.StartsWith(L"0x", true))
     {
-        for (end = 2; end < tExp.GetSize(); end++)
+        for (endt = 2; endt < tExp.GetSize(); endt++)
         {
-            WCHAR letter = tExp[end];
+            WCHAR letter = tExp[endt];
 
             if ((letter >= L'0' && letter <= L'9') ||
                 (letter >= L'a' && letter <= L'f') ||
@@ -2126,9 +2643,9 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
     }
     else if (tExp.StartsWith(L"0b", true))
     {
-        for (end = 2; end < tExp.GetSize(); end++)
+        for (endt = 2; endt < tExp.GetSize(); endt++)
         {
-            WCHAR letter = tExp[end];
+            WCHAR letter = tExp[endt];
 
             if (letter == L'0' || letter == L'1' || letter == L'_')
                 continue;
@@ -2137,9 +2654,9 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
     }
     else
     {
-        for (end = (tExp[0] == L'-') ? 1 : 0; end < tExp.GetSize(); end++)
+        for (endt = (tExp[0] == L'-') ? 1 : 0; endt < tExp.GetSize(); endt++)
         {
-            WCHAR letter = tExp[end];
+            WCHAR letter = tExp[endt];
 
             if ((letter >= L'0' && letter <= L'9') ||
                 letter == L'.' || letter == L'_')
@@ -2148,7 +2665,7 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
         }
     }
 
-    tExp.Set(tExp.SubString(start, end));
+    tExp.Set(tExp.SubString(start, endt));
 
     if (tExp.Find(L'.') != -1)
     {
@@ -2178,27 +2695,27 @@ void TJavaScriptInterpretor::InspectNumber(TString& exp, UINT line, ReportObject
         ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(l);
     }
 
-    exp.Set(exp.SubString(frontDifference + end));
+    exp.Set(exp.SubString(frontDifference + endt));
 }
 
-bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT& cur, TString& exp, UINT line, ReportObject& ro)
 {
     exp.TrimRight();
 
-
+    ro.errorMessage.Empty();
 
     _ASSERT(exp.GetSize());
 
-    UINT start = 0, end;
+    UINT start = 0, endt;
     bool present, procedureCall;
     TString varName;
     TrecPointer<TVariable> curVar, objVar;
-
+    TString fullVarName;
     // Get Next Variable title
     getNextVar:
-    for (end = 0; end < exp.GetSize(); end++)
+    for (endt = 0; endt < exp.GetSize(); endt++)
     {
-        WCHAR letter = exp[end];
+        WCHAR letter = exp[endt];
 
         if ((letter >= L'0' && letter <= L'9') ||
             (letter >= L'a' && letter <= L'z') ||
@@ -2209,24 +2726,30 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     }
 
     // See if it a "function" expression
-    varName.Set(exp.SubString(0, end));
+    varName.Set(exp.SubString(0, endt));
+
     if (!varName.Compare(L"function"))
     {
         exp.Delete(0, 8);
         exp.TrimRight();
 
-        ProcessFunctionDef(statements, cur, exp, line, ro);
+        UINT skip = ProcessFunctionDef(statements, cur, exp, line, ro);
+        if (!skip)
+            return false;
+        cur += skip;
         return true;
     }
     objVar = curVar;
+
+    fullVarName.Append(varName);
 
     if (curVar.Get())
     {
         if (curVar->GetVarType() == var_type::collection)
         {
-            curVar = dynamic_cast<TContainerVariable*>(curVar.Get())->GetValue(varName, present);
+            curVar = dynamic_cast<TContainerVariable*>(curVar.Get())->GetValue(varName, present, L"__proto__");
         }
-        else
+        else if(fullVarName.Find(L"prototype") == -1)
         {
             ro.returnCode = ro.improper_type;
             ro.errorMessage.Format(L"Variable not a collection variable. Could not get Member name %ws", varName.GetConstantBuffer());
@@ -2238,7 +2761,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
         curVar = GetVariable(varName, present);
     }
 
-    exp.Set(exp.SubString(end).GetTrim());
+    exp.Set(exp.SubString(endt).GetTrim());
 
     if (exp.StartsWith(L"?.") && !curVar.Get())
     {
@@ -2247,6 +2770,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     }
     if (exp.StartsWith(L"?.") || exp.StartsWith(L"."))
     {
+        fullVarName.Append(exp[0] == L'?' ? L"?." : L".");
         exp.Delete(0, exp[0] == L'?' ? 2 : 1);
         exp.Trim();
         goto getNextVar;
@@ -2272,11 +2796,15 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
             break;
     }
 
-
     if (procedureCall)
     {
         ro.errorObject = curVar;
-        ProcessProcedureCall(statements, cur, exp, line, ro, objVar);
+        ro.errorMessage.Set(varName);
+        TString tempExp(exp);
+        UINT addChars = ProcessProcedureCall(statements, cur, exp, line, ro, objVar);
+
+        if (!ro.returnCode)
+            fullVarName.Append(tempExp.SubString(0, addChars + 1));
     }
     //else 
     //{
@@ -2291,8 +2819,11 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
         return false;
 
     exp.Trim();
-    if(!procedureCall)
+    if (!procedureCall)
+    {
         ro.errorObject = curVar;
+        ro.errorMessage.Set(fullVarName);
+    }
     if (exp.StartsWith(L"?.") && !curVar.Get())
     {
         ro.errorObject.Nullify();
@@ -2310,20 +2841,59 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
     return true;
 }
 
-void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> objVar)
+UINT TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> objVar)
 {
     if (!ro.errorObject.Get())
     {
-        ro.returnCode = ro.broken_reference;
-        ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got nul/undefined!");
-        return;
+        // Check for call to Super
+        if (!ro.errorMessage.Compare(L"super"))
+        {
+            bool pesent = false;
+            TString strThis(L"this");
+            auto tThis = GetVariable(strThis, pesent);
+            if (!pesent && !tThis.Get())
+            {
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got null/undefined!");
+                return 0;
+            }
+
+            if (tThis->GetVarType() != var_type::collection)
+            {
+                ro.returnCode = ro.improper_type;
+                ro.errorMessage.Set(L"Variable 'this' did not amount to a class Object!");
+                return 0;
+            }
+            objVar = tThis;
+
+            ro.errorObject = dynamic_cast<TContainerVariable*>(tThis.Get())->GetValue(ro.errorMessage, pesent, L"__proto__");
+            if (!ro.errorObject.Get())
+            {
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Set(L"Expected Valid Procedure Object to call at method name 'super', got null/undefined!");
+                return 0;
+            }
+            if (ro.errorObject->GetVarType() != var_type::interpretor)
+            {
+                ro.returnCode = ro.improper_type;
+                ro.errorMessage.Set(L"Variable 'super' did not amount to a method call Object!");
+                return 0;
+            }
+
+        }
+        else
+        {
+            ro.returnCode = ro.broken_reference;
+            ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got nul/undefined!");
+            return 0;
+        }
     }
 
     if (ro.errorObject->GetVarType() != var_type::interpretor)
     {
         ro.returnCode = ro.improper_type;
         ro.errorMessage.Set(L"Expected Valid Procedure Object to call, got non-procedure object!");
-        return;
+        return 0;
     }
 
     TDataArray<TrecPointer<TVariable>> vars;
@@ -2350,7 +2920,9 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
         {
             if (exp[Rust] == L',' && closeParenth == 1)
             {
-                expressions.push_back(exp.SubString(0, Rust).GetTrim());
+                TString newExp(exp.SubString(0, Rust).GetTrim());
+                if(newExp.GetSize())
+                    expressions.push_back(newExp);
                 exp.Delete(0, Rust + 1);
                 Rust = 0;
                 goto startFor;
@@ -2372,26 +2944,133 @@ void TJavaScriptInterpretor::ProcessProcedureCall(TDataArray<JavaScriptStatement
     {
         ro.returnCode = ReportObject::mismatched_parehtnesis;
         ro.errorMessage.Set(L"Mismatched parenthesis when processing expressions for function call");
-        return;
+        return 0;
     }
-    expressions.push_back(exp.SubString(0, Rust).GetTrim());
+    TString newExp(exp.SubString(0, Rust).GetTrim());
+    if(newExp.GetSize())
+        expressions.push_back(newExp);
     exp.Delete(0, Rust + 1);
 
     TrecSubPointer<TVariable, TInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(ro.errorObject);
+    bool pres;
+    TString strThis(L"this");
+    auto jsThis = GetVariable(strThis, pres);
+
+    if (!ro.errorMessage.Compare(L"super") && jsThis.Get())
+    {
+        dynamic_cast<TJavaScriptInterpretor*>(func.Get())->variables.addEntry(L"this", TVariableMarker(false, jsThis));
+    }
 
     for (Rust = 0; Rust < expressions.Size(); Rust++)
     {
         ProcessExpression(statements, cur, expressions[Rust], line, ro);
         if (ro.returnCode)
-            return;
+            return Rust+1;
 
         vars.push_back(ro.errorObject);
     }
 
-    ro = func->Run(vars);
+    ro = func->Run(vars, false);
 
     if (!ro.returnCode && ro.mode == report_mode::report_mode_return)
         ro.mode = report_mode::report_mode_regular;
+
+    return Rust + 1;
+}
+
+void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro)
+{
+    TString contents;
+    if (!exp.Compare(L'{'))
+        file->ReadString(contents, statements[cur].fileEnd - statements[cur].fileStart);
+    else
+        contents.Set(exp.SubString(1));
+
+    UINT bracketStack = 0;
+    TDataArray<TString> sections;
+    UINT start = 0;
+    WCHAR quote = L'\0';
+    for (UINT Rust = 0; Rust < contents.GetSize(); Rust++)
+    {
+        WCHAR ch = contents[Rust];
+
+        switch (ch)
+        {
+        case L'(':
+        case L'[':
+        case L'{':
+            bracketStack++;
+            break;
+        case L')':
+        case L']':
+        case L'}':
+            bracketStack--;
+            break;
+        case L'`':
+        case L'\'':
+        case L'\"':
+            if (!quote)
+                quote = ch;
+            else if (quote == ch)
+                quote = L'\0';
+            break;
+        case L',':
+            if (!quote && !bracketStack)
+            {
+                sections.push_back(contents.SubString(start, Rust));
+                start = Rust + 1;
+            }
+        }
+
+        if (Rust == contents.GetSize() - 1 && start < Rust)
+        {
+            // Last Character
+            sections.push_back(contents.SubString(start, Rust));
+        }
+    }
+
+    TrecSubPointer<TVariable, TContainerVariable> retVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+
+    for (UINT Rust = 0; Rust < sections.Size(); Rust++)
+    {
+        auto pieces = sections[Rust].splitn(L':', 2, 3);
+
+        if (!InspectVariable(pieces->at(0)))
+        {
+            ro.returnCode = ro.invalid_name;
+            return;
+        }
+
+        if (pieces->Size() == 2 && pieces->at(1).GetSize())
+        {
+            ProcessExpression(statements, cur, pieces->at(1), line, ro);
+            if (ro.returnCode)
+                return;
+            retVar->SetValue(pieces->at(0), ro.errorObject);
+        }
+    }
+
+    ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(retVar);
+}
+
+bool TJavaScriptInterpretor::InspectVariable(const TString& exp)
+{
+    bool foundBad = false;
+
+    for (UINT endt = 0; endt < exp.GetSize(); endt++)
+    {
+        WCHAR letter = exp[endt];
+
+        if ((letter >= L'0' && letter <= L'9') ||
+            (letter >= L'a' && letter <= L'z') ||
+            (letter >= L'A' && letter <= L'Z') ||
+            letter == L'_')
+            continue;
+        foundBad = true;
+        break;
+    }
+
+    return !foundBad;
 }
 
 void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)
@@ -2432,6 +3111,10 @@ void TJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptStatement>& stat
 
         if (remove)
         {
+            if (expresions[Rust].varName.GetSize())
+            {
+                this->UpdateVariable(expresions[Rust].varName, expresions[Rust].value);
+            }
             operators.RemoveAt(Rust--);
         }
 
@@ -2582,7 +3265,7 @@ void TJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptStatement>&
         {
             if (expressions[Rust + 1].value->GetVarType() == var_type::primitive)
                 shift = expressions[Rust + 1].value->Get4Value();
-            else if (expressions[Rust + 1].value->GetVarType() == var_type::primitive)
+            else if (expressions[Rust + 1].value->GetVarType() == var_type::string)
             {
                 int iShift;
                 if (expressions[Rust + 1].value->GetString().ConvertToInt(iShift))
@@ -2672,7 +3355,7 @@ void TJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptStatem
             else
             {
                 
-                dynamic_cast<TContainerVariable*>(right.Get())->GetValue(left->GetString(), val);
+                dynamic_cast<TContainerVariable*>(right.Get())->GetValue(left->GetString(), val, L"__proto__");
                 
             }
 
@@ -2973,8 +3656,256 @@ void TJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptStatement>& 
     }
 }
 
-void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro)
+void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        ro.returnCode = ro.broken_reference;
+        ro.errorMessage.Set(L"The JS-Assignment handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (int Rust = ops.Size() - 1; Rust > -1; Rust--)
+    {
+        // Whether or not an assignment operator was found
+        bool found = false;
+
+        // Details on whether a bitwise shift assignment operator was found
+        bool doBit = false;
+        bool doRightBit = false;
+        UINT shift = 0;
+        USHORT flag = 0;
+
+        auto left = expressions[Rust].value;
+        auto right = expressions[Rust + 1].value;
+
+        bool canDo = true, possibleProto = false;
+
+        TrecSubPointer<TVariable, TPrimitiveVariable> operand =
+            TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(left);
+        if (canDo = (operand.Get() != nullptr))
+        {
+            canDo = right.Get() != nullptr;
+        }
+        if (canDo)
+        {
+            if (right->GetVarType() == var_type::primitive)
+                shift = right->Get4Value();
+            else if (right->GetVarType() == var_type::string)
+            {
+                int iShift;
+                if (right->GetString().ConvertToInt(iShift))
+                    canDo = false;
+                else
+                    shift = iShift;
+            }
+        }
+
+        if (!ops[Rust].Compare(L"="))
+        {
+            found = true;
+            ro.errorObject = right;
+
+            // Check for a Prototype call
+            auto pieces = expressions[Rust].varName.split(L'.', 3);
+
+            if (pieces->Size() == 3 && !pieces->at(1).Compare(L"prototype"))
+            {
+                ro = ProcessPrototypeOperation(pieces->at(0), pieces->at(2), left, JS_Prototype_Op::jpo_add_const);
+                return;
+            }
+        }
+        else if (!ops[Rust].Compare(L"+="))
+        {
+            found = true;
+            ProcessAddition(left, right);
+        }
+        else if(!ops[Rust].Compare(L"-="))
+        {
+            found = true;
+            ProcessSubtraction(left, right);
+        }
+        else if (!ops[Rust].Compare(L"**="))
+        {
+            found = true;
+            ProcessExponent(left, right);
+        }
+        else if (!ops[Rust].Compare(L"*="))
+        {
+            ProcessMultiplication(left, right);
+            found = true;
+        }
+        else if (!ops[Rust].Compare(L"/="))
+        {
+            ProcessDivision(left, right);
+            found = true;
+        }
+        else if (!ops[Rust].Compare(L"%="))
+        {
+            ProcessModDivision(left, right);
+            found = true;
+        }
+        else if (!ops[Rust].Compare(L"<<="))
+        {
+            found = true;
+            if (!canDo)
+            {
+                ro.returnCode = ReportObject::broken_reference;
+
+                return;
+            }
+            doBit = true;
+            flag = TPrimitiveVariable::bit_float;
+        }
+        else if (!ops[Rust].Compare(L">>="))
+        {
+        found = true;
+        if (!canDo)
+        {
+            ro.returnCode = ReportObject::broken_reference;
+
+            return;
+        }
+        doBit = doRightBit = true;
+        flag = TPrimitiveVariable::bit_float;
+        }
+        else if (!ops[Rust].Compare(L">>>="))
+        {
+        found = true;
+        if (!canDo)
+        {
+            ro.returnCode = ReportObject::broken_reference;
+
+            return;
+        }
+        doBit = doRightBit = true;
+        flag = TPrimitiveVariable::bit_float | TPrimitiveVariable::bit_replenish | TPrimitiveVariable::bit_to_32 | TPrimitiveVariable::bit_to_un_f;
+        }
+        else if (!ops[Rust].Compare(L"&="))
+        {
+        found = true;
+        DoubleLong dl1 = GetValueFromPrimitive(left);
+        DoubleLong dl2 = GetValueFromPrimitive(right);
+
+        if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+        {
+            ro.returnCode = ro.improper_type;
+
+            return;
+        }
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitAnd(dl2));
+        }
+        else if (!ops[Rust].Compare(L"^="))
+        {
+        found = true;
+        DoubleLong dl1 = GetValueFromPrimitive(left);
+        DoubleLong dl2 = GetValueFromPrimitive(right);
+
+        if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+        {
+            ro.returnCode = ro.improper_type;
+
+            return;
+        }
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitXor(dl2));
+        }
+        else if (!ops[Rust].Compare(L"|="))
+        {
+        found = true;
+        DoubleLong dl1 = GetValueFromPrimitive(left);
+        DoubleLong dl2 = GetValueFromPrimitive(right);
+
+        if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+        {
+            ro.returnCode = ro.improper_type;
+
+            return;
+        }
+        ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitOr(dl2));
+        }
+        else if (!ops[Rust].Compare(L"&&="))
+        {
+        found = true;
+        ro.errorObject = IsTruthful(left) ? right : left;
+        }
+        else if (!ops[Rust].Compare(L"||="))
+        {
+        found = true;
+        ro.errorObject = IsTruthful(left) ? left : right;
+        }
+        else if (!ops[Rust].Compare(L"??="))
+        {
+        found = true;
+        ro.errorObject = left.Get() ? left : right;
+        }
+
+        if (found)
+        {
+            if (!expressions[Rust].varName.GetSize())
+            {
+                ro.returnCode = ro.broken_reference;
+                ro.errorMessage.Format(L"Error! %ws operator must have a named variable as the left hand expression!", ops[Rust].GetConstantBuffer());
+                return;
+            }
+            if (doBit)
+            {
+                if (!operand->BitShift(doRightBit, shift, flag))
+                {
+                    ro.returnCode = ReportObject::broken_reference;
+                    ro.errorMessage.Set(L"Internal Error Attempting to Perform Bitwise manipulation!");
+                    return;
+                }
+                ro.errorObject = left;
+            }
+
+            if (expressions[Rust].varName.CountFinds(L'.'))
+            {
+                auto holdVal = ro.errorObject;
+                int finalDot = expressions[Rust].varName.FindLast(L'.');
+                TString initExp(expressions[Rust].varName.SubString(0, finalDot));
+                ProcessExpression(statements, cur, initExp, line, ro);
+
+                if (ro.returnCode)
+                    return;
+
+                if (!ro.errorObject.Get())
+                {
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Set(L"Found Broken reference in Assignment operation!");
+                    return;
+                }
+
+                if (ro.errorObject->GetVarType() != var_type::collection)
+                {
+                    ro.returnCode = ro.improper_type;
+                    ro.errorMessage.Format(L"Expected collection type for expression `%ws`", expressions[Rust].varName);
+                    return;
+                }
+                
+                dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetValue(expressions[Rust].varName.SubString(finalDot+1), holdVal);
+
+                ro.errorObject = holdVal;
+            }
+            else
+            {
+                switch (UpdateVariable(expressions[Rust].varName, ro.errorObject))
+                {
+                case 1:
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Format(L"Assignment to non-existant variable '%ws' occured!", expressions[Rust].varName.GetConstantBuffer());
+                    return;
+                case 2:
+                    ro.returnCode = ro.broken_reference;
+                    ro.errorMessage.Format(L"Assignment to const variable '%ws' was attempted!", expressions[Rust].varName.GetConstantBuffer());
+                    return;
+                }
+            }
+            expressions[Rust].value = ro.errorObject;
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+
+        }
+    }
 }
 
 void TJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expressions, TDataArray<TString>& ops, ReportObject& ro)

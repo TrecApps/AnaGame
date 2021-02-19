@@ -48,6 +48,21 @@
     <ClInclude Include="TcDataStruct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TClassStruct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TVariableType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TPrimitiveType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TSpecialVariable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TPrimitiveFormatVariable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -75,6 +90,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="JavaScriptFunc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TClassStruct.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TVariableType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TPrimitiveType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TSpecialVariable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TPrimitiveFormatVariable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

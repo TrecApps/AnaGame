@@ -7,6 +7,7 @@
 #include "TCodeHandler.h"
 #include "TerminalHandler.h"
 #include "TWebWindow.h"
+#include "FileHandler.h"
 
 static TString dialogClassName(L"TDialog");
 
@@ -457,7 +458,9 @@ TrecPointer<EventHandler> TInstance::GetHandler(const TString& name, anagame_pag
 				if (dynamic_cast<TCodeHandler*>(registeredHandlers[Rust].Get()))
 					return registeredHandlers[Rust];
 				break;
-
+			case anagame_page::anagame_page_file_node:
+				if (dynamic_cast<FileHandler*>(registeredHandlers[Rust].Get()))
+					return registeredHandlers[Rust];
 				// To-Do: As more Handlers are added, mention them here
 			}
 		}

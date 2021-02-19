@@ -61,7 +61,7 @@ public:
      * 
      * Attributes: override
      */
-    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) override;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVars = true) override;
 
 private:
     /**

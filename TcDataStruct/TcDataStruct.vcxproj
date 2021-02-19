@@ -159,12 +159,17 @@
     <ClInclude Include="JavaScriptFunc.h" />
     <ClInclude Include="Operator.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TClassStruct.h" />
     <ClInclude Include="TContainerVariable.h" />
     <ClInclude Include="TInterpretor.h" />
     <ClInclude Include="TNativeInterpretor.h" />
     <ClInclude Include="TObjectVariable.h" />
+    <ClInclude Include="TPrimitiveFormatVariable.h" />
+    <ClInclude Include="TPrimitiveType.h" />
     <ClInclude Include="TPrimitiveVariable.h" />
+    <ClInclude Include="TSpecialVariable.h" />
     <ClInclude Include="TStringVariable.h" />
+    <ClInclude Include="TVariableType.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -175,12 +180,17 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TClassStruct.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
     <ClCompile Include="TInterpretor.cpp" />
     <ClCompile Include="TNativeInterpretor.cpp" />
     <ClCompile Include="TObjectVariable.cpp" />
+    <ClCompile Include="TPrimitiveFormatVariable.cpp" />
+    <ClCompile Include="TPrimitiveType.cpp" />
     <ClCompile Include="TPrimitiveVariable.cpp" />
+    <ClCompile Include="TSpecialVariable.cpp" />
     <ClCompile Include="TStringVariable.cpp" />
+    <ClCompile Include="TVariableType.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

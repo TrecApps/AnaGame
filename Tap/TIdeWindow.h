@@ -159,7 +159,7 @@ public:
 	 *				bool pageTypeStrict - whether the caller is strict when it comes to the location of the Page
 	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
 	 */
-	TrecSubPointer<Page, IDEPage> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict = false);
+	TrecPointer<Page> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict = false);
 
 	/**
 	 * Method: TIdeWindow::AddPage
@@ -169,7 +169,7 @@ public:
 	 *				TString name - name of the page to write on the Tab
 	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
 	 */
-	TrecSubPointer<Page, IDEPage> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
+	TrecPointer<Page> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
 
 
 	/**
@@ -187,10 +187,10 @@ public:
 	/**
 	 * Method: TIdeWindow::SetCurrentHolder
 	 * Purpose: Marks a Page Holder as being dragged by the User
-	 * Parameters: TrecPointer<IDEPageHolder> holder - the Page holder believed to be dragged
+	 * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
 	 * Returns: void
 	 */
-	void SetCurrentHolder(TrecPointer<IDEPageHolder> holder);
+	void SetCurrentHolder(TrecPointer<Tab> holder, TrecPointer<Page> page);
 
 	/**
 	 * Method: TIdeWindow::SetEnvironment
@@ -266,7 +266,7 @@ protected:
 	/**
 	 * Holder being dragged
 	 */
-	TrecPointer<IDEPageHolder> currentHolder;
+	TrecPointer<Tab> currentHolder;
 
 	/**
 	 * the Environment to manage a Project
@@ -323,7 +323,7 @@ protected:
 	/**
 	 * Page to focus on (used when shifting the boundaries between two or three pages)
 	 */
-	TrecSubPointer<Page, IDEPage> focusPage;
+	TrecSubPointer<Page, IDEPage> focusPage, tabPage;
 
 
 	/**

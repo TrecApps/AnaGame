@@ -42,6 +42,12 @@ public:
      */
     TString ProcessHtml(TrecPointer<TFile> file, const TString& data);
 
+    TString RetrieveCss();
+
+    TString RetrieveTitle();
+
+    TrecPointer<HtmlLink> GetLink(UINT index);
+
 
 private:
     /**

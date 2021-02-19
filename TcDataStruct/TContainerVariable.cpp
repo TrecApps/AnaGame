@@ -1,6 +1,33 @@
 #include "pch.h"
 #include "TContainerVariable.h"
 
+TrecPointer<TVariable> TContainerVariable::Clone()
+{
+    TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(type);
+
+    for (UINT Rust = 0; Rust < values.count(); Rust++)
+    {
+        auto entry = values.GetEntryAt(Rust);
+
+        if (!entry.Get())
+            continue;
+        if (entry->key.GetSize())
+        {
+            TrecPointer<TVariable> var;
+            if (entry->object.Get())
+            {
+                // Don't clone if we have a circular reference, else we'll get "infinite" recursion
+                if (entry->object.Get() == this)
+                    var = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
+                else
+                    var = entry->object->Clone();
+            }
+            ret->values.addEntry(entry->key, var);
+        }
+    }
+    return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
+}
+
 /**
  * Method: TContainerVariable
  * Purpose: Constructor
@@ -97,6 +124,28 @@ TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& pr
     present = ret.Get() != nullptr;
     return ret;
     
+}
+
+TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present, const TString& super)
+{
+    auto supers = super.split(L";");
+    auto ret = GetValue(key, present);
+    if (present)
+        return ret;
+    for (UINT Rust = 0; Rust < supers->Size(); Rust++)
+    {
+        ret = GetValue(supers->at(Rust), present);
+        if (ret.Get() && ret->GetVarType() == var_type::collection)
+        {
+            ret = dynamic_cast<TContainerVariable*>(ret.Get())->GetValue(key, present);
+            if (present)
+                return ret;
+        }
+    }
+
+    present = false;
+    return ret;
+    return TrecPointer<TVariable>();
 }
 
 /**
@@ -294,4 +343,32 @@ TrecPointer<TVariable> TContainerVariable::GetValueAt(UINT index)
     if (!entry.Get())
         return TrecPointer<TVariable>();
     return entry->object;
+}
+
+bool TContainerVariable::GetValueAt(UINT index, TString& key, TrecPointer<TVariable>& value)
+{
+    if(index >= values.count())
+        return false;
+
+    TrecPointer<tEntry<TVariable>> entry = values.GetEntryAt(index);
+    if (entry.Get())
+    {
+        key.Set(entry->key);
+        value = entry->object->Clone();
+        return true;
+    }
+    return false;
+}
+
+TString TContainerVariable::GetTClassName()
+{
+    return className;
+}
+
+bool TContainerVariable::SetClassName(const TString& name)
+{
+    if(className.GetSize() || !name.GetSize())
+        return false;
+    className.Set(name);
+    return true;
 }

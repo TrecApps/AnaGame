@@ -188,21 +188,7 @@ void HTML_Reader::DeduceCharType(unsigned char * bytes)
 	}
 }
 
-/*
-* Method: HTML_Reader::ReturnWCharType
-* Purpose: Converts a char to a WCHAR
-* Parameters: char c - the char to convert
-* Returns: WCHAR - the wide char version of c
-* Note: Functionality is generic enough that method should be moved to a function
-*/
-WCHAR HTML_Reader::ReturnWCharType(char c)
-{
-	WCHAR w[] = { L'0',L'\0' };
-	size_t conv = 0;
-	char charTo[] = { c, '\0' };
-	mbstowcs_s(&conv, w, 2, charTo, 1);
-	return w[0];
-}
+
 
 /*
 * Method: HTML_Reader::isWhiteSpace

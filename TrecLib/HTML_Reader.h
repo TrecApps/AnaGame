@@ -77,14 +77,7 @@ private:
 	* Returns: void
 	*/
 	void DeduceCharType(unsigned char*);
-	/*
-	* Method: HTML_Reader::ReturnWCharType
-	* Purpose: Converts a char to a WCHAR
-	* Parameters: char c - the char to convert
-	* Returns: WCHAR - the wide char version of c
-	* Note: Functionality is generic enough that method should be moved to a function
-	*/
-	WCHAR ReturnWCharType(char);
+
 	/*
 	* Method: HTML_Reader::isWhiteSpace
 	* Purpose: Determines whether a character is white space or not

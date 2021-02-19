@@ -7,6 +7,9 @@
 #include <TEnvironment.h>
 
 
+#include "TClassStruct.h"
+
+
     /**
      * Method: TInterpretor::
      * Purpose:
@@ -145,14 +148,20 @@ class TC_DATA_STRUCT TInterpretor : public TVariable
 {
 public:
 
+    static void CorrectSplitStringForParenthesis(TrecPointer<TDataArray<TString>> splitString, WCHAR join);
+
+    virtual TrecPointer<TVariable> Clone()override;
+
     /**
      * Method: TInterpretor::UpdateVariable
      * Purpose: Updates an existing Variable
      * Parameters: const TString& name - the name to update
      *              TrecPointer<TVariable> value - value to update it with
+     *              bool addLocally - If true, then tf the variable is not found, go ahead and add it to 'this' interpretor (false by default)
+     *              bool makeConst - whether the variable added should be const or not (ignored if 'addLocally' is false) (false by Default)
      * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable)
      */
-    UINT UpdateVariable(const TString& name, TrecPointer<TVariable> value);
+    virtual UINT UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally = false, bool makeConst = false);
 
     /**
      * Method: TInterpretor::TInterpretor
@@ -232,7 +241,7 @@ public:
      * 
      * Attributes: abstract
      */
-    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) = 0;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables = true) = 0;
 
 
     /**
@@ -344,7 +353,19 @@ public:
      */
     void CheckVarName(TString& varname, ReportObject& ro, UINT line);
 
+    bool SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating);
+
+    void SetFirstParamName(const TString& iParam);
+
+    bool GetClass(const TString& className, TClassStruct& classStruct);
+
 protected:
+    /**
+     * The list of Types held by the Interpretor
+     */
+    TDataMap<TClassStruct> classes;
+
+
     /**
      * The Interpretor that created this interpretor 
      */

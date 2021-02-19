@@ -26,7 +26,10 @@ typedef enum class ContainerType
 class TC_DATA_STRUCT TContainerVariable :
     public TVariable
 {
+    friend class TContainerVariable;
 public:
+
+    virtual TrecPointer<TVariable> Clone();
 
     /**
      * Method: TContainerVariable
@@ -72,6 +75,17 @@ public:
      * Returns: TrecPointer<TVariable> - the value at the provided index, or null if the index was not found
      */
     TrecPointer<TVariable> GetValue(const TString& key, bool& present);
+
+    /**
+     * Method: TContainerVariable::GetValue
+     * Purpose: Retrieves the value by Key, taking into account prototypeing 
+     * Parameters: const TString& key - the key of the value to look for
+     *              bool& present - whether the index was found. This can be used by JavaScript to distinguish between NULL and UNDEFINED
+     *              const TString& super - keys to use as part of the chain
+     * Returns: TrecPointer<TVariable> - the value at the provided index, or null if the index was not found
+     */
+    TrecPointer<TVariable> GetValue(const TString& key, bool& present, const TString& super);
+
 
     /**
      * Method: TContainerVariable::SetValue
@@ -196,6 +210,35 @@ public:
      */
     TrecPointer<TVariable> GetValueAt(UINT index);
 
+    /**
+     * Method: TContainerVariable::GetValueAt
+     * Purpose: Retirevs the variable and key by index
+     * Parameters: UINT index - the index to check
+     *              TString& key - the key to use
+     *              TrecPointer<TVariable>& value - reference to the variable to store value at
+     * Returns: bool - whether content was found
+     */
+    bool GetValueAt(UINT index, TString& key, TrecPointer<TVariable>& value);
+
+    /**
+     * Method: TContainerVariable::GetClassName
+     * Purpose: Retrieves the Class Name of this object (if applicable)
+     * Parameters: void
+     * Returns: TString - the class name
+     */
+    TString GetTClassName();
+
+    /**
+     * Method: TContainerVariable::SetClassName
+     * Purpose: Sets the name of the class that this object is based off of
+     * Parameters: TString name - the class name to base this object off of
+     * Returns: bool - whether the name was set or not
+     * 
+     * Note: This Method call will only work once
+     */
+    bool SetClassName(const TString& name);
+
+
  private:
     /**
      * The map holding the values
@@ -206,5 +249,10 @@ public:
       * Restructions on the container
       */
      ContainerType type;
+
+     /**
+      * The class name used to generate this object (if applicable)
+      */
+     TString className;
 };
 

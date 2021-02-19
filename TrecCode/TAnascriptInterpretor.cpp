@@ -315,10 +315,11 @@ ReportObject TAnascriptInterpretor::Run()
  *
  * Note: this method is intended to be called in interpretors that represent specific methods or functions
  */
-ReportObject TAnascriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params)
+ReportObject TAnascriptInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables)
 {
     // Clear any previous variables set as we are about to get a new set of variables
-    variables.clear();
+    if(clearVariables)
+        variables.clear();
 
     for (UINT Rust = 0; Rust < params.Size(); Rust++)
     {

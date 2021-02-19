@@ -33,7 +33,7 @@ void ForgeDirectory(const TString& dir)
 		TString adder = pieces->at(rust) + L'\\';
 		bDir.Append(adder);
 
-		CreateDirectoryW(bDir.GetConstantBuffer(), 0);
+		CreateDirectoryW(bDir.GetConstantBuffer().getBuffer(), 0);
 	}
 }
 
@@ -150,7 +150,7 @@ void InitializeDirectories()
 
 	for (UINT c = 0; c < 9; c++)
 	{
-		CreateDirectoryW(shadowDirectories[c].GetConstantBuffer(), 0);
+		CreateDirectoryW(shadowDirectories[c].GetConstantBuffer().getBuffer(), 0);
 	}
 
 	initialized = true;

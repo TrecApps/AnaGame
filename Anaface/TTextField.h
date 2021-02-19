@@ -30,13 +30,33 @@ typedef struct _ANAFACE_DLL incrimentControl
 
 // Allows Anaface to format the text at different sections, used by Web-Tuors
 // To support the <b> and <i> tags in HTML
-typedef struct formattingDetails
+class _ANAFACE_DLL FormattingDetails
 {
+public:
+	FormattingDetails();
+	FormattingDetails(const FormattingDetails& copy);
+
 	DWRITE_FONT_WEIGHT weight; // For handling boldness
 	DWRITE_FONT_STYLE style;   // For handling italics
 	DWRITE_TEXT_RANGE range;   // the Range through which it should be done
-}formattingDetails;
+};
 
+/**
+ * Class: LineMetrics
+ * Purpose: Structure holding line Metrics of a text
+ */
+class _ANAFACE_DLL LineMetrics
+{
+public:
+	LineMetrics();
+	LineMetrics(const LineMetrics& orig);
+	LineMetrics(USHORT i);
+
+	void SetSize(UINT i, bool fromConstructor = false);
+
+	TDataArray<DWRITE_LINE_METRICS> metrics;
+	UINT sizeNeeded;
+};
 
 /*
 * Function: operator>
@@ -569,6 +589,14 @@ public:
 	*/
 	void AppendNormalText(const TString& t);
 
+	/**
+	 * Method: TTextField::ApplyFormatting
+	 * Purpose: Applies formatting to a portion of the String
+	 * Parameters: formattingDetails details
+	 * Returns: bool - true if no issue was found, false otherwise
+	 */
+	bool ApplyFormatting(FormattingDetails details);
+
 	/*
 	* Method: TTextField::isOnFocus
 	* Purpose: Reports whether focus is on the current control
@@ -636,6 +664,9 @@ public:
 	 * Returns: void
 	 */
 	static void RemoveFocus();
+
+	TrecPointer<LineMetrics> GetLineMetrics();
+
 protected:
 
 
@@ -779,7 +810,7 @@ protected:
 	/**
 	 * List for details such as weight
 	 */
-	TDataArray<formattingDetails> details;
+	TDataArray<FormattingDetails> details;
 	/**
 	 * List of colors affecting the text
 	 */

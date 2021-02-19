@@ -61,18 +61,19 @@ void TShell::SubmitCommand(TString& command)
 {
 	// First check to see if a Process is already running from a previous command.
 	// If it is, simply send the input to that process as it might be scanning for input
+	AG_THREAD_LOCK
 	if (CheckProcess())
 	{
 		std::string aString = command.GetRegString();
 		DWORD written = 0;
 		WriteFile(stdInWt, aString.c_str(), aString.size(), &written, nullptr);
-		return;
+		RETURN_THREAD_UNLOCK;
 	}
 
 
 	command.Trim();
 	if (!command.GetSize())
-		return;
+		RETURN_THREAD_UNLOCK;
 
 	int firstSpace = command.Find(L'\s');
 
@@ -196,6 +197,7 @@ void TShell::SubmitCommand(TString& command)
 			ProcessFrontCommand(command);
 		}
 	}
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -209,6 +211,7 @@ void TShell::SubmitCommand(TString& command)
 TString TShell::GetOutput()
 {
 	// If a process is running capture the output
+	AG_THREAD_LOCK
 	if (processInfo.hProcess)
 	{
 		char* str = new char[101];
@@ -228,7 +231,7 @@ TString TShell::GetOutput()
 	// capture the output into a return string and empty the output string
 	TString ret(output);
 	output.Empty();
-	return ret;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -239,6 +242,7 @@ TString TShell::GetOutput()
 */
 TString TShell::GetError()
 {
+	AG_THREAD_LOCK
 	// If Process is running capture the error reported by the process
 	if (processInfo.hProcess)
 	{
@@ -262,7 +266,7 @@ TString TShell::GetError()
 	// Capture the error string into a return string and empty the error string for further data
 	TString ret(standardError);
 	standardError.Empty();
-	return ret;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -273,12 +277,14 @@ TString TShell::GetError()
 */
 void TShell::TerminateProcess()
 {
+	AG_THREAD_LOCK
 	// To-Do: Find a less crude way of terminating the process
 	if (processInfo.hProcess)
 	{
 		::TerminateProcess(processInfo.hProcess, 0);
 		ZeroMemory(&processInfo, sizeof(processInfo));
 	}
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -290,6 +296,7 @@ void TShell::TerminateProcess()
 */
 bool TShell::CheckProcess()
 {
+	AG_THREAD_LOCK
 	// If a process is active, check on it
 	if (processInfo.hProcess)
 	{
@@ -298,7 +305,9 @@ bool TShell::CheckProcess()
 		BOOL runStatus = GetExitCodeProcess(processInfo.hProcess, &statusCode);
 
 		if (runStatus == STILL_ACTIVE) // If the process is still active, return true
-			return true;
+		{
+			RETURN_THREAD_UNLOCK true;
+		}
 		else if (runStatus) // Report the termination of the process
 			output.Format(TString(L"Process %i terminated with Exit Code: %i"), processInfo.dwProcessId, statusCode);
 		
@@ -310,7 +319,7 @@ bool TShell::CheckProcess()
 		ZeroMemory(&processInfo, sizeof(processInfo));
 	}
 	// If we make it here, we can assume that the TShell no longer has an active process running, so report false
-	return false;
+	RETURN_THREAD_UNLOCK false;
 }
 
 /*
@@ -387,7 +396,7 @@ void TShell::ProcessBackgroundProcess(TString& command)
 		FALSE,			// no need to inherite handles since this process is background and we don't ned to track it
 		0,				// No special flags
 		nullptr,		// No special environment settings
-		workingDirectory.GetConstantBuffer(), // the Working Directory to use
+		workingDirectory.GetConstantBuffer().getBuffer(), // the Working Directory to use
 		&start,			// the start info object we created
 		&processInfo	// Get information about our process
 	);
@@ -491,7 +500,7 @@ void TShell::ProcessFrontCommand(TString& command)
 		TRUE,									// Make sure process get our handles so we can communicate with it
 		CREATE_NO_WINDOW,						// We're presenting the output in our window so don't create a new one
 		nullptr,								// no special environment
-		workingDirectory.GetConstantBuffer(),	// Provide the working directory to use
+		workingDirectory.GetConstantBuffer().getBuffer(),	// Provide the working directory to use
 		&start,									// Default  start info
 		&processInfo							// Information about the process being created (out param)
 	);

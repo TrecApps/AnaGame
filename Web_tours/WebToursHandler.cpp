@@ -86,7 +86,7 @@ bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlag
 	{
 		if (fromChar && nChar == VK_RETURN)
 		{
-			window->AddNewTab(urlBox->GetText());
+			window->AddNewTab(urlBox->GetText(), false);
 			TTextField::RemoveFocus();
 		}
 

@@ -8,7 +8,7 @@
 * 
 * SuperClass: TObject
 */
-class CSSGenerator : public TObject
+class _ANAFACE_DLL CSSGenerator : public TObject
 {
 public:
 	CSSGenerator(TFile&);

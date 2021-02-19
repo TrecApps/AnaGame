@@ -49,7 +49,7 @@ ReportObject TNativeInterpretor::Run()
  *
  * Note: this method is intended to be called in interpretors that represent specific methods or functions
  */
-ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params)
+ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVars)
 {
 	ReportObject result;
 	if (!nativeFunction)

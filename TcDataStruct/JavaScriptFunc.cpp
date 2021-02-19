@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "JavaScriptFunc.h"
 #include "TPrimitiveVariable.h"
+#include "TContainerVariable.h"
 
 TMap<TNativeInterpretor> GetJavaScriptFunctions()
 {
@@ -14,6 +15,74 @@ TMap<TNativeInterpretor> GetJavaScriptFunctions()
 
     return jsFunctions;
 }
+
+
+namespace JSObject
+{
+    /**
+     * Function: JSObject::JsObjectAssign
+     * Purpose: Serves as Anagame's implementation of the Object.Assign method
+     * Parameters: TDataArray<TrecPointer<TVariable>>& params - objects to work with
+     *              TrecPointer<TEnvironment> env - environment function is being called in
+     *              ReportObject& ret - return information
+     * Returns: void
+     * 
+     * Note: Function uses the Native Function interface used by TNative Interpretors
+     */
+    void JsObjectAssign(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+    {
+        if (params.Size() < 2)
+        {
+            ret.returnCode = ReportObject::too_few_params;
+            ret.errorMessage.Set("Insufficient Params");
+            return;
+        }
+
+        if (!params[1].Get() || params[1]->GetVarType() != var_type::collection)
+        {
+            ret.returnCode = ReportObject::improper_type;
+            ret.errorMessage.Set("Target Object must be a JS Object type!");
+            return;
+        }
+
+        if (params.Size() > 2 && params[2].Get() && params[2]->GetVarType() == var_type::collection)
+        {
+            auto source = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[2]);
+            auto target = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[1]);
+            TString key;
+            TrecPointer<TVariable> value;
+            for (UINT Rust = 0; source->GetValueAt(Rust, key, value); Rust++)
+            {
+                target->SetValue(key, value);
+            }
+        }
+
+        ret.errorObject = params[1];
+    }
+
+    /**
+     * Function: JSObject::JsObjectCreate
+     * Purpose: Serves as Anagame's implementation of the Object.Create method
+     * Parameters: TDataArray<TrecPointer<TVariable>>& params - objects to work with
+     *              TrecPointer<TEnvironment> env - environment function is being called in
+     *              ReportObject& ret - return information
+     * Returns: void
+     *
+     * Note: Function uses the Native Function interface used by TNative Interpretors
+     */
+    void JsObjectCreate(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+    {
+        if (params.Size() < 2)
+        {
+            ret.returnCode = ReportObject::too_few_params;
+            ret.errorMessage.Set("Insufficient Params");
+            return;
+        }
+
+        JsObjectAssign(params, env, ret);
+    }
+}
+
 
 void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
 {
@@ -159,6 +228,17 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPo
         }
     }
     ret.returnCode = ReportObject::not_number;
+}
+
+TrecPointer<TVariable> JavaScriptFunc::GetJSObectVariable(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
+{
+    auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+
+    ret->SetValue(L"assign", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JSObject::JsObjectAssign, parent, env));
+    ret->SetValue(L"create", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JSObject::JsObjectCreate, parent, env));
+
+
+    return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
 }
 
 bool JavaScriptFunc::IsInfinity(TString& str)

@@ -56,7 +56,9 @@ TGradientStop::TGradientStop()
  */
 void TGradientStop::SetColor(const TColor& color)
 {
+	AG_THREAD_LOCK
 	gradient.color = color.GetColor();
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -67,7 +69,9 @@ void TGradientStop::SetColor(const TColor& color)
  */
 void TGradientStop::SetPosition(float position)
 {
+	AG_THREAD_LOCK
 	gradient.position = position;
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -78,7 +82,9 @@ void TGradientStop::SetPosition(float position)
  */
 void TGradientStop::SetGradient(const GRADIENT_STOP_2D& stop)
 {
+	AG_THREAD_LOCK
 	gradient = stop;
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -89,7 +95,10 @@ void TGradientStop::SetGradient(const GRADIENT_STOP_2D& stop)
  */
 TColor TGradientStop::GetColor()const
 {
-	return TColor(gradient.color);
+	AG_THREAD_LOCK
+
+		auto ret =  TColor(gradient.color);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -100,7 +109,9 @@ TColor TGradientStop::GetColor()const
  */
 float TGradientStop::GetPosition()const
 {
-	return gradient.position;
+	AG_THREAD_LOCK
+		auto ret = gradient.position;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -111,5 +122,7 @@ float TGradientStop::GetPosition()const
  */
 GRADIENT_STOP_2D TGradientStop::GetGradient() const
 {
-	return gradient;
+	AG_THREAD_LOCK
+		auto ret = gradient;
+	RETURN_THREAD_UNLOCK ret;
 }

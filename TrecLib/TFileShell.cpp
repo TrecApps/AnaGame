@@ -31,7 +31,9 @@ bool TFileShell::IsDirectory()
 */
 bool TFileShell::IsValid()
 {
-	return path.GetSize() && !deleted;
+	AG_THREAD_LOCK
+		bool ret =path.GetSize() && !deleted;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -44,7 +46,9 @@ bool TFileShell::IsValid()
 */
 TString TFileShell::GetPath()
 {
-	return path;
+	AG_THREAD_LOCK
+		TString ret(path);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -55,11 +59,10 @@ TString TFileShell::GetPath()
 */
 TString TFileShell::GetName()
 {
+	AG_THREAD_LOCK
 	int slashLoc = path.FindLastOneOf(TString(L"/\\"));
-	if (slashLoc == -1)
-		return path;
-
-	return path.SubString(slashLoc+1);
+	TString ret((slashLoc == -1 ? path : path.SubString(slashLoc + 1)));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -73,7 +76,8 @@ TString TFileShell::GetName()
 */
 TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 {
-	DWORD ftyp = GetFileAttributesW(path.GetConstantBuffer());
+	TString newPath(path);
+	DWORD ftyp = GetFileAttributesW(newPath.GetConstantBuffer().getBuffer());
 
 	if (ftyp == INVALID_FILE_ATTRIBUTES)
 		return TrecPointer<TFileShell>(); // if Invalid, simply return a Null
@@ -93,8 +97,10 @@ TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 */
 FILETIME TFileShell::GetCreationDate()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return fileInfo.ftCreationTime;
+	FILETIME ret = fileInfo.ftCreationTime;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -105,8 +111,10 @@ FILETIME TFileShell::GetCreationDate()
 */
 FILETIME TFileShell::GetLastAccessed()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return fileInfo.ftLastAccessTime;
+	FILETIME ret = fileInfo.ftLastAccessTime;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -117,8 +125,10 @@ FILETIME TFileShell::GetLastAccessed()
 */
 FILETIME TFileShell::GetLastWritten()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return fileInfo.ftLastWriteTime;
+	FILETIME ret = fileInfo.ftLastWriteTime;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -129,8 +139,10 @@ FILETIME TFileShell::GetLastWritten()
 */
 ULONG64 TFileShell::GetSize()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return (static_cast<ULONG64>(fileInfo.nFileSizeHigh) << 32) + static_cast<ULONG64>(fileInfo.nFileSizeLow);
+	ULONG64 ret = (static_cast<ULONG64>(fileInfo.nFileSizeHigh) << 32) + static_cast<ULONG64>(fileInfo.nFileSizeLow);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -141,8 +153,10 @@ ULONG64 TFileShell::GetSize()
 */
 bool TFileShell::IsArchive()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return fileInfo.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE;
+	bool ret = fileInfo.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -153,8 +167,10 @@ bool TFileShell::IsArchive()
 */
 bool TFileShell::IsEncrypted()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return  fileInfo.dwFileAttributes & FILE_ATTRIBUTE_ENCRYPTED;
+	bool ret = fileInfo.dwFileAttributes & FILE_ATTRIBUTE_ENCRYPTED;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -165,8 +181,10 @@ bool TFileShell::IsEncrypted()
 */
 bool TFileShell::IsHidden()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return  fileInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN;
+	bool ret =  fileInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -177,8 +195,10 @@ bool TFileShell::IsHidden()
 */
 bool TFileShell::IsReadOnly()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return  fileInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY;
+	bool ret = fileInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 
@@ -190,11 +210,14 @@ bool TFileShell::IsReadOnly()
 */
 TFileShell::TFileShell(const TString& path)
 {
-	if (GetFileAttributesExW(path.GetConstantBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
+	AG_THREAD_LOCK
+	TString newPath(path);
+	if (GetFileAttributesExW(newPath.GetConstantBuffer().getBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
 		this->path.Set(path);
 
 
 	deleted = false;
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -205,9 +228,11 @@ TFileShell::TFileShell(const TString& path)
 */
 void TFileShell::Refresh()
 {
-	if (!GetFileAttributesExW(path.GetConstantBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
+	AG_THREAD_LOCK
+	if (!GetFileAttributesExW(path.GetConstantBuffer().getBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
 	{
 		if (path.GetSize())
 			deleted = true;
 	}
+	RETURN_THREAD_UNLOCK;
 }

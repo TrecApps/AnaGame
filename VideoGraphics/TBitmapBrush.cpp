@@ -223,7 +223,7 @@ TBitmapBrush::TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingB
 	if (!SUCCEEDED(result))
 		return;
 
-	result = imageFactory->CreateDecoderFromFilename(picture->GetPath().GetConstantBuffer(),
+	result = imageFactory->CreateDecoderFromFilename(picture->GetPath().GetConstantBuffer().getBuffer(),
 		NULL,
 		GENERIC_READ,
 		WICDecodeMetadataCacheOnLoad,

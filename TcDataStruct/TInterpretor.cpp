@@ -193,15 +193,107 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 	ro.returnCode = 0;
 }
 
+bool TInterpretor::SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating)
+{
+	if (!updating)
+	{
+		TClassStruct s;
+		if (classes.retrieveEntry(className, s))
+			return false;
+
+		classes.addEntry(className, classStruct);
+		return true;
+	}
+	else
+	{
+		TClassStruct s;
+		if (classes.retrieveEntry(className, s))
+		{
+			classes.setEntry(className, classStruct);
+			return true;
+		}
+		return parent.Get() && parent->SubmitClassType(className, classStruct, updating);
+	}
+}
+
+void TInterpretor::SetFirstParamName(const TString& iParam)
+{
+	if (!paramNames.Size())
+	{
+		paramNames.push_back(iParam);
+		return;
+	}
+
+	if (!iParam.Compare(paramNames[0]))
+		return;
+
+	paramNames.push_back(paramNames[paramNames.Size() - 1]);
+
+	for (UINT Rust = paramNames.Size() - 2; Rust < paramNames.Size(); Rust--)
+	{
+		paramNames[Rust + 1].Set(paramNames[Rust]);
+	}
+
+	paramNames[0].Set(iParam);
+}
+
+bool TInterpretor::GetClass(const TString& className, TClassStruct& classStruct)
+{
+	if (classes.retrieveEntry(className, classStruct))
+		return true;
+
+	if (parent.Get())
+		parent->GetClass(className, classStruct);
+	return false;
+}
+
+void TInterpretor::CorrectSplitStringForParenthesis(TrecPointer<TDataArray<TString>> splitString, WCHAR join)
+{
+	for (UINT Rust = 1; Rust < splitString->Size(); Rust++)
+	{
+		TString first(splitString->at(Rust - 1));
+		TString second(splitString->at(Rust));
+
+		if (first.CountFinds(L'(') > first.CountFinds(L')'))
+		{
+			first.AppendChar(join);
+			first.Append(second);
+
+			splitString->at(Rust - 1).Set(first);
+			splitString->RemoveAt(Rust--);
+			continue;
+		}
+		if (first.CountFinds(L'[') > first.CountFinds(L']'))
+		{
+			first.AppendChar(join);
+			first.Append(second);
+
+			splitString->at(Rust - 1).Set(first);
+			splitString->RemoveAt(Rust--);
+		}
+	}
+}
+
+TrecPointer<TVariable> TInterpretor::Clone()
+{
+	return TrecPointerKey::GetTrecPointerFromSub<TVariable,TInterpretor>(TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+}
+
 /**
  * Method: TInterpretor::UpdateVariable
  * Purpose: Updates an existing Variable
  * Parameters: const TString& name - the name to update
  *              TrecPointer<TVariable> value - value to update it with
- * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable)
+ *              bool addLocally - If true, then tf the variable is not found, go ahead and add it to 'this' interpretor (false by default)
+ *              bool makeConst - whether the variable added should be const or not (ignored if 'addLocally' is false) (false by Default)
+ * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable, 3 for no name Provided)
  */
-UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value)
+UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally, bool makeConst)
 {
+	if (!name.GetSize())
+		return 3;
+
+
 	for (UINT Rust = 0; Rust < variables.count(); Rust++)
 	{
 		TDataEntry<TVariableMarker> varMarker;
@@ -219,7 +311,13 @@ UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> va
 			}
 		}
 	}
-	return parent.Get() ? parent->UpdateVariable(name, value) : 1;
+	UINT res = parent.Get() ? parent->UpdateVariable(name, value) : 1;
+	if (res == 1 && addLocally)
+	{
+		variables.addEntry(name, TVariableMarker(!makeConst, value));
+		return 0;
+	}
+	return res;
 }
 
 

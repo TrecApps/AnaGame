@@ -939,7 +939,7 @@ void TTextField::AppendBoldText(const TString & t)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_NORMAL;
 	fd.weight = DWRITE_FONT_WEIGHT_BOLD;
@@ -962,7 +962,7 @@ void TTextField::AppendItalicText(const TString & t)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_ITALIC;
 	fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
@@ -985,7 +985,7 @@ void TTextField::AppendBoldItalicText(const TString & t)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_ITALIC;
 	fd.weight = DWRITE_FONT_WEIGHT_BOLD;
@@ -1008,7 +1008,7 @@ void TTextField::AppendNormalText(const TString & t)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_NORMAL;
 	fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
@@ -1016,6 +1016,16 @@ void TTextField::AppendNormalText(const TString & t)
 
 	text += t;
 	updateTextString();
+}
+
+bool TTextField::ApplyFormatting(FormattingDetails ds)
+{
+	if((ds.range.startPosition + ds.range.length) >= text.GetSize())
+		return false;
+
+	this->details.push_back(ds);
+	updateTextString();
+	return true;
 }
 
 /*
@@ -1305,6 +1315,22 @@ void TTextField::RemoveFocus()
 		if (feild)
 			feild->onFocus = false;
 	}
+}
+
+TrecPointer<LineMetrics> TTextField::GetLineMetrics()
+{
+	if (text1.Get() && text1->fontLayout.Get())
+	{
+		TrecPointer<LineMetrics> ret = TrecPointerKey::GetNewTrecPointer<LineMetrics>(5);
+		HRESULT res = text1->fontLayout->GetLineMetrics(ret->metrics.data(), ret->metrics.Size(), &ret->sizeNeeded);
+		if (res == E_NOT_SUFFICIENT_BUFFER)
+		{
+			ret->SetSize(ret->sizeNeeded);
+			text1->fontLayout->GetLineMetrics(ret->metrics.data(), ret->metrics.Size(), &ret->sizeNeeded);
+			return ret;
+		}
+	}
+	return TrecPointer<LineMetrics>();
 }
 
 /*
@@ -1968,6 +1994,20 @@ void incrimentControl::operator=(float f)
 	value.f = f;
 }
 
+FormattingDetails::FormattingDetails()
+{
+	this->style = DWRITE_FONT_STYLE_NORMAL;
+	this->weight = DWRITE_FONT_WEIGHT_NORMAL;
+	this->range = { 0,0 };
+}
+
+FormattingDetails::FormattingDetails(const FormattingDetails& copy)
+{
+	this->style = copy.style;
+	this->weight = copy.weight;
+	this->range = copy.range;
+}
+
 /*
  * Method: TextHighlighter::TextHighlighter
  * Purpose: Constructor
@@ -2101,4 +2141,34 @@ void TextHighlighter::ResetUp(UINT cLocation)
 bool TextHighlighter::IsActive()
 {
 	return isActive;
+}
+
+LineMetrics::LineMetrics()
+{
+	sizeNeeded = 0;
+}
+
+LineMetrics::LineMetrics(const LineMetrics& orig)
+{
+	UINT size = sizeNeeded ? sizeNeeded : orig.metrics.Size();
+	for (UINT Rust = 0; Rust < size; Rust++)
+	{
+		auto met = orig.metrics.data()[Rust];
+		metrics.push_back(met);
+	}
+}
+
+LineMetrics::LineMetrics(USHORT i)
+{
+	SetSize(true);
+}
+
+void LineMetrics::SetSize(UINT i, bool fromConstructor = false)
+{
+	DWRITE_LINE_METRICS met;
+	sizeNeeded = fromConstructor ? 0 : i;
+	ZeroMemory(&met, sizeof(met));
+	metrics.RemoveAll();
+	for (UINT Rust = 0; Rust < i; Rust++)
+		metrics.push_back(met);
 }
