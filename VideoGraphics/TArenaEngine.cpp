@@ -73,7 +73,9 @@ bool TArenaEngine::SetShader(int id)
  */
 bool TArenaEngine::SetShader(DefaultShader ds)
 {
-	return windowEngine->assignShader(static_cast<UINT>(ds), camera, mvp, windowEngine->getDeviceD(), windowEngine->getDevice(), doMvp);
+	AG_THREAD_LOCK
+		bool ret = windowEngine->assignShader(static_cast<UINT>(ds), camera, mvp, windowEngine->getDeviceD(), windowEngine->getDevice(), doMvp);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -84,8 +86,9 @@ bool TArenaEngine::SetShader(DefaultShader ds)
  */
 void TArenaEngine::SetNewWindowEngine(TrecPointer<TWindowEngine> wEngine)
 {
+	AG_THREAD_LOCK
 	windowEngine = wEngine;
-
+	RETURN_THREAD_UNLOCK;
 	// To-Do: Create New Shaders to use the new resources
 }
 
@@ -99,12 +102,16 @@ void TArenaEngine::SetNewWindowEngine(TrecPointer<TWindowEngine> wEngine)
  */
 void TArenaEngine::RenderScene(DirectX::XMMATRIX& proj, DirectX::XMMATRIX& cam, D3D11_VIEWPORT& viewPort)
 {
-	if (!windowEngine.Get())
-		return;
+	AG_THREAD_LOCK
+		if (!windowEngine.Get())
+		{
+			RETURN_THREAD_UNLOCK;
+		}
 	TrecComPointer<ID3D11DeviceContext> contextDevice = windowEngine->getDevice();
 	if (!contextDevice.Get())
-		return;
-
+	{
+		RETURN_THREAD_UNLOCK;
+	}
 	contextDevice->RSSetViewports(1, &viewPort);
 
 	//contextDevice->ClearDepthStencilView(depthStensil, D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -116,7 +123,7 @@ void TArenaEngine::RenderScene(DirectX::XMMATRIX& proj, DirectX::XMMATRIX& cam, 
 	{
 		if (models[c].Get())
 			models[c]->Render(proj, cam);
-	}
+	}RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -127,14 +134,16 @@ void TArenaEngine::RenderScene(DirectX::XMMATRIX& proj, DirectX::XMMATRIX& cam, 
  */
 void TArenaEngine::AddModel(TrecPointer<ArenaModel> ae)
 {
+	AG_THREAD_LOCK
 	for (UINT C = 0; C < models.Size(); C++)
 	{
 		if (models[C].Get() == ae.Get())
 		{
-			return;
+			RETURN_THREAD_UNLOCK;
 		}
 	}
 	models.push_back(ae);
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -145,14 +154,16 @@ void TArenaEngine::AddModel(TrecPointer<ArenaModel> ae)
  */
 void TArenaEngine::RemoveModel(TrecPointer<ArenaModel> ae)
 {
+	AG_THREAD_LOCK
 	for (UINT C = 0; C < models.Size(); C++)
 	{
 		if (models[C].Get() == ae.Get())
 		{
 			models.RemoveAt(C);
-			return;
+			RETURN_THREAD_UNLOCK;
 		}
 	}
+	RETURN_THREAD_UNLOCK;
 }
 
 
@@ -164,9 +175,11 @@ void TArenaEngine::RemoveModel(TrecPointer<ArenaModel> ae)
  */
 TrecPointer<ArenaModel> TArenaEngine::GetModel(UINT Rust)
 {
+	AG_THREAD_LOCK
 	if (Rust >= models.Size())
-		return TrecPointer<ArenaModel>();
-	return models[Rust];
+		RETURN_THREAD_UNLOCK TrecPointer<ArenaModel>();
+	auto ret = models[Rust];
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -177,7 +190,9 @@ TrecPointer<ArenaModel> TArenaEngine::GetModel(UINT Rust)
  */
 TrecComPointer<ID3D11DeviceContext> TArenaEngine::getDevice()
 {
-	return windowEngine->getDevice();
+	AG_THREAD_LOCK
+		auto ret = windowEngine->getDevice();
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -188,7 +203,9 @@ TrecComPointer<ID3D11DeviceContext> TArenaEngine::getDevice()
  */
 TrecComPointer<IDXGISwapChain> TArenaEngine::getSwapChain()
 {
-	return windowEngine->getSwapChain();
+	AG_THREAD_LOCK
+		auto ret = windowEngine->getSwapChain();
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -199,7 +216,9 @@ TrecComPointer<IDXGISwapChain> TArenaEngine::getSwapChain()
  */
 TrecComPointer<ID3D11RenderTargetView> TArenaEngine::getRederTarget()
 {
-	return windowEngine->getRederTarget();
+	AG_THREAD_LOCK
+		auto ret = windowEngine->getRederTarget();
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -210,7 +229,9 @@ TrecComPointer<ID3D11RenderTargetView> TArenaEngine::getRederTarget()
  */
 TrecComPointer<ID3D11Device> TArenaEngine::getDeviceD()
 {
-	return windowEngine->getDeviceD();
+	AG_THREAD_LOCK
+		auto ret = windowEngine->getDeviceD();
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -221,7 +242,9 @@ TrecComPointer<ID3D11Device> TArenaEngine::getDeviceD()
  */
 TrecComPointer<IDXGIDevice> TArenaEngine::getDeviceD_U()
 {
-	return windowEngine->getDeviceD_U();
+	AG_THREAD_LOCK
+		auto ret = windowEngine->getDeviceD_U();
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -232,7 +255,9 @@ TrecComPointer<IDXGIDevice> TArenaEngine::getDeviceD_U()
  */
 TrecComPointer<IDXGISurface1> TArenaEngine::GetSurface()
 {
-	return windowEngine->GetSurface();
+	AG_THREAD_LOCK
+		auto ret = windowEngine->GetSurface();
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -243,7 +268,9 @@ TrecComPointer<IDXGISurface1> TArenaEngine::GetSurface()
  */
 int TArenaEngine::getBufferSize(DefaultShader shaderID)
 {
-	return windowEngine->getBufferSize(static_cast<int>(shaderID));
+	AG_THREAD_LOCK
+		auto ret = windowEngine->getBufferSize(static_cast<int>(shaderID));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -265,7 +292,9 @@ signed char TArenaEngine::getColorBufferLocation(int shaderID)
  */
 signed char TArenaEngine::getColorBufferLocation(DefaultShader shaderID)
 {
-	return windowEngine->getColorBufferLocation_(static_cast<int>(shaderID));
+	AG_THREAD_LOCK
+		auto ret =  windowEngine->getColorBufferLocation_(static_cast<int>(shaderID));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -291,7 +320,9 @@ int TArenaEngine::ReplaceConstantBuffer(int shaderID, unsigned char slot, TrecCo
  */
 int TArenaEngine::ReplaceConstantBuffer(DefaultShader shaderID, unsigned char slot, TrecComPointer<ID3D11Buffer> buff)
 {
-	return windowEngine->ReplaceConstantBuffer_(static_cast<int>(shaderID), slot, buff);
+	AG_THREAD_LOCK
+		auto ret = windowEngine->ReplaceConstantBuffer_(static_cast<int>(shaderID), slot, buff);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -302,12 +333,17 @@ int TArenaEngine::ReplaceConstantBuffer(DefaultShader shaderID, unsigned char sl
  */
 void TArenaEngine::ModelSetFillMode(D3D11_FILL_MODE fill)
 {
-	if (!windowEngine.Get())
-		return;
+	AG_THREAD_LOCK
+		if (!windowEngine.Get())
+		{
+			RETURN_THREAD_UNLOCK;
+		}
 	auto contextDevice = windowEngine->getDevice();
 	auto graphicsDevice = windowEngine->getDeviceD();
 	if (!contextDevice.Get())
-		return;
+	{
+		RETURN_THREAD_UNLOCK;
+	}
 	rasterizer.FillMode = fill;
 	TrecComPointer<ID3D11RasterizerState>::TrecComHolder state;
 	graphicsDevice->CreateRasterizerState(&rasterizer, state.GetPointerAddress());
@@ -334,8 +370,10 @@ bool TArenaEngine::DoMvp()
  */
 signed char TArenaEngine::GetModelLocation(DefaultShader shaderID)
 {
-	if (!windowEngine.Get()) return -2;
-	return windowEngine->GetModelLocation_(static_cast<int>(shaderID));
+	AG_THREAD_LOCK
+		if (!windowEngine.Get()) { RETURN_THREAD_UNLOCK - 2; }
+	auto ret = windowEngine->GetModelLocation_(static_cast<int>(shaderID));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -346,8 +384,10 @@ signed char TArenaEngine::GetModelLocation(DefaultShader shaderID)
  */
 signed char TArenaEngine::GetViewLocation(DefaultShader shaderID)
 {
-	if (!windowEngine.Get()) return -2;
-	return windowEngine->GetViewLocation_(static_cast<int>(shaderID));
+	AG_THREAD_LOCK
+	if (!windowEngine.Get()) { RETURN_THREAD_UNLOCK -2; }
+	auto ret = windowEngine->GetViewLocation_(static_cast<int>(shaderID));
+	return ret;
 }
 
 /**
@@ -358,8 +398,10 @@ signed char TArenaEngine::GetViewLocation(DefaultShader shaderID)
  */
 signed char TArenaEngine::GetCameraLocation(DefaultShader shaderID)
 {
-	if (!windowEngine.Get()) return -2;
-	return windowEngine->GetCameraLocation_(static_cast<int>(shaderID));
+	AG_THREAD_LOCK
+		if (!windowEngine.Get()) { RETURN_THREAD_UNLOCK -2; }
+	auto ret = windowEngine->GetCameraLocation_(static_cast<int>(shaderID));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -403,7 +445,9 @@ signed char TArenaEngine::GetCameraLocation(int shaderID)
  */
 TString TArenaEngine::GetName()
 {
-	return engineName;
+	AG_THREAD_LOCK
+		TString ret(engineName);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
