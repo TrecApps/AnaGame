@@ -1690,12 +1690,18 @@ void TControl::SetNewLocation(const D2D1_RECT_F& r)
 */
 void TControl::ShrinkHeight()
 {
+	float bottom = location.top;
 	for (UINT c = 0; c < children.Count(); c++)
 	{
 		if (!children.ElementAt(c).Get())
 			continue;
 		children.ElementAt(c)->ShrinkHeight();
+		if (bottom < children.ElementAt(c)->location.bottom)
+			bottom = children.ElementAt(c)->location.bottom;
 	}
+
+	if (bottom > location.top)
+		location.bottom = bottom;
 }
 
 /*
@@ -5158,6 +5164,20 @@ float TText::GetMinWidth(bool& worked)
 	float ret = 0.0f;
 	if(!(worked = (fontLayout.Get() && SUCCEEDED(fontLayout->DetermineMinWidth(&ret)))))
 		ret = bounds.right - bounds.left;
+	return ret;
+}
+
+float TText::GetMinHeight(bool& worked)
+{
+	float ret = 0.0f;
+	DWRITE_TEXT_METRICS mets;
+	worked = false;
+	if (fontLayout.Get() && SUCCEEDED(fontLayout->GetMetrics(&mets)))
+	{
+		worked = true;
+		ret = mets.height;
+	}
+
 	return ret;
 }
 

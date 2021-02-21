@@ -1338,6 +1338,20 @@ TrecPointer<LineMetrics> TTextField::GetLineMetrics()
 	return TrecPointer<LineMetrics>();
 }
 
+void TTextField::ShrinkHeight()
+{
+	if (text1.Get())
+	{
+		bool worked;
+		float height = text1->GetMinHeight(worked);
+		if (worked) {
+			location.bottom = location.top + height;
+			text1->bounds.bottom = location.bottom;
+			text1->reCreateLayout();
+		}
+	}
+}
+
 /*
 * Method: TTextField::updateTextString
 * Purpose: Refreshes the Text string formating

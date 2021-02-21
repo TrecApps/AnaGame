@@ -408,6 +408,14 @@ protected:
      */
     void PreEstablishTable();
 
+    /**
+     * Method: TWebNode::ShrinkHeight
+     * Purpose: Shrinks the Node to the minimum neccesary to display
+     * Parameters: void
+     * Returns: void
+     */
+    void ShrinkHeight();
+
 
     // Basic Core atributes of the node
     

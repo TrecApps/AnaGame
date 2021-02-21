@@ -445,16 +445,36 @@ void TWebNode::SetDisplay(const TString& display)
 		outsideDisplay = WebNodeDisplayOutside::wndo_inline;
 	else outsideDisplay = WebNodeDisplayOutside::wndo_block;
 
+	if (display.CountFinds(L"table-row-group"))
+		internalDisplay = WebNodeDisplayInternal::wndi_row_group;
+	else if (display.CountFinds(L"table-header-group"))
+		internalDisplay = WebNodeDisplayInternal::wndi_header_group;
+	else if (display.CountFinds(L"table-footer-group"))
+		internalDisplay = WebNodeDisplayInternal::wndi_footer_group;
+	else if (display.CountFinds(L"table-row"))
+		internalDisplay = WebNodeDisplayInternal::wndi_row;
+	else if (display.CountFinds(L"table-cell"))
+		internalDisplay = WebNodeDisplayInternal::wndi_cell;
+	else if (display.CountFinds(L"table-column-group"))
+		internalDisplay = WebNodeDisplayInternal::wndi_column_group;
+	else if (display.CountFinds(L"table-column"))
+		internalDisplay = WebNodeDisplayInternal::wndi_column;
+	else if (display.CountFinds(L"table-caption"))
+		internalDisplay = WebNodeDisplayInternal::wndi_caption;
+	else // To Do: Add support for ruby values
+		internalDisplay = WebNodeDisplayInternal::wndi_not_set;
+
+
 	// Inside Display
 	if (display.CountFinds(L"flow-root"))
 		insideDisplay = WebNodeDisplayInside::wndi_flow_root;
 	else if (display.CountFinds(L"flex"))
 		insideDisplay = WebNodeDisplayInside::wndi_flex;
-	if (display.CountFinds(L"table"))
+	else if ((internalDisplay == WebNodeDisplayInternal::wndi_not_set) ? (display.CountFinds(L"table") == 1) : (display.CountFinds(L"table") > 1))
 		insideDisplay = WebNodeDisplayInside::wndi_table;
 	else if (display.CountFinds(L"grid"))
 		insideDisplay = WebNodeDisplayInside::wndi_grid;
-	if (display.CountFinds(L"ruby"))
+	else if (display.CountFinds(L"ruby"))
 		insideDisplay = WebNodeDisplayInside::wndi_ruby;
 	else
 		insideDisplay = WebNodeDisplayInside::wndi_flow;
@@ -462,24 +482,7 @@ void TWebNode::SetDisplay(const TString& display)
 	// Handle List item
 	isListItem = display.CountFinds(L"list-item") > 0;
 
-	if (display.CountFinds(L"table-row-group"))
-		internalDisplay = WebNodeDisplayInternal::wndi_row_group;
-	else if (display.CountFinds(L"table-header-group"))
-		internalDisplay = WebNodeDisplayInternal::wndi_header_group;
-	if (display.CountFinds(L"table-footer-group"))
-		internalDisplay = WebNodeDisplayInternal::wndi_footer_group;
-	else if (display.CountFinds(L"table-row"))
-		internalDisplay = WebNodeDisplayInternal::wndi_row;
-	if (display.CountFinds(L"table-cell"))
-		internalDisplay = WebNodeDisplayInternal::wndi_cell;
-	else if (display.CountFinds(L"table-column-group"))
-		internalDisplay = WebNodeDisplayInternal::wndi_column_group;
-	if (display.CountFinds(L"table-column"))
-		internalDisplay = WebNodeDisplayInternal::wndi_column;
-	else if (display.CountFinds(L"table-caption"))
-		internalDisplay = WebNodeDisplayInternal::wndi_caption;
-	else // To Do: Add support for ruby values
-		internalDisplay = WebNodeDisplayInternal::wndi_not_set;
+
 }
 
 /**
@@ -661,10 +664,11 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 	{
 		auto tLoc = nonTextNode->GetLocation();
 
-		location.top = tLoc.bottom;
+		if(internalDisplay != WebNodeDisplayInternal::wndi_row)
+			location.top = tLoc.bottom;
 		nonTextNode.Nullify();
 	}
-
+	ShrinkHeight();
 
 	return 0;
 }
@@ -1604,6 +1608,41 @@ void TWebNode::PreEstablishTable()
 	if (fullParent.Get())
 		fullParent->AddColumn(columnSizes.Size());
 
+}
+
+void TWebNode::ShrinkHeight()
+{
+	// To-Do: Update Method once minimum height is tracked
+
+	float curBottom = location.top;
+	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	{
+		if (!childNodes[Rust].Get() || childNodes[Rust]->type == NodeContainerType::ntc_null)
+		{
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+
+		if (childNodes[Rust]->control.Get())
+		{
+			childNodes[Rust]->control->ShrinkHeight();
+			float chBottom = childNodes[Rust]->control->getLocation().bottom;
+			if (chBottom > curBottom)
+				curBottom = chBottom;
+		}
+		else if (childNodes[Rust]->webNode.Get())
+		{
+			childNodes[Rust]->webNode->ShrinkHeight();
+			float chBottom = childNodes[Rust]->webNode->location.bottom;
+			if (chBottom > curBottom)
+				curBottom = chBottom;
+		}
+		else
+		{
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+	}
 }
 
 EventPropagater::EventPropagater()

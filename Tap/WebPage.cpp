@@ -82,7 +82,9 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 		}
 		TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
 		rootNode->PreCreate(TrecPointerSoft<TWebNode>(), styles);
-		UINT createResult = rootNode->CreateWebNode(area, win->GetWindowEngine(), win->GetWindowHandle());
+		D2D1_RECT_F tempArea = area;
+		tempArea.bottom = 50000.0f;
+		UINT createResult = rootNode->CreateWebNode(tempArea, win->GetWindowEngine(), win->GetWindowHandle());
 		
 	}
 	else if (file->GetFileName().EndsWith(L".tml"))
