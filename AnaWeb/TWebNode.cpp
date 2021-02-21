@@ -1643,6 +1643,8 @@ void TWebNode::ShrinkHeight()
 			continue;
 		}
 	}
+	if (curBottom > location.top)
+		location.bottom = curBottom;
 }
 
 EventPropagater::EventPropagater()
