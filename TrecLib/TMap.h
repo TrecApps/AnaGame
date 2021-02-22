@@ -94,7 +94,7 @@ public:
 	*/
 	TrecPointer<t2> retrieveEntry(const TString& str)
 	{
-		for (int c = 0; c < map.Count(); c++)
+		for (UINT c = 0; c < map.Count(); c++)
 		{
 			TrecPointer<tEntry<t2>> point = map.ElementAt(c);
 
@@ -113,8 +113,8 @@ public:
 	*/
 	TrecPointer<t2> retrieveEntry(const TString& str, int occurance)
 	{
-		int occ = 0;
-		for (int c = 0; c < map.Count(); c++)
+		UINT occ = 0;
+		for (UINT c = 0; c < map.Count(); c++)
 		{
 			TrecPointer<tEntry<t2>> point = map.ElementAt(c);
 			
@@ -137,7 +137,7 @@ public:
 	*/
 	TrecPointer<t2> removeEntry(TString& str)
 	{
-		for (int c = 0; c < map.Count(); c++)
+		for (UINT c = 0; c < map.Count(); c++)
 		{
 			TrecPointer<tEntry<t2>> point = map.ElementAt(c);
 			if (point->key == str)
@@ -173,7 +173,7 @@ public:
 	*/
 	void operator=(TMap<t2>& cop)
 	{
-		for (int c = 0; c < cop.map.Count(); c++)
+		for (UINT c = 0; c < cop.map.Count(); c++)
 		{
 			map.Add(cop.map.ElementAt(c));
 		}

@@ -87,7 +87,7 @@ int TLayoutEx::RemoveColumn(UINT c)
 		}
 	}
 
-	for (int C = 0; C < removeEl.Size(); C++)
+	for (UINT C = 0; C < removeEl.Size(); C++)
 	{
 		lChildren.RemoveAt(C);
 	}
@@ -129,7 +129,7 @@ int TLayoutEx::RemoveRow(UINT c)
 		}
 	}
 
-	for (int C = 0; C < removeEl.Size(); C++)
+	for (UINT C = 0; C < removeEl.Size(); C++)
 	{
 		lChildren.RemoveAt(C);
 	}

@@ -16,7 +16,7 @@ void runLoop()
 	if (!otherRun)
 	{
 		TRadioButton* runner = NULL;
-		for (int c = 0; c < otherButtons.Size();c++)
+		for (UINT c = 0; c < otherButtons.Size();c++)
 		{
 			runner = otherButtons[c];
 			if (runner)
@@ -85,7 +85,7 @@ bool TRadioButton::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	if (buttonClass)
 	{
 		TRadioButton* radioCheck = NULL;
-		for (int c = 0; c < otherButtons.Size();c++)
+		for (UINT c = 0; c < otherButtons.Size();c++)
 		{
 			radioCheck = otherButtons[c];
 			if (radioCheck && radioCheck != this)
@@ -154,7 +154,7 @@ void TRadioButton::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut
 	{
 		isClicked = !isClicked;
 		*mOut = messageOutput::positiveOverrideUpdate;
-		for (int c = 0; c < otherSameButtons.Size(); c++)
+		for (UINT c = 0; c < otherSameButtons.Size(); c++)
 		{
 			otherSameButtons[c]->isClicked = false;
 		}
@@ -222,7 +222,7 @@ void TRadioButton::addButton(TRadioButton* trb)
 {
 	if (!trb)
 		return;
-	for (int c = 0; c < otherSameButtons.Size(); c++)
+	for (UINT c = 0; c < otherSameButtons.Size(); c++)
 	{
 		if (otherSameButtons[c] == trb)
 			return;

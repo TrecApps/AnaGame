@@ -1026,7 +1026,7 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPointer>& thisCollection, TDataArray<TrecPointer<TWebNode>>& nodeCollection, const TPoint& point)
 {
 	int found = -1;
-	for (int Rust = 0; Rust < nodeCollection.Size(); Rust++)
+	for (UINT Rust = 0; Rust < nodeCollection.Size(); Rust++)
 	{
 		if (nodeCollection[Rust].Get() == this)
 		{

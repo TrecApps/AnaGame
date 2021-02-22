@@ -28,7 +28,7 @@
 #include <TMap.h>
 #include <TObjectNode.h>
 
-#define RADIAN_DEGREE_RATIO 57.2957795
+#define RADIAN_DEGREE_RATIO 57.2957795f
 
 #define afx_msg
 

@@ -213,14 +213,14 @@ void TSpreadSheet::onDraw(TObject* obj)
 	if (drawLines && internalBrush.Get())
 	{
 		int add = 0;
-		for (int c = 0; c < rowLines.Size(); c++)
+		for (UINT c = 0; c < rowLines.Size(); c++)
 		{
 			add += rowLines[c];
 			internalBrush->DrawLine(D2D1::Point2F(location.left, location.top + add),
 				D2D1::Point2F(location.right, location.top + add), thickness);
 		}
 		add = 0;
-		for (int c = 0; c < columnLines.Size(); c++)
+		for (UINT c = 0; c < columnLines.Size(); c++)
 		{
 			add += columnLines[c];
 			internalBrush->DrawLine(D2D1::Point2F(location.left + add, location.top),

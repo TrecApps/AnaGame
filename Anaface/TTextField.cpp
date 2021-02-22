@@ -434,7 +434,7 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	text = text1->text;
 	if (!layout)
 		return false;
-	for (int c = 0; c < details.Size(); c++)
+	for (UINT c = 0; c < details.Size(); c++)
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
@@ -543,7 +543,7 @@ void TTextField::SetNewLocation(const D2D1_RECT_F& r)
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
 		return ;
-	for (int c = 0; c < details.Size(); c++)
+	for (UINT c = 0; c < details.Size(); c++)
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
@@ -624,7 +624,7 @@ afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput*
 			highlighter.SetFirstPosition(caretLoc);
 		
 		TTextField* feild = nullptr;
-		for (int c = 0; c < TextList.Size(); c++)
+		for (UINT c = 0; c < TextList.Size(); c++)
 		{
 			feild = TextList[c];
 			if (feild)
@@ -686,7 +686,7 @@ parentCall:
 	{
 		
 		TTextField* feild = nullptr;
-		for (int c = 0; c < TextList.Size(); c++)
+		for (UINT c = 0; c < TextList.Size(); c++)
 		{
 			feild = TextList[c];
 			if (feild)
@@ -776,7 +776,7 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 		else
 		{
 			POINT caretPoint;
-			for (int c = 0; c < nRepCnt;c++)
+			for (UINT c = 0; c < nRepCnt;c++)
 			{
 				switch (nChar)
 				{
@@ -1314,7 +1314,7 @@ void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 void TTextField::RemoveFocus()
 {
 	TTextField* feild = nullptr;
-	for (int c = 0; c < TextList.Size(); c++)
+	for (UINT c = 0; c < TextList.Size(); c++)
 	{
 		feild = TextList[c];
 		if (feild)
@@ -1378,7 +1378,7 @@ void TTextField::updateTextString()
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
 		return;
-	for (int c = 0; c < details.Size(); c++)
+	for (UINT c = 0; c < details.Size(); c++)
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
