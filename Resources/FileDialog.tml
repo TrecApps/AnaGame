@@ -4,11 +4,11 @@
 -/
 
 ->TStack
--|RowHeight:75
--|RowHeight:75
+-|RowHeight:40
+-|RowHeight:40
 -|RowHeight:1*
--|RowHeight:75
--|RowHeight:75
+-|RowHeight:40
+-|RowHeight:40
 -|InternalBorderColor:0.0,0.0,0.0,1.0
 -|InternalBorderThickness:2
 
@@ -29,11 +29,13 @@
 -->TGallery(0,1)
 --|ColumnWidth:1*
 --|ColumnWidth:1*
---->TControl(0,0)
+--->TTextField(0,0)
 ---|HoverContentColor:0.0,0.0,0.6,1.0
 ---|VerticalAlignment:Center
 ---|Caption:Add Directory to Favorites
+---|EventOnClick:OnToggleFavoriteFolder
 ---|BorderColor:1.0,0.0,0.0,1.0
+---|CanEdit:False
 --->TControl(1,0)
 ---|VerticalAlignment:Center
 ---|BorderColor:1.0,0.0,0.0,1.0
@@ -62,7 +64,6 @@
 ---|NodeHighlightColor: 0.3,0.1,1.0,0.5
 ---|BlockExtension:true
 ---->TControl
-----|FontColor: 0.0,0.0,0.0,1.0
 ----|Caption:{}
 
 # Browsing Folder
@@ -76,7 +77,6 @@
 ---|NodeHighlightColor: 0.3,0.1,1.0,0.5
 ---|BlockExtension:true
 ---->TControl
-----|FontColor: 0.0,0.0,0.0,1.0
 ----|Caption:{}
 
 # Report Selected File Name
