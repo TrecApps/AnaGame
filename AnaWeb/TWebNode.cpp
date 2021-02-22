@@ -664,8 +664,10 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 	{
 		auto tLoc = nonTextNode->GetLocation();
 
-		if(internalDisplay != WebNodeDisplayInternal::wndi_row)
+		if (internalDisplay != WebNodeDisplayInternal::wndi_row)
 			location.top = tLoc.bottom;
+		else
+			location.right = tLoc.left;
 		nonTextNode.Nullify();
 	}
 	ShrinkHeight();
@@ -1535,7 +1537,7 @@ void TWebNode::AddColumn(UCHAR count)
 			columnSizes.push_back(0);
 		}
 	}
-	else if (internalDisplay != WebNodeDisplayInternal::wndi_row && parent.Get())
+	else if (parent.Get())
 	{
 		auto fullParent = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(parent);
 		if (fullParent.Get())
@@ -1583,6 +1585,7 @@ void TWebNode::SetColumnsAndRows(TDataArray<UINT>& cols, TDataArray<UINT>& rows)
 
 void TWebNode::PreEstablishTable()
 {
+	auto fullParent = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(parent);
 	switch (internalDisplay)
 	{
 	case WebNodeDisplayInternal::wndi_row:
@@ -1600,13 +1603,22 @@ void TWebNode::PreEstablishTable()
 			}
 
 			if (childNodes[Rust]->type == NodeContainerType::nct_web && childNodes[Rust]->webNode.Get())
+			{
 				childNodes[Rust]->webNode->PreEstablishTable();
+				if (childNodes[Rust]->webNode->columnSizes.Size())
+					childNodes[Rust]->webNode->AddColumn(Rust + 1);
+			}
 		}
+
+		break;
+	default: 
+		columnSizes.push_back(0);
+		return;
 	}
 
-	auto fullParent = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(parent);
 	if (fullParent.Get())
 		fullParent->AddColumn(columnSizes.Size());
+	
 
 }
 
