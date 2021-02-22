@@ -19,7 +19,7 @@ typedef enum class config_source
     config_source_user,             // Only looks at the User configuration environment (accessible to the user)
     config_source_system_user,      // Looks at the system variables and then the user porperties
  
-};
+}config_source;
 
 
 /**

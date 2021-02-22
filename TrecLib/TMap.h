@@ -161,9 +161,9 @@ public:
 	* Method: TMap::
 	* Purpose: Retrieves the number of entries added to the TMap
 	* Parameters: void
-	* Returns: int - the count of entries in the TMap
+	* Returns: UINT - the count of entries in the TMap
 	*/
-	int count() { return map.Count(); }
+	UINT count() { return map.Count(); }
 
 	/*
 	* Method: TMap::operator=

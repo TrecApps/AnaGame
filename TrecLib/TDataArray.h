@@ -13,7 +13,7 @@
 * 
 * SuperClass: TDataArrayBase - common base class for all TDataArrays
 */
-template<typename T> class  TDataArray : public TDataArrayBase
+template<typename T> class _TREC_LIB_DLL TDataArray : public TDataArrayBase
 {
 	friend class TDataArray<T>;
 private:
@@ -247,7 +247,7 @@ public:
 * SuperClass: TDataArrayBase - common base class for all TDataArrays
 */
 template<typename T> 
-class  TDataArray<T*> : public TDataArrayBase
+class  _TREC_LIB_DLL TDataArray<T*> : public TDataArrayBase
 {
 	friend class TDataArray<T*>;
 private:

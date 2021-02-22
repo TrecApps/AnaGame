@@ -169,7 +169,6 @@
     <ClInclude Include="DirectoryInterface.h" />
     <ClInclude Include="Dragable.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="HTML_Reader.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="ParseReader_.h" />
     <ClInclude Include="Parser_.h" />
@@ -213,7 +212,6 @@
     <ClCompile Include="DirectoryInterface.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Dragable.cpp" />
-    <ClCompile Include="HTML_Reader.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="ParseReader_.cpp" />
     <ClCompile Include="Parser_.cpp" />

@@ -158,7 +158,7 @@ public:
  * Class: TrecBoxPointer
  * Purpose: holds the raw pointer and a counter to the object referenced by the various TrecPointers
  */
-template<class T> class TrecBoxPointer: public TrecBoxPointerBase
+template<class T> class _TREC_LIB_DLL TrecBoxPointer: public TrecBoxPointerBase
 {
 	/**
 	 * Need to allow the utility class TrecPointerKey access for it to perform it's job properly
@@ -322,7 +322,7 @@ public:
  * Class: TrecComBoxPointer
  * Purpose: Holds the actual raw pointer to COM types used
  */
-template<class T> class TrecComBoxPointer
+template<class T> class _TREC_LIB_DLL TrecComBoxPointer
 {
 private:
 	/**
@@ -416,7 +416,7 @@ public:
  * 
  * Note: Written to allow certain objects to hold references to themselves and return regular TrecPointer's to themselves
  */
-template<class T> class TrecPointerSoft
+template<class T> class _TREC_LIB_DLL TrecPointerSoft
 {
 	friend class TrecPointerKey;
 private:
@@ -505,7 +505,7 @@ public:
  * Class: TrecSubPointerSoft
  * Purpose: Provides a weak pointer type for the TrecSubPointer (which assumes object is a subclass of type u)
  */
-template<class T, class U> class TrecSubPointerSoft
+template<class T, class U> class _TREC_LIB_DLL TrecSubPointerSoft
 {
 	friend class TrecPointerKey;
 private:
@@ -591,7 +591,7 @@ public:
  * Class: TrecSubPointer
  * Purpose: Provide a means to hold a reference to a base class T and provide easy access to members of sub class U
  */
-template<class t, class u> class TrecSubPointer
+template<class t, class u> class _TREC_LIB_DLL TrecSubPointer
 {
 	friend class TrecPointerKey;
 	// friend class TrecPointer<t>;
@@ -748,7 +748,7 @@ public:
  * Class: TrecPointer
  * Purpose: Provide a Smart Pointer for use in Anagame
  */
-template<class t> class TrecPointer
+template<class t> class _TREC_LIB_DLL TrecPointer
 {
 	friend class TrecPointerKey;
 protected:
@@ -933,7 +933,7 @@ public:
  *		// Use the TrecPointerKey to get the TrecComPointer
  *		renderer = TrecPointerKey::GetComPointer<ID2D1RenderTarget, ID2D1HwndRenderTarget>(renderHw);
  */
-template<class t> class TrecComPointer
+template<class t> class _TREC_LIB_DLL TrecComPointer
 {
 	friend class TrecPointerKey;
 protected:
@@ -1162,7 +1162,7 @@ public:
  * Class: TrecPointerKey
  * Purpose: Utility class to allow for initializing various TrecPointer types and swapping compatible TrecPointer types
  */
-class TrecPointerKey
+class _TREC_LIB_DLL TrecPointerKey
 {
 public:
 

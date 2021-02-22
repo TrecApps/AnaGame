@@ -30,9 +30,6 @@
     <ClInclude Include="DirectoryInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HTML_Reader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -156,9 +153,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DirectoryInterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HTML_Reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TVariable.cpp">
