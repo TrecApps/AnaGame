@@ -188,7 +188,6 @@
     <ClInclude Include="TObject.h" />
     <ClInclude Include="TObjectNode.h" />
     <ClInclude Include="TPoint.h" />
-    <ClInclude Include="TPrimitiveType.h" />
     <ClInclude Include="TrecLib.h" />
     <ClInclude Include="TrecReference.h" />
     <ClInclude Include="TServerSocket.h" />
@@ -221,7 +220,6 @@
     </ClCompile>
     <ClCompile Include="TArrayBase.cpp" />
     <ClCompile Include="TClientSocket.cpp" />
-    <ClCompile Include="TAttribute.cpp" />
     <ClCompile Include="TControlComponent.cpp" />
     <ClCompile Include="TDataArrayBase.cpp" />
     <ClCompile Include="TDirectory.cpp" />
@@ -233,7 +231,6 @@
     <ClCompile Include="TObject.cpp" />
     <ClCompile Include="TObjectNode.cpp" />
     <ClCompile Include="TPoint.cpp" />
-    <ClCompile Include="TPrimitiveType.cpp" />
     <ClCompile Include="TrecLib.cpp" />
     <ClCompile Include="TrecReference.cpp" />
     <ClCompile Include="TServerSocket.cpp" />

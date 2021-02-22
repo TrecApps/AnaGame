@@ -93,9 +93,6 @@
     <ClInclude Include="TFileNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TPrimitiveType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Animation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -198,12 +195,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TFileNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TPrimitiveType.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TAttribute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Animation.cpp">
