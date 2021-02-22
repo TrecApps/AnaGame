@@ -1352,6 +1352,14 @@ void TTextField::ShrinkHeight()
 	}
 }
 
+float TTextField::GetMinWidth()
+{
+	bool w;
+	if (text1.Get())
+		return text1->GetMinWidth(w);
+	return 0.0f;
+}
+
 /*
 * Method: TTextField::updateTextString
 * Purpose: Refreshes the Text string formating

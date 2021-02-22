@@ -416,6 +416,20 @@ protected:
      */
     void ShrinkHeight();
 
+    /**
+     * Method: TWebNode::ShrinkWidth
+     * Purpose: Shrinks the Node to the minimum neccessary width to display
+     * Parameters: UINT minWidth - The absolute minimum width to allow the Node to shrink
+     * Returns: void
+     */
+    void ShrinkWidth(UINT minWidth);
+    /**
+     * Method: TWebNode::ShrinkWidth
+     * Purpose: Shrinks the Node to the minimum neccessary width to display
+     * Parameters: UINT column - The Column in Question (if Node is not a row, this parameter is ignored
+     * Returns: float - the width needed
+     */
+    float NeedsWidth(UINT column);
 
     // Basic Core atributes of the node
     
@@ -492,6 +506,8 @@ protected:
     TextData thisTextData;
 
     HWND win;
+
+    TrecPointer<TWindowEngine> d3dEngine;
 
     /// Table resources
 

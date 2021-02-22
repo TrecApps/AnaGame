@@ -670,7 +670,7 @@ public:
 	TrecPointer<LineMetrics> GetLineMetrics();
 
 	/**
-	 * Method: TControl::ShrinkHeight
+	 * Method: TTextField::ShrinkHeight
 	 * Purpose: Reduces the height of the control down to what is needed --> just shrinks its children
 	 *		some of whom might find ways to shrink themselves
 	 * Parameters: void
@@ -679,6 +679,8 @@ public:
 	 * Attributes: override
 	 */
 	virtual void ShrinkHeight() override;
+
+	float GetMinWidth();
 
 protected:
 

@@ -499,6 +499,8 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 	// Go through each bit of the child elements, determining where they lay
 	this->location = location;
 
+	this->win = window;
+	this->d3dEngine = d3dEngine;
 
 	TrecPointer<TWebNode::TWebNodeContainer> currentTextNode, nonTextNode;
 
@@ -592,9 +594,11 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 				}
 				if (nonTextNode.Get())
 				{
-					auto tLoc = nonTextNode->GetLocation();
-
-					location.top = tLoc.bottom;
+					if (internalDisplay != WebNodeDisplayInternal::wndi_row)
+					{
+						auto tLoc = nonTextNode->GetLocation();
+						location.top = tLoc.bottom;
+					}
 					nonTextNode.Nullify();
 				}
 				if (internalDisplay == WebNodeDisplayInternal::wndi_row && Rust < columnSizes.Size())
@@ -671,6 +675,8 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 		nonTextNode.Nullify();
 	}
 	ShrinkHeight();
+	if (insideDisplay == WebNodeDisplayInside::wndi_table)
+		ShrinkWidth(0);
 
 	return 0;
 }
@@ -1657,6 +1663,201 @@ void TWebNode::ShrinkHeight()
 	}
 	if (curBottom > location.top)
 		location.bottom = curBottom;
+}
+
+void TWebNode::ShrinkWidth(UINT minWidth)
+{
+	if (insideDisplay == WebNodeDisplayInside::wndi_table)
+	{
+		float width = NeedsWidth(0);
+
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		{
+			auto wnode = childNodes[Rust];
+			if (!wnode.Get())
+			{
+				childNodes.RemoveAt(Rust--);
+				continue;
+			}
+			TTextField* field = dynamic_cast<TTextField*>(wnode->control.Get());
+			TWebNode* node = wnode->webNode.Get();
+
+			if (field)
+			{
+				auto fieldLoc = field->getLocation();
+				fieldLoc.right = fieldLoc.left + width;
+				field->Resize(fieldLoc);
+			}
+			else if (node)
+			{
+				if (node->internalDisplay == WebNodeDisplayInternal::wndi_row)
+				{
+					node->SetColumnsAndRows(columnSizes, rowSizes);
+					node->ShrinkWidth(0);
+				}
+				else
+				{
+					auto nodeLoc = node->GetLocation();
+					nodeLoc.right = nodeLoc.left + width;
+					node->CreateWebNode(nodeLoc, d3dEngine, win);
+				}
+			}
+		}
+	}
+
+	if (internalDisplay == WebNodeDisplayInternal::wndi_row)
+	{
+		auto tempLoc = location;
+		if (columnSizes.Size())
+			tempLoc.right = tempLoc.left + columnSizes[0];
+		for (UINT Rust = 0, C = 0; Rust < columnSizes.Size() && C < childNodes.Size(); Rust++)
+		{
+			UINT curWidth = tempLoc.right - tempLoc.left;
+			auto wnode = childNodes[Rust];
+			if (!wnode.Get())
+			{
+				childNodes.RemoveAt(Rust--);
+				continue;
+			}
+			TTextField* field = dynamic_cast<TTextField*>(wnode->control.Get());
+			TWebNode* node = wnode->webNode.Get();
+
+			if (field)
+			{
+				field->Resize(tempLoc);
+				C++;
+			}
+			else if (node)
+			{
+				UINT span = 1;
+				
+
+				for (; span < node->columnSpan; span++)
+				{
+					if (C + span < columnSizes.Size())
+						curWidth += columnSizes[C + span];
+				}
+				C += span;
+				tempLoc.right = tempLoc.left + curWidth;
+				node->CreateWebNode(tempLoc, d3dEngine, win);
+			}
+
+			if ((Rust + 1) < columnSizes.Size())
+			{
+				tempLoc.left = tempLoc.right;
+				tempLoc.right += columnSizes[Rust + 1];
+			}
+		}
+	}
+
+}
+
+float TWebNode::NeedsWidth(UINT column)
+{
+	if (internalDisplay == WebNodeDisplayInternal::wndi_row)
+	{
+		for (UINT Rust = 0, C = 0; Rust < childNodes.Size() && C <= column; Rust++)
+		{
+			float ret = 0.0f;
+			UINT colSpan = 1;
+
+			if (childNodes[Rust].Get())
+			{
+				TTextField* field = dynamic_cast<TTextField*>(childNodes[Rust]->control.Get());
+				TWebNode* node = childNodes[Rust]->webNode.Get();
+				if (field)
+				{
+					ret = field->GetMinWidth();
+				}
+				else if(node)
+				{
+					ret = node->NeedsWidth(0);
+					colSpan = node->columnSpan;
+				}
+			}
+			if (C == column)
+				return ret;
+			if (!colSpan)
+				colSpan = 1;
+			column += colSpan;
+		}
+	}
+	else if (insideDisplay == WebNodeDisplayInside::wndi_table)
+	{
+		float minNeeded = 0.0f;
+		for (UINT Rust = 0; Rust < columnSizes.Size(); Rust++)
+		{
+			float minOfCol = 0;
+			for (UINT C = 0; C < childNodes.Size(); C++)
+			{
+				auto wnode = childNodes[C];
+				if (!wnode.Get())
+				{
+					childNodes.RemoveAt(Rust--);
+					continue;
+				}
+				TTextField* field = dynamic_cast<TTextField*>(wnode->control.Get());
+				TWebNode* node = wnode->webNode.Get();
+				if (field)
+				{
+					float needs = field->GetMinWidth();
+					if (minNeeded < needs)
+						minNeeded = needs;
+				}
+				else if (node && node->internalDisplay == WebNodeDisplayInternal::wndi_row)
+				{
+					float needs = node->NeedsWidth(Rust);
+					if (minOfCol < needs)
+						minOfCol = needs;
+				}
+				else if (node)
+				{
+					float needs = node->NeedsWidth(0);
+					if (minNeeded < needs)
+						minNeeded = needs;
+				}
+			}
+
+			columnSizes[Rust] = minOfCol;
+		}
+
+		float totalColumnSpan = 0;
+		for (UINT Rust = 0; Rust < columnSizes.Size(); Rust++)
+		{
+			totalColumnSpan += columnSizes[Rust];
+		}
+		return (minNeeded < totalColumnSpan) ? totalColumnSpan : minNeeded;
+	}
+	else
+	{
+		float ret = 0.0;
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		{
+			auto wnode = childNodes[Rust];
+			if (!wnode.Get())
+			{
+				childNodes.RemoveAt(Rust--);
+				continue;
+			}
+			TTextField* field = dynamic_cast<TTextField*>(wnode->control.Get());
+			TWebNode* node = wnode->webNode.Get();
+			if (field)
+			{
+				float needs = field->GetMinWidth();
+				if (ret < needs)
+					ret = needs;
+			}
+			else if (node)
+			{
+				float needs = node->NeedsWidth(0);
+				if (ret < needs)
+					ret = needs;
+			}
+		}
+		return ret;
+	}
+
+	return 0.0f;
 }
 
 EventPropagater::EventPropagater()
