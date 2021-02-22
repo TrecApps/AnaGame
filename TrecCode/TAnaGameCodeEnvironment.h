@@ -18,12 +18,7 @@ typedef enum class TargetAnagameMachine
 	tam_binary_stack
 }TargetAnagameMachine;
 
-typedef struct Variable
-{
-	TString name;
-	TrecPointer<TType> type;
-	UINT location;
-}Variable;
+
 
 
 class TAnaGameCodeEnvironment :
@@ -84,6 +79,5 @@ protected:
 
 	TMap<TLanguage> languages;
 
-	TDataArray<Variable> globalVariables;
 };
 

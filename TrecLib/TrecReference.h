@@ -36,7 +36,7 @@
  * Class: TrecBoxPointerBase
  * Purpose: Holds the counter and base for the 
  */
-class TrecBoxPointerBase
+class _TREC_LIB_DLL TrecBoxPointerBase
 {
 	friend class TrecPointerKey;
 	friend class TrecObjectPointer;

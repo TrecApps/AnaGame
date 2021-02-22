@@ -24,9 +24,6 @@
     <ClInclude Include="AnagameDef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TVariable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DirectoryInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -96,13 +93,7 @@
     <ClInclude Include="TFileNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TPrimitiveType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TTypeMetadata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Animation.h">
@@ -144,6 +135,9 @@
     <ClInclude Include="TSliceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TVariable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -153,9 +147,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DirectoryInterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TVariable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Logger.cpp">
@@ -209,13 +200,7 @@
     <ClCompile Include="TFileNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TType.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TPrimitiveType.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TTypeMetadata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TAttribute.cpp">
@@ -258,6 +243,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TSliceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TVariable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

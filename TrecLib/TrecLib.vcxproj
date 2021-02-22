@@ -161,7 +161,6 @@
     <ClInclude Include="TDataMap.h" />
     <ClInclude Include="TSliceManager.h" />
     <ClInclude Include="TStringSlice.h" />
-    <ClInclude Include="TVariable.h" />
     <ClInclude Include="TEnvironment.h" />
     <ClInclude Include="AnagameDef.h" />
     <ClInclude Include="Animation.h" />
@@ -198,14 +197,12 @@
     <ClInclude Include="TString.h" />
     <ClInclude Include="TTrecPointerArray.h" />
     <ClInclude Include="TTrecSoftPointerArray.h" />
-    <ClInclude Include="TType.h" />
-    <ClInclude Include="TTypeMetadata.h" />
+    <ClInclude Include="TVariable.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TBlankNode.cpp" />
     <ClCompile Include="TSliceManager.cpp" />
     <ClCompile Include="TStringSlice.cpp" />
-    <ClCompile Include="TVariable.cpp" />
     <ClCompile Include="TEnvironment.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Configuration.cpp" />
@@ -243,8 +240,7 @@
     <ClCompile Include="TSocket.cpp" />
     <ClCompile Include="TShell.cpp" />
     <ClCompile Include="TString.cpp" />
-    <ClCompile Include="TType.cpp" />
-    <ClCompile Include="TTypeMetadata.cpp" />
+    <ClCompile Include="TVariable.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
