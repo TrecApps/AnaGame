@@ -888,7 +888,7 @@ ReportObject TJavaScriptInterpretor::ProcessAddition(TrecPointer<TVariable> var1
             for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
             {
                 auto val = varColl->GetValueAt(Rust);
-                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer(): L"null");
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer().getBuffer(): L"null");
             }
             if (value.StartsWith(L","))
                 value.Delete(0);
@@ -912,7 +912,7 @@ ReportObject TJavaScriptInterpretor::ProcessAddition(TrecPointer<TVariable> var1
             for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
             {
                 auto val = varColl->GetValueAt(Rust);
-                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer() : L"null");
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer().getBuffer() : L"null");
             }
             if (value.StartsWith(L","))
                 value.Delete(0);
@@ -1726,7 +1726,7 @@ void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& state
         if (pieces->Size() != 3 || pieces->at(1).Compare(L"extends"))
         {
             ro.returnCode = ro.incomplete_statement;
-            ro.errorMessage.Format(L"Expected class statement with inheritence to follow format '[className] extends [superClassName]', found %ws", statement.contents.GetConstantBuffer());
+            ro.errorMessage.Format(L"Expected class statement with inheritence to follow format '[className] extends [superClassName]', found %ws", statement.contents.GetConstantBuffer().getBuffer());
 
             return;
         }

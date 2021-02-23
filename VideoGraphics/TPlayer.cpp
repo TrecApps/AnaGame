@@ -1,6 +1,5 @@
 #include "TPlayer.h"
 #include <mfreadwrite.h>
-#include <DX11VideoRenderer.h>
 
 #define SafeRelease(value) if(value) value->Release(); value = nullptr;
 
@@ -120,7 +119,7 @@ HRESULT TPlayer::OpenURL(const TString& url, TrecPointer<TWindowEngine> en)
 	HRESULT hr = CreateSession(en);
 	if (FAILED(hr))
 		goto done;
-	hr = CreateMediaSource(url.GetConstantBuffer(), &m_pSource);
+	hr = CreateMediaSource(url.GetConstantBuffer().getBuffer(), &m_pSource);
 	if (FAILED(hr))
 		goto done;
 	hr = m_pSource->CreatePresentationDescriptor(&present);

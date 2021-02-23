@@ -54,7 +54,7 @@ DrawingBoard::~DrawingBoard()
 
 void DrawingBoard::Resize(HWND window, RECT size, TrecComPointer<IDXGISurface1> surface)
 {
-
+	TObject::ThreadLock();
 	r = size;
 
 	surface3D = surface;
@@ -113,12 +113,14 @@ void DrawingBoard::Resize(HWND window, RECT size, TrecComPointer<IDXGISurface1> 
 
 		renderer2 = bitHolder.Extract();
 	}
-
+	TObject::ThreadRelease();
 }
 
 void DrawingBoard::Prep3DResize()
 {
+	TObject::ThreadLock();
 	dxgiTarget.Delete();
+	TObject::ThreadRelease();
 }
 
 /**
@@ -209,11 +211,15 @@ void DrawingBoard::SetSelf(TrecPointer<DrawingBoard> self)
  */
 bool DrawingBoard::SetTransform(const TRANSFORM_2D& matrix)
 {
+	ThreadLock();
 	if (!renderer.Get() || renderer2.Get())
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	renderer->SetTransform(matrix);
 	renderer2->SetTransform(matrix);
+	ThreadRelease();
 	return true;
 }
 
@@ -225,10 +231,14 @@ bool DrawingBoard::SetTransform(const TRANSFORM_2D& matrix)
  */
 bool DrawingBoard::GetTransform(TRANSFORM_2D& matrix)
 {
+	ThreadLock();
 	if (!renderer.Get())
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	renderer->GetTransform(&matrix);
+	ThreadRelease();
 	return true;
 }
 
@@ -240,6 +250,7 @@ bool DrawingBoard::GetTransform(TRANSFORM_2D& matrix)
  */
 void DrawingBoard::PopLayer()
 {
+	ThreadLock();
 	if (renderer.Get() && renderer2.Get() && layers.Size() && geometries.Size())
 	{
 		renderer->PopLayer();
@@ -248,6 +259,7 @@ void DrawingBoard::PopLayer()
 		layers2.RemoveAt(layers2.Size() - 1);
 		geometries.RemoveAt(geometries.Size() - 1);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -258,6 +270,8 @@ void DrawingBoard::PopLayer()
  */
 bool DrawingBoard::AddLayer(const RECT_2D& ret)
 {
+	ThreadLock();
+	bool bret = false;
 	if (renderer.Get())
 	{
 		TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, ret);
@@ -277,9 +291,10 @@ bool DrawingBoard::AddLayer(const RECT_2D& ret)
 
 		geometries.push_back(geo);
 
-		return true;
+		bret = true;
 	}
-	return false;
+	ThreadRelease();
+	return bret;
 }
 
 /**
@@ -290,6 +305,8 @@ bool DrawingBoard::AddLayer(const RECT_2D& ret)
  */
 bool DrawingBoard::AddLayer(const ELLIPSE_2D& ellipse)
 {
+	bool bret = false;
+	ThreadLock();
 	if (renderer.Get())
 	{
 		TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, ellipse);
@@ -309,9 +326,10 @@ bool DrawingBoard::AddLayer(const ELLIPSE_2D& ellipse)
 
 		geometries.push_back(geo);
 
-		return true;
+		bret = true;
 	}
-	return false;
+	ThreadRelease();
+	return bret;
 }
 
 /**
@@ -322,6 +340,8 @@ bool DrawingBoard::AddLayer(const ELLIPSE_2D& ellipse)
  */
 bool DrawingBoard::AddLayer(const ROUNDED_RECT_2D& rRect)
 {
+	bool bret = false;
+	ThreadLock();
 	if (renderer.Get())
 	{
 		TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, rRect);
@@ -341,9 +361,10 @@ bool DrawingBoard::AddLayer(const ROUNDED_RECT_2D& rRect)
 
 		geometries.push_back(geo);
 
-		return true;
+		bret = true;
 	}
-	return false;
+	ThreadRelease();
+	return bret;
 }
 
 /**
@@ -354,6 +375,8 @@ bool DrawingBoard::AddLayer(const ROUNDED_RECT_2D& rRect)
  */
 bool DrawingBoard::AddLayer(const TDataArray<POINT_2D>& points)
 {
+	bool bret = false;
+	ThreadLock();
 	if (renderer.Get())
 	{
 		TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, points);
@@ -373,9 +396,10 @@ bool DrawingBoard::AddLayer(const TDataArray<POINT_2D>& points)
 
 		geometries.push_back(geo);
 
-		return true;
+		bret = true;
 	}
-	return false;
+	ThreadRelease();
+	return bret;
 }
 
 /**
@@ -386,6 +410,8 @@ bool DrawingBoard::AddLayer(const TDataArray<POINT_2D>& points)
  */
 bool DrawingBoard::AddLayer(TrecPointer<TGeometry> geo)
 {
+	bool bret = false;
+	ThreadLock();
 	if (renderer.Get())
 	{
 		TrecComPointer<ID2D1Layer>::TrecComHolder layerHolder;
@@ -404,9 +430,10 @@ bool DrawingBoard::AddLayer(TrecPointer<TGeometry> geo)
 		layers2.push_back(layer);
 
 		geometries.push_back(geo);
-		return true;
+		bret = true;
 	}
-	return false;
+	ThreadRelease();
+	return bret;
 }
 
 /**
@@ -417,11 +444,14 @@ bool DrawingBoard::AddLayer(TrecPointer<TGeometry> geo)
  */
 TrecPointer<TGeometry> DrawingBoard::GetGeometry(const RECT_2D& ret)
 {
-	if(!renderer.Get())
+	ThreadLock();
+	if (!renderer.Get())
+	{
+		ThreadRelease();
 		return TrecPointer<TGeometry>();
-
+	}
 	TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, ret);
-
+	ThreadRelease();
 	return geo;
 }
 
@@ -433,12 +463,15 @@ TrecPointer<TGeometry> DrawingBoard::GetGeometry(const RECT_2D& ret)
  */
 TrecPointer<TGeometry> DrawingBoard::GetGeometry(const ELLIPSE_2D& ellipse)
 {
+	ThreadLock();
 	if (!renderer.Get())
+	{
+		ThreadRelease();
 		return TrecPointer<TGeometry>();
-
+	}
 
 	TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, ellipse);
-
+	ThreadRelease();
 	return geo;
 }
 
@@ -450,12 +483,15 @@ TrecPointer<TGeometry> DrawingBoard::GetGeometry(const ELLIPSE_2D& ellipse)
  */
 TrecPointer<TGeometry> DrawingBoard::GetGeometry(const ROUNDED_RECT_2D& rRect)
 {
+	ThreadLock();
 	if (!renderer.Get())
+	{
+		ThreadRelease();
 		return TrecPointer<TGeometry>();
-
+	}
 
 	TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, rRect);
-
+	ThreadRelease();
 	return geo;
 }
 
@@ -467,12 +503,15 @@ TrecPointer<TGeometry> DrawingBoard::GetGeometry(const ROUNDED_RECT_2D& rRect)
  */
 TrecPointer<TGeometry> DrawingBoard::GetGeometry(const TDataArray<POINT_2D>& points)
 {
+	ThreadLock();
 	if (!renderer.Get())
+	{
+		ThreadRelease();
 		return TrecPointer<TGeometry>();
-
+	}
 
 	TrecPointer<TGeometry> geo = TrecPointerKey::GetNewTrecPointer<TGeometry>(fact, points);
-
+	ThreadRelease();
 	return geo;
 }
 
@@ -484,7 +523,10 @@ TrecPointer<TGeometry> DrawingBoard::GetGeometry(const TDataArray<POINT_2D>& poi
  */
 UINT DrawingBoard::GetLayerCount()
 {
-	return layers.Size();
+	ThreadLock();
+	UINT ret = layers.Size();
+	ThreadRelease();
+	return ret;
 }
 
 
@@ -498,7 +540,9 @@ UINT DrawingBoard::GetLayerCount()
  */
 void DrawingBoard::SetToSecondaryTarget()
 {
+	ThreadLock();
 	usePrimaryDc = false;
+	ThreadRelease();
 }
 
 
@@ -512,7 +556,9 @@ void DrawingBoard::SetToSecondaryTarget()
  */
 void DrawingBoard::SetToPrimaryTarget()
 {
+	ThreadLock();
 	usePrimaryDc = true;
+	ThreadRelease();
 }
 
 /**
@@ -523,12 +569,13 @@ void DrawingBoard::SetToPrimaryTarget()
  */
 void DrawingBoard::BeginDraw()
 {
-
+	ThreadLock();
 
 	renderer->BeginDraw();
 	renderer->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 	renderer2->BeginDraw();
 	renderer2->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
+	ThreadRelease();
 }
 
 /**
@@ -540,10 +587,14 @@ void DrawingBoard::BeginDraw()
  */
 void DrawingBoard::EndDraw()
 {
+	ThreadLock();
 	int err = 0;
 	if (!renderer.Get() || !renderer2.Get())
+	{
+		ThreadRelease();
 		return;
-	if(FAILED(renderer->EndDraw()))
+	}
+	if (FAILED(renderer->EndDraw()))
 		err = GetLastError();
 	if (FAILED(renderer2->EndDraw()))
 		err = GetLastError();
@@ -572,6 +623,7 @@ void DrawingBoard::EndDraw()
 		}
 		windowTarget->EndDraw();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -582,7 +634,10 @@ void DrawingBoard::EndDraw()
  */
 D2D1_COLOR_F DrawingBoard::GetDefaultColor()
 {
-	return defaultColor;
+	ThreadLock();
+	auto ret = defaultColor;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -593,7 +648,10 @@ D2D1_COLOR_F DrawingBoard::GetDefaultColor()
  */
 D2D1_COLOR_F DrawingBoard::GetDefaultTextColor()
 {
-	return defaultTextColor;
+	ThreadLock();
+	auto ret = defaultTextColor;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -604,9 +662,11 @@ D2D1_COLOR_F DrawingBoard::GetDefaultTextColor()
  */
 void DrawingBoard::SetDefaultColor(const D2D1_COLOR_F& color)
 {
+	ThreadLock();
 	defaultColor = color;
 	if(self.Get())
 		defaultBrush = TrecPointerKey::GetNewTrecPointer<TBrush>(defaultColor, TrecPointerKey::GetTrecPointerFromSoft<DrawingBoard>(self));
+	ThreadRelease();
 }
 
 /**
@@ -617,7 +677,9 @@ void DrawingBoard::SetDefaultColor(const D2D1_COLOR_F& color)
  */
 void DrawingBoard::SetDefaultTextColor(const D2D1_COLOR_F& color)
 {
+	ThreadLock();
 	defaultTextColor = color;
+	ThreadRelease();
 }
 
 /**
@@ -632,6 +694,7 @@ void DrawingBoard::SetDefaultTextColor(const D2D1_COLOR_F& color)
  */
 void DrawingBoard::FillControlBackground(const D2D1_RECT_F& location, TShape shape)
 {
+	ThreadLock();
 	assert(defaultBrush.Get());
 	ELLIPSE_2D ell;
 	switch (shape)
@@ -646,6 +709,7 @@ void DrawingBoard::FillControlBackground(const D2D1_RECT_F& location, TShape sha
 	default:
 		defaultBrush->FillRectangle(location);
 	}
+	ThreadRelease();
 }
 
 

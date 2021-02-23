@@ -94,7 +94,9 @@ TColor::TColor(const color_struct& color)
  */
 void TColor::SetColor(t_color::Enum en)
 {
+	ThreadLock();
 	color = t_color(en);
+	ThreadRelease();
 }
 
 /**
@@ -107,7 +109,9 @@ void TColor::SetColor(t_color::Enum en)
  */
 void TColor::SetColor(float r, float g, float b)
 {
+	ThreadLock();
 	color = t_color(r, g, b);
+	ThreadRelease();
 }
 
 /**
@@ -121,7 +125,9 @@ void TColor::SetColor(float r, float g, float b)
  */
 void TColor::SetColor(float r, float g, float b, float a)
 {
+	ThreadLock();
 	color = t_color(r, g, b, a);
+	ThreadRelease();
 }
 
 /**
@@ -132,7 +138,9 @@ void TColor::SetColor(float r, float g, float b, float a)
  */
 void TColor::SetColor(const TColor& co)
 {
+	ThreadLock();
 	color = co.GetColor();
+	ThreadRelease();
 }
 
 /**
@@ -143,7 +151,10 @@ void TColor::SetColor(const TColor& co)
  */
 float TColor::GetRed()const
 {
-	return color.r;
+	ThreadLock();
+	float ret = color.r;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -154,7 +165,11 @@ float TColor::GetRed()const
  */
 float TColor::GetBlue()const
 {
-	return color.b;
+	ThreadLock();
+
+	float ret = color.b;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -165,7 +180,11 @@ float TColor::GetBlue()const
  */
 float TColor::GetGreen()const
 {
-	return color.g;
+	ThreadLock();
+
+	float ret = color.g;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -176,7 +195,10 @@ float TColor::GetGreen()const
  */
 float TColor::GetOpacity()const
 {
-	return color.a;
+	ThreadLock();
+	float ret = color.a;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -187,5 +209,8 @@ float TColor::GetOpacity()const
  */
 color_struct TColor::GetColor()const
 {
-	return color;
+	ThreadLock();
+	auto ret = color;
+	ThreadRelease();
+	return ret;
 }

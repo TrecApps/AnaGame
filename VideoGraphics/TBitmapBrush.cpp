@@ -26,11 +26,13 @@ void TBitmapBrush::NextFrame()
 {
 	if (!valid)
 		return;
+	ThreadLock();
 	currentFrame++;
 	if (currentFrame >= brushes.Size())
 		currentFrame = 0;
 
 	brush = brushes[currentFrame];
+	ThreadRelease();
 }
 
 /**
@@ -42,11 +44,13 @@ void TBitmapBrush::NextFrame()
 void TBitmapBrush::PrevFrame()
 {
 	if (!valid)return;
+	ThreadLock();
 	if (!currentFrame)
 		currentFrame = brushes.Size() - 1;
 	else
 		currentFrame--;
 	brush = brushes[currentFrame];
+	ThreadRelease();
 }
 
 /**
@@ -68,6 +72,7 @@ bool TBitmapBrush::IsValid()
  */
 void TBitmapBrush::SetLocation(RECT_2D& loc)
 {
+	ThreadLock();
 	location = loc;
 	RefreshBrush();
 }
@@ -80,7 +85,11 @@ void TBitmapBrush::SetLocation(RECT_2D& loc)
  */
 UINT TBitmapBrush::GetCurrentFrame()
 {
-	return currentFrame;
+
+	ThreadLock();
+	UINT ret = currentFrame;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -91,7 +100,10 @@ UINT TBitmapBrush::GetCurrentFrame()
  */
 UINT TBitmapBrush::GetFrameCount()
 {
-	return bitmaps.Size();
+	ThreadLock();
+	UINT ret = bitmaps.Size();
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -119,12 +131,14 @@ TBitmapBrush::~TBitmapBrush()
  */
 void TBitmapBrush::FillRectangle(const RECT_2D& r)
 {
+	ThreadLock();
 	if (Refresh() && currentFrame < bitmaps.Size() && bitmaps[currentFrame].Get() 
 		&& currentFrame < brushes.Size() && brushes[currentFrame].Get())
 	{
 		currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), r);
 		//currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), r);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -135,14 +149,19 @@ void TBitmapBrush::FillRectangle(const RECT_2D& r)
  */
 void TBitmapBrush::FillRoundedRectangle(const ROUNDED_RECT_2D& r)
 {
+	ThreadLock();
 	if (Refresh() && currentFrame < bitmaps.Size() && bitmaps[currentFrame].Get()
 		&& currentFrame < brushes.Size() && brushes[currentFrame].Get())
 	{
 		if (!board->AddLayer(r))
+		{
+			ThreadRelease();
 			return;
+		}
 		currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), r.rect);
 		board->PopLayer();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -153,11 +172,15 @@ void TBitmapBrush::FillRoundedRectangle(const ROUNDED_RECT_2D& r)
  */
 void TBitmapBrush::FillEllipse(const ELLIPSE_2D& r)
 {
+	ThreadLock();
 	if (Refresh() && currentFrame < bitmaps.Size() && bitmaps[currentFrame].Get()
 		&& currentFrame < brushes.Size() && brushes[currentFrame].Get())
 	{
 		if(!board->AddLayer(r))
+		{
+			ThreadRelease();
 			return;
+		}
 		RECT_2D rect = {
 			r.point.x - r.radiusX,
 			r.point.y - r.radiusY,
@@ -167,6 +190,7 @@ void TBitmapBrush::FillEllipse(const ELLIPSE_2D& r)
 		currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), rect);
 		board->PopLayer();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -177,18 +201,25 @@ void TBitmapBrush::FillEllipse(const ELLIPSE_2D& r)
  */
 void TBitmapBrush::FillGeometry(TrecPointer<TGeometry> geo)
 {
+	ThreadLock();
 	if (geo.Get() && Refresh() && currentFrame < bitmaps.Size() && bitmaps[currentFrame].Get()
 		&& currentFrame < brushes.Size() && brushes[currentFrame].Get())
 	{
 		RECT_2D rect;
 		if (!geo->GetBounds(rect))
+		{
+			ThreadRelease();
 			return;
+		}
 		if (!board->AddLayer(geo))
+		{
+			ThreadRelease();
 			return;
-	
+		}
 		currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), rect);
 		board->PopLayer();
 	}
+	ThreadRelease();
 }
 
 
@@ -309,11 +340,13 @@ TBitmapBrush::TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingB
  */
 void TBitmapBrush::RefreshBrush()
 {
+	if (!valid)
+		return;
+	ThreadLock();
 	brushes.RemoveAll();
 	bitmaps.RemoveAll();
 
-	if (!valid)
-		return;
+	
 	HRESULT result;
 	IWICBitmapScaler* scale = nullptr;
 	result = imageFactory->CreateBitmapScaler(&scale);
@@ -360,4 +393,5 @@ void TBitmapBrush::RefreshBrush()
 		brush = brushes[currentFrame];
 		valid = true;
 	}
+	ThreadRelease();
 }

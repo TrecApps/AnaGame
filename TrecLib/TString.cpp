@@ -34,12 +34,12 @@ TString::TString()
 	fillWhiteChar();
 }
 
-void TString::IncrementBuffer()
+void TString::IncrementBuffer()const 
 {
 	BufferCounter++;
 }
 
-void TString::DecrementBuffer()
+void TString::DecrementBuffer() const
 {
 	BufferCounter--;
 	if (!BufferCounter)
@@ -561,7 +561,7 @@ WCHAR * TString::GetBufferCopy() const
  * Parameters: void
  * Returns: const WCHAR* - a constant pointer of the underlying string buffer
  */
-TString::TConstBuffer TString::GetConstantBuffer()
+TString::TConstBuffer TString::GetConstantBuffer() const
 {
 	TObject::ThreadLock();
 	return TConstBuffer(this);
@@ -2778,7 +2778,7 @@ TString TString::Tokenize(TString& tokens, int& start, bool outOfQuotes) const
 	RETURN_THREAD_UNLOCK ret;
 }
 
-TString::TConstBuffer::TConstBuffer(TString* string)
+TString::TConstBuffer::TConstBuffer(const TString* string)
 {
 	if (!string)
 		throw L"Null Pointer Exception";

@@ -51,23 +51,23 @@ public:
 	class _TREC_LIB_DLL TConstBuffer
 	{
 	public:
-		TConstBuffer(TString* string);
+		TConstBuffer(const TString* string);
 		TConstBuffer(const TConstBuffer& buff);
 		~TConstBuffer();
 
 		const WCHAR* getBuffer();
 	private:
-		TString* string;
+		const TString* string;
 	};
 
 private:
 	mutable bool shouldUnlock;
 
-	UCHAR BufferCounter;
+	mutable UCHAR BufferCounter;
 
-	void IncrementBuffer();
+	void IncrementBuffer()const;
 
-	void DecrementBuffer();
+	void DecrementBuffer()const;
 
 public:
 
@@ -246,7 +246,7 @@ public:
 	* 
 	* Attributes: const
 	 */
-	TConstBuffer GetConstantBuffer();
+	TConstBuffer GetConstantBuffer()const ;
 
 	/*
 	* Method: TString::SubString
