@@ -334,7 +334,6 @@ public:
      */
     void OnDraw();
 
-
 protected:
     /// Display Properties
 

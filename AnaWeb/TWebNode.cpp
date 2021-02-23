@@ -498,8 +498,8 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 {
 	// Go through each bit of the child elements, determining where they lay
 	this->location = location;
-
-	this->win = window;
+	if(window)
+		this->win = window;
 	this->d3dEngine = d3dEngine;
 
 	TrecPointer<TWebNode::TWebNodeContainer> currentTextNode, nonTextNode;
@@ -650,7 +650,7 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 				currentTextNode->initTextSize = tempTextData.text.GetSize();
 			}
 
-			if(tempTextData.text.GetTrim().GetSize())
+			if(tempTextData.text.GetTrim().GetSize() && window)
 				currentTextNode->textDataList.push_back(tempTextData);
 		}
 
@@ -1699,7 +1699,7 @@ void TWebNode::ShrinkWidth(UINT minWidth)
 				{
 					auto nodeLoc = node->GetLocation();
 					nodeLoc.right = nodeLoc.left + width;
-					node->CreateWebNode(nodeLoc, d3dEngine, win);
+					node->CreateWebNode(nodeLoc, d3dEngine, nullptr);
 				}
 			}
 		}
@@ -1739,7 +1739,7 @@ void TWebNode::ShrinkWidth(UINT minWidth)
 				}
 				C += span;
 				tempLoc.right = tempLoc.left + curWidth;
-				node->CreateWebNode(tempLoc, d3dEngine, win);
+				node->CreateWebNode(tempLoc, d3dEngine, nullptr);
 			}
 
 			if ((Rust + 1) < columnSizes.Size())
@@ -1776,10 +1776,10 @@ float TWebNode::NeedsWidth(UINT column)
 				}
 			}
 			if (C == column)
-				return ret;
+				return ret + 1;
 			if (!colSpan)
 				colSpan = 1;
-			column += colSpan;
+			C += colSpan;
 		}
 	}
 	else if (insideDisplay == WebNodeDisplayInside::wndi_table)
@@ -1826,7 +1826,7 @@ float TWebNode::NeedsWidth(UINT column)
 		{
 			totalColumnSpan += columnSizes[Rust];
 		}
-		return (minNeeded < totalColumnSpan) ? totalColumnSpan : minNeeded;
+		return ((minNeeded < totalColumnSpan) ? totalColumnSpan : minNeeded) + 1;
 	}
 	else
 	{
@@ -1854,7 +1854,7 @@ float TWebNode::NeedsWidth(UINT column)
 					ret = needs;
 			}
 		}
-		return ret;
+		return ret ? ret + 1 : ret;
 	}
 
 	return 0.0f;
