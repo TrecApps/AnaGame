@@ -674,10 +674,12 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 			location.right = tLoc.left;
 		nonTextNode.Nullify();
 	}
-	ShrinkHeight();
-	if (insideDisplay == WebNodeDisplayInside::wndi_table)
-		ShrinkWidth(0);
-
+	if (window)
+	{
+		ShrinkHeight();
+		if (insideDisplay == WebNodeDisplayInside::wndi_table)
+			ShrinkWidth(0);
+	}
 	return 0;
 }
 

@@ -1347,7 +1347,7 @@ void TTextField::ShrinkHeight()
 		if (worked) {
 			location.bottom = location.top + height;
 			text1->bounds.bottom = location.bottom;
-			text1->reCreateLayout();
+			updateTextString();
 		}
 	}
 }
@@ -1378,14 +1378,15 @@ void TTextField::updateTextString()
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
 		return;
+	HRESULT res = 0;
 	for (UINT c = 0; c < details.Size(); c++)
 	{
-		layout->SetFontStyle(details[c].style, details[c].range);
-		layout->SetFontWeight(details[c].weight, details[c].range);
-		layout->SetFontSize(details[c].fontSize, details[c].range);
+		res = layout->SetFontStyle(details[c].style, details[c].range);
+		res = layout->SetFontWeight(details[c].weight, details[c].range);
+		res = layout->SetFontSize(details[c].fontSize, details[c].range);
 
 		if (details[c].color.Get())
-			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
+			res = layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
 
 	highlighter.SetLayout(text1->fontLayout);
