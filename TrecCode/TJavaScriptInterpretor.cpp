@@ -610,6 +610,13 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
 
                 statement.contents.Set(startStatement.SubString(5).GetTrim());
 
+                if (startStatement.EndsWith(L"{"))
+                {
+                    statement.fileStart = file->GetPosition();
+
+                    statement.fileEnd = GetBlockEnd();
+                }
+
                 statements.push_back(statement);
             }
             else if (startStatement.StartsWith(L"function", false, true))
@@ -658,7 +665,12 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                 statement.lineEnd = line;
 
                 statement.contents.Set(startStatement.SubString(4).GetTrim());
+                if (startStatement.EndsWith(L"{"))
+                {
+                    statement.fileStart = file->GetPosition();
 
+                    statement.fileEnd = GetBlockEnd();
+                }
                 statements.push_back(statement);
             }
             else if (startStatement.StartsWith(L"var", false, true))
@@ -668,7 +680,12 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                 statement.lineEnd = line;
 
                 statement.contents.Set(startStatement.SubString(4).GetTrim());
+                if (startStatement.EndsWith(L"{"))
+                {
+                    statement.fileStart = file->GetPosition();
 
+                    statement.fileEnd = GetBlockEnd();
+                }
                 statements.push_back(statement);
             }
             else if (startStatement.StartsWith(L"class", false, true))
@@ -694,6 +711,13 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                     statement.lineEnd = line;
 
                     statement.contents.Set(startStatement.SubString(6).GetTrim());
+                }
+
+                if (startStatement.EndsWith(L"{"))
+                {
+                    statement.fileStart = file->GetPosition();
+
+                    statement.fileEnd = GetBlockEnd();
                 }
                 statements.push_back(statement);
             }
@@ -3010,7 +3034,10 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
 {
     TString contents;
     if (!exp.Compare(L'{'))
+    {
+        file->Seek(statements[cur].fileStart, 0);
         file->ReadString(contents, statements[cur].fileEnd - statements[cur].fileStart);
+    }
     else
         contents.Set(exp.SubString(1));
 
@@ -3018,6 +3045,7 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
     TDataArray<TString> sections;
     UINT start = 0;
     WCHAR quote = L'\0';
+    UCHAR curlyBracketStack = 0;
     for (UINT Rust = 0; Rust < contents.GetSize(); Rust++)
     {
         WCHAR ch = contents[Rust];
@@ -3027,12 +3055,36 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
         case L'(':
         case L'[':
         case L'{':
-            bracketStack++;
+            if (!quote)
+            {
+                bracketStack++;
+                if (ch == L'{')
+                    curlyBracketStack++;
+            }
             break;
         case L')':
         case L']':
         case L'}':
-            bracketStack--;
+            if (!quote)
+            {
+                bracketStack--;
+                if (ch == '}')
+                {
+                    if (!curlyBracketStack)
+                    {
+                        ro.returnCode = ReportObject::incomplete_block;
+                        ro.errorMessage.Set(L"Unexpected '}' token detected!");
+                        return;
+                    }
+                    curlyBracketStack--;
+                    if (!curlyBracketStack && !bracketStack)
+                    {
+                        sections.push_back(contents.SubString(start, Rust));
+                        start = Rust + 1;
+                        continue;
+                    }
+                }
+            }
             break;
         case L'`':
         case L'\'':
