@@ -3,6 +3,7 @@
 #include <mfidl.h>
 #include <TrecReference.h>
 #include <TDataArray.h> 
+#include "DrawingBoard.h"
 
 /**
  * Class: TMediaSink
@@ -14,7 +15,7 @@ class TMediaSink :
 {
 public:
     // Static method to create the object.
-    static TrecComPointer<TMediaSink> CreateInstance();
+    static TrecComPointer<TMediaSink> CreateInstance(TrecPointer<DrawingBoard> board);
 
     // IUnknown
     STDMETHODIMP_(ULONG) AddRef(void) override;
@@ -39,8 +40,10 @@ private:
     bool AddStreamSink(TrecComPointer<IMFStreamSink> sink);
     TMediaSink();
 
+    IMFPresentationClock* m_clock;
+
     long m_nRefCount;
     bool isShutdown;
-    TDataArray<TrecComPointer<IMFStreamSink>> streamSinks;
+    TrecComPointer<IMFStreamSink> streamSink;
 };
 

@@ -52,6 +52,12 @@ public:
 	DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window);
 
 	/**
+	 * Method: DrawingBoard::DrawFrame
+	 * Purpose: Adds a Frame to the Drawing Board, expected to be called by Media Foundation Classes
+	 * Parameters:
+	 */
+
+	/**
 	 * Method: DrawingBoard::~DrawingBoard
 	 * Purpose: Destructor
 	 * Parameters: void

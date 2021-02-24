@@ -6,6 +6,12 @@ TMediaSink::TMediaSink()
 {
     this->m_nRefCount = 1;
     this->isShutdown = false;
+    this->m_clock = nullptr;
+}
+
+TrecComPointer<TMediaSink> TMediaSink::CreateInstance(TrecPointer<DrawingBoard> board)
+{
+    return TrecComPointer<TMediaSink>();
 }
 
 ULONG TMediaSink::AddRef(void)
@@ -36,56 +42,133 @@ HRESULT TMediaSink::AddStreamSink(DWORD dwStreamSinkIdentifier, __RPC__in_opt IM
     return MF_E_STREAMSINKS_FIXED;
 }
 
-HRESULT TMediaSink::GetCharacteristics(DWORD* pdwCharacteristics)
+HRESULT TMediaSink::GetCharacteristics(__RPC__out DWORD* pdwCharacteristics)
 {
-    return E_NOTIMPL;
+    if (!pdwCharacteristics)
+        return E_POINTER;
+    ThreadLock();
+    bool tempShutdown = isShutdown;
+    ThreadRelease();
+    if (tempShutdown)
+        return MF_E_SHUTDOWN;
+    *pdwCharacteristics = MEDIASINK_FIXED_STREAMS;
+    return S_OK;
 }
 
-HRESULT TMediaSink::GetPresentationClock(IMFPresentationClock** ppPresentationClock)
+HRESULT TMediaSink::GetPresentationClock(__RPC__deref_out_opt IMFPresentationClock** ppPresentationClock)
 {
-    return E_NOTIMPL;
+    if (!ppPresentationClock)
+        return E_POINTER;
+    ThreadLock();
+    if (isShutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+
+    if (!m_clock)
+    {
+        ThreadRelease();
+        return MF_E_NO_CLOCK;
+    }
+    *ppPresentationClock = m_clock;
+    m_clock->AddRef();
+    ThreadRelease();
+
+    return S_OK;
 }
 
-HRESULT TMediaSink::GetStreamSinkById(DWORD dwIdentifier, IMFStreamSink** ppStreamSink)
+HRESULT TMediaSink::GetStreamSinkById(DWORD dwIdentifier, __RPC__deref_out_opt IMFStreamSink** ppStreamSink)
 {
-    return E_NOTIMPL;
+    if (dwIdentifier != 1)
+        return MF_E_INVALIDSTREAMNUMBER;
+    if (!ppStreamSink)
+        return E_POINTER;
+    ThreadLock();
+    if (isShutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+    auto ret = streamSink.Get();
+    if (ret)
+        ret->AddRef();
+    *ppStreamSink = ret;
+    ThreadRelease();
+    return S_OK;
 }
 
-HRESULT TMediaSink::GetStreamSinkByIndex(DWORD dwIndex, IMFStreamSink** ppStreamSink)
+HRESULT TMediaSink::GetStreamSinkByIndex(DWORD dwIndex, __RPC__deref_out_opt IMFStreamSink** ppStreamSink)
 {
-    return E_NOTIMPL;
+    if (dwIndex > 0)
+        return MF_E_INVALIDINDEX;
+    if (!ppStreamSink)
+        return E_POINTER;
+    ThreadLock();
+    if (isShutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+    auto ret = streamSink.Get();
+    if (ret)
+        ret->AddRef();
+    *ppStreamSink = ret;
+    ThreadRelease();
+    return S_OK;
 }
 
-HRESULT TMediaSink::GetStreamSinkCount(DWORD* pcStreamSinkCount)
+HRESULT TMediaSink::GetStreamSinkCount(__RPC__out DWORD* pcStreamSinkCount)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    if (!pcStreamSinkCount)
+    {
+        ThreadRelease();
+        return E_POINTER;
+    }
+
+    if (isShutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+    *pcStreamSinkCount = 1;
+    ThreadRelease();
+    return S_OK;
 }
 
 HRESULT TMediaSink::RemoveStreamSink(DWORD dwStreamSinkIdentifier)
 {
-    return E_NOTIMPL;
+    return MF_E_STREAMSINKS_FIXED;
 }
 
-HRESULT TMediaSink::SetPresentationClock(IMFPresentationClock* pPresentationClock)
+HRESULT TMediaSink::SetPresentationClock(__RPC__in_opt IMFPresentationClock* pPresentationClock)
 {
-    return E_NOTIMPL;
+    
+    if (!pPresentationClock)
+        return E_POINTER;
+    TObject::ThreadLock();
+    if (isShutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+    if (m_clock)
+        m_clock->Release();
+    m_clock = pPresentationClock;
+    TObject::ThreadRelease();
+    return S_OK;
 }
 
 HRESULT TMediaSink::Shutdown(void)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    isShutdown = true;
+    
+    return MF_E_SHUTDOWN;
 }
 
 bool TMediaSink::AddStreamSink(TrecComPointer<IMFStreamSink> sink)
 {
-    if(!sink.Get())
-        return false;
 
-    for (UINT Rust = 0; Rust < streamSinks.Size(); Rust++)
-    {
-        if (sink.Get() == streamSinks[Rust].Get())
-            return false;
-    }
-    streamSinks.push_back(sink);
-    return true;
 }
