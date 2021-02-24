@@ -1692,7 +1692,7 @@ void TJavaScriptInterpretor::ProcessConst(TDataArray<JavaScriptStatement>& state
     AssignmentStatement(statements, cur, statement, ro, variables);
 }
 
-void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
+void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro, bool addToVars)
 {
     TString var(statement.contents.SubString(0, statement.contents.Find(L'(')).GetTrim());
 
@@ -1729,8 +1729,13 @@ void TJavaScriptInterpretor::ProcessFunction(TDataArray<JavaScriptStatement>& st
 
     dynamic_cast<TInterpretor*>(function.Get())->SetCode(file, statement.fileStart, statement.fileEnd);
     function->SetParamNames(paramNames);
-
-    variables.addEntry(var, TVariableMarker(true, TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(function)));
+    if (addToVars)
+        variables.addEntry(var, TVariableMarker(true, TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(function)));
+    else
+    {
+        ro.errorMessage.Set(var.GetTrim());
+        ro.errorObject = TrecPointerKey::GetTrecPointerFromSub<TVariable, TJavaScriptInterpretor>(function);
+    }
 }
 
 void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro)
@@ -3041,6 +3046,9 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
     else
         contents.Set(exp.SubString(1));
 
+    if (!contents.StartsWith(L'{') && contents.EndsWith(L'}'))
+        contents.Delete(contents.GetSize() - 1);
+
     UINT bracketStack = 0;
     TDataArray<TString> sections;
     UINT start = 0;
@@ -3070,7 +3078,7 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
                 bracketStack--;
                 if (ch == '}')
                 {
-                    if (!curlyBracketStack)
+                    if (!curlyBracketStack && bracketStack)
                     {
                         ro.returnCode = ReportObject::incomplete_block;
                         ro.errorMessage.Set(L"Unexpected '}' token detected!");
@@ -3079,7 +3087,7 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
                     curlyBracketStack--;
                     if (!curlyBracketStack && !bracketStack)
                     {
-                        sections.push_back(contents.SubString(start, Rust));
+                        sections.push_back(contents.SubString(start, Rust+1));
                         start = Rust + 1;
                         continue;
                     }
@@ -3109,11 +3117,25 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
         }
     }
 
+    for (UINT Rust = 0; Rust < sections.Size(); Rust++)
+    {
+        if (sections[Rust].StartsWith(L';'))
+            sections[Rust].Delete(0);
+        sections[Rust].Trim();
+
+        if (!sections[Rust].GetSize())
+        {
+            sections.RemoveAt(Rust--);
+        }
+    }
+
     TrecSubPointer<TVariable, TContainerVariable> retVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
     TrecSubPointer<TVariable, TAccessorVariable> accessVar;
     for (UINT Rust = 0; Rust < sections.Size(); Rust++)
     {
         auto pieces = sections[Rust].splitn(L':', 2, 3);
+
+        pieces->at(0).Trim();
 
         // Check for Set and Get
         UCHAR getSet = 0;
@@ -3143,11 +3165,16 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
         else if (!InspectVariable(pieces->at(0)))
         {
             ro.returnCode = ro.invalid_name;
+            ro.errorMessage.Format(L"Invalid Variable '%ws' detected in JSON Formatting!", pieces->at(0).GetConstantBuffer());
             return;
         }
 
  
+        if (pieces->Size() == 1)
+        {
+            UCHAR onceRes = 0;
 
+        }
         if (pieces->Size() == 2 && pieces->at(1).GetSize())
         {
             ProcessExpression(statements, cur, pieces->at(1), line, ro);
