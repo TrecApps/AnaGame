@@ -1,10 +1,17 @@
 #pragma once
 #include <mfidl.h>
-
-class TStreamSink : public IMFStreamSink
+#include <TObject.h>
+#include <TrecReference.h>
+#include "TMediaSink.h"
+#include <TLinkedList.h>
+class TStreamSink : public IMFStreamSink, public TObject
 {
-
+    friend class TMediaSink;
 public:
+    // IUnknown
+    STDMETHODIMP_(ULONG) AddRef(void) override;
+    STDMETHODIMP QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv) override;
+    STDMETHODIMP_(ULONG) Release(void) override;
 
     // IMFStreamSink
     STDMETHODIMP Flush(void) override;
@@ -19,5 +26,11 @@ public:
     STDMETHODIMP EndGetEvent(IMFAsyncResult* pResult, _Out_ IMFMediaEvent** ppEvent) override;
     STDMETHODIMP GetEvent(DWORD dwFlags, __RPC__deref_out_opt IMFMediaEvent** ppEvent) override;
     STDMETHODIMP QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtendedType, HRESULT hrStatus, __RPC__in_opt const PROPVARIANT* pvValue) override;
+
+private:
+    TrecComPointer<TMediaSink> mediaSink;
+    long m_nRefCount;
+
+    TLinkedList<TrecComPointer<ID2D1Bitmap1>> samples;
 };
 
