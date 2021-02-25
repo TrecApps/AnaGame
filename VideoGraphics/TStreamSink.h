@@ -28,9 +28,12 @@ public:
     STDMETHODIMP QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtendedType, HRESULT hrStatus, __RPC__in_opt const PROPVARIANT* pvValue) override;
 
 private:
+    bool isShutdown;
+    bool CheckShutdown();
+
     TrecComPointer<TMediaSink> mediaSink;
     long m_nRefCount;
 
-    TLinkedList<TrecComPointer<ID2D1Bitmap1>> samples;
+    TLinkedList<IUnknown*> samples;
 };
 

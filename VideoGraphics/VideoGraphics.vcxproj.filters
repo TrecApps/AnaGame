@@ -78,6 +78,9 @@
     <ClInclude Include="TVideoScheduler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TVideoMarker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -138,6 +141,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TVideoScheduler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TVideoMarker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
