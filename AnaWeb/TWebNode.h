@@ -89,6 +89,30 @@ public:
     bool useCapture;
 };
 
+typedef enum class border_style
+{
+    bs_not_set,
+    bs_dotted,
+    bs_dashed,
+    bs_solid,
+    bs_double,
+    bs_groove,
+    bs_ridge,
+    bs_inset,
+    bs_outset,
+    bs_none,
+    bs_hidden
+};
+
+typedef enum class border_side
+{
+    bs_all,
+    bs_top,
+    bs_bottom,
+    bs_left,
+    bs_right
+};
+
 /**
  * Class: TextData
  * Purpose: Holds data about the text provided, enabling child nodes to inject text into parent nodes if they are inline
@@ -113,6 +137,21 @@ public:
 
     bool fontSizeUpdated, flowDirectionUpdated, fontStretchUpdated, 
         fontStyleUpdated, fontWeightUpdated, lineSpacingUpdated, textColorUpdated;
+};
+
+class ANA_WEB_DLL BorderData
+{
+public:
+    BorderData();
+    BorderData(const BorderData& copy);
+
+    void CompileAttributes(TString& atts, border_side side);
+
+    border_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
+    USHORT thick, topThick, bottomThick, rightThick, leftThick;
+    TColor color, topColor, bottomColor, rightColor, leftColor;
+
+
 };
 
 /**
@@ -503,6 +542,8 @@ protected:
     TDataArray<FormattingDetails> formattingDetails;
 
     TextData thisTextData;
+
+    BorderData borderData;
 
     HWND win;
 

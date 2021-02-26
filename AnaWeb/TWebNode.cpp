@@ -1378,21 +1378,32 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	}
 
 
-	if (atts.retrieveEntry(L"", val))
+	if (atts.retrieveEntry(L"border", val))
 	{
-
+		borderData.CompileAttributes(val, border_side::bs_all);
 	}
 
 
-	if (atts.retrieveEntry(L"", val))
+	if (atts.retrieveEntry(L"border-bottom", val))
 	{
-
+		borderData.CompileAttributes(val, border_side::bs_bottom);
 	}
 
 
-	if (atts.retrieveEntry(L"", val))
+	if (atts.retrieveEntry(L"border-left", val))
 	{
+		borderData.CompileAttributes(val, border_side::bs_left);
+	}
 
+	if (atts.retrieveEntry(L"border-right", val))
+	{
+		borderData.CompileAttributes(val, border_side::bs_right);
+	}
+
+
+	if (atts.retrieveEntry(L"border-top", val))
+	{
+		borderData.CompileAttributes(val, border_side::bs_top);
 	}
 
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
@@ -2007,4 +2018,35 @@ void TextData::Update(const TextData& copy)
 		textColorUpdated = true;
 	}
 
+}
+
+BorderData::BorderData()
+{
+	borderStyle = topStyle = bottomStyle = rightStyle = leftStyle = border_style::bs_not_set;
+	thick = topThick = bottomThick = rightThick = leftThick = 0;
+}
+
+BorderData::BorderData(const BorderData& copy)
+{
+	borderStyle = copy.borderStyle;
+	topStyle = copy.topStyle;
+	bottomStyle = copy.bottomStyle;
+	leftStyle = copy.leftStyle;
+	rightStyle = copy.rightStyle;
+
+	thick = copy.thick;
+	topThick = copy.topThick;
+	bottomThick = copy.bottomThick;
+	leftThick = copy.leftThick;
+	rightThick = copy.rightThick;
+
+	color = copy.color;
+	topColor = copy.topColor;
+	bottomColor = copy.bottomColor;
+	leftColor = copy.leftColor;
+	rightColor = copy.rightColor;
+}
+
+void BorderData::CompileAttributes(TString& atts, border_side side)
+{
 }
