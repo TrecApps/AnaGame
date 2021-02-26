@@ -158,6 +158,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="TBlankNode.h" />
+    <ClInclude Include="TcInterpretor.h" />
     <ClInclude Include="TDataMap.h" />
     <ClInclude Include="TSliceManager.h" />
     <ClInclude Include="TStringSlice.h" />
@@ -200,6 +201,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TBlankNode.cpp" />
+    <ClCompile Include="TcInterpretor.cpp" />
     <ClCompile Include="TSliceManager.cpp" />
     <ClCompile Include="TStringSlice.cpp" />
     <ClCompile Include="TEnvironment.cpp" />
