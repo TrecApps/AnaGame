@@ -187,6 +187,19 @@ public:
 	 * Attributes: const
 	 */
 	color_struct GetColor()const;
+
+	/**
+	 * Method: TColor::GetColorFromString
+	 * Purpose: Returns a Color based off of the provided String
+	 * Parameters: const TString& color - string to derive a color out of
+	 *				bool& worked - reports whether a color can be derived from the string
+	 * Returns: TColor - the color returned
+	 * 
+	 * Note: If the string cannot be converted to a color, Black is returned and the 'worked' parameter is set to false
+	 *
+	 * Attributes: static
+	 */
+	static TColor GetColorFromString(const TString& color, bool& worked);
 private:
 	color_struct color;
 };
