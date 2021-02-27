@@ -30,6 +30,18 @@ typedef struct IndexRange {
 	int end;
 }IndexRange;
 
+/**
+ * Enum Class: number_base
+ * Purpose: Signal to which number base to use
+ */
+typedef enum class number_base
+{
+	nb_generic, // Let the method decide which base to use
+	nb_binary,	// assume string is 1's and 0's
+	nb_octal,	// assume string is 0-7
+	nb_decimal, // Use scale 0-9
+	nb_hexadecimal // Use scale 0-f
+}number_base;
 
 /**
  * Class: TString
@@ -41,6 +53,20 @@ typedef struct IndexRange {
 class _TREC_LIB_DLL TString : public TObject
 {
 public:
+
+	/**
+	 * Method: TString::ConvertStringToUint
+	 * Purpose: Allows TString class to convert itself into a numeral representation
+	 * Parameters: const TString& string - the string to convert
+	 *				UINT& num - the number to hold the data in
+	 *				number_base base - the base to assume
+	 * Returns: bool - whether the string could be converted into an int
+	 * 
+	 * Note: if the String starts with a number specifier (0x or 0b), then the base param must 
+	 *		match the specifier or be 'generic'. Otherwise it will fail and false is returned.
+	 *		Also, if 'generic' is set, then binary will only be considered if the string specifies binary
+	 */
+	static bool ConvertStringToUint(const TString& string, UINT& num, number_base base = number_base::nb_generic);
 
 	/**
 	 * Method: TString::GetType
