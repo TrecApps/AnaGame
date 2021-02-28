@@ -19,6 +19,11 @@ CodeStatement::CodeStatement(const CodeStatement& copy)
 	statementType = copy.statementType;
 }
 
+bool CodeStatement::IsEmpty()
+{
+	return !statement.GetTrim().GetSize() && !block.Size();
+}
+
 StatementCollector::StatementCollector()
 {
 	nextLineComment = nextLineString = nextLineStatement = true;
@@ -313,6 +318,7 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 
 void StatementCollector::CollectStatement(TDataArray<TrecPointer<CodeStatement>>& statements)
 {
+	CleanStatements(this->statements);
 	statements = this->statements;
 }
 
@@ -490,6 +496,31 @@ void StatementCollector::ParseNextMarker(statement_mode curMode, const TString& 
 	}
 }
 
-void StatementCollector::CleanStatements()
+void StatementCollector::CleanStatements(TDataArray<TrecPointer<CodeStatement>>& statements)
 {
+	if (!statements.Size())
+		return;
+	auto state = statements[0];
+	auto oState = state;
+	CleanStatements(state->block);
+
+	for (UINT Rust = 1; Rust < statements.Size(); Rust++)
+	{
+		auto nState = statements[Rust];
+		if (state->next.Get() == nState.Get() || state.Get() == nState.Get())
+		{
+			statements.RemoveAt(Rust--);
+			continue;
+		}
+
+		if (nState->IsEmpty())
+		{
+			statements.RemoveAt(Rust--);
+			continue;
+		}
+		state = nState;
+	}
+
+	if (oState->IsEmpty())
+		statements.RemoveAt(0);
 }

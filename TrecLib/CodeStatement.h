@@ -96,6 +96,14 @@ public:
      */
     CodeStatement(const CodeStatement& copy);
 
+    /**
+     * Method: CodeStatement::IsEmpty
+     * Purpose: Reports whether the Statement has any content in it
+     * Parameters: void
+     * Returns: bool - true if the statement is empty (no statement and empty block) and can be removed from the list
+     */
+    bool IsEmpty();
+
     UINT lineStart;     // the line in the file the statement begins
     UINT lineEnd;       // The line where the statement ends
     TString statement;  // The Statement
@@ -307,10 +315,10 @@ private:
     /**
      * Method: StatementCollector::CleanStatements
      * Purpose: Removes completely empty statements from the list of statements and removes duplicates
-     * Parameters: void
+     * Parameters: TDataArray<TrecPointer<CodeStatement>>& statements - current list of statements to clean
      * Returns: void
      */
-    void CleanStatements();
+    void CleanStatements(TDataArray<TrecPointer<CodeStatement>>& statements);
 
 
     TDataArray<TrecPointer<CodeStatement>> statements;
