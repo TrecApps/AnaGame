@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CodeStatement.h" />
     <ClInclude Include="TBlankNode.h" />
     <ClInclude Include="TcInterpretor.h" />
     <ClInclude Include="TDataMap.h" />
@@ -200,6 +201,7 @@
     <ClInclude Include="TVariable.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CodeStatement.cpp" />
     <ClCompile Include="TBlankNode.cpp" />
     <ClCompile Include="TcInterpretor.cpp" />
     <ClCompile Include="TSliceManager.cpp" />
