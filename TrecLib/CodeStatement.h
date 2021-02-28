@@ -286,7 +286,7 @@ public:
      * Parameters: TDataArray<CodeStatement>& statements - the statements held by the interpretor
      * Returns: void
      */
-    void CollectStatement(TDataArray<CodeStatement>& statements);
+    void CollectStatement(TDataArray<TrecPointer<CodeStatement>>& statements);
 
 
 private:
@@ -302,10 +302,18 @@ private:
      *              UINT& endIndex - the next index to enter as curIndex
      * Returns: void
      */
-    void ParseNextMarker(statement_mode curMode, const TString& string, UINT curIndex, statement_mode& netMode, UINT& startIndex, UINT& endIndex);
+    void ParseNextMarker(statement_mode curMode, const TString& string, UINT curIndex, statement_mode& netMode, UINT& startIndex, UINT& endIndex, TString& quote);
+
+    /**
+     * Method: StatementCollector::CleanStatements
+     * Purpose: Removes completely empty statements from the list of statements and removes duplicates
+     * Parameters: void
+     * Returns: void
+     */
+    void CleanStatements();
 
 
-    TDataArray<CodeStatement> statements;
+    TDataArray<TrecPointer<CodeStatement>> statements;
 
     bool nextLineComment,       // Use '\' to allow single line comments to go to the next line
         nextLineString,         // Use '\' to allow single line strings to go to the next line
