@@ -105,6 +105,17 @@ public:
     code_statement_type statementType;
 };
 
+
+typedef enum class statement_mode
+{
+    sm_basic,		// Basic code, not a string or a comment
+    sm_error,		// An error has been detected
+    sm_single_com,	// single line comment
+    sm_multi_com,	// multi line comment
+    sm_single_str,	// In a single line String
+    sm_multi_str	// In a multi-line string
+}statement_mode;
+
 /**
  * Class: StatementCollector
  * Purpose: Allows Interpretors to Easily read a source file and parse statements, taking into account Strings, parsing out blocks,
@@ -277,7 +288,23 @@ public:
      */
     void CollectStatement(TDataArray<CodeStatement>& statements);
 
+
 private:
+
+    /**
+     * Method: StatementCollector::ParseNextMarker
+     * Purpose: Helper Method for determining the next token in the Provided String
+     * Parameters: statement_mode curMode- the current mode of the parser
+     *              const TString& string - the String to parse
+     *              UINT curIndex - the index in the string to start the search
+     *              statement_mode& nextMode - the next mode
+     *              UINT& startIndex - where the token was found
+     *              UINT& endIndex - the next index to enter as curIndex
+     * Returns: void
+     */
+    void ParseNextMarker(statement_mode curMode, const TString& string, UINT curIndex, statement_mode& netMode, UINT& startIndex, UINT& endIndex);
+
+
     TDataArray<CodeStatement> statements;
 
     bool nextLineComment,       // Use '\' to allow single line comments to go to the next line

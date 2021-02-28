@@ -1,4 +1,6 @@
 #include "CodeStatement.h"
+#include "TFile.h"
+
 
 CodeStatement::CodeStatement()
 {
@@ -103,12 +105,139 @@ void StatementCollector::TurnOffStatementEscape()
 	nextLineStatement = false;
 }
 
+
+
 USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& errorMessage, UINT& line)
 {
+	if (!file.Get())
+		return 1;
+	TFile source(file->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
+
+
+
 	return USHORT();
 }
 
-void StatementCollector::CollectStatement(TDataArray<TFileShell>& statements)
+void StatementCollector::CollectStatement(TDataArray<CodeStatement>& statements)
 {
 	statements = this->statements;
+}
+
+
+int GetIndex(const TString& string, UINT startIndex, TDataArray<TString>& tokens, int& end)
+{
+	int ret = -1;
+
+	for (UINT Rust = 0; Rust < tokens.Size(); Rust++)
+	{
+		int index = string.Find(tokens[Rust], startIndex);
+		if (ret == -1)
+		{
+			ret = index;
+			if (index != -1)
+				end = index + tokens[Rust].GetSize();
+		}
+		else if (index != -1 && index < ret)
+		{
+			ret = index;
+			end = index + tokens[Rust].GetSize();
+		}
+	}
+	return ret;
+}
+
+void DeduceNextMarker(int nextSingleComment,
+	int nextMultiComStart,
+	int nextMultiComEnd,
+	int nextSingleString,
+	int nextMultiString,
+
+	int nextSingleComment_,
+	int nextMultiComStart_,
+	int nextMultiComEnd_,
+	int nextSingleString_,
+	int nextMultiString_,
+	
+	UINT& startIndex,
+	UINT& endIndex,
+	statement_mode& mode) 
+{
+	int tokens[] = {
+		nextSingleComment,
+		nextMultiComStart,
+		nextMultiComEnd,
+		nextSingleString,
+		nextMultiString
+	};
+
+	int lowest = -1;
+
+	for (int Rust = 0; Rust < 5; Rust++)
+	{
+		if (tokens[Rust] != -1)
+		{
+			if (lowest == -1 || tokens[Rust] <= tokens[lowest])
+				lowest = Rust;
+		}
+	}
+
+	switch (lowest)
+	{
+	case 0:
+		startIndex = nextSingleComment;
+		endIndex = nextSingleComment_;
+		mode = statement_mode::sm_single_com;
+		break;
+	case 1:
+		startIndex = nextMultiComStart;
+		endIndex = nextMultiComStart_;
+		mode = statement_mode::sm_multi_com;
+		break;
+	case 2:
+		startIndex = nextMultiComEnd;
+		endIndex = nextMultiComEnd_;
+		mode = statement_mode::sm_basic;
+		break;
+	case 3:
+		startIndex = nextSingleString;
+		endIndex = nextSingleString_;
+		mode = statement_mode::sm_single_str;
+		break;
+	case 4:
+		startIndex = nextMultiString;
+		endIndex = nextMultiString_;
+		mode = statement_mode::sm_multi_str;
+		break;
+	default:
+		mode = statement_mode::sm_error;
+	}
+
+}
+
+
+void StatementCollector::ParseNextMarker(statement_mode curMode, const TString& string, UINT curIndex, statement_mode& netMode, UINT& startIndex, UINT& endIndex)
+{
+	if (curIndex >= string.GetSize())
+		netMode = statement_mode::sm_error;
+
+	int nextSingleComment = -1;
+	int nextMultiComStart = -1;
+	int nextMultiComEnd = -1;
+	int nextSingleString = -1;
+	int nextMultiString = -1;
+
+	int nextSingleComment_ = -1;
+	int nextMultiComStart_ = -1;
+	int nextMultiComEnd_ = -1;
+	int nextSingleString_ = -1;
+	int nextMultiString_ = -1;
+
+	netMode = curMode;
+
+	switch (curMode)
+	{
+	case statement_mode::sm_basic:
+		nextSingleComment = GetIndex(string, curIndex, singleLineComment, nextSingleComment_);
+		nextMultiComStart = GetIndex(string, curIndex, multiLineCommentStart, )
+	}
 }
