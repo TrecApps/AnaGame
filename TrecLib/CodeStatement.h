@@ -111,6 +111,7 @@ public:
     TrecPointer<CodeStatement> next;
     TrecPointerSoft<CodeStatement> parent;
     code_statement_type statementType;
+    USHORT space, tab;
 };
 
 
@@ -338,6 +339,14 @@ private:
      * Returns: bool - whether to end the statement based off of the configuration and the contents of the statement
      */
     bool StartAsSingleLine(const TString& statement);
+
+    /**
+     * Method: StatementCollector::HandlePythonBlocks
+     * Purpose: Allows Collector to organize block by spaces and indents, since it would not have been done during initial statement generation
+     * Parameters: void
+     * Returns: UINT - 0 if successful, otherwise the statement that confused the Collector
+     */
+    UINT HandlePythonBlocks();
 
 
     TDataArray<TrecPointer<CodeStatement>> statements;

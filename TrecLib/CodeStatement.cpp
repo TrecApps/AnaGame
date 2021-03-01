@@ -5,6 +5,7 @@
 CodeStatement::CodeStatement()
 {
 	lineStart = lineEnd = 0;
+	space = tab = 0;
 	statementType = code_statement_type::cst_not_set;
 }
 
@@ -17,6 +18,8 @@ CodeStatement::CodeStatement(const CodeStatement& copy)
 	next = copy.next;
 	parent = copy.parent;
 	statementType = copy.statementType;
+	space = copy.space;
+	tab = copy.tab;
 }
 
 bool CodeStatement::IsEmpty()
@@ -200,7 +203,29 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 	while (source.ReadString(line))
 	{
 		UINT currentIndex = 0, startIndex = 0, endIndex = 0;
-		
+
+		if (!blockStart.Size() && currentMode == statement_mode::sm_basic)
+		{
+			if (line.GetTrim().GetSize() == 0)
+				continue;
+
+			UINT newTabCount = 0, newSpaceCount = 0;
+			for (UINT Rust = 0; Rust < line.GetSize(); Rust++)
+			{
+				WCHAR ch = line[Rust];
+				if (ch == L' ')
+					newSpaceCount++;
+				else if (ch == L'\t')
+					newTabCount++;
+				else
+					break;
+			}
+			if (currentStatement->statement.GetTrim().GetSize() == 0)
+			{
+				currentStatement->space = newSpaceCount;
+				currentStatement->tab = newTabCount;
+			}
+		}
 		while (currentIndex < line.GetSize())
 		{
 			if (currentMode == statement_mode::sm_basic)
@@ -333,6 +358,14 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 		return 2;
 	}
 	statements.push_back(currentStatement);
+
+	UINT blockCheck = HandlePythonBlocks();
+	if (blockCheck)
+	{
+		errorMessage.Set(L"Error managing Python Block types!");
+		lineNum = statements[blockCheck]->lineStart;
+		return 2;
+	}
 
 	return 0;
 }
@@ -587,4 +620,67 @@ bool StatementCollector::StartAsSingleLine(const TString& statement)
 	}
 	
 	return false;
+}
+
+UINT StatementCollector::HandlePythonBlocks()
+{
+	if (blockStart.Size())
+		return 0;
+	if (!statements.Size())
+		return 0;
+	TrecPointer<CodeStatement> parent = statements[0];
+	for (UINT Rust = 1; Rust < statements.Size(); Rust++)
+	{
+		auto current = statements[Rust];
+		if (parent->space == current->space && parent->tab == current->tab)
+		{
+			if (parent->parent.Get())
+			{
+				current->parent = parent->parent;
+				current->parent.Get()->block.push_back(current);
+				statements.RemoveAt(Rust--);
+			}
+
+			parent = current;
+			continue;
+		}
+
+		if (parent->space != current->space && parent->tab != current->tab)
+		{
+			return Rust;
+		}
+
+		if (current->space > parent->space || current->tab > parent->tab)
+		{
+			current->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parent);
+			parent->block.push_back(current);
+			statements.RemoveAt(Rust--);
+			parent = current;
+
+			continue;
+		}
+
+		if (current->space < parent->space || current->tab < parent->tab)
+		{
+			while (parent.Get())
+			{
+				if (parent->space == current->space && parent->tab == current->tab)
+				{
+					break;
+				}
+				parent = TrecPointerKey::GetTrecPointerFromSoft<>(parent->parent);
+			}
+			if (!parent.Get())
+				return Rust;
+
+			if (parent->parent.Get())
+			{
+				current->parent = parent->parent;
+				current->parent.Get()->block.push_back(current);
+				statements.RemoveAt(Rust--);
+
+			}
+			parent = current;
+		}
+	}
 }
