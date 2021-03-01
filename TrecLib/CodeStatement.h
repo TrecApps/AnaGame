@@ -277,6 +277,17 @@ public:
     void TurnOffStatementEscape();
 
     /**
+     * Method: StatementCollector::TurnOnOneLinePerStatement
+     * Purpose: Turns on the mode where a statement ends when it's current line does
+     * Parameters: void
+     * Returns: void
+     * 
+     * Note: if the statement Seperator is rendered Empty, then that has the same effect as calling this method. Also, calling this method 
+     *  cannot be undone
+     */
+    void TurnOnOneLinePerStatement();
+
+    /**
      * Method: StatementCollector::RunCollector
      * Purpose: Generates statements from the file, based on the configuration
      * Parameters: TrecPointer<TFileShell> file - the file to read
@@ -320,13 +331,21 @@ private:
      */
     void CleanStatements(TDataArray<TrecPointer<CodeStatement>>& statements);
 
+    /**
+     * Method: StatementCollector::StartsAsSingleLine
+     * Purpose: Reports whether the current statement qualifies for automatic singleline
+     * Parameters: const TString& statement - the statement in it's current form
+     * Returns: bool - whether to end the statement based off of the configuration and the contents of the statement
+     */
+    bool StartAsSingleLine(const TString& statement);
+
 
     TDataArray<TrecPointer<CodeStatement>> statements;
 
     bool nextLineComment,       // Use '\' to allow single line comments to go to the next line
         nextLineString,         // Use '\' to allow single line strings to go to the next line
-        nextLineStatement;      // Use '\' to allow single line sttements to go to the next line
-
+        nextLineStatement,      // Use '\' to allow single line sttements to go to the next line
+        newLineEndsStatement;   // Whether statements stop at new Line
 
     TDataArray<TString> statementseperator, // How to recognize when a Statement ends
         singleLineComment,                  // Token for recognizing the start of a single line comment

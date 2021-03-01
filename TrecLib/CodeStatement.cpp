@@ -27,6 +27,7 @@ bool CodeStatement::IsEmpty()
 StatementCollector::StatementCollector()
 {
 	nextLineComment = nextLineString = nextLineStatement = true;
+	newLineEndsStatement = false;
 
 	singleLineComment.push_back(L"//");
 	multiLineCommentStart.push_back(L"/*");
@@ -121,6 +122,11 @@ void StatementCollector::TurnOffStringEscape()
 void StatementCollector::TurnOffStatementEscape()
 {
 	nextLineStatement = false;
+}
+
+void StatementCollector::TurnOnOneLinePerStatement()
+{
+	newLineEndsStatement = true;
 }
 
 typedef enum class next_tok
@@ -301,7 +307,22 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 			currentMode = nextMode;
 		}
 
-		currentStatement->statement.AppendChar(L'\n');
+		if (currentMode == statement_mode::sm_basic)
+		{
+			if (newLineEndsStatement || statementseperator.Size() == 0 || StartAsSingleLine(currentStatement->statement))
+			{
+				currentStatement->lineEnd = currentLine;
+				if (parentStatement.Get())
+					parentStatement->block.push_back(currentStatement);
+				else statements.push_back(currentStatement);
+				currentStatement = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+			}
+			else
+				currentStatement->statement.AppendChar(L'\n');
+
+		}
+		else
+			currentStatement->statement.AppendChar(L'\n');
 		currentLine++;
 	}
 
@@ -488,11 +509,28 @@ void StatementCollector::ParseNextMarker(statement_mode curMode, const TString& 
 				else break;
 			}
 
-			if (slashCount % 2 == 0 || !this->nextLineString)
+			if ((slashCount % 2) == 0 || !this->nextLineString)
 			{
 				netMode = statement_mode::sm_error;
 			}
 		}
+		return;
+	case statement_mode::sm_single_com:
+		if (this->nextLineComment)
+		{
+			TString trimmed(string.GetTrim());
+			UINT slashCount = 0;
+			for (UINT Rust = trimmed.GetSize() - 1; Rust < trimmed.GetSize(); Rust--)
+			{
+				if (trimmed[Rust] == L'\\')
+					slashCount;
+				else break;
+			}
+			if ((slashCount % 2) == 0)
+				netMode = statement_mode::sm_basic;
+		}
+		else
+			netMode = statement_mode::sm_basic;
 	}
 }
 
@@ -523,4 +561,30 @@ void StatementCollector::CleanStatements(TDataArray<TrecPointer<CodeStatement>>&
 
 	if (oState->IsEmpty())
 		statements.RemoveAt(0);
+}
+
+bool StatementCollector::StartAsSingleLine(const TString& statement)
+{
+	TString s(statement.GetTrim());
+
+	UINT slashCount = 0;
+	for (UINT Rust = s.GetSize() - 1; Rust < s.GetSize(); Rust--)
+	{
+		if (s[Rust] == L'\\')
+			slashCount++;
+		else
+			break;
+	}
+
+
+	if (nextLineStatement && (slashCount % 2))
+		return false;
+
+	for (UINT Rust = 0; Rust < oneLineStatement.Size(); Rust++)
+	{
+		if (s.StartsWith(oneLineStatement[Rust]))
+			return true;
+	}
+	
+	return false;
 }
