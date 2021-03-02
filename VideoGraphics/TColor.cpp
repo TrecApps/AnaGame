@@ -277,6 +277,22 @@ color_struct TColor::GetColor()const
 	return color;
 }
 
+// Algorithm provided by https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
+
+float hueToRgb(float p, float q, float t) {
+	if (t < 0.0f)
+		t += 1.0f;
+	if (t > 1.0f)
+		t -= 1.0f;
+	if (t < 1.0f / 6.0f)
+		return p + (q - p) * 6.0f * t;
+	if (t < 1.0f / 2.0f)
+		return q;
+	if (t < 2.0f / 3.0f)
+		return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
+	return p;
+}
+
 TColor TColor::GetColorFromString(const TString& color, bool& worked)
 {
 	TString tempColor(color);
@@ -345,6 +361,51 @@ TColor TColor::GetColorFromString(const TString& color, bool& worked)
 			if (w)
 			{
 				return TColor(rgbf[0] / 255.0f, rgbf[1] / 255.0f, rgbf[2] / 255.0f);
+			}
+		}
+	}
+
+	// Algorithm provided by https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
+	if (tempColor.StartsWith(L"hsl(") && tempColor.EndsWith(L")"))
+	{
+		tempColor.Set(tempColor.SubString(4, tempColor.GetSize() - 1));
+		auto colors = tempColor.split(L',');
+
+		if (colors->Size() == 3)
+		{
+			float hslf[] = {
+				   0.0f,0.0f,0.0f
+			};
+			bool w = true;
+			for (UINT Rust = 0; Rust < 3 && w; Rust++)
+			{
+				colors->at(Rust).Trim();
+				if (Rust)
+				{
+					if (colors->at(Rust).EndsWith(L'%'))
+						colors->at(Rust).Set(colors->at(Rust).SubString(0, colors->at(Rust).GetSize() - 1));
+					colors->at(Rust).Trim();
+				}
+				if (colors->at(Rust).ConvertToFloat(hslf[Rust]))
+					w = false;
+			}
+
+			if (w)
+			{
+				if (hslf[1] > 1.0f)
+					hslf[1] /= 100.0f;
+				if (hslf[2] > 1.0f)
+					hslf[2] /= 100.0f;
+
+				if (!hslf[1])
+					return TColor(1.0f, 1.0f, 1.0f);
+
+				float q = hslf[2] < 0.5f ? hslf[2] * (1.0f + hslf[1]) : hslf[2] + hslf[1] - hslf[2] * hslf[1];
+				float p = 2.0f * hslf[2] - q;
+
+				return TColor(hueToRgb(p, q, hslf[0] + 1.0f/3.0f),
+					hueToRgb(p, q, hslf[0]),
+					hueToRgb(p, q, hslf[0] - 1.0f / 3.0f));
 			}
 		}
 	}
