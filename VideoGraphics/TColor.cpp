@@ -297,5 +297,58 @@ TColor TColor::GetColorFromString(const TString& color, bool& worked)
 			return TColor(r / 255.0f, g / 255.0f, b / 255.0f);
 		}
 	}
+
+	if (tempColor.StartsWith(L"#"))
+	{
+		UINT hexValue = 0;
+		bool w = TString::ConvertStringToUint(tempColor.SubString(1), hexValue, number_base::nb_hexadecimal);
+		if (w)
+		{
+			worked = true;
+			byte vals[4];
+			vals[0] = (hexValue & 0xff000000) >> 24;
+			vals[1] = (hexValue & 0x00ff0000) >> 16;
+			vals[2] = (hexValue & 0x0000ff00) >> 8;
+			vals[3] = hexValue & 0x000000ff;
+
+			float f0 = static_cast<float>(vals[0]) / 255.0f;
+			float f1 = static_cast<float>(vals[1]) / 255.0f;
+			float f2 = static_cast<float>(vals[2]) / 255.0f;
+			float f3 = static_cast<float>(vals[3]) / 255.0f;
+			
+			if (vals[0])
+			{
+				return TColor(f0, f1, f2, f3);
+			}
+			else
+				return TColor(f1, f2, f3);
+		}
+	}
+
+	if (tempColor.StartsWith(L"rgb(") && tempColor.EndsWith(L")"))
+	{
+		tempColor.Set(tempColor.SubString(4, tempColor.GetSize() - 1));
+		auto colors = tempColor.split(L',');
+
+		if (colors->Size() == 3)
+		{
+			float rgbf[] = {
+				0.0f,0.0f,0.0f
+			};
+			bool w = true;
+			for (UINT Rust = 0; Rust < 3 && w; Rust++)
+			{
+				colors->at(Rust).Trim();
+				if(colors->at(Rust).ConvertToFloat(rgbf[Rust]))
+					w = false;
+			}
+			if (w)
+			{
+				return TColor(rgbf[0] / 255.0f, rgbf[1] / 255.0f, rgbf[2] / 255.0f);
+			}
+		}
+	}
+
+
 	return TColor();
 }
