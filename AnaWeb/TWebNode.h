@@ -7,6 +7,21 @@
 #include "AnaWeb.h"
 
 /**
+ * Enum Class: WebSizeUnit
+ * Purpose: Represents a unit a size value is given in
+ */
+typedef enum class WebSizeUnit
+{
+    wsu_px, // pixel
+    wsu_in, // inch
+    wsu_pt, // points
+    wsu_cm, // centimeter
+    wsu_mm, // millimeter
+    wsu_em, // element relativity
+    wsu_bl  // Blank
+}WebSizeUnit;
+
+/**
  * Enum Class: WebNodeDisplayOutside
  * Purpose: Easy means of managing how the Node is supposed to appear
  */
@@ -146,6 +161,8 @@ public:
     BorderData(const BorderData& copy);
 
     void CompileAttributes(TString& atts, border_side side);
+
+    void CompileBorder(TString& atts, border_side size);
 
     border_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
     USHORT thick, topThick, bottomThick, rightThick, leftThick;

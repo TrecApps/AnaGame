@@ -2050,3 +2050,90 @@ BorderData::BorderData(const BorderData& copy)
 void BorderData::CompileAttributes(TString& atts, border_side side)
 {
 }
+
+void BorderData::CompileBorder(TString& atts, border_side size)
+{
+	atts.Trim();
+	
+	UINT dpi = GetDpiForSystem();
+	float dpif = static_cast<float>(dpi);
+	assert(dpi && dpif);
+	WebSizeUnit unit = WebSizeUnit::wsu_bl;
+
+	if (atts.EndsWith(L"px"))
+	{
+		unit = WebSizeUnit::wsu_px;
+	}
+	if (atts.EndsWith(L"cm"))
+	{
+		unit = WebSizeUnit::wsu_cm;
+	}
+	if (atts.EndsWith(L"mm"))
+	{
+		unit = WebSizeUnit::wsu_mm;
+	}
+	if (atts.EndsWith(L"in"))
+	{
+		unit = WebSizeUnit::wsu_in;
+	}
+	if (atts.EndsWith(L"em"))
+	{
+		unit = WebSizeUnit::wsu_em;
+	}
+	if (atts.EndsWith(L"pt"))
+	{
+		unit = WebSizeUnit::wsu_pt;
+	}
+
+	if (unit != WebSizeUnit::wsu_bl)
+		atts.Set(atts.SubString(0, atts.GetSize() - 2));
+
+	atts.Trim();
+
+	float sizeVal = 0.0f;
+	if (!atts.ConvertToFloat(sizeVal)) {
+		// We were able to get a value out of what was provided
+		switch (unit)
+		{
+		case WebSizeUnit::wsu_cm:
+			sizeVal = sizeVal * 2.54 / dpif;
+			break;
+		case WebSizeUnit::wsu_em:
+			
+			break;
+		case WebSizeUnit::wsu_in:
+			sizeVal = sizeVal / dpif;
+			break;
+		case WebSizeUnit::wsu_mm:
+			sizeVal = sizeVal * 0.254 / dpif;
+			break;
+		case WebSizeUnit::wsu_pt:
+			sizeVal = sizeVal * 72.0f / dpif;
+			break;
+		case WebSizeUnit::wsu_bl:
+		case WebSizeUnit::wsu_px:
+			sizeVal = sizeVal * (dpif / 96.0f);
+		}
+
+		switch (size)
+		{
+		case border_side::bs_bottom:
+			this->bottomThick = sizeVal;
+			break;
+		case border_side::bs_left:
+			this->leftThick = sizeVal;
+			break;
+		case border_side::bs_right:
+			this->rightThick = sizeVal;
+			break;
+		case border_side::bs_top:
+			this->topThick = sizeVal;
+			break;
+		default:
+			this->thick = sizeVal;
+		}
+
+
+	}
+
+}
