@@ -292,11 +292,11 @@ int TControl::loadFromHTML(TFile * ar)
 */
 void TControl::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 {
+	ThreadLock();
 	TString appendable;
 	resetAttributeString(&appendable, childLevel + 1);
 
 	const char* type = typeid(this).name();
-
 
 	// Only write Object type if this object is a pure TControl
 	if (!strcmp( type, "class TControl *"))
@@ -304,7 +304,6 @@ void TControl::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 		appendable.Append(L">TControl");
 		_WRITE_THE_STRING
 	}
-
 
 	if (className.GetSize())
 	{
@@ -350,7 +349,6 @@ void TControl::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 		resetAttributeString(&appendable, childLevel + 1);
 	}
 
-
 	if (dimensions)
 	{
 		if (dimensions->height)
@@ -391,7 +389,6 @@ void TControl::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 		}
 	}
 
-
 	resetAttributeString(&appendable, childLevel + 1);
 
 	if (shape ==TShape::T_Ellipse)
@@ -410,7 +407,6 @@ void TControl::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 		appendable.AppendFormat(L"%f", ellipse.radiusY);
 		_WRITE_THE_STRING;
 	}
-
 
 	if (border1.Get())
 	{
@@ -451,6 +447,7 @@ void TControl::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 	resetAttributeString(&appendable, childLevel + 1);
 	ar->WriteString(appendable);
 	ar->WriteString(L"/\n");
+	ThreadRelease();
 }
 
 /*
@@ -469,13 +466,17 @@ bool TControl::TookTab(TrecPointer<Tab> tab)
 {
 	if(!tab.Get())
 		return false;
-
+	ThreadLock();
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		auto ch = children.ElementAt(Rust);
 		if (ch.Get() && ch->TookTab(tab))
+		{
+			ThreadRelease();
 			return true;
+		}
 	}
+	ThreadRelease();
 	return false;
 }
 
@@ -489,7 +490,7 @@ bool TControl::TookTab(TrecPointer<Tab> tab)
 */
 bool TControl::onCreate(D2D1_RECT_F contain, TrecPointer<TWindowEngine> d3d)
 {
-
+	ThreadLock();
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|FixedHeight"));
 	if (valpoint.Get())
 	{
@@ -589,26 +590,6 @@ TrecPointer<styleTable> classy;
 		}
 	}
 
-	/*
-	valpoint = attributes.retrieveEntry(TString(L"|Class"));
-	
-	if (valpoint.Get())
-	{
-		className = *valpoint.Get();
-		if (styles.Get())
-		{
-			
-			for (int c = 0; c < styles->Size(); c++)
-			{
-				if (styles->at(c)->style == className)
-				{
-					classy = styles->at(c);
-					break;
-				}
-			}
-		}
-	}
-	*/
 	valpoint = attributes.retrieveEntry(TString(L"|id"));
 	if (valpoint.Get())
 	{
@@ -792,21 +773,8 @@ TrecPointer<styleTable> classy;
 			animateData.push_back(animate);
 		}
 	}
-	///* Check the status of the scroll bars. By default, they are off.
-	// * If the default holds, then the location of the TControl will have
-	// * to be contained. However, if scrollBars are present, then the
-	// * actual size of the TControl, represented by it's location, could theoretically
-	// * be as large as the developer desires. The Snip will serve as the location to draw */
-	//valpoint = attributes.retrieveEntry(TString(L"|VerticalScroll"));
-	//if (valpoint.Get() && !valpoint->Compare(L"True") && !vScroll.Get()) // don't make a new one if one already exists
-	//	vScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this,ScrollOrient::so_vertical);
-
-	//valpoint = attributes.retrieveEntry(TString(L"|HorizontalScroll"));
-	//if(valpoint.Get() && !valpoint->Compare(L"True") && !hScroll.Get())
-	//	hScroll = TrecPointerKey::GetNewTrecPointer<TScrollBar>(*this,ScrollOrient::so_horizontal);
 
 	Resize(contain);
-
 
 
 	onCreateClassAndId(contain);
@@ -815,11 +783,6 @@ TrecPointer<styleTable> classy;
 	                       // a style attribute from a style spec and that of the controls' spec, the latter is used 
 	onCreate2(&attributes, contain);
 	onCreate3(&attributes, contain);
-
-
-
-
-
 
 	int occ = 0;
 	valpoint = attributes.retrieveEntry(TString(L"|ContainerLoc"), occ);
@@ -873,6 +836,7 @@ TrecPointer<styleTable> classy;
 
 		animateData.push_back(animate);
 	}
+	ThreadRelease();
 	return true;
 }
 
@@ -885,7 +849,7 @@ TrecPointer<styleTable> classy;
 void TControl::Resize(D2D1_RECT_F& rr)
 {
 	// Updated Code
-
+	ThreadLock();
 
 	if (SetScrollControlOnMinSize(rr))
 	{
@@ -895,14 +859,12 @@ void TControl::Resize(D2D1_RECT_F& rr)
 		float difWidth = location.left - rr.left;
 		location.left -= difWidth;
 		location.right -= difWidth;
-
+		ThreadRelease();
 		return;
 	}
-
 	if (isSnipZero(location) || ((location.bottom - location.top) != (rr.bottom - rr.top))
 		|| (location.right - location.left != rr.right - rr.left))
 	{
-
 		checkMargin(rr);
 		checkHeightWidth(rr);
 
@@ -937,7 +899,6 @@ void TControl::Resize(D2D1_RECT_F& rr)
 				location.right = rr.right - margin.right;
 			}
 		}
-
 		if (vScroll.Get())
 		{
 			if (dimensions && dimensions->height)
@@ -949,8 +910,6 @@ void TControl::Resize(D2D1_RECT_F& rr)
 			}
 			else
 				location = rr; // if conlfict with hScroll, next code will resolve
-
-
 		}
 		else if (marginPriority)
 		{
@@ -959,7 +918,6 @@ void TControl::Resize(D2D1_RECT_F& rr)
 			if (dimensions && dimensions->height)
 				dimensions->height = location.bottom - location.top;
 		}
-
 		if (hScroll.Get())
 		{
 			if (dimensions && dimensions->width)
@@ -974,8 +932,6 @@ void TControl::Resize(D2D1_RECT_F& rr)
 				location.left = rr.left + margin.left;
 				location.right = rr.right - margin.right;
 			}
-
-
 		}
 		else if (marginPriority)
 		{
@@ -993,6 +949,7 @@ void TControl::Resize(D2D1_RECT_F& rr)
 
 		onScroll(x, y);
 	}
+	ThreadRelease();
 }
 
 /*
@@ -1004,6 +961,7 @@ void TControl::Resize(D2D1_RECT_F& rr)
 */
 bool TControl::setEventHandler(EventTarget & eh)
 {
+	ThreadLock();
 	for (int c = 0; c < children.Count(); c++)
 	{
 		TControl* tc = children.ElementAt(c).Get();
@@ -1011,6 +969,7 @@ bool TControl::setEventHandler(EventTarget & eh)
 			tc->setEventHandler(eh);
 	}
 	eventHandler = &eh;
+	ThreadRelease();
 	return true;
 }
 
@@ -1022,7 +981,9 @@ bool TControl::setEventHandler(EventTarget & eh)
 */
 void TControl::updateArrayID(int aid)
 {
+	ThreadLock();
 	arrayID = aid;
+	ThreadRelease();
 }
 
 /* Purpose: to allow the TControl to shift it's contents according to how it is scrolled.
@@ -1037,6 +998,7 @@ void TControl::updateArrayID(int aid)
  */
 bool TControl::onScroll(float x, float y)
 {
+	ThreadLock();
 	location.left += x;
 	location.right += x;
 	location.bottom += y;
@@ -1048,8 +1010,9 @@ bool TControl::onScroll(float x, float y)
 			continue;
 		cont->onBeingScrolled(x, y);
 	}
-
 	updateComponentLocation();
+	ThreadRelease();
+
 	// CheckScroll();
 	return false;
 }
@@ -1064,12 +1027,12 @@ bool TControl::onScroll(float x, float y)
 */
 bool TControl::onBeingScrolled(float x, float y)
 {
+	ThreadLock();
 	// Update real location of TControl
 	location.left += x;
 	location.right += x;
 	location.bottom += y;
 	location.top += y;
-
 
 	for (int c = 0; c < children.Count(); c++)
 	{
@@ -1081,6 +1044,7 @@ bool TControl::onBeingScrolled(float x, float y)
 
 	updateComponentLocation();
 	CheckScroll();
+	ThreadRelease();
 	return false;
 }
 
@@ -1092,6 +1056,7 @@ bool TControl::onBeingScrolled(float x, float y)
 */
 void TControl::AddClass(const TString & t)
 {
+	ThreadLock();
 	TString trimmedT = t.GetTrim();
 	if (className.GetSize())
 	{
@@ -1101,6 +1066,7 @@ void TControl::AddClass(const TString & t)
 	}
 	else
 		className = trimmedT;
+	ThreadRelease();
 }
 /*
 * Method: TControl::GetID
@@ -1110,7 +1076,10 @@ void TControl::AddClass(const TString & t)
 */
 TString TControl::GetID()
 {
-	return ID;
+	ThreadLock();
+	TString ret(ID);
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1121,12 +1090,15 @@ TString TControl::GetID()
 */
 void TControl::SetNormalMouseState()
 {
+	ThreadLock();
 	mState = messageState::normal;
+	ThreadRelease();
 }
 
 TrecPointer<TControl> TControl::QueryVideoControl()
 {
 	TrecPointer<TControl> ret;
+	ThreadLock();
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		auto ch = children.ElementAt(Rust);
@@ -1136,17 +1108,19 @@ TrecPointer<TControl> TControl::QueryVideoControl()
 		if (ret.Get())
 			break;
 	}
+	ThreadRelease();
 	return ret;
 }
 
 void TControl::QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		if (children.ElementAt(Rust).Get())
 			children.ElementAt(Rust)->QueryMediaControl(mediaControls);
-
 	}
+	ThreadRelease();
 }
 
 /**
@@ -1159,6 +1133,7 @@ TDataArray<TString> TControl::GetMultiData(const TString& key)
 {
 	TDataArray<TString> ret;
 
+	ThreadLock();
 	TrecPointer<TString> value = attributes.retrieveEntry(key);
 	UINT occ = 1;
 	while (value.Get())
@@ -1166,7 +1141,7 @@ TDataArray<TString> TControl::GetMultiData(const TString& key)
 		ret.push_back(*value.Get());
 		value = attributes.retrieveEntry(key, occ++);
 	}
-
+	ThreadRelease();
 	return ret;
 }
 
@@ -1178,6 +1153,8 @@ TDataArray<TString> TControl::GetMultiData(const TString& key)
  */
 bool TControl::SetScrollControlOnMinSize(D2D1_RECT_F l)
 {
+	ThreadLock();
+	bool ret = false;
 	if (dimensions)
 	{
 		bool h = dimensions->minHeight > static_cast<int>(l.bottom - l.top);
@@ -1191,11 +1168,12 @@ bool TControl::SetScrollControlOnMinSize(D2D1_RECT_F l)
 				auto oldParent = parent;
 				dynamic_cast<TScrollerControl*>(scrollControl.Get())->SetChildControl(TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
 				oldParent->SwitchChildControl(tThis, scrollControl);
-				return true;
+				ret = true;
 			}
 		}
 	}
-	return false;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -1207,6 +1185,7 @@ bool TControl::SetScrollControlOnMinSize(D2D1_RECT_F l)
  */
 void TControl::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPointer<TControl> newControl)
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		if (children.ElementAt(Rust).Get() == curControl.Get())
@@ -1216,6 +1195,7 @@ void TControl::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoin
 			break;
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -1226,11 +1206,14 @@ void TControl::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoin
  */
 TrecPointer<TParentHolder> TControl::GetParentReference()
 {
+	ThreadLock();
 	if (!thisParent.Get())
 	{
 		thisParent = TrecPointerKey::GetNewTrecPointerAlt<TParentHolder, TControlParentHolder>(tThis);
 	}
-	return thisParent;
+	auto ret = thisParent;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1241,12 +1224,17 @@ TrecPointer<TParentHolder> TControl::GetParentReference()
 */
 void TControl::onDraw(TObject* obj)
 {
+	ThreadLock();
 	if (!isActive)
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if ((location.bottom - location.top) < 1 || (location.right - location.left) < 1)
+	{
+		ThreadRelease();
 		return;
-
+	}
 	ID2D1Layer* layer = nullptr;
 
 	if (vScroll.Get() || hScroll.Get())
@@ -1333,7 +1321,8 @@ void TControl::onDraw(TObject* obj)
 	{
 		drawingBoard->PopLayer();
 	}
-		layer = nullptr;
+	layer = nullptr;
+	ThreadRelease();
 }
 
 /*
@@ -1344,7 +1333,10 @@ void TControl::onDraw(TObject* obj)
 */
 D2D1_RECT_F TControl::getLocation()
 {
-	return location;
+	ThreadLock();
+	auto ret = location;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1355,7 +1347,10 @@ D2D1_RECT_F TControl::getLocation()
 */
 D2D1_RECT_F TControl::getMargin()
 {
-	return margin;
+	ThreadLock();
+	auto ret = margin;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1366,7 +1361,10 @@ D2D1_RECT_F TControl::getMargin()
 */
 TrecPointer<DrawingBoard> TControl::getDrawingBoard()
 {
-	return drawingBoard;
+	ThreadLock();
+	auto ret = drawingBoard;
+	ThreadRelease();
+	return ret;;
 }
 
 /*
@@ -1377,9 +1375,10 @@ TrecPointer<DrawingBoard> TControl::getDrawingBoard()
 */
 TrecPointer<TControl> TControl::getParent()
 {
-	if (!parent.Get())
-		return TrecPointer<TControl>();
-	return parent->GetParent();
+	ThreadLock();
+	auto ret = parent.Get() ? parent->GetParent() : TrecPointer<TControl>();
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1390,6 +1389,7 @@ TrecPointer<TControl> TControl::getParent()
 */
 void TControl::offsetLocation(TPoint cp)
 {
+	ThreadLock();
 	int height = location.bottom - location.top;
 	int width = location.right - location.left;
 
@@ -1399,6 +1399,7 @@ void TControl::offsetLocation(TPoint cp)
 	location.right = location.left + width;
 
 	updateComponentLocation();
+	ThreadRelease();
 }
 
 /*
@@ -1409,6 +1410,7 @@ void TControl::offsetLocation(TPoint cp)
 */
 void TControl::ShiftHorizontal(int degrees)
 {
+	ThreadLock();
 	location.left += degrees;
 	location.right += degrees;
 
@@ -1432,6 +1434,7 @@ void TControl::ShiftHorizontal(int degrees)
 		border2->ShiftHorizontal(degrees);
 	if (border3.Get())
 		border3->ShiftHorizontal(degrees);
+	ThreadRelease();
 }
 
 /*
@@ -1442,6 +1445,7 @@ void TControl::ShiftHorizontal(int degrees)
 */
 void TControl::ShiftVertical(int degrees)
 {
+	ThreadLock();
 	location.top += degrees;
 	location.bottom += degrees;
 
@@ -1465,6 +1469,7 @@ void TControl::ShiftVertical(int degrees)
 		border2->ShiftVertical(degrees);
 	if (border3.Get())
 		border3->ShiftVertical(degrees);
+	ThreadRelease();
 }
 
 /*
@@ -1475,9 +1480,11 @@ void TControl::ShiftVertical(int degrees)
 */
 void TControl::setMinHeight(int h)
 {
+	ThreadLock();
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->minHeight = h;
+	ThreadRelease();
 }
 
 /*
@@ -1488,9 +1495,11 @@ void TControl::setMinHeight(int h)
 */
 void TControl::setMaxHeight(int h)
 {
+	ThreadLock();
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->maxHeight = h;
+	ThreadRelease();
 }
 
 /*
@@ -1501,9 +1510,11 @@ void TControl::setMaxHeight(int h)
 */
 void TControl::setMinWidth(int w)
 {
+	ThreadLock();
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->minWidth = w;
+	ThreadRelease();
 }
 
 /*
@@ -1514,9 +1525,11 @@ void TControl::setMinWidth(int w)
 */
 void TControl::setMaxWidth(int w)
 {
+	ThreadLock();
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->maxWidth = w;
+	ThreadRelease();
 }
 
 /*
@@ -1527,9 +1540,11 @@ void TControl::setMaxWidth(int w)
 */
 void TControl::setWidth(int w)
 {
+	ThreadLock();
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->width = w;
+	ThreadRelease();
 }
 
 /*
@@ -1540,9 +1555,11 @@ void TControl::setWidth(int w)
 */
 void TControl::setHeight(int h)
 {
+	ThreadLock();
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->height = h;
+	ThreadRelease();
 }
 
 /*
@@ -1557,8 +1574,10 @@ void TControl::setHeight(int h)
 bool TControl::addAttribute(const TString& attr, TrecPointer<TString> val)
 {
 	if(!attr.GetSize() || !val.Get())
-	return false;
+		return false;
+	ThreadLock();
 	attributes.addEntry(attr, val);
+	ThreadRelease();
 	return true;
 }
 
@@ -1571,12 +1590,13 @@ bool TControl::addAttribute(const TString& attr, TrecPointer<TString> val)
 bool TControl::addChild(TrecPointer<TControl> tcon)
 {
 	if(!tcon.Get())
-	return false;
+		return false;
+	ThreadLock();
 	children.Add(tcon);
 	
 	tcon->setParent(GetParentReference());
+	ThreadRelease();
 	return true;
-	
 }
 
 /*
@@ -1587,7 +1607,9 @@ bool TControl::addChild(TrecPointer<TControl> tcon)
 */
 void TControl::setLocation(D2D1_RECT_F r)
 {
+	ThreadLock();
 	location = r;
+	ThreadRelease();
 }
 
 /*
@@ -1598,8 +1620,10 @@ void TControl::setLocation(D2D1_RECT_F r)
 */
 void TControl::setMBottom(int b)
 {
+	ThreadLock();
 	margin.bottom = b;
 	marginSet = true;
+	ThreadRelease();
 }
 
 /*
@@ -1610,8 +1634,10 @@ void TControl::setMBottom(int b)
 */
 void TControl::setMTop(int t)
 {
+	ThreadLock();
 	margin.top = t;
 	marginSet = true;
+	ThreadRelease();
 }
 
 /*
@@ -1622,8 +1648,10 @@ void TControl::setMTop(int t)
 */
 void TControl::setMRight(int r)
 {
+	ThreadLock();
 	margin.right = r;
 	marginSet = true;
+	ThreadRelease();
 }
 
 /*
@@ -1634,8 +1662,10 @@ void TControl::setMRight(int r)
 */
 void TControl::setMLeft(int l)
 {
+	ThreadLock();
 	margin.left = l;
 	marginSet = true;
+	ThreadRelease();
 }
 
 /**
@@ -1646,9 +1676,11 @@ void TControl::setMLeft(int l)
  */
 void TControl::RotateDegrees(float degrees)
 {
+	ThreadLock();
 	if (degrees < 0.0f)
 		degrees += 360.0f;
 	rotation = degrees;
+	ThreadRelease();
 }
 
 /**
@@ -1659,7 +1691,9 @@ void TControl::RotateDegrees(float degrees)
  */
 void TControl::RotateRadians(float radians)
 {
+	ThreadLock();
 	RotateDegrees(radians * RADIAN_DEGREE_RATIO);
+	ThreadRelease();
 }
 
 /*
@@ -1670,7 +1704,10 @@ void TControl::RotateRadians(float radians)
 */
 UINT TControl::determineMinHeightNeeded()
 {
-	return location.bottom - location.top;
+	ThreadLock();
+	UINT ret = location.bottom - location.top;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1681,6 +1718,7 @@ UINT TControl::determineMinHeightNeeded()
 */
 void TControl::SetNewLocation(const D2D1_RECT_F& r)
 {
+	ThreadLock();
 	location = r;
 
 	if (text1.Get())
@@ -1722,6 +1760,8 @@ void TControl::SetNewLocation(const D2D1_RECT_F& r)
 	{
 		content3->location = r;
 	}
+	ThreadRelease();
+
 }
 
 /*
@@ -1733,12 +1773,14 @@ void TControl::SetNewLocation(const D2D1_RECT_F& r)
 */
 void TControl::ShrinkHeight()
 {
+	ThreadLock();
 	for (UINT c = 0; c < children.Count(); c++)
 	{
 		if (!children.ElementAt(c).Get())
 			continue;
 		children.ElementAt(c)->ShrinkHeight();
 	}
+	ThreadRelease();
 }
 
 /*
@@ -1750,7 +1792,9 @@ void TControl::ShrinkHeight()
 */
 void TControl::setParent(TrecPointer<TParentHolder> tcp)
 {
+	ThreadLock();
 	parent = tcp;
+	ThreadRelease();
 }
 
 /*
@@ -1761,18 +1805,19 @@ void TControl::setParent(TrecPointer<TParentHolder> tcp)
 */
 TrecPointer<TText> TControl::getText(int n)
 {
+	TrecPointer<TText> ret;
+	ThreadLock();
 	switch (n)
 	{
 	case 1:
-		return text1;
+		ret = text1; break;
 	case 2:
-		return text2;
+		ret = text2; break;
 	case 3:
-		return text3;
-	default:
-		return TrecPointer<TText>();
+		ret = text3; break;
 	}
-
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1783,17 +1828,19 @@ TrecPointer<TText> TControl::getText(int n)
 */
 TrecPointer<TContent> TControl::getContent(int n)
 {
+	TrecPointer<TContent> ret;
+	ThreadLock();
 	switch (n)
 	{
 	case 1:
-		return  content1;
+		ret = content1; break;
 	case 2:
-		return  content2;
+		ret = content2; break;
 	case 3:
-		return  content3;
-	default:
-		return  TrecPointer<TContent>();
+		ret = content3; break;
 	}
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1804,18 +1851,19 @@ TrecPointer<TContent> TControl::getContent(int n)
 */
 TrecPointer<TBorder> TControl::getBorder(int n)
 {
+	TrecPointer<TBorder> ret;
+	ThreadLock();
 	switch (n)
 	{
 	case 1:
-		return  border1;
+		ret = border1; break;
 	case 2:
-		return  border2;
+		ret = border2; break;
 	case 3:
-		return  border3;
-	default:
-		return  TrecPointer<TBorder>();
+		ret = border3; break;
 	}
-	
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -1826,6 +1874,7 @@ TrecPointer<TBorder> TControl::getBorder(int n)
  */
 void TControl::RegisterAnimations(TDataArray<TrecPointer<AnimationData>>& aData)
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		if (children.ElementAt(Rust).Get())
@@ -1837,19 +1886,9 @@ void TControl::RegisterAnimations(TDataArray<TrecPointer<AnimationData>>& aData)
 		aData.push_back(animateData[Rust]);
 	}
 	animateData.RemoveAll();
+	ThreadRelease();
 }
 
-/*
-* Method: TControl::setWrapperPointer
-* Purpose: Sets the wrapper component, DO NOT USE
-* Parameters: TrecPointer<TControl> tcp -  the wrapper control
-* Returns: void
-* Note: DEPRECIATED - Written when TypeSafetyControls were used (functionality being replaced by C++ RTTI
-
-void TControl::setWrapperPointer(TrecPointer<TControl> tcp)
-{
-	//PointerCase = tcp;
-}*/
 
 /*
 * Method: TControl::onCreate
@@ -2186,7 +2225,6 @@ bool TControl::onCreate(TMap<TString>* att, D2D1_RECT_F loc)
 
 		animateData.push_back(animate);
 	}
-
 	return false;
 }
 
@@ -2571,12 +2609,7 @@ bool TControl::onCreate2(TMap<TString>* att, D2D1_RECT_F loc)
 			animateData.push_back(animate);
 		}
 	}
-
-
-
-
 	return false;
-
 }
 
 /*
@@ -2772,7 +2805,6 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
 		}
 		text3->locale = valpoint.Get();
-		;
 	}
 
 	// 
@@ -2943,14 +2975,12 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 			animateData.push_back(animate);
 		}
 	}
-
-
 	return false;
-
 }
 
 bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
 {
+	ThreadLock();
 	auto valpoint = attributes.retrieveEntry(TString(L"|ArrayID"));
 	if (valpoint.Get())
 	{
@@ -3027,26 +3057,6 @@ bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
 		}
 	}
 
-	/*
-	valpoint = attributes.retrieveEntry(TString(L"|Class"));
-
-	if (valpoint.Get())
-	{
-		className = *valpoint.Get();
-		if (styles.Get())
-		{
-
-			for (int c = 0; c < styles->Size(); c++)
-			{
-				if (styles->at(c)->style == className)
-				{
-					classy = styles->at(c);
-					break;
-				}
-			}
-		}
-	}
-	*/
 	valpoint = attributes.retrieveEntry(TString(L"|id"));
 	if (valpoint.Get())
 	{
@@ -3060,6 +3070,8 @@ bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
 			ID = *valpoint.Get();
 		}
 	}
+	ThreadRelease();
+
 	return false;
 }
 
@@ -3071,7 +3083,7 @@ bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
 */
 void TControl::updateComponentLocation()
 {
-	// Borders
+	ThreadLock();
 	if (border1.Get())
 	{
 		border1->loci = location;
@@ -3112,6 +3124,7 @@ void TControl::updateComponentLocation()
 	{
 		content3->location = location;
 	}
+	ThreadRelease();
 
 }
 
@@ -3123,6 +3136,7 @@ void TControl::updateComponentLocation()
  */
 void TControl::CheckScroll()
 {
+	ThreadLock();
 	D2D1_RECT_F area = location;
 
 	bool needV = false, needH = false;
@@ -3177,9 +3191,9 @@ void TControl::CheckScroll()
 	{
 		hScroll.Delete();
 	}
+	ThreadRelease();
+
 }
-
-
 
 
 /*
@@ -3198,9 +3212,10 @@ int TControl::generateImage(TrecPointer<TContent> tcon, TrecPointer<TString> p, 
 	TrecPointer<TFileShell> file = TFileShell::GetFileInfo(*p.Get());
 
 	if (file.Get())
-	{
+	{	
+		ThreadLock();
 		tcon->image = drawingBoard->GetBrush(file, loc);
-
+		ThreadRelease();
 		return tcon->image.Get() ? 0 : 2;
 	}
 
@@ -3215,6 +3230,7 @@ int TControl::generateImage(TrecPointer<TContent> tcon, TrecPointer<TString> p, 
 */
 void TControl::checkMargin(D2D1_RECT_F contain)
 {
+	ThreadLock();
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|Margin"));
 	//margin = RECT{ 0,0,0,0 };
 	if (valpoint.Get())
@@ -3237,6 +3253,7 @@ void TControl::checkMargin(D2D1_RECT_F contain)
 		location.right = location.right - margin.right;
 		location.top = location.top + margin.top;
 	}
+	ThreadRelease();
 }
 
 /*
@@ -3247,8 +3264,7 @@ void TControl::checkMargin(D2D1_RECT_F contain)
 */
 void TControl::checkHeightWidth(D2D1_RECT_F r)
 {
-	//
-
+	ThreadLock();
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|Height"));
 	if (valpoint.Get())
 	{
@@ -3303,6 +3319,7 @@ void TControl::checkHeightWidth(D2D1_RECT_F r)
 		if (dimensions->width > r.right - r.left && !hScroll.Get())
 			dimensions->width = r.right - r.left;
 	}
+	ThreadRelease();
 }
 
 /*
@@ -3314,6 +3331,7 @@ void TControl::checkHeightWidth(D2D1_RECT_F r)
 */
 void TControl::generateSizeControl()
 {
+	ThreadLock();
 	if (!dimensions)
 	{
 		dimensions = new sizeControl;
@@ -3326,6 +3344,7 @@ void TControl::generateSizeControl()
 		dimensions->maxWidth = 0;
 		dimensions->minWidth = 0;
 	}
+	ThreadRelease();
 }
 
 /*
@@ -3336,12 +3355,16 @@ void TControl::generateSizeControl()
 */
 bool TControl::hasEvent(R_Message_Type type)
 {
-
-		for (int c = 0; c < eventList.Size(); c++)
+	ThreadLock();
+	for (int c = 0; c < eventList.Size(); c++)
+	{
+		if ((eventList)[c].eventType == type)
 		{
-			if ((eventList)[c].eventType == type)
-				return true;
+			ThreadRelease();
+			return true;
 		}
+	}
+	ThreadRelease();
 	return false;
 }
 
@@ -3353,8 +3376,7 @@ bool TControl::hasEvent(R_Message_Type type)
 */
 void TControl::resetArgs()
 {
-	
-
+	ThreadLock();
 	args.control = this;
 	args.isClick = false;
 	args.isLeftClick = false;
@@ -3365,6 +3387,7 @@ void TControl::resetArgs()
 	args.text.Empty();
 	args.type = L'\0';
 	args.object.Nullify();
+	ThreadRelease();
 }
 
 /*
@@ -3375,13 +3398,17 @@ void TControl::resetArgs()
 */
 int TControl::getEventID(R_Message_Type type)
 {
-
+	ThreadLock();
 	for (int c = 0; c < eventList.Size(); c++)
 	{
 		if (eventList[c].eventType == type)
-			return eventList.at(c).eventID;
+		{
+			int ret = eventList.at(c).eventID;
+			ThreadRelease();
+			return ret;
+		}
 	}
-	
+	ThreadRelease();
 	return -1;
 }
 
@@ -3393,6 +3420,7 @@ int TControl::getEventID(R_Message_Type type)
 */
 void TControl::SetToRenderTarget()
 {
+	ThreadLock();
 	if (border1.Get())
 		border1->drawingBoard = drawingBoard;
 	if (border2.Get())
@@ -3413,6 +3441,7 @@ void TControl::SetToRenderTarget()
 		text2->drawingBoard = drawingBoard;
 	if (text3.Get())
 		text3->drawingBoard = drawingBoard;
+	ThreadRelease();
 }
 
 /*
@@ -3424,13 +3453,13 @@ void TControl::SetToRenderTarget()
 */
 void TControl::addEventID(R_Message_Type rmt, int e_id)
 {
+	ThreadLock();
 	EventTypeID et;
 	et.eventID = e_id;
 	et.eventType = rmt;
 	eventList.push_back(et);
+	ThreadRelease();
 }
-
-
 
 
 // Messages TControls can expect to get from the Central Program (or when they are part of a running TAP
@@ -3446,9 +3475,12 @@ void TControl::addEventID(R_Message_Type rmt, int e_id)
 */
 afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (!isActive)
+	{
+		ThreadRelease();
 		return;
-
+	}
 	for (int c = 0; c < children.Count(); c++)
 	{
 		children.ElementAt(c)->OnRButtonUp(nFlags, point, mOut,eventAr);
@@ -3457,6 +3489,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 	{
 		mState = messageState::normal;
 		isRClick = false;
+		ThreadRelease();
 		return;
 	}
 
@@ -3490,7 +3523,6 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 
 	isRClick = false;
 
-
 	if (*mOut == messageOutput::positiveContinue)
 	{
 		if (mState ==messageState::mouseRClick)
@@ -3512,6 +3544,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		}
 	}
 	mState =messageState::mouseHover;
+	ThreadRelease();
 }
 
 /*
@@ -3526,9 +3559,12 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 */
 afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
+	ThreadLock();
 	if (!isActive)
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (vScroll.Get() && vScroll->OnLButtonDown(nFlags, point, mOut))
 	{
 		*mOut = messageOutput::positiveScroll;
@@ -3538,8 +3574,8 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.methodID = -1;
 		args.isClick = args.isLeftClick = true;
 		args.control = nullptr;;
-
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), vScroll));
+		ThreadRelease();
 		return;
 	}
 
@@ -3566,6 +3602,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		}
 		else
 			*mOut = messageOutput::negative;
+		ThreadRelease();
 		return;
 	}
 
@@ -3580,6 +3617,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 	if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
 	{
 		mState = messageState::normal;
+		ThreadRelease();
 		return;
 	}
 
@@ -3613,7 +3651,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_L_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
-
+	ThreadRelease();
 }
 
 /*
@@ -3628,6 +3666,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 */
 afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
+	ThreadLock();
 	if (!isActive)
 		return;
 
@@ -3641,16 +3680,19 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		}
 		else
 			*mOut = messageOutput::negative;
-
+		ThreadRelease();
 		return;
 	}
-	for (int c = 0; c < children.Count();c++)
+	for (int c = 0; c < children.Count(); c++)
 	{
-		children.ElementAt(c)->OnRButtonDown(nFlags, point, mOut,eventAr, clickedControls);
+		children.ElementAt(c)->OnRButtonDown(nFlags, point, mOut, eventAr, clickedControls);
 		if (*mOut == messageOutput::negative)
 			continue;
 		if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
+		{
+			ThreadRelease();
 			return;
+		}
 	}
 	if (*mOut == messageOutput::positiveContinue || *mOut == messageOutput::positiveContinueUpdate)
 	{
@@ -3673,6 +3715,7 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		eventAr.push_back(EventID_Cred( R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 	isRClick = true;
+	ThreadRelease();
 }
 
 /*
@@ -3687,9 +3730,12 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 */
 afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
+	ThreadLock();
 	if (!isActive)
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (!isContained(point, getLocation()))
 	{
 		if (mState != messageState::normal)
@@ -3724,11 +3770,9 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 					break;
 				}
 			}
-
-
 		}
 
-
+		ThreadRelease();
 		return;
 	}
 
@@ -3743,6 +3787,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 	if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
 	{
 		clickedControls.push_back(this);
+		ThreadRelease();
 		return;
 	}
 
@@ -3781,23 +3826,9 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 		
 	}
 	clickedControls.push_back(this);
+	ThreadRelease();
 }
 
-/*
-* Method: TControl::OnContextMenu
-* Purpose: Allows Anaface to catch onContextMenu calls from MFC
-* Parameters: CWnd* pWnd - The window involved
-*				TPoint point - the point on screen where the event occured
-*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
-* Returns: void
-* Note: UNUSED - Anaface's own Context Menu system is preferable
-
-afx_msg void TControl::OnContextMenu(CWnd* pWnd, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
-{
-	if (!isActive)
-		return;
-}*/
 
 
 /**
@@ -3812,6 +3843,8 @@ afx_msg void TControl::OnContextMenu(CWnd* pWnd, TPoint point, messageOutput* mO
  */
 bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
+	bool ret = false;
 	if (!isContained(point, location))
 	{
 		mState = messageState::normal;
@@ -3824,10 +3857,12 @@ bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 		args.isLeftClick = false;
 		args.control = this;
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Hover_Leave, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
-		return true;
+		ret = true;
 	}
-	return false;
+	ThreadRelease();
+	return ret;
 }
+
 /*
 * Method: TControl::OnLButtonDblClk
 * Purpose: Allows control to catch the DOuble Click event and act accordingly
@@ -3837,13 +3872,14 @@ bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-
-
 void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (!isActive)
+	{
+		ThreadRelease();
 		return;
-
+	}
 
 	if (!isContained(point, getLocation()))
 	{
@@ -3854,6 +3890,7 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 		}
 		else
 			*mOut = messageOutput::negative;
+		ThreadRelease();
 		return;
 	}
 	for (int c = 0; c < children.Count(); c++)
@@ -3862,7 +3899,10 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 		if (*mOut == messageOutput::negative)
 			continue;
 		if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
+		{
+			ThreadRelease();
 			return;
+		}
 	}
 	if (*mOut == messageOutput::positiveContinue || *mOut == messageOutput::positiveContinueUpdate)
 	{
@@ -3884,7 +3924,7 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 		args.control = this;
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_LDoubleClick, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
-
+	ThreadRelease();
 }
 
 /*
@@ -3898,18 +3938,12 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 */
 afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (!isActive)
-		return;
-
-	/*if (!parent.Get())
 	{
-		for (int c = 0; c < TextList.Size(); c++)
-		{
-			if (TextList[c])
-				TextList[c]->OnLButtonUp(nFlags, point, mOut,eventAr);
-		}
-	}*/
-
+		ThreadRelease();
+		return;
+	}
 
 	for (int c = 0; c < children.Count(); c++)
 	{
@@ -3924,6 +3958,7 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		mState = messageState::normal;
 		*mOut = messageOutput::negative;
 		isLClick = false;
+		ThreadRelease();
 		return;
 	}
 
@@ -3959,6 +3994,7 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 	isLClick = false;
+	ThreadRelease();
 }
 
 /*
@@ -3974,9 +4010,12 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 */
 afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (!isActive)
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	TControl* tcCall = NULL;
 	for (int c = 0; c < children.Count(); c++)
 	{
@@ -3995,12 +4034,11 @@ afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlag
 				args.control = this;
 				eventAr.push_back(EventID_Cred( R_Message_Type::On_Char, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
-
+			ThreadRelease();
 			return true;
 		}
-		
-		
 	}
+	ThreadRelease();
 	return false;
 }
 
@@ -4016,6 +4054,7 @@ afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlag
 */
 afx_msg void TControl::Builder_OnLButtonUp(UINT flags, TPoint point, TControl** mOut)
 {
+	ThreadLock();
 	for (int c = 0; c < children.Count();c++)
 	{
 		if (!children.ElementAt(c).Get())
@@ -4024,6 +4063,8 @@ afx_msg void TControl::Builder_OnLButtonUp(UINT flags, TPoint point, TControl** 
 		tc->Builder_OnLButtonUp(flags, point, mOut);
 	}
 	rightBorder = leftBorder = topBorder = bottomBorder = onClickFocus = false;
+	ThreadRelease();
+
 }
 
 /*
@@ -4037,6 +4078,7 @@ afx_msg void TControl::Builder_OnLButtonUp(UINT flags, TPoint point, TControl** 
 */
 afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl** mOut, messageOutput* o)
 {
+	ThreadLock();
 	for (int c = 0; c < children.Count();c++)
 	{
 		if (!children.ElementAt(c).Get()|| !children.ElementAt(c).Get())
@@ -4046,6 +4088,7 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		if (*o != messageOutput::negative && *o != messageOutput::negativeUpdate)
 		{
 			onFocus = onClickFocus = leftBorder = rightBorder = topBorder = bottomBorder = false; // other focus flags rendered false by LButtonUp method
+			ThreadRelease();
 			return;
 		}
 	}
@@ -4071,6 +4114,7 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		rightBorder = false;
 		topBorder = false;
 		bottomBorder = false;
+		ThreadRelease();
 		return;
 	}
 	if (abs((double)point.x - (double)location.right) < 5)
@@ -4082,6 +4126,7 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		leftBorder = false;
 		topBorder = false;
 		bottomBorder = false;
+		ThreadRelease();
 		return;
 	}
 	if (abs((double)point.y - (double)location.top) < 5)
@@ -4093,6 +4138,7 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		leftBorder = false;
 		topBorder = true;
 		bottomBorder = false;
+		ThreadRelease();
 		return;
 	}
 	if (abs((double)point.y - (double)location.bottom) < 5)
@@ -4104,9 +4150,10 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		leftBorder = false;
 		topBorder = false;
 		bottomBorder = true;
+		ThreadRelease();
 		return;
 	}
-
+	ThreadRelease();
 }
 
 /*
@@ -4121,10 +4168,11 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 */
 afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOut, const RECT& bounds, messageOutput* o)
 {
+	ThreadLock();
 	if (!onClickFocus)
 	{
 		TControl* point;
-		for (int c = 0; c < children.Count();c++)
+		for (int c = 0; c < children.Count(); c++)
 		{
 			point = children.ElementAt(c).Get();
 			if (point)
@@ -4132,8 +4180,11 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 				//const TControlHolder** hold = &PointerCase;
 				//point->Builder_OnMouseMove(flags, cp, mOut, location, o);
 			}
-			if (*o == messageOutput::negative && *o == messageOutput::negativeUpdate) // then it is positive
+			if (*o == messageOutput::negative || *o == messageOutput::negativeUpdate) // then it is positive
+			{
+				ThreadRelease();
 				return;
+			}
 		}
 	}
 
@@ -4176,7 +4227,7 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 				border3->loci.left = location.left;
 			}
 			
-
+			ThreadRelease();
 			return;
 		}
 		if (rightBorder)
@@ -4213,7 +4264,7 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 			{
 				border3->loci.right = location.right;
 			}
-
+			ThreadRelease();
 
 			return;
 		}
@@ -4252,7 +4303,7 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 			{
 				border3->loci.top = location.top;
 			}
-
+			ThreadRelease();
 			return;
 		}
 		if (bottomBorder)
@@ -4290,10 +4341,11 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 			{
 				border3->loci.bottom = location.bottom;
 			}
-
+			ThreadRelease();
 			return;
 		}
 	} // end if "isContained" if
+	ThreadRelease();
 }
 
 
@@ -4305,7 +4357,9 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 */
 void TControl::setActive(bool act)
 {
+	ThreadLock();
 	isActive = act;
+	ThreadRelease();
 }
 
 /**
@@ -4316,7 +4370,10 @@ void TControl::setActive(bool act)
  */
 bool TControl::GetActive()
 {
-	return isActive;
+	ThreadLock();
+	bool ret = isActive;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -4327,7 +4384,10 @@ bool TControl::GetActive()
 */
 EventArgs TControl::getEventArgs()
 {
-	return args;
+	ThreadLock();
+	auto ret = args;
+	ThreadRelease();
+	return ret;
 }
 
 /**
