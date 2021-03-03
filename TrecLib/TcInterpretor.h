@@ -22,7 +22,7 @@ const COMPILE_TYPE USE_REGISTR = 0x0008;  // Code that can support Registers. Ma
  * Class: TcVariableHolder
  * Purpose: Holds Variables, including value, type and mutbility status
  */
-class TcVariableHolder
+class _TREC_LIB_DLL TcVariableHolder
 {
 public:
     bool mut;                       // Is this variable mutable
@@ -62,7 +62,7 @@ typedef enum class return_mode
  * Class: ReturnObject
  * Purpose: Represents information returned from an operation
  */
-class ReturnObject
+class _TREC_LIB_DLL ReturnObject
 {
 public:
     TString errorMessage;               // String Information
@@ -112,7 +112,7 @@ public:
  * 
  * SuperClass: TVariable
  */
-class TcInterpretor :
+class _TREC_LIB_DLL TcInterpretor :
     public TVariable
 {
 public:
@@ -314,6 +314,16 @@ public:
      */
     virtual void SetSelf(TrecPointer<TVariable>) override;
 
+    /**
+     * Method: TcInterpretor::ProcessIndividualStatement
+     * Purpose: Allows an Interpretor to process a statement 
+     * Parameters: const TString& statement - the statemnt to process
+     *              ReturnObject& ret - offers return information
+     * Returns: void
+     * 
+     * Attributes: abstract
+     */
+    virtual void ProcessIndividualStatement(const TString& statement, ReturnObject& ret) = 0;
 protected:
 
     /**
