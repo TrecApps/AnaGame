@@ -118,30 +118,11 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
         ThreadRelease();
         return ret;
     }
-    for (UINT Rust = 0; Rust < sampleSize; Rust++)
-    {
-        IMFMediaBuffer* buff = nullptr;
-        ret = pSample->GetBufferByIndex(Rust,&buff);
-        if (SUCCEEDED(ret))
-        {
-            // buff->Lock();
-            IMF2DBuffer* buff2D = nullptr;
-            if (SUCCEEDED(buff->QueryInterface(__uuidof(IMF2DBuffer), (void**)&buff2D)))
-            {
-
-                
-                BYTE* data = nullptr;
-                DWORD length = 0;
-                if (SUCCEEDED(buff->Lock(&data, nullptr, &length)))
-                {
-
-                }
-            }
-        }
-    }
+    auto uSample = (IUnknown*)pSample;
+    samples.Push(uSample);
 
     ThreadRelease();
-    return E_NOTIMPL;
+    return S_OK;
 }
 
 HRESULT TStreamSink::BeginGetEvent(IMFAsyncCallback* pCallback, IUnknown* punkState)
@@ -166,5 +147,5 @@ HRESULT TStreamSink::QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtend
 
 bool TStreamSink::CheckShutdown()
 {
-    return false;
+    return isShutdown;
 }

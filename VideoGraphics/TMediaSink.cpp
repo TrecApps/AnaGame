@@ -154,8 +154,9 @@ HRESULT TMediaSink::SetPresentationClock(__RPC__in_opt IMFPresentationClock* pPr
         return MF_E_SHUTDOWN;
     }
     if (m_clock)
-        m_clock->Release();
+        m_clock->RemoveClockStateSink(this);
     m_clock = pPresentationClock;
+    m_clock->AddClockStateSink(this);
     TObject::ThreadRelease();
     return S_OK;
 }
@@ -166,6 +167,31 @@ HRESULT TMediaSink::Shutdown(void)
     isShutdown = true;
     
     return MF_E_SHUTDOWN;
+}
+
+HRESULT TMediaSink::OnClockPause(MFTIME time)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TMediaSink::OnClockRestart(MFTIME time)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TMediaSink::OnClockSetRate(MFTIME time, float rate)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TMediaSink::OnClockStart(MFTIME time, LONGLONG startOffset)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TMediaSink::OnClockStop(MFTIME time)
+{
+    return E_NOTIMPL;
 }
 
 bool TMediaSink::AddStreamSink(TrecComPointer<IMFStreamSink> sink)

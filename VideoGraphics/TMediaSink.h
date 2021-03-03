@@ -11,7 +11,8 @@
  */
 class TMediaSink :
     public TObject,
-    public IMFMediaSink
+    public IMFMediaSink,
+    public IMFClockStateSink
 {
 public:
     // Static method to create the object.
@@ -33,6 +34,12 @@ public:
     STDMETHODIMP SetPresentationClock(__RPC__in_opt IMFPresentationClock* pPresentationClock);
     STDMETHODIMP Shutdown(void);
 
+    // IMFClockStateSink
+    HRESULT OnClockPause(MFTIME time) override;
+    HRESULT OnClockRestart(MFTIME time) override;
+    HRESULT OnClockSetRate(MFTIME time, float rate) override;
+    HRESULT OnClockStart(MFTIME time, LONGLONG startOffset) override;
+    HRESULT OnClockStop(MFTIME time) override;
     // Anagame Alternative Methods
     
 
