@@ -44,11 +44,13 @@ TLayoutEx::~TLayoutEx()
  */
 int TLayoutEx::RemoveChildWithPrejudice(UINT x, UINT y)
 {
+	ThreadLock();
 	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
 		if (lChildren.ElementAt(c)->x == x && lChildren.ElementAt(c)->y == y)
 			lChildren.ElementAt(c)->contain.Delete();
 	}
+	ThreadRelease();
 	return 0;
 }
 
@@ -60,9 +62,12 @@ int TLayoutEx::RemoveChildWithPrejudice(UINT x, UINT y)
  */
 int TLayoutEx::RemoveColumn(UINT c)
 {
-	if(c >= columnLines.Size())
+	ThreadLock();
+	if (c >= columnLines.Size())
+	{
+		ThreadRelease();
 		return 1;
-
+	}
 	int shift = columnLines[c];
 
 	for (UINT C = c + 1; C < columnLines.Size(); C++)
@@ -91,6 +96,7 @@ int TLayoutEx::RemoveColumn(UINT c)
 	{
 		lChildren.RemoveAt(C);
 	}
+	ThreadRelease();
 	return 0;
 }
 
@@ -102,9 +108,12 @@ int TLayoutEx::RemoveColumn(UINT c)
  */
 int TLayoutEx::RemoveRow(UINT c)
 {
+	ThreadLock();
 	if (c >= rowLines.Size())
+	{
+		ThreadRelease();
 		return 1;
-
+	}
 	int shift = rowLines[c];
 
 	for (UINT C = c + 1; C < rowLines.Size(); C++)
@@ -133,6 +142,7 @@ int TLayoutEx::RemoveRow(UINT c)
 	{
 		lChildren.RemoveAt(C);
 	}
+	ThreadRelease();
 	return 0;
 }
 
@@ -144,10 +154,10 @@ int TLayoutEx::RemoveRow(UINT c)
  */
 UINT TLayoutEx::AddRow(UINT size)
 {
-	// rowLines.push_back(size);
-	if (addRow(size,false))
-		return rowLines.Size();
-	return 0;
+	ThreadLock();
+	UINT ret = addRow(size, false) ? rowLines.Size() : 0;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -158,9 +168,10 @@ UINT TLayoutEx::AddRow(UINT size)
  */
 UINT TLayoutEx::AddCol(UINT size)
 {
-	if(addColunm(size, false))
-		return columnLines.Size();
-	return 0;
+	ThreadLock();
+	UINT ret = addColunm(size, false) ? columnLines.Size() : 0;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -172,6 +183,7 @@ UINT TLayoutEx::AddCol(UINT size)
  */
 TrecPointer<TControl> TLayoutEx::RemoveChild(UINT x, UINT y)
 {
+	ThreadLock();
 	TrecPointer<TControl> ret;
 	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
@@ -181,6 +193,7 @@ TrecPointer<TControl> TLayoutEx::RemoveChild(UINT x, UINT y)
 			lChildren.RemoveAt(c);
 		}
 	}
+	ThreadRelease();
 	return ret;
 }
 
@@ -192,7 +205,10 @@ TrecPointer<TControl> TLayoutEx::RemoveChild(UINT x, UINT y)
  */
 bool TLayoutEx::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
-	return TLayout::onCreate(r,d3d);
+	ThreadLock();
+	bool ret = TLayout::onCreate(r,d3d);
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -203,7 +219,9 @@ bool TLayoutEx::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
  */
 void TLayoutEx::onDraw(TObject* obj)
 {
+	ThreadLock();
 	TLayout::onDraw(obj);
+	ThreadRelease();
 }
 
 UCHAR * TLayoutEx::GetAnaGameType()
