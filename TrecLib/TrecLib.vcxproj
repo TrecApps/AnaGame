@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="CodeStatement.h" />
     <ClInclude Include="TBlankNode.h" />
+    <ClInclude Include="TcBashInterpretor.h" />
     <ClInclude Include="TcInterpretor.h" />
     <ClInclude Include="TDataMap.h" />
     <ClInclude Include="TSliceManager.h" />
@@ -203,6 +204,7 @@
   <ItemGroup>
     <ClCompile Include="CodeStatement.cpp" />
     <ClCompile Include="TBlankNode.cpp" />
+    <ClCompile Include="TcBashInterpretor.cpp" />
     <ClCompile Include="TcInterpretor.cpp" />
     <ClCompile Include="TSliceManager.cpp" />
     <ClCompile Include="TStringSlice.cpp" />
