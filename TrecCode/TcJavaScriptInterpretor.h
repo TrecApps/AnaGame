@@ -1,5 +1,6 @@
 #pragma once
 #include <TcInterpretor.h>
+#include <CodeStatement.h>
 
 /**
  * Class: TcJavaScriptInterpretor
@@ -81,5 +82,44 @@ public:
      * Attributes: abstract
      */
     virtual void ProcessIndividualStatement(const TString& statement, ReturnObject& ret) override;
+
+    /**
+     * Method: TcJavaScriptInterpretor::TcInterpretor
+     * Purpose: Constructor
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
+     *              TrecPointer<TEnvironment> env - the environemnt this interpretor runs in
+     * Returns: New TInterpretor Object
+     */
+    TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env);
+
+protected:
+
+    /**
+     * Method: TcJavaScriptInterpretor::PreProcess
+     * Purpose: Allows Interpretors to do a brief scan of the code and id basic syntax errors
+     * Parameters: ReturnObject& ret - info about issues detected
+     *              TDataArray<TrecPointer<CodeStatement>>& statements - statement list to focus on
+     * Returns: void
+     */
+    void PreProcess(ReturnObject& ret, TDataArray<TrecPointer<CodeStatement>>& statements);
+
+    /**
+     * Method: TcJavaScriptInterpretor::PreProcess
+     * Purpose: Allows Interpretors to do a brief scan of the code and id basic syntax errors
+     * Parameters: ReturnObject& ret - info about issues detected
+     *              TDataArray<TrecPointer<CodeStatement>>& statements - statement list to focus on
+     * Returns: void
+     */
+    void PreProcess(ReturnObject& ret, TrecPointer<CodeStatement>& statement);
+
+    /**
+     * List of statements generated
+     */
+    TDataArray<TrecPointer<CodeStatement>> statements;
+
+    /**
+     * Whether the statements are preprocessed and ready to run
+     */
+    bool readyToRun;
 };
 

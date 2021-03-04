@@ -100,6 +100,8 @@ public:
     const static USHORT ERR_IMPROPER_TYPE = 9;
     const static USHORT ERR_IMPROPER_NAME = 10;
     const static USHORT ERR_UNEXPECTED_TOK = 11;
+    const static USHORT ERR_UNSUPPORTED_OP = 12;
+    const static USHORT ERR_INVALID_FILE_PARAM - 13;
 
 
     const static USHORT ERR_GENERIC_ERROR = 20;

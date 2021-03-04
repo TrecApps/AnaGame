@@ -35,6 +35,7 @@ typedef enum class code_statement_type
 
     cst_if,             // If statement
     cst_else,           // Else Statement
+    cst_else_if,        // Else if Statement
     cst_while,          // While loop
     cst_for,            // For loop
     cst_do,             // do while
