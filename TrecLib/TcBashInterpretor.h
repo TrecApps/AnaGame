@@ -81,5 +81,22 @@ class TcBashInterpretor :
      * Attributes: abstract
      */
     virtual void ProcessIndividualStatement(const TString& statement, ReturnObject& ret) override;
+
+
+    /**
+     * Method: TcBashInterpretor::TcInterpretor
+     * Purpose: Constructor
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
+     *              TrecPointer<TEnvironment> env - the environemnt this interpretor runs in
+     * Returns: New TInterpretor Object
+     */
+    TcBashInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env);
+
+
+protected:
+    /**
+     * List of statements generated
+     */
+    TDataArray<TrecPointer<CodeStatement>> statements;
 };
 
