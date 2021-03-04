@@ -46,6 +46,7 @@ TPromptControl::~TPromptControl()
 */
 bool TPromptControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	TTextField::onCreate(r, d3d);
 
 	auto valpoint = attributes.retrieveEntry(L"|ConsoleMode");
@@ -54,7 +55,7 @@ bool TPromptControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 
 	isPassword = false;
 	isNumber = false;
-
+	ThreadRelease();
 	return false;
 }
 
@@ -66,6 +67,7 @@ bool TPromptControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 */
 void TPromptControl::onDraw(TObject* obj)
 {
+	ThreadLock();
 	TString shellOutput(shell.GetOutput());
 
 	if (shellOutput.GetSize())
@@ -85,8 +87,6 @@ void TPromptControl::onDraw(TObject* obj)
 	}
 
 	bool processCheck = shell.CheckProcess();
-
-
 	if (promptMode == prompt_mode::regular)
 	{
 		if (processRunning && !processCheck)
@@ -113,8 +113,9 @@ void TPromptControl::onDraw(TObject* obj)
 			caretLoc += add.GetSize();
 		}
 	}
-
 	TControl::onDraw(obj);
+	ThreadRelease();
+
 }
 
 /*
@@ -128,6 +129,7 @@ void TPromptControl::onDraw(TObject* obj)
 */
 void TPromptControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
+	ThreadLock();
 	resetArgs();
 
 	BOOL trailing = false, isInside = false;
@@ -278,6 +280,7 @@ parentCall:
 	{
 		args.text.Set(text1->getCaption());
 	}
+	ThreadRelease();
 }
 
 /*
@@ -293,6 +296,7 @@ parentCall:
 */
 bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	// To-Do: sort out anomalies with characters
 	resetArgs();
 
@@ -301,7 +305,6 @@ bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags
 		if (fromChar)
 		{
 			InputChar(static_cast<WCHAR>(LOWORD(nChar)), nRepCnt);
-
 		}
 		else
 		{
@@ -331,18 +334,7 @@ bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags
 					text.AppendChar(L'\n');
 					caretLoc++;
 					break;
-				/*case VK_UP:
-					if (GetCaretPos(&caretPoint))
-					{
-						moveCaretUp(caretPoint);
-					}
-					break;
-				case VK_DOWN:
-					if (GetCaretPos(&caretPoint))
-					{
-						moveCaretDown(caretPoint);
-					}
-					break;*/
+
 				case VK_UP:
 				case VK_DOWN: // To-Do: Add History feature for these commands
 				case VK_ESCAPE:
@@ -371,7 +363,10 @@ bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags
 			highlighter.SetLayout(text1->fontLayout);
 		}
 	}
-	return onFocus;
+	bool ret = onFocus;
+	ThreadRelease();
+
+	return ret;
 }
 
 
@@ -387,9 +382,11 @@ void TPromptControl::SetText(TString)
  */
 void TPromptControl::SubmitCommand(TString& command)
 {
+	ThreadLock();
 	isPassword = false;
 	shell.SubmitCommand(command);
 	processRunning = true;
+	ThreadRelease();
 }
 
 /**
@@ -400,11 +397,13 @@ void TPromptControl::SubmitCommand(TString& command)
  */
 void TPromptControl::Print(const TString& input)
 {
+	ThreadLock();
 	if (promptMode == prompt_mode::print_only)
 	{
 		text.Append(input);
 		updateTextString();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -415,8 +414,10 @@ void TPromptControl::Print(const TString& input)
  */
 void TPromptControl::PrintLine(const TString& input)
 {
+	ThreadLock();
 	TString lInput(input + L'\n');
 	Print(lInput);
+	ThreadRelease();
 }
 
 /**
@@ -427,8 +428,10 @@ void TPromptControl::PrintLine(const TString& input)
  */
 void TPromptControl::Clear()
 {
+	ThreadLock();
 	text.Empty();
 	updateTextString();
+	ThreadRelease();
 }
 
 /*
@@ -439,8 +442,11 @@ void TPromptControl::Clear()
  */
 bool TPromptControl::isInInput(UINT proposeLoc)
 {
+	ThreadLock();
 	auto textSize = text.GetSize();
-	return proposeLoc < textSize && proposeLoc >= (textSize - input.GetSize());
+	bool ret = proposeLoc < textSize && proposeLoc >= (textSize - input.GetSize());
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -451,6 +457,7 @@ bool TPromptControl::isInInput(UINT proposeLoc)
  */
 void TPromptControl::SubmitCommand()
 {
+	ThreadLock();
 	isPassword = false;
 
 	// if mode == regular
@@ -460,10 +467,9 @@ void TPromptControl::SubmitCommand()
 
 	// else if mode == program_input
 
-
-
-
 	input.Empty();
+	ThreadRelease();
+
 }
 
 /*
@@ -475,9 +481,12 @@ void TPromptControl::SubmitCommand()
  */
 void TPromptControl::InputChar(wchar_t cha, int times)
 {
+	ThreadLock();
 	if (!onFocus) // hopefully this is true, but just in case
+	{
+		ThreadRelease();
 		return;
-
+	}
 	int caretDif = text.GetSize() - input.GetSize();
 
 	for (int c = 0; c < times; c++)
@@ -491,9 +500,7 @@ void TPromptControl::InputChar(wchar_t cha, int times)
 				text.Delete(caretLoc - 1, 1);
 				input.Delete(caretLoc - 1 - caretDif, 1);
 				caretLoc--;
-
 			}
-
 			break;
 		case VK_OEM_PERIOD:
 			if (isPassword)
@@ -523,7 +530,6 @@ void TPromptControl::InputChar(wchar_t cha, int times)
 		case VK_DELETE:
 			if (text.GetSize() > 0)
 			{
-
 				text.Delete(caretLoc, 1);
 				input.Delete(caretLoc - caretDif, 1);
 			}
@@ -539,6 +545,5 @@ void TPromptControl::InputChar(wchar_t cha, int times)
 			input.Insert(caretLoc++ - caretDif, cha);
 		}
 	}
+	ThreadRelease();
 }
-
-

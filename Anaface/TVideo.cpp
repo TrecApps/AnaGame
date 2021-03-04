@@ -17,38 +17,34 @@ TVideo::~TVideo()
 
 bool TVideo::setVideo(const WCHAR* str)
 {
-	if (!player.Get())
-		return false;
-	if (FAILED(player->OpenURL(str, windowEngine)))
-		return false;
-	return true;
+	ThreadLock();
+	bool ret = player.Get() && SUCCEEDED(player->OpenURL(str, windowEngine));
+	ThreadRelease();
+	return ret;
 }
 
 bool TVideo::Play()
 {
-	if (!player.Get())
-		return false;
-	if (FAILED(player->Play()))
-		return false;
-	return true;
+	ThreadLock();
+	bool ret = player.Get() && SUCCEEDED(player->Play());
+	ThreadRelease();
+	return ret;
 }
 
 bool TVideo::Pause()
 {
-	if (!player.Get())
-		return false;
-	if (FAILED(player->Pause()))
-		return false;
-	return true;
+	ThreadLock();
+	bool ret = player.Get() && SUCCEEDED(player->Pause());
+	ThreadRelease();
+	return ret;
 }
 
 bool TVideo::Stop()
 {
-	if (!player.Get())
-		return false;
-	if (FAILED(player->Stop()))
-		return false;
-	return true;
+	ThreadLock();
+	bool ret = player.Get() && SUCCEEDED(player->Stop());
+	ThreadRelease();
+	return ret;
 }
 
 bool TVideo::Speed(float r)
@@ -58,9 +54,12 @@ bool TVideo::Speed(float r)
 
 bool TVideo::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	if (!player.Get())
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	windowEngine = d3d;
 
 	// Don't want to override non-direct 2D Content
@@ -70,30 +69,34 @@ bool TVideo::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|MediaSource"));
 	if (valpoint.Get())
 	{
-		if (!setVideo(valpoint->GetConstantBuffer()))
+		if (!setVideo(valpoint->GetConstantBuffer().getBuffer()))
 			returnable = false;
 	} 
 	RECT rr = convertD2DRectToRECT(location);
 	player->ResizeVideo(rr);
-
+	ThreadRelease();
 	return returnable;
 }
 
 void TVideo::onDraw(TObject* obj)
 {
+	ThreadLock();
 	TControl::onDraw(obj);
 	if (player.Get())
 		player->Repaint();
+	ThreadRelease();
 }
 
 void TVideo::Resize(D2D1_RECT_F& r)
 {
+	ThreadLock();
 	if (player.Get())
 	{
 		RECT rr = convertD2DRectToRECT(r);
 		player->ResizeVideo(rr);
 	}
 	TControl::Resize(r);
+	ThreadRelease();
 }
 
 TrecPointer<TControl> TVideo::QueryVideoControl()
@@ -103,11 +106,16 @@ TrecPointer<TControl> TVideo::QueryVideoControl()
 
 TrecComPointer<TPlayer> TVideo::GetPlayer()
 {
-	return player;
+	ThreadLock();
+	auto ret = player;
+	ThreadRelease();
+	return ret;
 }
 
 void TVideo::QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)
 {
+	ThreadLock();
 	mediaControls.push_back(TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
 	TControl::QueryMediaControl(mediaControls);
+	ThreadRelease();
 }

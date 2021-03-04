@@ -15,9 +15,8 @@ TTabBar::~TTabBar()
 
 bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	bool ret = TControl::onCreate(loc, d3d);
-	
-
 	auto valpoint = attributes.retrieveEntry(TString(L"|EnableExit"));
 
 	if (valpoint.Get() && !valpoint->CompareNoCase(L"true") && drawingBoard.Get())
@@ -37,8 +36,6 @@ bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 		if (textBuffer > 60)
 			textBuffer = 60;
 	}
-
-
 
 	if (!content1.Get())
 	{
@@ -98,18 +95,22 @@ bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 	rightTab.SetText(TString(L">"));
 
 	SetTabSizes();
+	ThreadRelease();
 
 	return ret;
 }
 
 void TTabBar::Resize(D2D1_RECT_F& l)
 {
+	ThreadLock();
 	TControl::Resize(l);
 	SetTabSizes();
+	ThreadRelease();
 }
 
 void TTabBar::onDraw(TObject* obj)
 {
+	ThreadLock();
 	for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
 	{
 		if (!tabs[Rust].Get())
@@ -126,21 +127,24 @@ void TTabBar::onDraw(TObject* obj)
 
 	if (!isSnipZero(rightTab.location))
 		rightTab.Draw();
+	ThreadRelease();
 }
 
 void TTabBar::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
-	if (!isContained(point, location))
-		return;
-
-	for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
+	ThreadLock();
+	if (isContained(point, location))
 	{
-		if (!tabs[Rust].Get())
-			continue;
-		
-		tabs[Rust]->draw1 = !isContained(point, tabs[Rust]->location);
-		tabs[Rust]->xReg = !isContained(point, tabs[Rust]->xLocation);
+		for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
+		{
+			if (!tabs[Rust].Get())
+				continue;
+
+			tabs[Rust]->draw1 = !isContained(point, tabs[Rust]->location);
+			tabs[Rust]->xReg = !isContained(point, tabs[Rust]->xLocation);
+		}
 	}
+	ThreadRelease();
 }
 /**
  * Method: TTabBar::OnLButtonDown
@@ -156,6 +160,7 @@ void TTabBar::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
  */
 void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
+	ThreadLock();
 	if (isContained(point, location))
 	{
 		*mOut = messageOutput::positiveContinue;
@@ -188,6 +193,7 @@ void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 				clickMode = TabClickMode::tcm_left_tab;
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -203,6 +209,7 @@ void TTabBar::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
  */
 void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (onClick && isContained(point, location))
 	{
 		if (isContained(point, leftTab.location) && startTab > 0 && clickMode == TabClickMode::tcm_left_tab)
@@ -248,6 +255,7 @@ void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 	}
 	onClick = false;
 	clickDownTab.Nullify();
+	ThreadRelease();
 }
 
 
@@ -259,6 +267,7 @@ void TTabBar::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
  */
 TrecPointer<Tab> TTabBar::AddTab(const TString& text)
 {
+	ThreadLock();
 	TrecPointer<Tab> newTab = TrecPointerKey::GetNewTrecPointer<Tab>();
 
 	newTab->exitReg = exitReg;
@@ -286,6 +295,8 @@ TrecPointer<Tab> TTabBar::AddTab(const TString& text)
 	}
 
 	SetTabSizes();
+	ThreadRelease();
+
 	return newTab;
 }
 
@@ -293,18 +304,18 @@ bool TTabBar::AddTab(TrecPointer<Tab> tab)
 {
 	if(!tab.Get())
 		return false;
+	ThreadLock();
 	if (tab.Get() == removedTab.Get())
 	{
 		tab->MovePoint(removedTabPoint.x, removedTabPoint.y);
 		removedTab.Nullify();
 	}
 	TPoint tabPoint = tab->GetCurrentPoint();
-
-
-
 	if (!isContained(tabPoint, location))
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	bool inserted = false;
 	for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
 	{
@@ -339,6 +350,8 @@ bool TTabBar::AddTab(TrecPointer<Tab> tab)
 	tab->exitReg = exitReg;
 
 	SetTabSizes();
+	ThreadRelease();
+
 	return true;
 }
 
@@ -350,11 +363,11 @@ bool TTabBar::AddTab(TrecPointer<Tab> tab)
  */
 UINT TTabBar::GetContentSize()
 {
-	if (haveAdd && tabs.Size())
-		return tabs.Size() - 1;
-	return tabs.Size();
+	ThreadLock();
+	UINT ret = (haveAdd && tabs.Size()) ? tabs.Size() - 1 : tabs.Size();
+	ThreadRelease();
+	return ret;
 }
-
 
 /**
  * Method: TTabBar::GetTabAt
@@ -364,9 +377,13 @@ UINT TTabBar::GetContentSize()
  */
 TrecPointer<Tab> TTabBar::GetTabAt(UINT index)
 {
+	ThreadLock();
+	TrecPointer<Tab> ret;
 	if (index < tabs.Size())
-		return tabs[index];
-	return TrecPointer<Tab>();
+		ret = tabs[index];
+	ThreadRelease();
+
+	return ret;
 }
 
 /**
@@ -377,6 +394,7 @@ TrecPointer<Tab> TTabBar::GetTabAt(UINT index)
  */
 void TTabBar::RemoveTabAt(UINT index)
 {
+	ThreadLock();
 	if (index < tabs.Size())
 	{
 		removedTab = tabs.RemoveAt(index);
@@ -401,10 +419,12 @@ void TTabBar::RemoveTabAt(UINT index)
 		// To-Do: Figure out ho to move the tabs
 		SetTabSizes();
 	}
+	ThreadRelease();
 }
 
 void TTabBar::RemoveTab(TrecPointer<Tab> tab)
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
 	{
 		if (tabs[Rust].Get() == tab.Get())
@@ -415,14 +435,18 @@ void TTabBar::RemoveTab(TrecPointer<Tab> tab)
 			else if (tabs.Size())
 				currentlyClickedTab = tabs[Rust - 1];
 			else currentlyClickedTab.Nullify();
-			return;
+			break;
 		}
 	}
+	ThreadRelease();
 }
 
 TrecPointer<Tab> TTabBar::GetCurrentTab()
 {
-	return this->currentlyClickedTab;
+	ThreadLock();
+	auto ret =  this->currentlyClickedTab;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -433,11 +457,15 @@ TrecPointer<Tab> TTabBar::GetCurrentTab()
  */
 TrecPointer<Tab> TTabBar::GetCurrentDownTab()
 {
-	return this->clickDownTab;
+	ThreadLock();
+	auto ret = this->clickDownTab;
+	ThreadRelease();
+	return ret;
 }
 
 bool TTabBar::SetCurrentTab(TrecPointer<Tab> tab)
 {
+	ThreadLock();
 	if (tab.Get())
 	{
 		for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
@@ -445,10 +473,13 @@ bool TTabBar::SetCurrentTab(TrecPointer<Tab> tab)
 			if (tab.Get() == tabs[Rust].Get())
 			{
 				currentlyClickedTab = tab;
+				ThreadRelease();
 				return true;
 			}
 		}
 	}
+	ThreadRelease();
+
 	return false;
 }
 
@@ -460,15 +491,18 @@ bool TTabBar::SetCurrentTab(TrecPointer<Tab> tab)
  */
 TabClickMode TTabBar::GetClickMode()
 {
-	return clickMode;
+	ThreadLock();
+	auto ret = clickMode;
+	ThreadRelease();
+	return ret;
 }
 
 void TTabBar::SetTabSizes()
 {
+	ThreadLock();
+
 	UINT limit = location.right - selectionSize;
-
 	bool showSelection = startTab > 0;
-
 	UINT leftBounds = location.left;
 
 	for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
@@ -477,15 +511,12 @@ void TTabBar::SetTabSizes()
 			continue;
 
 		auto newLoc = tabs[Rust]->SetLocation(D2D1::RectF(leftBounds, location.top, location.right, location.bottom), textBuffer);
-
-
 		if (newLoc.right > limit)
 		{
 			tabs[Rust]->SetLocation(D2D1::RectF(), textBuffer);
 			showSelection = true;
 			break;
 		}
-
 		leftBounds = newLoc.right;
 	}
 
@@ -500,6 +531,7 @@ void TTabBar::SetTabSizes()
 		leftTab.SetLocation(D2D1::RectF(), textBuffer);
 		rightTab.SetLocation(D2D1::RectF(), textBuffer);
 	}
+	ThreadRelease();
 }
 
 Tab::Tab()
