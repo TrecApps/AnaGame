@@ -78,6 +78,7 @@ TRadioButton::~TRadioButton()
 */
 bool TRadioButton::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	TGadgetControl::onCreate(r,d3d);
 
 	runLoop();
@@ -106,14 +107,13 @@ bool TRadioButton::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 		text1->text = L"Radio-Button";
-
-
 	}
-
 
 	ellBut.point = D2D1::Point2F((DxLocation.right + DxLocation.left) / 2, (DxLocation.top + DxLocation.bottom) / 2);
 	ellBut.radiusX = (DxLocation.right - DxLocation.left) / 2;
 	ellBut.radiusY = (DxLocation.bottom - DxLocation.top) / 2;
+	ThreadRelease();
+
 	return false;
 }
 
@@ -125,15 +125,17 @@ bool TRadioButton::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 */
 void TRadioButton::onDraw(TObject* obj)
 {
+	ThreadLock();
 	TControl::onDraw(obj);
 
-	if (!isActive)
-		return;
-
-	if (isClicked)
-		brush->FillEllipse(ellBut);
-	else
-		brush->DrawEllipse(ellBut);
+	if (isActive)
+	{
+		if (isClicked)
+			brush->FillEllipse(ellBut);
+		else
+			brush->DrawEllipse(ellBut);
+	}
+	ThreadRelease();
 }
 
 /*
@@ -147,6 +149,7 @@ void TRadioButton::onDraw(TObject* obj)
 */
 void TRadioButton::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
+	ThreadLock();
 	resetArgs();
 	TControl::OnLButtonDown(nFlags, point, mOut, eventAr, clickedControl);
 
@@ -170,7 +173,7 @@ void TRadioButton::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut
 			args.methodID = getEventID(R_Message_Type::On_radio_change);
 		}
 	}
-
+	ThreadRelease();
 }
 
 /*
@@ -184,7 +187,9 @@ void TRadioButton::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut
 */
 void TRadioButton::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	TControl::OnLButtonUp(nFlags, point, mOut,eventAr);
+	ThreadRelease();
 }
 
 /*
@@ -206,10 +211,12 @@ UCHAR * TRadioButton::GetAnaGameType()
  */
 void TRadioButton::Resize(D2D1_RECT_F& r)
 {
+	ThreadLock();
 	TGadgetControl::Resize(r);
 	ellBut.point = D2D1::Point2F((DxLocation.right + DxLocation.left) / 2, (DxLocation.top + DxLocation.bottom) / 2);
 	ellBut.radiusX = (DxLocation.right - DxLocation.left) / 2;
 	ellBut.radiusY = (DxLocation.bottom - DxLocation.top) / 2;
+	ThreadRelease();
 }
 
 /*
@@ -222,13 +229,18 @@ void TRadioButton::addButton(TRadioButton* trb)
 {
 	if (!trb)
 		return;
+	ThreadLock();
 	for (int c = 0; c < otherSameButtons.Size(); c++)
 	{
 		if (otherSameButtons[c] == trb)
+		{
+			ThreadRelease();
 			return;
+		}
 	}
 	otherSameButtons.push_back(trb);
 	trb->addButton(this);
+	ThreadRelease();
 }
 
 /*
@@ -239,11 +251,13 @@ void TRadioButton::addButton(TRadioButton* trb)
 */
 void TRadioButton::onCreateClass()
 {
+	ThreadLock();
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|RadioClass"));
 	if (valpoint.Get())
 	{
 		buttonClass = new TString(valpoint.Get());
 	}
+	ThreadRelease();
 }
 
 /*
@@ -256,16 +270,16 @@ void TRadioButton::onCreateClass()
 */
 void TRadioButton::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 {
-	//_Unreferenced_parameter_(overrideChildren);
-
+	ThreadLock();
 	if (buttonClass)
 	{
 		TString appendable;
 		resetAttributeString(&appendable, childLevel + 1);
 
 		appendable.Append(L"|RadioClass:");
-		appendable.Append(buttonClass->GetConstantBuffer());
+		appendable.Append(buttonClass->GetConstantBuffer().getBuffer());
 		_WRITE_THE_STRING;
 	}
 	TControl::storeInTML(ar, childLevel);
+	ThreadRelease();
 }

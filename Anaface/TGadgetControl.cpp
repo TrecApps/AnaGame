@@ -44,6 +44,7 @@ TGadgetControl::~TGadgetControl()
 
 void TGadgetControl::storeInTML(TFile* ar, int childLevel, bool ov)
 {
+	ThreadLock();
 	TString appendable;
 	resetAttributeString(&appendable, childLevel + 1);
 
@@ -52,6 +53,7 @@ void TGadgetControl::storeInTML(TFile* ar, int childLevel, bool ov)
 	_WRITE_THE_STRING;
 
 	TControl::storeInTML(ar, childLevel, ov);
+	ThreadRelease();
 }
 
 
@@ -64,6 +66,7 @@ void TGadgetControl::storeInTML(TFile* ar, int childLevel, bool ov)
 */
 bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	marginPriority = false;
 
 	TControl::onCreate(r,d3d);
@@ -114,6 +117,8 @@ bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 		
 		brush = drawingBoard->GetBrush(TColor(color));
 	}
+	ThreadRelease();
+
 
 	return false;
 }
@@ -138,6 +143,7 @@ UCHAR * TGadgetControl::GetAnaGameType()
  */
 void TGadgetControl::Resize(D2D1_RECT_F& r)
 {
+	ThreadLock();
 	TControl::Resize(r);
 	int height = location.bottom - location.top;
 	int offset = (height - bSize) / 2;
@@ -150,4 +156,5 @@ void TGadgetControl::Resize(D2D1_RECT_F& r)
 	DxLocation.left = checker.left;
 	DxLocation.right = checker.right;
 	DxLocation.top = checker.top;
+	ThreadRelease();
 }
