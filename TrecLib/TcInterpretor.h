@@ -3,6 +3,7 @@
 #include "TDirectory.h"
 #include "TEnvironment.h"
 #include "TDataMap.h"
+#include "CodeStatement.h"
 
 #ifndef TC_INTERPRETOR_COMPILE
 #define TC_INTERPRETOR_COMPILE
@@ -101,7 +102,7 @@ public:
     const static USHORT ERR_IMPROPER_NAME = 10;
     const static USHORT ERR_UNEXPECTED_TOK = 11;
     const static USHORT ERR_UNSUPPORTED_OP = 12;
-    const static USHORT ERR_INVALID_FILE_PARAM - 13;
+    const static USHORT ERR_INVALID_FILE_PARAM = 13;
 
 
     const static USHORT ERR_GENERIC_ERROR = 20;

@@ -179,6 +179,30 @@ next_tok DeduceNextMove(int statement, int beginBlock, int endBlock, UINT mode, 
 }
 
 
+int GetIndex(const TString& string, UINT startIndex, TDataArray<TString>& tokens, int& end, TString& token)
+{
+	int ret = -1;
+
+	for (UINT Rust = 0; Rust < tokens.Size(); Rust++)
+	{
+		int index = string.Find(tokens[Rust], startIndex, false);
+		if (ret == -1)
+		{
+			ret = index;
+			token.Set(tokens[Rust]);
+			if (index != -1)
+				end = index + tokens[Rust].GetSize();
+		}
+		else if (index != -1 && index < ret)
+		{
+			ret = index;
+			end = index + tokens[Rust].GetSize();
+
+			token.Set(tokens[Rust]);
+		}
+	}
+	return ret;
+}
 
 USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& errorMessage, UINT& lineNum)
 {
@@ -377,30 +401,6 @@ void StatementCollector::CollectStatement(TDataArray<TrecPointer<CodeStatement>>
 }
 
 
-int GetIndex(const TString& string, UINT startIndex, TDataArray<TString>& tokens, int& end, TString& token)
-{
-	int ret = -1;
-
-	for (UINT Rust = 0; Rust < tokens.Size(); Rust++)
-	{
-		int index = string.Find(tokens[Rust], startIndex, false);
-		if (ret == -1)
-		{
-			ret = index;
-			token.Set(tokens[Rust]);
-			if (index != -1)
-				end = index + tokens[Rust].GetSize();
-		}
-		else if (index != -1 && index < ret)
-		{
-			ret = index;
-			end = index + tokens[Rust].GetSize();
-
-			token.Set(tokens[Rust]);
-		}
-	}
-	return ret;
-}
 
 void DeduceNextMarker(int nextSingleComment,
 	int nextMultiComStart,

@@ -77,8 +77,7 @@ typedef enum class code_statement_type
  * Class: CodeStatement
  * Purpose: Holds a basic statement, containing the statement, line numbers
  */
-class CodeStatement :
-    public TObject
+class CodeStatement :  public TObject
 {
 public:
     /**

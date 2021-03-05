@@ -144,6 +144,9 @@
     <ClInclude Include="TcBashInterpretor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ObjectOperator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -255,6 +258,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TcBashInterpretor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectOperator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
