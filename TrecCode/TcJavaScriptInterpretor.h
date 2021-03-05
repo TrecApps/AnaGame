@@ -95,6 +95,22 @@ public:
 protected:
 
     /**
+     * Method: TcJavaScriptInterpretor::Run
+     * Purpose: Allows the Interpretor to run the Code As Is
+     * Parameters: void
+     * Returns: ReturnObject - information about the Run
+     */
+     ReturnObject Run(TDataArray<TrecPointer<CodeStatement>>& statements);
+
+     /**
+      * Method: TcJavaScriptInterpretor::Run
+      * Purpose: Allows the Interpretor to run the Code As Is
+      * Parameters: void
+      * Returns: ReturnObject - information about the Run
+      */
+     ReturnObject Run(TrecPointer<CodeStatement>& statement);
+
+    /**
      * Method: TcJavaScriptInterpretor::PreProcess
      * Purpose: Allows Interpretors to do a brief scan of the code and id basic syntax errors
      * Parameters: ReturnObject& ret - info about issues detected
@@ -121,5 +137,15 @@ protected:
      * Whether the statements are preprocessed and ready to run
      */
     bool readyToRun;
+
+    // Methods designed to address Pacific Statement Types
+
+    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret);            // Call when you need an expression analyzed
+    void ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret);   // Call for const, let, and var statements
+    void ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret);             // Call for if, else, and else if statements
+    void ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret);                 // Call For while and do...while
+    void ProcessFor(TrecPointer<CodeStatement> statement, ReturnObject& ret);                   // Call for for statements
+    void ProcessTryCatchFinally(TrecPointer<CodeStatement> statement, ReturnObject& ret);       // Call for the Try/catch/finally blocks
+    void ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret);                // Call for Switch Statements
 };
 

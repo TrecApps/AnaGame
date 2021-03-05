@@ -1383,12 +1383,10 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 		borderData.CompileAttributes(val, border_side::bs_all);
 	}
 
-
 	if (atts.retrieveEntry(L"border-bottom", val))
 	{
 		borderData.CompileAttributes(val, border_side::bs_bottom);
 	}
-
 
 	if (atts.retrieveEntry(L"border-left", val))
 	{
@@ -1400,11 +1398,32 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 		borderData.CompileAttributes(val, border_side::bs_right);
 	}
 
-
 	if (atts.retrieveEntry(L"border-top", val))
 	{
 		borderData.CompileAttributes(val, border_side::bs_top);
 	}
+
+	if (atts.retrieveEntry(L"border-color", val))
+		borderData.CompileColor(val, border_side::bs_all);
+	if (atts.retrieveEntry(L"border-left-color", val))
+		borderData.CompileColor(val, border_side::bs_left);
+	if (atts.retrieveEntry(L"border-bottom-color", val))
+		borderData.CompileColor(val, border_side::bs_bottom);
+	if (atts.retrieveEntry(L"border-top-color", val))
+		borderData.CompileColor(val, border_side::bs_top);
+	if (atts.retrieveEntry(L"border-right-color", val))
+		borderData.CompileColor(val, border_side::bs_right);
+
+	if (atts.retrieveEntry(L"border-width", val))
+		borderData.CompileBorder(val, border_side::bs_all);
+	if (atts.retrieveEntry(L"border-left-width", val))
+		borderData.CompileBorder(val, border_side::bs_left);
+	if (atts.retrieveEntry(L"border-bottom-width", val))
+		borderData.CompileBorder(val, border_side::bs_bottom);
+	if (atts.retrieveEntry(L"border-top-width", val))
+		borderData.CompileBorder(val, border_side::bs_top);
+	if (atts.retrieveEntry(L"border-right-width", val))
+		borderData.CompileBorder(val, border_side::bs_right);
 
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
@@ -2136,4 +2155,130 @@ void BorderData::CompileBorder(TString& atts, border_side size)
 
 	}
 
+}
+
+void BorderData::CompileColor(TString& atts, border_side side)
+{
+	TColor color;
+	bool worked = false;
+
+	if (side == border_side::bs_all)
+	{
+		TDataArray<TString> str1, str2;
+		TString tok;
+		bool parenthStack = false;
+		for (UINT Rust = 0; Rust < atts.GetSize(); Rust++)
+		{
+			WCHAR ch = atts[Rust];
+
+			if (ch == L' ')
+			{
+				if (tok.GetSize() && !parenthStack)
+				{
+					str1.push_back(tok);
+					tok.Empty();
+				}
+			}
+			else
+				tok.AppendChar(ch);
+			if (ch == L'(')
+				parenthStack = true;
+			else if (ch == L')')
+				parenthStack = false;
+		}
+		if (tok.GetSize())
+			str1.push_back(tok);
+
+		tok.Empty();
+
+		for (UINT Rust = 0; Rust < str1.Size(); Rust++)
+		{
+			TString curTok(str1[Rust]);
+			if (!curTok.StartsWith(L'(') && tok.GetSize())
+			{
+				str2.push_back(tok);
+				tok.Empty();
+			}
+			tok.Append(curTok);
+		}
+		if (tok.GetSize())
+			str2.push_back(tok);
+
+		switch (str2.Size())
+		{
+		case 1:
+			// Single color applies to all borders
+			color = TColor::GetColorFromString(str2[0], worked);
+			if (worked)
+				this->color = color;
+			break;
+		case 2:
+			// First Color applies to top and bottom
+			color = TColor::GetColorFromString(str2[0], worked);
+			if (worked)
+				this->topColor = this->bottomColor = color;
+			// Second color applies to left and right
+			color = TColor::GetColorFromString(str2[1], worked);
+			if (worked)
+				this->leftColor = this->rightColor = color;
+			break;
+		case 3:
+			// First Color applies to top
+			color = TColor::GetColorFromString(str2[0], worked);
+			if (worked)
+				this->topColor = color;
+			// Second color applies to left and right
+			color = TColor::GetColorFromString(str2[1], worked);
+			if (worked)
+				this->leftColor = this->rightColor = color;
+			// Third Color applies to bottom
+			color = TColor::GetColorFromString(str2[2], worked);
+			if (worked)
+				this->bottomColor = color;
+			break;
+		case 4:
+			// First color applies to top
+			color = TColor::GetColorFromString(str2[0], worked);
+			if (worked)
+				this->topColor = color;
+			// Second color applies to right
+			color = TColor::GetColorFromString(str2[1], worked);
+			if (worked)
+				this->rightColor = color;
+			// First color applies to bottom
+			color = TColor::GetColorFromString(str2[2], worked);
+			if (worked)
+				this->bottomColor = color;
+			// Second color applies to left
+			color = TColor::GetColorFromString(str2[3], worked);
+			if (worked)
+				this->leftColor = color;
+		}
+	}
+	else
+	{
+		switch (side)
+		{
+		case border_side::bs_bottom:
+			color = TColor::GetColorFromString(atts, worked);
+			if (worked)
+				this->bottomColor = color;
+			break;
+		case border_side::bs_left:
+			color = TColor::GetColorFromString(atts, worked);
+			if (worked)
+				this->leftColor = color;
+			break;
+		case border_side::bs_right:
+			color = TColor::GetColorFromString(atts, worked);
+			if (worked)
+				this->rightColor = color;
+			break;
+		case border_side::bs_top:
+			color = TColor::GetColorFromString(atts, worked);
+			if (worked)
+				this->topColor = color;
+			break;
+		}
+	}
 }

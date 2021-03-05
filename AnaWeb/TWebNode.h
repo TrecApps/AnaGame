@@ -164,6 +164,8 @@ public:
 
     void CompileBorder(TString& atts, border_side size);
 
+    void CompileColor(TString& atts, border_side size);
+
     border_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
     USHORT thick, topThick, bottomThick, rightThick, leftThick;
     TColor color, topColor, bottomColor, rightColor, leftColor;

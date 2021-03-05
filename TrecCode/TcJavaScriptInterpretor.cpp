@@ -61,8 +61,7 @@ ReturnObject TcJavaScriptInterpretor::Run()
         return;
     }
 
-
-    return ret;
+    return Run(statements);
 }
 
 void TcJavaScriptInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
@@ -86,6 +85,92 @@ TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInt
     TcInterpretor(parentInterpretor, env)
 {
     readyToRun = false;
+}
+
+ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements)
+{
+    ReturnObject ret;
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    {
+        ret = Run(statements[Rust]);
+        if (ret.returnCode)
+            break;
+    }
+
+
+    return ret;
+}
+
+ReturnObject TcJavaScriptInterpretor::Run(TrecPointer<CodeStatement>& statement)
+{
+    ReturnObject ret;
+
+    switch (statement->statementType)
+    {
+    case code_statement_type::cst_break:
+
+        break;
+    case code_statement_type::cst_catch:
+
+        break;
+    case code_statement_type::cst_class:
+
+        break;
+    case code_statement_type::cst_const:
+
+        break;
+    case code_statement_type::cst_continue:
+
+        break;
+    case code_statement_type::cst_do:
+
+        break;
+
+    case code_statement_type::cst_else:
+
+        break;
+    case code_statement_type::cst_else_if:
+
+        break;
+    case code_statement_type::cst_finally:
+
+        break;
+    case code_statement_type::cst_for:
+
+        break;
+    case code_statement_type::cst_function:
+
+        break;
+    case code_statement_type::cst_if:
+
+        break;
+    case code_statement_type::cst_let:
+
+        break;
+    case code_statement_type::cst_regular:
+
+        break;
+    case code_statement_type::cst_return:
+
+        break;
+    case code_statement_type::cst_switch:
+
+        break;
+    case code_statement_type::cst_throw:
+
+        break;
+    case code_statement_type::cst_try:
+
+        break;
+    case code_statement_type::cst_var:
+
+        break;
+    case code_statement_type::cst_while:
+
+        break;
+    }
+
+    return ReturnObject();
 }
 
 void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TDataArray<TrecPointer<CodeStatement>>& statements)
@@ -357,4 +442,32 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
     PreProcess(ret, state->block);
     if (ret.returnCode)return;
     PreProcess(ret, state->next);
+}
+
+void TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::ProcessFor(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::ProcessTryCatchFinally(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
 }
