@@ -1,4 +1,6 @@
 #include "TcJavaScriptInterpretor.h"
+#include <TSpecialVariable.h>
+
 
 COMPILE_TYPE TcJavaScriptInterpretor::CanCompile()
 {
@@ -117,7 +119,9 @@ ReturnObject TcJavaScriptInterpretor::Run(TrecPointer<CodeStatement>& statement)
 
         break;
     case code_statement_type::cst_const:
-
+    case code_statement_type::cst_let:
+    case code_statement_type::cst_var:
+        ProcessAssignmentStatement(statement, ret);
         break;
     case code_statement_type::cst_continue:
 
@@ -144,9 +148,6 @@ ReturnObject TcJavaScriptInterpretor::Run(TrecPointer<CodeStatement>& statement)
     case code_statement_type::cst_if:
 
         break;
-    case code_statement_type::cst_let:
-
-        break;
     case code_statement_type::cst_regular:
 
         break;
@@ -160,9 +161,6 @@ ReturnObject TcJavaScriptInterpretor::Run(TrecPointer<CodeStatement>& statement)
 
         break;
     case code_statement_type::cst_try:
-
-        break;
-    case code_statement_type::cst_var:
 
         break;
     case code_statement_type::cst_while:
@@ -450,6 +448,101 @@ void TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
 
 void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
+    // Attempt to divide the statement up by ',', taking into account strings, into sub-statements
+    TDataArray<TString> subStatements;  // Holds the sub-Statements
+    TString subStatement;               // The SubStatement in the moment
+
+    WCHAR quote = L'\0';
+
+    for (UINT Rust = 0; Rust < statement->statement.GetSize(); Rust++)
+    {
+        WCHAR ch = statement->statement[Rust];
+
+        switch (ch)
+        {
+        case L',':
+            if (!quote && subStatement.GetSize())
+            {
+                subStatements.push_back(subStatement);
+                subStatement.Empty();
+                continue;
+            }
+        case L'\'':
+        case L'\"':
+        case L'`':
+            if (!quote)
+                quote = ch;
+            else if (quote == ch)
+                quote = L'\0';
+        default:
+            subStatement.AppendChar(ch);
+        }
+    }
+    if (subStatement.GetSize())
+    {
+        subStatements.push_back(subStatement);
+        subStatement.Empty();
+    }
+
+
+    // Go Through Each sub statement and assess the new variable
+    for (UINT Rust = 0; Rust < subStatements.Size(); Rust++)
+    {
+        auto toks = subStatements[Rust].splitn(L"=", 2);
+
+        for (UINT Rust = 0; Rust < toks->Size(); Rust++)
+            toks->at(Rust).Trim();
+
+        if (toks->at(0).EndsWith(L';'))
+            toks->at(0).Delete(toks->at(0).GetSize() - 1);
+
+        CheckVarName(toks->at(0), ret);
+        
+        if (ret.returnCode)
+        {
+            // To-Do: Add Error information
+
+            return;
+        }
+
+        bool worked = false;
+        TrecPointer<TVariable> car = GetVariable(toks->at(0), worked, true);
+
+        if (worked)
+        {
+            ret.returnCode = ReturnObject::ERR_EXISTING_VAR;
+            ret.errorMessage.Format(L"Variable '%ws' already exists in the current Scope!", toks->at(0).GetConstantBuffer());
+
+            return;
+        }
+        if (toks->Size() > 1)
+        {
+            ProcessIndividualStatement(toks->at(1), ret);
+            if (ret.returnCode)
+            {
+                // Add line info
+
+                return;
+            }
+            TcVariableHolder varHold;
+            varHold.mut = statement->statementType != code_statement_type::cst_const;
+            varHold.value = ret.errorObject;
+            variables.addEntry(toks->at(0), varHold);
+        }
+        else
+        {
+            TcVariableHolder varHold;
+            varHold.mut = statement->statementType != code_statement_type::cst_const;
+            varHold.value = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+            variables.addEntry(toks->at(0), varHold);
+        }
+    }
+    
+    if (statement->next.Get())
+    {
+        statement->next->statementType = statement->statementType;
+        ProcessAssignmentStatement(statement->next, ret);
+    }
 }
 
 void TcJavaScriptInterpretor::ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret)

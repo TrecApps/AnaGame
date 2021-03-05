@@ -159,6 +159,54 @@ void TcInterpretor::SetSelf(TrecPointer<TVariable> self)
 }
 
 /**
+ * Method: TcInterpretor::CheckVarName
+ * Purpose: Method Interpreters can use to inspect the variable name to make sure it is valid
+ * Parameters: TString& varname - the variable name to check
+ *              ReportObject& ro - the Object to modify based off of the findings
+ * Returns: void
+ */
+void TcInterpretor::CheckVarName(TString& varname, ReturnObject& ro)
+{
+	int badChar = varname.FindOneOf(L"!@#$%^&*(){}[]-=+/,;:'\"\\`~");
+	if (badChar != -1)
+	{
+		ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
+		return;
+	}
+
+	WCHAR firstChar = varname[0];
+
+	if (!((firstChar >= L'a' && firstChar <= 'z') || (firstChar >= L'A' && firstChar <= 'Z') || firstChar == L'_'))
+	{
+		ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
+		return;
+	}
+
+	ro.returnCode = 0;
+}
+
+TrecPointer<TVariable> TcInterpretor::GetVariable(TString& varName, bool& present, bool currentScope)
+{
+	TcVariableHolder marker;
+	if (variables.retrieveEntry(varName, marker))
+	{
+		present = true;
+		return marker.value;
+	}
+
+	if (!currentScope)
+	{
+		if (parent.Get())
+			return dynamic_cast<TcInterpretor*>(parent.Get())->GetVariable(varName, present,false);
+		if (environment.Get())
+			return environment->GetVariable(varName, present);
+	}
+	present = false;
+	return TrecPointer<TVariable>();
+}
+
+
+/**
  * Method: TCInterpretor::SetParamNames
  * Purpose: Allows Parameter names to be set
  * Parameters: TDataArray<TString>& paramNames - the Names of Initial parameters

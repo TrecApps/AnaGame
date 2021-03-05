@@ -104,7 +104,7 @@ public:
     const static USHORT ERR_UNSUPPORTED_OP = 12;
     const static USHORT ERR_INVALID_FILE_PARAM = 13;
 
-
+    const static USHORT ERR_THROWN = 19;
     const static USHORT ERR_GENERIC_ERROR = 20;
 
 };
@@ -318,6 +318,15 @@ public:
     virtual void SetSelf(TrecPointer<TVariable>) override;
 
     /**
+     * Method: TcInterpretor::CheckVarName
+     * Purpose: Method Interpreters can use to inspect the variable name to make sure it is valid
+     * Parameters: TString& varname - the variable name to check
+     *              ReportObject& ro - the Object to modify based off of the findings
+     * Returns: void
+     */
+    void CheckVarName(TString& varname, ReturnObject& ro);
+
+    /**
      * Method: TcInterpretor::ProcessIndividualStatement
      * Purpose: Allows an Interpretor to process a statement 
      * Parameters: const TString& statement - the statemnt to process
@@ -327,6 +336,17 @@ public:
      * Attributes: abstract
      */
     virtual void ProcessIndividualStatement(const TString& statement, ReturnObject& ret) = 0;
+
+
+    /**
+     * Method: TcInterpretor::GetVariable
+     * Purpose: Retrieves the variable specified
+     * Parameters: TString& varName - the name of the variable requested
+     *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
+     *              bool currentScope - whether to only check the current scope (don't check parent interpretors), default of false
+     * Returns: TrecPointer<TVariable> - the variable requested (null if not found)
+     */
+    TrecPointer<TVariable> GetVariable(TString& varName, bool& present, bool currentScope = false);
 protected:
 
     /**
