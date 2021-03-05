@@ -162,9 +162,11 @@ public:
 
     void CompileAttributes(TString& atts, border_side side);
 
-    void CompileBorder(TString& atts, border_side size);
+    void CompileBorder(TString& atts, border_side side);
 
-    void CompileColor(TString& atts, border_side size);
+    void CompileColor(TString& atts, border_side side);
+
+    bool CompileStyle(TString& atts, border_side side);
 
     border_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
     USHORT thick, topThick, bottomThick, rightThick, leftThick;

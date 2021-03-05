@@ -3,6 +3,7 @@
 #include <TPromptControl.h>
 
 #define WEB_EVENT_HANDLER_COUNT 71
+#define WEB_BORDER_STYLE_COUNT 8
 
 static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
 	// Window Events
@@ -58,6 +59,22 @@ static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
 	
 	// Toggle
 	TString(L"ontoggle")
+};
+
+typedef struct StyleString {
+	TString str;
+	border_style style;
+}StyleString;
+
+static StyleString styleStrings[WEB_BORDER_STYLE_COUNT] = {
+	{TString(L"dashed"), border_style::bs_dashed},
+	{TString(L"dotted"), border_style::bs_dotted},
+	{TString(L"double"), border_style::bs_double},
+	{TString(L"groove"), border_style::bs_groove},
+	{TString(L"inset"), border_style::bs_inset},
+	{TString(L"outset"), border_style::bs_outset},
+	{TString(L"ridge"), border_style::bs_ridge},
+	{TString(L"solid"), border_style::bs_solid},
 };
 
 // False string
@@ -1425,6 +1442,17 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	if (atts.retrieveEntry(L"border-right-width", val))
 		borderData.CompileBorder(val, border_side::bs_right);
 
+	if (atts.retrieveEntry(L"border-style", val))
+		borderData.CompileStyle(val, border_side::bs_all);
+	if (atts.retrieveEntry(L"border-left-style", val))
+		borderData.CompileStyle(val, border_side::bs_left);
+	if (atts.retrieveEntry(L"border-bottom-style", val))
+		borderData.CompileStyle(val, border_side::bs_bottom);
+	if (atts.retrieveEntry(L"border-top-style", val))
+		borderData.CompileStyle(val, border_side::bs_top);
+	if (atts.retrieveEntry(L"border-right-style", val))
+		borderData.CompileStyle(val, border_side::bs_right);
+
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
 		auto ch = childNodes[Rust];
@@ -2281,4 +2309,34 @@ void BorderData::CompileColor(TString& atts, border_side side)
 			break;
 		}
 	}
+}
+
+bool BorderData::CompileStyle(TString& atts, border_side side)
+{
+	for (UINT Rust = 0; Rust < WEB_BORDER_STYLE_COUNT; Rust++)
+	{
+		if (!styleStrings[Rust].str.Compare(atts))
+		{
+			switch (side)
+			{
+			case border_side::bs_bottom:
+				this->bottomStyle = styleStrings[Rust].style;
+				break;
+			case border_side::bs_left:
+				this->leftStyle = styleStrings[Rust].style;
+				break;
+			case border_side::bs_right:
+				this->rightStyle = styleStrings[Rust].style;
+				break;
+			case border_side::bs_top:
+				this->topStyle = styleStrings[Rust].style;
+				break;
+			default:
+				this->borderStyle = styleStrings[Rust].style;
+			}
+			return true;
+		}
+	}
+
+	return false;
 }
