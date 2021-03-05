@@ -2340,3 +2340,26 @@ bool BorderData::CompileStyle(TString& atts, border_side side)
 
 	return false;
 }
+
+
+TColorSet::TColorSet()
+{
+	set = false;
+}
+TColorSet::TColorSet(const TColorSet& copy)
+{
+	set = copy.set;
+	color = copy.color;
+}
+TColorSet TColorSet::operator=(const TColorSet& copy)
+{
+	set = copy.set;
+	color = copy.color;
+	return *this;
+}
+TColorSet TColorSet::operator=(const TColor& color)
+{
+	set = true;
+	this->color = color;
+	return *this;
+}

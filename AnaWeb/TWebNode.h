@@ -154,6 +154,18 @@ public:
         fontStyleUpdated, fontWeightUpdated, lineSpacingUpdated, textColorUpdated;
 };
 
+class ANA_WEB_DLL TColorSet
+{
+public:
+    TColorSet();
+    TColorSet(const TColorSet& copy);
+    TColorSet operator=(const TColorSet& color);
+    TColorSet operator=(const TColor& color);
+
+    TColor color;
+    bool set;
+};
+
 class ANA_WEB_DLL BorderData
 {
 public:
@@ -170,7 +182,8 @@ public:
 
     border_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
     USHORT thick, topThick, bottomThick, rightThick, leftThick;
-    TColor color, topColor, bottomColor, rightColor, leftColor;
+    TColor color;
+    TColorSet topColor, bottomColor, rightColor, leftColor;
 
 
 };
