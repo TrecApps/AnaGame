@@ -71,7 +71,7 @@ public:
 	 * Parameters: HWND window -  the window to get the size from
 	 * Returns: void
 	 */
-	void Resize(HWND window, RECT size, TrecComPointer<IDXGISurface1> surface);
+	void Resize(HWND window, RECT size, TrecPointer<TWindowEngine> surface);
 
 
 	void Prep3DResize();
@@ -346,9 +346,19 @@ private:
 	bool usePrimaryDc;
 
 	/**
+	 * Used to determine if Drawing Board is Drawing or not
+	 */
+	bool isDrawing;
+
+	/**
 	 * Whether we are in 3D mode or not
 	 */
 	TrecComPointer<IDXGISurface1> surface3D;
+
+	/**
+	 * The Engine to facilitate Video Processing Drawing
+	 */
+	TrecPointer<TWindowEngine> d3dEngine;
 
 	/**
 	 * the factory object the Board is working with, used to retieve Geometries

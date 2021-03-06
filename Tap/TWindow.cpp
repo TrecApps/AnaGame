@@ -33,8 +33,8 @@ static BLENDFUNCTION blendFunc = {
  */
 TWindow::TWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins)
 {
-	currentWindow = CreateWindowW(winClass.GetConstantBuffer(),
-		name.GetConstantBuffer(), style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent, nullptr, ins->GetInstanceHandle(), nullptr);
+	currentWindow = CreateWindowW(winClass.GetConstantBuffer().getBuffer(),
+		name.GetConstantBuffer().getBuffer(), style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent, nullptr, ins->GetInstanceHandle(), nullptr);
 
 	if (!currentWindow)
 	{
@@ -507,17 +507,15 @@ void TWindow::OnWindowResize(UINT width, UINT height)
 	if (mainPage.Get())
 		mainPage->OnResize(newLoc, 0, d3dEngine);
 
-	TrecComPointer<IDXGISurface1> surf;
 	if (d3dEngine.Get())
 	{
 		if (drawingBoard.Get())
 			drawingBoard->Prep3DResize();
 		d3dEngine->Resize(width, height);
-		surf = d3dEngine->GetSurface();
 	}
 	if (drawingBoard.Get())
 	{
-		drawingBoard->Resize(currentWindow, size, surf);
+		drawingBoard->Resize(currentWindow, size, d3dEngine);
 	}
 
 	//safeToDraw = safeToDraw & 0b11111101;
@@ -730,7 +728,7 @@ bool TWindow::SetUp3D()
 		return false;
 	}
 
-	drawingBoard->Resize(currentWindow, size, d3dEngine->GetSurface());
+	drawingBoard->Resize(currentWindow, size, d3dEngine);
 
 
 	return true;

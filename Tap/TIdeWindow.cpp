@@ -130,15 +130,14 @@ void TIdeWindow::OnWindowResize(UINT width, UINT height)
 	lowerLeft->OnResize(zeroRec, 0, d3dEngine);
 	lowerRight->OnResize(zeroRec, 0, d3dEngine);
 	deepConsole->OnResize(bottom, 0, d3dEngine);
-	TrecComPointer<IDXGISurface1> surf;
+
 	if (d3dEngine.Get())
 	{
 		d3dEngine->Resize(width, height);
-		surf = d3dEngine->GetSurface();
 	}
 	if (drawingBoard.Get())
 	{
-		drawingBoard->Resize(currentWindow, size, surf);
+		drawingBoard->Resize(currentWindow, size, d3dEngine);
 	}
 }
 
@@ -753,7 +752,7 @@ UINT TIdeWindow::OpenFile(TrecPointer<TFileShell> shell)
 	TString printOut;
 	printOut.Format(format, shell->GetPath().GetConstantBuffer());
 
-	ATLTRACE(printOut.GetConstantBuffer());
+	ATLTRACE(printOut.GetConstantBuffer().getBuffer());
 }
 
 /**

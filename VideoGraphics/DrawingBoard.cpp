@@ -34,9 +34,10 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 	RECT area;
 
 	usePrimaryDc = true;
+	isDrawing = false;
 	GetClientRect(window, &area);
 
-	Resize(window, area, TrecComPointer<IDXGISurface1>());
+	Resize(window, area, TrecPointer<TWindowEngine>());
 
 	this->window = window;
 
@@ -52,12 +53,14 @@ DrawingBoard::~DrawingBoard()
 
 
 
-void DrawingBoard::Resize(HWND window, RECT size, TrecComPointer<IDXGISurface1> surface)
+void DrawingBoard::Resize(HWND window, RECT size, TrecPointer<TWindowEngine> surface)
 {
 	TObject::ThreadLock();
 	r = size;
 
-	surface3D = surface;
+	d3dEngine = surface;
+	if(surface.Get())
+		surface3D = surface->GetSurface();
 
 	D2D1_RENDER_TARGET_PROPERTIES props;
 	ZeroMemory(&props, sizeof(props));
@@ -575,6 +578,7 @@ void DrawingBoard::BeginDraw()
 	renderer->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 	renderer2->BeginDraw();
 	renderer2->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
+	isDrawing = true;
 	ThreadRelease();
 }
 
@@ -623,6 +627,7 @@ void DrawingBoard::EndDraw()
 		}
 		windowTarget->EndDraw();
 	}
+	isDrawing = false;
 	ThreadRelease();
 }
 
