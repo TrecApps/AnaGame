@@ -48,6 +48,7 @@ AnafaceUI::~AnafaceUI()
  */
 bool AnafaceUI::TookTab(TrecPointer<Tab> tab)
 {
+	ThreadLock();
 	if (bar.AddTab(tab))
 		return true;
 
@@ -57,10 +58,13 @@ bool AnafaceUI::TookTab(TrecPointer<Tab> tab)
 		if (curTab.Get() && curTab->GetContent().Get())
 		{
 			if (curTab->GetContent()->TookTab(tab))
+			{
+				ThreadRelease();
 				return true;
+			}
 		}
 	}
-
+	ThreadRelease();
 	return false;
 }
 
@@ -72,6 +76,7 @@ bool AnafaceUI::TookTab(TrecPointer<Tab> tab)
 */
 bool AnafaceUI::switchView(UINT x)
 {
+	ThreadLock();
 	if (x < bar.GetContentSize())
 	{
 		try
@@ -79,6 +84,7 @@ bool AnafaceUI::switchView(UINT x)
 			auto tab = bar.GetTabAt(x);
 
 			currentContent = tab->GetContent();
+			ThreadRelease();
 			return true;
 		}
 		catch (...)
@@ -86,6 +92,7 @@ bool AnafaceUI::switchView(UINT x)
 			currentContent.Nullify();
 		}
 	}
+	ThreadRelease();
 	return false;
 }
 
@@ -100,6 +107,7 @@ bool AnafaceUI::switchView(UINT x)
  */
 void AnafaceUI::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPointer<TControl> newControl)
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < bar.GetContentSize(); Rust++)
 	{
 		auto tab = bar.GetTabAt(Rust);
@@ -117,7 +125,7 @@ void AnafaceUI::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoi
 			break;
 		}
 	}
-
+	ThreadRelease();
 }
 
 
@@ -134,8 +142,10 @@ void AnafaceUI::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoi
  */
 void AnafaceUI::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (currentContent.Get())
 		currentContent->OnRButtonUp(nFlags, point, mOut, eventAr);
+	ThreadRelease();
 }
 
 /*
@@ -150,6 +160,7 @@ void AnafaceUI::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
  */
 void AnafaceUI::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
+	ThreadLock();
 	if (isContained(point, location))
 	{
 		clickedControl.push_back(this);
@@ -157,7 +168,7 @@ void AnafaceUI::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, T
 		if (currentContent.Get())
 			currentContent->OnLButtonDown(nFlags, point, mOut, eventAr, clickedControl);
 	}
-
+	ThreadRelease();
 }
 
 /*
@@ -172,6 +183,7 @@ void AnafaceUI::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, T
 */
 void AnafaceUI::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
+	ThreadLock();
 	if (isContained(point, location))
 	{
 		if (currentContent.Get())
@@ -180,6 +192,7 @@ void AnafaceUI::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TD
 		}
 		clickedButtons.push_back(this);
 	}
+	ThreadRelease();
 }
 
 /*
@@ -194,6 +207,7 @@ void AnafaceUI::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TD
 */
 void AnafaceUI::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
+	ThreadLock();
 	if (isContained(point, location))
 	{
 		hoverControls.push_back(this);
@@ -204,8 +218,7 @@ void AnafaceUI::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 			currentContent->OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
 		}
 	}
-
-	
+	ThreadRelease();
 }
 
 /*
@@ -219,12 +232,14 @@ void AnafaceUI::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 */
 void AnafaceUI::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (isContained(point, location))
 	{
 		bar.OnLButtonDblClk(nFlags, point, mOut, eventAr);
 		if (currentContent.Get())
 			currentContent->OnLButtonDblClk(nFlags, point, mOut, eventAr);
 	}
+	ThreadRelease();
 }
 
 /*
@@ -238,6 +253,7 @@ void AnafaceUI::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, 
 */
 void AnafaceUI::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (isContained(point, location))
 	{
 		bar.OnLButtonUp(nFlags, point, mOut, eventAr);
@@ -247,6 +263,7 @@ void AnafaceUI::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 		if (currentContent.Get())
 			currentContent->OnLButtonUp(nFlags, point, mOut, eventAr);
 	}
+	ThreadRelease();
 }
 
 /*
@@ -262,9 +279,10 @@ void AnafaceUI::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 */
 bool AnafaceUI::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	if (currentContent.Get())
-		return currentContent->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut, eventAr);
-	return false;
+	ThreadLock();
+	bool ret = currentContent.Get() ? currentContent->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut, eventAr) : false;
+	ThreadRelease();
+	return ret;
 }
 
 
@@ -276,6 +294,7 @@ bool AnafaceUI::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, mes
 */
 bool AnafaceUI::onCreate(D2D1_RECT_F container, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	windowEngine = d3d;
 	TControl::onCreate(container,d3d);
 	D2D1_RECT_F r;
@@ -335,7 +354,7 @@ bool AnafaceUI::onCreate(D2D1_RECT_F container, TrecPointer<TWindowEngine> d3d)
 		if (!c)
 			currentContent = cContent;
 	}
-
+	ThreadRelease();
 	return false;
 }
 
@@ -349,6 +368,7 @@ bool AnafaceUI::onCreate(D2D1_RECT_F container, TrecPointer<TWindowEngine> d3d)
  */
 int AnafaceUI::addControl(TrecPointer<TabContent> control, TString tabName)
 {
+	ThreadLock();
 	if (control.Get() && control->HasContent())
 	{
 		if (control->GetContentType() == TabContentType::tct_control)
@@ -359,6 +379,7 @@ int AnafaceUI::addControl(TrecPointer<TabContent> control, TString tabName)
 				if (newControl.Get() == children.ElementAt(c).Get())
 				{
 					currentContent = control;
+					ThreadRelease();
 					return c;
 				}
 			}
@@ -371,9 +392,11 @@ int AnafaceUI::addControl(TrecPointer<TabContent> control, TString tabName)
 			
 		auto tab = bar.AddTab(tabName);
 		tab->SetContent(control);
-
-		return bar.GetContentSize();;
+		int ret =  bar.GetContentSize();;
+		ThreadRelease();
+		return ret;
 	}
+	ThreadRelease();
 	return -1;
 }
 
@@ -388,9 +411,13 @@ int AnafaceUI::addControl(TrecPointer<TabContent> control, TString tabName)
 */
 void AnafaceUI::onDraw(TObject* obj)
 {
+	ThreadLock();
 	//TControl::onDraw();
 	if (!isActive)
+	{
+		ThreadRelease();
 		return;
+	}
 	if (mState == messageState::mouseLClick)
 	{
 		if (content3.Get())
@@ -440,6 +467,7 @@ void AnafaceUI::onDraw(TObject* obj)
 		bar.onDraw(obj);
 	if (currentContent.Get())
 		currentContent->Draw(obj);
+	ThreadRelease();
 }
 
 /*
@@ -450,9 +478,10 @@ void AnafaceUI::onDraw(TObject* obj)
 */
 TrecPointer<TControl> AnafaceUI::GetChildAt(UINT c)
 {
-	if (c < children.Count())
-		return children.ElementAt(c);
-	return TrecPointer<TControl>();
+	ThreadLock();
+	auto ret = (c < children.Count()) ? children.ElementAt(c) : TrecPointer<TControl>();
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -463,7 +492,10 @@ TrecPointer<TControl> AnafaceUI::GetChildAt(UINT c)
 */
 TrecPointer<TabContent> AnafaceUI::GetCurrentChild()
 {
-	return currentContent;
+	ThreadLock();
+	auto ret = currentContent;
+	ThreadRelease();
+	return ret;
 }
 
 /*

@@ -49,6 +49,7 @@ TSpreadSheet::~TSpreadSheet()
  */
 bool TSpreadSheet::onCreate(D2D1_RECT_F l, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	winEngine = d3d;
 
 	// Clears all children, as the Spreadsheet is supposed to handle child controls internally
@@ -199,6 +200,7 @@ bool TSpreadSheet::onCreate(D2D1_RECT_F l, TrecPointer<TWindowEngine> d3d)
 	if (valpoint.Get() && !valpoint->Compare(L"True"))
 		stickToNums = true;
 
+	ThreadRelease();
 	return false;
 }
 
@@ -210,6 +212,7 @@ bool TSpreadSheet::onCreate(D2D1_RECT_F l, TrecPointer<TWindowEngine> d3d)
  */
 void TSpreadSheet::onDraw(TObject* obj)
 {
+	ThreadLock();
 	if (drawLines && internalBrush.Get())
 	{
 		int add = 0;
@@ -228,6 +231,7 @@ void TSpreadSheet::onDraw(TObject* obj)
 		}
 	}
 	TControl::onDraw(obj);
+	ThreadRelease();
 }
 
 /**
@@ -249,6 +253,7 @@ TString TSpreadSheet::GetData()
 	TString returnable;
 
 	UINT start = 0;
+	ThreadLock();
 	if (hasTitle)
 		start = columnLines.Size();
 
@@ -263,6 +268,7 @@ TString TSpreadSheet::GetData()
 		returnable += ttf->GetText();
 	}
 
+	ThreadRelease();
 	return returnable;
 }
 
@@ -274,7 +280,10 @@ TString TSpreadSheet::GetData()
  */
 TString TSpreadSheet::GetDataSplitTokens()
 {
-	return splitTokens;
+	ThreadLock();
+	TString ret(splitTokens);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -288,9 +297,12 @@ TString TSpreadSheet::GetDataSplitTokens()
  */
 void TSpreadSheet::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
+	ThreadLock();
 	if (!isContained(&point, &location))
+	{
+		ThreadRelease();
 		return;
-
+	}
 	TPoint relPoint{ point.x - location.left, point.y - location.top };
 	UINT Rust, addUp = 0;
 	for (Rust = 0; Rust < columnLines.Size(); Rust++)
@@ -300,7 +312,10 @@ void TSpreadSheet::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut
 			break;
 	}
 	if (Rust == columnLines.Size())
+	{
+		ThreadRelease();
 		return;
+	}
 	UINT x_loc = Rust;
 
 	for (Rust = 0, addUp = 0; Rust < rowLines.Size(); Rust++)
@@ -310,7 +325,10 @@ void TSpreadSheet::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut
 			break;
 	}
 	if (Rust == rowLines.Size())
+	{
+		ThreadRelease();
 		return;
+	}
 	UINT y_loc = Rust;
 
 	TrecPointer<TControl> tc = GetLayoutChild(x_loc, y_loc);
@@ -345,4 +363,5 @@ void TSpreadSheet::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut
 	}
 
 	tc->OnLButtonDown(nFlags, point, mOut, eventAr, clickedControl);
+	ThreadRelease();
 }

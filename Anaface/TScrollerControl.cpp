@@ -32,12 +32,17 @@ TScrollerControl::TScrollerControl(TrecPointer<DrawingBoard> rt, TrecPointer<TAr
  */
 void TScrollerControl::onDraw(TObject* obj)
 {
+	ThreadLock();
 	if (!isActive || !childControl.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if ((location.bottom - location.top) < 1 || (location.right - location.left) < 1)
+	{
+		ThreadRelease();
 		return;
-
+	}
 
 
 	RefreshScroll();
@@ -69,6 +74,7 @@ void TScrollerControl::onDraw(TObject* obj)
 	if (hScroll.Get())
 		hScroll->onDraw(drawingBoard->GetRenderer().Get());
 
+	ThreadRelease();
 }
 
 /**
@@ -79,9 +85,11 @@ void TScrollerControl::onDraw(TObject* obj)
  */
 void TScrollerControl::SetChildControl(TrecPointer<TControl> cont)
 {
+	ThreadLock();
 	childControl = cont;
 	children.Clear();
 	TControl::addChild(cont);
+	ThreadRelease();
 }
 
 /**
@@ -92,8 +100,10 @@ void TScrollerControl::SetChildControl(TrecPointer<TControl> cont)
  */
 void TScrollerControl::Resize(D2D1_RECT_F& loc)
 {
+	ThreadLock();
 	location = loc;
 	RefreshScroll();
+	ThreadRelease();
 }
 
 /**
@@ -107,9 +117,13 @@ void TScrollerControl::Resize(D2D1_RECT_F& loc)
  */
 void TScrollerControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
+	ThreadLock();
 	if (!isContained(&point, &location))
-		return;
+	{
 
+		ThreadRelease(); 
+		return;
+	}
 	if (vScroll.Get() && vScroll->OnLButtonDown(nFlags, point, mOut))
 	{
 		resetArgs();
@@ -120,6 +134,7 @@ void TScrollerControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.control = nullptr;
 
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Select_Scroller, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), vScroll));
+		ThreadRelease();
 		return;
 	}
 
@@ -134,11 +149,13 @@ void TScrollerControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.control = nullptr;
 
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Select_Scroller, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), hScroll));
+		ThreadRelease();
 		return;
 	}
 
 	if (childControl.Get())
 		childControl->OnLButtonDown(nFlags, point, mOut, eventAr, clickedButtons);
+	ThreadRelease();
 }
 /**
  * Method: TScrollerControl::OnMouseMove Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
@@ -151,17 +168,20 @@ void TScrollerControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
  */
 void TScrollerControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
+	ThreadLock();
 	if (onScrollFocus)
 	{
 		if (vScroll.Get())
 			vScroll->OnMouseMove(nFlags, point, mOut);
 		if (hScroll.Get())
 			hScroll->OnMouseMove(nFlags, point, mOut);
+		ThreadRelease();
 		return;
 	}
 
 	if (childControl.Get())
 		childControl->OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
+	ThreadRelease();
 }
 /**
  * Method: TScrollerControl::OnLButtonUp
@@ -174,6 +194,7 @@ void TScrollerControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
  */
 void TScrollerControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (vScroll.Get())
 		vScroll->OnLButtonUp(nFlags, point, mOut);
 	if (hScroll.Get())
@@ -182,12 +203,15 @@ void TScrollerControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 	if (childControl.Get())
 		childControl->OnLButtonUp(nFlags, point, mOut, eventAr);
 	onScrollFocus = false;
+	ThreadRelease();
 }
 
 void TScrollerControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (childControl.Get())
 		childControl->OnLButtonDblClk(nFlags, point, mOut, eventAr);
+	ThreadRelease();
 }
 
 /**
@@ -198,15 +222,20 @@ void TScrollerControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput*
  */
 TrecPointer<TControl> TScrollerControl::GetChildControl()
 {
-	return childControl;
+	ThreadLock();
+	auto ret = childControl;
+	ThreadRelease();
+	return ret;
 }
 bool TScrollerControl::onScroll(float x,float y)
 {
+	ThreadRelease();
 	if (childControl.Get())
 	{
 		childControl->onScroll(x, y);
 	}
 
+	ThreadRelease();
 	return true;
 }
 /**
@@ -218,7 +247,10 @@ bool TScrollerControl::onScroll(float x,float y)
 void TScrollerControl::RefreshScroll()
 {
 	if (!childControl.Get())
+	{
+		ThreadRelease();
 		return;
+	}
 	D2D1_RECT_F childLocation = childControl->getLocation();
 	if (!vScroll.Get() && ((location.bottom - location.top) < (childLocation.bottom - childLocation.top)))
 	{
@@ -248,4 +280,5 @@ void TScrollerControl::RefreshScroll()
 		vScroll->Refresh(clipRect, childLocation);
 	if (hScroll.Get())
 		hScroll->Refresh(clipRect, childLocation);
+	ThreadRelease();
 }
