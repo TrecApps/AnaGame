@@ -452,7 +452,8 @@ void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStateme
     TDataArray<TString> subStatements;  // Holds the sub-Statements
     TString subStatement;               // The SubStatement in the moment
 
-    WCHAR quote = L'\0';
+    WCHAR quote = L'\0', open = L'\0';
+    UINT openStack = 0;
 
     for (UINT Rust = 0; Rust < statement->statement.GetSize(); Rust++)
     {
@@ -461,12 +462,13 @@ void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStateme
         switch (ch)
         {
         case L',':
-            if (!quote && subStatement.GetSize())
+            if (!quote && !openStack && subStatement.GetSize())
             {
                 subStatements.push_back(subStatement);
                 subStatement.Empty();
                 continue;
             }
+            break;
         case L'\'':
         case L'\"':
         case L'`':
@@ -474,9 +476,31 @@ void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStateme
                 quote = ch;
             else if (quote == ch)
                 quote = L'\0';
-        default:
-            subStatement.AppendChar(ch);
+            break;
+        case L'(':
+        case L'[':
+            if (!quote && (!openStack || open == ch))
+            {
+                openStack++;
+                open = ch;
+            }
+            break;
+        case L')':
+            if (!quote && openStack && open == L'(')
+            {
+                openStack--;
+                open = ch;
+            }
+            break;
+        case L']':
+            if (!quote && openStack && open == L'[')
+            {
+                openStack--;
+                open = ch;
+            }
+            break;
         }
+        subStatement.AppendChar(ch);
     }
     if (subStatement.GetSize())
     {
