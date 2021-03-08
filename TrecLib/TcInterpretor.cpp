@@ -276,6 +276,7 @@ void TcInterpretor::SetActiveObject(TrecPointer<TVariable> var)
 ReturnObject::ReturnObject()
 {
 	returnCode = 0;
+	nextCount = 0;
 	mode = return_mode::rm_regular;
 }
 
@@ -293,5 +294,7 @@ ReturnObject::ReturnObject(const ReturnObject& copy)
 	mode = copy.mode;
 
 	stackTrace = copy.stackTrace;
+
+	nextCount = copy.nextCount;
 }
 

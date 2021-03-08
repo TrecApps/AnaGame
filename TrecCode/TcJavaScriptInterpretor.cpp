@@ -1,5 +1,6 @@
 #include "TcJavaScriptInterpretor.h"
 #include <TSpecialVariable.h>
+#include <TStringVariable.h>
 
 
 COMPILE_TYPE TcJavaScriptInterpretor::CanCompile()
@@ -87,6 +88,66 @@ TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInt
     TcInterpretor(parentInterpretor, env)
 {
     readyToRun = false;
+}
+
+int TcJavaScriptInterpretor::DetermineParenthStatus(const TString& string)
+{
+    WCHAR quote = L'\0';
+    UINT backslashStack = 0;
+    int ret = 0;
+    for (UINT Rust = 0; Rust < string.GetSize(); Rust++)
+    {
+        WCHAR ch = string.GetAt(Rust);
+
+        switch (ch)
+        {
+        case L'`':
+        case L'\'':
+        case L'\"':
+            if (!quote)
+                quote = ch;
+            else if (quote == ch && !(backslashStack % 2))
+                quote = ch;
+            break;
+        case L'(':
+            if (!quote)
+                ret++;
+            break;
+        case L')':
+            if (!quote)
+                ret--;
+            break;
+        }
+
+        if (ch == L'\\')
+            backslashStack++;
+        else
+            backslashStack = 0;
+    }
+
+    return ret;
+}
+
+void TcJavaScriptInterpretor::SetStatements(TDataArray<TrecPointer<CodeStatement>>& statements)
+{
+    this->statements = statements;
+}
+
+void TcJavaScriptInterpretor::SetStatementToBlock(TrecPointer<CodeStatement>& statement, ReturnObject& ret)
+{
+    if (statement->block.Size())
+    {
+        TrecSubPointer<TVariable, TcInterpretor> updatedSelf = TrecPointerKey::GetSubPointerFromSoft<>(self);
+        TrecSubPointer<TVariable, TcJavaScriptInterpretor> tcJsInt = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(updatedSelf, environment);
+
+        tcJsInt->SetStatements(statement->block);
+        tcJsInt->PreProcess(ret);
+        if (ret.returnCode)
+            return;
+
+        statement->statementVar = TrecPointerKey::GetTrecPointerFromSub<TVariable, TcJavaScriptInterpretor>(tcJsInt);
+        statement->block.RemoveAll();
+    }
 }
 
 ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements)
@@ -202,14 +263,37 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         state->statement.Delete(0, 2);
 
         state->statement.Trim();
+
         if (!state->statement.StartsWith(L'(') || !state->statement.EndsWith(L')'))
         {
             ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
             ret.errorMessage.Set(L"expected 'if' statement to be surrounded by ()");
+            return;
+        }
+
+        auto curState = state;
+
+        int parenthState = DetermineParenthStatus(state->statement);
+
+        while (state->next.Get() && parenthState > 0)
+        {
+            state = state->next;
+            parenthState += DetermineParenthStatus(state->statement);
+        }
+
+        if (parenthState < 0)
+        {
+            ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+            ret.errorMessage.Format(L"expected 'if' statement to be surrounded by (), but there are %d extra ')' detected!", abs(parenthState));
+        }
+        else if (parenthState > 0)
+        {
+            ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+            ret.errorMessage.Format(L"expected 'if' statement to be surrounded by (), but statement needs %d more ')' to close!", abs(parenthState));
         }
         else
         {
-            PreProcess(ret, state->block);
+            SetStatementToBlock(state, ret);
             if (ret.returnCode) return;
             PreProcess(ret, state->next);
         }
@@ -248,6 +332,29 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
                 ret.errorMessage.Set(L"expected 'if' statement to be surrounded by ()");
                 return;
             }
+
+            auto curState = state;
+
+            int parenthState = DetermineParenthStatus(state->statement);
+
+            while (state->next.Get() && parenthState > 0)
+            {
+                state = state->next;
+                parenthState += DetermineParenthStatus(state->statement);
+            }
+
+            if (parenthState < 0)
+            {
+                ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+                ret.errorMessage.Format(L"expected 'if' statement to be surrounded by (), but there are %d extra ')' detected!", abs(parenthState));
+                return;
+            }
+            else if (parenthState > 0)
+            {
+                ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+                ret.errorMessage.Format(L"expected 'if' statement to be surrounded by (), but statement needs %d more ')' to close!", abs(parenthState));
+                return;
+            }
         }
         else
         {
@@ -268,7 +375,29 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         if (!state->statement.StartsWith(L'(') || !state->statement.EndsWith(L')'))
         {
             ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
-            ret.errorMessage.Set(L"expected 'while' statement to be surrounded by ()");
+            ret.errorMessage.Set(L"expected 'if' statement to be surrounded by ()");
+            return;
+        }
+
+        auto curState = state;
+
+        int parenthState = DetermineParenthStatus(state->statement);
+
+        while (state->next.Get() && parenthState > 0)
+        {
+            state = state->next;
+            parenthState += DetermineParenthStatus(state->statement);
+        }
+
+        if (parenthState < 0)
+        {
+            ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+            ret.errorMessage.Format(L"expected 'if' statement to be surrounded by (), but there are %d extra ')' detected!", abs(parenthState));
+        }
+        else if (parenthState > 0)
+        {
+            ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+            ret.errorMessage.Format(L"expected 'if' statement to be surrounded by (), but statement needs %d more ')' to close!", abs(parenthState));
         }
         else
         {
@@ -571,6 +700,45 @@ void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStateme
 
 void TcJavaScriptInterpretor::ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
+    TcJavaScriptInterpretor* jsVar = nullptr;
+    switch (statement->statementType)
+    {
+    case code_statement_type::cst_if:
+    case code_statement_type::cst_else_if:
+        ProcessExpression(statement, ret);
+        if (ret.returnCode)
+            return;
+
+        for (; ret.nextCount && statement.Get(); ret.nextCount--)
+        {
+            statement = statement->next;
+        }
+
+        if (!statement.Get())
+        {
+            ret.returnCode = ReturnObject::ERR_INTERNAL;
+            ret.errorMessage.Set(L"INTERNAL ERROR! This is an error with the Interpretor itself and might not have been caused by your code!");
+            return;
+        }
+
+        if (IsTruthful(ret.errorObject) && statement->statementVar.Get())
+        {
+            jsVar = dynamic_cast<TcJavaScriptInterpretor*>(statement->statementVar.Get());
+            if (jsVar)
+                ret = jsVar->Run();
+        }
+        else if (statement->next.Get())
+            ProcessBasicFlow(statement->next, ret);
+        break;
+    case code_statement_type::cst_else:
+        jsVar = dynamic_cast<TcJavaScriptInterpretor*>(statement->statementVar.Get());
+        if (jsVar)
+            ret = jsVar->Run();
+        break;
+    default:
+        if (statement->next.Get())
+            ProcessBasicFlow(statement->next, ret);
+    }
 }
 
 void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret)
@@ -587,4 +755,23 @@ void TcJavaScriptInterpretor::ProcessTryCatchFinally(TrecPointer<CodeStatement> 
 
 void TcJavaScriptInterpretor::ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
+}
+
+bool TcJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
+{
+    if (!var.Get())
+        return false;
+
+    switch (var->GetVarType())
+    {
+    case var_type::string:
+        // If a String, then only the Empty String is considered Falsy
+        return dynamic_cast<TStringVariable*>(var.Get())->GetSize() > 0;
+    case var_type::primitive:
+        // If a Primitive value, boolean false, 
+        return var->Get8Value() > 0;
+    }
+
+
+    return true;
 }

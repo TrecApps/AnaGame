@@ -71,6 +71,7 @@ public:
     USHORT returnCode;                  // 0 if working, error otherwise
     TDataArray<TString> stackTrace;     // stack trace info
     return_mode mode;                   // Mode, the context in which an operation ended
+    USHORT nextCount;                   // How many Statements were part of a single Expression (statement and next statement)
 
 
     /**
@@ -106,6 +107,7 @@ public:
 
     const static USHORT ERR_THROWN = 19;
     const static USHORT ERR_GENERIC_ERROR = 20;
+    const static USHORT ERR_INTERNAL = 21;          // Indicates an Issue that the Interpretor has detected witin itself
 
 };
 

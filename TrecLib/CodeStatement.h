@@ -104,14 +104,15 @@ public:
      */
     bool IsEmpty();
 
-    UINT lineStart;     // the line in the file the statement begins
-    UINT lineEnd;       // The line where the statement ends
-    TString statement;  // The Statement
-    TDataArray<TrecPointer<CodeStatement>> block;
-    TrecPointer<CodeStatement> next;
-    TrecPointerSoft<CodeStatement> parent;
-    code_statement_type statementType;
-    USHORT space, tab;
+    UINT lineStart;                                 // the line in the file the statement begins
+    UINT lineEnd;                                   // The line where the statement ends
+    TString statement;                              // The Statement
+    TDataArray<TrecPointer<CodeStatement>> block;   // The block within this statement
+    TrecPointer<TVariable> statementVar;            // Can be used by Interpretors to create a variable for this statement (likely an Interpretor to hold onto the block)
+    TrecPointer<CodeStatement> next;                // Portions of the statement that come after the block (singly-linked list
+    TrecPointerSoft<CodeStatement> parent;          // Statement holding onto this statement
+    code_statement_type statementType;              // type of Statement, set by the interpretor to aid in processing (narrow down how statement should be processed
+    USHORT space, tab;                              // Used by interpretors that use indentation to determine blocks
 };
 
 

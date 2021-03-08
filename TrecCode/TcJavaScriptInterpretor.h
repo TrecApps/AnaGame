@@ -95,6 +95,31 @@ public:
 protected:
 
     /**
+     * Method: TcJavaScriptInterpretor::DetermineParenthStatus
+     * Purpose: Reports whether there are more open or closed parenthesis
+     * Parameters: const TString& string - string to read
+     * Returns: int - negative (more close than open parenth), positive (more open than close) or 0 (equal count)
+     */
+    int DetermineParenthStatus(const TString& string);
+
+    /**
+     * Method: TcJavaScriptInterpretor::SetStatements
+     * Purpose: Allows Interpretors to set the statements of child Interpretors
+     * Parameters: TDataArray<TrecPointer<CodeStatement>>& statements - the statements to set
+     * Returns: void
+     */
+    void SetStatements(TDataArray<TrecPointer<CodeStatement>>& statements);
+
+    /**
+     * Method: TcJavaScriptInterpretor::SetStatementToBlock
+     * Purpose: Updates a Statement to use an Interpretor to enable Scoping
+     * Parameters: TrecPointer<CodeStatement>& statement - the statement to update
+     *              ReturnObject& ret - offers return information
+     * Returns: void
+     */
+    void SetStatementToBlock(TrecPointer<CodeStatement>& statement, ReturnObject& ret);
+
+    /**
      * Method: TcJavaScriptInterpretor::Run
      * Purpose: Allows the Interpretor to run the Code As Is
      * Parameters: void
@@ -147,5 +172,8 @@ protected:
     void ProcessFor(TrecPointer<CodeStatement> statement, ReturnObject& ret);                   // Call for for statements
     void ProcessTryCatchFinally(TrecPointer<CodeStatement> statement, ReturnObject& ret);       // Call for the Try/catch/finally blocks
     void ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret);                // Call for Switch Statements
+
+    // Helper Methods for the Process-Methods
+    bool IsTruthful(TrecPointer<TVariable> var);
 };
 
