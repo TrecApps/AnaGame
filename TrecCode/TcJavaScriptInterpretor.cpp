@@ -743,6 +743,65 @@ void TcJavaScriptInterpretor::ProcessBasicFlow(TrecPointer<CodeStatement> statem
 
 void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
+    TrecPointer<CodeStatement> blockHolder;
+    TrecPointer<CodeStatement> expreHolder;
+    TcJavaScriptInterpretor* jsVar = nullptr;
+    if (statement->statementType == code_statement_type::cst_do)
+    {
+        blockHolder = statement;
+        expreHolder = statement->next;
+        if (!expreHolder.Get() || expreHolder->statementType != code_statement_type::cst_while)
+        {
+            ret.errorMessage.Set(L"Error in Do-While Statement, expected while clause after do-block!");
+            ret.returnCode = ReturnObject::ERR_INCOMPLETE_STATEMENT;
+            ret;
+        }
+        jsVar = dynamic_cast<TcJavaScriptInterpretor*>(blockHolder->statementVar.Get());
+        if (!jsVar)
+            return;
+        jsVar->Run();
+        ProcessExpression(expreHolder, ret);
+        if (ret.returnCode)
+            return;
+    }
+    else
+    {
+        expreHolder = statement;
+        blockHolder = statement;
+        ProcessExpression(statement, ret);
+        if (ret.returnCode)
+            return;
+
+        for (; ret.nextCount && blockHolder.Get(); ret.nextCount--)
+        {
+            blockHolder = blockHolder->next;
+        }
+        if (!blockHolder.Get())
+        {
+            ret.returnCode = ReturnObject::ERR_INTERNAL;
+            ret.errorMessage.Set(L"INTERNAL ERROR! This is an error with the Interpretor itself and might not have been caused by your code!");
+            return;
+        }
+        jsVar = dynamic_cast<TcJavaScriptInterpretor*>(blockHolder->statementVar.Get());
+        if (!jsVar)
+            return;
+    }
+
+    
+    if (statement->statementType == code_statement_type::cst_do)
+        jsVar->Run();
+
+    while (IsTruthful(ret.errorObject))
+    {
+        jsVar->Run();
+        ProcessExpression(expreHolder, ret);
+        if (ret.returnCode)
+            return;
+    }
+
+    if (statement->statementType == code_statement_type::cst_do)
+        ret = Run(expreHolder);
+    else ret = Run(blockHolder);
 }
 
 void TcJavaScriptInterpretor::ProcessFor(TrecPointer<CodeStatement> statement, ReturnObject& ret)
