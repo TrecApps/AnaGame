@@ -95,7 +95,7 @@ TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 	internalDisplay = WebNodeDisplayInternal::wndi_not_set;
 	doDisplay = shouldDraw = true;
 	isListItem = false;
-	location = D2D1::RectF();
+	location = innerMargin = outerMargin = D2D1::RectF();
 	columnSpan = rowSpan = 1;
 }
 
@@ -1205,7 +1205,7 @@ void TWebNode::OnDraw()
 	if (!shouldDraw)
 		return;
 	// To-Do: Draw Self Content once such resources are added to the node
-
+	DrawBorder();
 
 	// Now draw the ChildNodes
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
@@ -1564,6 +1564,13 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 	if (!textNode.Get() || textNode->type != NodeContainerType::nct_text || !dynamic_cast<TTextField*>(textNode->control.Get()))
 		return;
 
+	// Limit the location based off of the margins and borders
+	loc.left += innerMargin.left + borderData.GetBorderThickness(border_side::bs_left);
+	loc.right -= (innerMargin.right + borderData.GetBorderThickness(border_side::bs_right));
+	loc.top += innerMargin.top + borderData.GetBorderThickness(border_side::bs_top);
+
+
+
 	TTextField* textField = dynamic_cast<TTextField*>(textNode->control.Get());
 	textField->addAttribute(L"|CanEdit", falseString);
 	textField->onCreate(loc, TrecPointer<TWindowEngine>());
@@ -1918,6 +1925,77 @@ float TWebNode::NeedsWidth(UINT column)
 	}
 
 	return 0.0f;
+}
+
+/**
+ * Method: TWebNode::DrawBorder
+ * Purpose: Holds the logic for actually drawing a border around the content
+ * Parameters: void
+ * Returns: void
+ */
+void TWebNode::DrawBorder()
+{
+	TColor color;
+
+	// Start with the top border
+	float curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_top));
+	if (curThick)
+	{
+		borderData.GetBorderColor(color, border_side::bs_top);
+		if (!borderData.brush.Get())
+			borderData.brush = board->GetBrush(color);
+		else borderData.brush->SetColor(color);
+		if (borderData.brush.Get())
+		{
+			float top = location.top + (static_cast<float>(curThick) / 2.0f);
+			borderData.brush->DrawLine(D2D1::Point2F(location.left, top), D2D1::Point2F(location.right, top), curThick);
+		}
+	}
+
+	// go for the right border
+	curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_right));
+	if (curThick)
+	{
+		borderData.GetBorderColor(color, border_side::bs_right);
+		if (!borderData.brush.Get())
+			borderData.brush = board->GetBrush(color);
+		else borderData.brush->SetColor(color);
+		if (borderData.brush.Get())
+		{
+			float right = location.right - (static_cast<float>(curThick) / 2.0f);
+			borderData.brush->DrawLine(D2D1::Point2F(right, location.top), D2D1::Point2F(right, location.bottom), curThick);
+		}
+	}
+
+	// now the left border
+	curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_left));
+	if (curThick)
+	{
+		borderData.GetBorderColor(color, border_side::bs_left);
+		if (!borderData.brush.Get())
+			borderData.brush = board->GetBrush(color);
+		else borderData.brush->SetColor(color);
+		if (borderData.brush.Get())
+		{
+			float left = location.left + (static_cast<float>(curThick) / 2.0f);
+			borderData.brush->DrawLine(D2D1::Point2F(left, location.top), D2D1::Point2F(left, location.bottom), curThick);
+		}
+	}
+
+	// finally, the bottom border
+	curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_bottom));
+	if (curThick)
+	{
+		borderData.GetBorderColor(color, border_side::bs_bottom);
+		if (!borderData.brush.Get())
+			borderData.brush = board->GetBrush(color);
+		else borderData.brush->SetColor(color);
+		if (borderData.brush.Get())
+		{
+			float bottom = location.bottom + (static_cast<float>(curThick) / 2.0f);
+			borderData.brush->DrawLine(D2D1::Point2F(location.left, bottom), D2D1::Point2F(location.right, bottom), curThick);
+		}
+	}
 }
 
 EventPropagater::EventPropagater()
@@ -2341,6 +2419,79 @@ bool BorderData::CompileStyle(TString& atts, border_side side)
 	return false;
 }
 
+USHORT BorderData::GetBorderThickness(border_side side)
+{
+	if (side == border_side::bs_all)
+		return 0; // We need a specific side
+	border_style sideStyle;
+	USHORT sideThick = 0;
+
+	switch (side)
+	{
+	case border_side::bs_bottom:
+		sideStyle = bottomStyle;
+		sideThick = bottomThick;
+		break;
+	case border_side::bs_left:
+		sideStyle = leftStyle;
+		sideThick = leftThick;
+		break;
+	case border_side::bs_right:
+		sideStyle = rightStyle;
+		sideThick = rightThick;
+		break;
+	case border_side::bs_top:
+		sideStyle = topStyle;
+		sideThick = leftThick;
+	}
+
+	bool mainSet = false, sideSet = false;
+	for (UINT Rust = 0; Rust < WEB_BORDER_STYLE_COUNT; Rust++)
+	{
+		auto style = styleStrings[Rust].style;
+		if (style == this->borderStyle)
+			mainSet = true;
+		if (style == sideStyle)
+			sideSet = true;
+	}
+	if (mainSet || sideSet)
+	{
+		return this->thick > sideThick ? this->thick : sideThick;
+	}
+	return 0;
+}
+
+bool BorderData::GetBorderColor(TColor& color, border_side side)
+{
+	if (side == border_side::bs_all)
+		return false;
+	bool ret = false;
+	switch (side)
+	{
+	case border_side::bs_bottom:
+		ret = bottomColor.set;
+		color = bottomColor.color;
+		break;
+	case border_side::bs_left:
+		ret = leftColor.set;
+		color = leftColor.color;
+		break;
+	case border_side::bs_right:
+		ret = rightColor.set;
+		color = rightColor.color;
+		break;
+	case border_side::bs_top:
+		ret = topColor.set;
+		color = topColor.color;
+		break;
+	}
+	if (!ret)
+	{
+		ret = true;
+		color = this->color;
+	}
+	return ret;
+}
 
 TColorSet::TColorSet()
 {

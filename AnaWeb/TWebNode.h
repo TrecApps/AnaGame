@@ -180,11 +180,15 @@ public:
 
     bool CompileStyle(TString& atts, border_side side);
 
+    USHORT GetBorderThickness(border_side side);
+
+    bool GetBorderColor(TColor& color, border_side);
+
     border_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
     USHORT thick, topThick, bottomThick, rightThick, leftThick;
     TColor color;
     TColorSet topColor, bottomColor, rightColor, leftColor;
-
+    TrecPointer<TBrush> brush;
 
 };
 
@@ -503,6 +507,16 @@ protected:
      */
     float NeedsWidth(UINT column);
 
+    // Other Helper Methods
+
+    /**
+     * Method: TWebNode::DrawBorder
+     * Purpose: Holds the logic for actually drawing a border around the content
+     * Parameters: void
+     * Returns: void
+     */
+    void DrawBorder();
+
     // Basic Core atributes of the node
     
     /**
@@ -552,6 +566,11 @@ protected:
      * Location of the Web Node
      */
     D2D1_RECT_F location;
+
+    /**
+     * Margins of the App (inner between text/content and border, outer between border and boundaries)
+     */
+    D2D1_RECT_F innerMargin, outerMargin;
 
     /**
      * Basic string attributes
