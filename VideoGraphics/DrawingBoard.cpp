@@ -579,7 +579,7 @@ void DrawingBoard::BeginDraw()
 	renderer2->BeginDraw();
 	renderer2->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 	isDrawing = true;
-	ThreadRelease();
+	// ThreadRelease();
 }
 
 /**

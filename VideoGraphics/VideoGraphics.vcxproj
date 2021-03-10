@@ -177,6 +177,7 @@
     <ClInclude Include="TGradientStopCollection.h" />
     <ClInclude Include="TMediaSink.h" />
     <ClInclude Include="TPlayer.h" />
+    <ClInclude Include="TPresenter.h" />
     <ClInclude Include="TShaderHost.h" />
     <ClInclude Include="TShaderParser.h" />
     <ClInclude Include="TStreamSink.h" />
@@ -205,6 +206,7 @@
     <ClCompile Include="TGradientStopCollection.cpp" />
     <ClCompile Include="TMediaSink.cpp" />
     <ClCompile Include="TPlayer.cpp" />
+    <ClCompile Include="TPresenter.cpp" />
     <ClCompile Include="TShaderHost.cpp" />
     <ClCompile Include="TShaderParser.cpp" />
     <ClCompile Include="TStreamSink.cpp" />
