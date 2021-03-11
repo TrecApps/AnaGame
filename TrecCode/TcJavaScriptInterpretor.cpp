@@ -155,7 +155,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     ReturnObject ret;
     for (UINT Rust = 0; Rust < statements.Size(); Rust++)
     {
-        ret = Run(statements[Rust]);
+        ret = Run(statements, Rust);
         if (ret.returnCode)
             break;
     }
@@ -164,9 +164,11 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     return ret;
 }
 
-ReturnObject TcJavaScriptInterpretor::Run(TrecPointer<CodeStatement>& statement)
+ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index)
 {
     ReturnObject ret;
+
+    auto statement = statements[index];
 
     switch (statement->statementType)
     {
@@ -236,14 +238,93 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TDataArray<TrecPoint
 {
     for (UINT Rust = 0; Rust < statements.Size(); Rust++)
     {
-        PreProcess(ret, statements[Rust]);
+        auto state = statements[Rust];
+        PreProcess(ret, state);
         if (ret.returnCode)
             return;
 
-        if (statements[Rust]->statementType == code_statement_type::cst_for &&
-            statements[Rust]->block.Size() == 0)
+        if (statements[Rust]->statementType == code_statement_type::cst_for)
         {
             // To-Do: Handle 3 statement for-block
+
+            int parenthState = DetermineParenthStatus(state->statement);
+
+            while (state->next.Get() && parenthState > 0)
+            {
+                state = state->next;
+                parenthState += DetermineParenthStatus(state->statement);
+            }
+
+            if (parenthState < 0)
+            {
+                ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+                ret.errorMessage.Format(L"expected 'for' statement to be surrounded by (), but there are %d extra ')' detected!", abs(parenthState));
+                return;
+            }
+
+            if (parenthState > 0)
+            {
+                // At this point, we expect two more statements before the for block.
+                statements[Rust]->statementType = code_statement_type::cst_for_3;
+                if (!((Rust + 2) < statements.Size()))
+                {
+                    ret.returnCode = ReturnObject::ERR_INCOMPLETE_STATEMENT;
+                    ret.errorMessage.Set(L"Not enough statements to complete the 3-statement 'for' block!");
+                    return;
+                }
+                PreProcess(ret, statements[Rust + 1]);
+                if (ret.returnCode)
+                    return;
+                PreProcess(ret, statements[Rust + 2]);
+                if (ret.returnCode)
+                    return;
+
+                // Assess parenthesis situation in regards to the middle statement
+                state = statements[Rust + 1];
+                parenthState += DetermineParenthStatus(state->statement);
+
+                while (state->next.Get() && parenthState > 0)
+                {
+                    state = state->next;
+                    parenthState += DetermineParenthStatus(state->statement);
+                }
+
+                if (parenthState < 1)
+                {
+                    ret.returnCode = ReturnObject::ERR_INCOMPLETE_STATEMENT;
+                    ret.errorMessage.Set(L"Not enough statements to complete the 3-statement 'for' block!");
+                    return;
+                }
+
+                // Assess parenthesis situation in rgards to the final statement (this statement will have the block (and thus the Interpretor)
+                state = statements[Rust + 2];
+                parenthState += DetermineParenthStatus(state->statement);
+
+                while (state->next.Get() && parenthState > 0)
+                {
+                    state = state->next;
+                    parenthState += DetermineParenthStatus(state->statement);
+                }
+                
+                if (parenthState < 0)
+                {
+                    ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+                    ret.errorMessage.Format(L"expected 'for' statement to be surrounded by (), but there are %d extra ')' detected!", abs(parenthState));
+                }
+                else if (parenthState > 0)
+                {
+                    ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+                    ret.errorMessage.Format(L"expected 'for' statement to be surrounded by (), but statement needs %d more ')' to close!", abs(parenthState));
+                }
+
+
+                SetStatementToBlock(state, ret);
+                if (ret.returnCode)
+                    return;
+
+                Rust += 2;
+            }
+
         }
     }
 }
@@ -392,12 +473,12 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         if (parenthState < 0)
         {
             ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
-            ret.errorMessage.Format(L"expected 'if' statement to be surrounded by (), but there are %d extra ')' detected!", abs(parenthState));
+            ret.errorMessage.Format(L"expected 'while' statement to be surrounded by (), but there are %d extra ')' detected!", abs(parenthState));
         }
         else if (parenthState > 0)
         {
             ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
-            ret.errorMessage.Format(L"expected 'if' statement to be surrounded by (), but statement needs %d more ')' to close!", abs(parenthState));
+            ret.errorMessage.Format(L"expected 'while' statement to be surrounded by (), but statement needs %d more ')' to close!", abs(parenthState));
         }
         else
         {
@@ -405,6 +486,17 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
             if (ret.returnCode) return;
             PreProcess(ret, state->next);
         }
+        return;
+    }
+
+    if (startStatement.StartsWith(L"for", false, true) || startStatement.StartsWith(L"for("))
+    {
+        state->statementType = code_statement_type::cst_while;
+        state->statement.Delete(0, 3);
+
+        PreProcess(ret, state->block);
+        if (ret.returnCode) return;
+        PreProcess(ret, state->next);
         return;
     }
 
@@ -799,12 +891,12 @@ void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement,
             return;
     }
 
-    if (statement->statementType == code_statement_type::cst_do)
-        ret = Run(expreHolder);
-    else ret = Run(blockHolder);
+    //if (statement->statementType == code_statement_type::cst_do)
+    //    ret = Run(expreHolder);
+    //else ret = Run(blockHolder);
 }
 
-void TcJavaScriptInterpretor::ProcessFor(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statement, UINT index, ReturnObject& ret)
 {
 }
 

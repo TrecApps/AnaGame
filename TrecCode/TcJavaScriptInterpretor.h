@@ -133,7 +133,7 @@ protected:
       * Parameters: void
       * Returns: ReturnObject - information about the Run
       */
-     ReturnObject Run(TrecPointer<CodeStatement>& statement);
+     ReturnObject Run(TDataArray<TrecPointer<CodeStatement>>& statement, UINT index);
 
     /**
      * Method: TcJavaScriptInterpretor::PreProcess
@@ -169,7 +169,7 @@ protected:
     void ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret);   // Call for const, let, and var statements
     void ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret);             // Call for if, else, and else if statements
     void ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret);                 // Call For while and do...while
-    void ProcessFor(TrecPointer<CodeStatement> statement, ReturnObject& ret);                   // Call for for statements
+    void ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statement, UINT index, ReturnObject& ret);                   // Call for for statements
     void ProcessTryCatchFinally(TrecPointer<CodeStatement> statement, ReturnObject& ret);       // Call for the Try/catch/finally blocks
     void ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret);                // Call for Switch Statements
 

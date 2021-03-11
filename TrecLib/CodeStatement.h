@@ -37,7 +37,8 @@ typedef enum class code_statement_type
     cst_else,           // Else Statement
     cst_else_if,        // Else if Statement
     cst_while,          // While loop
-    cst_for,            // For loop
+    cst_for,            // For loop (basic or 1-statement)
+    cst_for_3,          // Three statement For-loop
     cst_do,             // do while
     cst_until,          // Until block (the opposite of a while loop, found in perl)
     cst_try,            // Try block (code running in here might encounter an error)
