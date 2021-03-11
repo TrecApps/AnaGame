@@ -20,6 +20,22 @@ typedef enum class TShape {
 	T_Custom_shape
 }TShape;
 
+
+/**
+ * Class: TVideoSlot
+ * Purpose: Used By the DrawingBoard to track Video Frams and where they belong on the Screen
+ */
+class TVideoSlot
+{
+public:
+	TVideoSlot();
+	TVideoSlot(const TVideoSlot& copy);
+
+	bool set;
+	D2D1_RECT_F loc;
+	TrecComPointer<ID2D1Bitmap> frame;
+};
+
 /**
  * Class: DrawingBoard
  * Purpose: Holds the Direct2D RenderTarget and provides methods on manipulatingit and retrieving Brushes to draw upon it
@@ -332,7 +348,57 @@ public:
 	 */
 	void FillControlBackground(const D2D1_RECT_F& location, TShape shape = TShape::T_Rect);
 
+	/// Methods to manage Video Slots in the board
+
+	/**
+	 * Method: DrawingBoard::AddFrameSlot
+	 * Purpose: Alows a Media Sink and it's associated objects to register itself for a frame 
+	 * Parameters: void
+	 * Returns: UINT - index of the slot in the list
+	 */
+	UINT AddFrameSlot();
+
+	/**
+	 * Method: DrawingBoard::SetFrame
+	 * Purpose: Allows Video Display Managers to set the next Frame to display
+	 * Parameters: DXGI_MAPPED_RECT& data - the data for the map
+	 *				D2D1_SIZE_U& size - current Size of the Map
+	 *				UINT slot - the slot to find the index in
+	 * Returns: bool - whether it was successful or not			
+	 */
+	bool SetFrame(DXGI_MAPPED_RECT& data, D2D1_SIZE_U& size, UINT slot);
+
+	/**
+	 * Method: DrawingBoard::PresentFrame
+	 * Purpose: Presents the Frame for Presentation
+	 * Parameters: UINT slot - the slot for video presentation
+	 * Returns: void
+	 */
+	void PresentFrame(UINT slot);
+
+	/**
+	 * Method: DrawingBoard::ReleaseFrame
+	 * Purpose: Allows sinks to release the hold they have on the drawing board, frees up a slot for a new sink
+	 * Parameters: UINT slot - the slot to free up
+	 * Returns: void
+	 */
+	void ReleaseFrame(UINT slot);
+
+	/**
+	 * Method: DrawingBoard::SetFrame
+	 * Purpose: Allows Display controls to set the location of the frame
+	 * Parameters: UINT slot - the slot to free up
+	 *				const D2D1_RECT_F& loc - location on the Render Target to present the frame
+	 * Returns: bool - whether the situation was valid
+	 */
+	bool SetFrame(UINT slot, const D2D1_RECT_F& loc);
+
 private:
+
+	TDataArray<TVideoSlot> slots;
+
+	TrecSubPointer<TBrush, TBitmapBrush> frameBrush;
+
 	TrecPointer<TBrush> defaultBrush;
 
 	/**

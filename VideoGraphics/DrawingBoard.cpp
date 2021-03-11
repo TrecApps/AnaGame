@@ -2,6 +2,13 @@
 #include "TGeometry.h"
 
 
+
+
+static D2D1_PIXEL_FORMAT desc2d = { DXGI_FORMAT_B8G8R8A8_UNORM , D2D1_ALPHA_MODE_IGNORE };
+static D2D1_BITMAP_PROPERTIES bmpprops = { desc2d , 96.0f, 96.0f};
+
+
+
 /**
  * Method: DrawingBoard::GetType
  * Purpose: Returns a String Representation of the object type
@@ -717,4 +724,100 @@ void DrawingBoard::FillControlBackground(const D2D1_RECT_F& location, TShape sha
 	ThreadRelease();
 }
 
+UINT DrawingBoard::AddFrameSlot()
+{
+	ThreadLock();
+	for (UINT Rust = 0; Rust < slots.Size(); Rust++)
+	{
+		if (!slots[Rust].set)
+		{
+			slots[Rust].set = true;
+			ThreadRelease();
+			return Rust;
+		}
+	}
+	slots.push_back(TVideoSlot());
+	UINT ret = slots.Size() - 1;
+	ThreadRelease();
+	return ret;
+}
+
+bool DrawingBoard::SetFrame(DXGI_MAPPED_RECT& data, D2D1_SIZE_U& size, UINT slot)
+{
+	if (!renderer.Get() || slot >= slots.Size() || !slots[slot].set)
+		return false;
+
+
+	TrecComPointer<ID2D1Bitmap>::TrecComHolder bHolder;
+	if (SUCCEEDED(renderer->CreateBitmap(size, data.pBits, data.Pitch, bmpprops, bHolder.GetPointerAddress())))
+	{
+		slots[slot].frame = bHolder.Extract();
+		return true;
+	}
+	return false;
+}
+
+void DrawingBoard::PresentFrame(UINT slot)
+{
+	ThreadLock();
+	if (!renderer.Get() || slot >= slots.Size() || !slots[slot].set)
+	{
+		ThreadRelease();
+		return;
+	}
+	if (!frameBrush.Get())
+	{
+		// To-Do: Add new means of getting Bitmap Brush
+
+
+		return; // To-Do: Remove
+	}
+
+	if (!isDrawing)
+	{
+		renderer->BeginDraw();
+		renderer2->BeginDraw();
+	}
+	// To-Do: Set Brush to use frame
+
+	frameBrush->FillRectangle(slots[slot].loc);
+
+	EndDraw();
+}
+
+void DrawingBoard::ReleaseFrame(UINT slot)
+{
+	ThreadLock();
+	if (slot < slots.Size())
+	{
+		slots[slot].set = false;
+		slots[slot].frame.Nullify();
+	}
+}
+
+bool DrawingBoard::SetFrame(UINT slot, const D2D1_RECT_F& loc)
+{
+	ThreadLock();
+	if (slot >= slots.Size() || !slots[slot].set)
+	{
+		ThreadRelease();
+		return false;
+	}
+	slots[slot].loc = loc;
+	ThreadRelease();
+	return true;
+}
+
+TVideoSlot::TVideoSlot()
+{
+	set = false;
+	loc = { 0.0f,0.0f,0.0f,0.0f };
+}
+
+TVideoSlot::TVideoSlot(const TVideoSlot& copy)
+{
+	set = copy.set;
+	loc = copy.loc;
+	frame = copy.frame;
+}
 

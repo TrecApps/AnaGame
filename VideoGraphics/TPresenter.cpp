@@ -176,23 +176,18 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     DXGI_MAPPED_RECT bitmap2Dmap;
     dxgiSurf->Map(&bitmap2Dmap, DXGI_MAP_READ);
 
-    D2D1_PIXEL_FORMAT desc2d;
-    D2D1_BITMAP_PROPERTIES bmpprops;
 
-    desc2d.format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    desc2d.alphaMode = D2D1_ALPHA_MODE_IGNORE; // Adapt to your needs.      
-
-    bmpprops.dpiX = 96.0f;
-    bmpprops.dpiY = 96.0f;
-    bmpprops.pixelFormat = desc2d;
 
     D2D1_SIZE_U size = D2D1::SizeU(frameWidth, frameHeight);
 
     // To-Do: Add Frame Setting functionality to the Drawing Board and call it
-
-
-
-    return S_OK;
+    if (!board->SetFrame(bitmap2Dmap, size, 0))
+        res = E_CHANGED_STATE;
+    dxgiSurf->Unmap();
+    dxgiSurf->Release();
+    if (mfdxgiBuff) mfdxgiBuff->Release();
+    if (d3dText) d3dText->Release();
+    return res;
 }
 
 HRESULT TPresenter::SetCurrentMediaType(IMFMediaType* pMediaType)
