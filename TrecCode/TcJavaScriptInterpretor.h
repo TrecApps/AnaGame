@@ -133,7 +133,7 @@ protected:
       * Parameters: void
       * Returns: ReturnObject - information about the Run
       */
-     ReturnObject Run(TDataArray<TrecPointer<CodeStatement>>& statement, UINT index);
+     ReturnObject Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, TrecPointer<CodeStatement> statement);
 
     /**
      * Method: TcJavaScriptInterpretor::PreProcess

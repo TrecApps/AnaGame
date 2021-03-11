@@ -1,6 +1,7 @@
 #include "TcJavaScriptInterpretor.h"
 #include <TSpecialVariable.h>
 #include <TStringVariable.h>
+#include <TContainerVariable.h>
 
 
 COMPILE_TYPE TcJavaScriptInterpretor::CanCompile()
@@ -155,7 +156,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     ReturnObject ret;
     for (UINT Rust = 0; Rust < statements.Size(); Rust++)
     {
-        ret = Run(statements, Rust);
+        ret = Run(statements, Rust, TrecPointer<CodeStatement>());
         if (ret.returnCode)
             break;
     }
@@ -164,11 +165,13 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     return ret;
 }
 
-ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index)
+ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, TrecPointer<CodeStatement> statement)
 {
     ReturnObject ret;
 
-    auto statement = statements[index];
+
+    if(!statement.Get())
+        statement = statements[index];
 
     switch (statement->statementType)
     {
@@ -203,6 +206,8 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
 
         break;
     case code_statement_type::cst_for:
+    case code_statement_type::cst_for_3:
+        ProcessFor(statements, index, ret);
 
         break;
     case code_statement_type::cst_function:
@@ -896,8 +901,137 @@ void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement,
     //else ret = Run(blockHolder);
 }
 
-void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statement, UINT index, ReturnObject& ret)
+void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, ReturnObject& ret)
 {
+    auto statement = statements[index];
+    auto block = statement;
+
+    if (statement->statementType == code_statement_type::cst_for)
+    {
+        // Single 
+        int parenthStatus = DetermineParenthStatus(statement->statement);
+
+        while (block->next.Get() && parenthStatus > 1)
+        {
+            parenthStatus += DetermineParenthStatus(block->next->statement);
+            block = block->next;
+        }
+
+        if (parenthStatus < 0)
+        {
+            ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+            ret.errorMessage.Format(L"expected 'For' statement to be surrounded by (), but there are %d extra ')' detected!", abs(parenthStatus));
+            return;
+        }
+
+        if (parenthStatus > 0)
+        {
+            ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+            ret.errorMessage.Format(L"expected 'For' statement to be surrounded by (), but statement needs %d more ')' to close!", abs(parenthStatus));
+            return;
+        }
+
+        ProcessExpression(statement, ret);
+        if (ret.returnCode)
+            return;
+
+        if (!ret.errorObject.Get() || ret.errorObject->GetVarType() != var_type::collection)
+        {
+            ret.returnCode = ret.ERR_IMPROPER_TYPE;
+            ret.errorMessage.Set(L"Expected Collection type for single-statement For-loop!");
+            return;
+        }
+        if (!ret.errorMessage.GetSize())
+        {
+            ret.returnCode = ReturnObject::ERR_IMPROPER_NAME;
+            ret.errorMessage.Set(L"Expected Name to be provided for indexed Element!");
+            return;
+        }
+
+        auto jsVar = dynamic_cast<TcJavaScriptInterpretor*>(block->statementVar.Get());
+        if (!jsVar)
+            return;
+        auto container = dynamic_cast<TContainerVariable*>(ret.errorObject.Get());
+        TrecPointer<TVariable> var;
+        TString varName(ret.errorMessage), indexName;
+
+        for (UINT Rust = 0; container->GetValueAt(Rust, indexName, var); Rust++)
+        {
+            jsVar->variables.clear();
+            TcVariableHolder holder;
+            holder.mut = true;
+            holder.value = var;
+            jsVar->variables.addEntry(varName, holder);
+            ret = jsVar->Run();
+            if (ret.returnCode)
+                return;
+        }
+
+        if (block->next.Get())
+        {
+            Run(statements, index, block->next);
+        }
+    }
+    else
+    {
+        ProcessExpression(statement, ret);
+        if (ret.returnCode)
+            return;
+
+        auto jsVar = dynamic_cast<TcJavaScriptInterpretor*>(block->statementVar.Get());
+
+        // To-Do: After implementing ProcessExpression, figure out how to respond to non-errors
+
+
+
+        // End To-Do: Now Run the Other two statements
+
+        if (jsVar)
+            jsVar->ProcessExpression(statements[index + 1], ret);
+        else
+            ProcessExpression(statements[index + 1], ret);
+        if (ret.returnCode)
+            return;
+
+        while (IsTruthful(ret.errorObject))
+        {
+            if(jsVar)
+                ret = jsVar->Run();
+
+            // Check to see if either an error occured or a return statement has been reached.
+            // The For loop is not responsible for handling either scenario
+            if (ret.returnCode || ret.mode == return_mode::rm_return)
+                return;
+
+            // For loop is responsible for handling break and for
+            if (ret.mode != return_mode::rm_regular)
+            {
+                // here, we either break or continue
+                return_mode m = ret.mode;
+                ret.mode = return_mode::rm_regular;
+                if (m == return_mode::rm_break)
+                    return;
+            }
+
+            if (jsVar)
+            {
+                jsVar->ProcessExpression(statements[index + 2], ret);
+                if (ret.returnCode)
+                    return;
+                jsVar->ProcessExpression(statements[index + 1], ret);
+            }
+            else
+            {
+                ProcessExpression(statements[index + 2], ret);
+                if (ret.returnCode)
+                    return;
+                ProcessExpression(statements[index + 1], ret);
+            }
+            if (ret.returnCode)
+                return;
+        }
+        
+    }
 }
 
 void TcJavaScriptInterpretor::ProcessTryCatchFinally(TrecPointer<CodeStatement> statement, ReturnObject& ret)
