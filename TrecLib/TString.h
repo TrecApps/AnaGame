@@ -464,7 +464,7 @@ public:
 	*/
 	virtual UCHAR* GetAnaGameType() override;
 
-	WCHAR operator[](UINT loc)const;
+	WCHAR& operator[](UINT loc)const;
 
 
 	/**

@@ -4,6 +4,7 @@
 
 #define WEB_EVENT_HANDLER_COUNT 71
 #define WEB_BORDER_STYLE_COUNT 8
+#define WEB_LIST_STYLE_COUNT 22
 
 static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
 	// Window Events
@@ -77,6 +78,179 @@ static StyleString styleStrings[WEB_BORDER_STYLE_COUNT] = {
 	{TString(L"solid"), border_style::bs_solid},
 };
 
+typedef struct ListStyleString 
+{
+	TString str;
+	list_style style;
+}ListStyleString;
+
+static ListStyleString listStyleStrings[WEB_LIST_STYLE_COUNT] = {
+	{TString(L"disc"), list_style::ls_disc},
+	{TString(L"circle"), list_style::ls_circle},
+	{TString(L"none"), list_style::ls_none},
+	{TString(L"square"), list_style::ls_square},
+
+	{TString(L"armenian"), list_style::ls_armenian},
+	{TString(L"cjk-ideographic"), list_style::ls_cjk},
+	{TString(L"decimal"), list_style::ls_decimal},
+	{TString(L"decimal-leading-zero"), list_style::ls_decimal_0},
+	{TString(L"georgian"), list_style::ls_georgian},
+	{TString(L"hebrew"), list_style::ls_hebrew},
+	{TString(L"hiragana"), list_style::ls_hiragana},
+	{TString(L"hiragana-iroha"), list_style::ls_hiragana_iroha},
+	{TString(L"katakana"), list_style::ls_katakana},
+	{TString(L"katakana-iroha"), list_style::ls_katakana_iroha},
+	{TString(L"lower-alpha"), list_style::ls_lower_alph},
+	{TString(L"lower-greek"), list_style::ls_lower_greek},
+	{TString(L"lower-latin"), list_style::ls_lower_latin},
+	{TString(L"lower-roman"), list_style::ls_lower_roman},
+	{TString(L"upper-alpha"), list_style::ls_upper_alpha},
+	{TString(L"upper-greek"), list_style::ls_upper_greek},
+	{TString(L"upper-latin"), list_style::ls_upper_latin},
+	{TString(L"upper-roman"), list_style::ls_upper_roman},
+};
+
+bool GetListStyle(const TString& styleStr, list_style& style)
+{
+	for (UINT Rust = 0; Rust < WEB_LIST_STYLE_COUNT; Rust++)
+	{
+		if (styleStr.CompareNoCase(listStyleStrings[Rust].str))
+		{
+			style = listStyleStrings[Rust].style;
+			return true;
+		}
+	}
+	return false;
+}
+
+void IncrementDecrementString(TString& str, WCHAR lower, WCHAR upper, UCHAR mode)
+{
+	if (!mode)
+		return;
+
+	if (mode > 0)
+	{
+		// Incrementing
+		bool changeDetected = false;
+		UINT Rust = str.GetSize() - 1;
+		for (; Rust < str.GetSize(); Rust--)
+		{
+			if (str.GetAt(Rust) < upper)
+			{
+				str[Rust] = str[Rust] + 1;
+				changeDetected = true;
+				break;
+			}
+		}
+
+		if (changeDetected)
+			Rust++;
+		else
+		{
+			Rust = 1;
+			str.Set(TString(lower) + str);
+		}
+		for (; Rust < str.GetSize(); Rust++)
+			str[Rust] = lower;
+	}
+	else
+	{
+		if (!str.Compare(lower))
+			return; // Can't go any lower
+
+		// Decrementing
+		UINT Rust = str.GetSize() - 1;
+		bool changeDetected = false;
+		for (; Rust < str.GetSize(); Rust--)
+		{
+			if (str[Rust] > lower)
+			{
+				str[Rust] = str[Rust] - 1;
+				changeDetected = true;
+				break;
+			}
+		}
+
+		if (changeDetected)
+			Rust++;
+		else
+		{
+			// They are all the lower letter, delete one character and set the rest to the upper char
+			Rust = 0;
+			str.Delete(0);
+		}
+		for (; Rust < str.GetSize(); Rust++)
+			str[Rust] = upper;
+	}
+}
+
+
+/**
+ * Function: GetListPrepend
+ * Purpose: Helper function for getting the list bullet
+ * Parameters: TString& str - the current point
+ *				list_style style - the list style
+ *				UCHAR mode - positive if getting the next one, negtive if moving backwards
+ * Returns: void
+ * 
+ * Note: Values for the unordered list were found courtesy of https://unicode-table.com/en/
+ */
+void GetListPrepend(TString& str, list_style style, signed char mode)
+{
+	switch (style)
+	{
+	case list_style::ls_disc:
+		str.Set(L'\x25cf');
+		break;
+	case list_style::ls_circle:
+		str.Set(L'\x25cb');
+		break;
+	case list_style::ls_square:
+		str.Set(L'\x25ad');
+		break;
+	case list_style::ls_none:
+		str.Set(L'\s');
+		break;
+	case list_style::ls_decimal:
+	case list_style::ls_decimal_0:
+		if (!str.GetSize())
+			str.Set(style == list_style::ls_decimal ? L"1." : L"01.");
+		else
+		{
+			TString num(str.SubString(0, str.GetSize() - 1));
+			int val = 1;
+			num.ConvertToInt(val);
+			if (mode > 0)
+				val++;
+			else if (mode < 0)
+				val--;
+			str.Format(style == list_style::ls_decimal ? L"%i." : L"0%i.", val);
+		}
+		break;
+	case list_style::ls_lower_alph:
+		if (!str.GetSize())
+			str.Set(L"a.");
+		else
+		{
+			str.Set(str.SubString(0, str.GetSize() - 1));
+			IncrementDecrementString(str, L'a', L'z', mode);
+			str.AppendChar(L'.');
+		}
+		break;
+	case list_style::ls_upper_alpha:
+		if (!str.GetSize())
+			str.Set(L"A.");
+		else
+		{
+			str.Set(str.SubString(0, str.GetSize() - 1));
+			IncrementDecrementString(str, L'A', L'Z', mode);
+			str.AppendChar(L'.');
+		}
+		break;
+	}
+}
+
+
 // False string
 TrecPointer<TString> falseString = TrecPointerKey::GetNewTrecPointer<TString>(L"false");
 
@@ -97,6 +271,7 @@ TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 	isListItem = false;
 	location = innerMargin = outerMargin = D2D1::RectF();
 	columnSpan = rowSpan = 1;
+	listForward = true;
 }
 
 
@@ -562,6 +737,13 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 	}
 	
 	UINT cellLeft = 0;
+
+	// Handle case where this Node is a list item
+	if (isListItem && parent.Get())
+	{
+		listInfo.Set(parent.Get()->GetListPrepend());
+	}
+
 
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
@@ -1207,6 +1389,7 @@ void TWebNode::OnDraw()
 	// To-Do: Draw Self Content once such resources are added to the node
 	DrawBorder();
 
+
 	// Now draw the ChildNodes
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
@@ -1321,6 +1504,15 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	{
 		SetDisplay(val);
 	}
+
+	// List Attributes
+	if (atts.retrieveEntry(L"list-style-type", val))
+	{
+		GetListStyle(val, listStyle);
+	}
+
+	::GetListPrepend(this->listInfo, this->listStyle, 0);
+
 
 	// take care of text attributes
 	if (atts.retrieveEntry(L"color", val))
@@ -1481,6 +1673,8 @@ bool TWebNode::IsText()
 	shouldDraw = true;
 	if(this->outsideDisplay != WebNodeDisplayOutside::wndo_inline)
 		return false; // In this case, text generated here cannot be injected into a parent Node
+	if (this->isListItem)
+		return false;
 
 	// Assume true until discovered Otherwise
 
@@ -1580,8 +1774,17 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 	{
 		theText.Append(textNode->textDataList[Rust].text);
 	}
-	textField->SetText(theText);
 	UINT beginningIndex = 0;
+	if (isListItem)
+	{
+		textField->SetText(listInfo + L"  " + theText);
+		beginningIndex = listInfo.GetSize() + 2;
+	}
+	else
+	{
+		textField->SetText(theText);
+	}
+
 	for (UINT Rust = 0; Rust < textNode->textDataList.Size(); Rust++)
 	{
 		det.range.startPosition = beginningIndex;
@@ -1925,6 +2128,23 @@ float TWebNode::NeedsWidth(UINT column)
 	}
 
 	return 0.0f;
+}
+
+/**
+ * Method: TWebNode::GetListPrePend
+ * Purpose: Called by list-items, provides the list item with the Prepend String
+ * Parameters: void
+ * Returns: TString - the current prepender
+ */
+TString TWebNode::GetListPrepend()
+{
+	TString ret(listInfo);
+	
+	if (this->listForward)
+		::GetListPrepend(listInfo, listStyle, 1);
+	else
+		::GetListPrepend(listInfo, listStyle, -1);
+	return ret;
 }
 
 /**
@@ -2423,7 +2643,7 @@ USHORT BorderData::GetBorderThickness(border_side side)
 {
 	if (side == border_side::bs_all)
 		return 0; // We need a specific side
-	border_style sideStyle;
+	border_style sideStyle = border_style::bs_not_set;
 	USHORT sideThick = 0;
 
 	switch (side)

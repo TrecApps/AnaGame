@@ -1482,9 +1482,11 @@ bool TString::operator!=(WCHAR * s)
  * Parameters: UINT loc - the index of the character
  * Returns: WCHAR - the character at the index, '\0' if index is out of bounds
  */
-WCHAR TString::operator[](UINT loc) const 
+WCHAR& TString::operator[](UINT loc) const 
 {
-	return GetAt(loc);
+	if (loc > size)
+		throw L"IndexOutOfBounds";
+	return string[loc];
 }
 
 /*

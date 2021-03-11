@@ -128,6 +128,33 @@ typedef enum class border_side
     bs_right
 };
 
+typedef enum class list_style
+{
+    ls_disc,
+    ls_circle,
+    ls_none,
+    ls_square,
+
+    ls_armenian,
+    ls_cjk,
+    ls_decimal,
+    ls_decimal_0,
+    ls_georgian,
+    ls_hebrew,
+    ls_hiragana,
+    ls_hiragana_iroha,
+    ls_katakana,
+    ls_katakana_iroha,
+    ls_lower_alph,
+    ls_lower_greek,
+    ls_lower_latin,
+    ls_lower_roman,
+    ls_upper_alpha,
+    ls_upper_greek,
+    ls_upper_latin,
+    ls_upper_roman
+};
+
 /**
  * Class: TextData
  * Purpose: Holds data about the text provided, enabling child nodes to inject text into parent nodes if they are inline
@@ -507,6 +534,14 @@ protected:
      */
     float NeedsWidth(UINT column);
 
+    /**
+     * Method: TWebNode::GetListPrePend
+     * Purpose: Called by list-items, provides the list item with the Prepend String
+     * Parameters: void
+     * Returns: TString - the current prepender
+     */
+    TString GetListPrepend();
+
     // Other Helper Methods
 
     /**
@@ -597,6 +632,21 @@ protected:
     TextData thisTextData;
 
     BorderData borderData;
+
+    /**
+     * For list objects, what to send to the next list item that asks, for List items, what to prepend to the text
+     */
+    TString listInfo;
+
+    /**
+     * whether to send the list forward, or backwards
+     */
+    bool listForward;
+
+    /**
+     * list Style Mode
+     */
+    list_style listStyle;
 
     HWND win;
 
