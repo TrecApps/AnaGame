@@ -178,9 +178,6 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     case code_statement_type::cst_break:
 
         break;
-    case code_statement_type::cst_catch:
-
-        break;
     case code_statement_type::cst_class:
 
         break;
@@ -200,9 +197,6 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
 
         break;
     case code_statement_type::cst_else_if:
-
-        break;
-    case code_statement_type::cst_finally:
 
         break;
     case code_statement_type::cst_for:
@@ -229,7 +223,8 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
 
         break;
     case code_statement_type::cst_try:
-
+    case code_statement_type::cst_finally:
+        ProcessTryCatchFinally(statements, index, statement, ret);
         break;
     case code_statement_type::cst_while:
 
@@ -1034,8 +1029,74 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
     }
 }
 
-void TcJavaScriptInterpretor::ProcessTryCatchFinally(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+void TcJavaScriptInterpretor::ProcessTryCatchFinally(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
+    auto jsVar = dynamic_cast<TcJavaScriptInterpretor*>(statement->statementVar.Get());
+    switch (statement->statementType)
+    {
+    case code_statement_type::cst_try:
+        if (!statement->next.Get() || (statement->statementType != code_statement_type::cst_break && statement->statementType != code_statement_type::cst_finally))
+        {
+            ret.errorMessage.Set(L"Try-block must be followed by a 'catch' or 'finally' block!");
+            ret.returnCode = ReturnObject::ERR_INCOMPLETE_STATEMENT;
+            return;
+        }
+        if(jsVar)
+            ret = jsVar->Run();
+        ProcessTryCatchFinally(statements, index, statement->next, ret);
+        break;
+    case code_statement_type::cst_catch:
+
+        if (ret.returnCode)
+        {
+            TString e(statement->statement);
+            e.Trim();
+            int parenthState = DetermineParenthStatus(e);
+            if (parenthState)
+            {
+                ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
+                ret.errorMessage.Set(L"Error Processing Catch-Block!");
+                return;
+            }
+            while (e.StartsWith(L'('))
+            {
+                e.Set(e.SubString(1, e.GetSize() - 1));
+                e.Trim();
+            }
+            ReturnObject ret2;
+            CheckVarName(e, ret2);
+            if (ret2.returnCode)
+            {
+                ret = ret2;
+                ret.errorMessage.Append(L" Detected processing Catch-Block!");
+                return;
+            }
+            ret.returnCode = 0;
+            if (jsVar)
+            {
+                jsVar->variables.clear();
+                TcVariableHolder holder;
+                holder.mut = true;
+                holder.value = ret.errorObject;
+                if (!holder.value.Get())
+                    holder.value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(ret.errorMessage);
+
+                jsVar->variables.addEntry(e, holder);
+                ret = jsVar->Run();
+            }
+        }
+
+        if (statement->next.Get())
+        {
+            if (!ret.returnCode || statement->next->statementType == code_statement_type::cst_finally)
+                ret = Run(statements, index, statement->next);
+        }
+
+        break;
+    default: // Finally
+        if (jsVar)
+            jsVar->Run();
+    }
 }
 
 void TcJavaScriptInterpretor::ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret)
