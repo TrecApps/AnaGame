@@ -4,6 +4,7 @@
 #include "TEnvironment.h"
 #include "TDataMap.h"
 #include "CodeStatement.h"
+#include "ObjectOperator.h"
 
 #ifndef TC_INTERPRETOR_COMPILE
 #define TC_INTERPRETOR_COMPILE
@@ -17,6 +18,7 @@ const COMPILE_TYPE ALL_PRIM =    0x0004;  // All Variables are treated as primit
 const COMPILE_TYPE USE_REGISTR = 0x0008;  // Code that can support Registers. Markers will be set to int at assemblers which registers to use
 
 #endif // !TC_INTERPRETOR_COMPILE
+
 
 
 /**

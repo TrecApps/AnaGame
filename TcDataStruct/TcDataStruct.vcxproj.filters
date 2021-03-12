@@ -72,6 +72,9 @@
     <ClInclude Include="JsNumber.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DefaultObjectOperator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -123,6 +126,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="JsNumber.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultObjectOperator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

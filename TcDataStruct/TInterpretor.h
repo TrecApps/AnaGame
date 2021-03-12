@@ -5,7 +5,7 @@
 #include <TDataMap.h>
 #include <TFile.h>
 #include <TEnvironment.h>
-
+#include "DefaultObjectOperator.h"
 
 #include "TClassStruct.h"
 
@@ -17,63 +17,8 @@
      * Returns: 
      */
 
-/**
- * Union: doubleLong
- * Purpose: Holds either a double, unsigned or signed integer, all 8 bytes
- */
-union doubleLong
-{
-    LONG64 s;
-    ULONG64 u;
-    double d;
-};
 
-/**
- * Enum Class: double_long
- * Purpose: used to keep track of the status of the doubleLong union
- */
-enum class double_long
-{
-    dl_sign,  // Set to a signed integer
-    dl_unsign,// Set to an unsigned integer
-    dl_double,// Set to double
-    dl_invalid // Not properly set
-};
 
-/**
- * Class: DoubleLong
- * Purpose: Aids interpretors in basic arithmetic byt hold values and keeping track of their types
- */
-class TC_DATA_STRUCT DoubleLong
-{
-public:
-    DoubleLong(ULONG64 val);
-    DoubleLong(LONG64 val);
-    DoubleLong(double val);
-    DoubleLong();
-    doubleLong value;
-    double_long type;
-
-    bool operator<(const DoubleLong& o);
-    bool operator<=(const DoubleLong& o);
-    bool operator>=(const DoubleLong& o);
-    bool operator>(const DoubleLong& o);
-    bool operator==(const DoubleLong& o);
-
-    ULONG64 ToUnsignedLong()const;
-
-    ULONG64 GetBitAnd(const DoubleLong& o);
-    ULONG64 GetBitOr(const DoubleLong& o);
-    ULONG64 GetBitXor(const DoubleLong& o);
-
-    /**
-     * Method: TInterpretor::GetValueFromPrimitive
-     * Purpose: Helper method for interpreting arithmetic operations by extracting the value from the variable
-     * Parameters: TrecPointer<TVariable> var - the variable believed holding the primitive value
-     * Returns: DoubleLong - the value held by the variable
-     */
-    static DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var);
-};
 
 typedef enum class report_mode
 {

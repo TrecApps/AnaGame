@@ -154,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DefaultObjectOperator.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="JsMath.h" />
     <ClInclude Include="JsNumber.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="TVariableType.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DefaultObjectOperator.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="JavaScriptFunc.cpp" />
     <ClCompile Include="JsMath.cpp" />
