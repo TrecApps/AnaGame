@@ -808,6 +808,11 @@ bool DrawingBoard::SetFrame(UINT slot, const D2D1_RECT_F& loc)
 	return true;
 }
 
+TrecPointer<TWindowEngine> DrawingBoard::GetWindowEngine()
+{
+	return d3dEngine;
+}
+
 TVideoSlot::TVideoSlot()
 {
 	set = false;

@@ -145,6 +145,28 @@ HRESULT TStreamSink::QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtend
     return E_NOTIMPL;
 }
 
+TrecComPointer<IMFStreamSink> TStreamSink::GetStreamSink(TrecComPointer<TMediaSink> sink, TrecPointer<DrawingBoard> board)
+{
+    if(!sink.Get() || !board.Get() || !board->GetWindowEngine().Get())
+        return TrecComPointer<IMFStreamSink>();
+
+
+    TrecComPointer<IMFStreamSink>::TrecComHolder holder;
+    TStreamSink* tsink = new TStreamSink(TPresenter::GetTPresenter(board->GetWindowEngine(), board));
+
+    auto mem = holder.GetPointerAddress();
+    auto isink = (IMFStreamSink*)tsink;
+    mem = &isink;
+    tsink->m_nRefCount = 1;
+    tsink->isShutdown = false;
+    return holder.Extract();
+}
+
+TStreamSink::TStreamSink(TrecComPointer<TPresenter> present)
+{
+    presenter = present;
+}
+
 bool TStreamSink::CheckShutdown()
 {
     return isShutdown;

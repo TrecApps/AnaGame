@@ -393,6 +393,14 @@ public:
 	 */
 	bool SetFrame(UINT slot, const D2D1_RECT_F& loc);
 
+	/**
+	 * Method: DrawingBoard::GetWindowEngine
+	 * Purpose: Retireves the TWindowEngine held by the drawing board
+	 * Parameters: void
+	 * Returns: TrecPointer<TWindowEngine> - the 3D engine held
+	 */
+	TrecPointer<TWindowEngine> GetWindowEngine();
+
 private:
 
 	TDataArray<TVideoSlot> slots;

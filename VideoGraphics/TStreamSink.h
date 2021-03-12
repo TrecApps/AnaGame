@@ -4,6 +4,7 @@
 #include <TrecReference.h>
 #include "TMediaSink.h"
 #include <TLinkedList.h>
+#include "TPresenter.h"
 class TStreamSink : public IMFStreamSink, public TObject
 {
     friend class TMediaSink;
@@ -27,11 +28,17 @@ public:
     STDMETHODIMP GetEvent(DWORD dwFlags, __RPC__deref_out_opt IMFMediaEvent** ppEvent) override;
     STDMETHODIMP QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtendedType, HRESULT hrStatus, __RPC__in_opt const PROPVARIANT* pvValue) override;
 
+    static TrecComPointer<IMFStreamSink> GetStreamSink(TrecComPointer<TMediaSink> sink, TrecPointer<DrawingBoard> board);
+
 private:
+
+    TStreamSink(TrecComPointer<TPresenter> present);
+
     bool isShutdown;
     bool CheckShutdown();
 
     TrecComPointer<TMediaSink> mediaSink;
+    TrecComPointer<TPresenter> presenter;
     long m_nRefCount;
 
     TLinkedList<IUnknown*> samples;
