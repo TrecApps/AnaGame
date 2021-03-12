@@ -20,8 +20,6 @@ IDEPage::IDEPage(ide_page_type type, UINT barSpace, TrecPointer<DrawingBoard> bo
 	curPoint.x = curPoint.y = 0.0f;
 	draw = true;
 
-
-
 }
 
 /**
@@ -52,12 +50,13 @@ IDEPage::~IDEPage()
  */
 void IDEPage::SetResources(TrecPointer<TInstance> in, TrecPointer<TWindow> window)
 {
+	ThreadLock();
 	this->windowHandle = TrecPointerKey::GetSoftPointerFromTrec<TWindow>( window);
 	instance = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(in);
 
 
 	deviceH = GetWindowDC(window->GetWindowHandle());
-	
+	ThreadRelease();	
 }
 
 /**
@@ -70,7 +69,9 @@ void IDEPage::SetResources(TrecPointer<TInstance> in, TrecPointer<TWindow> windo
  */
 void IDEPage::SetResources(TrecPointer<TInstance> in, TrecPointer<TWindow> window, TrecPointer<TWindowEngine> engine)
 {
+	ThreadLock();
 	SetResources(in, window);
+	ThreadRelease();
 }
 
 /**
@@ -82,8 +83,12 @@ void IDEPage::SetResources(TrecPointer<TInstance> in, TrecPointer<TWindow> windo
  */
 void IDEPage::MoveBorder(float& magnitude, page_move_mode mode)
 {
+	ThreadLock();
 	if (isSnipZero(area))
+	{
+		ThreadRelease();
 		return;
+	}
 	switch (mode)
 	{
 	case page_move_mode::page_move_mode_bottom:
@@ -144,11 +149,12 @@ void IDEPage::MoveBorder(float& magnitude, page_move_mode mode)
 	}
 	else if (rootControl.Get())
 		rootControl->Resize(topBorder);
-	
+	ThreadRelease();	
 }
 
 void IDEPage::SetArea(const D2D1_RECT_F& loc)
 {
+	ThreadLock();
 	Page::SetArea(loc);
 	auto tempLoc = loc;
 	tempLoc.bottom = tempLoc.top + barSpace;
@@ -157,10 +163,12 @@ void IDEPage::SetArea(const D2D1_RECT_F& loc)
 	pages.addAttribute(L"|EnableExit", TrecPointerKey::GetNewTrecPointer<TString>(L"true"));
 
 	pages.onCreate(tempLoc, TrecPointer<TWindowEngine>());
+	ThreadRelease();
 }
 
 bool IDEPage::TookTab(TrecPointer<Tab> tab)
 {
+	ThreadLock();
 	if (pages.AddTab(tab) && tab->GetContent().Get())
 	{
 		auto pageSpace = area;
@@ -175,6 +183,7 @@ bool IDEPage::TookTab(TrecPointer<Tab> tab)
 		}
 		pages.SetCurrentTab(tab);
 
+		ThreadRelease();
 		return true;
 	}
 	if (currentPage.Get() && tab.Get())
@@ -182,10 +191,16 @@ bool IDEPage::TookTab(TrecPointer<Tab> tab)
 		if (tab->GetContent().Get() && tab->GetContent()->GetContentType() == TabContentType::tct_reg_page)
 		{
 			if (dynamic_cast<TabPageContent*>(tab->GetContent().Get())->GetPage().Get() == currentPage.Get())
+			{
+				ThreadRelease();
 				return false;
+			}
 		}
-		return currentPage->TookTab(tab);
+		bool ret =currentPage->TookTab(tab);
+		ThreadRelease();
+		return ret;
 	}
+	ThreadRelease();
 	return false;
 }
 
@@ -199,10 +214,12 @@ bool IDEPage::TookTab(TrecPointer<Tab> tab)
  */
 void IDEPage::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
 {
+	ThreadLock();
 	if (currentPage.Get())
 		currentPage->OnRButtonUp(nFlags, point, mOut);
 	else
 		Page::OnRButtonUp(nFlags, point, mOut);
+	ThreadRelease();
 }
 
 /**
@@ -215,6 +232,7 @@ void IDEPage::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	TDataArray<EventID_Cred> cred;
 	TDataArray<TControl*> cl;
 	pages.OnLButtonDown(nFlags, point, mOut, cred, cl);
@@ -248,7 +266,7 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, Trec
 	Page::OnLButtonDown(nFlags, point, mOut, fly);
 	if (currentPage.Get())
 		currentPage->OnLButtonDown(nFlags, point, mOut, fly);
-		
+	ThreadRelease();		
 }
 
 /**
@@ -261,10 +279,12 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, Trec
  */
 void IDEPage::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
 {
+	ThreadLock();
 	if (currentPage.Get())
 		currentPage->OnRButtonDown(nFlags, point, mOut);
 	else
 		Page::OnRButtonDown(nFlags, point, mOut);
+	ThreadRelease();
 }
 
 /**
@@ -277,9 +297,11 @@ void IDEPage::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void IDEPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	Page::OnMouseMove(nFlags, point, mOut, fly);
 	if (currentPage.Get())
 		currentPage->OnMouseMove(nFlags, point, mOut, fly);
+	ThreadRelease();
 }
 
 /**
@@ -292,9 +314,11 @@ void IDEPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
  */
 void IDEPage::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
 {
+	ThreadLock();
 	Page::OnLButtonDblClk(nFlags, point, mOut);
 	if (currentPage.Get())
 		currentPage->OnLButtonDblClk(nFlags, point, mOut);
+	ThreadRelease();
 }
 
 /**
@@ -307,6 +331,7 @@ void IDEPage::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void IDEPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	TDataArray<EventID_Cred> cred;
 	pages.OnLButtonUp(nFlags, point, mOut, cred);
 
@@ -336,7 +361,7 @@ void IDEPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
 	Page::OnLButtonUp(nFlags, point, mOut, fly);
 	if (currentPage.Get())
 		currentPage->OnLButtonUp(nFlags, point, mOut, fly);
-		
+	ThreadRelease();
 }
 
 /**
@@ -351,10 +376,11 @@ void IDEPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
  */
 bool IDEPage::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)
 {
-	if (currentPage.Get())
-		return currentPage->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut);
-	else
-		return Page::OnChar(fromChar, nChar, nRepCnt, nFlags, mOut);
+	ThreadLock();
+	bool ret = (currentPage.Get()) ? currentPage->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut)
+		: Page::OnChar(fromChar, nChar, nRepCnt, nFlags, mOut);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -367,6 +393,7 @@ bool IDEPage::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messa
  */
 void IDEPage::OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine> e)
 {
+	ThreadLock();
 	auto tabsLoc = newLoc;
 	tabsLoc.bottom = tabsLoc.top + barSpace;
 	pages.Resize(tabsLoc);
@@ -393,6 +420,7 @@ void IDEPage::OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWind
  */
 void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	if (isContained(point, area))
 	{
 		D2D1_RECT_F topBorder = area;
@@ -412,6 +440,7 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 			//moveMode = page_move_mode::page_move_mode_top;
 			// To-Do: Set Cursor
 
+			ThreadRelease();
 			return;
 		}
 
@@ -420,6 +449,7 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 			moveMode = page_move_mode::page_move_mode_bottom;
 			// To-Do: Set Cursor
 
+			ThreadRelease();
 			return;
 		}
 
@@ -428,6 +458,7 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 			moveMode = page_move_mode::page_move_mode_right;
 			// To-Do: Set Cursor
 
+			ThreadRelease();
 			return;
 		}
 
@@ -435,7 +466,8 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 		{
 			moveMode = page_move_mode::page_move_mode_left;
 			// To-Do: Set Cursor
-			
+
+			ThreadRelease();
 			return;
 		}
 
@@ -445,6 +477,7 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 		pages.OnLButtonDown(nFlags, point, mOut, eventAr, clicked);
 		Page::OnLButtonDown(nFlags, point, mOut, eventAr, fly);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -459,11 +492,14 @@ void IDEPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 void IDEPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)
 {
 	TDataArray<TControl*> cl;
+	ThreadLock();
 	pages.OnMouseMove(nFlags, point, mOut, eventAr, cl);
 
 	if (moveMode == page_move_mode::page_move_mode_normal)
+	{
+		ThreadRelease();
 		return Page::OnMouseMove(nFlags, point, mOut, eventAr, fly);
-
+	}
 	
 
 	TPoint diff(static_cast<int>(point.x) - static_cast<int>(curPoint.x),
@@ -497,6 +533,7 @@ void IDEPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
 	curPoint.x = point.x;
 	curPoint.y = point.y;
 	*mOut = messageOutput::positiveOverrideUpdate;
+	ThreadRelease();
 }
 
 /**
@@ -507,10 +544,12 @@ void IDEPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataA
  */
 bool IDEPage::OnLButtonUp(TPoint& point)
 {
+	ThreadLock();
 	curPoint.x = curPoint.y = 0.0f;
 	moveMode = page_move_mode::page_move_mode_normal;
-
-	return isContained(point, area);
+	bool ret = isContained(point, area);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -522,10 +561,12 @@ bool IDEPage::OnLButtonUp(TPoint& point)
  */
 void IDEPage::Draw(TrecPointer<TBrush> color, TWindowEngine* twe)
 {
+	ThreadLock();
 	if (!draw)
+	{
+		ThreadRelease();
 		return;
-
-
+	}
 	D2D1_RECT_F topBorder = area;
 	topBorder.bottom = topBorder.top + barSpace;
 
@@ -542,6 +583,7 @@ void IDEPage::Draw(TrecPointer<TBrush> color, TWindowEngine* twe)
 	pages.onDraw();
 	if (color.Get())
 		color->DrawRectangle(area, 1.5F);
+	ThreadRelease();
 }
 
 
@@ -554,6 +596,7 @@ void IDEPage::Draw(TrecPointer<TBrush> color, TWindowEngine* twe)
  */
 void IDEPage::SetLink(TrecSubPointer<Page, IDEPage> p, ide_page_type t)
 {
+	ThreadLock();
 	switch (t)
 	{
 	case ide_page_type::ide_page_type_body:
@@ -577,8 +620,8 @@ void IDEPage::SetLink(TrecSubPointer<Page, IDEPage> p, ide_page_type t)
 	case ide_page_type::ide_page_type_lower_left:
 		lowerLeft = p;
 		break;
-
 	}
+	ThreadRelease();
 }
 
 /**
@@ -589,7 +632,10 @@ void IDEPage::SetLink(TrecSubPointer<Page, IDEPage> p, ide_page_type t)
  */
 TString IDEPage::GetName()
 {
-	return name;
+	ThreadLock();
+	TString ret(name);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -600,7 +646,9 @@ TString IDEPage::GetName()
  */
 void IDEPage::SetNewParentPage(TrecPointer<Page> p)
 {
+	ThreadLock();
 	currentPage = p;
+	ThreadRelease();
 }
 
 /**
@@ -611,13 +659,18 @@ void IDEPage::SetNewParentPage(TrecPointer<Page> p)
  */
 void IDEPage::AddNewPage(TrecPointer<Page> pageHolder, const TString& name)
 {
-	if (!pageHolder.Get()) return;
-
+	ThreadLock();
+	if (!pageHolder.Get())
+	{
+		ThreadRelease();
+		return;
+	}
 	for (UINT c = 0; c < pages.GetContentSize(); c++)
 	{
 		auto curPage = dynamic_cast<TabPageContent*>(pages.GetTabAt(c)->GetContent().Get())->GetPage();
 		if (curPage.Get() == pageHolder.Get())
 		{
+			ThreadRelease();
 			return;
 		}
 	}
@@ -631,6 +684,7 @@ void IDEPage::AddNewPage(TrecPointer<Page> pageHolder, const TString& name)
 	tab->SetContent(content);
 
 	pages.SetCurrentTab(tab);
+	ThreadRelease();
 }
 
 /**
@@ -644,6 +698,7 @@ void IDEPage::AddNewPage(TrecPointer<Page> pageHolder, const TString& name)
  */
 TrecPointer<Page> IDEPage::AddNewPage(TrecPointer<TInstance> ins, TrecPointer<TWindow> win, TString name, TrecPointer<EventHandler> h)
 {
+	ThreadLock();
 	TrecPointer<Page> page = Page::GetWindowPage(ins, win, h);
 	if (ins.Get() && h.Get())
 	{
@@ -651,6 +706,7 @@ TrecPointer<Page> IDEPage::AddNewPage(TrecPointer<TInstance> ins, TrecPointer<TW
 		ins->RegisterHandler(h);
 	}
 	AddNewPage(page, name);
+	ThreadRelease();
 	return page;
 }
 
@@ -662,6 +718,7 @@ TrecPointer<Page> IDEPage::AddNewPage(TrecPointer<TInstance> ins, TrecPointer<TW
  */
 void IDEPage::RemovePage(TrecPointer<Tab> pageHolder)
 {
+	ThreadLock();
 	int index = -1;
 	for (UINT C = 0; C < pages.GetContentSize(); C++)
 	{
@@ -673,10 +730,12 @@ void IDEPage::RemovePage(TrecPointer<Tab> pageHolder)
 	}
 
 	if (index == -1)
+	{
+		ThreadRelease();
 		return;
-
+	}
 	pages.RemoveTabAt(index);
-
+	ThreadRelease();
 }
 
 /**
@@ -687,7 +746,10 @@ void IDEPage::RemovePage(TrecPointer<Tab> pageHolder)
  */
 bool IDEPage::IsDrawing()
 {
-	return draw = !isSnipZero(area);
+	ThreadLock();
+	bool ret = draw = !isSnipZero(area);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -698,15 +760,18 @@ bool IDEPage::IsDrawing()
  */
 TrecPointer<Tab> IDEPage::GetFocusPage(TPoint& point)
 {
+	ThreadLock();
 	for (UINT c = 0; c < pages.GetContentSize(); c++)
 	{
 		if (pages.GetTabAt(c).Get() && (pages.GetTabAt(c)->AttemptClick(point) == TabClickMode::tcm_regular_click))
 		{
 			auto ret = pages.GetTabAt(c);
 			//pages.RemoveTabAt(c);
+			ThreadRelease();
 			return ret;
 		}
 	}
+	ThreadRelease();
 	return TrecPointer<Tab>();
 }
 
@@ -721,6 +786,7 @@ void IDEPage::MouseMoveBody(TPoint& diff)
 	TPoint before = diff;
 	float yDiff = 0.0f, xDiff = 0.0f;
 	D2D1_RECT_F curRect = { 0,0,0,0 };
+	ThreadLock();
 	switch (moveMode)
 	{
 	case page_move_mode::page_move_mode_bottom:
@@ -795,6 +861,7 @@ void IDEPage::MouseMoveBody(TPoint& diff)
 	//default:
 		
 	}
+	ThreadRelease();
 }
 
 /**
@@ -805,6 +872,7 @@ void IDEPage::MouseMoveBody(TPoint& diff)
  */
 void IDEPage::MouseMoveBasicConsole(TPoint& diff)
 {
+	ThreadLock();
 	switch (moveMode)
 	{
 	case page_move_mode::page_move_mode_bottom:
@@ -830,6 +898,7 @@ void IDEPage::MouseMoveBasicConsole(TPoint& diff)
 		MoveBorder(diff.x, moveMode);
 		break;
 	}
+	ThreadRelease();
 }
 
 /**
@@ -840,6 +909,7 @@ void IDEPage::MouseMoveBasicConsole(TPoint& diff)
  */
 void IDEPage::MouseMoveDeepConsole(TPoint& diff)
 {
+	ThreadLock();
 	if (moveMode == page_move_mode::page_move_mode_top)
 	{
 		D2D1_RECT_F curRect = { 0,0,0,0 };
@@ -901,6 +971,7 @@ void IDEPage::MouseMoveDeepConsole(TPoint& diff)
 		}
 		MoveBorder(diff.y, moveMode);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -914,6 +985,7 @@ void IDEPage::MouseMoveUpperRight(TPoint& diff)
 	TPoint before = diff;
 	float yDiff = 0.0f, xDiff = 0.0f;
 	D2D1_RECT_F curRect = { 0,0,0,0 };
+	ThreadLock();
 	switch (moveMode)
 	{
 	case page_move_mode::page_move_mode_bottom:
@@ -961,6 +1033,7 @@ void IDEPage::MouseMoveUpperRight(TPoint& diff)
 		MoveBorder(diff.x, moveMode);
 		break;
 	}
+	ThreadRelease();
 }
 
 /**
@@ -971,6 +1044,7 @@ void IDEPage::MouseMoveUpperRight(TPoint& diff)
  */
 void IDEPage::MouseMoveLowerRight(TPoint& diff)
 {
+	ThreadLock();
 	TPoint before = diff;
 	float yDiff = 0.0f, xDiff = 0.0f;
 	D2D1_RECT_F curRect = { 0,0,0,0 };
@@ -1013,6 +1087,7 @@ void IDEPage::MouseMoveLowerRight(TPoint& diff)
 		MoveBorder(diff.y, moveMode);
 		break;
 	}
+	ThreadRelease();
 }
 
 /**
@@ -1026,6 +1101,7 @@ void IDEPage::MouseMoveUpperLeft(TPoint& diff)
 	TPoint before = diff;
 	float yDiff = 0.0f, xDiff = 0.0f;
 	D2D1_RECT_F curRect = { 0,0,0,0 };
+	ThreadLock();
 	switch (moveMode)
 	{
 	case page_move_mode::page_move_mode_bottom:
@@ -1073,6 +1149,7 @@ void IDEPage::MouseMoveUpperLeft(TPoint& diff)
 		MoveBorder(diff.x, moveMode);
 		break;
 	}
+	ThreadRelease();
 }
 
 /**
@@ -1086,6 +1163,7 @@ void IDEPage::MouseMoveLowerLeft(TPoint& diff)
 	TPoint before = diff;
 	float yDiff = 0.0f, xDiff = 0.0f;
 	D2D1_RECT_F curRect = { 0,0,0,0 };
+	ThreadLock();
 	switch (moveMode)
 	{
 	case page_move_mode::page_move_mode_top:
@@ -1125,6 +1203,7 @@ void IDEPage::MouseMoveLowerLeft(TPoint& diff)
 		MoveBorder(diff.y, moveMode);
 		break;
 	}
+	ThreadRelease();
 }
 
 /**

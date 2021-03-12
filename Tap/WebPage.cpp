@@ -20,6 +20,7 @@ WebPage::~WebPage()
 
 void WebPage::SetEnvironment(TrecPointer<TEnvironment> env)
 {
+	ThreadLock();
 	environment = env;
 
 	if (environment.Get())
@@ -34,35 +35,43 @@ void WebPage::SetEnvironment(TrecPointer<TEnvironment> env)
 
 
 		htmlBuilder = TrecPointerKey::GetNewTrecPointer<HtmlBuilder>(environment, this->drawingBoard);
-
 	}
-
-	
+	ThreadRelease();	
 }
 
 int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 {
+	ThreadLock();
 	if (!file.Get() || !file->IsOpen())
+	{
+		ThreadRelease();
 		return 1;
-
+	}
 	if (!environment.Get())
+	{
+		ThreadRelease();
 		return 2;
-
+	}
 	if (!windowHandle.Get())
+	{
+		ThreadRelease();
 		return 5;
-
+	}
 	if (file->GetFileName().EndsWith(L".html") || file->GetFileName().EndsWith(L".htm"))
 	{
 		if (!htmlBuilder.Get())
+		{
+			ThreadRelease();
 			return 3;
-
+		}
 		TString res(htmlBuilder->BuildPage(file, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowHandle()));
 
 		if (res.GetSize())
 		{
 			TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
 
-			MessageBoxExW(win->GetWindowHandle(), res.GetConstantBuffer(), L"Error Creating WebPage", 0, 0);
+			MessageBoxExW(win->GetWindowHandle(), res.GetConstantBuffer().getBuffer(), L"Error Creating WebPage", 0, 0);
+			ThreadRelease();
 			return 4;
 		}
 
@@ -77,6 +86,7 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 			TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
 
 			MessageBoxExW(win->GetWindowHandle(), L"No Web Page Body Detected after attempted Generation!", L"Error Creating WebPage", 0, 0);
+			ThreadRelease();
 			return 5;
 		}
 		TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
@@ -85,19 +95,26 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 		
 	}
 	else if (file->GetFileName().EndsWith(L".tml"))
-		return Page::SetAnaface(file, eh);
-
+	{
+		auto ret =  Page::SetAnaface(file, eh);
+		ThreadRelease();
+		return ret;
+	}
+	ThreadRelease();
 	return 0;
 }
 
 void WebPage::Draw(TWindowEngine* twe)
 {
+	ThreadLock();
 	if (rootNode.Get())
 	{
 
 	}
 	else
 		Page::Draw(twe);
+	ThreadRelease();
+
 }
 
 TrecPointer<TWebNode> WebPage::GetElementById(const TString& id)
@@ -129,25 +146,26 @@ void WebPage::Close()
 
 void WebPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	if (rootNode.Get())
 	{
 		TDataArray<TString> script;
 		TDataArray<TrecObjectPointer> objects;
 
 		rootNode->OnLButtonDown(script, objects, clickNodes, point);
-
 	}
+	ThreadRelease();
 }
 
 void WebPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	if (rootNode.Get())
 	{
 		TDataArray<TString> script;
 		TDataArray<TrecObjectPointer> objects;
 
 		rootNode->OnMouseMove(script, objects, moveNodes, point);
-
 
 		for (UINT Rust = 0; Rust < moveNodes.Size(); Rust++)
 		{
@@ -157,22 +175,25 @@ void WebPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
 			node->OnMouseMove(script, objects, moveNodes, point);
 		}
 	}
+	ThreadRelease();
 }
 
 void WebPage::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
 {
+	ThreadLock();
 	if (rootNode.Get())
 	{
 		TDataArray<TString> script;
 		TDataArray<TrecObjectPointer> objects;
 
 		rootNode->OnLButtonDblClck(script, objects, point);
-
 	}
+	ThreadRelease();
 }
 
 void WebPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	if (rootNode.Get())
 	{
 		TDataArray<TString> script;
@@ -191,6 +212,7 @@ void WebPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
 			focusNode = newFocus;
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -203,17 +225,23 @@ void WebPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
  */
 TString WebPage::GetTitle()
 {
+	ThreadLock();
 	if (htmlBuilder.Get())
 	{
 		TrecPointer<HtmlHeader> head = htmlBuilder->RetrieveHeader();
 		if (head.Get())
+		{
+			ThreadRelease();
 			return head->RetrieveTitle();
+		}
 	}
+	ThreadRelease();
 	return TString();
 }
 
 TString WebPage::SetUpCSS()
 {
+	ThreadLock();
 	TrecPointer<HtmlHeader> header = htmlBuilder->RetrieveHeader();
 
 	TDataArray<TrecPointer<TFileShell>> cssFiles;
@@ -271,9 +299,7 @@ TString WebPage::SetUpCSS()
 			}
 		}
 	}
-
-
-
+	ThreadRelease();
 	return TString();
 }
 

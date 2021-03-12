@@ -24,7 +24,10 @@ TString MiniApp::GetType()
 
 bool MiniApp::ShouldDestroy()
 {
-	return mainPage.Get() == nullptr;
+	ThreadLock();
+	bool ret = mainPage.Get() == nullptr;
+	ThreadRelease();
+	return ret;
 }
 
 void MiniApp::SetSelf(TrecPointer<MiniApp> s)

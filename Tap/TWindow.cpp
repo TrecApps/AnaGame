@@ -95,9 +95,12 @@ TString TWindow::GetType()
  */
 int TWindow::PrepareWindow()
 {
+	ThreadLock();
 	if (!currentWindow)
+	{
+		ThreadRelease();
 		return 1;
-
+	}
 	assert(windowInstance.Get());
 
 	TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->RegisterDialog(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
@@ -108,6 +111,7 @@ int TWindow::PrepareWindow()
 
 	animationCentral.SetWindow(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
 
+	ThreadRelease();
 	return 0;
 }
 
@@ -120,20 +124,32 @@ int TWindow::PrepareWindow()
  */
 int TWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 {
+	ThreadLock();
 	if (!windowInstance.Get())
+	{
+		ThreadRelease();
 		return -1;
+	}
 	if (!currentWindow)
+	{
+		ThreadRelease();
 		return -2;
+	}
 	TrecPointer<TFile> aFile = TrecPointerKey::GetNewTrecPointer<TFile>(file, TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 
 	if (!aFile.Get() || !aFile->IsOpen())
+	{
+		ThreadRelease();
 		return 1;
-
+	}
 	assert(windowInstance.Get());
 	mainPage = Page::GetWindowPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), eh);
 
 	if (!mainPage.Get())
+	{
+		ThreadRelease();
 		return 2;
+	}
 	RECT loc;
 	GetClientRect(currentWindow, &loc);
 
@@ -149,6 +165,7 @@ int TWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 	safeToDraw = 1;
 	Draw();
 
+	ThreadRelease();
 	return 0;
 }
 
@@ -162,15 +179,17 @@ int TWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
  */
 bool TWindow::MovePageToTop(TrecPointer<Page> p)
 {
-	if (!p.Get())
+	ThreadLock();
+	if (!p.Get() || !pages.Size())
+	{
+		ThreadRelease();
 		return false;
-
-	if (!pages.Size())
-		return false;
-
+	}
 	if (pages[0].Get() == p.Get())
+	{
+		ThreadRelease();
 		return true;
-
+	}
 	UINT loc = 0;
 	for (UINT Rust = 0; Rust < pages.Size(); Rust++)
 	{
@@ -181,13 +200,16 @@ bool TWindow::MovePageToTop(TrecPointer<Page> p)
 		}
 	}
 	if (!loc)
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	for (int assign = loc; assign - 1 > -1; assign--)
 	{
 		pages[assign] = pages[assign - 1];
 	}
 	pages[0] = p;
+	ThreadRelease();
 	return true;
 }
 
@@ -199,7 +221,10 @@ bool TWindow::MovePageToTop(TrecPointer<Page> p)
  */
 TString TWindow::GetWinClass()
 {
-	return winClass;
+	ThreadLock();
+	TString ret(winClass);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -210,7 +235,10 @@ TString TWindow::GetWinClass()
  */
 TString TWindow::GetWinName()
 {
-	return name;
+	ThreadLock();
+	TString ret(name);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -221,6 +249,7 @@ TString TWindow::GetWinName()
  */
 void TWindow::Draw()
 {
+	ThreadLock();
 	if (mainPage.Get() && safeToDraw)
 	{	UCHAR tempSafe = safeToDraw;
 		safeToDraw = 0;
@@ -255,7 +284,7 @@ void TWindow::Draw()
 			mainPage->OnFirstDraw();
 		}
 	}
-
+	ThreadRelease();
 }
 
 /**
@@ -268,11 +297,14 @@ void TWindow::Draw()
  */
 void TWindow::Draw(Page& draw)
 {
+	ThreadLock();
 	draw.Draw();
+	ThreadRelease();
 }
 
 void TWindow::RefreshMediaControls()
 {
+	ThreadLock();
 	mediaControls.RemoveAll();
 
 	TDataArray<TrecPointer<TControl>> controls;
@@ -288,6 +320,7 @@ void TWindow::RefreshMediaControls()
 		mLoc.loc = convertD2DRectToRECT(mLoc.control->getLocation());
 		mediaControls.push_back(mLoc);
 	}
+	ThreadRelease();
 
 }
 
@@ -306,12 +339,14 @@ void TWindow::InduceDraw()
 
 void TWindow::OnVideoEvent(WPARAM param)
 {
+	ThreadLock();
 	if (videoPlayer.Get())
 	{
 		TrecComPointer<TPlayer> p = videoPlayer->GetPlayer();
 		if (p.Get())
 			p->HandleEvent(param);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -323,7 +358,12 @@ void TWindow::OnVideoEvent(WPARAM param)
  */
 void TWindow::OnRButtonUp(UINT nFlags, TPoint point)
 {
-	if (locked) return;
+	ThreadLock();
+	if (locked)
+	{
+		ThreadRelease();
+		return;
+	}
 	messageOutput mOut = messageOutput::negative;
 	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
 	{
@@ -333,6 +373,7 @@ void TWindow::OnRButtonUp(UINT nFlags, TPoint point)
 
 	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
 		mainPage->OnRButtonUp(nFlags, point, &mOut);
+	ThreadRelease();
 }
 
 /**
@@ -346,7 +387,12 @@ void TWindow::OnRButtonUp(UINT nFlags, TPoint point)
  */
 void TWindow::OnLButtonDown(UINT nFlags, TPoint point)
 {
-	if (locked) return;
+	ThreadLock();
+	if (locked)
+	{
+		ThreadRelease();
+		return;
+	}
 	messageOutput mOut = messageOutput::negative;
 
 	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
@@ -357,6 +403,7 @@ void TWindow::OnLButtonDown(UINT nFlags, TPoint point)
 
 	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
 		mainPage->OnLButtonDown(nFlags, point, &mOut, flyout);
+	ThreadRelease();
 }
 
 /**
@@ -368,7 +415,12 @@ void TWindow::OnLButtonDown(UINT nFlags, TPoint point)
  */
 void TWindow::OnRButtonDown(UINT nFlags, TPoint point)
 {
-	if (locked) return;
+	ThreadLock();
+	if (locked)
+	{
+		ThreadRelease();
+		return;
+	}
 	messageOutput mOut = messageOutput::negative;
 	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
 	{
@@ -378,6 +430,7 @@ void TWindow::OnRButtonDown(UINT nFlags, TPoint point)
 
 	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
 		mainPage->OnRButtonDown(nFlags, point, &mOut);
+	ThreadRelease();
 }
 
 /**
@@ -389,7 +442,12 @@ void TWindow::OnRButtonDown(UINT nFlags, TPoint point)
  */
 void TWindow::OnMouseMove(UINT nFlags, TPoint point)
 {
-	if (locked) return;
+	ThreadLock();
+	if (locked)
+	{
+		ThreadRelease();
+		return;
+	}
 	messageOutput mOut = messageOutput::negative;
 	if (currentScrollBar.Get())
 	{
@@ -397,6 +455,7 @@ void TWindow::OnMouseMove(UINT nFlags, TPoint point)
 		currentScrollBar->OnMouseMove(nFlags, point, &mOut);
 		
 		Draw();
+		ThreadRelease();
 		return;
 	}
 
@@ -410,6 +469,7 @@ void TWindow::OnMouseMove(UINT nFlags, TPoint point)
 
 	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
 		mainPage->OnMouseMove(nFlags, point, &mOut, flyout);
+	ThreadRelease();
 }
 
 /**
@@ -421,7 +481,12 @@ void TWindow::OnMouseMove(UINT nFlags, TPoint point)
  */
 void TWindow::OnLButtonDblClk(UINT nFlags, TPoint point)
 {
-	if (locked) return;
+	ThreadLock();
+	if (locked)
+	{
+		ThreadRelease();
+		return;
+	}
 	messageOutput mOut = messageOutput::negative;
 	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
 	{
@@ -431,6 +496,7 @@ void TWindow::OnLButtonDblClk(UINT nFlags, TPoint point)
 
 	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
 		mainPage->OnLButtonDblClk(nFlags, point, &mOut);
+	ThreadRelease();
 }
 
 /**
@@ -442,11 +508,16 @@ void TWindow::OnLButtonDblClk(UINT nFlags, TPoint point)
  */
 void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
 {
+	ThreadLock();
 	if (currentScrollBar.Get())
 		currentScrollBar.Nullify();
 
 
-	if (locked) return;
+	if (locked)
+	{
+		ThreadRelease();
+		return;
+	}
 	messageOutput mOut = messageOutput::negative;
 
 	auto fly = flyout;
@@ -460,6 +531,7 @@ void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
 
 	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
 		mainPage->OnLButtonUp(nFlags, point, &mOut, fly);
+	ThreadRelease();
 }
 
 /**
@@ -473,7 +545,12 @@ void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
  */
 bool TWindow::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	if (locked) return false;
+	ThreadLock();
+	if (locked)
+	{
+		ThreadRelease();
+		return false;
+	}
 	messageOutput mOut = messageOutput::negative;
 
 	bool returnable = false;
@@ -486,6 +563,7 @@ bool TWindow::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
 		returnable = mainPage->OnChar(fromChar, nChar, nRepCnt, nFlags, &mOut);
+	ThreadRelease();
 	return returnable;
 }
 
@@ -498,7 +576,8 @@ bool TWindow::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags)
  * Returns: void
  */
 void TWindow::OnWindowResize(UINT width, UINT height)
-{	
+{
+	ThreadLock();
 	D2D1_RECT_F newLoc;
 	newLoc.top = newLoc.left = 0;
 	newLoc.bottom = height;
@@ -517,6 +596,7 @@ void TWindow::OnWindowResize(UINT width, UINT height)
 	{
 		drawingBoard->Resize(currentWindow, size, d3dEngine);
 	}
+	ThreadRelease();
 
 	//safeToDraw = safeToDraw & 0b11111101;
 }
@@ -529,9 +609,10 @@ void TWindow::OnWindowResize(UINT width, UINT height)
  */
 bool TWindow::OnDestroy()
 {
-	if(mainPage.Get())
-		return mainPage->OnDestroy();
-	return true;
+	ThreadLock();
+	bool ret = (mainPage.Get()) ? mainPage->OnDestroy() : true;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -650,7 +731,9 @@ TrecPointer<Page> TWindow::Get3DPage(bool singleton, TrecPointer<TArenaEngine> e
  */
 void TWindow::LockWindow()
 {
+	ThreadLock();
 	locked = true;
+	ThreadRelease();
 }
 
 /**
@@ -661,7 +744,9 @@ void TWindow::LockWindow()
  */
 void TWindow::UnlockWindow()
 {
+	ThreadLock();
 	locked = false;
+	ThreadRelease();
 }
 
 /**
@@ -705,7 +790,10 @@ TrecPointer<Page> TWindow::GetPageByArea(D2D1_RECT_F r)
  */
 TrecPointer<TInstance> TWindow::GetInstance()
 {
-	return TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance);
+	ThreadLock();
+	auto ret = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -716,8 +804,12 @@ TrecPointer<TInstance> TWindow::GetInstance()
  */
 bool TWindow::SetUp3D()
 {
+	ThreadLock();
 	if (d3dEngine.Get())
+	{
+		ThreadRelease();
 		return true;
+	}
 	assert(windowInstance.Get());
 
 	d3dEngine = TrecPointerKey::GetNewTrecPointer<TWindowEngine>(currentWindow, TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->GetInstanceHandle());
@@ -725,11 +817,11 @@ bool TWindow::SetUp3D()
 	if (d3dEngine->Initialize() || !drawingBoard.Get())
 	{
 		d3dEngine.Delete();
+		ThreadRelease();
 		return false;
 	}
-
 	drawingBoard->Resize(currentWindow, size, d3dEngine);
-
+	ThreadRelease();
 
 	return true;
 }
@@ -742,7 +834,9 @@ bool TWindow::SetUp3D()
  */
 void TWindow::CleanUp()
 {
+	ThreadLock();
 	deletePage.Delete();
+	ThreadRelease();
 }
 
 /**
@@ -753,7 +847,10 @@ void TWindow::CleanUp()
  */
 TrecPointer<TWindowEngine> TWindow::GetWindowEngine()
 {
-	return d3dEngine;
+	ThreadLock();
+	auto ret = d3dEngine;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -765,11 +862,15 @@ TrecPointer<TWindowEngine> TWindow::GetWindowEngine()
 TrecPointer<TArenaEngine> TWindow::GetNewArenaEngine()
 {
 	TrecPointer<TArenaEngine> ret;
+	ThreadLock();
 	if (!d3dEngine.Get())
+	{
+		ThreadRelease();
 		return ret;
-
+	}
 	ret = TrecPointerKey::GetNewTrecPointer<TArenaEngine>(d3dEngine);
 	engines.push_back(ret);
+	ThreadRelease();
 	return ret;
 }
 
@@ -782,11 +883,15 @@ TrecPointer<TArenaEngine> TWindow::GetNewArenaEngine()
 TrecPointer<TArenaEngine> TWindow::GetNewArenaEngine(TString& name)
 {
 	TrecPointer<TArenaEngine> ret;
+	ThreadLock();
 	if (!d3dEngine.Get())
+	{
+		ThreadRelease();
 		return ret;
-	
+	}
 	ret = TrecPointerKey::GetNewTrecPointer<TArenaEngine>(d3dEngine, name);
 	engines.push_back(ret);
+	ThreadRelease();
 	return ret;
 }
 
@@ -798,7 +903,10 @@ TrecPointer<TArenaEngine> TWindow::GetNewArenaEngine(TString& name)
  */
 TrecPointer<DrawingBoard> TWindow::GetDrawingBoard()
 {
-	return drawingBoard;
+	ThreadLock();
+	auto ret = drawingBoard;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -809,11 +917,16 @@ TrecPointer<DrawingBoard> TWindow::GetDrawingBoard()
  */
 bool TWindow::PrepAnimations(TrecPointer<Page> page)
 {
-	if(!page.Get() || page->GetWindowHandle().Get() != this)
+	ThreadLock();
+	if (!page.Get() || page->GetWindowHandle().Get() != this)
+	{
+		ThreadRelease();
 		return false;
+	}
 	page->PrepAnimations(animationCentral);
 	animationCentral.StartBegin();
 	animationCentral.StartNewPersistant();
+	ThreadRelease();
 	return true;
 }
 
@@ -827,7 +940,9 @@ bool TWindow::PrepAnimations(TrecPointer<Page> page)
  */
 void TWindow::SetFlyout(TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	flyout = fly;
+	ThreadRelease();
 }
 
 
@@ -839,7 +954,10 @@ void TWindow::SetFlyout(TrecPointer<TFlyout> fly)
  */
 HWND TWindow::GetWindowHandle()
 {
-	return currentWindow;
+	ThreadLock();
+	HWND ret = currentWindow;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -850,26 +968,34 @@ HWND TWindow::GetWindowHandle()
  */
 TrecComPointer<ID2D1Factory1> TWindow::GetFactory()
 {
-	return directFactory;
+	ThreadLock();
+	auto ret = directFactory;
+	ThreadRelease();
+	return ret;
 }
 
 void TWindow::submitPlayer(TrecPointer<TControl> play)
 {
+	ThreadLock();
 	videoPlayer = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TVideo>(play);
 	assert(videoPlayer.Get());
+	ThreadRelease();
 }
 
 HDC TWindow::GetTWindowDc()
 {
-	if (d3dEngine.Get())
-		return d3dEngine->GetDC();
-	return GetDC(currentWindow);
+	ThreadLock();
+	HDC ret = (d3dEngine.Get()) ? d3dEngine->GetDC() : GetDC(currentWindow);
+	ThreadRelease();
+	return ret;
 }
 
 void TWindow::FlushDc()
 {
+	ThreadLock();
 	if (d3dEngine.Get())
 		d3dEngine->ClearDC();
+	ThreadRelease();
 }
 
 /**

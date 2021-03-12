@@ -21,9 +21,12 @@ TWebWindow::~TWebWindow()
 
 int TWebWindow::PrepareWindow()
 {
+    ThreadLock();
     if (TWindow::PrepareWindow())
+    {
+        ThreadRelease();
         return 1;
-
+    }
     RECT location = { 0,0,0,0 };
     GetClientRect(currentWindow, &location);
 
@@ -50,11 +53,13 @@ int TWebWindow::PrepareWindow()
 
     // AddNewTab();
 
+    ThreadRelease();
     return 0;
 }
 
 void TWebWindow::OnWindowResize(UINT width, UINT height)
 {
+    ThreadLock();
     size.right = width;
     size.bottom = height;
     size.left = size.top = 0;
@@ -83,6 +88,7 @@ void TWebWindow::OnWindowResize(UINT width, UINT height)
     {
         drawingBoard->Resize(currentWindow, size, d3dEngine);
     }
+    ThreadRelease();
 }
 
 void TWebWindow::AddNewTab()
@@ -92,11 +98,10 @@ void TWebWindow::AddNewTab()
 
 void TWebWindow::AddNewTab(const TString& url, bool createTab)
 {
+    ThreadLock();
     TString fixedUrl(FixUrl(url));
 
     TrecSubPointer<Page, WebPage> newWebPage = GetWebPage(fixedUrl);
-
-    
 
     if (newWebPage.Get())
     {
@@ -110,26 +115,37 @@ void TWebWindow::AddNewTab(const TString& url, bool createTab)
         tab->SetContent(TrecPointerKey::GetTrecPointerFromSub<TabContent, TabWebPageContent>(pageContent));
         webPages->SetCurrentTab(tab);
     }
+    ThreadRelease();
 }
 
 int TWebWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 {
+    ThreadLock();
     if (!windowInstance.Get())
+    {
+        ThreadRelease();
         return -1;
+    }
     if (!currentWindow)
+    {
+        ThreadRelease();
         return -2;
-
+    }
     TrecPointer<TFile> aFile = TrecPointerKey::GetNewTrecPointer<TFile>(file, TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 
     if (!aFile.Get() || !aFile->IsOpen())
+    {
+        ThreadRelease();
         return 1;
-
+    }
     assert(windowInstance.Get());
     mainPage = Page::GetWindowPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), eh);
 
     if (!mainPage.Get())
+    {
+        ThreadRelease();
         return 2;
-
+    }
     mainPage->SetArea(mainPageSpace);
 
     mainPage->SetAnaface(aFile, eh);
@@ -141,16 +157,20 @@ int TWebWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
     safeToDraw = 1;
     Draw();
 
+    ThreadRelease();
     return 0;
 }
 
 void TWebWindow::SetEnvironmentGenerator(TrecPointer<EnvironmentGenerator> gen)
 {
+    ThreadLock();
     envGenerator = gen;
+    ThreadRelease();
 }
 
 void TWebWindow::DrawOtherPages()
 {
+    ThreadLock();
     if (webPages.Get())
     {
         webPages->onDraw();
@@ -158,10 +178,12 @@ void TWebWindow::DrawOtherPages()
         if (tab.Get() && tab->GetContent().Get())
             tab->GetContent()->Draw(nullptr);
     }
+    ThreadRelease();
 }
 
 void TWebWindow::OnLButtonDown(UINT nFlags, TPoint point)
 {
+    ThreadLock();
     if (webPages.Get())
     {
         messageOutput mOut = messageOutput::negative;
@@ -171,6 +193,7 @@ void TWebWindow::OnLButtonDown(UINT nFlags, TPoint point)
 
         if (mOut != messageOutput::negative && mOut != messageOutput::negativeUpdate)
         {
+            ThreadRelease();
             return;
         }
 
@@ -184,13 +207,13 @@ void TWebWindow::OnLButtonDown(UINT nFlags, TPoint point)
         }
     }
 
-
-
     TWindow::OnLButtonDown(nFlags, point);
+    ThreadRelease();
 }
 
 void TWebWindow::OnMouseMove(UINT nFlags, TPoint point)
 {
+    ThreadLock();
     if (webPages.Get())
     {
         messageOutput mOut = messageOutput::negative;
@@ -200,6 +223,7 @@ void TWebWindow::OnMouseMove(UINT nFlags, TPoint point)
 
         if (mOut != messageOutput::negative && mOut != messageOutput::negativeUpdate)
         {
+            ThreadRelease();
             return;
         }
 
@@ -214,10 +238,12 @@ void TWebWindow::OnMouseMove(UINT nFlags, TPoint point)
     }
 
     TWindow::OnMouseMove(nFlags, point);
+    ThreadRelease();
 }
 
 void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
 {
+    ThreadLock();
     if (webPages.Get())
     {
         messageOutput mOut = messageOutput::negative;
@@ -231,6 +257,7 @@ void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
             if (tcm == TabClickMode::tcm_new_tab)
                 AddNewTab();
             Draw();
+            ThreadRelease();
             return;
         }
 
@@ -246,13 +273,15 @@ void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
 
     TWindow::OnLButtonDown(nFlags, point);
     Draw();
+    ThreadRelease();
 }
 
 TString TWebWindow::FixUrl(const TString& url)
 {
-    if(url.StartsWith(L"Anagame://") || url.StartsWith(L"File://") || url.StartsWith(L"http://") || url.StartsWith(L"https://") || url.StartsWith(L"ftp://"))
+    if (url.StartsWith(L"Anagame://") || url.StartsWith(L"File://") || url.StartsWith(L"http://") || url.StartsWith(L"https://") || url.StartsWith(L"ftp://"))
+    {
         return TString(url);
-
+    }
     TrecPointer<TFileShell> file = TFileShell::GetFileInfo(url);
 
     if (file.Get())
@@ -263,6 +292,7 @@ TString TWebWindow::FixUrl(const TString& url)
 
 TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
 {
+    ThreadLock();
     auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<Page, WebPage>(drawingBoard, self);
 
     // ret->SetEnvironment(envGenerator->GetEnvironment(TrecPointer<TFileShell>()));
@@ -284,6 +314,7 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
             if (!index.Get())
             {
                 MessageBox(currentWindow, L"Failed to Set up Error Message for Anagame Page!", nullptr, MB_OK);
+                ThreadRelease();
                 return ret;
             }
         }
@@ -311,6 +342,7 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
             if (!index.Get())
             {
                 MessageBox(currentWindow, L"Failed to Set up Error Message for Anagame Page!", nullptr, MB_OK);
+                ThreadRelease();
                 return ret;
             }
         }
@@ -335,6 +367,7 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
     {
 
     }
+    ThreadRelease();
     return ret;
 }
 

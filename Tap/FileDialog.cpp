@@ -29,29 +29,35 @@ int FileDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 	TString file = GetDirectoryWithSlash(CentralDirectories::cd_Executable);
 
 	file.Append(L"Resources\\FileDialog.tml");
-
+	ThreadLock();
 	int returnable = TWindow::CompileView(file, TrecPointerKey::GetTrecPointerFromSub<EventHandler, FileDialogHandler>( handler));
 
-	if (returnable)return returnable;
-
-	if (!mainPage.Get())
-		return 10;
-	return 0;
+	if (!returnable && !mainPage.Get())
+	{
+		returnable = -10;
+	}
+	ThreadRelease();
+	return returnable;
 }
 
 bool FileDialog::OnDestroy()
 {
+	ThreadLock();
 	bool ret = TDialog::OnDestroy();
 
 	if (handler.Get())
 		file = TFileShell::GetFileInfo(handler->GetPath());
 
+	ThreadRelease();
 	return true;
 }
 
 TrecPointer<TFileShell> FileDialog::GetFile()
 {
-	return file;
+	ThreadLock();
+	auto ret = file;
+	ThreadRelease();
+	return ret;
 }
 
 TrecPointer<TFileShell> BrowseForFile(TrecPointer<TInstance> in, HWND parent, TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile, file_node_filter_mode filter_mode)

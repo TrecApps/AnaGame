@@ -61,8 +61,12 @@ TString TDialog::GetType()
  */
 int TDialog::PrepareWindow()
 {
+	ThreadLock();
 	if (!currentWindow)
+	{
+		ThreadRelease();
 		return 1;
+	}
 	if (parent)
 	{
 		if (windowInstance.Get() && dialogMode == TDialogMode::dialog_mode_soft_modal)
@@ -74,7 +78,9 @@ int TDialog::PrepareWindow()
 			EnableWindow(parent, FALSE);
 		}
 	}
-	return TWindow::PrepareWindow();
+	int ret = TWindow::PrepareWindow();
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -85,6 +91,7 @@ int TDialog::PrepareWindow()
  */
 bool TDialog::OnDestroy()
 {
+	ThreadLock();
 	bool returnable = TWindow::OnDestroy();
 	if (returnable && parent)
 	{
@@ -97,8 +104,9 @@ bool TDialog::OnDestroy()
 			EnableWindow(parent, TRUE);
 		}
 	}
-	
-	return breakLoop = returnable;
+	bool ret = breakLoop = returnable;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -109,12 +117,14 @@ bool TDialog::OnDestroy()
  */
 void TDialog::Run()
 {
+	ThreadLock();
 	MSG msg;
 	while (!breakLoop && GetMessage(&msg, nullptr, 0, 0))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+	ThreadRelease();
 }
 
 /**

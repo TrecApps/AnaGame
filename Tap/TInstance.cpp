@@ -74,6 +74,7 @@ TInstance::~TInstance()
  */
 LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	ThreadLock();
 	TWindow* win = nullptr;
 	if (message == WM_LBUTTONUP)
 		int e = 4;
@@ -95,9 +96,11 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 	}
 
-	if(!win)
+	if (!win)
+	{
+		ThreadRelease();
 		return DefWindowProc(hWnd, message, wParam, lParam);
-
+	}
 	switch (message)
 	{
 	case WM_APP_PLAYER_EVENT:
@@ -165,8 +168,9 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		windowList[windowIndex]->messageStack--;
 	}
 	CleanWindows();
-
-	return DefWindowProc(hWnd, message, wParam, lParam);
+	auto ret = DefWindowProc(hWnd, message, wParam, lParam);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -180,10 +184,12 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
  */
 int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<EventHandler> eh, t_window_type winType)
 {
+	ThreadLock();
 	WORD regResult = RegisterClassExW(&wcex);
 	if (!regResult)
 	{
 		int err = GetLastError();
+		ThreadRelease();
 		return 1;
 	}
 	switch (winType)
@@ -203,7 +209,9 @@ int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<Event
 	
 
 	mainWindow->PrepareWindow();
-	return mainWindow->CompileView(file, eh);
+	auto ret = mainWindow->CompileView(file, eh);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -214,20 +222,32 @@ int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<Event
  */
 TrecPointer<TWindow> TInstance::GetWindowByName(TString& name)
 {
-	if(mainWindow.Get() && !mainWindow->GetWinName().Compare(name))
-		return mainWindow;
-	for(UINT Rust = 0; Rust < windowList.Size(); Rust++)
+	ThreadLock();
+	if (mainWindow.Get() && !mainWindow->GetWinName().Compare(name))
 	{
-		if(windowList[Rust].Get() && windowList[Rust]->window.Get() && !windowList[Rust]->window->GetWinName().Compare(name))
-			return windowList[Rust]->window;
+		ThreadRelease();
+		return mainWindow;
 	}
+	for (UINT Rust = 0; Rust < windowList.Size(); Rust++)
+	{
+		if (windowList[Rust].Get() && windowList[Rust]->window.Get() && !windowList[Rust]->window->GetWinName().Compare(name))
+		{
+			ThreadRelease();
+			return windowList[Rust]->window;
+		}
+	}
+	ThreadRelease();
 	return TrecPointer<TWindow>();
 }
 
 void TInstance::AssertDialogRegistered()
 {
+	ThreadLock();
 	if (dialogAtom)
+	{
+		ThreadRelease();
 		return;
+	}
 	WNDCLASSEXW windowClassStructure;
 	ZeroMemory(&windowClassStructure, sizeof(windowClassStructure));
 
@@ -243,52 +263,20 @@ void TInstance::AssertDialogRegistered()
 	windowClassStructure.hCursor = nullptr;
 	windowClassStructure.hbrBackground = nullptr;
 	windowClassStructure.lpszMenuName = nullptr;
-	windowClassStructure.lpszClassName = winClass.GetConstantBuffer();
+	windowClassStructure.lpszClassName = winClass.GetConstantBuffer().getBuffer();
 	windowClassStructure.hIconSm = nullptr;
 
 	dialogAtom = RegisterClassExW(&windowClassStructure);
 	if (!dialogAtom)
 	{
 		int err = GetLastError();
+		ThreadRelease();
 		throw err;
 	}
+	ThreadRelease();
 }
 
-/*bool TInstance::LaunchDialog(TString& file, TrecPointer<EventHandler> eh, HWND callingWindow)
-{
-	WNDCLASSEXW windowClassStructure;
-	ZeroMemory(&windowClassStructure, sizeof(windowClassStructure));
 
-	if (!GetClassInfoExW(instance, dialogClassName.GetConstantBuffer(), &windowClassStructure))
-	{
-		windowClassStructure.cbSize = sizeof(windowClassStructure);
-		windowClassStructure.style = WS_CAPTION | WS_DLGFRAME | WS_POPUPWINDOW;
-		windowClassStructure.lpfnWndProc = proctor;
-		windowClassStructure.cbClsExtra = 0;
-		windowClassStructure.cbWndExtra = 0;
-		windowClassStructure.hInstance = instance;
-		windowClassStructure.hIcon = nullptr;
-		windowClassStructure.hCursor = nullptr;
-		windowClassStructure.hbrBackground = nullptr;
-		windowClassStructure.lpszMenuName = nullptr;
-		windowClassStructure.lpszClassName = dialogClassName.GetConstantBuffer();
-		windowClassStructure.hIconSm = nullptr;
-
-
-		dialogAtom = RegisterClassExW(&windowClassStructure);
-
-		assert(dialogAtom);
-	}
-	
-	TrecPointer<TWindow> newDialog = TrecPointerKey::GetNewTrecPointerAlt<TWindow, TDialog>(mainWindowName, dialogClassName, mainStyle, mainWindowHandle, command, instance);
-
-	newDialog->PrepareWindow();
-
-	if (newDialog->CompileView(file, factory, eh))
-		return false;
-	windowList.push_back(newDialog);
-	return true;
-}*/
 
 /**
  * Method: TInstance::GetProc
@@ -310,7 +298,10 @@ WNDPROC TInstance::GetProc()
  */
 TrecPointer<TWindow> TInstance::GetMainWindow()
 {
-	return mainWindow;
+	ThreadLock();
+	auto ret = mainWindow;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -321,14 +312,23 @@ TrecPointer<TWindow> TInstance::GetMainWindow()
  */
 TrecPointer<TWindow> TInstance::GetWindow(HWND h)
 {
+	ThreadLock();
 	if (h == mainWindow->GetWindowHandle())
-		return mainWindow;
-
+	{
+		auto ret = mainWindow;
+		ThreadRelease();
+		return ret;
+	}
 	for (UINT Rust = 0; Rust < windowList.Size(); Rust++)
 	{
 		if (windowList[Rust].Get() && windowList[Rust]->window.Get() && windowList[Rust]->window->GetWindowHandle() == h)
-			return windowList[Rust]->window;
+		{
+			auto ret =  windowList[Rust]->window;
+			ThreadRelease();
+			return ret;
+		}
 	}
+	ThreadRelease();
 	return TrecPointer<TWindow>();
 }
 
@@ -340,9 +340,11 @@ TrecPointer<TWindow> TInstance::GetWindow(HWND h)
  */
 void TInstance::LockWindow(HWND win)
 {
+	ThreadLock();
 	if (mainWindow.Get() && mainWindow->GetWindowHandle() == win)
 	{
 		mainWindow->LockWindow();
+		ThreadRelease();
 		return;
 	}
 
@@ -351,9 +353,11 @@ void TInstance::LockWindow(HWND win)
 		if (windowList[Rust].Get() && windowList[Rust]->window.Get() && windowList[Rust]->window->GetWindowHandle() == win)
 		{
 			windowList[Rust]->window->LockWindow();
+			ThreadRelease();
 			return;
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -364,9 +368,11 @@ void TInstance::LockWindow(HWND win)
  */
 void TInstance::UnlockWindow(HWND win)
 {
+	ThreadLock();
 	if (mainWindow.Get() && mainWindow->GetWindowHandle() == win)
 	{
 		mainWindow->UnlockWindow();
+		ThreadRelease();
 		return;
 	}
 
@@ -375,9 +381,11 @@ void TInstance::UnlockWindow(HWND win)
 		if (windowList[Rust].Get() && windowList[Rust]->window.Get() && windowList[Rust]->window->GetWindowHandle() == win)
 		{
 			windowList[Rust]->window->UnlockWindow();
+			ThreadRelease();
 			return;
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -399,7 +407,10 @@ HINSTANCE TInstance::GetInstanceHandle()
  */
 TrecComPointer<ID2D1Factory1> TInstance::GetFactory()
 {
-	return factory;
+	ThreadLock();
+	auto ret = factory;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -425,12 +436,14 @@ void TInstance::SetSelf(TrecPointer<TInstance> i)
  */
 void TInstance::DispatchAnagameMessage(TrecPointer<HandlerMessage> message)
 {
+	ThreadLock();
 	CleanHandlerList();
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
 	{
 		if (registeredHandlers[Rust].Get() && registeredHandlers[Rust]->ShouldProcessMessage(message))
 			registeredHandlers[Rust]->ProcessMessage(message);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -442,6 +455,8 @@ void TInstance::DispatchAnagameMessage(TrecPointer<HandlerMessage> message)
  */
 TrecPointer<EventHandler> TInstance::GetHandler(const TString& name, anagame_page pageType)
 {
+	ThreadLock();
+	TrecPointer<EventHandler> ret;
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
 	{
 		if (registeredHandlers[Rust].Get())
@@ -452,20 +467,23 @@ TrecPointer<EventHandler> TInstance::GetHandler(const TString& name, anagame_pag
 			{
 			case anagame_page::anagame_page_command_prompt:
 				if (dynamic_cast<TerminalHandler*>(registeredHandlers[Rust].Get()))
-					return registeredHandlers[Rust];
+				{
+					ret = registeredHandlers[Rust];
+				}
 				break;
 			case anagame_page::anagame_page_code_file:
 				if (dynamic_cast<TCodeHandler*>(registeredHandlers[Rust].Get()))
-					return registeredHandlers[Rust];
+					ret = registeredHandlers[Rust];
 				break;
 			case anagame_page::anagame_page_file_node:
 				if (dynamic_cast<FileHandler*>(registeredHandlers[Rust].Get()))
-					return registeredHandlers[Rust];
+					ret = registeredHandlers[Rust];
 				// To-Do: As more Handlers are added, mention them here
 			}
 		}
 	}
-	return TrecPointer<EventHandler>();
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -476,9 +494,11 @@ TrecPointer<EventHandler> TInstance::GetHandler(const TString& name, anagame_pag
  */
 void TInstance::RegisterDialog(TrecPointer<TWindow> win)
 {
+	ThreadLock();
 	TrecPointer<WindowContainer> contain = TrecPointerKey::GetNewTrecPointer<WindowContainer>();
 	contain->window = win;
 	windowList.push_back(contain);
+	ThreadRelease();
 }
 
 /**
@@ -489,6 +509,7 @@ void TInstance::RegisterDialog(TrecPointer<TWindow> win)
  */
 void TInstance::CleanWindows()
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < windowList.Size(); Rust++)
 	{
 		if (windowList[Rust].Get() && windowList[Rust]->destroy && !windowList[Rust]->messageStack)
@@ -497,6 +518,7 @@ void TInstance::CleanWindows()
 			windowList.RemoveAt(Rust);
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -507,6 +529,7 @@ void TInstance::CleanWindows()
  */
 void TInstance::UnregisterHandler(TrecPointer<EventHandler> handler)
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
 	{
 		if (handler.Get() == registeredHandlers[Rust].Get())
@@ -515,6 +538,7 @@ void TInstance::UnregisterHandler(TrecPointer<EventHandler> handler)
 			break;
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -528,14 +552,19 @@ bool TInstance::RegisterHandler(TrecPointer<EventHandler> handler)
 	if(!handler.Get())
 		return false;
 
+	ThreadLock();
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
 	{
 		if (handler.Get() == registeredHandlers[Rust].Get())
+		{
+			ThreadRelease();
 			return false;
+		}
 	}
 
 	registeredHandlers.push_back(handler);
 	handler->id = handlerID++;
+	ThreadRelease();
 	return true;
 }
 
@@ -547,11 +576,13 @@ bool TInstance::RegisterHandler(TrecPointer<EventHandler> handler)
  */
 void TInstance::CleanHandlerList()
 {
+	ThreadLock();
 	for (int Rust = static_cast<int>(registeredHandlers.Size()) - 1; Rust >= 0; Rust--)
 	{
 		if (!registeredHandlers[Rust].Get())
 			registeredHandlers.RemoveAt(Rust--);
 	}
+	ThreadRelease();
 }
 
 /**
