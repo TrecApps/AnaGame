@@ -104,20 +104,7 @@ public:
     bool useCapture;
 };
 
-typedef enum class border_style
-{
-    bs_not_set,
-    bs_dotted,
-    bs_dashed,
-    bs_solid,
-    bs_double,
-    bs_groove,
-    bs_ridge,
-    bs_inset,
-    bs_outset,
-    bs_none,
-    bs_hidden
-};
+
 
 typedef enum class border_side
 {
@@ -211,7 +198,9 @@ public:
 
     bool GetBorderColor(TColor& color, border_side);
 
-    border_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
+    stroke_style GetStrokeStyle(border_side side);
+
+    stroke_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
     USHORT thick, topThick, bottomThick, rightThick, leftThick;
     TColor color;
     TColorSet topColor, bottomColor, rightColor, leftColor;

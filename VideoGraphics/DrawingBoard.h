@@ -8,6 +8,34 @@
 
 class TWindow;
 
+typedef enum class stroke_style
+{
+	bs_not_set,
+	bs_dotted,
+	bs_dashed,
+	bs_solid,
+	bs_double,
+	bs_groove,
+	bs_ridge,
+	bs_inset,
+	bs_outset,
+	bs_none,
+	bs_hidden
+};
+
+bool hasStyle(stroke_style style);
+
+class StrokeStyle
+{
+public:
+	StrokeStyle();
+	StrokeStyle(const StrokeStyle& copy);
+	StrokeStyle(stroke_style tag, TrecComPointer<ID2D1StrokeStyle> value);
+	stroke_style tag;
+	TrecComPointer<ID2D1StrokeStyle> value;
+};
+
+
 /**
  * Class: DrawingBoard
  * Purpose: Holds the Direct2D RenderTarget and provides methods on manipulatingit and retrieving Brushes to draw upon it
@@ -257,7 +285,23 @@ public:
 	 */
 	UINT GetLayerCount();
 
+	/**
+	 * Method: DrawingBoard::GetStrokeStyle
+	 * Purpose: Returns the actual stroke style based off of the provided tag
+	 * Parameters: stroke_style tag - the stroke style requested
+	 * Returns: TrecComPointer<ID2D1StrokeStyle> - the stroke style
+	 */
+	TrecComPointer<ID2D1StrokeStyle> GetStrokeStyle(stroke_style tag);
+
 private:
+
+	/**
+	 * Holds the Stroke Styles
+	 */
+	TDataArray<StrokeStyle> strokeStyles;
+
+	void PrepStyles();
+
 	/**
 	 * the factory object the Board is working with, used to retieve Geometries
 	 */

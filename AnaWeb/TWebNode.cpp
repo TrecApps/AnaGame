@@ -64,18 +64,18 @@ static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
 
 typedef struct StyleString {
 	TString str;
-	border_style style;
+	stroke_style style;
 }StyleString;
 
 static StyleString styleStrings[WEB_BORDER_STYLE_COUNT] = {
-	{TString(L"dashed"), border_style::bs_dashed},
-	{TString(L"dotted"), border_style::bs_dotted},
-	{TString(L"double"), border_style::bs_double},
-	{TString(L"groove"), border_style::bs_groove},
-	{TString(L"inset"), border_style::bs_inset},
-	{TString(L"outset"), border_style::bs_outset},
-	{TString(L"ridge"), border_style::bs_ridge},
-	{TString(L"solid"), border_style::bs_solid},
+	{TString(L"dashed"), stroke_style::bs_dashed},
+	{TString(L"dotted"), stroke_style::bs_dotted},
+	{TString(L"double"), stroke_style::bs_double},
+	{TString(L"groove"), stroke_style::bs_groove},
+	{TString(L"inset"), stroke_style::bs_inset},
+	{TString(L"outset"), stroke_style::bs_outset},
+	{TString(L"ridge"), stroke_style::bs_ridge},
+	{TString(L"solid"), stroke_style::bs_solid},
 };
 
 typedef struct ListStyleString 
@@ -2159,7 +2159,8 @@ void TWebNode::DrawBorder()
 
 	// Start with the top border
 	float curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_top));
-	if (curThick)
+	stroke_style curStyle = borderData.GetStrokeStyle(border_side::bs_top);
+	if (curThick && hasStyle(curStyle))
 	{
 		borderData.GetBorderColor(color, border_side::bs_top);
 		if (!borderData.brush.Get())
@@ -2168,13 +2169,14 @@ void TWebNode::DrawBorder()
 		if (borderData.brush.Get())
 		{
 			float top = location.top + (static_cast<float>(curThick) / 2.0f);
-			borderData.brush->DrawLine(D2D1::Point2F(location.left, top), D2D1::Point2F(location.right, top), curThick);
+			borderData.brush->DrawLine(D2D1::Point2F(location.left, top), D2D1::Point2F(location.right, top), board->GetStrokeStyle(curStyle), curThick);
 		}
 	}
 
 	// go for the right border
 	curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_right));
-	if (curThick)
+	stroke_style curStyle = borderData.GetStrokeStyle(border_side::bs_right);
+	if (curThick && hasStyle(curStyle))
 	{
 		borderData.GetBorderColor(color, border_side::bs_right);
 		if (!borderData.brush.Get())
@@ -2183,13 +2185,14 @@ void TWebNode::DrawBorder()
 		if (borderData.brush.Get())
 		{
 			float right = location.right - (static_cast<float>(curThick) / 2.0f);
-			borderData.brush->DrawLine(D2D1::Point2F(right, location.top), D2D1::Point2F(right, location.bottom), curThick);
+			borderData.brush->DrawLine(D2D1::Point2F(right, location.top), D2D1::Point2F(right, location.bottom), board->GetStrokeStyle(curStyle), curThick);
 		}
 	}
 
 	// now the left border
 	curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_left));
-	if (curThick)
+	stroke_style curStyle = borderData.GetStrokeStyle(border_side::bs_left);
+	if (curThick && hasStyle(curStyle))
 	{
 		borderData.GetBorderColor(color, border_side::bs_left);
 		if (!borderData.brush.Get())
@@ -2198,13 +2201,14 @@ void TWebNode::DrawBorder()
 		if (borderData.brush.Get())
 		{
 			float left = location.left + (static_cast<float>(curThick) / 2.0f);
-			borderData.brush->DrawLine(D2D1::Point2F(left, location.top), D2D1::Point2F(left, location.bottom), curThick);
+			borderData.brush->DrawLine(D2D1::Point2F(left, location.top), D2D1::Point2F(left, location.bottom), board->GetStrokeStyle(curStyle), curThick);
 		}
 	}
 
 	// finally, the bottom border
 	curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_bottom));
-	if (curThick)
+	stroke_style curStyle = borderData.GetStrokeStyle(border_side::bs_bottom);
+	if (curThick && hasStyle(curStyle))
 	{
 		borderData.GetBorderColor(color, border_side::bs_bottom);
 		if (!borderData.brush.Get())
@@ -2213,7 +2217,7 @@ void TWebNode::DrawBorder()
 		if (borderData.brush.Get())
 		{
 			float bottom = location.bottom + (static_cast<float>(curThick) / 2.0f);
-			borderData.brush->DrawLine(D2D1::Point2F(location.left, bottom), D2D1::Point2F(location.right, bottom), curThick);
+			borderData.brush->DrawLine(D2D1::Point2F(location.left, bottom), D2D1::Point2F(location.right, bottom), board->GetStrokeStyle(curStyle), curThick);
 		}
 	}
 }
@@ -2367,7 +2371,7 @@ void TextData::Update(const TextData& copy)
 
 BorderData::BorderData()
 {
-	borderStyle = topStyle = bottomStyle = rightStyle = leftStyle = border_style::bs_not_set;
+	borderStyle = topStyle = bottomStyle = rightStyle = leftStyle = stroke_style::bs_not_set;
 	thick = topThick = bottomThick = rightThick = leftThick = 0;
 }
 
@@ -2643,7 +2647,7 @@ USHORT BorderData::GetBorderThickness(border_side side)
 {
 	if (side == border_side::bs_all)
 		return 0; // We need a specific side
-	border_style sideStyle = border_style::bs_not_set;
+	stroke_style sideStyle = stroke_style::bs_not_set;
 	USHORT sideThick = 0;
 
 	switch (side)
@@ -2711,6 +2715,30 @@ bool BorderData::GetBorderColor(TColor& color, border_side side)
 		color = this->color;
 	}
 	return ret;
+}
+
+stroke_style BorderData::GetStrokeStyle(border_side side)
+{
+	switch (side)
+	{
+	case border_side::bs_bottom:
+		if (bottomStyle == stroke_style::bs_not_set)
+			return borderStyle;
+		return bottomStyle;
+	case border_side::bs_left:
+		if (leftStyle == stroke_style::bs_not_set)
+			return borderStyle;
+		return leftStyle;
+	case border_side::bs_right:
+		if (rightStyle == stroke_style::bs_not_set)
+			return borderStyle;
+		return rightStyle;
+	case border_side::bs_top:
+		if (rightStyle == stroke_style::bs_not_set)
+			return borderStyle;
+		return rightStyle;
+	}
+	return borderStyle;
 }
 
 TColorSet::TColorSet()

@@ -30,6 +30,8 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 		throw L"Error! Factory Object MUST be initialized!";
 	this->fact = fact;
 
+	PrepStyles();
+
 	D2D1_RENDER_TARGET_PROPERTIES props;
 	ZeroMemory(&props, sizeof(props));
 
@@ -563,6 +565,51 @@ UINT DrawingBoard::GetLayerCount()
 	return layers.Size();
 }
 
+TrecComPointer<ID2D1StrokeStyle> DrawingBoard::GetStrokeStyle(stroke_style tag)
+{
+	return strokeStyles.at(static_cast<UINT>(tag)).value;
+}
+
+void DrawingBoard::PrepStyles()
+{
+	D2D1_STROKE_STYLE_PROPERTIES props;
+	float dashes = 1.0f;
+	TrecComPointer<ID2D1StrokeStyle>::TrecComHolder holder;
+
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_not_set, TrecComPointer<ID2D1StrokeStyle>()));
+
+
+	props.dashCap = D2D1_CAP_STYLE_ROUND;
+	props.dashOffset = D2D1_CAP_STYLE_ROUND;
+	props.dashStyle = D2D1_DASH_STYLE_DOT;
+	props.endCap = D2D1_CAP_STYLE_ROUND;
+	props.lineJoin = D2D1_LINE_JOIN_MITER_OR_BEVEL;
+	props.miterLimit = 1.0f;
+	props.startCap = D2D1_CAP_STYLE_ROUND;
+	fact->CreateStrokeStyle(props, &dashes, 1, holder.GetPointerAddress());
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_dotted, holder.Extract()));
+
+
+	props.dashCap = D2D1_CAP_STYLE_FLAT;
+	props.dashOffset = D2D1_CAP_STYLE_FLAT;
+	props.endCap = D2D1_CAP_STYLE_FLAT;
+	props.startCap = D2D1_CAP_STYLE_FLAT;
+	props.dashStyle = D2D1_DASH_STYLE_DASH;
+	fact->CreateStrokeStyle(props, &dashes, 1, holder.GetPointerAddress());
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_dashed, holder.Extract()));
+
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_solid, TrecComPointer<ID2D1StrokeStyle>()));
+
+
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_double, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_groove, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_ridge, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_inset, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_outset, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_none, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_hidden, TrecComPointer<ID2D1StrokeStyle>()));
+}
+
 void DrawingBoard::Set3D(TrecPointer<TWindowEngine> engine, ID2D1Factory1* fact)
 {
 	TrecComPointer<IDXGISurface1> surf = engine->GetSurface();
@@ -611,4 +658,26 @@ void DrawingBoard::Set3D(TrecPointer<TWindowEngine> engine, ID2D1Factory1* fact)
 	this->engine = engine;
 
 	is3D = true;
+}
+
+StrokeStyle::StrokeStyle()
+{
+	tag = stroke_style::bs_not_set;
+}
+
+StrokeStyle::StrokeStyle(const StrokeStyle& copy)
+{
+	tag = copy.tag;
+	value = copy.value;
+}
+
+StrokeStyle::StrokeStyle(stroke_style tag, TrecComPointer<ID2D1StrokeStyle> value)
+{
+	this->tag = tag;
+	this->value = value;
+}
+
+bool hasStyle(stroke_style style)
+{
+	return !(style == stroke_style::bs_none || style == stroke_style::bs_not_set || style == stroke_style::bs_hidden);
 }

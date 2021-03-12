@@ -129,6 +129,17 @@ public:
 	 * Returns: void
 	 */
 	void DrawLine(const POINT_2D& p1, const POINT_2D& p2, float thickness = 1.0f);
+
+	/**
+	 * Method: TBrush::DrawLine
+	 * Purpose: Draws a specific line to the Drawing Board, adding Stroke Style to the mix
+	 * Parameters: const POINT_2D& p1 - the beginning of the line
+	 *				const POINT_2D& p2 - the end of the line
+	 *				float thickness -  the thickness of the line (default is 1.0f)
+	 *				TrecComPointer<ID2D1StrokeStyle> style - the style to apply
+	 * Returns: void
+	 */
+	void DrawLine(const POINT_2D& p1, const POINT_2D& p2, TrecComPointer<ID2D1StrokeStyle> style, float thickness = 1.0f);
 	
 
 	/**
