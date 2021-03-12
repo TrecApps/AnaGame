@@ -67,29 +67,42 @@ void EventHandler::OnFirstDraw()
 
 bool EventHandler::ShouldProcessMessage(TrecPointer<HandlerMessage> message)
 {
-	if(!message.Get())
+	ThreadLock();
+	if (!message.Get())
+	{
+		ThreadRelease();
 		return false;
-
+	}
+	bool ret = false;
 	switch (message->GetMessageTransmission())
 	{
 	case message_transmission::message_transmission_firm_id:
-		return message->GetHandlerIdType() == id;
+		ret = message->GetHandlerIdType() == id;
+		break;
 	case message_transmission::message_transmission_firm_name:
-		return name.GetSize() && !name.Compare(message->GetHandlerName());
+		ret = name.GetSize() && !name.Compare(message->GetHandlerName());
+		break;
 	case message_transmission::message_transmission_id_over_name:
 		if (message->GetHandlerIdType() == id)
-			return true;
-		return name.GetSize() && !name.Compare(message->GetHandlerName());
+			ret = true;
+		else
+		ret = name.GetSize() && !name.Compare(message->GetHandlerName());
+		break;
 	case message_transmission::message_transmission_name_over_id:
 		if (name.GetSize() && !name.Compare(message->GetHandlerName()))
-			return true;
-		return message->GetHandlerIdType() == id;
+			ret = true;
+		else
+		ret = message->GetHandlerIdType() == id;
+		break;
 	case message_transmission::message_transmission_by_type:
-		return this->ShouldProcessMessageByType(message);
+		ret = this->ShouldProcessMessageByType(message);
+		break;
 	case message_transmission::message_transmission_name_type:
-		return this->ShouldProcessMessageByType(message) && !name.Compare(message->GetHandlerName());
+		ret = this->ShouldProcessMessageByType(message) && !name.Compare(message->GetHandlerName());
 	}
-	return true;
+
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -233,6 +246,7 @@ void EventHandler::SetSelf(TrecPointer<EventHandler> handleSelf)
 {
 	if (handleSelf.Get() != this)
 		throw L"Error! Needs to be set to Self";
+	ThreadLock();
 	hSelf = TrecPointerKey::GetSoftPointerFromTrec<EventHandler>(handleSelf);
 	if (app.Get())
 		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->RegisterHandler(handleSelf);
@@ -248,7 +262,10 @@ void EventHandler::SetSelf(TrecPointer<EventHandler> handleSelf)
  */
 UINT EventHandler::GetId()
 {
-	return id;
+	ThreadLock();
+	UINT ret = id;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -259,7 +276,10 @@ UINT EventHandler::GetId()
  */
 TrecPointer<Page> EventHandler::GetPage()
 {
-	return page;
+	ThreadLock();
+	auto ret = page;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -270,7 +290,9 @@ TrecPointer<Page> EventHandler::GetPage()
  */
 void EventHandler::SetMiniApp(TrecPointer<MiniApp> mApp)
 {
+	ThreadLock();
 	miniApp = mApp;
+	ThreadRelease();
 }
 
 /**
@@ -282,8 +304,10 @@ void EventHandler::SetMiniApp(TrecPointer<MiniApp> mApp)
  */
 void EventHandler::OnFocus()
 {
+	ThreadLock();
 	if (!page.Get() || !page->GetWindowHandle().Get())
 	{
+		ThreadRelease();
 		return;
 	}
 
@@ -305,6 +329,7 @@ void EventHandler::OnFocus()
 
 		realApp->DispatchAnagameMessage(message);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -325,12 +350,17 @@ void EventHandler::OnSave()
  */
 void EventHandler::SetSaveFile(TrecPointer<TFileShell> file)
 {
+	ThreadLock();
 	filePointer = file;
+	ThreadRelease();
 }
 
 TrecPointer<TFileShell> EventHandler::GetFilePointer()
 {
-	return filePointer;
+	ThreadLock();
+	auto ret = filePointer;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -341,12 +371,17 @@ TrecPointer<TFileShell> EventHandler::GetFilePointer()
  */
 void EventHandler::SetSaveFile()
 {
+	ThreadLock();
 	if (filePointer.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (!page.Get() || !page->GetWindowHandle().Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	auto win = page->GetWindowHandle();
 
 	TString initialSearch(GetDirectory(CentralDirectories::cd_Documents));
@@ -359,7 +394,7 @@ void EventHandler::SetSaveFile()
 	fileInfo.hwndOwner = win->GetWindowHandle();
 	fileInfo.hInstance = win->GetInstance()->GetInstanceHandle();
 	fileInfo.lpstrFilter = nullptr;
-	fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer();
+	fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer().getBuffer();
 	fileInfo.lpstrFile = new WCHAR[255];
 	fileInfo.nMaxFile = 230;
 
@@ -370,6 +405,5 @@ void EventHandler::SetSaveFile()
 	}
 
 	delete[] fileInfo.lpstrFile;
-	if (!gotName) return;
-	
+	ThreadRelease();
 }

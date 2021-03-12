@@ -113,8 +113,12 @@ TString FileDialogHandler::GetType()
 
 void FileDialogHandler::Initialize(TrecPointer<Page> page)
 {
+	ThreadLock();
 	if (!page.Get() || !page->GetRootControl().Get() || !page->GetWindowHandle().Get())
+	{
+		ThreadRelease();
 		return;
+	}
 	window = page->GetWindowHandle();
 	if (!startDirectory.Get())
 	{
@@ -241,12 +245,14 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 	}
 
 	RefreshFavoriteToggle();
+	ThreadRelease();
 }
 
 void FileDialogHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 {
 	int e_id = -1;
 	EventArgs ea;
+	ThreadLock();
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
 		auto tc = eventAr.at(c).control;
@@ -266,6 +272,7 @@ void FileDialogHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 	if (window.Get())
 		window->Draw();
 	eventAr.RemoveAll();
+	ThreadRelease();
 }
 
 void FileDialogHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
@@ -274,16 +281,21 @@ void FileDialogHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 
 TString FileDialogHandler::GetPath()
 {
-	return chosenPath;
+	ThreadLock();
+	TString ret(chosenPath);
+	ThreadRelease();
+	return ret;
 }
 
 void FileDialogHandler::SetAttributes(TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile, file_node_filter_mode filter_mode)
 {
+	ThreadLock();
 	this->filter_mode = filter_mode;
 	this->extensions.Set(extensions);
 	if (directory.Get() && directory->IsDirectory())
 		startDirectory = directory;
 	this->allowCreateFile = allowCreateFile;
+	ThreadRelease();
 }
 
 bool FileDialogHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
@@ -293,11 +305,14 @@ bool FileDialogHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> m
 
 void FileDialogHandler::RefreshFavoriteToggle()
 {
+	ThreadLock();
 	isFavorite = false;
 
 	if (!toggleFavoriteDirectory.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (favoritesControl.Get())
 	{
 		auto mainNode = favoritesControl->GetNode();
@@ -330,15 +345,19 @@ void FileDialogHandler::RefreshFavoriteToggle()
 		toggleFavoriteDirectory->SetText(L"Remove From Favorites");
 	else
 		toggleFavoriteDirectory->SetText(L"Add to Favorites");
+	ThreadRelease();
 }
 
 void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	auto fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(ea.object);
 
 	if (!fileNode.Get() || !browserControl.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (fileNode->IsExtendable())
 	{
 		// Here, we are dealing with a directory
@@ -398,29 +417,38 @@ void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
 		auto rect = browserLayout->getRawSectionLocation(1, 1);
 		browserControl->Resize(rect);
 	}
+	ThreadRelease();
 }
 
 void FileDialogHandler::OnCancel(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	chosenPath.Empty();
 	DestroyWindow(window->GetWindowHandle());
+	ThreadRelease();
 }
 
 void FileDialogHandler::OnOkay(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	chosenPath.Set(directoryText->GetText() + L"\\" + fileText->GetText());
 
 	DestroyWindow(window->GetWindowHandle());
+	ThreadRelease();
 }
 
 void FileDialogHandler::OnFileNameChange(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	if (!directoryText.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (!ea.text.GetSize())
 	{
 		okayControl->setActive(false);
+		ThreadRelease();
 		return;
 	}
 
@@ -435,19 +463,25 @@ void FileDialogHandler::OnFileNameChange(TrecPointer<TControl> tc, EventArgs ea)
 	}
 
 
+	ThreadRelease();
 }
 
 void FileDialogHandler::OnClickNode(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	if (!ea.object.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	auto fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(ea.object);
 
 	TrecPointer<TFileShell> obj = fileNode->GetData();
 	if (!fileNode.Get() || !obj.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	
 
 	switch (filter_mode)
@@ -477,15 +511,22 @@ void FileDialogHandler::OnClickNode(TrecPointer<TControl> tc, EventArgs ea)
 		auto rect = browserLayout->getRawSectionLocation(1, 1);
 		browserControl->Resize(rect);
 	}
+	ThreadRelease();
 }
 
 void FileDialogHandler::OnNewFolder(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	if (!fileNode.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (!window.Get() || !window->GetInstance().Get())
+	{
+		ThreadRelease();
 		return;
+	}
 	TString newDir(L"Enter a name for this directory");
 	TString dirName = ActivateNameDialog(window->GetInstance(), window->GetWindowHandle(), newDir);
 
@@ -509,19 +550,23 @@ void FileDialogHandler::OnNewFolder(TrecPointer<TControl> tc, EventArgs ea)
 			fileNode->Extend();
 		}
 	}
+	ThreadRelease();
 }
 
 void FileDialogHandler::OnToggleFavoriteFolder(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	if (!favoritesControl.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	auto mainNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TBlankNode>(favoritesControl->GetNode());
-	if (!mainNode.Get())
+	if (!mainNode.Get() || !directoryText.Get())
+	{
+		ThreadRelease();
 		return;
-	if (!directoryText.Get())
-		return;
-
+	}
 	if (isFavorite)
 	{
 		TString curDirectory = directoryText->GetText();
@@ -557,4 +602,5 @@ void FileDialogHandler::OnToggleFavoriteFolder(TrecPointer<TControl> tc, EventAr
 	}
 
 	RefreshFavoriteToggle();
+	ThreadRelease();
 }

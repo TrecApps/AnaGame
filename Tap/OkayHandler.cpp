@@ -48,6 +48,7 @@ TString OkayHandler::GetType()
  */
 void OkayHandler::Initialize(TrecPointer<Page> page)
 {
+	ThreadLock();
 	assert(page.Get());
 	this->page = page;
 	auto tempApp = page->GetInstance();
@@ -62,6 +63,7 @@ void OkayHandler::Initialize(TrecPointer<Page> page)
  */
 void OkayHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	bool markDestroy = false; EventArgs ea;
 	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
 	{
@@ -78,6 +80,7 @@ void OkayHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 
 	if (markDestroy)
 		OnOkay(nullptr, ea);
+	ThreadRelease();
 }
 
 /**
@@ -100,13 +103,20 @@ void OkayHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
  */
 void OkayHandler::OnOkay(TControl* control, EventArgs ea)
 {
+	ThreadLock();
 	if (!page.Get())
+	{
+		ThreadRelease();
 		throw L"Error! Handler expected pointer to a page!";
+	}
 	TrecPointer<TWindow> windHandle = page->GetWindowHandle();
 	if (!windHandle.Get())
+	{
+		ThreadRelease();
 		throw L"Error! Handler's Page Object returned a NULL window handle";
-
+	}
 	DestroyWindow(windHandle->GetWindowHandle());
+	ThreadRelease();
 }
 
 /**
@@ -117,8 +127,8 @@ void OkayHandler::OnOkay(TControl* control, EventArgs ea)
  */
 bool OkayHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
 {
-	if(!message.Get())
-		return false;
-
-	return message->GetHandlerType() == handler_type::handler_type_okay;
+	ThreadLock();
+	bool ret = (!message.Get()) ? false : message->GetHandlerType() == handler_type::handler_type_okay;
+	ThreadRelease();
+	return ret;
 }

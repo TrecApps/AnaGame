@@ -39,13 +39,17 @@ TString TerminalHandler::GetType()
  */
 void TerminalHandler::Initialize(TrecPointer<Page> page)
 {
+	ThreadLock();
 	if (!page.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	auto root = page->GetRootControl();
 
 	if (root.Get())
 		currentTerminal = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TPromptControl>(root);
+	ThreadRelease();
 }
 
 /**
@@ -76,7 +80,10 @@ void TerminalHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
  */
 TrecSubPointer<TControl, TPromptControl> TerminalHandler::GetTerminal()
 {
-	return currentTerminal;
+	ThreadLock();
+	auto ret = currentTerminal;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -87,7 +94,8 @@ TrecSubPointer<TControl, TPromptControl> TerminalHandler::GetTerminal()
  */
 bool TerminalHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
 {
-	if(!message.Get())
-		return false;
-	return message->GetHandlerType() == handler_type::handler_type_console;
+	ThreadLock();
+	bool ret =(!message.Get()) ? false : message->GetHandlerType() == handler_type::handler_type_console;
+	ThreadRelease();
+	return ret;
 }
