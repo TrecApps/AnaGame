@@ -1,6 +1,25 @@
 #pragma once
 #include <TcInterpretor.h>
 #include <CodeStatement.h>
+#include <DefaultObjectOperator.h>
+/**
+ * Class: JsObjectOperator
+ * Purpose: Provides JavaScript specific functionality to code interpretation.
+ */
+class JsObjectOperator : public DefaultObjectOperator
+{
+    /**
+     * Method: DefaultObjectOperator::Add
+     * Purpose: Provides a means through which Addition can be performed
+     * Parameters: TrecPointer<TVariable> op1 - the first operator
+     *				TrecPointer<TVariable> op2 - the second operator
+     * Returns: TrecPointer<TVariable> - the result of the operation
+     *
+     * Note: If the result is null, that is a sign that the operation didn't work
+     */
+    virtual TrecPointer<TVariable> Add(TrecPointer<TVariable> op1, TrecPointer<TVariable> op2) override;
+};
+
 
 /**
  * Class: TcJavaScriptInterpretor

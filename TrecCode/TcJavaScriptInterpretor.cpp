@@ -2,6 +2,7 @@
 #include <TSpecialVariable.h>
 #include <TStringVariable.h>
 #include <TContainerVariable.h>
+#include <TPrimitiveVariable.h>
 
 
 COMPILE_TYPE TcJavaScriptInterpretor::CanCompile()
@@ -1120,4 +1121,74 @@ bool TcJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
 
 
     return true;
+}
+
+TrecPointer<TVariable> JsObjectOperator::Add(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
+{
+    TrecPointer<TVariable> ret = DefaultObjectOperator::Add(var1, var2);
+    if (ret.Get())
+        return ret;
+
+    if (!var1.Get() && !var2.Get())
+    {
+        return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(0ULL);
+    }
+
+    if (var1.Get() && var1->GetVarType() == var_type::string)
+    {
+        TString value(var1->GetString());
+        value.Append(var2.Get() ? var2->GetString() : L"null");
+        return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+    }
+    else if (var2.Get() && var2->GetVarType() == var_type::string)
+    {
+        TString value(var1.Get() ? var1->GetString() : L"null");
+        value.Append(var2->GetString());
+        return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+    }
+
+    if (var1.Get() && !var2.Get())
+    {
+        if (var1->GetVarType() == var_type::collection)
+        {
+            auto varColl = dynamic_cast<TContainerVariable*>(var1.Get());
+            TString value;
+            for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
+            {
+                auto val = varColl->GetValueAt(Rust);
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer() : L"null");
+            }
+            if (value.StartsWith(L","))
+                value.Delete(0);
+            value.Append(L"null");
+            return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+        }
+        if (var1->GetVarType() == var_type::primitive)
+        {
+            return var1;
+        }
+    }
+
+    if (var2.Get() && !var1.Get())
+    {
+        if (var2->GetVarType() == var_type::collection)
+        {
+            auto varColl = dynamic_cast<TContainerVariable*>(var2.Get());
+            TString value;
+            for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
+            {
+                auto val = varColl->GetValueAt(Rust);
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer() : L"null");
+            }
+            if (value.StartsWith(L","))
+                value.Delete(0);
+            value.Set(TString(L"null") + value);
+            return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(value);
+        }
+        if (var2->GetVarType() == var_type::primitive)
+        {
+            return var2;
+        }
+    }
+    return ret;
 }

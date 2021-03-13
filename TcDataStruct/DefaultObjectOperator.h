@@ -60,23 +60,24 @@ public:
     static DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var);
 };
 
-DoubleLong Add(const DoubleLong& v1, const DoubleLong& v2);
-DoubleLong Subtract(const DoubleLong& v1, const DoubleLong& v2);
-DoubleLong Multiply(const DoubleLong& v1, const DoubleLong& v2);
-DoubleLong Divide(const DoubleLong& v1, const DoubleLong& v2);
-DoubleLong ModDivide(const DoubleLong& v1, const DoubleLong& v2);
-DoubleLong Exponent(const DoubleLong& v1, const DoubleLong& v2);
+DoubleLong TC_DATA_STRUCT Add(const DoubleLong& v1, const DoubleLong& v2);
+DoubleLong TC_DATA_STRUCT Subtract(const DoubleLong& v1, const DoubleLong& v2);
+DoubleLong TC_DATA_STRUCT Multiply(const DoubleLong& v1, const DoubleLong& v2);
+DoubleLong TC_DATA_STRUCT Divide(const DoubleLong& v1, const DoubleLong& v2);
+DoubleLong TC_DATA_STRUCT ModDivide(const DoubleLong& v1, const DoubleLong& v2);
+DoubleLong TC_DATA_STRUCT Exponent(const DoubleLong& v1, const DoubleLong& v2);
 
-TString GetStringFromPrimitive(TrecPointer<TVariable> var)
+TString TC_DATA_STRUCT GetStringFromPrimitive(TrecPointer<TVariable> var);
 
 /**
  * Class: ObjectOperator
  * Purpose: Enables various operations to be performed on two different TVariable types
  */
-class DefaultObjectOperator : public ObjectOperator
+class TC_DATA_STRUCT DefaultObjectOperator : public ObjectOperator
 {
+public:
     /**
-     * Method: ObjectOperator::Add
+     * Method: DefaultObjectOperator::Add
      * Purpose: Provides a means through which Addition can be performed
      * Parameters: TrecPointer<TVariable> op1 - the first operator
      *				TrecPointer<TVariable> op2 - the second operator
@@ -87,7 +88,7 @@ class DefaultObjectOperator : public ObjectOperator
     virtual TrecPointer<TVariable> Add(TrecPointer<TVariable> op1, TrecPointer<TVariable> op2) override;
 
     /**
-     * Method: ObjectOperator::Subtract
+     * Method: DefaultObjectOperator::Subtract
      * Purpose: Provides a means through which Subtraction can be performed
      * Parameters: TrecPointer<TVariable> op1 - the first operator
      *				TrecPointer<TVariable> op2 - the second operator
@@ -98,7 +99,7 @@ class DefaultObjectOperator : public ObjectOperator
     virtual TrecPointer<TVariable> Subtract(TrecPointer<TVariable> op1, TrecPointer<TVariable> op2) override;
 
     /**
-     * Method: ObjectOperator::Multiply
+     * Method: DefaultObjectOperator::Multiply
      * Purpose: Provides a means through which multiplication can be performed
      * Parameters: TrecPointer<TVariable> op1 - the first operator
      *				TrecPointer<TVariable> op2 - the second operator
@@ -109,7 +110,7 @@ class DefaultObjectOperator : public ObjectOperator
     virtual TrecPointer<TVariable> Multiply(TrecPointer<TVariable> op1, TrecPointer<TVariable> op2) override;
 
     /**
-     * Method: ObjectOperator::Divide
+     * Method: DefaultObjectOperator::Divide
      * Purpose: Provides a means through which Division can be performed
      * Parameters: TrecPointer<TVariable> op1 - the first operator
      *				TrecPointer<TVariable> op2 - the second operator
@@ -120,7 +121,7 @@ class DefaultObjectOperator : public ObjectOperator
     virtual TrecPointer<TVariable> Divide(TrecPointer<TVariable> op1, TrecPointer<TVariable> op2) override;
 
     /**
-     * Method: ObjectOperator::Mod
+     * Method: DefaultObjectOperator::Mod
      * Purpose: Provides a means through which Mod Division can be performed
      * Parameters: TrecPointer<TVariable> op1 - the first operator
      *				TrecPointer<TVariable> op2 - the second operator
@@ -131,7 +132,7 @@ class DefaultObjectOperator : public ObjectOperator
     virtual TrecPointer<TVariable> Mod(TrecPointer<TVariable> op1, TrecPointer<TVariable> op2) override;
 
     /**
-     * Method: ObjectOperator::Pow
+     * Method: DefaultObjectOperator::Pow
      * Purpose: Provides a means through which the power of the First to the second Operand can be determined
      * Parameters: TrecPointer<TVariable> op1 - the first operator
      *				TrecPointer<TVariable> op2 - the second operator
@@ -142,7 +143,7 @@ class DefaultObjectOperator : public ObjectOperator
     virtual TrecPointer<TVariable> Pow(TrecPointer<TVariable> op1, TrecPointer<TVariable> op2) override;
 
     /**
-     * Method: ObjectOperator::Equality
+     * Method: DefaultObjectOperator::Equality
      * Purpose: Provides a means through which Addition can be performed
      * Parameters: TrecPointer<TVariable> op1 - the first operator
      *				TrecPointer<TVariable> op2 - the second operator
