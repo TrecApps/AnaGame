@@ -379,7 +379,7 @@ PIDLIST_ABSOLUTE EnvironmentHandler::BrowseFolder(const TString& message)
     WCHAR* startPath = (currentWorkspace.Get()) ? currentWorkspace->GetPath().GetBufferCopy() : nullptr;
 
     info.hwndOwner = (window.Get()) ? window->GetWindowHandle() : 0;
-    info.lpszTitle = message.GetConstantBuffer();
+    info.lpszTitle = message.GetConstantBuffer().getBuffer();
     info.pszDisplayName = folderPath;
     info.ulFlags = BIF_NEWDIALOGSTYLE;
     info.lParam = (LPARAM)startPath;
