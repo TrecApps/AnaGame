@@ -182,4 +182,5 @@ bool ArenaHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> messag
 	ThreadLock();
 	bool ret = (!message.Get()) ? false : message->GetHandlerType() == handler_type::handler_type_arena;
 	ThreadRelease();
+	return ret;
 }

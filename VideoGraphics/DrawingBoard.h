@@ -25,7 +25,7 @@ typedef enum class TShape {
  * Class: TVideoSlot
  * Purpose: Used By the DrawingBoard to track Video Frams and where they belong on the Screen
  */
-class TVideoSlot
+class _VIDEO_GRAPHICS TVideoSlot
 {
 public:
 	TVideoSlot();

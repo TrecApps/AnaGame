@@ -2223,7 +2223,7 @@ LineMetrics::LineMetrics(USHORT i)
 	SetSize(true);
 }
 
-void LineMetrics::SetSize(UINT i, bool fromConstructor = false)
+void LineMetrics::SetSize(UINT i, bool fromConstructor)
 {
 	DWRITE_LINE_METRICS met;
 	sizeNeeded = fromConstructor ? 0 : i;

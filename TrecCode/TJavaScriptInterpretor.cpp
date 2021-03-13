@@ -3949,7 +3949,7 @@ bool TJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
 
 DoubleLong TJavaScriptInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
 {
-    if (var.Get() && var->GetVarType() == var_type::primitive && (var->GetType() & TPrimitiveVariable::type_bool))
+    if (var.Get() && var->GetVarType() == var_type::primitive && (var->GetVType() & TPrimitiveVariable::type_bool))
     {
         return DoubleLong(var->Get8Value());
     }
@@ -3976,7 +3976,7 @@ bool TJavaScriptInterpretor::IsEqual(TrecPointer<TVariable> var1, TrecPointer<TV
         DoubleLong dl1 = GetValueFromPrimitive(var1);
         DoubleLong dl2 = GetValueFromPrimitive(var2);
 
-        eqType = dl1.type == dl2.type && var1->GetVarType() == var2->GetVarType() && var1->GetType();
+        eqType = dl1.type == dl2.type && var1->GetVarType() == var2->GetVarType() && var1->GetVType();
 
         eqVal = dl1 == dl2;
     }

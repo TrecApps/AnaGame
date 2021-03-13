@@ -48,9 +48,6 @@ bool ColorAnimation::Update(float progress)
 		GetFloatBetween(color1.b, color2.b, progress),
 		GetFloatBetween(color1.a, color2.a, progress)
 	};
-	TString print;
-	print.Format(L"COLOR ANIMATION R: %f G: %f, B: %f, A: %f\n", curColor.r, curColor.g, curColor.b, curColor.a);
-	ATLTRACE(print.GetConstantBuffer());
 
 	try
 	{

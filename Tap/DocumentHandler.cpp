@@ -93,6 +93,7 @@ TString DocumentHandler::GetFilePath()
 	ThreadLock();
 	TString ret(file.Get() ?  file->GetPath(): TString());
 	ThreadRelease();
+	return ret;
 }
 
 TrecPointer<TFileShell> DocumentHandler::GetFile()
