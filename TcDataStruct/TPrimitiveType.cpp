@@ -53,33 +53,44 @@ var_category TPrimitiveType::GetVarGategory()
 
 UINT TPrimitiveType::GetSize()const 
 {
+    ThreadLock();
+    UINT ret = 0;
     switch (type >> 4)
     {
     case 0b0001:
-        return 1;
+        ret = 1;
+        break;
     case 0b0010:
-        return 2;
+        ret = 2;
+        break;
     case 0b0011:
-        return 4;
+        ret = 4;
+        break;
     case 0b0100:
-        return 8;
+        ret = 8;
     }
-    return 0;
+    ThreadRelease();
+    return ret;
 }
 
 var_primitive_cat TPrimitiveType::getPimitiveType() const
 {
+    ThreadLock();
+    var_primitive_cat ret = var_primitive_cat::vpc_int;
     switch (type & 0b00001111)
     {
     case 0b00000001:
-        return var_primitive_cat::vpc_bool;
+        ret = var_primitive_cat::vpc_bool;
+        break;
     case 0b00000010:
-        return var_primitive_cat::vpc_float;
+        ret = var_primitive_cat::vpc_float;
+        break;
     case 0b00000100:
-        return var_primitive_cat::vpc_char;
+        ret = var_primitive_cat::vpc_char;
+        break;
     case 0b00001000:
-        return var_primitive_cat::vpc_uint;
-    default:
-        return var_primitive_cat::vpc_int;
+        ret = var_primitive_cat::vpc_uint;
     }
+    ThreadRelease();
+    return ret;
 }

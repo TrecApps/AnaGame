@@ -101,7 +101,7 @@ public:
      *
      * Attributes: override
      */
-    virtual UINT GetType() override;
+    virtual UINT GetVType() override;
 
     /**
      * Method: TSpecialVariable::GetSpecialVariable

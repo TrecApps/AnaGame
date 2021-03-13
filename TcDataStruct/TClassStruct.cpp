@@ -30,37 +30,56 @@ TClassStruct::TClassStruct()
 
 bool TClassStruct::AddAttribute(const TClassAttribute& att)
 {
-	if(!att.name.GetSize())
+	ThreadLock();
+	if (!att.name.GetSize())
+	{
+		ThreadRelease();
 		return false;
+	}
 	for (UINT Rust = 0; Rust < attributes.Size(); Rust++)
 	{
 		if ((caseSensitive) ? (!att.name.Compare(attributes[Rust].name)) : (!att.name.CompareNoCase(attributes[Rust].name)))
+		{
+			ThreadRelease();
 			return false;
+		}
 	}
 	attributes.push_back(att);
+	ThreadRelease();
 	return true;
 }
 
 TClassAttribute TClassStruct::GetAttributeByName(const TString& name)
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < attributes.Size(); Rust++)
 	{
 		if ((caseSensitive) ? (!name.Compare(attributes[Rust].name)) : (!name.CompareNoCase(attributes[Rust].name)))
+		{
+			ThreadRelease();
 			return attributes[Rust];
+		}
 	}
+	ThreadRelease();
 	return TClassAttribute();
 }
 
 bool TClassStruct::GetAttributeByIndex(UINT index, TClassAttribute& att)
 {
+	ThreadLock();
 	if (index >= this->attributes.Size())
+	{
+		ThreadRelease();
 		return false;
+	}
 	att = attributes[index];
+	ThreadRelease();
 	return true;
 }
 
 void TClassStruct::SetCaseInsensitive()
 {
+	ThreadLock();
 	caseSensitive = false;
 }
 
@@ -75,27 +94,37 @@ void TClassStruct::SetClassType(tc_class_type classType)
 
 tc_class_type TClassStruct::GetClassType()
 {
-	return classType;
+	ThreadLock();
+	auto ret = classType;
+	ThreadRelease();
+	return ret;
 }
 
 UINT TClassStruct::AddParentClass(const TString& className, tc_class_type cType)
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < parentClasses.Size(); Rust++)
 	{
 		if (!className.Compare(parentClasses[Rust]))
+		{
+			ThreadRelease();
 			return 1;
+		}
 	}
 	parentClasses.push_back(className);
-
+	ThreadRelease();
 	return 0;
 }
 
 bool TClassStruct::GetParentClass(UINT index, TString& className)
 {
+	ThreadLock();
+	bool ret = false;
 	if (index < parentClasses.Size())
 	{
 		className.Set(parentClasses[index]);
-		return true;
+		ret = true;
 	}
-	return false;
+	ThreadRelease();
+	return ret;
 }

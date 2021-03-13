@@ -26,7 +26,7 @@ typedef enum class var_type
  * Class: TVariable
  * Purpose: Represents a given variable in the system, abstract to support both Objects and raw data types
  */
-class _TREC_LIB_DLL TVariable
+class _TREC_LIB_DLL TVariable : public TObject
 {
 public:
 
@@ -112,7 +112,7 @@ public:
      * 
      * Attributes: abstract
      */
-    virtual UINT GetType() = 0;
+    virtual UINT GetVType() = 0;
 
     /**
      * Method: TVariable::SetSelf

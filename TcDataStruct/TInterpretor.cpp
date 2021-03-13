@@ -41,18 +41,27 @@ ReportObject::ReportObject(const ReportObject& obj)
  */
 TrecPointer<TVariable> TInterpretor::GetVariable(TString& varName, bool& present)
 {
+	ThreadLock();
 	TVariableMarker marker;
 	if (variables.retrieveEntry(varName, marker))
 	{
 		present = true;
+		ThreadRelease();
 		return marker.GetVariable();
 	}
 
 	if (parent.Get())
+	{
+		ThreadRelease();
 		return parent->GetVariable(varName, present);
+	}
 	if (environment.Get())
+	{
+		ThreadRelease();
 		return environment->GetVariable(varName, present);
+	}
 	present = false;
+	ThreadRelease();
 	return TrecPointer<TVariable>();
 }
 
@@ -64,11 +73,13 @@ TrecPointer<TVariable> TInterpretor::GetVariable(TString& varName, bool& present
  */
 void TInterpretor::SetParamNames(TDataArray<TString>& names)
 {
+	ThreadLock();
 	this->paramNames.RemoveAll();
 	for (UINT Rust = 0; Rust < names.Size(); Rust++)
 	{
 		paramNames.push_back(names[Rust]);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -138,7 +149,7 @@ UINT TInterpretor::GetSize()
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
  */
-UINT TInterpretor::GetType()
+UINT TInterpretor::GetVType()
 {
 	return 0;
 }
@@ -159,6 +170,7 @@ void TInterpretor::SetSelf(TrecPointer<TVariable> self)
  */
 void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 {
+	ThreadLock();
 	int badChar = varname.FindOneOf(L"!@#$%^&*(){}[]-=+/,;:'\"\\`~");
 	if (badChar != -1)
 	{
@@ -170,7 +182,7 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
 		ro.stackTrace.push_back(stack);
 
-
+		ThreadRelease();
 		return;
 	}
 
@@ -186,22 +198,25 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
 		ro.stackTrace.push_back(stack);
 
-
-		return;
 	}
 
 	ro.returnCode = 0;
+	ThreadRelease();
 }
 
 bool TInterpretor::SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating)
 {
+	ThreadLock();
 	if (!updating)
 	{
 		TClassStruct s;
 		if (classes.retrieveEntry(className, s))
+		{
+			ThreadRelease();
 			return false;
-
+		}
 		classes.addEntry(className, classStruct);
+		ThreadRelease();
 		return true;
 	}
 	else
@@ -210,23 +225,30 @@ bool TInterpretor::SubmitClassType(const TString& className, TClassStruct& class
 		if (classes.retrieveEntry(className, s))
 		{
 			classes.setEntry(className, classStruct);
+			ThreadRelease();
 			return true;
 		}
-		return parent.Get() && parent->SubmitClassType(className, classStruct, updating);
+		bool ret = parent.Get() && parent->SubmitClassType(className, classStruct, updating);
+		ThreadRelease();
+		return ret;
 	}
 }
 
 void TInterpretor::SetFirstParamName(const TString& iParam)
 {
+	ThreadLock();
 	if (!paramNames.Size())
 	{
 		paramNames.push_back(iParam);
+		ThreadRelease();
 		return;
 	}
 
 	if (!iParam.Compare(paramNames[0]))
+	{
+		ThreadRelease();
 		return;
-
+	}
 	paramNames.push_back(paramNames[paramNames.Size() - 1]);
 
 	for (UINT Rust = paramNames.Size() - 2; Rust < paramNames.Size(); Rust--)
@@ -235,15 +257,20 @@ void TInterpretor::SetFirstParamName(const TString& iParam)
 	}
 
 	paramNames[0].Set(iParam);
+	ThreadRelease();
 }
 
 bool TInterpretor::GetClass(const TString& className, TClassStruct& classStruct)
 {
+	ThreadLock();
 	if (classes.retrieveEntry(className, classStruct))
+	{
+		ThreadRelease();
 		return true;
-
+	}
 	if (parent.Get())
 		parent->GetClass(className, classStruct);
+	ThreadRelease();
 	return false;
 }
 
@@ -276,7 +303,10 @@ void TInterpretor::CorrectSplitStringForParenthesis(TrecPointer<TDataArray<TStri
 
 TrecPointer<TVariable> TInterpretor::Clone()
 {
-	return TrecPointerKey::GetTrecPointerFromSub<TVariable,TInterpretor>(TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+	ThreadLock();
+	auto ret = TrecPointerKey::GetTrecPointerFromSub<TVariable,TInterpretor>(TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -293,7 +323,7 @@ UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> va
 	if (!name.GetSize())
 		return 3;
 
-
+	ThreadLock();
 	for (UINT Rust = 0; Rust < variables.count(); Rust++)
 	{
 		TDataEntry<TVariableMarker> varMarker;
@@ -305,9 +335,14 @@ UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> va
 				{
 					varMarker.object.SetVariable(value);
 					variables.setEntry(name, varMarker.object);
+					ThreadRelease();
 					return 0;
 				}
-				else return 2;
+				else
+				{
+					ThreadRelease();
+					return 2;
+				}
 			}
 		}
 	}
@@ -315,8 +350,10 @@ UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> va
 	if (res == 1 && addLocally)
 	{
 		variables.addEntry(name, TVariableMarker(!makeConst, value));
+		ThreadRelease();
 		return 0;
 	}
+	ThreadRelease();
 	return res;
 }
 
@@ -355,20 +392,25 @@ var_type TInterpretor::GetVarType()
  */
 UINT TInterpretor::SetCode(TrecPointer<TFile> file, ULONG64 start, ULONG64 end)
 {
+	ThreadLock();
+	UINT ret = 0;
 	if (!file.Get())
-		return 1;
-	if (!file->IsOpen())
-		return 2;
-	if (file->GetLength() < end)
-		return 3;
-	if (start >= end)
-		return 4;
+		ret = 1;
+	else if (!file->IsOpen())
+		ret = 2;
+	else if (file->GetLength() < end)
+		ret = 3;
+	else if (start >= end)
+		ret = 4;
 
-	this->file = file;
-	this->start = start;
-	this->end = end;
-
-	return 0;
+	if (!ret)
+	{
+		this->file = file;
+		this->start = start;
+		this->end = end;
+	}
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -381,8 +423,10 @@ UINT TInterpretor::SetCode(TrecPointer<TFile> file, ULONG64 start, ULONG64 end)
  */
 void TInterpretor::CloseFile()
 {
+	ThreadLock();
 	if (file.Get() && file->IsOpen())
 		file->Close();
+	ThreadRelease();
 }
 
 
@@ -1040,19 +1084,23 @@ DoubleLong TInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
 	ULONG64 u_value = 0ULL;
 	LONG64 s_value = 0LL;
 
-	switch (var->GetType())
+	ThreadLock();
+	switch (var->GetVType())
 	{
 	case (TPrimitiveVariable::type_bool):
+		ThreadRelease();
 		return DoubleLong( 1ULL);
 
 	case (0b00110010):						// Indicates a four-byte float
 		u_value = var->Get4Value();
 		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
+		ThreadRelease();
 		return DoubleLong( f_value);
 
 	case (0b01000010):						// Indicates an eight-byte float
 		u_value = var->Get8Value();
 		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
+		ThreadRelease();
 		return DoubleLong( f_value);
 
 	case (0b00010000):						// Indicates a 1-byte int
@@ -1061,16 +1109,19 @@ DoubleLong TInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
 	case (0b01000000):						// Indicates an 8-byte int
 		u_value = var->Get8Value();
 		memcpy_s(&s_value, sizeof(s_value), &u_value, sizeof(u_value));
+		ThreadRelease();
 		return DoubleLong( s_value);
 
 	case (0b00011000):						// Indicates a 1-byte uint
 	case (0b00101000):						// Indicates a 2-byte uint
 	case (0b00111000):						// Indicates a 4-byte uint
-	case (0b01001000):						// Indicates an 8-byte uint
+	case (0b01001000):
+		ThreadRelease();						// Indicates an 8-byte uint
 		return DoubleLong( static_cast<ULONG64>(u_value));
 
 
 	}
+	ThreadRelease();
 	return DoubleLong();
 }
 
@@ -1085,8 +1136,10 @@ TString TInterpretor::GetStringFromPrimitive(TrecPointer<TVariable> var)
 	if (!var.Get() || var->GetVarType() != var_type::primitive)
 		return TString();
 	TString strValue;
-	auto v1Type = var->GetType();
+	auto v1Type = var->GetVType();
 
+
+	ThreadLock();
 	if (v1Type == (TPrimitiveVariable::type_char & TPrimitiveVariable::type_one))
 		strValue.Set(static_cast<char>(var->Get4Value()));
 	else if (v1Type == (TPrimitiveVariable::type_char & TPrimitiveVariable::type_two))
@@ -1113,6 +1166,7 @@ TString TInterpretor::GetStringFromPrimitive(TrecPointer<TVariable> var)
 			strValue.Format(L"%u", value.value.u);
 		}
 	}
+	ThreadRelease();
 	return strValue;
 }
 
@@ -1132,6 +1186,12 @@ DoubleLong::DoubleLong(double val)
 {
 	value.d = val;
 	type = double_long::dl_double;
+}
+
+DoubleLong::DoubleLong(const DoubleLong& copy)
+{
+	type = copy.type;
+	value = copy.value;
 }
 
 DoubleLong::DoubleLong()

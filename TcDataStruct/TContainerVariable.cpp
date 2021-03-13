@@ -3,6 +3,7 @@
 
 TrecPointer<TVariable> TContainerVariable::Clone()
 {
+    ThreadLock();
     TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(type);
 
     for (UINT Rust = 0; Rust < values.count(); Rust++)
@@ -25,6 +26,7 @@ TrecPointer<TVariable> TContainerVariable::Clone()
             ret->values.addEntry(entry->key, var);
         }
     }
+    ThreadRelease();
     return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
 }
 
@@ -58,10 +60,13 @@ var_type TContainerVariable::GetVarType()
  */
 void TContainerVariable::Initialize(TMap<TVariable>& vars)
 {
+    ThreadLock();
     // If container is immutable and already initialized, return so we don't do anything
     if (type == ContainerType::ct_tuple && values.count())
+    {
+        ThreadRelease();
         return;
-
+    }
     values.clear();
 
     for (UINT Rust = 0; Rust < vars.count(); Rust++)
@@ -70,6 +75,7 @@ void TContainerVariable::Initialize(TMap<TVariable>& vars)
         if(value.Get())
         values.addEntry(value->key, value->object);
     }
+    ThreadRelease();
 }
 
 /**
@@ -83,9 +89,12 @@ void TContainerVariable::Initialize(TMap<TVariable>& vars)
 TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, bool attemptKey)
 {
     present = false;
-    if(type == ContainerType::ct_set)
+    ThreadLock();
+    if (type == ContainerType::ct_set)
+    {
+        ThreadRelease();
         return TrecPointer<TVariable>();
-    
+    }
     if (index < values.count())
     {
         auto entry = values.GetEntryAt(index);
@@ -98,6 +107,7 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
 
             // here we got our value so return that
             present = true;
+            ThreadRelease();
             return entry->object;
         }
     }
@@ -106,8 +116,10 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
     {
         TString k;
         k.Format(L"%i", index);
+        ThreadRelease();
         return GetValue(k, present);
     }
+    ThreadRelease();
     return TrecPointer<TVariable>();
 }
 
@@ -120,18 +132,24 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
  */
 TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present)
 {
+    ThreadLock();
     auto ret = values.retrieveEntry(key);
     present = ret.Get() != nullptr;
+    ThreadRelease();
     return ret;
     
 }
 
 TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present, const TString& super)
 {
+    ThreadLock();
     auto supers = super.split(L";");
     auto ret = GetValue(key, present);
     if (present)
+    {
+        ThreadRelease();
         return ret;
+    }
     for (UINT Rust = 0; Rust < supers->Size(); Rust++)
     {
         ret = GetValue(supers->at(Rust), present);
@@ -139,13 +157,16 @@ TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& pr
         {
             ret = dynamic_cast<TContainerVariable*>(ret.Get())->GetValue(key, present);
             if (present)
+            {
+                ThreadRelease();
                 return ret;
+            }
         }
     }
 
     present = false;
+    ThreadRelease();
     return ret;
-    return TrecPointer<TVariable>();
 }
 
 /**
@@ -158,10 +179,12 @@ TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& pr
  */
 bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool allowKey)
 {
+    ThreadLock();
     switch (type)
     {
     case ContainerType::ct_set:
     case ContainerType::ct_tuple:
+        ThreadRelease();
         return false;
     }
 
@@ -179,6 +202,7 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
                 entry->key.Set(L"");
                 entry->object = value;
 
+                ThreadRelease();
                 return true;
             }
         }
@@ -190,9 +214,11 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
         k.Format(L"%i", index);
         values.removeEntry(k);
         values.addEntry(k, value);
+        ThreadRelease();
         return true;
     }
 
+    ThreadRelease();
     return false;
 }
 
@@ -206,12 +232,17 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
  */
 bool TContainerVariable::SetValue(const TString& key, TrecPointer<TVariable> value)
 {
-    if(type == ContainerType::ct_tuple)
+    ThreadLock();
+    if (type == ContainerType::ct_tuple)
+    {
+        ThreadRelease();
         return false;
+    }
     TString sKey(key);
 
     values.removeEntry(sKey);
     values.addEntry(key, value);
+    ThreadRelease();
     return true;
 }
 
@@ -223,11 +254,14 @@ bool TContainerVariable::SetValue(const TString& key, TrecPointer<TVariable> val
  */
 bool TContainerVariable::AppendValue(TrecPointer<TVariable> value)
 {
+    ThreadLock();
     if (type == ContainerType::ct_tuple)
+    {
+        ThreadRelease();
         return false;
-
+    }
     values.addEntry(L"", value);
-
+    ThreadRelease();
     return true;
 }
 
@@ -239,11 +273,14 @@ bool TContainerVariable::AppendValue(TrecPointer<TVariable> value)
  */
 bool TContainerVariable::RemoveByKey(TString& key)
 {
+    ThreadLock();
     if (type == ContainerType::ct_tuple)
+    {
+        ThreadRelease();
         return false;
-
+    }
     values.removeEntry(key);
-
+    ThreadRelease();
     return false;
 }
 
@@ -316,7 +353,10 @@ ULONG64 TContainerVariable::Get8Value()
  */
 UINT TContainerVariable::GetSize()
 {
-    return values.count();
+    ThreadLock();
+    UINT ret = values.count();
+    ThreadRelease();
+    return ret;
 }
 
 /**
@@ -325,7 +365,7 @@ UINT TContainerVariable::GetSize()
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
  */
-UINT TContainerVariable::GetType()
+UINT TContainerVariable::GetVType()
 {
     return 0;
 }
@@ -338,37 +378,51 @@ UINT TContainerVariable::GetType()
  */
 TrecPointer<TVariable> TContainerVariable::GetValueAt(UINT index)
 {
+    ThreadLock();
     auto entry = values.GetEntryAt(index);
 
-    if (!entry.Get())
-        return TrecPointer<TVariable>();
-    return entry->object;
+    auto ret = (!entry.Get()) ? TrecPointer<TVariable>() : entry->object;
+    ThreadRelease();
+    return ret;
 }
 
 bool TContainerVariable::GetValueAt(UINT index, TString& key, TrecPointer<TVariable>& value)
 {
-    if(index >= values.count())
+    ThreadLock();
+    if (index >= values.count())
+    {
+        ThreadRelease();
         return false;
-
+    }
     TrecPointer<tEntry<TVariable>> entry = values.GetEntryAt(index);
     if (entry.Get())
     {
         key.Set(entry->key);
         value = entry->object->Clone();
+        ThreadRelease();
         return true;
     }
+    ThreadRelease();
     return false;
 }
 
 TString TContainerVariable::GetTClassName()
 {
-    return className;
+    ThreadLock();
+    TString ret(className);
+    ThreadRelease();
+    return ret;
 }
 
 bool TContainerVariable::SetClassName(const TString& name)
 {
-    if(className.GetSize() || !name.GetSize())
+    ThreadLock();
+    if (className.GetSize() || !name.GetSize())
+    {
+        ThreadRelease();
         return false;
+    }
     className.Set(name);
+    ThreadRelease();
     return true;
 }

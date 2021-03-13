@@ -51,6 +51,7 @@ ReportObject TNativeInterpretor::Run()
  */
 ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVars)
 {
+	ThreadLock();
 	ReportObject result;
 	if (!nativeFunction)
 	{
@@ -59,5 +60,6 @@ ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params,
 	}
 	else
 		nativeFunction(params, environment, result);
+	ThreadRelease();
 	return result;
 }

@@ -103,9 +103,12 @@ UINT TSpecialVariable::GetSize()
  *
  * Attributes: override
  */
-UINT TSpecialVariable::GetType()
+UINT TSpecialVariable::GetVType()
 {
-    return static_cast<UINT>(specialVar);
+    ThreadLock();
+    UINT ret = static_cast<UINT>(specialVar);
+    ThreadRelease();
+    return ret;
 }
 
 /**

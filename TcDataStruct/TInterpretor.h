@@ -50,6 +50,7 @@ public:
     DoubleLong(ULONG64 val);
     DoubleLong(LONG64 val);
     DoubleLong(double val);
+    DoubleLong(const DoubleLong& copy);
     DoubleLong();
     doubleLong value;
     double_long type;
@@ -331,7 +332,7 @@ public:
      * 
      * Attributes: override
      */
-    virtual UINT GetType() override;
+    virtual UINT GetVType() override;
 
 
     /**

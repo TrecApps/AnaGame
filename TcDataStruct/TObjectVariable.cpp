@@ -33,7 +33,9 @@ var_type TObjectVariable::GetVarType()
  */
 void TObjectVariable::Set(TrecObjectPointer obj)
 {
+	ThreadLock();
 	object = obj;
+	ThreadRelease();
 }
 
 
@@ -47,7 +49,10 @@ void TObjectVariable::Set(TrecObjectPointer obj)
  */
 TrecObjectPointer TObjectVariable::GetObject()
 {
-	return object;
+	ThreadLock();
+	auto ret = object;
+	ThreadRelease();
+	return ret;
 }
 
 
@@ -61,9 +66,10 @@ TrecObjectPointer TObjectVariable::GetObject()
  */
 TString TObjectVariable::GetString()
 {
-	if(!object.Get())
-		return TString(L"null");
-	return object->toString();
+	ThreadLock();
+	TString ret(!object.Get() ? TString(L"null") : object->toString());
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -105,7 +111,7 @@ UINT TObjectVariable::GetSize()
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
  */
-UINT TObjectVariable::GetType()
+UINT TObjectVariable::GetVType()
 {
 	return 0;
 }

@@ -32,7 +32,9 @@ TPrimitiveFormatVariable::TPrimitiveFormatVariable(const TPrimitiveFormatVariabl
  */
 void TPrimitiveFormatVariable::SetRightJustify(bool rJust)
 {
+	ThreadLock();
 	flags = rJust ? (flags | 0b00000001) : (flags & 0b11111110);
+	ThreadRelease();
 }
 
 /**
@@ -43,7 +45,10 @@ void TPrimitiveFormatVariable::SetRightJustify(bool rJust)
  */
 bool TPrimitiveFormatVariable::GetRightJustify()
 {
-	return flags & 0b00000001;
+	ThreadLock();
+	bool ret = flags & 0b00000001;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -54,7 +59,9 @@ bool TPrimitiveFormatVariable::GetRightJustify()
  */
 void TPrimitiveFormatVariable::SetBlank(bool rBlank)
 {
+	ThreadLock();
 	flags = rBlank ? (flags | 0b00000010) : (flags & 0b11111101);
+	ThreadRelease();
 }
 
 /**
@@ -65,7 +72,10 @@ void TPrimitiveFormatVariable::SetBlank(bool rBlank)
  */
 bool TPrimitiveFormatVariable::GetBlank()
 {
-	return flags & 0b00000010;
+	ThreadLock();
+	bool ret = flags & 0b00000010;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -76,7 +86,9 @@ bool TPrimitiveFormatVariable::GetBlank()
  */
 void TPrimitiveFormatVariable::SetPrefix(bool rPrefix)
 {
+	ThreadLock();
 	flags = rPrefix ? (flags | 0b00000100) : (flags & 0b11111011);
+	ThreadRelease();
 }
 
 /**
@@ -87,7 +99,10 @@ void TPrimitiveFormatVariable::SetPrefix(bool rPrefix)
  */
 bool TPrimitiveFormatVariable::GetPrefix()
 {
-	return flags & 0b00000100;
+	ThreadLock();
+	bool ret = flags & 0b00000100;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -100,9 +115,11 @@ bool TPrimitiveFormatVariable::GetPrefix()
  */
 void TPrimitiveFormatVariable::SetFormattingWidth(UCHAR w)
 {
+	ThreadLock();
 	width = w;
 	if (width > 20)
 		width = 20;
+	ThreadRelease();
 }
 
 /**
@@ -113,7 +130,10 @@ void TPrimitiveFormatVariable::SetFormattingWidth(UCHAR w)
  */
 UCHAR TPrimitiveFormatVariable::GetFormattingWidth(UCHAR w)
 {
-	return width;
+	ThreadLock();
+	UCHAR ret = width;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -126,9 +146,11 @@ UCHAR TPrimitiveFormatVariable::GetFormattingWidth(UCHAR w)
  */
 void TPrimitiveFormatVariable::SetFormattingPrecision(UCHAR w)
 {
+	ThreadLock();
 	precision = w;
 	if (precision > 20)
 		precision = 20;
+	ThreadRelease();
 }
 
 /**
@@ -139,12 +161,18 @@ void TPrimitiveFormatVariable::SetFormattingPrecision(UCHAR w)
  */
 UCHAR TPrimitiveFormatVariable::GetFormattingPrecision(UCHAR w)
 {
-	return precision;
+	ThreadLock();
+	UCHAR ret = precision;
+	ThreadRelease();
+	return ret;
 }
 
 TrecPointer<TVariable> TPrimitiveFormatVariable::Clone()
 {
-	return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveFormatVariable>(*this);
+	ThreadLock();
+	auto ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveFormatVariable>(*this);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -162,6 +190,7 @@ var_type TPrimitiveFormatVariable::GetVarType()
 
 TString TPrimitiveFormatVariable::GetString()
 {
+	ThreadLock();
 	TString format(L"%");
 
 	if (flags & 0b00000001)
@@ -175,6 +204,7 @@ TString TPrimitiveFormatVariable::GetString()
 		format.AppendFormat(L"%i", width);
 	if (precision)
 		format.AppendFormat(L".%i", precision);
-
-	return TPrimitiveVariable::GetString(format);
+	TString ret(TPrimitiveVariable::GetString(format));
+	ThreadRelease();
+	return ret;
 }
