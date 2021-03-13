@@ -1,6 +1,7 @@
 #pragma once
 #include "TrecLib.h"
 #include "TObject.h"
+#include "TrecReference.h"
 /**
  * Class: TLinkedListBase
  * Purpose: Serves as the base class for Linked Lists
@@ -18,10 +19,11 @@ public:
 	UINT GetCurrentIndex();
 };
 
-template<typename T> class _TREC_LIB_DLL ListNode {
+template<typename T> class _TREC_LIB_DLL ListNode 
+{
 public:
 	TrecPointer<ListNode<T>> next;
-	TrecSoftPointer<ListNode<T>> prev;
+	TrecPointerSoft<ListNode<T>> prev;
 	T data;
 };
 
@@ -52,10 +54,11 @@ public:
 		else
 		{
 			tail->next = node;
-			node->prev = TrecPointerKey::GetTrecSoftPointerFromTrec<ListNode<T>>(tail);
+			node->prev = TrecPointerKey::GetSoftPointerFromTrec<ListNode<T>>(tail);
 			tail = node;
 		}
 		size++;
+		return size;
 	}
 
 	TrecPointer<ListNode<T>> GetCurrentNode()

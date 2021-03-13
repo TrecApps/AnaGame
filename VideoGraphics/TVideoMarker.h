@@ -14,7 +14,7 @@ public:
     static HRESULT Create(MFSTREAMSINK_MARKER_TYPE eMarkerType,
         const PROPVARIANT* pvarMarkerValue,
         const PROPVARIANT* pvarContextValue,
-        const TVideoMarker** marker);
+        TVideoMarker** marker);
 
     HRESULT GetMarkerType(MFSTREAMSINK_MARKER_TYPE* type);
     HRESULT GetMarker(PROPVARIANT* var);

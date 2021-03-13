@@ -35,7 +35,7 @@ ULONG TVideoMarker::Release(void)
     return count;
 }
 
-HRESULT TVideoMarker::Create(MFSTREAMSINK_MARKER_TYPE eMarkerType, const PROPVARIANT* pvarMarkerValue, const PROPVARIANT* pvarContextValue, const TVideoMarker** marker)
+HRESULT TVideoMarker::Create(MFSTREAMSINK_MARKER_TYPE eMarkerType, const PROPVARIANT* pvarMarkerValue, const PROPVARIANT* pvarContextValue, TVideoMarker** marker)
 {
     if (!marker)
         return E_POINTER;

@@ -212,5 +212,13 @@ HRESULT TMediaSink::OnClockStop(MFTIME time)
 
 bool TMediaSink::AddStreamSink(TrecComPointer<IMFStreamSink> sink)
 {
-    this->streamSink = sink;
+    ThreadLock();
+    bool ret = false;
+    if (sink.Get())
+    {
+        this->streamSink = sink;
+        ret = true;
+    }
+    ThreadRelease();
+    return ret;
 }

@@ -35,11 +35,11 @@ public:
     STDMETHODIMP Shutdown(void);
 
     // IMFClockStateSink
-    HRESULT OnClockPause(MFTIME time) override;
-    HRESULT OnClockRestart(MFTIME time) override;
-    HRESULT OnClockSetRate(MFTIME time, float rate) override;
-    HRESULT OnClockStart(MFTIME time, LONGLONG startOffset) override;
-    HRESULT OnClockStop(MFTIME time) override;
+    HRESULT STDMETHODCALLTYPE OnClockPause(MFTIME time) override;
+    HRESULT STDMETHODCALLTYPE OnClockRestart(MFTIME time) override;
+    HRESULT STDMETHODCALLTYPE OnClockSetRate(MFTIME time, float rate) override;
+    HRESULT STDMETHODCALLTYPE OnClockStart(MFTIME time, LONGLONG startOffset) override;
+    HRESULT STDMETHODCALLTYPE OnClockStop(MFTIME time) override;
     // Anagame Alternative Methods
     
 

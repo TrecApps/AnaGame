@@ -829,12 +829,12 @@ public:
 	 * Parameters: const TrecPointer<t>& other - the Pointer to copy from
 	 * Returns: void
 	 */
-	void operator=(const TrecPointer<t>& other)
+	TrecPointer<t> operator=(const TrecPointer<t>& other)
 	{
 		// First, make sure that the other TrecPointer isn't pointing to the same reference.
 		// If it is, we don't want to decrement the reference lest it become 0 (and self-destructs)
 		if (other.pointer == pointer)
-			return;
+			return *this;
 
 		if(pointer)
 			pointer->Decrement();
@@ -843,6 +843,7 @@ public:
 
 		if (pointer)
 			pointer->Increment();
+		return *this;
 	}
 
 	/**
