@@ -21,6 +21,7 @@ typedef enum class equality_op
  */
 class ObjectOperator
 {
+public:
 	/**
 	 * Method: ObjectOperator::Add
 	 * Purpose: Provides a means through which Addition can be performed

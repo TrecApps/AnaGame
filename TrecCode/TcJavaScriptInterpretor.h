@@ -2,12 +2,14 @@
 #include <TcInterpretor.h>
 #include <CodeStatement.h>
 #include <DefaultObjectOperator.h>
+#include "TrecCode.h"
 /**
  * Class: JsObjectOperator
  * Purpose: Provides JavaScript specific functionality to code interpretation.
  */
 class JsObjectOperator : public DefaultObjectOperator
 {
+public:
     /**
      * Method: DefaultObjectOperator::Add
      * Purpose: Provides a means through which Addition can be performed
@@ -21,13 +23,27 @@ class JsObjectOperator : public DefaultObjectOperator
 };
 
 
+class _TREC_CODE_DLL JavaScriptExpression2
+{
+public:
+    JavaScriptExpression2();
+    JavaScriptExpression2(const JavaScriptExpression2& orig);
+    JavaScriptExpression2(const TString& name, TrecPointer<TVariable> value);
+
+    void operator=(const JavaScriptExpression2& orig);
+
+    TString varName;
+    TrecPointer<TVariable> value;
+};
+
+
 /**
  * Class: TcJavaScriptInterpretor
  * Purpose: Implements the TcInterpretor for the JavaScript Programming Language
  * 
  * SuperClass: TcInterpretor
  */
-class TcJavaScriptInterpretor : public TcInterpretor
+class _TREC_CODE_DLL TcJavaScriptInterpretor : public TcInterpretor
 {
 public:
 
@@ -184,16 +200,59 @@ protected:
 
     // Methods designed to address Pacific Statement Types
 
-    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret);            // Call when you need an expression analyzed
-    void ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret);   // Call for const, let, and var statements
-    void ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret);             // Call for if, else, and else if statements
-    void ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret);                 // Call For while and do...while
-    void ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statement, UINT index, ReturnObject& ret);                   // Call for for statements
+    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret);                    // Call when you need an expression analyzed
+    void ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret);           // Call for const, let, and var statements
+    void ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret);                     // Call for if, else, and else if statements
+    void ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret);                         // Call For while and do...while
+    void ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statement, UINT index, ReturnObject& ret);  // Call for for statements
     void ProcessTryCatchFinally(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, 
-        TrecPointer<CodeStatement> statement, ReturnObject& ret);       // Call for the Try/catch/finally blocks
-    void ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret);                // Call for Switch Statements
+        TrecPointer<CodeStatement> statement, ReturnObject& ret);                                       // Call for the Try/catch/finally blocks
+    void ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret);                        // Call for Switch Statements
 
     // Helper Methods for the Process-Methods
     bool IsTruthful(TrecPointer<TVariable> var);
+
+    /// Process Expression Methods. They follow a certain pattern as they may or may not encompass the whole expression provided
+    /// Parameters:
+    ///     UINT& parenth - How many Parenthesis have already been processed
+    ///     UINT& square - How many squarebrackets have been processed
+    ///     UINT& index - Index in the statement string to start at
+    ///     TrecPointer<CodeStatement> statement - the statement to actually process 
+    ///     ReturnObject& ret - results of the operation
+    ///     TDataArray<JavaScriptExpression2>& expressions - list of values derived
+    ///     TDataArray<TString>& ops - operators between the evaluated expressions
+    /// Returns: UINT - how many times the operation moved into the 'next'  statement
+    UINT ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, 
+        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+    UINT ProcessArrayExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
+        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+    UINT ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
+        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+    UINT ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
+        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+    UINT ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
+        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+    UINT ProcessNumberExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
+        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+    UINT ProcessStringExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
+        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+
+    // Operator Handler Methods
+    void HandlePreExpr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleExponents(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleMultDiv(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleAddSub(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleBitwiseShift(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleLogicalComparison(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleEquality(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleBitwiseAnd(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleBitwiseXor(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleBitwiseOr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleLogicalAnd(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleLogicalOr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleNullish(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleConditional(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleAssignment(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+    void HandleComma(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
 };
 

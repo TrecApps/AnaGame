@@ -33,7 +33,43 @@ TcVariableHolder::TcVariableHolder(const TcVariableHolder& copy)
 ///
 
 
-	/**
+UINT TcInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally, bool makeConst)
+{
+	if (!name.GetSize())
+		return 3;
+
+
+	for (UINT Rust = 0; Rust < variables.count(); Rust++)
+	{
+		TDataEntry<TcVariableHolder> varMarker;
+		if (variables.GetEntryAt(Rust, varMarker))
+		{
+			if (!varMarker.key.Compare(name))
+			{
+				if (varMarker.object.mut)
+				{
+					varMarker.object.value = (value);
+					variables.setEntry(name, varMarker.object);
+					return 0;
+				}
+				else return 2;
+			}
+		}
+	}
+	UINT res = dynamic_cast<TcInterpretor*>(parent.Get()) ? dynamic_cast<TcInterpretor*>(parent.Get())->UpdateVariable(name, value) : 1;
+	if (res == 1 && addLocally)
+	{
+		TcVariableHolder hold;
+		hold.mut = true;
+		hold.type.Set(L"");
+		hold.value = value;
+		variables.addEntry(name, hold);
+		return 0;
+	}
+	return res;
+}
+
+/**
 	 * Method: TcInterpretor::GetVarType
 	 * Purpose: Reports the type of varible that this object represents
 	 * Parameters: void
@@ -203,6 +239,29 @@ TrecPointer<TVariable> TcInterpretor::GetVariable(TString& varName, bool& presen
 	}
 	present = false;
 	return TrecPointer<TVariable>();
+}
+
+/**
+ * Method: TcInterprtor::PrepReturn
+ * Purpose: Refactored Solution for setting an error message to return
+ * Parameters: ReturnObject& ret - the object to operate on
+ *              const TString& mess - the message to send
+ *				const TString& stackMess - the message to prepend to the stack message
+ *              USHORT code - the code to add
+ *              LONG64 line - the line Number (use a negative value to ignore the stack trace)
+ * Returns: void
+ */
+void TcInterpretor::PrepReturn(ReturnObject& ret, const TString& mess, const TString& stackMess, USHORT code, LONG64 line)
+{
+	ret.stackTrace.RemoveAll();
+	ret.returnCode = code;
+	ret.errorMessage.Set(mess);
+	if (line > -1)
+	{
+		TString stack;
+		stack.Format(L"%ws line %d", line);
+		ret.stackTrace.push_back(stack);
+	}
 }
 
 

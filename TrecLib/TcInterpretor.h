@@ -124,6 +124,17 @@ class _TREC_LIB_DLL TcInterpretor :
 {
 public:
 
+    /**
+     * Method: TcInterpretor::UpdateVariable
+     * Purpose: Updates an existing Variable
+     * Parameters: const TString& name - the name to update
+     *              TrecPointer<TVariable> value - value to update it with
+     *              bool addLocally - If true, then tf the variable is not found, go ahead and add it to 'this' interpretor (false by default)
+     *              bool makeConst - whether the variable added should be const or not (ignored if 'addLocally' is false) (false by Default)
+     * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable)
+     */
+    virtual UINT UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally = false, bool makeConst = false);
+
     /// TVariable Methods
     /**
      * Method: TcInterpretor::GetVarType
@@ -351,6 +362,18 @@ public:
      * Returns: TrecPointer<TVariable> - the variable requested (null if not found)
      */
     TrecPointer<TVariable> GetVariable(TString& varName, bool& present, bool currentScope = false);
+
+    /**
+     * Method: TcInterprtor::PrepReturn
+     * Purpose: Refactored Solution for setting an error message to return
+     * Parameters: ReturnObject& ret - the object to operate on
+     *              const TString& mess - the message to send
+     *				const TString& stackMess - the message to prepend to the stack message
+     *              USHORT code - the code to add
+     *              LONG64 line - the line Number (use a negative value to ignore the stack trace)
+     * Returns: void
+     */
+    void PrepReturn(ReturnObject& ret, const TString& mess, const TString& stackMess, USHORT code, LONG64 line);
 protected:
 
     /**

@@ -5,6 +5,12 @@
 #include <TPrimitiveVariable.h>
 
 
+static TDataArray<TString> standardOperators;
+
+static TrecPointer<ObjectOperator> jsOperators;
+
+static TrecPointer<TVariable> one;
+
 COMPILE_TYPE TcJavaScriptInterpretor::CanCompile()
 {
     return COMPILE_TYPE(0);
@@ -90,6 +96,48 @@ TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInt
     TcInterpretor(parentInterpretor, env)
 {
     readyToRun = false;
+
+    if (!jsOperators.Get())
+        jsOperators = TrecPointerKey::GetNewTrecPointerAlt<ObjectOperator, JsObjectOperator>();
+
+    if (!standardOperators.Size())
+    {
+        standardOperators.push_back(L">>>=");
+        standardOperators.push_back(L"===");
+        standardOperators.push_back(L"!==");
+        standardOperators.push_back(L">>>");
+        standardOperators.push_back(L"<<=");
+        standardOperators.push_back(L">>=");
+        standardOperators.push_back(L"&&=");
+        standardOperators.push_back(L"||=");
+        standardOperators.push_back(L"??=");
+        standardOperators.push_back(L"**=");
+        standardOperators.push_back(L"++");
+        standardOperators.push_back(L"--");
+        standardOperators.push_back(L"**");
+        standardOperators.push_back(L"<<");
+        standardOperators.push_back(L">>");
+        standardOperators.push_back(L"<=");
+        standardOperators.push_back(L">=");
+        standardOperators.push_back(L"==");
+        standardOperators.push_back(L"!=");
+        standardOperators.push_back(L"&&");
+        standardOperators.push_back(L"||");
+        standardOperators.push_back(L"??");
+        standardOperators.push_back(L"+=");
+        standardOperators.push_back(L"-=");
+        standardOperators.push_back(L"*=");
+        standardOperators.push_back(L"/=");
+        standardOperators.push_back(L"%=");
+        standardOperators.push_back(L"&=");
+        standardOperators.push_back(L"^=");
+        standardOperators.push_back(L"|=");
+    }
+
+    if (!one.Get())
+    {
+        one = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<int>(1));
+    }
 }
 
 int TcJavaScriptInterpretor::DetermineParenthStatus(const TString& string)
@@ -1191,4 +1239,421 @@ TrecPointer<TVariable> JsObjectOperator::Add(TrecPointer<TVariable> var1, TrecPo
         }
     }
     return ret;
+}
+
+JavaScriptExpression2::JavaScriptExpression2()
+{
+}
+
+JavaScriptExpression2::JavaScriptExpression2(const JavaScriptExpression2& orig)
+{
+    varName.Set(orig.varName);
+    value = orig.value;
+}
+
+JavaScriptExpression2::JavaScriptExpression2(const TString& name, TrecPointer<TVariable> value)
+{
+    varName.Set(name);
+    this->value = value;
+}
+
+
+void JavaScriptExpression2::operator=(const JavaScriptExpression2& orig)
+{
+    varName.Set(orig.varName);
+    value = orig.value;
+}
+
+UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+{
+    bool processed = false; // False, we are looking for an expression, true, look for operator or end
+    UINT nodes = 0, fullNodes = 0; // Track how many nodes have been traversed during processing
+    for (; index < statement->statement.GetSize(); index++)
+    {
+        bool processed = false; // Did we process some expression upon hitting a certain character
+        WCHAR ch = statement->statement[index];
+        switch (ch)
+        {
+        case L'(':
+            if (processed)
+            {
+                PrepReturn(ret, L"Unepected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return fullNodes;
+            }
+            processed = true;
+            parenth++;
+            nodes = ProcessExpression(parenth, square, ++index, statement, ret, expressions, ops);
+            break;
+        case L'[':
+            if (processed)
+            {
+                PrepReturn(ret, L"Unepected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return fullNodes;
+            }
+            processed = true;
+            square++;
+            nodes = ProcessArrayExpression(parenth, square, ++index, statement, ret, expressions, ops);
+            break;
+        case L'\'':
+        case L'\"':
+        case L'`':
+            if (processed)
+            {
+                PrepReturn(ret, L"Unepected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return fullNodes;
+            }
+            processed = true;
+            nodes = ProcessStringExpression(parenth, square, index, statement, ret, expressions, ops);
+            break;
+        case L'.':
+        case L'0':
+        case L'1':
+        case L'2':
+        case L'3':
+        case L'4':
+        case L'5':
+        case L'6':
+        case L'7':
+        case L'8':
+        case L'9':
+            if (processed)
+            {
+                TString message;
+                message.Format(L"Unexpected '%c' character detected", ch);
+                PrepReturn(ret, message, L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return fullNodes;
+            }
+            processed = true;
+            nodes = ProcessNumberExpression(parenth, square, index, statement, ret, expressions, ops);
+
+        }
+
+
+        if ((ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z') || ch == L'_')
+        {
+            if (processed)
+            {
+                TString message;
+                message.Format(L"Unexpected '%c' character detected", ch);
+                PrepReturn(ret, message, L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return fullNodes;
+            }
+            processed = true;
+            nodes = ProcessVariableExpression(parenth, square, index, statement, ret, expressions, ops);
+        }
+
+        if (processed)
+        {
+            if (ret.returnCode)
+                return fullNodes;
+            JavaScriptExpression2 exp;
+            exp.value = ret.errorObject;
+            ret.errorObject.Nullify();
+            exp.varName.Set(ret.errorMessage);
+            expressions.push_back(exp);
+            fullNodes += nodes;
+            if (nodes && !statement->next.Get())
+            {
+                break;
+            }
+
+            while (nodes && statement->next.Get())
+            {
+                statement = statement->next;
+                nodes--;
+            }
+        }
+        TString exp(statement->statement.SubString(index));
+
+        // Handle Post-Increment/Decrement
+        if (expressions.Size() && expressions[expressions.Size() - 1].varName.GetSize() && ((exp.StartsWith(L"++") || exp.StartsWith(L"--"))))
+        {
+            index += 2;
+            bool inc = exp.StartsWith(L"++");
+
+            JavaScriptExpression2 jExp(expressions[expressions.Size() - 1]);
+
+            jExp.value = (jExp.value.Get()) ? jExp.value->Clone() : jExp.value;
+
+
+            // Now handle the increment or decrement step
+            bool present;
+            TrecPointer<TVariable> tempValue = GetVariable(jExp.varName, present);
+
+            if (!tempValue.Get())
+            {
+                ret.returnCode = ret.ERR_BROKEN_REF;
+
+                ret.errorMessage.Format(L"Post-%ws attempt encountered %ws variable!",
+                    inc ? L"Increment" : L"Decrement",
+                    present ? L"Null" : L"Default");
+                return fullNodes;
+            }
+
+            auto result = inc ? jsOperators->  Add(tempValue, one) :
+                jsOperators->Subtract(tempValue, one);
+
+            if (!result.Get())
+            {
+                TString message;
+                message.Format(L"Invalid type found for variable '%ws' in pre-%ws operation!", 
+                    jExp.varName.GetConstantBuffer(), inc ? L"increment" : L"decrement");
+                PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
+                return fullNodes;
+            }
+            UINT updateResult = UpdateVariable(jExp.varName, ret.errorObject);
+
+            ret.errorObject.Nullify();
+            if (updateResult == 1)
+            {
+                ret.returnCode = ret.ERR_BROKEN_REF;
+                ret.errorMessage.Format(L"Post-%ws attempt encountered %ws variable!",
+                    inc ? L"Increment" : L"Decrement",
+                    present ? L"Null" : L"Default");
+                return fullNodes;
+            }
+            if (updateResult == 2)
+            {
+                ret.returnCode = ret.ERR_IMPROPER_NAME;
+                ret.errorMessage.Format(L"Post-%ws attempt to update immutable variable!",
+                    inc ? L"Increment" : L"Decrement");
+                return fullNodes;
+            }
+
+            exp.Delete(0, 2);
+            exp.Trim();
+        }
+
+        bool foundOp = false;
+        for (UINT Rust = 0; Rust < standardOperators.Size(); Rust++)
+        {
+            if (exp.StartsWith(standardOperators[Rust]))
+            {
+                ops.push_back(standardOperators[Rust]);
+                foundOp = true;
+                exp.Delete(0, standardOperators[Rust].GetSize());
+                break;
+            }
+        }
+
+        if (!foundOp)
+        {
+            if (!exp.FindOneOf(L"+-*/%^&|<>?=~!,"))
+            {
+                ops.push_back(TString(exp[0]));
+                exp.Delete(0, 1);
+                foundOp = true;
+            }
+        }
+
+        if (foundOp)
+        {
+            processed = false;
+            continue;
+        }
+
+        switch (ch)
+        {
+        case L']':
+            if (!square)
+            {
+                PrepReturn(ret, L"Unexpected ']' token detected!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
+                return fullNodes;
+            }
+            square--;
+            index++;
+            goto crunch;
+        case L')':
+            if(!parenth)
+                if (!square)
+                {
+                    PrepReturn(ret, L"Unexpected ')' token detected!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
+                    return fullNodes;
+                }
+            square--;
+        case L',':
+        case L';':
+            index++;
+            goto crunch;
+        }
+        
+    }
+
+    if (index == statement->statement.GetSize() && statement->block.Size())
+    {
+        ProcessJsonExpression(parenth, square, index, statement, ret, expressions, ops);
+        if (ret.returnCode)
+            return fullNodes;
+        JavaScriptExpression2 exp;
+        exp.value = ret.errorObject;
+        ret.errorObject.Nullify();
+        exp.varName.Set(ret.errorMessage);
+        expressions.push_back(exp);
+        if (statement->next.Get())
+        {
+            index = 0;
+            nodes = ProcessExpression(parenth, square, index, statement->next, ret, expressions, ops);
+            if (ret.returnCode)
+                return;
+            fullNodes += nodes;
+            while (nodes && statement->next.Get())
+            {
+                statement = statement->next;
+                nodes--;
+            }
+            if (index)
+            {
+                int e = 0;
+            }
+        }
+    }
+
+crunch:
+
+    HandlePreExpr(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleExponents(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleMultDiv(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleAddSub(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleBitwiseShift(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleLogicalComparison(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleEquality(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleBitwiseAnd(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleBitwiseXor(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleBitwiseOr(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleLogicalAnd(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleLogicalOr(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleNullish(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleConditional(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleAssignment(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleComma(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    if (expressions.Size() == 1)
+        ret.errorObject = expressions[0].value;
+
+    return fullNodes;
+}
+
+UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+{
+    return 0;
+}
+
+UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+{
+    return 0;
+}
+
+UINT TcJavaScriptInterpretor::ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+{
+    return 0;
+}
+
+UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+{
+    return 0;
+}
+
+UINT TcJavaScriptInterpretor::ProcessNumberExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+{
+    return 0;
+}
+
+UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+{
+    return 0;
+}
+
+void TcJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleExponents(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleLogicalOr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleNullish(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
+}
+
+void TcJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+{
 }
