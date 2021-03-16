@@ -114,7 +114,7 @@ bool GetListStyle(const TString& styleStr, list_style& style)
 {
 	for (UINT Rust = 0; Rust < WEB_LIST_STYLE_COUNT; Rust++)
 	{
-		if (styleStr.CompareNoCase(listStyleStrings[Rust].str))
+		if (!styleStr.CompareNoCase(listStyleStrings[Rust].str))
 		{
 			style = listStyleStrings[Rust].style;
 			return true;
@@ -2175,7 +2175,7 @@ void TWebNode::DrawBorder()
 
 	// go for the right border
 	curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_right));
-	stroke_style curStyle = borderData.GetStrokeStyle(border_side::bs_right);
+	curStyle = borderData.GetStrokeStyle(border_side::bs_right);
 	if (curThick && hasStyle(curStyle))
 	{
 		borderData.GetBorderColor(color, border_side::bs_right);
@@ -2191,7 +2191,7 @@ void TWebNode::DrawBorder()
 
 	// now the left border
 	curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_left));
-	stroke_style curStyle = borderData.GetStrokeStyle(border_side::bs_left);
+	curStyle = borderData.GetStrokeStyle(border_side::bs_left);
 	if (curThick && hasStyle(curStyle))
 	{
 		borderData.GetBorderColor(color, border_side::bs_left);
@@ -2207,7 +2207,7 @@ void TWebNode::DrawBorder()
 
 	// finally, the bottom border
 	curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_bottom));
-	stroke_style curStyle = borderData.GetStrokeStyle(border_side::bs_bottom);
+	curStyle = borderData.GetStrokeStyle(border_side::bs_bottom);
 	if (curThick && hasStyle(curStyle))
 	{
 		borderData.GetBorderColor(color, border_side::bs_bottom);

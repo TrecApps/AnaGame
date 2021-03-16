@@ -2,7 +2,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TFileShell.h"
-
+#include "TVariable.h"
 /**
  * Method: StatementCollector::
  * Purpose:
@@ -78,7 +78,7 @@ typedef enum class code_statement_type
  * Class: CodeStatement
  * Purpose: Holds a basic statement, containing the statement, line numbers
  */
-class CodeStatement :  public TObject
+class _TREC_LIB_DLL CodeStatement :  public TObject
 {
 public:
     /**
@@ -132,7 +132,7 @@ typedef enum class statement_mode
  * Purpose: Allows Interpretors to Easily read a source file and parse statements, taking into account Strings, parsing out blocks,
  *  and filtering out comments
  */
-class StatementCollector
+class _TREC_LIB_DLL StatementCollector
 {
 public:
     /**

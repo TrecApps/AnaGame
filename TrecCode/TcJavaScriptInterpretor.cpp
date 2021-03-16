@@ -63,7 +63,7 @@ ReturnObject TcJavaScriptInterpretor::Run()
     {
         ret.errorMessage.Set(L"Interpretor not ready to run. Make sure you are successful in calling 'SetFile' and 'PreProcess' before calling this method");
         ret.returnCode = ReturnObject::ERR_UNSUPPORTED_OP;
-        return;
+        return ret;
     }
 
     return Run(statements);

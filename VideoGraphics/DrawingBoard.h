@@ -23,9 +23,9 @@ typedef enum class stroke_style
 	bs_hidden
 };
 
-bool hasStyle(stroke_style style);
+bool _VIDEO_GRAPHICS hasStyle(stroke_style style);
 
-class StrokeStyle
+class _VIDEO_GRAPHICS StrokeStyle
 {
 public:
 	StrokeStyle();
