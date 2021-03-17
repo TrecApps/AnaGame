@@ -420,7 +420,7 @@ TBrush::TBrush(TrecPointer<DrawingBoard> rt)
  * Parameters: void
  * Returns: bool
  */
-bool TBrush::Refresh()
+bool TBrush::Refresh(bool forceBrushRefresh)
 {
 	ThreadLock();
 	if (!board.Get() || !brush.Get())
@@ -431,8 +431,10 @@ bool TBrush::Refresh()
 
 	if (currentRenderer.Get() && currentRenderer.Get() == board->GetRenderer().Get())
 	{
-		ThreadRelease();
-		return true;
+		if (!forceBrushRefresh) {
+			ThreadRelease();
+			return true;
+		}
 	}
 	currentRenderer = board->GetRenderer();
 	RefreshBrush();

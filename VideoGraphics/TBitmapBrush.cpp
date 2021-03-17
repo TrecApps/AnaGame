@@ -222,6 +222,15 @@ void TBitmapBrush::FillGeometry(TrecPointer<TGeometry> geo)
 	ThreadRelease();
 }
 
+void TBitmapBrush::UpdateFrame(TrecComPointer<ID2D1Bitmap> map)
+{
+	if (!usesFile)
+	{
+		bitmaps[0] = map;
+		Refresh(true);
+	}
+}
+
 
 /**
  * Method: TBitmapBrush::TBitmapBrush
@@ -234,16 +243,18 @@ void TBitmapBrush::FillGeometry(TrecPointer<TGeometry> geo)
 TBitmapBrush::TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingBoard> rt, RECT_2D& loc): TBrush(rt)
 {
 	valid = false;
-
+	usesFile = true;
 	brushType = brush_type::brush_type_bitmap;
-
-	if (!picture.Get())
-		return;
-
 	imageFactory = NULL;
 	decoder = NULL;
 	frameDec = NULL;
 	converter = NULL;
+	location = { 0,0,0,0 };
+	currentFrame = 0;
+	if (!picture.Get())
+		return;
+
+
 	IWICBitmapScaler* scale = nullptr;
 	UINT frameCount = 0;
 	HRESULT result = CoCreateInstance(CLSID_WICImagingFactory1,
@@ -331,6 +342,26 @@ TBitmapBrush::TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingB
 	location = loc;
 }
 
+TBitmapBrush::TBitmapBrush(TrecPointer<DrawingBoard> rt, TrecComPointer<ID2D1Bitmap> map): TBrush(rt)
+{
+	brushType = brush_type::brush_type_bitmap;
+	usesFile = false;
+	valid = false;	
+	imageFactory = nullptr;
+	decoder = nullptr;
+	frameDec = nullptr;
+	converter = nullptr;
+	location = { 0,0,0,0 };
+	currentFrame = 0;
+	if (!rt.Get() || !map.Get())
+	{
+		
+		return;
+	}
+	bitmaps.push_back(map);
+
+}
+
 /**
  * Method: TBitmapBrush::RefreshBrush
  * Purpose: Makes sure that the Brush is compatible with the Render Target, as Direct2D demands that a new Brush be created when
@@ -343,6 +374,18 @@ void TBitmapBrush::RefreshBrush()
 	if (!valid)
 		return;
 	ThreadLock();
+
+	if (!usesFile)
+	{
+		for (UINT Rust = 0; Rust < brushes.Size() && Rust < bitmaps.Size(); Rust++)
+		{
+			TrecComPointer<ID2D1BitmapBrush>::TrecComHolder bitHolder;
+			currentRenderer->CreateBitmapBrush(bitmaps[Rust].Get(), bitHolder.GetPointerAddress());
+			brushes[Rust] = TrecPointerKey::GetComPointer<ID2D1Brush, ID2D1BitmapBrush>(bitHolder);
+		}
+		return;
+	}
+
 	brushes.RemoveAll();
 	bitmaps.RemoveAll();
 

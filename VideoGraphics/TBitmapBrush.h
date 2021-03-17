@@ -121,8 +121,10 @@ public:
 	 * Attributes: override
 	 */
 	virtual void FillGeometry(TrecPointer<TGeometry> geo)override;
-
+	void UpdateFrame(TrecComPointer<ID2D1Bitmap> map);
 protected:
+
+
 
 	/**
 	 * Method: TBitmapBrush::TBitmapBrush
@@ -135,9 +137,23 @@ protected:
 	TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingBoard> rt, RECT_2D& loc);
 
 	/**
+	 * Method: TBitmapBrush::TBitmapBrush
+	 * Purpose: Creates a bitmap brush using an existing bitmap
+	 * Parameters: TrecPointer<DrawingBoard> rt - the Drawing Board crating the Brush
+	 *				TrecComPointer<ID2D1Bitmap> map - the bitmap to draw
+	 * Returns: New Bitmap BrushObject
+	 */
+	TBitmapBrush(TrecPointer<DrawingBoard> rt, TrecComPointer<ID2D1Bitmap> map);
+
+	/**
 	 * reports whether constriction worked properly or not. 
 	 */
 	bool valid;
+
+	/**
+	 * flags related to how the Brush was generated
+	 */
+	bool usesFile;
 
 	/**
 	 * Set of bitmaps from the image

@@ -241,7 +241,7 @@ protected:
 	 * Parameters: void
 	 * Returns: bool
 	 */
-	bool Refresh();
+	bool Refresh(bool forceBrushRefresh = false);
 
 	/**
 	 * Method: TBrush::RefreshBrush
