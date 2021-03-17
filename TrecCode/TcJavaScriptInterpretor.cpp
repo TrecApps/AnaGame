@@ -279,16 +279,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     case code_statement_type::cst_continue:
 
         break;
-    case code_statement_type::cst_do:
 
-        break;
-
-    case code_statement_type::cst_else:
-
-        break;
-    case code_statement_type::cst_else_if:
-
-        break;
     case code_statement_type::cst_for:
     case code_statement_type::cst_for_3:
         ProcessFor(statements, index, ret);
@@ -298,26 +289,31 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
 
         break;
     case code_statement_type::cst_if:
-
+        ProcessBasicFlow(statement, ret);
         break;
     case code_statement_type::cst_regular:
-
+        ProcessExpression(statement, ret);
         break;
     case code_statement_type::cst_return:
-
+        ProcessExpression(statement, ret);
+        if (!ret.returnCode)
+            ret.mode = return_mode::rm_return;
         break;
     case code_statement_type::cst_switch:
 
         break;
     case code_statement_type::cst_throw:
-
+        ProcessExpression(statement, ret);
+        if (!ret.returnCode)
+            ret.returnCode = ReturnObject::ERR_THROWN;
         break;
     case code_statement_type::cst_try:
     case code_statement_type::cst_finally:
         ProcessTryCatchFinally(statements, index, statement, ret);
         break;
+    case code_statement_type::cst_do:
     case code_statement_type::cst_while:
-
+        ProcessWhile(statement, ret);
         break;
     }
 
