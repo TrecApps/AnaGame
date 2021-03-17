@@ -11,6 +11,47 @@ static TrecPointer<ObjectOperator> jsOperators;
 
 static TrecPointer<TVariable> one;
 
+bool IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEqual, bool castType)
+{
+    bool eqVal = false, eqType;
+
+    if (var1.Get() && var2.Get())
+    {
+        DoubleLong dl1 = DoubleLong::GetValueFromPrimitive(var1);
+        DoubleLong dl2 = DoubleLong::GetValueFromPrimitive(var2);
+
+        eqType = dl1.type == dl2.type && var1->GetVarType() == var2->GetVarType() && var1->GetType();
+
+        eqVal = dl1 == dl2;
+    }
+    else if (var1.Get())
+    {
+        eqType = false;
+        DoubleLong dl = DoubleLong::GetValueFromPrimitive(var1);
+
+        eqVal = dl.type == double_long::dl_invalid || dl == DoubleLong((LONG64)0);
+    }
+    else if (var2.Get())
+    {
+        eqType = false;
+        DoubleLong dl = DoubleLong::GetValueFromPrimitive(var2);
+
+        eqVal = dl.type == double_long::dl_invalid || dl == DoubleLong((LONG64)0);
+    }
+    else eqType = true;
+
+    if (isEqual)
+    {
+        // Dealing with == or ===
+        return eqVal && ((castType) ? true : eqType);
+    }
+    else
+    {
+        // Dealing with != or !==
+        return (castType) ? !eqVal : (!eqVal && !eqType);
+    }
+}
+
 COMPILE_TYPE TcJavaScriptInterpretor::CanCompile()
 {
     return COMPILE_TYPE(0);
@@ -1566,11 +1607,46 @@ crunch:
 
 UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
 {
-    return 0;
+    TrecSubPointer<TVariable, TContainerVariable> arrayVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
+
+    if (statement->statement[index] == L'[')
+        index++;
+
+    bool processArray = true;
+    UINT curParenth = parenth;
+    UINT curSquare = square;
+    UINT nodeRet = 0;
+    UINT nodes = 0;
+    while (square >= curSquare)
+    {
+        nodes = ProcessExpression(parenth, square, index, statement, ret, expressions, ops);
+        if (ret.returnCode)
+            return nodeRet;
+
+        if (curParenth != parenth)
+        {
+            PrepReturn(ret, L"Parenthesis mismatch in array expression!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
+            return nodeRet;
+        }
+
+        arrayVar->AppendValue(ret.errorObject);
+        ret.errorObject.Nullify();
+        nodeRet += nodes;
+        while (nodes && statement->next.Get())
+        {
+            nodes--;
+            statement = statement->next;
+        }
+    }
+
+    ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(arrayVar);
+
+    return nodeRet;
 }
 
 UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
 {
+
     return 0;
 }
 
@@ -1586,72 +1662,889 @@ UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& squ
 
 UINT TcJavaScriptInterpretor::ProcessNumberExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
 {
+    UINT start = index;
+    for (; index < statement->statement.GetSize(); index++)
+    {
+        switch (statement->statement[index])
+        {
+        case L'\s':
+        case L'\n':
+        case L'\r':
+        case L'\t':
+        case L',':
+        case L';':
+            goto broken;
+        }
+    }
+    broken:
+    TString numStr(statement->statement.SubString(start, index));
+    double d = 0.0;
+    LONG64 s = 0;
+    UINT u = 0;
+    if (!numStr.ConvertToDouble(d))
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
+    else if (!numStr.ConvertToLong(s))
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(s);
+    else if (TString::ConvertStringToUint(numStr, u))
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(u);
+    else
+    {
+        TString message;
+        message.Format(L"Failed to convert token '%ws' to a number!", numStr.GetConstantBuffer());
+        PrepReturn(ret, message, L"", ReturnObject::ERR_NOT_NUMBER, statement->lineStart);
+    }
     return 0;
 }
 
 UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
 {
+    WCHAR quote = statement->statement[index];
+    bool istemplated = false;
+    int quoteLoc = -1;
+    switch (quote)
+    {
+    case L'`':
+        istemplated = true;
+    case L'\'':
+    case L'\"':
+        quoteLoc = statement->statement.Find(quote, index + 1, false);
+        if (quoteLoc == -1)
+        {
+            PrepReturn(ret, L"Incomplete String detected!", L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
+            return;
+        }
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(statement->statement.SubString(index + 1, quoteLoc));
+        break;
+    default:
+        PrepReturn(ret, L"INTERNAL ERROR! Expected Quote character!", L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
+    }
     return 0;
 }
 
-void TcJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ro)
 {
+    for (UINT Rust = 0; Rust < operators.Size(); Rust++)
+    {
+        if (Rust >= expresions.Size())
+        {
+            PrepReturn(ro, L"Too many operators for the expression List!", L"", ReturnObject::ERR_TOO_FEW_PARMS, -1);
+            return;
+        }
+
+
+        bool remove = false;
+        if (!operators[Rust].Compare(L"++"))
+        {
+            TrecPointer<TVariable> var = expresions[Rust].value;
+            remove = true;
+            // To-Do: Add 1 to var
+            ro.errorObject = jsOperators->Add(var, one);
+            if (!ro.errorObject.Get())
+            {
+                PrepReturn(ro, L"Invalid Types detected for Addition Operation", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+            expresions[Rust].value = ro.errorObject;
+        }
+        else if (!operators[Rust].Compare(L"--"))
+        {
+            TrecPointer<TVariable> var = expresions[Rust].value;
+            remove = true;
+            // To-Do: Subtract 1 from var
+            ro.errorObject = jsOperators->Subtract(var, one);
+            if (!ro.errorObject.Get())
+            {
+                PrepReturn(ro, L"Invalid Types detected for Subtraction Operation", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+            expresions[Rust].value = ro.errorObject;
+        }
+
+        if (remove)
+        {
+            if (expresions[Rust].varName.GetSize())
+            {
+                this->UpdateVariable(expresions[Rust].varName, expresions[Rust].value);
+            }
+            operators.RemoveAt(Rust--);
+        }
+
+    }
 }
 
-void TcJavaScriptInterpretor::HandleExponents(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleExponents(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ro)
 {
+    if (expresions.Size() != operators.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-Exponent handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    if (operators.Size())
+    {
+        // JavaScript Processes exponents from right to left, so make sure that operators are available and 
+        // Start towars the end instead of at 0
+        for (int Rust = static_cast<int>(operators.Size()) - 1; Rust >= 0; Rust--)
+        {
+            if (!operators[Rust].Compare(L"**"))
+            {
+                ro.errorObject = jsOperators->Pow(expresions[Rust].value, expresions[Rust + 1].value);
+                if (!ro.errorObject.Get())
+                {
+                    PrepReturn(ro, L"Invalid Types detected for Exponent Operation", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                    return;
+                }
+
+                expresions[Rust].value = ro.errorObject;
+                expresions.RemoveAt(Rust + 1);
+                operators.RemoveAt(Rust--);
+            }
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleMultDiv(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-Multiplication-Division handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].CompareNoCase(L"*"))
+        {
+            ro.errorObject = jsOperators->Multiply(expressions[Rust].value, expressions[Rust + 1].value);
+            if (!ro.errorObject.Get())
+            {
+                PrepReturn(ro, L"Invalid Types detected for Multiplication Operation", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+
+            expressions[Rust].value = ro.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"/"))
+        {
+            ro.errorObject = jsOperators->Divide(expressions[Rust].value, expressions[Rust + 1].value);
+            if (!ro.errorObject.Get())
+            {
+                PrepReturn(ro, L"Invalid Types detected for Division Operation", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+
+            expressions[Rust].value = ro.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"%"))
+        {
+            ro.errorObject = jsOperators->Mod(expressions[Rust].value, expressions[Rust + 1].value);
+            if (!ro.errorObject.Get())
+            {
+                PrepReturn(ro, L"Invalid Types detected for Mod-Division Operation", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+
+            expressions[Rust].value = ro.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleAddSub(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ret)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ret, L"The JS-addition/subtraction handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].CompareNoCase(L"+"))
+        {
+            ret.errorObject = jsOperators->Add(expressions[Rust].value, expressions[Rust + 1].value);
+            if (!ret.errorObject.Get())
+            {
+                PrepReturn(ret, L"Invalid Types detected for Addition Operation", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+
+            expressions[Rust].value = ret.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+
+        if (!ops[Rust].CompareNoCase(L"-"))
+        {
+            ret.errorObject = jsOperators->Subtract(expressions[Rust].value, expressions[Rust + 1].value);
+            if (!ret.errorObject.Get())
+            {
+                PrepReturn(ret, L"Invalid Types detected for Subtraction Operation", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+            expressions[Rust].value = ret.errorObject;
+
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+            continue;
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleBitwiseShift(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ret)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ret, L"The JS-Bitwise handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        bool canDo = true;
+
+        TrecSubPointer<TVariable, TPrimitiveVariable> operand =
+            TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(expressions[Rust].value);
+        if (canDo = (operand.Get() != nullptr))
+        {
+            canDo = expressions[Rust + 1].value.Get() != nullptr;
+        }
+        UINT shift = 0;
+        if (canDo)
+        {
+            if (expressions[Rust + 1].value->GetVarType() == var_type::primitive)
+                shift = expressions[Rust + 1].value->Get4Value();
+            else if (expressions[Rust + 1].value->GetVarType() == var_type::string)
+            {
+                int iShift;
+                if (expressions[Rust + 1].value->GetString().ConvertToInt(iShift))
+                    canDo = false;
+                else
+                    shift = iShift;
+            }
+        }
+
+        bool doBit = false;
+        bool doRightBit = false;
+        USHORT flag = 0;
+
+        if (!ops[Rust].Compare(L">>"))
+        {
+            if (!canDo)
+            {
+                PrepReturn(ret, L"Cannot perform >> operation!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                return;
+            }
+            doBit = doRightBit = true;
+            flag = TPrimitiveVariable::bit_float;
+        }
+        else if (!ops[Rust].Compare(L">>>"))
+        {
+            if (!canDo)
+            {
+                PrepReturn(ret, L"Cannot perform >>> operation!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                return;
+            }
+            doBit = doRightBit = true;
+            flag = TPrimitiveVariable::bit_float | TPrimitiveVariable::bit_replenish | TPrimitiveVariable::bit_to_32 | TPrimitiveVariable::bit_to_un_f;
+        }
+        else if (!ops[Rust].Compare(L"<<"))
+        {
+            if (!canDo)
+            {
+                PrepReturn(ret, L"Cannot perform << operation!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                return;
+            }
+            doBit = true;
+            flag = TPrimitiveVariable::bit_float;
+        }
+
+        if (doBit)
+        {
+            if (operand->BitShift(doRightBit, shift, flag))
+            {
+                expressions.RemoveAt(Rust + 1);
+                ops.RemoveAt(Rust--);
+            }
+            else
+            {
+                PrepReturn(ret, L"Internal Error Attempting to Perform Bitwise manipulation!", L"", ReturnObject::ERR_INTERNAL, -1);
+            }
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleLogicalComparison(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-logical comparison handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        auto left = expressions[Rust].value;
+        auto right = expressions[Rust + 1].value;
+
+        bool found = false;
+        bool val;
+        if (!ops[Rust].Compare(L"in"))
+        {
+            found = true;
+            if (!left.Get() || !right.Get() || left->GetVarType() != var_type::string || right->GetVarType() != var_type::collection)
+            {
+                val = false;
+            }
+            else
+            {
+
+                dynamic_cast<TContainerVariable*>(right.Get())->GetValue(left->GetString(), val, L"__proto__");
+
+            }
+
+        }
+        else if (!ops[Rust].Compare(L"instanceof"))
+        {
+            // To-Do: Implement once type management if implemented for this interpretor to use
+        }
+        else
+        {
+            UCHAR larger = 0;
+            if (!left.Get() || !right.Get())
+            {
+                larger = 255;
+                val = false;
+            }
+
+            if (!larger)
+            {
+                if (left->GetVarType() == var_type::string && right->GetVarType() == var_type::string)
+                {
+                    int i = left->GetString().Compare(right->GetString());
+
+                    if (i > 0)
+                        larger = 2;
+                    else if (i < 0)
+                        larger = 1;
+                }
+                else
+                {
+                    DoubleLong leftDl = DoubleLong::GetValueFromPrimitive(left);
+                    DoubleLong rightDl = DoubleLong::GetValueFromPrimitive(right);
+
+                    if (leftDl.type == double_long::dl_invalid || rightDl.type == double_long::dl_invalid)
+                    {
+                        larger = 255;
+                        val = false;
+                    }
+                    else
+                    {
+                        if (leftDl > rightDl)
+                            larger = 2;
+                        else if (leftDl < rightDl)
+                            larger = 1;
+                    }
+                }
+            }
+
+            if (!ops[Rust].Compare(L"<"))
+            {
+                found = true;
+                val = larger == 1;
+            }
+            else if (!ops[Rust].Compare(L"<="))
+            {
+                found = true;
+                val = (!larger || larger == 1);
+            }
+            else if (!ops[Rust].Compare(L">"))
+            {
+                found = true;
+                val = larger == 2;
+            }
+            else if (!ops[Rust].Compare(L">="))
+            {
+                found = true;
+                val = (!larger || larger == 2);
+            }
+        }
+
+        if (found)
+        {
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(val);
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleEquality(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-Equality handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        bool found = false, result;
+        auto left = expressions[Rust].value;
+        auto right = expressions[Rust + 1].value;
+        if (!ops[Rust].Compare(L"==="))
+        {
+            found = true;
+            result = IsEqual(left, right, true, false);
+        }
+        else if (!ops[Rust].Compare(L"=="))
+        {
+            found = true;
+            result = IsEqual(left, right, true, true);
+        }
+        else if (!ops[Rust].Compare(L"!=="))
+        {
+            found = true;
+            result = IsEqual(left, right, false, false);
+        }
+        else if (!ops[Rust].Compare(L"!="))
+        {
+            found = true;
+            result = IsEqual(left, right, false, true);
+        }
+
+        if (found)
+        {
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(result);
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleBitwiseAnd(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-bitwise-and handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"&"))
+        {
+            DoubleLong dl1 = DoubleLong::GetValueFromPrimitive(expressions[Rust].value);
+            DoubleLong dl2 = DoubleLong::GetValueFromPrimitive(expressions[Rust + 1].value);
+
+            if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+            {
+                PrepReturn(ro, L"Invalid Types detected for & operation!", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitAnd(dl2));
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleBitwiseXor(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-bitwise-xor handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"^"))
+        {
+            DoubleLong dl1 = DoubleLong::GetValueFromPrimitive(expressions[Rust].value);
+            DoubleLong dl2 = DoubleLong::GetValueFromPrimitive(expressions[Rust + 1].value);
+
+            if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+            {
+                PrepReturn(ro, L"Invalid Types detected for ^ operation!", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitXor(dl2));
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleBitwiseOr(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-bitwise-or handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"|"))
+        {
+            DoubleLong dl1 = DoubleLong::GetValueFromPrimitive(expressions[Rust].value);
+            DoubleLong dl2 = DoubleLong::GetValueFromPrimitive(expressions[Rust + 1].value);
+
+            if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+            {
+                PrepReturn(ro, L"Invalid Types detected for | operation!", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+            expressions[Rust].value = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitOr(dl2));
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleLogicalAnd(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-logical-and handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"&&"))
+        {
+            expressions[Rust] = IsTruthful(expressions[Rust].value) ? expressions[Rust + 1] : expressions[Rust];
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleLogicalOr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleLogicalOr(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-logical-or handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"||"))
+        {
+            expressions[Rust] = IsTruthful(expressions[Rust].value) ? expressions[Rust] : expressions[Rust + 1];
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleNullish(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleNullish(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-Nullish handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        ro.errorMessage.Set(L"The JS-Nullish handler expected one more Expression than operator!");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"??"))
+        {
+            expressions[Rust] = expressions[Rust].value.Get() ? expressions[Rust] : expressions[Rust + 1];
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleConditional(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-Conditional handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < ops.Size(); Rust++)
+    {
+        if (!ops[Rust].Compare(L"?"))
+        {
+            if (Rust + 1 == ops.Size() || ops[Rust + 1].Compare(L":"))
+            {
+                PrepReturn(ro, L"Invalid Types detected for ? operation!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                return;
+            }
+
+
+            expressions[Rust] = IsTruthful(expressions[Rust].value) ? expressions[Rust + 1] : expressions[Rust + 2];
+            expressions.RemoveAt(Rust + 1);
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust);
+            ops.RemoveAt(Rust--);
+        }
+    }
 }
 
-void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
+void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops, ReturnObject& ro)
 {
+    if (expressions.Size() != ops.Size() + 1)
+    {
+        PrepReturn(ro, L"The JS-Assignment handler expected one more Expression than operator!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+        return;
+    }
+
+    for (int Rust = ops.Size() - 1; Rust > -1; Rust--)
+    {
+        // Whether or not an assignment operator was found
+        bool found = false;
+
+        // Details on whether a bitwise shift assignment operator was found
+        bool doBit = false;
+        bool doRightBit = false;
+        UINT shift = 0;
+        USHORT flag = 0;
+
+        auto left = expressions[Rust].value;
+        auto right = expressions[Rust + 1].value;
+
+        bool canDo = true, possibleProto = false;
+
+        TrecSubPointer<TVariable, TPrimitiveVariable> operand =
+            TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(left);
+        if (canDo = (operand.Get() != nullptr))
+        {
+            canDo = right.Get() != nullptr;
+        }
+        if (canDo)
+        {
+            if (right->GetVarType() == var_type::primitive)
+                shift = right->Get4Value();
+            else if (right->GetVarType() == var_type::string)
+            {
+                int iShift;
+                if (right->GetString().ConvertToInt(iShift))
+                    canDo = false;
+                else
+                    shift = iShift;
+            }
+        }
+
+        if (!ops[Rust].Compare(L"="))
+        {
+            found = true;
+            ro.errorObject = right;
+
+            // Check for a Prototype call
+           /* auto pieces = expressions[Rust].varName.split(L'.', 3);
+
+            if (pieces->Size() == 3 && !pieces->at(1).Compare(L"prototype"))
+            {
+                ro = ProcessPrototypeOperation(pieces->at(0), pieces->at(2), left, JS_Prototype_Op::jpo_add_const);
+                return;
+            }*/
+        }
+        else if (!ops[Rust].Compare(L"+="))
+        {
+            found = true;
+            left = jsOperators->Add(left, right);
+        }
+        else if (!ops[Rust].Compare(L"-="))
+        {
+            found = true;
+            left = jsOperators->Subtract(left, right);
+        }
+        else if (!ops[Rust].Compare(L"**="))
+        {
+            found = true;
+            left = jsOperators->Pow(left, right);
+        }
+        else if (!ops[Rust].Compare(L"*="))
+        {
+            left = jsOperators->Multiply(left, right);
+            found = true;
+        }
+        else if (!ops[Rust].Compare(L"/="))
+        {
+            left = jsOperators->Divide(left, right);
+            found = true;
+        }
+        else if (!ops[Rust].Compare(L"%="))
+        {
+            left = jsOperators->Mod(left, right);
+            found = true;
+        }
+        else if (!ops[Rust].Compare(L"<<="))
+        {
+            found = true;
+            if (!canDo)
+            {
+                PrepReturn(ro, L"Could not pull off <<= operation!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                return;
+            }
+            doBit = true;
+            flag = TPrimitiveVariable::bit_float;
+        }
+        else if (!ops[Rust].Compare(L">>="))
+        {
+            found = true;
+            if (!canDo)
+            {
+                PrepReturn(ro, L"Could not pull off >>= operation!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                return;
+            }
+            doBit = doRightBit = true;
+            flag = TPrimitiveVariable::bit_float;
+        }
+        else if (!ops[Rust].Compare(L">>>="))
+        {
+            found = true;
+            if (!canDo)
+            {
+                PrepReturn(ro, L"COuld not pull off >>>= operation!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                return;
+            }
+            doBit = doRightBit = true;
+            flag = TPrimitiveVariable::bit_float | TPrimitiveVariable::bit_replenish | TPrimitiveVariable::bit_to_32 | TPrimitiveVariable::bit_to_un_f;
+        }
+        else if (!ops[Rust].Compare(L"&="))
+        {
+            found = true;
+            DoubleLong dl1 = DoubleLong::GetValueFromPrimitive(left);
+            DoubleLong dl2 = DoubleLong::GetValueFromPrimitive(right);
+
+            if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+            {
+                PrepReturn(ro, L"Invalid type detected for &= operator!", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+            ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitAnd(dl2));
+        }
+        else if (!ops[Rust].Compare(L"^="))
+        {
+            found = true;
+            DoubleLong dl1 = DoubleLong::GetValueFromPrimitive(left);
+            DoubleLong dl2 = DoubleLong::GetValueFromPrimitive(right);
+
+            if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+            {
+                PrepReturn(ro, L"Invalid type detected for ^= operator!", L"", ReturnObject::ERR_IMPROPER_TYPE, -1);
+                return;
+            }
+            ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitXor(dl2));
+        }
+        else if (!ops[Rust].Compare(L"|="))
+        {
+            found = true;
+            DoubleLong dl1 = DoubleLong::GetValueFromPrimitive(left);
+            DoubleLong dl2 = DoubleLong::GetValueFromPrimitive(right);
+
+            if (dl1.type == double_long::dl_invalid || dl2.type == double_long::dl_invalid)
+            {
+                PrepReturn(ro, L"", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                return;
+            }
+            ro.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(dl1.GetBitOr(dl2));
+        }
+        else if (!ops[Rust].Compare(L"&&="))
+        {
+            found = true;
+            ro.errorObject = IsTruthful(left) ? right : left;
+        }
+        else if (!ops[Rust].Compare(L"||="))
+        {
+            found = true;
+            ro.errorObject = IsTruthful(left) ? left : right;
+        }
+        else if (!ops[Rust].Compare(L"??="))
+        {
+            found = true;
+            ro.errorObject = left.Get() ? left : right;
+        }
+
+        if (found)
+        {
+            if (!expressions[Rust].varName.GetSize())
+            {
+                PrepReturn(ro, L"", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                ro.errorMessage.Format(L"Error! %ws operator must have a named variable as the left hand expression!", ops[Rust].GetConstantBuffer());
+                return;
+            }
+            if (doBit)
+            {
+                if (!operand->BitShift(doRightBit, shift, flag))
+                {
+                    PrepReturn(ro, L"Internal Error Attempting to Perform Bitwise manipulation!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                    return;
+                }
+                ro.errorObject = left;
+            }
+
+            if (expressions[Rust].varName.CountFinds(L'.'))
+            {
+                auto holdVal = ro.errorObject;
+                int finalDot = expressions[Rust].varName.FindLast(L'.');
+                TString initExp(expressions[Rust].varName.SubString(0, finalDot));
+                this->ProcessIndividualStatement(initExp, ro);
+
+                if (ro.returnCode)
+                    return;
+
+                if (!ro.errorObject.Get())
+                {
+                    PrepReturn(ro, L"Found Broken reference in Assignment operation!", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                    return;
+                }
+
+                if (ro.errorObject->GetVarType() != var_type::collection)
+                {
+                    PrepReturn(ro, L"", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                    ro.errorMessage.Format(L"Expected collection type for expression `%ws`", expressions[Rust].varName);
+                    return;
+                }
+
+                dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetValue(expressions[Rust].varName.SubString(finalDot + 1), holdVal);
+
+                ro.errorObject = holdVal;
+            }
+            else
+            {
+                switch (UpdateVariable(expressions[Rust].varName, ro.errorObject))
+                {
+                case 1:
+                    PrepReturn(ro, L"", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                    ro.errorMessage.Format(L"Assignment to non-existant variable '%ws' occured!", expressions[Rust].varName.GetConstantBuffer());
+                    return;
+                case 2:
+                    PrepReturn(ro, L"", L"", ReturnObject::ERR_BROKEN_REF, -1);
+                    ro.errorMessage.Format(L"Assignment to const variable '%ws' was attempted!", expressions[Rust].varName.GetConstantBuffer());
+                    return;
+                }
+            }
+            expressions[Rust].value = ro.errorObject;
+            expressions.RemoveAt(Rust + 1);
+            ops.RemoveAt(Rust--);
+
+        }
+    }
 }
 
 void TcJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
