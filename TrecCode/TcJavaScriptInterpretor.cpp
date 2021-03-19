@@ -3,6 +3,7 @@
 #include <TStringVariable.h>
 #include <TContainerVariable.h>
 #include <TPrimitiveVariable.h>
+#include <TAccessorVariable.h>
 
 
 static TDataArray<TString> standardOperators;
@@ -1648,6 +1649,161 @@ UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square,
 
 UINT TcJavaScriptInterpretor::ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
 {
+    TDataArray<TString> pieces;
+
+    TString phrase, wholePhrase;
+    bool spaceDetected = false;
+    UINT uret = 0;
+
+    UCHAR attribute = 0;
+    bool loopAround;
+
+    TrecPointer<TVariable> var, vThis;
+
+throughString:
+    loopAround = false;
+    for (; index < statement->statement.GetSize(); index++)
+    {
+        WCHAR ch = statement->statement[index];
+
+        if ((ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z') || ch == L'_')
+        {
+            if (spaceDetected)
+            {
+                if (!phrase.Compare(L"new"))
+                    attribute = 1;
+                else if (phrase.Compare(L"get"))
+                    attribute = 2;
+                else if (phrase.Compare(L"set"))
+                    attribute = 3;
+                else
+                {
+                    TString message;
+                    message.Format(L"Unexpected Expression after '%ws' token detected!", phrase.GetConstantBuffer());
+                    PrepReturn(ret, message, L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                    return;
+                }
+                phrase.Empty();
+                spaceDetected = false;
+            }
+
+            phrase.AppendChar(ch);
+            continue;
+        }
+
+        if (ch == L'\s')
+        {
+            if (phrase.GetSize())
+                spaceDetected = true;
+            continue;
+        }
+
+
+        break;
+    }
+
+    if (phrase.GetSize())
+    {
+        if (var.Get())
+        {
+            if (var->GetVarType() == var_type::collection)
+            {
+                vThis = var;
+                bool pres;
+                var = dynamic_cast<TContainerVariable*>(var.Get())->GetValue(phrase, pres);
+                if (!pres)
+                {
+                    var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+                }
+            }
+        }
+        else
+        {
+            bool pres;
+            var = GetVariable(phrase, pres);
+        }
+        wholePhrase.Append(phrase);
+        phrase.Empty();
+    }
+
+    if (index < statement->statement.GetSize())
+    {
+        WCHAR ch = statement->statement[index++];
+        if (ch == L'(' && var.Get())
+        {
+            wholePhrase.AppendChar(ch);
+            parenth++;
+
+            UINT curIndex = index;
+            if (var->GetVarType() == var_type::interpretor)
+            {
+                UINT curRet = uret;
+                uret += ProcessProcedureCall(parenth, square, index, vThis, var, statement, ret);
+
+                if (ret.returnCode)
+                    return uret;
+
+                if (uret > curRet)
+                {
+                    wholePhrase.Append(statement->statement.SubString(curIndex) + L"{...}");
+                    while (statement->next.Get() && uret > curRet)
+                    {
+                        statement = statement->next;
+                        curRet++;
+                    }
+                    wholePhrase.Append(statement->statement.SubString(0, index + 1));
+                }
+                var = ret.errorObject;
+            }
+            else if (var->GetVarType() == var_type::accessor)
+            {
+                auto getter = dynamic_cast<TAccessorVariable*>(var.Get())->GetGetter();
+                if (getter.Get())
+                {
+                    auto oRet = getter->Run();
+                    if (oRet.returnCode)
+                    {
+                        // To-Do: Replace Getters and Setters with Interpretors
+                        ret.returnCode = oRet.returnCode;
+                        ret.errorMessage.Set(oRet.errorMessage);
+                        return;
+                    }
+                    var = oRet.errorObject;
+                    int iIndex = statement->statement.Find(L')', index);
+
+                    if (iIndex == -1)
+                    {
+                        TString message;
+                        message.Format(L"Incomplete getter call detected on variable expression '%ws'", wholePhrase.GetConstantBuffer());
+                        PrepReturn(ret, message, L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
+                        return;
+                    }
+                    index = iIndex;
+                }
+            }
+            else
+                var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+            spaceDetected = false;
+            loopAround = true;
+
+            wholePhrase.AppendChar(L')');
+        }
+
+        if (ch == L'.' || ch == L'?')
+        {
+            loopAround = true;
+            spaceDetected = false;
+            wholePhrase.AppendChar(ch);
+        }
+    }
+
+    if (loopAround)
+        goto throughString;
+
+    ret.errorMessage.Set(wholePhrase);
+    ret.errorObject = var;
+
+
     return 0;
 }
 
@@ -1714,6 +1870,11 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
     default:
         PrepReturn(ret, L"INTERNAL ERROR! Expected Quote character!", L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
     }
+    return 0;
+}
+
+UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object, TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, ReturnObject& obj)
+{
     return 0;
 }
 
