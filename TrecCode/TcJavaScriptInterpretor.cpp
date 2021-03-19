@@ -4,6 +4,7 @@
 #include <TContainerVariable.h>
 #include <TPrimitiveVariable.h>
 #include <TAccessorVariable.h>
+#include <cassert>
 
 
 static TDataArray<TString> standardOperators;
@@ -138,6 +139,8 @@ TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInt
     TcInterpretor(parentInterpretor, env)
 {
     readyToRun = false;
+
+    selfWord.Set(L"this");
 
     if (!jsOperators.Get())
         jsOperators = TrecPointerKey::GetNewTrecPointerAlt<ObjectOperator, JsObjectOperator>();
@@ -1672,9 +1675,9 @@ throughString:
             {
                 if (!phrase.Compare(L"new"))
                     attribute = 1;
-                else if (phrase.Compare(L"get"))
+                else if (!phrase.Compare(L"get"))
                     attribute = 2;
-                else if (phrase.Compare(L"set"))
+                else if (!phrase.Compare(L"set"))
                     attribute = 3;
                 else
                 {
@@ -1704,7 +1707,11 @@ throughString:
 
     if (phrase.GetSize())
     {
-        if (var.Get())
+        if (phrase.Compare(L"null"))
+            var.Nullify();
+        else if(phrase.Compare(L"undefined"))
+            var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+        else if (var.Get())
         {
             if (var->GetVarType() == var_type::collection)
             {
@@ -1738,7 +1745,7 @@ throughString:
             if (var->GetVarType() == var_type::interpretor)
             {
                 UINT curRet = uret;
-                uret += ProcessProcedureCall(parenth, square, index, vThis, var, statement, ret);
+                uret += ProcessProcedureCall(parenth, square, index, vThis, var, statement, ret, expressions, ops);
 
                 if (ret.returnCode)
                     return uret;
@@ -1809,6 +1816,9 @@ throughString:
 
 UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
 {
+
+
+
     return 0;
 }
 
@@ -1873,9 +1883,59 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
     return 0;
 }
 
-UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object, TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, ReturnObject& obj)
+UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object, TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, 
+    ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
 {
-    return 0;
+    UINT curParenth = parenth;
+    UINT nextRet = 0;
+
+    TDataArray<TrecPointer<TVariable>> params;
+
+    while (parenth >= curParenth)
+    {
+        // First check to see if the net token is a close parenthesis
+        TString left(statement->statement.SubString(index));
+        left.Trim();
+
+        if (left.StartsWith(L')'))
+        {
+            index = statement->statement.Find(L')', index) + 1;
+            parenth--;
+            continue;
+        }
+
+        // Get the Parameter
+        UINT uret = ProcessExpression(parenth, square, index, statement, ret, expressions, ops);
+        nextRet += uret;
+
+        // If an error was detected, return
+        if (ret.returnCode)
+            return nextRet;
+
+        // If blocks were detected, go through and retrieve the current statement we are on
+        while (uret && statement->next.Get())
+        {
+            uret--;
+            statement = statement->next;
+        }
+        // Add the parameter
+        params.push_back(ret.errorObject);
+    }
+
+    // Convert to a function we can call
+    TrecSubPointer<TVariable, TcInterpretor> function = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(proc);
+    assert(function.Get());
+
+    // This is a method if object is valid
+    function->SetActiveObject(object);
+    // Set the parameters
+    function->SetIntialVariables(params);
+
+    // Run the function and get the results
+    ret = function->Run();
+
+    // Return how many statments were jumped
+    return nextRet;
 }
 
 void TcJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ro)

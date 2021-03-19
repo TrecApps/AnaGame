@@ -224,6 +224,16 @@ void TcInterpretor::CheckVarName(TString& varname, ReturnObject& ro)
 TrecPointer<TVariable> TcInterpretor::GetVariable(TString& varName, bool& present, bool currentScope)
 {
 	TcVariableHolder marker;
+
+	if (!varName.Compare(selfWord))
+	{
+		if (this->methodObject.Get())
+		{
+			present = true;
+			return methodObject;
+		}
+	}
+
 	if (variables.retrieveEntry(varName, marker))
 	{
 		present = true;

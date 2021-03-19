@@ -390,5 +390,6 @@ protected:
     TDataMap<TcVariableHolder> variables;       // List of Variables to Hold
     TDataMap<TcVariableHolder> strictVariables; // List of Variables to hold and Generate prior to runtime (must not be removed)
     
+    TString selfWord;
 };
 
