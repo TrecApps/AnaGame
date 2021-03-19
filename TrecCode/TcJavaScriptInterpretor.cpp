@@ -1635,7 +1635,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
             index = 0;
             nodes = ProcessExpression(parenth, square, index, statement->next, ret, expressions, ops);
             if (ret.returnCode)
-                return;
+                return fullNodes;
             fullNodes += nodes;
             while (nodes && statement->next.Get())
             {
@@ -1652,52 +1652,52 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
 crunch:
 
     HandlePreExpr(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleExponents(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleMultDiv(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleAddSub(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleBitwiseShift(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleLogicalComparison(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleEquality(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleBitwiseAnd(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleBitwiseXor(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleBitwiseOr(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleLogicalAnd(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleLogicalOr(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleNullish(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleConditional(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleAssignment(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     HandleComma(expressions, ops, ret);
-    if (ret.returnCode) return;
+    if (ret.returnCode) return fullNodes;
 
     if (expressions.Size() == 1)
         ret.errorObject = expressions[0].value;
@@ -1784,7 +1784,7 @@ throughString:
                     TString message;
                     message.Format(L"Unexpected Expression after '%ws' token detected!", phrase.GetConstantBuffer());
                     PrepReturn(ret, message, L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
-                    return;
+                    return uret;
                 }
                 phrase.Empty();
                 spaceDetected = false;
@@ -1873,7 +1873,7 @@ throughString:
                         // To-Do: Replace Getters and Setters with Interpretors
                         ret.returnCode = oRet.returnCode;
                         ret.errorMessage.Set(oRet.errorMessage);
-                        return;
+                        return 0;
                     }
                     var = oRet.errorObject;
                     int iIndex = statement->statement.Find(L')', index);
@@ -1883,7 +1883,7 @@ throughString:
                         TString message;
                         message.Format(L"Incomplete getter call detected on variable expression '%ws'", wholePhrase.GetConstantBuffer());
                         PrepReturn(ret, message, L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
-                        return;
+                        return 0;
                     }
                     index = iIndex;
                 }
@@ -1922,7 +1922,7 @@ UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& squ
     {
         ret.errorObject.Nullify();
         ret.errorMessage.Empty();
-        return;
+        return 0;
     }
     TString paramNames(statement->statement.SubString(startP + 1, endP));
     TDataArray<TString> params;
@@ -1944,7 +1944,7 @@ UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& squ
                 ret.returnCode = 0;
                 ret.errorObject.Nullify();
                 ret.errorMessage.Empty();
-                return;
+                return 0;
             }
             params.push_back(iParam);
         }
@@ -2009,7 +2009,7 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
         if (quoteLoc == -1)
         {
             PrepReturn(ret, L"Incomplete String detected!", L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
-            return;
+            return 0;
         }
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(statement->statement.SubString(index + 1, quoteLoc));
         break;

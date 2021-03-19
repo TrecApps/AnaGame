@@ -5,6 +5,7 @@
 #define WEB_EVENT_HANDLER_COUNT 71
 #define WEB_BORDER_STYLE_COUNT 8
 #define WEB_LIST_STYLE_COUNT 22
+#define WEB_VOID_ELEMENT_COUNT 14
 
 static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
 	// Window Events
@@ -61,6 +62,33 @@ static TString eventHandlers[WEB_EVENT_HANDLER_COUNT] = {
 	// Toggle
 	TString(L"ontoggle")
 };
+
+static TString VoidElements[WEB_VOID_ELEMENT_COUNT] = {
+	TString(L"area"),
+	TString(L"base"),
+	TString(L"br"),
+	TString(L"col"),
+	TString(L"embed"),
+	TString(L"hr"),
+	TString(L"img"),
+	TString(L"input"),
+	TString(L"link"),
+	TString(L"meta"),
+	TString(L"param"),
+	TString(L"source"),
+	TString(L"track"),
+	TString(L"wbr")
+};
+
+bool IsVoidElement(const TString& tag)
+{
+	for (UINT Rust = 0; Rust < WEB_VOID_ELEMENT_COUNT; Rust++)
+	{
+		if (!tag.CompareNoCase(VoidElements[Rust]))
+			return true;
+	}
+	return false;
+}
 
 typedef struct StyleString {
 	TString str;
@@ -426,7 +454,8 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win)
 			return 0;
 		start++;
 	}
-
+	if (IsVoidElement(tagName))
+		return 0;
 	return ProcessInnerHtml(html, start, win);
 }
 
@@ -459,9 +488,9 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 				printableText.Empty();
 			}
 
-
 			try
 			{
+				
 				if (html->GetAt(start) == L'/')
 				{
 					innerHtml = html.GetSlice(currentStart, start - 1);
@@ -481,7 +510,8 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 
 			UINT result = newNode->ProcessHtml(html, start, win);
 
-			if (result) return result;
+			if (result)
+				return result;
 
 			if (!start)break;
 		}
@@ -489,7 +519,6 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 		{
 			printableText.AppendChar(ch);
 		}
-		
 	}
 
 	innerHtml = html.GetSlice(currentStart, html->GetSize() -1);
