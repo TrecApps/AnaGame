@@ -541,6 +541,16 @@ protected:
      */
     void DrawBorder();
 
+    /**
+     * Method: TWebNode::CompileMargin
+     * Purpose: Converts String data into a margin
+     * Parameters: const TSTring& marginString
+     *              border_side side - the border side to focus on
+     *              bool inner - inner border
+     * Returns: void
+     */
+    void CompileMargin(const TString& marginString, border_side side, bool inner);
+
     // Basic Core atributes of the node
     
     /**

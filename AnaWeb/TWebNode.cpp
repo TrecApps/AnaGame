@@ -110,6 +110,71 @@ static ListStyleString listStyleStrings[WEB_LIST_STYLE_COUNT] = {
 	{TString(L"upper-roman"), list_style::ls_upper_roman},
 };
 
+float ConvertMeasurement(TString& atts)
+{
+	UINT dpi = GetDpiForSystem();
+	float dpif = static_cast<float>(dpi);
+	assert(dpi && dpif);
+	WebSizeUnit unit = WebSizeUnit::wsu_bl;
+
+	if (atts.EndsWith(L"px"))
+	{
+		unit = WebSizeUnit::wsu_px;
+	}
+	if (atts.EndsWith(L"cm"))
+	{
+		unit = WebSizeUnit::wsu_cm;
+	}
+	if (atts.EndsWith(L"mm"))
+	{
+		unit = WebSizeUnit::wsu_mm;
+	}
+	if (atts.EndsWith(L"in"))
+	{
+		unit = WebSizeUnit::wsu_in;
+	}
+	if (atts.EndsWith(L"em"))
+	{
+		unit = WebSizeUnit::wsu_em;
+	}
+	if (atts.EndsWith(L"pt"))
+	{
+		unit = WebSizeUnit::wsu_pt;
+	}
+
+	if (unit != WebSizeUnit::wsu_bl)
+		atts.Set(atts.SubString(0, atts.GetSize() - 2));
+
+	atts.Trim();
+
+	float sizeVal = 0.0f;
+	if (!atts.ConvertToFloat(sizeVal)) {
+		// We were able to get a value out of what was provided
+		switch (unit)
+		{
+		case WebSizeUnit::wsu_cm:
+			sizeVal = sizeVal * 2.54 / dpif;
+			break;
+		case WebSizeUnit::wsu_em:
+
+			break;
+		case WebSizeUnit::wsu_in:
+			sizeVal = sizeVal / dpif;
+			break;
+		case WebSizeUnit::wsu_mm:
+			sizeVal = sizeVal * 0.254 / dpif;
+			break;
+		case WebSizeUnit::wsu_pt:
+			sizeVal = sizeVal * 72.0f / dpif;
+			break;
+		case WebSizeUnit::wsu_bl:
+		case WebSizeUnit::wsu_px:
+			sizeVal = sizeVal * (dpif / 96.0f);
+		}
+	}
+	return sizeVal;
+}
+
 bool GetListStyle(const TString& styleStr, list_style& style)
 {
 	for (UINT Rust = 0; Rust < WEB_LIST_STYLE_COUNT; Rust++)
@@ -1645,6 +1710,28 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	if (atts.retrieveEntry(L"border-right-style", val))
 		borderData.CompileStyle(val, border_side::bs_right);
 
+	if (atts.retrieveEntry(L"margin", val))
+		CompileMargin(val, border_side::bs_all, false);
+	if (atts.retrieveEntry(L"margin-left", val))
+		CompileMargin(val, border_side::bs_left, false);
+	if (atts.retrieveEntry(L"margin-right", val))
+		CompileMargin(val, border_side::bs_right, false);
+	if (atts.retrieveEntry(L"margin-top", val))
+		CompileMargin(val, border_side::bs_top, false);
+	if (atts.retrieveEntry(L"margin-bottom", val))
+		CompileMargin(val, border_side::bs_bottom, false);
+
+	if (atts.retrieveEntry(L"padding", val))
+		CompileMargin(val, border_side::bs_all, true);
+	if (atts.retrieveEntry(L"padding-left", val))
+		CompileMargin(val, border_side::bs_left, true);
+	if (atts.retrieveEntry(L"padding-right", val))
+		CompileMargin(val, border_side::bs_right, true);
+	if (atts.retrieveEntry(L"padding-top", val))
+		CompileMargin(val, border_side::bs_top, true);
+	if (atts.retrieveEntry(L"padding-bottom", val))
+		CompileMargin(val, border_side::bs_bottom, true);
+
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
 		auto ch = childNodes[Rust];
@@ -2218,6 +2305,61 @@ void TWebNode::DrawBorder()
 		{
 			float bottom = location.bottom + (static_cast<float>(curThick) / 2.0f);
 			borderData.brush->DrawLine(D2D1::Point2F(location.left, bottom), D2D1::Point2F(location.right, bottom), board->GetStrokeStyle(curStyle), curThick);
+		}
+	}
+}
+
+/**
+ * Method: TWebNode::CompileMargin
+ * Purpose: Converts String data into a margin
+ * Parameters: const TSTring& marginString
+ *              border_side side - the border side to focus on
+ *              bool inner - inner border
+ * Returns: void
+ */
+void TWebNode::CompileMargin(const TString& marginString, border_side side, bool inner)
+{
+	TString atts(marginString);
+	TrecPointer<TDataArray<TString>> pieces = atts.split(L'\s');
+
+	if (!pieces->Size())
+		return;
+	D2D1_RECT_F* rect = inner ? &innerMargin : &outerMargin;
+
+	switch (side)
+	{
+	case border_side::bs_bottom:
+		rect->bottom = ConvertMeasurement(pieces->at(0));
+		break;
+	case border_side::bs_left:
+		rect->left = ConvertMeasurement(pieces->at(0));
+		break;
+	case border_side::bs_right:
+		rect->right = ConvertMeasurement(pieces->at(0));
+		break;
+	case border_side::bs_top:
+		rect->top = ConvertMeasurement(pieces->at(0));
+		break;
+	default:
+		switch (pieces->Size())
+		{
+		case 1:
+			rect->bottom = rect->left = rect->right = rect->top = ConvertMeasurement(pieces->at(0));
+			break;
+		case 2:
+			rect->top = rect->bottom = ConvertMeasurement(pieces->at(0));
+			rect->left = rect->right = ConvertMeasurement(pieces->at(1));
+			break;
+		case 3:
+			rect->top = ConvertMeasurement(pieces->at(0));
+			rect->left = rect->right = ConvertMeasurement(pieces->at(1));
+			rect->bottom = ConvertMeasurement(pieces->at(2));
+			break;
+		default:
+			rect->top = ConvertMeasurement(pieces->at(0));
+			rect->right = ConvertMeasurement(pieces->at(1));
+			rect->bottom = ConvertMeasurement(pieces->at(2));
+			rect->left = ConvertMeasurement(pieces->at(3));
 		}
 	}
 }
