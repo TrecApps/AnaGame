@@ -200,14 +200,15 @@ protected:
 
     // Methods designed to address Pacific Statement Types
 
-    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret);                    // Call when you need an expression analyzed
-    void ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret);           // Call for const, let, and var statements
-    void ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret);                     // Call for if, else, and else if statements
-    void ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret);                         // Call For while and do...while
-    void ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statement, UINT index, ReturnObject& ret);  // Call for for statements
+    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret,TrecSubPointer<TVariable, TcJavaScriptInterpretor> in
+        = TrecSubPointer<TVariable, TcJavaScriptInterpretor>());                                                         // Call when you need an expression analyzed
+    void ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT stringStart = 0);      // Call for const, let, and var statements
+    void ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret);                                     // Call for if, else, and else if statements
+    void ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret);                                         // Call For while and do...while
+    void ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statement, UINT index, ReturnObject& ret);                  // Call for for statements
     void ProcessTryCatchFinally(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, 
-        TrecPointer<CodeStatement> statement, ReturnObject& ret);                                       // Call for the Try/catch/finally blocks
-    void ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret);                        // Call for Switch Statements
+        TrecPointer<CodeStatement> statement, ReturnObject& ret);                                                       // Call for the Try/catch/finally blocks
+    void ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret);                                        // Call for Switch Statements
 
     // Helper Methods for the Process-Methods
     bool IsTruthful(TrecPointer<TVariable> var);

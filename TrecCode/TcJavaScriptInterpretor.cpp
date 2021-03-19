@@ -581,8 +581,9 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
 
     if (startStatement.StartsWith(L"for", false, true) || startStatement.StartsWith(L"for("))
     {
-        state->statementType = code_statement_type::cst_while;
+        state->statementType = code_statement_type::cst_for;
         state->statement.Delete(0, 3);
+        state->statement.Trim();
 
         PreProcess(ret, state->block);
         if (ret.returnCode) return;
@@ -753,11 +754,95 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
     PreProcess(ret, state->next);
 }
 
-void TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+void TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, TrecSubPointer<TVariable, TcJavaScriptInterpretor> in)
 {
+    UINT parenth = 0, square = 0, index = 0;
+    TDataArray<JavaScriptExpression2> exp;
+    TDataArray<TString> ops;
+    TString statementString(statement->statement.SubString(statement->statement.Find(L'(') + 1));
+    statementString.Trim();
+    TrecPointer<TDataArray<TString>> tokens;
+
+    TString retString;
+    switch (statement->statementType)
+    {
+    case code_statement_type::cst_for:
+        if (statementString.StartsWith(L"let", false, true) || statementString.StartsWith(L"var", false, true)
+            || statementString.StartsWith(L"const", false, true))
+        {
+            tokens = statementString.splitn(L"\s\t\n\r", 4);
+            retString.Set(tokens->at(0) + L'\s');
+            tokens->RemoveAt(0);
+        }
+        else
+            tokens = statementString.splitn(L"\s\t\n\r", 3);
+
+        if (tokens->Size() < 3)
+        {
+            PrepReturn(ret, L"Incomplete For statement!", L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
+            return;
+        }
+        CheckVarName(tokens->at(0), ret);
+        if (ret.returnCode)
+            return;
+        retString.Append(tokens->at(0));
+        
+        if (tokens->at(1).Compare(L"of") && tokens->at(1).Compare(L"in"))
+        {
+            PrepReturn(ret, L"Expected 'in' or 'of' token in for statement!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+            return;
+        }
+
+        parenth = 1;
+        index = statement->statement.Find(tokens->at(1), statement->statement.Find(tokens->at(0)) + tokens->at(0).GetSize());
+        ProcessExpression(parenth, square, index, statement, ret, exp, ops);
+
+        if (!ret.returnCode)
+            ret.errorMessage.Set(retString);
+        break;
+    case code_statement_type::cst_for_3:
+
+        if (statementString.StartsWith(L"let", false, true))
+        {
+            index = 3;
+            statement->statementType = code_statement_type::cst_let;
+        }
+        else if (statementString.StartsWith(L"var", false, true))
+        {
+            index = 3;
+            statement->statementType = code_statement_type::cst_var;
+        }
+        else if (statementString.StartsWith(L"const", false, true))
+        {
+            index = 5;
+            statement->statementType = code_statement_type::cst_const;
+        }
+        index += statement->statement.Find(L'(') + 1;
+
+        switch (code_statement_type::cst_for_3)
+        {
+        case code_statement_type::cst_const:
+        case code_statement_type::cst_var:
+        case code_statement_type::cst_let:
+            if (!in.Get())
+            {
+                PrepReturn(ret, L"INTERNAL ERROR! For Loop method should have proveded ProcessExpression Method with an interpretor!", L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
+                return;
+            }
+            in->ProcessAssignmentStatement(statement, ret, index);
+            break;
+        default:
+            ProcessExpression(parenth, square, index, statement, ret, exp, ops);
+        }
+        statement->statementType = code_statement_type::cst_for_3;
+
+        break;
+    default:
+        ProcessExpression(parenth, square, index, statement, ret, exp, ops);
+    }
 }
 
-void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT stringStart)
 {
     // Attempt to divide the statement up by ',', taking into account strings, into sub-statements
     TDataArray<TString> subStatements;  // Holds the sub-Statements
@@ -766,7 +851,7 @@ void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStateme
     WCHAR quote = L'\0', open = L'\0';
     UINT openStack = 0;
 
-    for (UINT Rust = 0; Rust < statement->statement.GetSize(); Rust++)
+    for (UINT Rust = stringStart; Rust < statement->statement.GetSize(); Rust++)
     {
         WCHAR ch = statement->statement[Rust];
 
@@ -1040,11 +1125,25 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
         TrecPointer<TVariable> var;
         TString varName(ret.errorMessage), indexName;
 
+        bool thisScope = true, makeMut = true;
+        if (varName.StartsWith(L"var", false, true) || varName.StartsWith(L"let", false, true))
+        {
+            thisScope = false;
+            varName.Delete(0, 3);
+        }
+        else if (varName.StartsWith(L"const", false, true))
+        {
+            thisScope = false;
+            makeMut = false;
+            varName.Delete(0, 5);
+        }
+        varName.Trim();
+
         for (UINT Rust = 0; container->GetValueAt(Rust, indexName, var); Rust++)
         {
             jsVar->variables.clear();
             TcVariableHolder holder;
-            holder.mut = true;
+            holder.mut = makeMut;
             holder.value = var;
             jsVar->variables.addEntry(varName, holder);
             ret = jsVar->Run();
@@ -1059,11 +1158,12 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
     }
     else
     {
-        ProcessExpression(statement, ret);
+       auto jsVar = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcJavaScriptInterpretor>(block->statementVar);
+        ProcessExpression(statement, ret, jsVar);
         if (ret.returnCode)
             return;
 
-        auto jsVar = dynamic_cast<TcJavaScriptInterpretor*>(block->statementVar.Get());
+        
 
         // To-Do: After implementing ProcessExpression, figure out how to respond to non-errors
 
@@ -1071,7 +1171,7 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
 
         // End To-Do: Now Run the Other two statements
 
-        if (jsVar)
+        if (jsVar.Get())
             jsVar->ProcessExpression(statements[index + 1], ret);
         else
             ProcessExpression(statements[index + 1], ret);
@@ -1080,7 +1180,7 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
 
         while (IsTruthful(ret.errorObject))
         {
-            if(jsVar)
+            if(jsVar.Get())
                 ret = jsVar->Run();
 
             // Check to see if either an error occured or a return statement has been reached.
@@ -1098,7 +1198,7 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
                     return;
             }
 
-            if (jsVar)
+            if (jsVar.Get())
             {
                 jsVar->ProcessExpression(statements[index + 2], ret);
                 if (ret.returnCode)
@@ -1816,8 +1916,44 @@ throughString:
 
 UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
 {
+    int startP = statement->statement.Find(L'(', index), endP = statement->statement.Find(L')');
 
+    if (startP == -1 || endP < startP)
+    {
+        ret.errorObject.Nullify();
+        ret.errorMessage.Empty();
+        return;
+    }
+    TString paramNames(statement->statement.SubString(startP + 1, endP));
+    TDataArray<TString> params;
 
+    paramNames.Trim();
+    if (paramNames.GetSize())
+    {
+        auto paramPieces = paramNames.split(L',');
+        for (UINT Rust = 0; Rust < paramPieces->Size(); Rust++)
+        {
+            TString iParam(paramPieces->at(Rust));
+            iParam.Trim();
+
+            //auto paramPieces = iParam.splitn(L'=', 2);
+
+            CheckVarName(iParam, ret);
+            if (ret.returnCode)
+            {
+                ret.returnCode = 0;
+                ret.errorObject.Nullify();
+                ret.errorMessage.Empty();
+                return;
+            }
+            params.push_back(iParam);
+        }
+    }
+    TrecSubPointer<TVariable, TcInterpretor> updatedSelf = TrecPointerKey::GetSubPointerFromSoft<>(self);
+    auto function = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(updatedSelf, environment);
+
+    function->SetParamNames(params);
+    function->SetStatements(statement->block);
 
     return 0;
 }
