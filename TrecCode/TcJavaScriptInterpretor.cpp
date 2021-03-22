@@ -245,10 +245,10 @@ void TcJavaScriptInterpretor::SetStatementToBlock(TrecPointer<CodeStatement>& st
     }
 }
 
-ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements)
+ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT start)
 {
     ReturnObject ret;
-    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    for (UINT Rust = start; Rust < statements.Size(); Rust++)
     {
         ret = Run(statements, Rust, TrecPointer<CodeStatement>());
         if (ret.returnCode)
@@ -304,7 +304,12 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
             ret.mode = return_mode::rm_return;
         break;
     case code_statement_type::cst_switch:
-
+        ProcessSwitch(statement, ret);
+        break;
+    case code_statement_type::cst_case:
+    case code_statement_type::cst_default:
+        if(statement->next.Get())
+            ret = Run(statements, index, statement->next);
         break;
     case code_statement_type::cst_throw:
         ProcessExpression(statement, ret);
@@ -471,7 +476,88 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         return;
     }
 
-    if (startStatement.StartsWith(L"else"))
+    if (startStatement.StartsWith(L"case", false, true))
+    {
+        state->statementType = code_statement_type::cst_case;
+
+        auto parseState = state;
+        while (parseState->statement.Find(L':') == -1 && parseState.Get())
+            parseState = parseState->next;
+
+        if (!parseState.Get())
+        {
+            ret.returnCode = ReturnObject::ERR_INCOMPLETE_STATEMENT;
+            ret.errorMessage.Set("'case' statement does not contain a propert ':' terminater!");
+            return;
+        }
+
+        int foundTok = parseState->statement.Find(L':');
+
+        TString nextStatement(parseState->statement.SubString(foundTok + 1).GetTrim());
+
+        if (nextStatement.GetSize())
+        {
+            // Cut the current Statement String short
+            parseState->statement.Set(parseState->statement.SubString(0, foundTok));
+
+            TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+            newState->statement.Set(nextStatement);
+            newState->lineStart = parseState->lineStart + parseState->statement.CountFinds(L"\n");
+            newState->lineEnd = newState->lineStart + nextStatement.CountFinds(L"\n");
+            newState->block = parseState->block;
+            parseState->block.RemoveAll();
+
+            newState->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parseState);
+            
+            newState->next = parseState->next;
+            parseState->next = newState;
+        }
+
+        PreProcess(ret, parseState->next);
+        return;
+    }
+
+    if (startStatement.StartsWith(L"default:") || startStatement.StartsWith(L"default", false, true))
+    {
+        state->statementType = code_statement_type::cst_default;
+        auto parseState = state;
+        while (parseState->statement.Find(L':') == -1 && parseState.Get())
+            parseState = parseState->next;
+
+        if (!parseState.Get())
+        {
+            ret.returnCode = ReturnObject::ERR_INCOMPLETE_STATEMENT;
+            ret.errorMessage.Set("'case' statement does not contain a propert ':' terminater!");
+            return;
+        }
+
+        int foundTok = parseState->statement.Find(L':');
+
+        TString nextStatement(parseState->statement.SubString(foundTok + 1).GetTrim());
+
+        if (nextStatement.GetSize())
+        {
+            // Cut the current Statement String short
+            parseState->statement.Set(parseState->statement.SubString(0, foundTok));
+
+            TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+            newState->statement.Set(nextStatement);
+            newState->lineStart = parseState->lineStart + parseState->statement.CountFinds(L"\n");
+            newState->lineEnd = newState->lineStart + nextStatement.CountFinds(L"\n");
+            newState->block = parseState->block;
+            parseState->block.RemoveAll();
+
+            newState->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parseState);
+
+            newState->next = parseState->next;
+            parseState->next = newState;
+        }
+
+        PreProcess(ret, parseState->next);
+        return;
+    }
+
+    if (startStatement.StartsWith(L"else", false, true))
     {
         if (!state->parent.Get())
         {
@@ -754,7 +840,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
     PreProcess(ret, state->next);
 }
 
-void TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, TrecSubPointer<TVariable, TcJavaScriptInterpretor> in)
+UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, TrecSubPointer<TVariable, TcJavaScriptInterpretor> in)
 {
     UINT parenth = 0, square = 0, index = 0;
     TDataArray<JavaScriptExpression2> exp;
@@ -764,6 +850,7 @@ void TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
     TrecPointer<TDataArray<TString>> tokens;
 
     TString retString;
+    UINT returnable = 0;
     switch (statement->statementType)
     {
     case code_statement_type::cst_for:
@@ -780,22 +867,22 @@ void TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
         if (tokens->Size() < 3)
         {
             PrepReturn(ret, L"Incomplete For statement!", L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
-            return;
+            return returnable;
         }
         CheckVarName(tokens->at(0), ret);
         if (ret.returnCode)
-            return;
+            return returnable;
         retString.Append(tokens->at(0));
         
         if (tokens->at(1).Compare(L"of") && tokens->at(1).Compare(L"in"))
         {
             PrepReturn(ret, L"Expected 'in' or 'of' token in for statement!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
-            return;
+            return returnable;
         }
 
         parenth = 1;
         index = statement->statement.Find(tokens->at(1), statement->statement.Find(tokens->at(0)) + tokens->at(0).GetSize());
-        ProcessExpression(parenth, square, index, statement, ret, exp, ops);
+        returnable += ProcessExpression(parenth, square, index, statement, ret, exp, ops);
 
         if (!ret.returnCode)
             ret.errorMessage.Set(retString);
@@ -832,14 +919,15 @@ void TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
             in->ProcessAssignmentStatement(statement, ret, index);
             break;
         default:
-            ProcessExpression(parenth, square, index, statement, ret, exp, ops);
+            returnable += ProcessExpression(parenth, square, index, statement, ret, exp, ops);
         }
         statement->statementType = code_statement_type::cst_for_3;
 
         break;
     default:
-        ProcessExpression(parenth, square, index, statement, ret, exp, ops);
+        returnable += ProcessExpression(parenth, square, index, statement, ret, exp, ops);
     }
+    return returnable;
 }
 
 void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT stringStart)
@@ -1291,6 +1379,97 @@ void TcJavaScriptInterpretor::ProcessTryCatchFinally(TDataArray<TrecPointer<Code
 
 void TcJavaScriptInterpretor::ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
+    UINT next = ProcessExpression(statement, ret);
+    if (ret.returnCode)
+        return;
+
+    while (statement->next.Get() && next)
+    {
+        statement = statement->next;
+        next--;
+    }
+
+    TrecPointer<TVariable> switchExpress = ret.errorObject;
+
+    // Right now, assume we do not have a default statement!
+    int defaultStatement = -1;
+    bool ran = false;
+    for (UINT Rust = 0; Rust < statement->block.Size(); Rust++)
+    {
+        bool def = false;
+        TrecPointer<CodeStatement> state = statement->block[Rust];
+        if (state->statementType == code_statement_type::cst_default)
+        {
+            if(defaultStatement != -1)
+            {
+                PrepReturn(ret, L"Second Default statement detected in 'switch' statement!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return;
+            }
+            defaultStatement = Rust;
+            continue;
+        }
+        if (state->statementType == code_statement_type::cst_default && ProcessCase(state, statement, switchExpress, def, ret))
+        {
+            ran = true;
+            ret = Run(statement->block, Rust);
+            break;
+        }
+        if (def)
+        {
+            if (defaultStatement == -1)
+                defaultStatement = Rust;
+            else
+            {
+                PrepReturn(ret, L"Second Default statement detected in 'switch' statement!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return;
+            }
+        }
+
+        if (ret.returnCode)
+            return;
+    }
+
+    if (!ran && defaultStatement > -1)
+    {
+        ret = Run(statement->block, defaultStatement);
+    }
+}
+
+bool TcJavaScriptInterpretor::ProcessCase(TrecPointer<CodeStatement> caseStatement, TrecPointer<CodeStatement> switchStatement, TrecPointer<TVariable> var, bool& hadDefault, ReturnObject& ret)
+{
+    bool seeking = true;
+    bool found = false;
+    hadDefault = false;
+    while (seeking)
+    {
+        if (caseStatement->statementType == code_statement_type::cst_default)
+        {
+            hadDefault = true;
+        }
+        else
+        {
+            UINT jumps = ProcessExpression(caseStatement, ret);
+            if (ret.returnCode)
+                return false;
+
+            if (IsEqual(ret.errorObject, var, true, true))
+            {
+                found = true;
+            }
+
+            while (caseStatement->next.Get() && jumps)
+            {
+                jumps--;
+                caseStatement = caseStatement->next;
+            }
+        }
+
+        caseStatement = caseStatement->next;
+        seeking = false;
+        if (caseStatement.Get() && (caseStatement->statementType == code_statement_type::cst_case || caseStatement->statementType == code_statement_type::cst_default))
+            seeking = true;
+    }
+    return found;
 }
 
 bool TcJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)

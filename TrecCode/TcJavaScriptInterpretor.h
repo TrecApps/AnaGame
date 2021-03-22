@@ -160,7 +160,7 @@ protected:
      * Parameters: void
      * Returns: ReturnObject - information about the Run
      */
-     ReturnObject Run(TDataArray<TrecPointer<CodeStatement>>& statements);
+     ReturnObject Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT start = 0);
 
      /**
       * Method: TcJavaScriptInterpretor::Run
@@ -200,7 +200,7 @@ protected:
 
     // Methods designed to address Pacific Statement Types
 
-    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret,TrecSubPointer<TVariable, TcJavaScriptInterpretor> in
+    UINT ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret,TrecSubPointer<TVariable, TcJavaScriptInterpretor> in
         = TrecSubPointer<TVariable, TcJavaScriptInterpretor>());                                                         // Call when you need an expression analyzed
     void ProcessAssignmentStatement(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT stringStart = 0);      // Call for const, let, and var statements
     void ProcessBasicFlow(TrecPointer<CodeStatement> statement, ReturnObject& ret);                                     // Call for if, else, and else if statements
@@ -209,6 +209,8 @@ protected:
     void ProcessTryCatchFinally(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, 
         TrecPointer<CodeStatement> statement, ReturnObject& ret);                                                       // Call for the Try/catch/finally blocks
     void ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret);                                        // Call for Switch Statements
+    bool ProcessCase(TrecPointer<CodeStatement> caseStatement, TrecPointer<CodeStatement> switchStatement,
+        TrecPointer<TVariable> var, bool& hadDefault, ReturnObject& ret);                                                                  // Call for case statements
 
     // Helper Methods for the Process-Methods
     bool IsTruthful(TrecPointer<TVariable> var);

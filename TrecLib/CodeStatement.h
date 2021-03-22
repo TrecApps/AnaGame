@@ -46,6 +46,8 @@ typedef enum class code_statement_type
     cst_finally,        // finally block
     cst_throw,          // manually initialte an exception
     cst_switch,         // Switch statement
+    cst_case,           // Case
+    cst_default,        // Default
     cst_match,          // Similar to a switch statement, used in Rust
 
     // flow controls
