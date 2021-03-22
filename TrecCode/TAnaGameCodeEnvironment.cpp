@@ -3,6 +3,7 @@
 #include "TJavaScriptInterpretor.h"
 #include <TFileNode.h>
 #include <TPromptControl.h>
+#include "TcJavaScriptInterpretor.h"
 
 TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shell)
 {
@@ -181,16 +182,46 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 	}
 	else if (path.GetSize() > 3 && path.EndsWith(L".js"))
 	{
-		auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(),
+		auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(),
 			TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
-		TFile actualFile(path, TFile::t_file_open_always | TFile::t_file_read);
-		UINT setCodeResult = javaScriptInterpretor->SetCode(actualFile);
+		ReturnObject ret;
+		javaScriptInterpretor->SetFile(file, ret);
 
-		if (setCodeResult)
+		if (ret.returnCode)
+		{
+			TString message;
+			message.Format(L"Java Script file Preprocessing exited with Error code: %d", ret.returnCode);
+			this->PrintLine(message);
+			this->PrintLine(ret.errorMessage);
+
+			for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+			{
+				this->Print(L'\t');
+				this->PrintLine(ret.stackTrace[Rust]);
+			}
 			return;
+		}
+		ret = javaScriptInterpretor->Run();
+		if (ret.returnCode)
+		{
+			TString message;
+			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", path.GetConstantBuffer(), ret.returnCode);
+			this->PrintLine(message);
+			this->PrintLine(ret.errorMessage);
 
-		auto runCodeResult = javaScriptInterpretor->Run();
-
+			for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+			{
+				this->Print(L'\t');
+				this->PrintLine(ret.stackTrace[Rust]);
+			}
+			return;
+		}
+		else
+		{
+			TString message;
+			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code 0", path.GetConstantBuffer());
+			this->PrintLine(message);
+		}
 		int e = 3;
 	}
 }
