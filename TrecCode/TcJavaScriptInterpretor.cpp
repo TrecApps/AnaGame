@@ -1988,10 +1988,12 @@ throughString:
 
     if (phrase.GetSize())
     {
-        if (phrase.Compare(L"null"))
+        if (!phrase.Compare(L"null"))
             var.Nullify();
-        else if(phrase.Compare(L"undefined"))
+        else if (!phrase.Compare(L"undefined"))
             var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+        else if (!phrase.Compare(L"this"))
+            var = methodObject;
         else if (var.Get())
         {
             if (var->GetVarType() == var_type::collection)
@@ -2026,6 +2028,11 @@ throughString:
             if (var->GetVarType() == var_type::interpretor)
             {
                 UINT curRet = uret;
+
+                if (attribute == 1)// calling new
+                {
+                    vThis = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_array);
+                }
                 uret += ProcessProcedureCall(parenth, square, index, vThis, var, statement, ret, expressions, ops);
 
                 if (ret.returnCode)
@@ -2078,6 +2085,12 @@ throughString:
         }
         else if (ch == L'(')
         {
+            if (attribute == 1)
+            {
+                // Expect to deal with a type
+                
+            }
+
             // Likely dealing with function defintion
             ret.errorObject.Nullify();
             UINT jumps = ProcessFunctionExpression(parenth, square, index, statement, ret, expressions, ops);
