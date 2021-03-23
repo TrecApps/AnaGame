@@ -1958,6 +1958,8 @@ throughString:
                     attribute = 2;
                 else if (!phrase.Compare(L"set"))
                     attribute = 3;
+                else if (!phrase.Compare(L"function"))
+                    attribute = 4;
                 else
                 {
                     TString message;
@@ -2074,6 +2076,78 @@ throughString:
 
             wholePhrase.AppendChar(L')');
         }
+        else if (ch == L'(')
+        {
+            // Likely dealing with function defintion
+            ret.errorObject.Nullify();
+            UINT jumps = ProcessFunctionExpression(parenth, square, index, statement, ret, expressions, ops);
+            if (ret.returnCode)
+                return;
+            if (ret.errorObject.Get())
+            {
+                bool worked = true;
+                switch (attribute)
+                {
+                case 1: // new
+
+                    break;
+                case 2: // get
+                case 3: // set
+                    wholePhrase.Delete(0, 3);
+                    wholePhrase.Trim();
+                    if (this->methodObject.Get())
+                    {
+                        if (methodObject->GetVarType() == var_type::collection)
+                        {
+                            auto coll = dynamic_cast<TContainerVariable*>(methodObject.Get());
+                            bool accessPres = false;
+                            auto access = coll->GetValue(wholePhrase, accessPres);
+                            if (!access.Get())
+                            {
+                                access = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAccessorVariable>();
+                                coll->SetValue(wholePhrase, access);
+                            }
+                            else if (access->GetVarType() != var_type::accessor)
+                            {
+                                TString message;
+                                message.Format(L"Cannot assign getter/setter to attribute %ws since it is already assigned and not an accessor!", wholePhrase.GetConstantBuffer());
+                                PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
+                            }
+                            auto tAccess = dynamic_cast<TAccessorVariable*>(access.Get());
+                            //if (attribute == 2)
+                            //    tAccess->SetGetter(ret.errorObject);
+                            //else
+                            //    tAccess->SetSetter(ret.errorObject);
+                        }
+                        else if (methodObject->GetVarType() == var_type::accessor)
+                        {
+                            auto tAccess = dynamic_cast<TAccessorVariable*>(methodObject.Get());
+                            //if (attribute == 2)
+                            //    tAccess->SetGetter(ret.errorObject);
+                            //else
+                            //    tAccess->SetSetter(ret.errorObject);
+                        }
+                        else
+                        {
+                            // To-Do: Handle Error
+                        }
+                    }
+                    else
+                    {
+                        // To-Do: Handle Error!
+                    }
+                
+                    break;
+                case 4: // Function
+                    wholePhrase.Delete(0, 8);
+                    wholePhrase.Trim();
+
+                }
+                var = ret.errorObject;
+                loopAround = false;
+            }
+        }
+
 
         if (ch == L'.' || ch == L'?')
         {
