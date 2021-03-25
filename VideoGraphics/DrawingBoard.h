@@ -401,6 +401,24 @@ public:
 	 */
 	TrecPointer<TWindowEngine> GetWindowEngine();
 
+	/**
+	 * Method: DrawingBoard::GetVideoPosition
+	 * Purpose: Retireves the video location of the frame
+	 * Parameters: UINT slot - the slot given
+	 *				D2D1_RECT_F& loc - the location
+	 * Returns: bool - whether the slot was valid
+	 */
+	bool GetVideoPosition(UINT slot, D2D1_RECT_F& loc);
+
+	/**
+	 * Method: DrawingBoard::SetVideoPosition
+	 * Purpose: Sets the video location of the frame
+	 * Parameters: UINT slot - the slot given
+	 *				D2D1_RECT_F& loc - the location given
+	 * Returns: bool - whether the slot was valid
+	 */
+	bool SetVideoPosition(UINT slot, const D2D1_RECT_F& loc);
+
 private:
 
 	TDataArray<TVideoSlot> slots;

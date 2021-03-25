@@ -586,7 +586,7 @@ void DrawingBoard::BeginDraw()
 	renderer2->BeginDraw();
 	renderer2->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 	isDrawing = true;
-	// ThreadRelease();
+	ThreadRelease();
 }
 
 /**
@@ -782,8 +782,9 @@ void DrawingBoard::PresentFrame(UINT slot)
 	// To-Do: Set Brush to use frame
 
 	frameBrush->FillRectangle(slots[slot].loc);
-
-	EndDraw();
+	if(!isDrawing)
+		EndDraw();
+	ThreadRelease();
 }
 
 void DrawingBoard::ReleaseFrame(UINT slot)
@@ -812,6 +813,32 @@ bool DrawingBoard::SetFrame(UINT slot, const D2D1_RECT_F& loc)
 TrecPointer<TWindowEngine> DrawingBoard::GetWindowEngine()
 {
 	return d3dEngine;
+}
+
+bool DrawingBoard::SetVideoPosition(UINT slot, const D2D1_RECT_F& loc)
+{
+	bool ret = false;
+	ThreadLock();
+	if (slot < slots.Size() || slots[slot].set)
+	{
+		ret = true;
+		slots[slot].loc = loc;
+	}
+	ThreadRelease();
+	return ret;
+}
+
+bool DrawingBoard::GetVideoPosition(UINT slot, D2D1_RECT_F& loc)
+{
+	bool ret = false;
+	ThreadLock();
+	if (slot < slots.Size() || slots[slot].set)
+	{
+		ret = true;
+		loc = slots[slot].loc;
+	}
+	ThreadRelease();
+	return ret;
 }
 
 TVideoSlot::TVideoSlot()

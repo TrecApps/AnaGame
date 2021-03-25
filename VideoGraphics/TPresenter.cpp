@@ -7,6 +7,8 @@ TPresenter::TPresenter(TrecPointer<TWindowEngine> engine, TrecPointer<DrawingBoa
 {
     this->engine = engine;
     this->board = board;
+
+    boardSlot = board->AddFrameSlot();
     m_nRefCount = 1;
     isShutdown = false;
 
@@ -49,10 +51,70 @@ STDMETHODIMP_(ULONG __stdcall) TPresenter::Release(void)
     return c;
 }
 
+STDMETHODIMP_(HRESULT __stdcall) TPresenter::GetVideoPosition(__RPC__out MFVideoNormalizedRect* pnrcSource, __RPC__out LPRECT prcDest)
+{
+    if (!prcDest)
+        return E_POINTER;
+    HRESULT ret = E_FAIL;
+    ThreadLock();
+    if (board.Get())
+    {
+        D2D1_RECT_F loc;
+        if(board->GetVideoPosition(boardSlot, loc))
+        {
+            prcDest->top = loc.top;
+            prcDest->left = loc.left;
+            prcDest->right = loc.right;
+            prcDest->bottom = loc.bottom;
+            ret = S_OK;
+        }
+        
+    }
+    ThreadRelease();
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TPresenter::RepaintVideo(void)
+{
+    HRESULT ret = E_FAIL;
+    ThreadLock();
+    if (board.Get())
+    {
+        board->PresentFrame(boardSlot);
+        ret = S_OK;
+    }
+    ThreadRelease();
+    return ret;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TPresenter::SetVideoPosition(__RPC__in_opt const MFVideoNormalizedRect* pnrcSource, __RPC__in_opt const LPRECT prcDest)
+{
+    if (!prcDest)
+        return E_POINTER;
+
+    ThreadLock();
+    HRESULT ret = E_FAIL;
+    if (board.Get())
+    {
+        D2D1_RECT_F add{ 0.0f,0.0f,0.0f,0.0f };
+        add.top = prcDest->top;
+        add.left = prcDest->left;
+        add.right = prcDest->right;
+        add.bottom = prcDest->bottom;
+        if (board->SetVideoPosition(boardSlot, add))
+            ret = S_OK;
+    }
+    ThreadRelease();
+    return ret;
+}
+
 void TPresenter::Shutdown()
 {
     TObject::ThreadLock();
+    
     isShutdown = true;
+    if (board.Get())
+        board->ReleaseFrame(boardSlot);
     board.Nullify();
     engine.Nullify();
     TObject::ThreadRelease();
