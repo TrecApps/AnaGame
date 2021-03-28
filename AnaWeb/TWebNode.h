@@ -532,12 +532,28 @@ protected:
     TString GetListPrepend();
 
     /**
-     * Mehtod: TWebNode::HandleRowSpan
+     * Method: TWebNode::HandleRowSpan
      * Purpose: Called by a node identifying as a table to allow row nodes to update cells that extend the rowspan
      * Parameters: void
      * Returns: void
      */
     void HandleRowSpan();
+
+    /**
+     * Method: TWebNode::HandleColGroup
+     * Purpose: Called by table to handle attributes provided by colgroups and col nodes
+     * Parameters: TDataArray<TDataMap<String>>& groups - collection of attribute to add
+     * Returns: void
+     */
+    void HandleColGroup(TDataArray<TDataMap<TString>>& groups);
+
+    /**
+     * Method: TWebNode::ProbeColAtts
+     * Purpose: Called By table to probe for column attributes 
+     * Parameters: TDataArray<TDataMap<String>>& groups - collection of attribute to add
+     * Returns: void
+     */
+    void ProbeColAtts(TDataArray<TDataMap<TString >> &groups);
 
     // Other Helper Methods
 
@@ -622,7 +638,7 @@ protected:
     /**
      * The attributes gained
      */
-    TDataMap<TString> attributes;
+    TDataMap<TString> attributes, exAttributes;
 
     /**
      * Hold the Drawing board being held

@@ -806,8 +806,17 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 	TrecPointer<TWebNode::TWebNodeContainer> currentTextNode, nonTextNode;
 
 	// Handle Scenario where this Element is a table
+	TDataArray<TDataMap<TString>> colOptions;
 	if (insideDisplay == WebNodeDisplayInside::wndi_table)
 	{
+
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		{
+			auto ch = childNodes[Rust];
+			if (ch.Get() && ch->webNode.Get())
+				ch->webNode->ProbeColAtts(colOptions);
+		}
+
 		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 		{
 			TrecPointer<TWebNode::TWebNodeContainer> ch = childNodes[Rust];
@@ -840,7 +849,7 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 			if (ch->type == TWebNode::NodeContainerType::nct_web && ch->webNode.Get())
 			{
 				ch->webNode->SetColumnsAndRows(columnSizes, rowSizes);
-
+				ch->webNode->HandleColGroup(colOptions);
 				if (ch->webNode->internalDisplay == WebNodeDisplayInternal::wndi_row)
 				{
 					ch->webNode->rowSpan = rowCount++;
@@ -946,6 +955,7 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 
 			if (insideDisplay == WebNodeDisplayInside::wndi_table && ch->webNode->internalDisplay == WebNodeDisplayInternal::wndi_row)
 			{
+				ch->webNode->HandleColGroup(colOptions);
 				if (ch->webNode->rowSpan < rowSizes.Size())
 				{
 					UINT h = ch->webNode->location.bottom - ch->webNode->location.top;
@@ -1626,6 +1636,12 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	{
 		TDataEntry<TString> entry;
 		if (attributes.GetEntryAt(Rust, entry))
+			atts.addEntry(entry.key, entry.object);
+	}
+	for (UINT Rust = 0; Rust < exAttributes.count(); Rust++)
+	{
+		TDataEntry<TString> entry;
+		if (exAttributes.GetEntryAt(Rust, entry))
 			atts.addEntry(entry.key, entry.object);
 	}
 
@@ -2356,6 +2372,71 @@ void TWebNode::HandleRowSpan()
 			{
 				cNode->webNode->HandleRowSpan();
 			}
+		}
+	}
+}
+
+/**
+ * Method: TWebNode::HandleColGroup
+ * Purpose: Called by table to handle attributes provided by colgroups and col nodes
+ * Parameters: TDataArray<TDataMap<String>>& groups - collection of attribute to add
+ * Returns: void
+ */
+void TWebNode::HandleColGroup(TDataArray<TDataMap<TString>>& groups)
+{
+	if (internalDisplay == WebNodeDisplayInternal::wndi_row)
+	{
+		for (UINT gCount = 0, cCount = 0; gCount < groups.Size() && cCount < childNodes.Size();gCount++)
+		{
+			TString entry;
+			UINT cSpan = 1;
+			if (groups[gCount].retrieveEntry(L"span", entry))
+			{
+				TString::ConvertStringToUint(entry, cSpan);
+			}
+
+			while (cSpan && cCount < childNodes.Size())
+			{
+				auto ch = childNodes[cCount++];
+				UINT spanSub = 1;
+				if (ch.Get() && ch->webNode.Get())
+				{
+					if (ch->webNode->columnSpan > spanSub)
+						spanSub = ch->webNode->columnSpan;
+
+
+					for (UINT Rust = 0; Rust < groups[gCount].count(); Rust++)
+					{
+						TDataEntry<TString> e;
+						if (groups[gCount].GetEntryAt(Rust, e))
+						{
+							ch->webNode->exAttributes.addEntry(e.key, e.object);
+						}
+					}
+				}
+
+				if (spanSub > cSpan)
+					cSpan = 0;
+				else
+					cSpan -= spanSub;
+			}
+		}
+	}
+}
+
+void TWebNode::ProbeColAtts(TDataArray<TDataMap<TString>>& groups)
+{
+	if (internalDisplay == WebNodeDisplayInternal::wndi_column)
+	{
+		groups.push_back(attributes);
+	}
+	else if (internalDisplay == WebNodeDisplayInternal::wndi_column_group)
+	{
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		{
+			auto ch = childNodes[Rust];
+			if (ch.Get() && ch->webNode.Get())
+				ch->webNode->ProbeColAtts(groups);
 		}
 	}
 }
