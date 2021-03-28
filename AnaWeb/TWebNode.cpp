@@ -77,7 +77,8 @@ static TString VoidElements[WEB_VOID_ELEMENT_COUNT] = {
 	TString(L"param"),
 	TString(L"source"),
 	TString(L"track"),
-	TString(L"wbr")
+	TString(L"wbr")//,
+	// TString(L"colgroup")
 };
 
 bool IsVoidElement(const TString& tag)
@@ -346,6 +347,7 @@ void GetListPrepend(TString& str, list_style style, signed char mode)
 
 // False string
 TrecPointer<TString> falseString = TrecPointerKey::GetNewTrecPointer<TString>(L"false");
+TrecPointer<TString> vertiString = TrecPointerKey::GetNewTrecPointer<TString>(L"Center");
 
 
 /**
@@ -364,7 +366,7 @@ TWebNode::TWebNode(TrecPointer<DrawingBoard> board)
 	isListItem = false;
 	location = innerMargin = outerMargin = D2D1::RectF();
 	columnSpan = rowSpan = 1;
-	listForward = true;
+	listForward = doShrink = true;
 }
 
 
@@ -398,13 +400,13 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win)
 		getAtts = false;
 		tagName.Set(tagName.SubString(0, tagName.Find(L'>')));
 	}
-
+	TString attribute, value;
 	if (getAtts)
 	{
 		WCHAR quote = L'\0';
 
 		bool attMode = true;
-		TString attribute, value;
+		
 		UINT backslashCount = 0;
 		while (start < html->GetSize() && (quote || html->GetAt(start) != L'>'))
 		{
@@ -433,7 +435,8 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win)
 				else if (IsWhitespace(ch))
 				{
 					attMode = true;
-					attributes.addEntry(attribute, value);
+					if (attribute.GetSize() && value.GetSize())
+						attributes.addEntry(attribute, value);
 					attribute.Empty();
 					value.Empty();
 				}
@@ -454,6 +457,9 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win)
 			return 0;
 		start++;
 	}
+	if (attribute.GetSize() && value.GetSize())
+		attributes.addEntry(attribute, value);
+
 	if (IsVoidElement(tagName))
 		return 0;
 	return ProcessInnerHtml(html, start, win);
@@ -742,9 +748,15 @@ void TWebNode::SetDisplay(const TString& display)
 	else if (display.CountFinds(L"table-cell"))
 		internalDisplay = WebNodeDisplayInternal::wndi_cell;
 	else if (display.CountFinds(L"table-column-group"))
+	{
+		doDisplay = false;
 		internalDisplay = WebNodeDisplayInternal::wndi_column_group;
+	}
 	else if (display.CountFinds(L"table-column"))
+	{
+		doDisplay = false;
 		internalDisplay = WebNodeDisplayInternal::wndi_column;
+	}
 	else if (display.CountFinds(L"table-caption"))
 		internalDisplay = WebNodeDisplayInternal::wndi_caption;
 	else // To Do: Add support for ruby values
@@ -783,7 +795,10 @@ void TWebNode::SetDisplay(const TString& display)
 UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window)
 {
 	// Go through each bit of the child elements, determining where they lay
-	this->location = location;
+	if (this->doDisplay && !IsVoidElement(tagName))
+		this->location = location;
+	else
+		location = { 0.0f,0.0f,0.0f,0.0f };
 	if(window)
 		this->win = window;
 	this->d3dEngine = d3dEngine;
@@ -818,13 +833,18 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 			columnSizes[Rust] = totalWidth / columnSizes.Size();
 		}
 
-		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		for (UINT Rust = 0, rowCount = 0; Rust < childNodes.Size(); Rust++)
 		{
 			TrecPointer<TWebNode::TWebNodeContainer> ch = childNodes[Rust];
 
 			if (ch->type == TWebNode::NodeContainerType::nct_web && ch->webNode.Get())
 			{
 				ch->webNode->SetColumnsAndRows(columnSizes, rowSizes);
+
+				if (ch->webNode->internalDisplay == WebNodeDisplayInternal::wndi_row)
+				{
+					ch->webNode->rowSpan = rowCount++;
+				}
 			}
 			
 		}
@@ -839,7 +859,7 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 	}
 
 
-	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	for (UINT Rust = 0, colRust = 0; Rust < childNodes.Size(); Rust++, colRust++)
 	{
 		TrecPointer<TWebNode::TWebNodeContainer> ch = childNodes[Rust];
 		if (!ch.Get() || ch->type == TWebNode::NodeContainerType::ntc_null)
@@ -890,7 +910,8 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 					if (internalDisplay != WebNodeDisplayInternal::wndi_row)
 					{
 						auto tLoc = nonTextNode->GetLocation();
-						location.top = tLoc.bottom;
+						if (tLoc.bottom < location.bottom) 
+							location.top = tLoc.bottom;
 					}
 					nonTextNode.Nullify();
 				}
@@ -899,22 +920,41 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 					// Specific code for Table Rows
 					auto tempLoc = location;
 					tempLoc.left = cellLeft;
-					tempLoc.right = cellLeft + columnSizes[Rust];
+					tempLoc.right = cellLeft;
+					
+					UINT rSpan = ch->webNode->rowSpan;
+					while (colRust < columnSizes.Size() && rSpan)
+					{
+						tempLoc.right += columnSizes[colRust];
+						rSpan--;
+						colRust++;
+					} 
+					
 					cellLeft = tempLoc.right;
 					UINT ret = ch->webNode->CreateWebNode(tempLoc, d3dEngine, window);
 					if (ret)
 						return ret;
 				}
-				else
+				else if(ch->webNode->doDisplay)
 				{
 					// COde for every other element type
 					UINT ret = ch->webNode->CreateWebNode(location, d3dEngine, window);
 					if (ret)
 						return ret;
 				}
-				nonTextNode = ch;
+				if(ch->webNode->doDisplay)
+					nonTextNode = ch;
 			}
-			
+			ch->webNode->ShrinkHeight();
+
+			if (insideDisplay == WebNodeDisplayInside::wndi_table && ch->webNode->internalDisplay == WebNodeDisplayInternal::wndi_row)
+			{
+				if (ch->webNode->rowSpan < rowSizes.Size())
+				{
+					UINT h = ch->webNode->location.bottom - ch->webNode->location.top;
+					rowSizes[ch->webNode->rowSpan] = h;
+				}
+			}
 
 			continue;
 		}
@@ -946,7 +986,7 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 			if(tempTextData.text.GetTrim().GetSize() && window)
 				currentTextNode->textDataList.push_back(tempTextData);
 		}
-
+		
 	}
 
 	if (currentTextNode.Get())
@@ -971,7 +1011,10 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 	{
 		ShrinkHeight();
 		if (insideDisplay == WebNodeDisplayInside::wndi_table)
+		{
 			ShrinkWidth(0);
+			HandleRowSpan();
+		}
 	}
 	return 0;
 }
@@ -1506,9 +1549,6 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	TString empty;
 	attributes.removeEntry(empty, empty);
 
-	// A Good Metric to assess whether CSS Compilation is necessary
-	if (attributes.count())
-		return;
 
 	// This is done to ensure that when events are activated, the node has a smaller map to retireve
 	// data from, thus boosting response times
@@ -1761,6 +1801,19 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	if (atts.retrieveEntry(L"padding-bottom", val))
 		CompileMargin(val, border_side::bs_bottom, true);
 
+	if (atts.retrieveEntry(L"rowspan", val) && internalDisplay != WebNodeDisplayInternal::wndi_row)
+	{
+		UINT rSpan = 0;
+		if (TString::ConvertStringToUint(val, rSpan))
+			rowSpan = rSpan;
+	}
+	if (atts.retrieveEntry(L"colspan", val))
+	{
+		UINT cSpan = 0;
+		if (TString::ConvertStringToUint(val, cSpan))
+			columnSpan = cSpan;
+	}
+
 	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
 	{
 		auto ch = childNodes[Rust];
@@ -1883,6 +1936,7 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 
 	TTextField* textField = dynamic_cast<TTextField*>(textNode->control.Get());
 	textField->addAttribute(L"|CanEdit", falseString);
+	textField->addAttribute(L"|VerticalAlignment", vertiString);
 	textField->onCreate(loc, TrecPointer<TWindowEngine>());
 	FormattingDetails det;
 	TString theText;
@@ -2008,7 +2062,7 @@ void TWebNode::PreEstablishTable()
 		return;
 	}
 
-	if (fullParent.Get())
+	if (fullParent.Get() && !IsVoidElement(tagName))
 		fullParent->AddColumn(columnSizes.Size());
 	
 
@@ -2016,6 +2070,8 @@ void TWebNode::PreEstablishTable()
 
 void TWebNode::ShrinkHeight()
 {
+	if (!doShrink)
+		return;
 	// To-Do: Update Method once minimum height is tracked
 
 	float curBottom = location.top;
@@ -2049,6 +2105,7 @@ void TWebNode::ShrinkHeight()
 	}
 	if (curBottom > location.top)
 		location.bottom = curBottom;
+
 }
 
 void TWebNode::ShrinkWidth(UINT minWidth)
@@ -2261,6 +2318,49 @@ TString TWebNode::GetListPrepend()
 	else
 		::GetListPrepend(listInfo, listStyle, -1);
 	return ret;
+}
+
+/**
+ * Mehtod: TWebNode::HandleRowSpan
+ * Purpose: Called by a node identifying as a table to allow row nodes to update cells that extend the rowspan
+ * Parameters: void
+ * Returns: void
+ */
+void TWebNode::HandleRowSpan()
+{
+
+
+	if (internalDisplay == WebNodeDisplayInternal::wndi_row)
+	{
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		{
+			auto cNode = childNodes[Rust];
+			if (cNode.Get() && cNode->type == NodeContainerType::nct_web && cNode->webNode.Get() && cNode->webNode->rowSpan > 1)
+			{
+				UINT rSpan = cNode->webNode->rowSpan;
+				UINT curRSpan = rowSpan;
+				cNode->webNode->location.bottom = cNode->webNode->location.top;
+				while (rSpan && curRSpan < rowSizes.Size())
+				{
+					cNode->webNode->location.bottom += rowSizes[curRSpan++];
+					rSpan--;
+				}
+				cNode->webNode->doShrink = false;
+				cNode->webNode->CreateWebNode(cNode->webNode->location, d3dEngine, this->win);
+			}
+		}
+	}
+	else
+	{
+		for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+		{
+			auto cNode = childNodes[Rust];
+			if (cNode.Get() && cNode->type == NodeContainerType::nct_web && cNode->webNode.Get())
+			{
+				cNode->webNode->HandleRowSpan();
+			}
+		}
+	}
 }
 
 /**

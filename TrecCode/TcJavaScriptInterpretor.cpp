@@ -914,7 +914,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
             if (!in.Get())
             {
                 PrepReturn(ret, L"INTERNAL ERROR! For Loop method should have proveded ProcessExpression Method with an interpretor!", L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
-                return;
+                return returnable;
             }
             in->ProcessAssignmentStatement(statement, ret, index);
             break;
@@ -2095,7 +2095,7 @@ throughString:
             ret.errorObject.Nullify();
             UINT jumps = ProcessFunctionExpression(parenth, square, index, statement, ret, expressions, ops);
             if (ret.returnCode)
-                return;
+                return 0;
             if (ret.errorObject.Get())
             {
                 bool worked = true;

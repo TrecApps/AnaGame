@@ -12,7 +12,7 @@ void fillWhiteChar()
 		return;
 
 	whiteChar.push_back(L' ');
-	whiteChar.push_back(L'\s');
+	// whiteChar.push_back(L'\s');
 	whiteChar.push_back(L'\n');
 	whiteChar.push_back(L'\r');
 	whiteChar.push_back(L'\t');

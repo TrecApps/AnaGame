@@ -531,6 +531,14 @@ protected:
      */
     TString GetListPrepend();
 
+    /**
+     * Mehtod: TWebNode::HandleRowSpan
+     * Purpose: Called by a node identifying as a table to allow row nodes to update cells that extend the rowspan
+     * Parameters: void
+     * Returns: void
+     */
+    void HandleRowSpan();
+
     // Other Helper Methods
 
     /**
@@ -662,5 +670,10 @@ protected:
      * Column and Row Spans
      */
     UCHAR columnSpan, rowSpan;
+
+    /**
+     * Whether the node should attempt to shrink height
+     */
+    bool doShrink;
 };
 

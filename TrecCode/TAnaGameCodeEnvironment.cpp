@@ -182,7 +182,7 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 	}
 	else if (path.GetSize() > 3 && path.EndsWith(L".js"))
 	{
-		auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(),
+		auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(TrecSubPointer<TVariable, TcInterpretor>(),
 			TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
 		ReturnObject ret;
 		javaScriptInterpretor->SetFile(file, ret);
