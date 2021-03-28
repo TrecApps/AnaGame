@@ -922,12 +922,9 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 					tempLoc.left = cellLeft;
 					tempLoc.right = cellLeft;
 					
-					UINT rSpan = ch->webNode->rowSpan;
-					while (colRust < columnSizes.Size() && rSpan)
+					if (colRust < columnSizes.Size())
 					{
 						tempLoc.right += columnSizes[colRust];
-						rSpan--;
-						colRust++;
 					} 
 					
 					cellLeft = tempLoc.right;
@@ -2153,10 +2150,10 @@ void TWebNode::ShrinkWidth(UINT minWidth)
 		auto tempLoc = location;
 		if (columnSizes.Size())
 			tempLoc.right = tempLoc.left + columnSizes[0];
-		for (UINT Rust = 0, C = 0; Rust < columnSizes.Size() && C < childNodes.Size(); Rust++)
+		for (UINT Rust = 0, C = 0; Rust < columnSizes.Size() && C < childNodes.Size(); C++)
 		{
 			UINT curWidth = tempLoc.right - tempLoc.left;
-			auto wnode = childNodes[Rust];
+			auto wnode = childNodes[C];
 			if (!wnode.Get())
 			{
 				childNodes.RemoveAt(Rust--);
@@ -2168,7 +2165,7 @@ void TWebNode::ShrinkWidth(UINT minWidth)
 			if (field)
 			{
 				field->Resize(tempLoc);
-				C++;
+				Rust++;
 			}
 			else if (node)
 			{
@@ -2177,18 +2174,18 @@ void TWebNode::ShrinkWidth(UINT minWidth)
 
 				for (; span < node->columnSpan; span++)
 				{
-					if (C + span < columnSizes.Size())
-						curWidth += columnSizes[C + span];
+					if ((Rust + span) < columnSizes.Size())
+						curWidth += columnSizes[Rust + span];
 				}
-				C += span;
+				Rust += span;
 				tempLoc.right = tempLoc.left + curWidth;
 				node->CreateWebNode(tempLoc, d3dEngine, nullptr);
 			}
 
-			if ((Rust + 1) < columnSizes.Size())
+			if ((Rust) < columnSizes.Size())
 			{
 				tempLoc.left = tempLoc.right;
-				tempLoc.right += columnSizes[Rust + 1];
+				tempLoc.right += columnSizes[Rust];
 			}
 		}
 	}
