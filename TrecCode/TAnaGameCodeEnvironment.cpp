@@ -100,37 +100,9 @@ UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 			// We have an Anascript file on our hands
 			auto interpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(), TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
 
-			TFile file(task, TFile::t_file_open_existing | TFile::t_file_read);
+			TrecPointer<TFileShell> jsFile = TFileShell::GetFileInfo(task);
+			Run(jsFile);
 
-
-			if (file.IsOpen())
-			{
-				interpretor->SetCode(file);
-
-				file.Close();
-
-				auto result = interpretor->Run();
-
-				if (this->shellRunner.Get())
-				{
-					TString resultStr(L"Program exited with code: ");
-					resultStr.AppendFormat(L"%i\n", result.returnCode);
-
-					if (result.returnCode)
-					{
-						resultStr.Append(result.errorMessage);
-
-						for (UINT Rust = 0; Rust < result.stackTrace.Size(); Rust++)
-						{
-							resultStr.AppendFormat(L"\n\t%ws", result.stackTrace[Rust].GetConstantBuffer());
-						}
-						resultStr.AppendChar(L'\n');
-					}
-
-
-					shellRunner->Print(resultStr);
-				}
-			}
 		}
 	}
 	return 0;
@@ -160,8 +132,10 @@ void TAnaGameCodeEnvironment::Run()
 void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 {
 	if (!file.Get() || file->IsDirectory())
+	{
+		this->PrintLine(L"Null File or a Directory has been provided!");
 		return;
-
+	}
 	auto path = file->GetPath();
 
 
