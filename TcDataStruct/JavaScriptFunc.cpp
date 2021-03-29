@@ -5,6 +5,7 @@
 #include "TObjectVariable.h"
 #include "TSpecialVariable.h"
 #include "TStringVariable.h"
+#include "TcNativeInterpretor.h"
 
 /**
  * Characters excempt from encoding by encodeURL
@@ -20,23 +21,23 @@ const TString componentEscapeExempt(L"-_.!~*'()");
  */
 const TString escapeEscapeExempt(L"@*_+-./");
 
-TMap<TNativeInterpretor> GetJavaScriptFunctions()
+TMap<TcNativeInterpretor> GetJavaScriptFunctions()
 {
-    TMap<TNativeInterpretor> jsFunctions;
+    TMap<TcNativeInterpretor> jsFunctions;
 
-    jsFunctions.addEntry(L"isFinite", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isFinite, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"isNaN", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::isNaN, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"parseFloat", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseFloat, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"parseInt", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::parseInt, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"encodeURI", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::EncodeURI, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"decodeURI", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::DecodeURI, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"encodeURIComponent", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::EncodeURIComponent, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"decodeURIComponent", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::DecodeURIComponent, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"isFinite", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::isFinite, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"isNaN", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::isNaN, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"parseFloat", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::parseFloat, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"parseInt", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::parseInt, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"encodeURI", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::EncodeURI, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"decodeURI", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::DecodeURI, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"encodeURIComponent", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::EncodeURIComponent, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"decodeURIComponent", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::DecodeURIComponent, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
 
-    jsFunctions.addEntry(L"escape", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::JsEscape, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"unescape", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::JsUnEscape, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"Number", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::Number, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
-    jsFunctions.addEntry(L"String", TrecPointerKey::GetNewTrecPointer<TNativeInterpretor>(JavaScriptFunc::String, TrecSubPointer<TVariable, TInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"escape", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::JsEscape, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"unescape", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::JsUnEscape, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"Number", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::Number, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
+    jsFunctions.addEntry(L"String", TrecPointerKey::GetNewTrecPointer<TcNativeInterpretor>(JavaScriptFunc::String, TrecSubPointer<TVariable, TcInterpretor>(), TrecPointer<TEnvironment>()));
 
     return jsFunctions;
 }
@@ -49,23 +50,23 @@ namespace JSObject
      * Purpose: Serves as Anagame's implementation of the Object.Assign method
      * Parameters: TDataArray<TrecPointer<TVariable>>& params - objects to work with
      *              TrecPointer<TEnvironment> env - environment function is being called in
-     *              ReportObject& ret - return information
+     *              ReturnObject& ret - return information
      * Returns: void
      * 
      * Note: Function uses the Native Function interface used by TNative Interpretors
      */
-    void JsObjectAssign(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+    void JsObjectAssign(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
     {
         if (params.Size() < 2)
         {
-            ret.returnCode = ReportObject::too_few_params;
+            ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
             ret.errorMessage.Set("Insufficient Params");
             return;
         }
 
         if (!params[1].Get() || params[1]->GetVarType() != var_type::collection)
         {
-            ret.returnCode = ReportObject::improper_type;
+            ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
             ret.errorMessage.Set("Target Object must be a JS Object type!");
             return;
         }
@@ -90,16 +91,16 @@ namespace JSObject
      * Purpose: Serves as Anagame's implementation of the Object.Create method
      * Parameters: TDataArray<TrecPointer<TVariable>>& params - objects to work with
      *              TrecPointer<TEnvironment> env - environment function is being called in
-     *              ReportObject& ret - return information
+     *              ReturnObject& ret - return information
      * Returns: void
      *
      * Note: Function uses the Native Function interface used by TNative Interpretors
      */
-    void JsObjectCreate(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+    void JsObjectCreate(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
     {
         if (params.Size() < 2)
         {
-            ret.returnCode = ReportObject::too_few_params;
+            ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
             ret.errorMessage.Set("Insufficient Params");
             return;
         }
@@ -109,11 +110,11 @@ namespace JSObject
 }
 
 
-void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (!params.Size())
     {
-        ret.returnCode = ReportObject::too_few_params;
+        ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
         ret.errorMessage.Set(L"'parseFloat' expected 1 parameter!");
         return;
     }
@@ -157,13 +158,13 @@ void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPo
     }
 }
 
-void JavaScriptFunc::isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
-    ReportObject r1, r2;
+    ReturnObject r1, r2;
 
     parseFloat(params, env, r1);
     
-    if (r1.returnCode == ReportObject::not_number  || r1.returnCode == ReportObject::too_few_params)
+    if (r1.returnCode == ReturnObject::ERR_NOT_NUMBER  || r1.returnCode == ReturnObject::ERR_TOO_FEW_PARMS)
     {
         ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(true);
     }
@@ -171,11 +172,11 @@ void JavaScriptFunc::isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPoint
         ret.errorObject = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(false);
 }
 
-void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (!params.Size())
     {
-        ret.returnCode = ReportObject::too_few_params;
+        ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
         ret.errorMessage.Set(L"'parseFloat' expected 1 parameter!");
         return;
     }
@@ -207,15 +208,15 @@ void JavaScriptFunc::parseFloat(TDataArray<TrecPointer<TVariable>>& params, Trec
         return;
     }
 
-    ret.returnCode = ReportObject::not_number;
+    ret.returnCode = ReturnObject::ERR_NOT_NUMBER;
     ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
 }
 
-void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (!params.Size())
     {
-        ret.returnCode = ReportObject::too_few_params;
+        ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
         ret.errorMessage.Set(L"'parseFloat' expected 1 parameter!");
         return;
     }
@@ -260,17 +261,17 @@ void JavaScriptFunc::parseInt(TDataArray<TrecPointer<TVariable>>& params, TrecPo
         return;
     }
 
-    ret.returnCode = ReportObject::not_number;
+    ret.returnCode = ReturnObject::ERR_NOT_NUMBER;
     ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
 
 }
 
-void JavaScriptFunc::EncodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::EncodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     TString val;
     if (!ConvertParamOneToString(val, params))
     {
-        ret.returnCode = ReportObject::too_few_params;
+        ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
 
         return;
     }
@@ -288,12 +289,12 @@ void JavaScriptFunc::EncodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecP
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val2);
 }
 
-void JavaScriptFunc::EncodeURIComponent(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::EncodeURIComponent(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     TString val;
     if (!ConvertParamOneToString(val, params))
     {
-        ret.returnCode = ReportObject::too_few_params;
+        ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
 
         return;
     }
@@ -311,12 +312,12 @@ void JavaScriptFunc::EncodeURIComponent(TDataArray<TrecPointer<TVariable>>& para
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val2);
 }
 
-void JavaScriptFunc::DecodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::DecodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     TString val;
     if (!ConvertParamOneToString(val, params))
     {
-        ret.returnCode = ReportObject::too_few_params;
+        ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
 
         return;
     }
@@ -335,7 +336,7 @@ void JavaScriptFunc::DecodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecP
             charVal = wcstol(val2.GetConstantBuffer(), nullptr, 16);
             if (!charVal)
             {
-                ret.returnCode = ReportObject::invalid_name;
+                ret.returnCode = ReturnObject::ERR_IMPROPER_NAME;
 
                 return;
             }
@@ -355,12 +356,12 @@ void JavaScriptFunc::DecodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecP
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val);
 }
 
-void JavaScriptFunc::DecodeURIComponent(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::DecodeURIComponent(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     TString val;
     if (!ConvertParamOneToString(val, params))
     {
-        ret.returnCode = ReportObject::too_few_params;
+        ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
 
         return;
     }
@@ -379,7 +380,7 @@ void JavaScriptFunc::DecodeURIComponent(TDataArray<TrecPointer<TVariable>>& para
             charVal = wcstol(val2.GetConstantBuffer(), nullptr, 16);
             if (!charVal)
             {
-                ret.returnCode = ReportObject::invalid_name;
+                ret.returnCode = ReturnObject::ERR_IMPROPER_NAME;
 
                 return;
             }
@@ -399,12 +400,12 @@ void JavaScriptFunc::DecodeURIComponent(TDataArray<TrecPointer<TVariable>>& para
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val);
 }
 
-void JavaScriptFunc::JsEscape(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::JsEscape(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
      TString val;
      if (!ConvertParamOneToString(val, params))
      {
-         ret.returnCode = ReportObject::too_few_params;
+         ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
 
          return;
      }
@@ -422,12 +423,12 @@ void JavaScriptFunc::JsEscape(TDataArray<TrecPointer<TVariable>>& params, TrecPo
      ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val2);
 }
 
-TC_DATA_STRUCT void JavaScriptFunc::JsUnEscape(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::JsUnEscape(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     TString val;
     if (!ConvertParamOneToString(val, params))
     {
-        ret.returnCode = ReportObject::too_few_params;
+        ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
 
         return;
     }
@@ -446,7 +447,7 @@ TC_DATA_STRUCT void JavaScriptFunc::JsUnEscape(TDataArray<TrecPointer<TVariable>
             charVal = wcstol(val2.GetConstantBuffer(), nullptr, 16);
             if (!charVal)
             {
-                ret.returnCode = ReportObject::invalid_name;
+                ret.returnCode = ReturnObject::ERR_IMPROPER_NAME;
 
                 return;
             }
@@ -466,7 +467,7 @@ TC_DATA_STRUCT void JavaScriptFunc::JsUnEscape(TDataArray<TrecPointer<TVariable>
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(val);
 }
 
-void JavaScriptFunc::Number(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::Number(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (!params.Size() || !params[0].Get())
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(0);
@@ -481,7 +482,7 @@ void JavaScriptFunc::Number(TDataArray<TrecPointer<TVariable>>& params, TrecPoin
     }
 }
 
-void JavaScriptFunc::String(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JavaScriptFunc::String(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size())
     {
@@ -497,8 +498,19 @@ TrecPointer<TVariable> JavaScriptFunc::GetJSObectVariable(TrecSubPointer<TVariab
 {
     auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
 
-    ret->SetValue(L"assign", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JSObject::JsObjectAssign, parent, env));
-    ret->SetValue(L"create", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JSObject::JsObjectCreate, parent, env));
+    // ret->SetValue(L"assign", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JSObject::JsObjectAssign, parent, env));
+    // ret->SetValue(L"create", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JSObject::JsObjectCreate, parent, env));
+
+
+    return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
+}
+
+TrecPointer<TVariable> JavaScriptFunc::GetJSObectVariable(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+{
+    auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+
+    ret->SetValue(L"assign", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSObject::JsObjectAssign, parent, env));
+    ret->SetValue(L"create", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSObject::JsObjectCreate, parent, env));
 
 
     return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);

@@ -164,6 +164,7 @@
     <ClInclude Include="Operator.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TClassStruct.h" />
+    <ClInclude Include="TcNativeInterpretor.h" />
     <ClInclude Include="TContainerVariable.h" />
     <ClInclude Include="TInterpretor.h" />
     <ClInclude Include="TNativeInterpretor.h" />
@@ -189,6 +190,7 @@
     </ClCompile>
     <ClCompile Include="TAccessorVariable.cpp" />
     <ClCompile Include="TClassStruct.cpp" />
+    <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
     <ClCompile Include="TInterpretor.cpp" />
     <ClCompile Include="TNativeInterpretor.cpp" />

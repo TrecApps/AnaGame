@@ -261,5 +261,8 @@ protected:
     void HandleConditional(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
     void HandleAssignment(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
     void HandleComma(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
+
+    // Sets up a console Object
+    TrecPointer<TVariable> GetJsConsole();
 };
 

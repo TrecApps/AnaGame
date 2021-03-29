@@ -28,6 +28,21 @@ TcVariableHolder::TcVariableHolder(const TcVariableHolder& copy)
 	value = copy.value;
 }
 
+/**
+ * Method: TcVariableHolder::TcVariableHolder
+ * Purpose: Param Constructor
+ * Parameters: bool mut - whether this variable is mutable or not
+ *              const TString& type - the type of variable this is (empty for 'any')
+ *              TrecPointer<TVariable> value - the actual value held
+ * Returns: New variable holder
+ */
+TcVariableHolder::TcVariableHolder(bool mut, const TString& type, TrecPointer<TVariable> value)
+{
+	this->mut = mut;
+	this->type = type;
+	this->value = value;
+}
+
 ///
 /// TcInterpretor 
 ///

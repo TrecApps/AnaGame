@@ -5,6 +5,8 @@
 #include <TPrimitiveVariable.h>
 #include <TAccessorVariable.h>
 #include <cassert>
+#include <JavaScriptFunc.h>
+#include "JsConsole.h"
 
 
 static TDataArray<TString> standardOperators;
@@ -103,6 +105,18 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
 
     collector.CollectStatement(statements);
     readyToRun = false;
+
+    if (isFirst)
+    {
+        // Initialize Objects meant for the main Interpretor
+
+        // Intitialize a Console Object
+        // Console Object
+        variables.addEntry(L"console", TcVariableHolder(false, L"", GetJsConsole()));
+        // Object Object
+        variables.addEntry(L"Object", TcVariableHolder(false, L"", JavaScriptFunc::GetJSObectVariable(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+
+    }
 }
 
 ReturnObject TcJavaScriptInterpretor::Run()
@@ -3168,4 +3182,30 @@ void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>
 
 void TcJavaScriptInterpretor::HandleComma(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret)
 {
+}
+
+TrecPointer<TVariable> TcJavaScriptInterpretor::GetJsConsole()
+{
+    TrecPointer<TVariable> console = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+
+    TContainerVariable* containerConsole = dynamic_cast<TContainerVariable*>(console.Get());
+
+    containerConsole->SetValue(L"counter", TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>((UINT)0));
+
+    auto fullSelf = TrecPointerKey::GetSubPointerFromSoft<TVariable, TcInterpretor>(self);
+
+    containerConsole->SetValue(L"assert", JsConsole::GetAssert(fullSelf, environment));
+    containerConsole->SetValue(L"clear", JsConsole::GetClear(fullSelf, environment));
+    containerConsole->SetValue(L"count", JsConsole::GetCount(fullSelf, environment));
+    containerConsole->SetValue(L"error", JsConsole::GetError(fullSelf, environment));
+    containerConsole->SetValue(L"group", JsConsole::GetGroup(fullSelf, environment));
+    containerConsole->SetValue(L"groupEnd", JsConsole::GetGroupEnd(fullSelf, environment));
+    containerConsole->SetValue(L"info", JsConsole::GetInfo(fullSelf, environment));
+    containerConsole->SetValue(L"log", JsConsole::GetLog(fullSelf, environment));
+    containerConsole->SetValue(L"time", JsConsole::GetTime(fullSelf, environment));
+    containerConsole->SetValue(L"timeEnd", JsConsole::GetTimeEnd(fullSelf, environment));
+    containerConsole->SetValue(L"warn", JsConsole::GetWarn(fullSelf, environment));
+
+
+    return console;
 }

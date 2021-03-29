@@ -2,10 +2,11 @@
 
 #include <TContainerVariable.h>
 #include <TPrimitiveVariable.h>
+#include <TcNativeInterpretor.h>
 
 namespace JsConsole
 {
-	void Log(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void Log(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 		// Not an error, but silently fail if we don't have an environment or text to display.
 		// Also, first parameter is expected to be the console object, which we can ignore
@@ -40,15 +41,15 @@ namespace JsConsole
 		}
 	}
 
-	void Assert(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void Assert(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 	}
 
-	void Clear(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void Clear(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 	}
 
-	void Count(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void Count(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 		if (!env.Get() || params.Size() < 1 || params.at(0).Get())
 			return;
@@ -72,99 +73,163 @@ namespace JsConsole
 
 	}
 
-	void Error(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void Error(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 	}
 
-	void Group(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void Group(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 	}
 
-	void GroupEnd(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void GroupEnd(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 	}
 
-	void Info(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void Info(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 	}
 
-	void Time(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void Time(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 	}
 
-	void TimeEnd(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void TimeEnd(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 	}
 
-	void Warn(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+	void Warn(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 	}
 
 
 	TrecPointer<TVariable> GetLog(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(Log, parent, env);
+		return  TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetAssert(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(Assert, parent, env);
+		return  TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetClear(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(Clear, parent, env);
+		return TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetCount(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(Count, parent, env);
+		return  TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetError(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(Error, parent, env);
+		return  TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetGroup(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(Group, parent, env);
+		return  TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetGroupEnd(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(GroupEnd, parent, env);
+		return  TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetInfo(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(Info, parent, env);
+		return  TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetTime(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(Time, parent, env);
+		return  TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetTimeEnd(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(TimeEnd, parent, env);
+		return  TrecPointer<TVariable>();
 	}
 
 
 	TrecPointer<TVariable> GetWarn(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
 	{
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(Warn, parent, env);
+		return TrecPointer<TVariable>();
 	}
 
+	TrecPointer<TVariable> GetLog(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(Log, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetAssert(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(Assert, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetClear(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(Clear, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetCount(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(Count, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetError(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(Error, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetGroup(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(Group, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetGroupEnd(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(GroupEnd, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetInfo(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(Info, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetTime(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(Time, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetTimeEnd(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(TimeEnd, parent, env);
+	}
+
+
+	TrecPointer<TVariable> GetWarn(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+	{
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(Warn, parent, env);
+	}
 
 }

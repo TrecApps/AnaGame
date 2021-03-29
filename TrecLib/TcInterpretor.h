@@ -47,6 +47,16 @@ public:
      * Returns: new Variable Holder
      */
     TcVariableHolder(const TcVariableHolder& copy);
+
+    /**
+     * Method: TcVariableHolder::TcVariableHolder
+     * Purpose: Param Constructor
+     * Parameters: bool mut - whether this variable is mutable or not
+     *              const TString& type - the type of variable this is (empty for 'any')
+     *              TrecPointer<TVariable> value - the actual value held
+     * Returns: New variable holder
+     */
+    TcVariableHolder(bool mut, const TString& type, TrecPointer<TVariable> value);
 };
 
 /**
@@ -374,6 +384,8 @@ public:
      * Returns: void
      */
     void PrepReturn(ReturnObject& ret, const TString& mess, const TString& stackMess, USHORT code, LONG64 line);
+
+
 protected:
 
     /**

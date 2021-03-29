@@ -9,7 +9,7 @@
 const LONG64 MAX_SAFE_INT = 9007199254740991;
 const LONG64 MIN_SAFE_INT = -9007199254740991;
 
- TrecPointer<TVariable> JsNumber::GetJsNumberObject(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
+ TrecPointer<TVariable> JsNumber::GetJsNumberObject(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
 {
      TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
 
@@ -19,23 +19,28 @@ const LONG64 MIN_SAFE_INT = -9007199254740991;
      ret->SetValue(L"NaN",TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan));
      ret->SetValue(L"INFINITY", TrecPointerKey::GetNewSelfTrecPointerAlt < TVariable, TPrimitiveVariable>(INFINITY));
 
-     ret->SetValue(L"isFinite", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::isFinite, parent, env));
-     ret->SetValue(L"isInteger", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::isInteger, parent, env));
-     ret->SetValue(L"isNaN", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::isNaN, parent, env));
-     ret->SetValue(L"isSafeInteger", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::isSafeInteger, parent, env));
-     ret->SetValue(L"toExponential", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::toExponential, parent, env));
-     ret->SetValue(L"toFixed", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::toFixed, parent, env));
-     ret->SetValue(L"toLocaleString", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::toLocaleString, parent, env));
-     ret->SetValue(L"toPrecision", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::toPrecision, parent, env));
-     ret->SetValue(L"toString", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::toString, parent, env));
-     ret->SetValue(L"valueOf", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsNumber::valueOf, parent, env));
+     ret->SetValue(L"isFinite", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::isFinite, parent, env));
+     ret->SetValue(L"isInteger", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::isInteger, parent, env));
+     ret->SetValue(L"isNaN", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::isNaN, parent, env));
+     ret->SetValue(L"isSafeInteger", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::isSafeInteger, parent, env));
+     ret->SetValue(L"toExponential", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::toExponential, parent, env));
+     ret->SetValue(L"toFixed", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::toFixed, parent, env));
+     ret->SetValue(L"toLocaleString", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::toLocaleString, parent, env));
+     ret->SetValue(L"toPrecision", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::toPrecision, parent, env));
+     ret->SetValue(L"toString", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::toString, parent, env));
+     ret->SetValue(L"valueOf", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsNumber::valueOf, parent, env));
 
      return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
 }
 
+ TrecPointer<TVariable> JsNumber::GetJsNumberObject(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
+ {
+     return TrecPointer<TVariable>();
+ }
 
 
-void JsNumber::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+
+void JsNumber::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2)
     {
@@ -47,7 +52,7 @@ void JsNumber::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<
     sParam.push_back(params[1]);
     JavaScriptFunc::isFinite(sParam, env, ret);
 }
-void JsNumber::isInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsNumber::isInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2)
     {
@@ -67,7 +72,7 @@ void JsNumber::isInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPointer
     else
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(true);
 }
-void JsNumber::isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsNumber::isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get())
     {
@@ -82,7 +87,7 @@ void JsNumber::isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEn
     }
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(false);
 }
-void JsNumber::isSafeInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsNumber::isSafeInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -107,11 +112,11 @@ void JsNumber::isSafeInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(false);
     }
 }
-void JsNumber::toExponential(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsNumber::toExponential(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (!params.Size())
     {
-        ret.returnCode = ReportObject::broken_reference;
+        ret.returnCode = ReturnObject::ERR_BROKEN_REF;
         ret.errorMessage.Set(L"Zero parameters provided to Number.toExponential method!");
         return;
     }
@@ -120,7 +125,7 @@ void JsNumber::toExponential(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 
     if (!number.Get())
     {
-        ret.returnCode = ReportObject::broken_reference;
+        ret.returnCode = ReturnObject::ERR_BROKEN_REF;
         ret.errorMessage.Set(L"Attempted to call Number.toExponential method on a null variable!");
         return;
     }
@@ -133,7 +138,7 @@ void JsNumber::toExponential(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 
     if (number->GetVarType() != var_type::primitive_formatted)
     {
-        ret.returnCode = ReportObject::improper_type;
+        ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
         ret.errorMessage.Set(L"Attempted to call Number.toExponential method on a non-number variable!");
         return;
     }
@@ -145,7 +150,7 @@ void JsNumber::toExponential(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
         UINT value = params[1]->Get4Value();
         if (value > 100)
         {
-            ret.returnCode = ReportObject::improper_type;
+            ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
             ret.errorMessage.Format(L"Error in call to Number.toExponential: number provided was %i, needs to be from 0 to 100!", value);
             return;
         }
@@ -159,11 +164,11 @@ void JsNumber::toExponential(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
     toString(newParams, env, ret);
 }
 
-void JsNumber::toFixed(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsNumber::toFixed(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (!params.Size())
     {
-        ret.returnCode = ReportObject::broken_reference;
+        ret.returnCode = ReturnObject::ERR_BROKEN_REF;
         ret.errorMessage.Set(L"Zero parameters provided to Number.toFixed method!");
         return;
     }
@@ -172,7 +177,7 @@ void JsNumber::toFixed(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<T
 
     if (!number.Get())
     {
-        ret.returnCode = ReportObject::broken_reference;
+        ret.returnCode = ReturnObject::ERR_BROKEN_REF;
         ret.errorMessage.Set(L"Attempted to call Number.toFixed method on a null variable!");
         return;
     }
@@ -185,7 +190,7 @@ void JsNumber::toFixed(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<T
 
     if (number->GetVarType() != var_type::primitive_formatted)
     {
-        ret.returnCode = ReportObject::improper_type;
+        ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
         ret.errorMessage.Set(L"Attempted to call Number.toFixed method on a non-number variable!");
         return;
     }
@@ -197,7 +202,7 @@ void JsNumber::toFixed(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<T
         UINT value = params[1]->Get4Value();
         if (value > 100)
         {
-            ret.returnCode = ReportObject::improper_type;
+            ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
             ret.errorMessage.Format(L"Error in call to Number.toFixed: number provided was %i, needs to be from 0 to 100!", value);
             return;
         }
@@ -209,15 +214,15 @@ void JsNumber::toFixed(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<T
     newParams.push_back(number);
     toString(newParams, env, ret);
 }
-void JsNumber::toLocaleString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsNumber::toLocaleString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
 
 }
-void JsNumber::toPrecision(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsNumber::toPrecision(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (!params.Size())
     {
-        ret.returnCode = ReportObject::broken_reference;
+        ret.returnCode = ReturnObject::ERR_BROKEN_REF;
         ret.errorMessage.Set(L"Zero parameters provided to Number.toPrecision method!");
         return;
     }
@@ -226,7 +231,7 @@ void JsNumber::toPrecision(TDataArray<TrecPointer<TVariable>>& params, TrecPoint
 
     if (!number.Get())
     {
-        ret.returnCode = ReportObject::broken_reference;
+        ret.returnCode = ReturnObject::ERR_BROKEN_REF;
         ret.errorMessage.Set(L"Attempted to call Number.toPrecision method on a null variable!");
         return;
     }
@@ -239,7 +244,7 @@ void JsNumber::toPrecision(TDataArray<TrecPointer<TVariable>>& params, TrecPoint
 
     if (number->GetVarType() != var_type::primitive_formatted)
     {
-        ret.returnCode = ReportObject::improper_type;
+        ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
         ret.errorMessage.Set(L"Attempted to call Number.toPrecision method on a non-number variable!");
         return;
     }
@@ -250,7 +255,7 @@ void JsNumber::toPrecision(TDataArray<TrecPointer<TVariable>>& params, TrecPoint
         UINT value = params[1]->Get4Value();
         if (value > 100)
         {
-            ret.returnCode = ReportObject::improper_type;
+            ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
             ret.errorMessage.Format(L"Error in call to Number.toPrecision: number provided was %i, needs to be from 0 to 100!", value);
             return;
         }
@@ -262,7 +267,7 @@ void JsNumber::toPrecision(TDataArray<TrecPointer<TVariable>>& params, TrecPoint
     newParams.push_back(number);
     toString(newParams, env, ret);
 }
-void JsNumber::toString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsNumber::toString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (!params.Size())
     {
@@ -276,4 +281,4 @@ void JsNumber::toString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<
     }
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(params[0]->GetString());
 }
-void JsNumber::valueOf(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) {  }
+void JsNumber::valueOf(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {  }
