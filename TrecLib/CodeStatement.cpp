@@ -189,9 +189,12 @@ int GetIndex(const TString& string, UINT startIndex, TDataArray<TString>& tokens
 		if (ret == -1)
 		{
 			ret = index;
-			token.Set(tokens[Rust]);
+			// 
 			if (index != -1)
+			{	
+				token.Set(tokens[Rust]);
 				end = index + tokens[Rust].GetSize();
+			}
 		}
 		else if (index != -1 && index < ret)
 		{
@@ -492,18 +495,24 @@ void StatementCollector::ParseNextMarker(statement_mode curMode, const TString& 
 
 	TString curQuote(quote);
 
+	TString sinQ, mulQ;
+
 	switch (curMode)
 	{
 	case statement_mode::sm_basic:
 		nextSingleComment = GetIndex(string, curIndex, singleLineComment, nextSingleComment_, quote);
 		nextMultiComStart = GetIndex(string, curIndex, multiLineCommentStart, nextMultiComStart_, quote);
-		nextSingleString = GetIndex(string, curIndex, singleString, nextSingleString_,quote);
-		nextMultiString = GetIndex(string, curIndex, multiString, nextMultiString_,quote);
+		nextSingleString = GetIndex(string, curIndex, singleString, nextSingleString_,sinQ);
+		nextMultiString = GetIndex(string, curIndex, multiString, nextMultiString_,mulQ);
 		DeduceNextMarker(nextSingleComment, nextMultiComStart, nextMultiComEnd, nextSingleString,nextMultiString,
 			nextSingleComment_, nextMultiComStart_, nextMultiComEnd_, nextSingleString_, nextMultiString_,
 			startIndex, endIndex, netMode);
 		if (netMode == statement_mode::sm_error)
 			netMode = curMode;
+		else if (netMode == statement_mode::sm_multi_str)
+			quote.Set(mulQ);
+		else if (netMode == statement_mode::sm_single_str)
+			quote.Set(sinQ);
 		return;
 	case statement_mode::sm_multi_com:
 		nextMultiComEnd = GetIndex(string, curIndex, multiLineCommentEnd, nextMultiComEnd_,quote);
@@ -513,6 +522,8 @@ void StatementCollector::ParseNextMarker(statement_mode curMode, const TString& 
 			startIndex = nextMultiComEnd;
 			endIndex = nextMultiComEnd_;
 		}
+		else
+			endIndex = string.GetSize();
 		return;
 	case statement_mode::sm_multi_str:
 		nextMultiString = string.Find(quote, curIndex, false);

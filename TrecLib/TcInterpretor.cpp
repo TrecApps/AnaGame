@@ -189,8 +189,11 @@ UINT TcInterpretor::GetType()
  */
 TcInterpretor::TcInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env)
 {
-	auto p = TrecPointerKey::GetTrecPointerFromSub<>(parentInterpretor);
-	parent = TrecPointerKey::GetSoftPointerFromTrec<TVariable>(p);
+	if (parentInterpretor.Get())
+	{
+		auto p = TrecPointerKey::GetTrecPointerFromSub<>(parentInterpretor);
+		parent = TrecPointerKey::GetSoftPointerFromTrec<TVariable>(p);
+	}
 	environment = env;
 }
 
