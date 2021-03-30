@@ -280,11 +280,13 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 					currentStatement->lineEnd = currentLine;
 					currentStatement->statement.Append(line.SubString(currentIndex, endBlock));
 					parentStatement->block.push_back(currentStatement);
+					currentStatement->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parentStatement);
 					currentStatement = parentStatement;
 					parentStatement = TrecPointerKey::GetTrecPointerFromSoft<CodeStatement>(parentStatement->parent);
 					currentIndex = endBlock_;
-					statements.push_back(currentStatement);
+					// statements.push_back(currentStatement);
 					currentStatement->next = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+					currentStatement->next->parent = TrecPointerKey::GetSoftPointerFromTrec<>(currentStatement);
 					currentStatement = currentStatement->next;
 					break;
 				case next_tok::nt_mode:
@@ -306,6 +308,12 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 				case next_tok::nt_open_block:
 					currentStatement->statement.Append(line.SubString(currentIndex, startBlock));
 					currentStatement->lineEnd = currentLine;
+					if (parentStatement.Get())
+					{
+						parentStatement->block.push_back(currentStatement);
+						currentStatement->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parentStatement);
+					}
+					else statements.push_back(currentStatement);
 					parentStatement = currentStatement;
 					currentStatement = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
 
@@ -321,7 +329,10 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 					currentStatement->statement.Append(line.SubString(currentIndex, statement_));
 					currentStatement->lineEnd = currentLine;
 					if (parentStatement.Get())
+					{
 						parentStatement->block.push_back(currentStatement);
+						currentStatement->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parentStatement);
+					}
 					else statements.push_back(currentStatement);
 					currentStatement = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
 					currentIndex = statement_;
@@ -365,7 +376,10 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 			{
 				currentStatement->lineEnd = currentLine;
 				if (parentStatement.Get())
+				{
 					parentStatement->block.push_back(currentStatement);
+					currentStatement->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parentStatement);
+				}
 				else statements.push_back(currentStatement);
 				currentStatement = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
 			}
@@ -575,6 +589,7 @@ void StatementCollector::ParseNextMarker(statement_mode curMode, const TString& 
 		}
 		else
 			netMode = statement_mode::sm_basic;
+		endIndex = string.GetSize();
 	}
 }
 

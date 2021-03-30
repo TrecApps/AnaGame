@@ -175,6 +175,23 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 			}
 			return;
 		}
+
+		javaScriptInterpretor->PreProcess(ret);
+		if (ret.returnCode)
+		{
+			TString message;
+			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", path.GetConstantBuffer(), ret.returnCode);
+			this->PrintLine(message);
+			this->PrintLine(ret.errorMessage);
+
+			for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+			{
+				this->Print(L'\t');
+				this->PrintLine(ret.stackTrace[Rust]);
+			}
+			return;
+		}
+
 		ret = javaScriptInterpretor->Run();
 		if (ret.returnCode)
 		{
