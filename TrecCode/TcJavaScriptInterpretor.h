@@ -189,6 +189,32 @@ protected:
     void PreProcess(ReturnObject& ret, TrecPointer<CodeStatement>& statement);
 
     /**
+     * Method: TcJavaScriptInterpretor::HandleSemiColon
+     * Purpose: Initiates the process of semi-colon insertion amongst the collected statements
+     * Parameters: void
+     * Returns: void
+     */
+    void HandleSemiColon();
+
+
+    /**
+     * Method: TcJavaScriptInterpretor::HandleSemiColon
+     * Purpose: Performs the process of semi-colon insertion amongst the collected statements
+     * Parameters: TDataArray<TrecPointer<CodeStatement>>& statements - the statements to update
+     * Returns: void
+     */
+    void HandleSemiColon(TDataArray<TrecPointer<CodeStatement>>& statements);
+
+    /**
+     * Method: TcJavaScriptInterpretor::HandleSemiColon
+     * Purpose: Performs the process of semi-colon insertion amongst the collected statements
+     * Parameters: TrecPointer<CodeStatement> statement - the statement to update
+     *              TDataArray<TrecPointer<CodeStatement>>& statements - the statement list to add statements to
+     *              bool isNext - whether the provided statement is a 'next' statement
+     * Returns: void
+     */
+    void HandleSemiColon(TrecPointer<CodeStatement> statement, TDataArray<TrecPointer<CodeStatement>>& statements, bool isNext = false);
+    /**
      * List of statements generated
      */
     TDataArray<TrecPointer<CodeStatement>> statements;

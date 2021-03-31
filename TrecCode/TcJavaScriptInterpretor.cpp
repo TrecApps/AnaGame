@@ -854,6 +854,142 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
     PreProcess(ret, state->next);
 }
 
+void TcJavaScriptInterpretor::HandleSemiColon()
+{
+    HandleSemiColon(statements);
+}
+
+void TcJavaScriptInterpretor::HandleSemiColon(TDataArray<TrecPointer<CodeStatement>>& statements)
+{
+    TDataArray<TrecPointer<CodeStatement>> tempStatements;
+
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    {
+        TrecPointer<CodeStatement> state = statements.at(Rust);
+
+        if (!state.Get())
+            continue;
+
+        
+        HandleSemiColon(state, tempStatements);
+        HandleSemiColon(tempStatements);
+    }
+
+    statements = tempStatements;
+}
+
+void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, TDataArray<TrecPointer<CodeStatement>>& statements, bool isNext)
+{
+    TString state1, state2;
+
+    state->statement.Trim();
+
+    bool onState1 = true;
+    WCHAR quote = L'\0';
+    UINT backSlash = 0;
+    UINT C = 0;
+    UINT line = state->lineStart;
+
+    probeStatementString:
+    for (; C < state->statement.GetSize(); C++)
+    {
+        TString* curState = onState1 ? &state1 : &state2;
+        WCHAR ch = state->statement[C];
+        bool addChar = true;
+        switch (ch)
+        {
+        case L'\'':
+        case L'\"':
+        case L'`':
+            if (quote && !(backSlash % 2))
+                quote = L'\0';
+            else if (!quote)
+                quote = ch;
+            break;
+        case L'\\':
+            if (quote)
+                backSlash++;
+            break;
+        case L'\r':
+            if (!quote)
+                addChar = false;
+        }
+
+        if (addChar)
+            curState->AppendChar(ch);
+        if (backSlash && ch != L'\\')
+            backSlash = 0;
+
+        if (ch == L'\n')
+        {
+            if (onState1)
+                onState1 = false;
+            else
+                break;
+        }
+    }
+
+    state1.Trim();
+    state2.Trim();
+
+    if (state1.GetSize() && !state2.GetSize())
+    {
+        // We are mostly done. Just create a Code Statement with the features of the current
+        TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+        newState->statement.Set(state1);
+        newState->lineEnd = newState->lineStart = line;
+        newState->block = state->block;
+
+        newState->parent = state->parent;
+        
+        newState->next = state->next;
+        if(!isNext)
+            statements.push_back(newState);
+        if (newState->next.Get())
+            HandleSemiColon(newState->next, statements, true);
+        return;
+    }
+    else if (state1.GetSize() && state2.GetSize())
+    {
+        WCHAR ch1 = state1[state1.GetSize() - 1];
+        WCHAR ch2 = state2[0];
+        bool splitSemi = false;
+
+        if ((IsCharAlphaNumericW(ch1) || ch1 == L'_') && (IsCharAlphaNumericW(ch2) || ch2 == L'_'))
+            splitSemi = true;
+        if (state1.EndsWith(L"return") ||
+            state1.EndsWith(L"continue") ||
+            state1.EndsWith(L"break") ||
+            state1.EndsWith(L"throw") ||
+            state1.EndsWith(L"yield") ||
+            state1.EndsWith(L"++") ||
+            state1.EndsWith(L"--"))
+            splitSemi = true;
+
+
+        if (splitSemi)
+        {
+            // Initialite semiColon insertion
+            state1.AppendChar(L';');
+            TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+            newState->statement.Set(state1);
+            newState->lineEnd = newState->lineStart = line;
+            newState->block = state->block;
+
+            newState->parent = state->parent;
+            if (!isNext)
+                statements.push_back(newState);
+            // If this was a 'next' statement, make sure it is not this time around
+            isNext = false;
+
+            state1.Set(state2);
+        }
+        else
+            state1.Append(state2);
+    }
+    goto probeStatementString;
+}
+
 UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, TrecSubPointer<TVariable, TcJavaScriptInterpretor> in)
 {
     UINT parenth = 0, square = 0, index = 0;
