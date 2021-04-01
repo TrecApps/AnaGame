@@ -270,6 +270,8 @@ protected:
         TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, ReturnObject& ret,
         TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
 
+    void ProcessFunctionExpression(TrecPointer<CodeStatement> statement, ReturnObject& obj);
+
     // Operator Handler Methods
     void HandlePreExpr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
     void HandleExponents(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);

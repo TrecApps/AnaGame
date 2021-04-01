@@ -15,6 +15,8 @@ static TrecPointer<ObjectOperator> jsOperators;
 
 static TrecPointer<TVariable> one;
 
+static TDataArray<WCHAR> noSemiColonEnd;
+
 bool IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEqual, bool castType)
 {
     bool eqVal = false, eqType;
@@ -194,6 +196,11 @@ TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInt
         standardOperators.push_back(L"|=");
     }
 
+    if (!noSemiColonEnd.Size())
+    {
+        noSemiColonEnd.push_back(L',');
+    }
+
     if (!one.Get())
     {
         one = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<int>(1));
@@ -305,7 +312,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
 
         break;
     case code_statement_type::cst_function:
-
+        ProcessFunctionExpression(statement, ret);
         break;
     case code_statement_type::cst_if:
         ProcessBasicFlow(statement, ret);
@@ -927,12 +934,17 @@ void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, 
             if (onState1)
                 onState1 = false;
             else
+            {
+                C++;
                 break;
+            }
         }
     }
 
     state1.Trim();
     state2.Trim();
+    if (!state2.GetSize() && C < state->statement.GetSize())
+        goto probeStatementString;
 
     if (state1.GetSize() && !state2.GetSize())
     {
@@ -972,6 +984,16 @@ void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, 
             state1.EndsWith(L"--"))
             splitSemi = true;
 
+        if (state1.EndsWith(L"]") || state1.EndsWith(L')'))
+        {
+            splitSemi = true;
+            for (UINT Rust = 0; Rust < noSemiColonEnd.Size() && splitSemi; Rust++)
+            {
+                if (ch2 == noSemiColonEnd[Rust])
+                    splitSemi = false;
+            }
+        }
+
 
         if (splitSemi)
         {
@@ -999,6 +1021,7 @@ void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, 
         }
         else
             state1.Append(state2);
+        state2.Empty();
     }
     goto probeStatementString;
 }
@@ -2383,7 +2406,8 @@ UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& squ
 
     function->SetParamNames(params);
     function->SetStatements(statement->block);
-
+    ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(function);
+    ret.errorMessage.Set(statement->statement.SubString(index, startP).GetTrim());
     return 0;
 }
 
@@ -2501,6 +2525,34 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
 
     // Return how many statments were jumped
     return nextRet;
+}
+
+void TcJavaScriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatement> statement, ReturnObject& obj)
+{
+    UINT p = 0, s = 0, i = 0;
+    TDataArray<JavaScriptExpression2> e;
+    TDataArray<TString> o;
+    ProcessFunctionExpression(p, s, i, statement, obj, e, o);
+
+    if (!obj.errorObject.Get())
+    {
+        TString message;
+        message.Format(L"Statement '%ws' Failed to generate a function variable!", statement->statement.GetConstantBuffer());
+        PrepReturn(obj, message, L"", ReturnObject::ERR_INCOMPLETE_STATEMENT ,statement->lineStart);
+        return;
+    }
+    if (!obj.errorMessage.GetSize())
+    {
+        TString message;
+        message.Format(L"Statement '%ws' Failed to provide a function name!", statement->statement.GetConstantBuffer());
+        PrepReturn(obj, message, L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
+        return;
+    }
+    CheckVarName(obj.errorMessage, obj);
+    if (obj.returnCode)
+        return;
+
+    UpdateVariable(obj.errorMessage, obj.errorObject, true);
 }
 
 void TcJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ro)
