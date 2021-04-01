@@ -287,7 +287,7 @@ void TcInterpretor::PrepReturn(ReturnObject& ret, const TString& mess, const TSt
 	if (line > -1)
 	{
 		TString stack;
-		stack.Format(L"%ws line %d", line);
+		stack.Format(L"%ws line %d", stackMess.GetConstantBuffer(), line);
 		ret.stackTrace.push_back(stack);
 	}
 }

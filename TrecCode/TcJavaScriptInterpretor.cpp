@@ -140,6 +140,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret)
 {
     if (readyToRun)
         return;
+    this->HandleSemiColon();
     PreProcess(ret, statements);
     if (!ret.returnCode)
         readyToRun = true;
@@ -867,12 +868,13 @@ void TcJavaScriptInterpretor::HandleSemiColon(TDataArray<TrecPointer<CodeStateme
     {
         TrecPointer<CodeStatement> state = statements.at(Rust);
 
-        if (!state.Get())
+        if (!state.Get() || !state->statement.GetTrim().GetSize())
             continue;
 
         
         HandleSemiColon(state, tempStatements);
-        HandleSemiColon(tempStatements);
+        if (state->block.Size())
+            HandleSemiColon(state->block);
     }
 
     statements = tempStatements;
@@ -935,18 +937,22 @@ void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, 
     if (state1.GetSize() && !state2.GetSize())
     {
         // We are mostly done. Just create a Code Statement with the features of the current
-        TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
-        newState->statement.Set(state1);
-        newState->lineEnd = newState->lineStart = line;
-        newState->block = state->block;
+        if (!isNext)
+        {
+            TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+            newState->statement.Set(state1);
+            newState->lineEnd = newState->lineStart = line;
+            newState->block = state->block;
 
-        newState->parent = state->parent;
-        
-        newState->next = state->next;
-        if(!isNext)
+            newState->parent = state->parent;
+
+            newState->next = state->next;
             statements.push_back(newState);
-        if (newState->next.Get())
-            HandleSemiColon(newState->next, statements, true);
+        }
+        else
+        {
+            state->statement.Set(state1);
+        }
         return;
     }
     else if (state1.GetSize() && state2.GetSize())
@@ -970,15 +976,22 @@ void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, 
         if (splitSemi)
         {
             // Initialite semiColon insertion
-            state1.AppendChar(L';');
-            TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
-            newState->statement.Set(state1);
-            newState->lineEnd = newState->lineStart = line;
-            newState->block = state->block;
-
-            newState->parent = state->parent;
             if (!isNext)
+            {
+                TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+                newState->statement.Set(state1);
+                newState->lineEnd = newState->lineStart = line;
+                newState->block = state->block;
+
+                newState->parent = state->parent;
+
+                newState->next = state->next;
                 statements.push_back(newState);
+            }
+            else
+            {
+                state->statement.Set(state1);
+            }
             // If this was a 'next' statement, make sure it is not this time around
             isNext = false;
 
