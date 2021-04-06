@@ -290,7 +290,7 @@ TrecSubPointer<Page, WebPage> TWebWindow::GetWebPage(const TString& url)
 
         TrecPointer<TFile> file = TrecPointerKey::GetNewTrecPointer<TFile>(index->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
         ret->SetEnvironment(envGenerator->GetEnvironment(TFileShell::GetFileInfo(file->GetFileDirectory())));
-
+        ret->directory.Set(file->GetFileDirectory());
         ret->SetAnaface(file, TrecPointer < EventHandler>());
     }
     else if (url.StartsWith(L"http://"))

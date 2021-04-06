@@ -305,6 +305,8 @@ public:
 	TString GetTitle();
 
 protected:
+	TString directory;
+
 	TString SetUpCSS();
 
 	TrecPointer<TArray<styleTable>> styles;

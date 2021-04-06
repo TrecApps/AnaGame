@@ -139,7 +139,7 @@ static ListStyleString listStyleStrings[WEB_LIST_STYLE_COUNT] = {
 	{TString(L"upper-roman"), list_style::ls_upper_roman},
 };
 
-float ConvertMeasurement(TString& atts)
+float TWebNode::ConvertMeasurement(TString& atts)
 {
 	UINT dpi = GetDpiForSystem();
 	float dpif = static_cast<float>(dpi);
@@ -185,7 +185,7 @@ float ConvertMeasurement(TString& atts)
 			sizeVal = sizeVal * 2.54 / dpif;
 			break;
 		case WebSizeUnit::wsu_em:
-
+			sizeVal = sizeVal * thisTextData.fontSize;
 			break;
 		case WebSizeUnit::wsu_in:
 			sizeVal = sizeVal / dpif;
@@ -460,6 +460,8 @@ UINT TWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win)
 	if (attribute.GetSize() && value.GetSize())
 		attributes.addEntry(attribute, value);
 
+	attributes.retrieveEntry(L"class", this->nodeClass);
+	attributes.retrieveEntry(L"id", this->id);
 	if (IsVoidElement(tagName))
 		return 0;
 	return ProcessInnerHtml(html, start, win);
@@ -531,8 +533,6 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 
 	start = html->Find(L'>', start) + 1;
 
-	attributes.retrieveEntry(L"class", this->nodeClass);
-	attributes.retrieveEntry(L"id", this->id);
 
 	return 2;
 }
@@ -796,7 +796,16 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 {
 	// Go through each bit of the child elements, determining where they lay
 	if (this->doDisplay && !IsVoidElement(tagName))
+	{
+		location.top += outerMargin.top;
+		location.left += outerMargin.left;
+		location.right -= outerMargin.right;
+
 		this->location = location;
+		location.top += innerMargin.top + static_cast<float>(borderData.GetBorderThickness(border_side::bs_top));
+		location.left += innerMargin.left + static_cast<float>(borderData.GetBorderThickness(border_side::bs_left));
+		location.right -= innerMargin.right - static_cast<float>(borderData.GetBorderThickness(border_side::bs_bottom));
+	}
 	else
 		location = { 0.0f,0.0f,0.0f,0.0f };
 	if(window)
@@ -958,7 +967,8 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 				ch->webNode->HandleColGroup(colOptions);
 				if (ch->webNode->rowSpan < rowSizes.Size())
 				{
-					UINT h = ch->webNode->location.bottom - ch->webNode->location.top;
+					auto chLoc = ch->webNode->GetLocation();
+					UINT h = chLoc.bottom - chLoc.top;
 					rowSizes[ch->webNode->rowSpan] = h;
 				}
 			}
@@ -1028,7 +1038,12 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 
 D2D1_RECT_F TWebNode::GetLocation()
 {
-	return location;
+	D2D1_RECT_F ret = location;
+	ret.bottom += outerMargin.bottom;
+	ret.right -= outerMargin.right;
+	ret.left += outerMargin.left;
+	ret.top -= outerMargin.top;
+	return ret;
 }
 
 /**
@@ -1950,6 +1965,7 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 	TTextField* textField = dynamic_cast<TTextField*>(textNode->control.Get());
 	textField->addAttribute(L"|CanEdit", falseString);
 	textField->addAttribute(L"|VerticalAlignment", vertiString);
+	textField->addAttribute(L"|AutoGenContent", falseString);
 	textField->onCreate(loc, TrecPointer<TWindowEngine>());
 	FormattingDetails det;
 	TString theText;
@@ -2117,7 +2133,7 @@ void TWebNode::ShrinkHeight()
 		}
 	}
 	if (curBottom > location.top)
-		location.bottom = curBottom;
+		location.bottom = curBottom + innerMargin.bottom;
 
 }
 

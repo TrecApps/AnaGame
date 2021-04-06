@@ -19,6 +19,16 @@ public:
      */
     TString ProcessHtml(TrecPointer<TFile> file, const TString& data);
 
+    /**
+     * Method: TObject::getVariableValueStr
+     * Purpose: Returns the String value of a TObjects given variable, meant for databinding
+     * Parameters: TString& varName - the name of the variable to seek
+     * Returns: TString - the variable value in String form, or an empty string if variable does not exist
+     *
+     * Attributes: override
+     */
+    virtual TString getVariableValueStr(const TString& varName)override;
+
 private:
     TrecPointer<TEnvironment> env;
 

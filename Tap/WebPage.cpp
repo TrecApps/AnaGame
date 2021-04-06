@@ -236,10 +236,24 @@ TString WebPage::SetUpCSS()
 		for (TrecPointer<HtmlLink> link = header->GetLink(linkIndex++); link.Get(); link = header->GetLink(linkIndex++))
 		{
 			TString relation(link->getVariableValueStr(L"rel"));
+			TString val(link->getVariableValueStr(L"href"));
 
 			if (!relation.CompareNoCase(L"stylesheet"))
 			{
 				// To-Do: Manage retrieval of Stylesheets in a URL
+				TString fullPath(directory + val);
+				TFile tcssFile(fullPath, TFile::t_file_read | TFile::t_file_open_always);
+
+				if (!tcssFile.IsOpen())
+				{
+
+				}
+
+				if (tcssFile.IsOpen())
+				{
+					cssFiles.push_back(TFileShell::GetFileInfo(tcssFile.GetFilePath()));
+					tcssFile.Close();
+				}
 			}
 		}
 

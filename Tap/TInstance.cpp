@@ -38,7 +38,7 @@ TInstance::TInstance(TString& name, TString& winClass, UINT style, HWND parent, 
 
 	TrecComPointer<ID2D1Factory1>::TrecComHolder factoryHolder;
 
-	D2D1_FACTORY_OPTIONS d2dDebugLevel = { D2D1_DEBUG_LEVEL_ERROR };
+	D2D1_FACTORY_OPTIONS d2dDebugLevel = { D2D1_DEBUG_LEVEL_WARNING };
 
 	D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, d2dDebugLevel, factoryHolder.GetPointerAddress());
 	factory = factoryHolder.Extract();

@@ -246,6 +246,8 @@ protected:
 
 
 public:
+    float ConvertMeasurement(TString& atts);
+
     /**
      * Method: TWebNode::TWebNode
      * Purpose: Constructor

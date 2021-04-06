@@ -382,5 +382,6 @@ protected:
 	 * Locations to keep track of
 	 */
 	D2D1_RECT_F mainPageSpace, tabs, webPage;
+
 };
 
