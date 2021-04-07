@@ -713,7 +713,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         }
 
         PreProcess(ret, state->block);
-        if (ret.returnCode)return;
+        return;
     }
 
     if (startStatement.StartsWith(L"function", false, true))
@@ -735,7 +735,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         state->statement.Trim();
 
         PreProcess(ret, state->block);
-        if (ret.returnCode)return;
+        return;
     }
 
     if (startStatement.StartsWith(L"var", false, true))
@@ -745,7 +745,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         state->statement.Trim();
 
         PreProcess(ret, state->block);
-        if (ret.returnCode)return;
+        return;
     }
 
     if (startStatement.StartsWith(L"class", false, true))
@@ -2553,6 +2553,9 @@ void TcJavaScriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatemen
         return;
 
     UpdateVariable(obj.errorMessage, obj.errorObject, true);
+
+    if (statement->next.Get())
+        obj = Run(statement->block, 0, statement->next);
 }
 
 void TcJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ro)
