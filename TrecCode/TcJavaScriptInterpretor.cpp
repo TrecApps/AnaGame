@@ -150,6 +150,14 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret)
 
 void TcJavaScriptInterpretor::ProcessIndividualStatement(const TString& statement, ReturnObject& ret)
 {
+    UINT p = 0, s = 0, i = 0;
+    TrecPointer<CodeStatement> state = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+    state->lineStart = 0;
+    state->statement.Set(statement.GetTrim());
+    state->lineEnd = statement.CountFinds(L'\n');
+    TDataArray<JavaScriptExpression2> exp;
+    TDataArray<TString> str;
+    ProcessExpression(p, s, i, state, ret, exp, str);
 }
 
 TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env):
@@ -1067,7 +1075,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
         }
 
         parenth = 1;
-        index = statement->statement.Find(tokens->at(1), statement->statement.Find(tokens->at(0)) + tokens->at(0).GetSize());
+        index = statement->statement.Find(tokens->at(2), statement->statement.Find(tokens->at(1)) + tokens->at(1).GetSize());
         returnable += ProcessExpression(parenth, square, index, statement, ret, exp, ops);
 
         if (!ret.returnCode)
