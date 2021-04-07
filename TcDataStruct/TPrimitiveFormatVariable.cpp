@@ -169,7 +169,7 @@ TString TPrimitiveFormatVariable::GetString()
 	if (flags & 0b00000001)
 		format.AppendChar(L'-');
 	if (flags & 0b00000010)
-		format.AppendChar(L'\s');
+		format.AppendChar(L' ');
 	if (flags & 0b00000100)
 		format.AppendChar(L'#');
 

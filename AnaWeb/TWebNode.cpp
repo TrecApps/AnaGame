@@ -303,7 +303,7 @@ void GetListPrepend(TString& str, list_style style, signed char mode)
 		str.Set(L'\x25ad');
 		break;
 	case list_style::ls_none:
-		str.Set(L'\s');
+		str.Set(L' ');
 		break;
 	case list_style::ls_decimal:
 	case list_style::ls_decimal_0:
@@ -1622,7 +1622,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 		}
 
 		// Next get attributes for classes
-		auto classes = nodeClass.split(L"\s\n\r\t");
+		auto classes = nodeClass.split(L" \n\r\t");
 		for (UINT c = 0; c < classes->Size(); c++)
 		{
 			TString cl = classes->at(c).GetTrim();
@@ -2543,7 +2543,7 @@ void TWebNode::DrawBorder()
 void TWebNode::CompileMargin(const TString& marginString, border_side side, bool inner)
 {
 	TString atts(marginString);
-	TrecPointer<TDataArray<TString>> pieces = atts.split(L'\s');
+	TrecPointer<TDataArray<TString>> pieces = atts.split(L' ');
 
 	if (!pieces->Size())
 		return;

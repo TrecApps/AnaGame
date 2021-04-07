@@ -1442,7 +1442,7 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
 
     if (fields->Size() == 1)
     {
-        TrecPointer<TDataArray<TString>> tokens = fields->at(0).split(L" \s\n\r\t", 2);
+        TrecPointer<TDataArray<TString>> tokens = fields->at(0).split(L" \n\r\t", 2);
 
         // Remove the Open bracket token
         if (tokens->Size() > 3 && tokens->at(tokens->Size() - 1).StartsWith(L'{'))

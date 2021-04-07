@@ -1043,12 +1043,12 @@ UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
         if (statementString.StartsWith(L"let", false, true) || statementString.StartsWith(L"var", false, true)
             || statementString.StartsWith(L"const", false, true))
         {
-            tokens = statementString.splitn(L"\s\t\n\r", 4);
-            retString.Set(tokens->at(0) + L'\s');
+            tokens = statementString.splitn(L" \t\n\r", 4);
+            retString.Set(tokens->at(0) + L' ');
             tokens->RemoveAt(0);
         }
         else
-            tokens = statementString.splitn(L"\s\t\n\r", 3);
+            tokens = statementString.splitn(L" \t\n\r", 3);
 
         if (tokens->Size() < 3)
         {
@@ -2161,7 +2161,7 @@ throughString:
             continue;
         }
 
-        if (ch == L'\s')
+        if (ch == L' ')
         {
             if (phrase.GetSize())
                 spaceDetected = true;
@@ -2418,7 +2418,7 @@ UINT TcJavaScriptInterpretor::ProcessNumberExpression(UINT& parenth, UINT& squar
     {
         switch (statement->statement[index])
         {
-        case L'\s':
+        case L' ':
         case L'\n':
         case L'\r':
         case L'\t':

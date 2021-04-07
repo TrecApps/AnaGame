@@ -74,7 +74,7 @@ void TShell::SubmitCommand(TString& command)
 	if (!command.GetSize())
 		return;
 
-	int firstSpace = command.Find(L'\s');
+	int firstSpace = command.Find(L' ');
 
 	TString com(command.SubString(0, firstSpace));
 	com.Trim();
@@ -105,7 +105,7 @@ void TShell::SubmitCommand(TString& command)
 	}
 	else if (!com.CompareNoCase(L"setpath"))
 	{
-		if (comArgs.Find(L'\s') == -1)
+		if (comArgs.Find(L' ') == -1)
 		{
 			output.Set("Error! 'setpath' requires a command and a path to set it to!\n");
 			output.Append(TString(L"\tIt's in the form:  setpath [command] [path-for-command]\n"));
@@ -118,8 +118,8 @@ void TShell::SubmitCommand(TString& command)
 		}
 		else
 		{
-			TString comArgs2(comArgs.SubString(0, comArgs.Find(L'\s')));
-			TString comArgs3(comArgs.SubString(comArgs.Find(L'\s')));
+			TString comArgs2(comArgs.SubString(0, comArgs.Find(L' ')));
+			TString comArgs3(comArgs.SubString(comArgs.Find(L' ')));
 
 			comArgs2.Trim();
 			comArgs3.Trim();
@@ -179,7 +179,7 @@ void TShell::SubmitCommand(TString& command)
 			else if (pathCommand[pathCommand.GetSize() - 1] != L'\"')
 				pathCommand.AppendChar(L'\"');
 
-			command.Set(pathCommand + TString(L'\s') + comArgs);
+			command.Set(pathCommand + TString(L' ') + comArgs);
 		}
 
 
