@@ -225,6 +225,7 @@ void TcInterpretor::CheckVarName(TString& varname, ReturnObject& ro)
 	if (badChar != -1)
 	{
 		ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
+		ro.errorMessage.Format(L"Name '$ws' is not a proper name for a variable!", varname.GetConstantBuffer());
 		return;
 	}
 
@@ -233,6 +234,7 @@ void TcInterpretor::CheckVarName(TString& varname, ReturnObject& ro)
 	if (!((firstChar >= L'a' && firstChar <= 'z') || (firstChar >= L'A' && firstChar <= 'Z') || firstChar == L'_'))
 	{
 		ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
+		ro.errorMessage.Format(L"Name '$ws' is not a proper name for a variable!", varname.GetConstantBuffer());
 		return;
 	}
 

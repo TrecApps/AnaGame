@@ -253,8 +253,7 @@ protected:
     /// Returns: UINT - how many times the operation moved into the 'next'  statement
     UINT ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, 
         ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
-    UINT ProcessArrayExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
-        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+    UINT ProcessArrayExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
     UINT ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
         ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
     UINT ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,

@@ -266,7 +266,7 @@ void TcJavaScriptInterpretor::SetStatementToBlock(TrecPointer<CodeStatement>& st
         TrecSubPointer<TVariable, TcJavaScriptInterpretor> tcJsInt = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(updatedSelf, environment);
 
         tcJsInt->SetStatements(statement->block);
-        tcJsInt->PreProcess(ret);
+        // tcJsInt->PreProcess(ret);
         if (ret.returnCode)
             return;
 
@@ -356,7 +356,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
         break;
     }
 
-    return ReturnObject();
+    return ret;
 }
 
 void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TDataArray<TrecPointer<CodeStatement>>& statements)
@@ -430,7 +430,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TDataArray<TrecPoint
                     state = state->next;
                     parenthState += DetermineParenthStatus(state->statement);
                 }
-                
+
                 if (parenthState < 0)
                 {
                     ret.returnCode = ReturnObject::ERR_PARENTH_MISMATCH;
@@ -449,6 +449,8 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TDataArray<TrecPoint
 
                 Rust += 2;
             }
+            else if (!parenthState)
+                SetStatementToBlock(state, ret);
 
         }
     }
@@ -462,6 +464,9 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
     state->statement.Trim();
 
     TString startStatement(state->statement);
+
+    if (state->next.Get())
+        state->next->parent = TrecPointerKey::GetSoftPointerFromTrec<>(state);
 
     if (startStatement.StartsWith(L"if", false, true) || startStatement.StartsWith(L"if("))
     {
@@ -587,12 +592,12 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         return;
     }
 
-    if (startStatement.StartsWith(L"else", false, true))
+    if (startStatement.StartsWith(L"else", false, true) || !startStatement.Compare(L"else"))
     {
         if (!state->parent.Get())
         {
             ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
-            ret.errorMessage.Set(L"Unepected 'else' token detected!");
+            ret.errorMessage.Set(L"Unexpected 'else' token detected!");
             return;
         }
 
@@ -600,12 +605,14 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         if (parentType != code_statement_type::cst_else_if && parentType != code_statement_type::cst_if)
         {
             ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
-            ret.errorMessage.Set(L"Unepected 'else' token detected! Epected Previous statement to be an 'if' block or an 'else if' block!");
+            ret.errorMessage.Set(L"Unexpected 'else' token detected! Epected Previous statement to be an 'if' block or an 'else if' block!");
             return;
         }
 
         state->statement.Delete(0, 4);
         state->statement.Trim();
+
+        startStatement.Set(state->statement);
 
         if (startStatement.StartsWith(L"if", false, true) || startStatement.StartsWith(L"if("))
         {
@@ -805,7 +812,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         if (!state->parent.Get())
         {
             ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
-            ret.errorMessage.Set(L"Unepected 'catch' token detected!");
+            ret.errorMessage.Set(L"Unexpected 'catch' token detected!");
             return;
         }
 
@@ -813,7 +820,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         if (parentType != code_statement_type::cst_try)
         {
             ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
-            ret.errorMessage.Set(L"Unepected 'catch' token detected! Epected Previous statement to be a 'try' block!");
+            ret.errorMessage.Set(L"Unexpected 'catch' token detected! Epected Previous statement to be a 'try' block!");
             return;
         }
 
@@ -832,7 +839,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         if (!state->parent.Get())
         {
             ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
-            ret.errorMessage.Set(L"Unepected 'catch' token detected!");
+            ret.errorMessage.Set(L"Unexpected 'catch' token detected!");
             return;
         }
 
@@ -840,7 +847,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         if (parentType != code_statement_type::cst_try && parentType != code_statement_type::cst_catch)
         {
             ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
-            ret.errorMessage.Set(L"Unepected 'catch' token detected! Epected Previous statement to be a 'try' or a 'catch' block!");
+            ret.errorMessage.Set(L"Unexpected 'catch' token detected! Epected Previous statement to be a 'try' or a 'catch' block!");
             return;
         }
 
@@ -888,11 +895,23 @@ void TcJavaScriptInterpretor::HandleSemiColon(TDataArray<TrecPointer<CodeStateme
 
         
         HandleSemiColon(state, tempStatements);
-        if (state->block.Size())
-            HandleSemiColon(state->block);
+        //if (state->block.Size())
+        //    HandleSemiColon(state->block);
     }
 
     statements = tempStatements;
+
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    {
+        if (statements[Rust]->block.Size())
+        {
+            HandleSemiColon(statements[Rust]->block);
+            for (UINT C = 0; C < statements[Rust]->block.Size(); C++)
+            {
+                statements[Rust]->block[C]->parent = TrecPointerKey::GetSoftPointerFromTrec<>(statements[Rust]);
+            }
+        }
+    }
 }
 
 void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, TDataArray<TrecPointer<CodeStatement>>& statements, bool isNext)
@@ -1011,11 +1030,11 @@ void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, 
                 TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
                 newState->statement.Set(state1);
                 newState->lineEnd = newState->lineStart = line;
-                newState->block = state->block;
+                // newState->block = state->block;
 
                 newState->parent = state->parent;
 
-                newState->next = state->next;
+                // newState->next = state->next;
                 statements.push_back(newState);
             }
             else
@@ -1791,7 +1810,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
         case L'(':
             if (processed)
             {
-                PrepReturn(ret, L"Unepected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                PrepReturn(ret, L"Unexpected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
                 return fullNodes;
             }
             processed = true;
@@ -1801,19 +1820,19 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
         case L'[':
             if (processed)
             {
-                PrepReturn(ret, L"Unepected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                PrepReturn(ret, L"Unexpected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
                 return fullNodes;
             }
             processed = true;
             square++;
-            nodes = ProcessArrayExpression(parenth, square, ++index, statement, ret, expressions, ops);
+            nodes = ProcessArrayExpression(parenth, square, ++index, statement, ret);
             break;
         case L'\'':
         case L'\"':
         case L'`':
             if (processed)
             {
-                PrepReturn(ret, L"Unepected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                PrepReturn(ret, L"Unexpected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
                 return fullNodes;
             }
             processed = true;
@@ -1952,7 +1971,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
 
         if (!foundOp)
         {
-            if (!exp.FindOneOf(L"+-*/%^&|<>?=~!,"))
+            if (!exp.FindOneOf(L"+-*/%^&|<>?=~!"))
             {
                 ops.push_back(TString(exp[0]));
                 exp.Delete(0, 1);
@@ -1965,6 +1984,9 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
             processed = false;
             continue;
         }
+
+        if (index < statement->statement.GetSize())
+            ch = statement->statement[index];
 
         switch (ch)
         {
@@ -2078,13 +2100,14 @@ crunch:
     return fullNodes;
 }
 
-UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
     TrecSubPointer<TVariable, TContainerVariable> arrayVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
 
     if (statement->statement[index] == L'[')
         index++;
-
+    TDataArray<JavaScriptExpression2> expressions;
+    TDataArray<TString> ops;
     bool processArray = true;
     UINT curParenth = parenth;
     UINT curSquare = square;
@@ -2110,6 +2133,8 @@ UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square
             nodes--;
             statement = statement->next;
         }
+        expressions.RemoveAll();
+        ops.RemoveAll();
     }
 
     ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(arrayVar);
@@ -2432,6 +2457,8 @@ UINT TcJavaScriptInterpretor::ProcessNumberExpression(UINT& parenth, UINT& squar
         case L'\t':
         case L',':
         case L';':
+        case L']':
+        case L')':
             goto broken;
         }
     }
@@ -2440,12 +2467,12 @@ UINT TcJavaScriptInterpretor::ProcessNumberExpression(UINT& parenth, UINT& squar
     double d = 0.0;
     LONG64 s = 0;
     UINT u = 0;
-    if (!numStr.ConvertToDouble(d))
-        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
+    if (TString::ConvertStringToUint(numStr, u))
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(u);
     else if (!numStr.ConvertToLong(s))
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(s);
-    else if (TString::ConvertStringToUint(numStr, u))
-        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(u);
+    else if (!numStr.ConvertToDouble(d))
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(d);
     else
     {
         TString message;
