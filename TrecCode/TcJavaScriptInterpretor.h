@@ -107,6 +107,15 @@ public:
      */
     virtual void PreProcess(ReturnObject& ret) override;
 
+
+    /**
+     * Method: TcJavaScriptInterpretor::PreProcess
+     * Purpose: Allows Interpretors to do a brief scan of the code and id basic syntax errors
+     * Parameters: void
+     * Returns: ReturnObject - info about issues detected
+     */
+    ReturnObject PreProcess();
+
     /**
      * Method: TcInterpretor::ProcessIndividualStatement
      * Purpose: Allows an Interpretor to process a statement

@@ -143,9 +143,16 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret)
     if (readyToRun)
         return;
     this->HandleSemiColon();
+    ret = PreProcess();
+}
+
+ReturnObject TcJavaScriptInterpretor::PreProcess()
+{
+    ReturnObject ret;
     PreProcess(ret, statements);
     if (!ret.returnCode)
         readyToRun = true;
+    return ret;
 }
 
 void TcJavaScriptInterpretor::ProcessIndividualStatement(const TString& statement, ReturnObject& ret)
@@ -266,7 +273,7 @@ void TcJavaScriptInterpretor::SetStatementToBlock(TrecPointer<CodeStatement>& st
         TrecSubPointer<TVariable, TcJavaScriptInterpretor> tcJsInt = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(updatedSelf, environment);
 
         tcJsInt->SetStatements(statement->block);
-        // tcJsInt->PreProcess(ret);
+        ret = tcJsInt->PreProcess();
         if (ret.returnCode)
             return;
 
@@ -871,7 +878,8 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         if (ret.returnCode)return;
     }
 
-    state->statementType = code_statement_type::cst_regular;
+    if(state->statementType == code_statement_type::cst_not_set)
+        state->statementType = code_statement_type::cst_regular;
     PreProcess(ret, state->block);
     if (ret.returnCode)return;
     PreProcess(ret, state->next);
