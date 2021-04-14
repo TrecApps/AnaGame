@@ -661,7 +661,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         {
             state->statementType = code_statement_type::cst_else;
         }
-        PreProcess(ret, state->block);
+        SetStatementToBlock(state, ret);
         if (ret.returnCode) return;
         PreProcess(ret, state->next);
         return;
@@ -1989,6 +1989,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
 
         if (foundOp)
         {
+            index += (ops.at(ops.Size() -1).GetSize() -1);
             processed = false;
             continue;
         }
@@ -2245,9 +2246,10 @@ throughString:
 
     if (index < statement->statement.GetSize())
     {
-        WCHAR ch = statement->statement[index++];
+        WCHAR ch = statement->statement[index];
         if (ch == L'(' && var.Get())
         {
+            index++;
             wholePhrase.AppendChar(ch);
             parenth++;
 
@@ -2312,6 +2314,7 @@ throughString:
         }
         else if (ch == L'(')
         {
+            index++;
             if (attribute == 1)
             {
                 // Expect to deal with a type
@@ -2391,6 +2394,7 @@ throughString:
 
         if (ch == L'.' || ch == L'?')
         {
+            index++;
             loopAround = true;
             spaceDetected = false;
             wholePhrase.AppendChar(ch);
