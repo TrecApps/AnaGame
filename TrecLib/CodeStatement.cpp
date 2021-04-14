@@ -281,12 +281,13 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 					currentStatement->statement.Append(line.SubString(currentIndex, endBlock));
 					if((!currentStatement->parent.Get()) || (currentStatement->parent.Get()->next.Get() != currentStatement.Get()))
 						parentStatement->block.push_back(currentStatement);
+					currentStatement->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parentStatement);
+					currentStatement = parentStatement;
 					while (parentStatement->parent.Get() && parentStatement->parent.Get()->next.Get() == parentStatement.Get())
 					{
 						parentStatement = TrecPointerKey::GetTrecPointerFromSoft<>(parentStatement->parent);
 					}
-					currentStatement->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parentStatement);
-					currentStatement = parentStatement;
+					
 					parentStatement = TrecPointerKey::GetTrecPointerFromSoft<CodeStatement>(parentStatement->parent);
 					currentIndex = endBlock_;
 					// statements.push_back(currentStatement);
