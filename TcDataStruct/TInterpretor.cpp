@@ -1261,6 +1261,7 @@ DoubleLong DoubleLong::GetValueFromPrimitive(TrecPointer<TVariable> var)
 	case (0b00101000):						// Indicates a 2-byte uint
 	case (0b00111000):						// Indicates a 4-byte uint
 	case (0b01001000):						// Indicates an 8-byte uint
+		u_value = var->Get8Value();
 		return DoubleLong(static_cast<ULONG64>(u_value));
 
 
