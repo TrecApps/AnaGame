@@ -162,9 +162,7 @@ void TcJavaScriptInterpretor::ProcessIndividualStatement(const TString& statemen
     state->lineStart = 0;
     state->statement.Set(statement.GetTrim());
     state->lineEnd = statement.CountFinds(L'\n');
-    TDataArray<JavaScriptExpression2> exp;
-    TDataArray<TString> str;
-    ProcessExpression(p, s, i, state, ret, exp, str);
+    ProcessExpression(p, s, i, state, ret);
 }
 
 TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env):
@@ -1064,8 +1062,6 @@ void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, 
 UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, TrecSubPointer<TVariable, TcJavaScriptInterpretor> in)
 {
     UINT parenth = 0, square = 0, index = 0;
-    TDataArray<JavaScriptExpression2> exp;
-    TDataArray<TString> ops;
     TString statementString(statement->statement.SubString(statement->statement.Find(L'(') + 1));
     statementString.Trim();
     TrecPointer<TDataArray<TString>> tokens;
@@ -1103,7 +1099,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
 
         parenth = 1;
         index = statement->statement.Find(tokens->at(2), statement->statement.Find(tokens->at(1)) + tokens->at(1).GetSize());
-        returnable += ProcessExpression(parenth, square, index, statement, ret, exp, ops);
+        returnable += ProcessExpression(parenth, square, index, statement, ret);
 
         if (!ret.returnCode)
             ret.errorMessage.Set(retString);
@@ -1140,13 +1136,13 @@ UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
             in->ProcessAssignmentStatement(statement, ret, index);
             break;
         default:
-            returnable += ProcessExpression(parenth, square, index, statement, ret, exp, ops);
+            returnable += ProcessExpression(parenth, square, index, statement, ret);
         }
         statement->statementType = code_statement_type::cst_for_3;
 
         break;
     default:
-        returnable += ProcessExpression(parenth, square, index, statement, ret, exp, ops);
+        returnable += ProcessExpression(parenth, square, index, statement, ret);
     }
     return returnable;
 }
@@ -1805,8 +1801,10 @@ void JavaScriptExpression2::operator=(const JavaScriptExpression2& orig)
     value = orig.value;
 }
 
-UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret )
 {
+    TDataArray<JavaScriptExpression2> expressions;
+    TDataArray<TString> ops;
     bool processed = false; // False, we are looking for an expression, true, look for operator or end
     UINT nodes = 0, fullNodes = 0; // Track how many nodes have been traversed during processing
     for (; index < statement->statement.GetSize(); index++)
@@ -1823,7 +1821,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
             }
             processed = true;
             parenth++;
-            nodes = ProcessExpression(parenth, square, ++index, statement, ret, expressions, ops);
+            nodes = ProcessExpression(parenth, square, ++index, statement, ret);
             break;
         case L'[':
             if (processed)
@@ -1844,7 +1842,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
                 return fullNodes;
             }
             processed = true;
-            nodes = ProcessStringExpression(parenth, square, index, statement, ret, expressions, ops);
+            nodes = ProcessStringExpression(parenth, square, index, statement, ret);
             break;
         case L'.':
         case L'0':
@@ -1865,7 +1863,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
                 return fullNodes;
             }
             processed = true;
-            nodes = ProcessNumberExpression(parenth, square, index, statement, ret, expressions, ops);
+            nodes = ProcessNumberExpression(parenth, square, index, statement, ret);
 
         }
 
@@ -1880,7 +1878,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
                 return fullNodes;
             }
             processed = true;
-            nodes = ProcessVariableExpression(parenth, square, index, statement, ret, expressions, ops);
+            nodes = ProcessVariableExpression(parenth, square, index, statement, ret);
         }
 
         if (processed)
@@ -2015,7 +2013,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
                     PrepReturn(ret, L"Unexpected ')' token detected!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
                     return fullNodes;
                 }
-            square--;
+            parenth--;
         case L',':
         case L';':
             index++;
@@ -2026,7 +2024,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
 
     if (index == statement->statement.GetSize() && statement->block.Size())
     {
-        ProcessJsonExpression(parenth, square, index, statement, ret, expressions, ops);
+        ProcessJsonExpression(parenth, square, index, statement, ret);
         if (ret.returnCode)
             return fullNodes;
         JavaScriptExpression2 exp;
@@ -2037,7 +2035,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
         if (statement->next.Get())
         {
             index = 0;
-            nodes = ProcessExpression(parenth, square, index, statement->next, ret, expressions, ops);
+            nodes = ProcessExpression(parenth, square, index, statement->next, ret);
             if (ret.returnCode)
                 return fullNodes;
             fullNodes += nodes;
@@ -2115,8 +2113,6 @@ UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square
 
     if (statement->statement[index] == L'[')
         index++;
-    TDataArray<JavaScriptExpression2> expressions;
-    TDataArray<TString> ops;
     bool processArray = true;
     UINT curParenth = parenth;
     UINT curSquare = square;
@@ -2124,7 +2120,7 @@ UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square
     UINT nodes = 0;
     while (square >= curSquare)
     {
-        nodes = ProcessExpression(parenth, square, index, statement, ret, expressions, ops);
+        nodes = ProcessExpression(parenth, square, index, statement, ret);
         if (ret.returnCode)
             return nodeRet;
 
@@ -2142,8 +2138,6 @@ UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square
             nodes--;
             statement = statement->next;
         }
-        expressions.RemoveAll();
-        ops.RemoveAll();
     }
 
     ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(arrayVar);
@@ -2151,13 +2145,13 @@ UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square
     return nodeRet;
 }
 
-UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
 
     return 0;
 }
 
-UINT TcJavaScriptInterpretor::ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+UINT TcJavaScriptInterpretor::ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
     TDataArray<TString> pieces;
 
@@ -2262,7 +2256,7 @@ throughString:
                 {
                     vThis = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_array);
                 }
-                uret += ProcessProcedureCall(parenth, square, index, vThis, var, statement, ret, expressions, ops);
+                uret += ProcessProcedureCall(parenth, square, index, vThis, var, statement, ret);
 
                 if (ret.returnCode)
                     return uret;
@@ -2323,7 +2317,7 @@ throughString:
 
             // Likely dealing with function defintion
             ret.errorObject.Nullify();
-            UINT jumps = ProcessFunctionExpression(parenth, square, index, statement, ret, expressions, ops);
+            UINT jumps = ProcessFunctionExpression(parenth, square, index, statement, ret);
             if (ret.returnCode)
                 return 0;
             if (ret.errorObject.Get())
@@ -2411,7 +2405,7 @@ throughString:
     return 0;
 }
 
-UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
     int startP = statement->statement.Find(L'(', index), endP = statement->statement.Find(L')');
 
@@ -2456,7 +2450,7 @@ UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& squ
     return 0;
 }
 
-UINT TcJavaScriptInterpretor::ProcessNumberExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+UINT TcJavaScriptInterpretor::ProcessNumberExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
     UINT start = index;
     for (; index < statement->statement.GetSize(); index++)
@@ -2494,7 +2488,7 @@ UINT TcJavaScriptInterpretor::ProcessNumberExpression(UINT& parenth, UINT& squar
     return 0;
 }
 
-UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
     WCHAR quote = statement->statement[index];
     bool istemplated = false;
@@ -2519,8 +2513,8 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
     return 0;
 }
 
-UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object, TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, 
-    ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops)
+UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object, TrecPointer<TVariable> proc,
+    TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
     UINT curParenth = parenth;
     UINT nextRet = 0;
@@ -2541,7 +2535,7 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
         }
 
         // Get the Parameter
-        UINT uret = ProcessExpression(parenth, square, index, statement, ret, expressions, ops);
+        UINT uret = ProcessExpression(parenth, square, index, statement, ret);
         nextRet += uret;
 
         // If an error was detected, return
@@ -2577,9 +2571,7 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
 void TcJavaScriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatement> statement, ReturnObject& obj)
 {
     UINT p = 0, s = 0, i = 0;
-    TDataArray<JavaScriptExpression2> e;
-    TDataArray<TString> o;
-    ProcessFunctionExpression(p, s, i, statement, obj, e, o);
+    ProcessFunctionExpression(p, s, i, statement, obj);
 
     if (!obj.errorObject.Get())
     {

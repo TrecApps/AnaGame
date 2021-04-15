@@ -257,26 +257,17 @@ protected:
     ///     UINT& index - Index in the statement string to start at
     ///     TrecPointer<CodeStatement> statement - the statement to actually process 
     ///     ReturnObject& ret - results of the operation
-    ///     TDataArray<JavaScriptExpression2>& expressions - list of values derived
-    ///     TDataArray<TString>& ops - operators between the evaluated expressions
     /// Returns: UINT - how many times the operation moved into the 'next'  statement
-    UINT ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, 
-        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+    UINT ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
     UINT ProcessArrayExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
-    UINT ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
-        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
-    UINT ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
-        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
-    UINT ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
-        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
-    UINT ProcessNumberExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
-        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
-    UINT ProcessStringExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement,
-        ReturnObject& ret, TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+    UINT ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    UINT ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    UINT ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    UINT ProcessNumberExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    UINT ProcessStringExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
 
     UINT ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object,
-        TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, ReturnObject& ret,
-        TDataArray<JavaScriptExpression2>& expressions, TDataArray<TString>& ops);
+        TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, ReturnObject& ret);
 
     void ProcessFunctionExpression(TrecPointer<CodeStatement> statement, ReturnObject& obj);
 
