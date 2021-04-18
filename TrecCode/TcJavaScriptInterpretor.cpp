@@ -136,6 +136,30 @@ ReturnObject TcJavaScriptInterpretor::Run()
 
 void TcJavaScriptInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
 {
+    variables.clear();
+    bool onDefault = false;
+
+    // Create the arguements parameter
+    TrecSubPointer<TVariable, TContainerVariable> arguments = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
+
+    for (UINT Rust = 0; Rust < paramNames.Size(); Rust++)
+    {
+        TcVariableHolder holder;
+        holder.mut = true;
+        if (Rust < params.Size())
+            holder.value = params[Rust];
+        else if (Rust < defaultVars.Size())
+            holder.value = defaultVars[Rust];
+        else
+            holder.value = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+
+        variables.addEntry(paramNames[Rust], holder);
+        arguments->AppendValue(holder.value);
+    }
+    TcVariableHolder holder;
+    holder.mut = false;
+    holder.value = TrecPointerKey::GetTrecPointerFromSub<>(arguments);
+    variables.addEntry(L"arguments", holder);
 }
 
 void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret)
@@ -1458,7 +1482,7 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
 
         if (block->next.Get())
         {
-            Run(statements, index, block->next);
+            ret = Run(statements, index, block->next);
         }
     }
     else
@@ -2170,7 +2194,7 @@ throughString:
     {
         WCHAR ch = statement->statement[index];
 
-        if ((ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z') || ch == L'_')
+        if ((ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z') || ch == L'_' || (ch >= L'0' && ch <= L'9'))
         {
             if (spaceDetected)
             {
@@ -2445,6 +2469,12 @@ UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& squ
 
     function->SetParamNames(params);
     function->SetStatements(statement->block);
+
+    ret = function->PreProcess();
+
+    if (ret.returnCode)
+        return 0;
+
     ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(function);
     ret.errorMessage.Set(statement->statement.SubString(index, startP).GetTrim());
     return 0;
@@ -2506,6 +2536,7 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
             return 0;
         }
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(statement->statement.SubString(index + 1, quoteLoc));
+        index = quoteLoc + 1;
         break;
     default:
         PrepReturn(ret, L"INTERNAL ERROR! Expected Quote character!", L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
