@@ -331,7 +331,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     for (UINT Rust = start; Rust < statements.Size(); Rust++)
     {
         ret = Run(statements, Rust, TrecPointer<CodeStatement>());
-        if (ret.returnCode)
+        if (ret.returnCode || (ret.mode != return_mode::rm_regular))
             break;
     }
 
@@ -350,7 +350,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     switch (statement->statementType)
     {
     case code_statement_type::cst_break:
-
+        ret.mode = return_mode::rm_break;
         break;
     case code_statement_type::cst_class:
 
@@ -361,7 +361,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
         ProcessAssignmentStatement(statement, ret);
         break;
     case code_statement_type::cst_continue:
-
+        ret.mode = return_mode::rm_continue;
         break;
 
     case code_statement_type::cst_for:
@@ -402,7 +402,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
         break;
     case code_statement_type::cst_do:
     case code_statement_type::cst_while:
-        ProcessWhile(statement, ret);
+        ProcessWhile(statement, index, ret);
         break;
     }
 
@@ -745,7 +745,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         }
         else
         {
-            PreProcess(ret, state->block);
+            SetStatementToBlock(state, ret);
             if (ret.returnCode) return;
             PreProcess(ret, state->next);
         }
@@ -842,7 +842,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         state->statement.Trim();
 
         PreProcess(ret, state->block);
-        if (ret.returnCode)return;
+        return;
     }
 
     if (startStatement.StartsWith(L"try", false, true) || !startStatement.Compare(L"try"))
@@ -913,7 +913,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
 
     if (startStatement.StartsWith(L"continue", false, true) || startStatement.StartsWith(L"continue;"))
     {
-        state->statementType = code_statement_type::cst_break;
+        state->statementType = code_statement_type::cst_continue;
         state->statement.Delete(0, 5);
         state->statement.Trim();
 
@@ -1358,7 +1358,7 @@ void TcJavaScriptInterpretor::ProcessBasicFlow(TrecPointer<CodeStatement> statem
     }
 }
 
-void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement, UINT& index, ReturnObject& ret)
 {
     TrecPointer<CodeStatement> blockHolder;
     TrecPointer<CodeStatement> expreHolder;
@@ -1406,15 +1406,31 @@ void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement,
 
     
     if (statement->statementType == code_statement_type::cst_do)
-        jsVar->Run();
+        ret = jsVar->Run();
 
     while (IsTruthful(ret.errorObject))
     {
-        jsVar->Run();
+        ret = jsVar->Run();
+        // For loop is responsible for handling break and for
+        if (ret.mode != return_mode::rm_regular)
+        {
+            // here, we either break or continue
+            return_mode m = ret.mode;
+            ret.mode = return_mode::rm_regular;
+            if (m == return_mode::rm_break)
+                break;
+        }
+
         ProcessExpression(expreHolder, ret);
         if (ret.returnCode)
             return;
     }
+
+    if (statement->statementType == code_statement_type::cst_while && blockHolder->next.Get())
+    {
+        ret = Run(statements, index, blockHolder->next);
+    }
+
 
     //if (statement->statementType == code_statement_type::cst_do)
     //    ret = Run(expreHolder);
@@ -1557,7 +1573,7 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
                 return_mode m = ret.mode;
                 ret.mode = return_mode::rm_regular;
                 if (m == return_mode::rm_break)
-                    return;
+                    break;
             }
 
             if (jsVar.Get())
@@ -1579,7 +1595,10 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
                 return;
         }
         index += 2;
-        
+        if (block->next.Get())
+        {
+            ret = Run(statements, index, block->next);
+        }
     }
 }
 
@@ -1862,6 +1881,9 @@ void JavaScriptExpression2::operator=(const JavaScriptExpression2& orig)
 
 UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret )
 {
+    if (!statement->statement.GetSize())
+        return 0;
+
     TDataArray<JavaScriptExpression2> expressions;
     TDataArray<TString> ops;
     bool processed = false; // False, we are looking for an expression, true, look for operator or end

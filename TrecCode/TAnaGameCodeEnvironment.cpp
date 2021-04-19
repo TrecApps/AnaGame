@@ -196,7 +196,7 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 		if (ret.returnCode)
 		{
 			TString message;
-			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", path.GetConstantBuffer(), ret.returnCode);
+			message.Format(L"Java Script '%ws' file Run exited with Error code: %d", path.GetConstantBuffer(), ret.returnCode);
 			this->PrintLine(message);
 			this->PrintLine(ret.errorMessage);
 
