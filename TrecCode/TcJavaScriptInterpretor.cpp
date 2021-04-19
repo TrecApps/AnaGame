@@ -131,6 +131,27 @@ ReturnObject TcJavaScriptInterpretor::Run()
         return ret;
     }
 
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    {
+        TrecPointer<CodeStatement> state = statements[Rust];
+        if (!state.Get())
+        {
+            statements.RemoveAt(Rust--);
+            continue;
+        }
+        while (state.Get())
+        {
+            TcJavaScriptInterpretor* inte = dynamic_cast<TcJavaScriptInterpretor*>(state->statementVar.Get());
+            if (inte && inte->parent.Get() != this)
+            {
+                TrecSubPointer<TVariable, TcInterpretor> subSelf = TrecPointerKey::GetSubPointerFromSoft<>(self);
+                TrecPointer<TVariable> vSelf = TrecPointerKey::GetTrecPointerFromSub<>(subSelf);
+                inte->parent = TrecPointerKey::GetSoftPointerFromTrec<>(vSelf);
+            }
+            state = state->next;
+        }
+    }
+
     return Run(statements);
 }
 
@@ -318,7 +339,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     return ret;
 }
 
-ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, TrecPointer<CodeStatement> statement)
+ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, TrecPointer<CodeStatement> statement)
 {
     ReturnObject ret;
 
@@ -1400,7 +1421,7 @@ void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement,
     //else ret = Run(blockHolder);
 }
 
-void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, ReturnObject& ret)
+void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, ReturnObject& ret)
 {
     auto statement = statements[index];
     auto block = statement;
@@ -1541,7 +1562,8 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
 
             if (jsVar.Get())
             {
-                jsVar->ProcessExpression(statements[index + 2], ret);
+                UINT parenth = 1, square = 0, strIndex = 0;
+                jsVar->ProcessExpression(parenth, square, strIndex, statements[index + 2], ret);
                 if (ret.returnCode)
                     return;
                 jsVar->ProcessExpression(statements[index + 1], ret);
@@ -1556,6 +1578,7 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
             if (ret.returnCode)
                 return;
         }
+        index += 2;
         
     }
 }
@@ -1976,7 +1999,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
                 PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
                 return fullNodes;
             }
-            UINT updateResult = UpdateVariable(jExp.varName, ret.errorObject);
+            UINT updateResult = UpdateVariable(jExp.varName, result);
 
             ret.errorObject.Nullify();
             if (updateResult == 1)
@@ -2635,9 +2658,9 @@ void TcJavaScriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatemen
         return;
 
     UpdateVariable(obj.errorMessage, obj.errorObject, true);
-
+    UINT run = 0;
     if (statement->next.Get())
-        obj = Run(statement->block, 0, statement->next);
+        obj = Run(statement->block, run, statement->next);
 }
 
 void TcJavaScriptInterpretor::HandlePreExpr(TDataArray<JavaScriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ro)
