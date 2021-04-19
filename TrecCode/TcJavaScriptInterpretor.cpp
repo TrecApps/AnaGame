@@ -397,7 +397,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
             ret.returnCode = ReturnObject::ERR_THROWN;
         break;
     case code_statement_type::cst_try:
-    case code_statement_type::cst_finally:
+    //case code_statement_type::cst_finally:
         ProcessTryCatchFinally(statements, index, statement, ret);
         break;
     case code_statement_type::cst_do:

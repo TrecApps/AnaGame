@@ -217,6 +217,8 @@ public:
 		for (; c < size - 1; c++)
 			array[c] = array[c + 1];
 		size--;
+		// Set to the Default
+		array[size] = T();
 		return returnable;
 	}
 
@@ -432,6 +434,7 @@ public:
 		for (; c < size - 1; c++)
 			array[c] = array[c + 1];
 		size--;
+		array[size] = nullptr;
 		return returnable;
 	}
 
