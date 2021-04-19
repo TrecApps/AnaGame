@@ -824,7 +824,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         if (ret.returnCode)return;
     }
 
-    if (startStatement.StartsWith(L"try", false, true))
+    if (startStatement.StartsWith(L"try", false, true) || !startStatement.Compare(L"try"))
     {
         state->statementType = code_statement_type::cst_try;
         state->statement.Delete(0, 3);
@@ -863,7 +863,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         return;
     }
 
-    if (startStatement.StartsWith(L"finally", false, true) || startStatement.StartsWith(L"finally{"))
+    if (startStatement.StartsWith(L"finally", false, true) || !startStatement.Compare(L"finally"))
     {
         if (!state->parent.Get())
         {
@@ -1147,7 +1147,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
         }
         index += statement->statement.Find(L'(') + 1;
 
-        switch (code_statement_type::cst_for_3)
+        switch (statement->statementType)
         {
         case code_statement_type::cst_const:
         case code_statement_type::cst_var:
@@ -1487,6 +1487,18 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
     }
     else
     {
+        UINT bIndex = index + 2; // Index would be the first statement of the for-loop, so index Plus 2 would be the final statement with the block of code to execute
+        if (bIndex >= statements.Size())
+        {
+            PrepReturn(ret, L"Incomplete 3-Statement For-loop detected!", L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, 0);
+            return;
+        }
+        block = statements[bIndex];
+        if (!block.Get())
+        {
+            PrepReturn(ret, L"INTERNAL ERROR! Block Statement was null in 3-statement For-Loop!", L"", ReturnObject::ERR_INTERNAL, 0);
+            return;
+        }
        auto jsVar = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcJavaScriptInterpretor>(block->statementVar);
         ProcessExpression(statement, ret, jsVar);
         if (ret.returnCode)
