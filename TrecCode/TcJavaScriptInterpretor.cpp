@@ -851,7 +851,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         state->statement.Delete(0, 3);
         state->statement.Trim();
 
-        PreProcess(ret, state->block);
+        SetStatementToBlock(state, ret);
         if (ret.returnCode) return;
         PreProcess(ret, state->next);
         return;
@@ -878,7 +878,7 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         state->statement.Delete(0, 5);
         state->statement.Trim();
 
-        PreProcess(ret, state->block);
+        SetStatementToBlock(state, ret);
         if (ret.returnCode)return;
         PreProcess(ret, state->next);
         return;
@@ -901,11 +901,11 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
             return;
         }
 
-        state->statementType = code_statement_type::cst_catch;
-        state->statement.Delete(0, 5);
+        state->statementType = code_statement_type::cst_finally;
+        state->statement.Delete(0, 7);
         state->statement.Trim();
 
-        PreProcess(ret, state->block);
+        SetStatementToBlock(state,ret);
         if (ret.returnCode)return;
         PreProcess(ret, state->next);
         return;
@@ -1426,10 +1426,10 @@ void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement,
             return;
     }
 
-    if (statement->statementType == code_statement_type::cst_while && blockHolder->next.Get())
-    {
-        ret = Run(statements, index, blockHolder->next);
-    }
+    //if (statement->statementType == code_statement_type::cst_while && blockHolder->next.Get())
+    //{
+    //    ret = Run(statements, index, blockHolder->next);
+    //}
 
 
     //if (statement->statementType == code_statement_type::cst_do)
@@ -1608,7 +1608,7 @@ void TcJavaScriptInterpretor::ProcessTryCatchFinally(TDataArray<TrecPointer<Code
     switch (statement->statementType)
     {
     case code_statement_type::cst_try:
-        if (!statement->next.Get() || (statement->statementType != code_statement_type::cst_break && statement->statementType != code_statement_type::cst_finally))
+        if (!statement->next.Get() || (statement->next->statementType != code_statement_type::cst_catch && statement->next->statementType != code_statement_type::cst_finally))
         {
             ret.errorMessage.Set(L"Try-block must be followed by a 'catch' or 'finally' block!");
             ret.returnCode = ReturnObject::ERR_INCOMPLETE_STATEMENT;
@@ -1662,7 +1662,7 @@ void TcJavaScriptInterpretor::ProcessTryCatchFinally(TDataArray<TrecPointer<Code
         if (statement->next.Get())
         {
             if (!ret.returnCode || statement->next->statementType == code_statement_type::cst_finally)
-                ret = Run(statements, index, statement->next);
+                ProcessTryCatchFinally(statements, index, statement->next, ret);
         }
 
         break;
