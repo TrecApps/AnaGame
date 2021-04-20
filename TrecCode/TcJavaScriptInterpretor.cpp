@@ -206,9 +206,10 @@ ReturnObject TcJavaScriptInterpretor::PreProcess()
         switch (state->statementType)
         {
         case code_statement_type::cst_while:
+        case code_statement_type::cst_function:
             if (state->next.Get())
             {
-                if (state->next.Get() != nextState.Get())
+                if (!nextState.Get() || !state->next->IsEqual(*nextState.Get()))
                     statements.InsertAt(state->next, Rust + 1);
                 state->next.Nullify();
             }

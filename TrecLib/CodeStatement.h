@@ -107,6 +107,14 @@ public:
      */
     bool IsEmpty();
 
+    /**
+     * Method: CodeStatement::IsEqual
+     * Purpose: Reports whether another statement is more or less the exact same statement as this one
+     * Parameters: const CodeStatement& other - the other statement to compare it to
+     * Returns: bool - whether the statements are 'equal'
+     */
+    bool IsEqual(const CodeStatement& other);
+
     UINT lineStart;                                 // the line in the file the statement begins
     UINT lineEnd;                                   // The line where the statement ends
     TString statement;                              // The Statement

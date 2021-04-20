@@ -27,6 +27,20 @@ bool CodeStatement::IsEmpty()
 	return !statement.GetTrim().GetSize() && !block.Size();
 }
 
+/**
+ * Method: CodeStatement::IsEqual
+ * Purpose: Reports whether another statement is more or less the exact same statement as this one
+ * Parameters: const CodeStatement& other - the other statement to compare it to
+ * Returns: bool - whether the statements are 'equal'
+ */
+bool CodeStatement::IsEqual(const CodeStatement& other)
+{
+	return this->lineEnd == other.lineEnd &&
+		this->lineStart == other.lineStart &&
+		this->statementType == other.statementType &&
+		!this->statement.Compare(other.statement);
+}
+
 StatementCollector::StatementCollector()
 {
 	nextLineComment = nextLineString = nextLineStatement = true;
