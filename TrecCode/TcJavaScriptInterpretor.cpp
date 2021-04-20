@@ -195,6 +195,26 @@ ReturnObject TcJavaScriptInterpretor::PreProcess()
 {
     ReturnObject ret;
     PreProcess(ret, statements);
+
+    if (ret.returnCode)
+        return ret;
+
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    {
+        auto state = statements[Rust];
+        TrecPointer<CodeStatement> nextState = Rust + 1 < statements.Size() ? statements[Rust + 1] : TrecPointer<CodeStatement>();
+        switch (state->statementType)
+        {
+        case code_statement_type::cst_while:
+            if (state->next.Get())
+            {
+                if (state->next.Get() != nextState.Get())
+                    statements.InsertAt(state->next, Rust + 1);
+                state->next.Nullify();
+            }
+        }
+    }
+
     if (!ret.returnCode)
         readyToRun = true;
     return ret;
@@ -2297,6 +2317,12 @@ throughString:
             var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
         else if (!phrase.Compare(L"this"))
             var = methodObject;
+        else if (!phrase.Compare(L"function"))
+            attribute = 4;
+        else if (!phrase.Compare(L"get"))
+            attribute = 2;
+        else if (!phrase.Compare(L"set"))
+            attribute = 3;
         else if (var.Get())
         {
             if (var->GetVarType() == var_type::collection)
@@ -2389,7 +2415,7 @@ throughString:
         }
         else if (ch == L'(')
         {
-            index++;
+            
             if (attribute == 1)
             {
                 // Expect to deal with a type
@@ -2399,6 +2425,7 @@ throughString:
             // Likely dealing with function defintion
             ret.errorObject.Nullify();
             UINT jumps = ProcessFunctionExpression(parenth, square, index, statement, ret);
+            index++;
             if (ret.returnCode)
                 return 0;
             if (ret.errorObject.Get())
@@ -2534,6 +2561,7 @@ UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& squ
 
     ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(function);
     ret.errorMessage.Set(statement->statement.SubString(index, startP).GetTrim());
+    index = endP;
     return 0;
 }
 
@@ -2651,6 +2679,17 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
 
     // Run the function and get the results
     ret = function->Run();
+
+    // Inspect the results
+    if (ret.returnCode)
+    {
+        // Add Stack info
+    }
+    else
+    {
+        ret.mode = return_mode::rm_regular;
+    }
+
 
     // Return how many statments were jumped
     return nextRet;

@@ -564,6 +564,7 @@ void StatementCollector::ParseNextMarker(statement_mode curMode, const TString& 
 			endIndex = startIndex + quote.GetSize();
 			netMode = statement_mode::sm_basic;
 		}
+		else endIndex = string.GetSize();
 		return;
 	case statement_mode::sm_single_str:
 		nextSingleString = string.Find(quote, curIndex, false);
