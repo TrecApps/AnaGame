@@ -1038,8 +1038,9 @@ void TcJavaScriptInterpretor::HandleSemiColon(TrecPointer<CodeStatement> state, 
         if (backSlash && ch != L'\\')
             backSlash = 0;
 
-        if (ch == L'\n')
+        if (ch == L'\n' && !quote)
         {
+
             if (onState1)
                 onState1 = false;
             else
@@ -2637,6 +2638,7 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
     WCHAR quote = statement->statement[index];
     bool istemplated = false;
     int quoteLoc = -1;
+    TString theString;
     switch (quote)
     {
     case L'`':
@@ -2649,12 +2651,42 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
             PrepReturn(ret, L"Incomplete String detected!", L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
             return 0;
         }
-        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(statement->statement.SubString(index + 1, quoteLoc));
+        theString.Set(statement->statement.SubString(index + 1, quoteLoc));
+        
         index = quoteLoc + 1;
         break;
     default:
         PrepReturn(ret, L"INTERNAL ERROR! Expected Quote character!", L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
     }
+
+    if (istemplated)
+    {
+        UINT startIndex = 0;
+        while ((startIndex = theString.FindOutOfQuotes(L"${", startIndex)) != -1)
+        {
+            UINT closeBracket = theString.FindOutOfQuotes(L'}', startIndex);
+            if (closeBracket == -1)
+                break;
+
+            TString var(theString.SubString(startIndex + 2, closeBracket));
+
+            ProcessIndividualStatement(var, ret);
+            // ProcessExpression(statements, cur, var, line, ro);
+
+            if (ret.returnCode)
+            {
+                ret.returnCode = 0;
+                ret.errorObject.Nullify();
+            }
+
+            TString res = ret.errorObject.Get() ? ret.errorObject->GetString() : TString(L"undefined");
+
+            theString.Replace(TString(L"${") + var + L'}', res);
+        }
+    }
+
+    ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(theString);
+
     return 0;
 }
 
