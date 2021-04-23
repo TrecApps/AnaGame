@@ -19,5 +19,7 @@ public:
 protected:
     TString className, superName;
     TClassStruct classData, superData;
+
+    void ProcessMethod(const TString& methodName, TrecPointer<CodeStatement> state, ReturnObject& ro, UCHAR att);
 };
 

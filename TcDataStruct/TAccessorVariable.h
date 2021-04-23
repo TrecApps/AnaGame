@@ -1,5 +1,6 @@
 #pragma once
 #include "TInterpretor.h"
+#include <TcInterpretor.h>
 
 /**
  * Class: TAcessorVariable
@@ -111,12 +112,28 @@ public:
     TrecSubPointer<TVariable, TInterpretor> GetGetter();
 
     /**
+     * Method: TAccessorVariable::GetCGetter
+     * Purpose: Retireve the Getter held by this variable
+     * Parameters: void
+     * Returns: TrecSubPointer<TVariable, TcInterpretor> - the interpretor representing a getter
+     */
+    TrecSubPointer<TVariable, TcInterpretor> GetCGetter();
+
+    /**
      * Method: TAccessorVariable::SetGetter
      * Purpose: Retireve the Getter held by this variable
      * Parameters: TrecSubPointer<TVariable, TInterpretor> g - the interpretor representing a getter
      * Returns: void
      */
     void SetGetter(TrecSubPointer<TVariable, TInterpretor> g);
+
+    /**
+     * Method: TAccessorVariable::SetGetter
+     * Purpose: Retireve the Getter held by this variable
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> g - the interpretor representing a getter
+     * Returns: void
+     */
+    void SetGetter(TrecSubPointer<TVariable, TcInterpretor> g);
 
     /**
      * Method: TAccessorVariable::GetSetter
@@ -127,6 +144,14 @@ public:
     TrecSubPointer<TVariable, TInterpretor> GetSetter();
 
     /**
+     * Method: TAccessorVariable::GetCSetter
+     * Purpose: Retireve the Setter held by this variable
+     * Parameters: void
+     * Returns: TrecSubPointer<TVariable, TcInterpretor> - the interpretor representing a setter
+     */
+    TrecSubPointer<TVariable, TcInterpretor> GetCSetter();
+
+    /**
      * Method: TAccessorVariable::SetSetter
      * Purpose: Retireve the Getter held by this variable
      * Parameters: TrecSubPointer<TVariable, TInterpretor> s - the interpretor representing a setter
@@ -134,7 +159,16 @@ public:
      */
     void SetSetter(TrecSubPointer<TVariable, TInterpretor> s);
 
+    /**
+     * Method: TAccessorVariable::SetSetter
+     * Purpose: Retireve the Getter held by this variable
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> s - the interpretor representing a setter
+     * Returns: void
+     */
+    void SetSetter(TrecSubPointer<TVariable, TcInterpretor> s);
+
 private:
     TrecSubPointer<TVariable, TInterpretor> getter, setter;
+    TrecSubPointer<TVariable, TcInterpretor> cGetter, cSetter;
 };
 

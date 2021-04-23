@@ -129,6 +129,17 @@ TrecSubPointer<TVariable, TInterpretor> TAccessorVariable::GetGetter()
 }
 
 /**
+ * Method: TAccessorVariable::GetCGetter
+ * Purpose: Retireve the Getter held by this variable
+ * Parameters: void
+ * Returns: TrecSubPointer<TVariable, TcInterpretor> - the interpretor representing a getter
+ */
+TrecSubPointer<TVariable, TcInterpretor> TAccessorVariable::GetCGetter()
+{
+    return cGetter;
+}
+
+/**
  * Method: TAccessorVariable::SetGetter
  * Purpose: Retireve the Getter held by this variable
  * Parameters: TrecSubPointer<TVariable, TInterpretor> g - the interpretor representing a getter
@@ -137,6 +148,17 @@ TrecSubPointer<TVariable, TInterpretor> TAccessorVariable::GetGetter()
 void TAccessorVariable::SetGetter(TrecSubPointer<TVariable, TInterpretor> g)
 {
     getter = g;
+}
+
+/**
+ * Method: TAccessorVariable::SetGetter
+ * Purpose: Retireve the Getter held by this variable
+ * Parameters: TrecSubPointer<TVariable, TcInterpretor> g - the interpretor representing a getter
+ * Returns: void
+ */
+void TAccessorVariable::SetGetter(TrecSubPointer<TVariable, TcInterpretor> g)
+{
+    cGetter = g;
 }
 
 /**
@@ -150,6 +172,18 @@ TrecSubPointer<TVariable, TInterpretor> TAccessorVariable::GetSetter()
     return setter;
 }
 
+
+/**
+ * Method: TAccessorVariable::GetCSetter
+ * Purpose: Retireve the Setter held by this variable
+ * Parameters: void
+ * Returns: TrecSubPointer<TVariable, TcInterpretor> - the interpretor representing a setter
+ */
+TrecSubPointer<TVariable, TcInterpretor> TAccessorVariable::GetCSetter()
+{
+    return cSetter;
+}
+
 /**
  * Method: TAccessorVariable::SetSetter
  * Purpose: Retireve the Getter held by this variable
@@ -159,4 +193,15 @@ TrecSubPointer<TVariable, TInterpretor> TAccessorVariable::GetSetter()
 void TAccessorVariable::SetSetter(TrecSubPointer<TVariable, TInterpretor> s)
 {
     setter = s;
+}
+
+/**
+ * Method: TAccessorVariable::SetSetter
+ * Purpose: Retireve the Getter held by this variable
+ * Parameters: TrecSubPointer<TVariable, TcInterpretor> s - the interpretor representing a setter
+ * Returns: void
+ */
+void TAccessorVariable::SetSetter(TrecSubPointer<TVariable, TcInterpretor> s)
+{
+    cSetter = s;
 }
