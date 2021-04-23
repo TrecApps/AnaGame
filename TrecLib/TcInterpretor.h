@@ -385,7 +385,9 @@ public:
      */
     void PrepReturn(ReturnObject& ret, const TString& mess, const TString& stackMess, USHORT code, LONG64 line);
 
+    bool GetClass(const TString& className, TClassStruct& classStruct);
 
+    bool SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating);
 protected:
 
     /**
@@ -403,5 +405,10 @@ protected:
     TDataMap<TcVariableHolder> strictVariables; // List of Variables to hold and Generate prior to runtime (must not be removed)
     
     TString selfWord;
+
+    /**
+     * The list of Types held by the Interpretor
+     */
+    TDataMap<TClassStruct> classes;
 };
 

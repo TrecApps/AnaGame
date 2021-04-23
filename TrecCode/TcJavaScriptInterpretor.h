@@ -1,5 +1,5 @@
 #pragma once
-#include <TcInterpretor.h>
+#include <TcTypeInterpretor.h>
 #include <CodeStatement.h>
 #include <DefaultObjectOperator.h>
 #include "TrecCode.h"
@@ -43,7 +43,7 @@ public:
  * 
  * SuperClass: TcInterpretor
  */
-class _TREC_CODE_DLL TcJavaScriptInterpretor : public TcInterpretor
+class _TREC_CODE_DLL TcJavaScriptInterpretor : public TcTypeInterpretor
 {
 public:
 

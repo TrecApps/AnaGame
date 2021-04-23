@@ -166,6 +166,7 @@
     <ClInclude Include="TClassStruct.h" />
     <ClInclude Include="TcNativeInterpretor.h" />
     <ClInclude Include="TContainerVariable.h" />
+    <ClInclude Include="TcTypeInterpretor.h" />
     <ClInclude Include="TInterpretor.h" />
     <ClInclude Include="TNativeInterpretor.h" />
     <ClInclude Include="TObjectVariable.h" />
@@ -192,6 +193,7 @@
     <ClCompile Include="TClassStruct.cpp" />
     <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
+    <ClCompile Include="TcTypeInterpretor.cpp" />
     <ClCompile Include="TInterpretor.cpp" />
     <ClCompile Include="TNativeInterpretor.cpp" />
     <ClCompile Include="TObjectVariable.cpp" />

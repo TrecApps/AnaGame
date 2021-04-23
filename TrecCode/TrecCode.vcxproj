@@ -164,6 +164,7 @@
     <ClInclude Include="TAnaGameCodeEnvironment.h" />
     <ClInclude Include="TAnagameEnvironmentBuilder.h" />
     <ClInclude Include="TAnascriptInterpretor.h" />
+    <ClInclude Include="TcJavaScriptClassInterpretor.h" />
     <ClInclude Include="TcJavaScriptInterpretor.h" />
     <ClInclude Include="TEnvironmentBuilder.h" />
     <ClInclude Include="TGradleEnvironment.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="TAnaGameCodeEnvironment.cpp" />
     <ClCompile Include="TAnagameEnvironmentBuilder.cpp" />
     <ClCompile Include="TAnascriptInterpretor.cpp" />
+    <ClCompile Include="TcJavaScriptClassInterpretor.cpp" />
     <ClCompile Include="TcJavaScriptInterpretor.cpp" />
     <ClCompile Include="TEnvironmentBuilder.cpp" />
     <ClCompile Include="TGradleEnvironment.cpp" />
