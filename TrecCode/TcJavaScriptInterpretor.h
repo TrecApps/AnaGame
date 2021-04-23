@@ -291,5 +291,10 @@ protected:
 
     // Sets up a console Object
     TrecPointer<TVariable> GetJsConsole();
+
+
+
+    // Variables to not erase
+    
 };
 

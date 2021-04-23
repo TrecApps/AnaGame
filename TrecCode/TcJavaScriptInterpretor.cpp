@@ -87,38 +87,38 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
         return;
     }
 
-    StatementCollector collector;
-    UINT line = 0;
-    TString stack;
-    switch (collector.RunCollector(codeFile, ret.errorMessage, line))
-    {
-    case 1:
-        ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", codeFile->GetPath().GetConstantBuffer());
-        ret.returnCode = ReturnObject::ERR_INVALID_FILE_PARAM;
-        return;
-    case 2:
-        ret.returnCode = ReturnObject::ERR_GENERIC_ERROR;
-        stack.Format(L"In File '%ws'", codeFile->GetPath().GetConstantBuffer());
-        ret.stackTrace.push_back(stack);
-        stack.Format(L"At Line: %d", line);
-        ret.stackTrace.push_back(stack);
-        return;
-    }
+StatementCollector collector;
+UINT line = 0;
+TString stack;
+switch (collector.RunCollector(codeFile, ret.errorMessage, line))
+{
+case 1:
+    ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", codeFile->GetPath().GetConstantBuffer());
+    ret.returnCode = ReturnObject::ERR_INVALID_FILE_PARAM;
+    return;
+case 2:
+    ret.returnCode = ReturnObject::ERR_GENERIC_ERROR;
+    stack.Format(L"In File '%ws'", codeFile->GetPath().GetConstantBuffer());
+    ret.stackTrace.push_back(stack);
+    stack.Format(L"At Line: %d", line);
+    ret.stackTrace.push_back(stack);
+    return;
+}
 
-    collector.CollectStatement(statements);
-    readyToRun = false;
+collector.CollectStatement(statements);
+readyToRun = false;
 
-    if (isFirst)
-    {
-        // Initialize Objects meant for the main Interpretor
+if (isFirst)
+{
+    // Initialize Objects meant for the main Interpretor
 
-        // Intitialize a Console Object
-        // Console Object
-        variables.addEntry(L"console", TcVariableHolder(false, L"", GetJsConsole()));
-        // Object Object
-        variables.addEntry(L"Object", TcVariableHolder(false, L"", JavaScriptFunc::GetJSObectVariable(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+    // Intitialize a Console Object
+    // Console Object
+    variables.addEntry(L"console", TcVariableHolder(false, L"", GetJsConsole()));
+    // Object Object
+    variables.addEntry(L"Object", TcVariableHolder(false, L"", JavaScriptFunc::GetJSObectVariable(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
 
-    }
+}
 }
 
 ReturnObject TcJavaScriptInterpretor::Run()
@@ -177,10 +177,20 @@ void TcJavaScriptInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariabl
         variables.addEntry(paramNames[Rust], holder);
         arguments->AppendValue(holder.value);
     }
+
     TcVariableHolder holder;
     holder.mut = false;
     holder.value = TrecPointerKey::GetTrecPointerFromSub<>(arguments);
     variables.addEntry(L"arguments", holder);
+
+    for (UINT Rust = 0; Rust < strictVariables.count(); Rust++)
+    {
+        TDataEntry<TcVariableHolder> entry;
+        if(strictVariables.GetEntryAt(Rust, entry))
+        {
+            variables.addEntry(entry.key, entry.object);
+        }
+    }
 }
 
 void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret)
@@ -2563,6 +2573,24 @@ UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& squ
     ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(function);
     ret.errorMessage.Set(statement->statement.SubString(index, startP).GetTrim());
     index = endP;
+
+    // Collect local variables to create a working closure
+    for (UINT Rust = 0; Rust < variables.count(); Rust++)
+    {
+        TDataEntry<TcVariableHolder> entry;
+        if (!variables.GetEntryAt(Rust, entry))
+            continue;
+
+        if (entry.key.GetSize())
+        {
+            auto tempVar = entry.object.value;
+            TcVariableHolder mark;
+            mark.mut = entry.object.mut;
+            mark.value = (tempVar.Get() ? tempVar->Clone() : tempVar);
+            function->strictVariables.addEntry(entry.key, mark);
+        }
+    }
+
     return 0;
 }
 
