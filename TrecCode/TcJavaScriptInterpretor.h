@@ -246,6 +246,7 @@ protected:
     void ProcessSwitch(TrecPointer<CodeStatement> statement, ReturnObject& ret);                                        // Call for Switch Statements
     bool ProcessCase(TrecPointer<CodeStatement> caseStatement, TrecPointer<CodeStatement> switchStatement,
         TrecPointer<TVariable> var, bool& hadDefault, ReturnObject& ret);                                                                  // Call for case statements
+    void ProcessClass(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
 
     // Helper Methods for the Process-Methods
     bool IsTruthful(TrecPointer<TVariable> var);

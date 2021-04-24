@@ -7,6 +7,7 @@
 #include <cassert>
 #include <JavaScriptFunc.h>
 #include "JsConsole.h"
+#include "TcJavaScriptClassInterpretor.h"
 
 
 static TDataArray<TString> standardOperators;
@@ -242,7 +243,7 @@ void TcJavaScriptInterpretor::ProcessIndividualStatement(const TString& statemen
 }
 
 TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env):
-    TcInterpretor(parentInterpretor, env)
+    TcTypeInterpretor(parentInterpretor, env)
 {
     readyToRun = false;
 
@@ -850,8 +851,13 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         state->statement.Delete(0, 5);
         state->statement.Trim();
 
-        PreProcess(ret, state->block);
-        if (ret.returnCode)return;
+        TrecSubPointer<TVariable, TcJavaScriptClassInterpretor> classJs = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptClassInterpretor>(
+            TrecPointerKey::GetSubPointerFromSoft<>(self), environment);
+        classJs->PreProcess(ret);
+        if (ret.returnCode)
+            return;
+
+        state->statementVar = TrecPointerKey::GetTrecPointerFromSub<>(classJs);
         PreProcess(ret, state->next);
         return;
     }
@@ -1799,6 +1805,74 @@ bool TcJavaScriptInterpretor::ProcessCase(TrecPointer<CodeStatement> caseStateme
     return found;
 }
 
+void TcJavaScriptInterpretor::ProcessClass(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+    TString classState(statement->statement);
+    auto pieces = classState.split(L' ');
+
+    TClassStruct s, c;
+    bool hasParent = false;
+
+    switch (pieces->Size())
+    {
+    case 3:
+        // make sure middle word is extended
+        if (pieces->at(1).Compare(L"extends"))
+        {
+            PrepReturn(ret, L"Expected keyword 'extends' in Class Declaration", L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
+            return;
+        }
+
+        if (!this->GetClass(pieces->at(2), s))
+        {
+            TString message;
+            message.Format(L"Expected Superclass %ws does not exist in the required scope!", pieces->at(2).GetConstantBuffer());
+            PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
+            return;
+        }
+        hasParent = true;
+    case 1:
+        CheckVarName(pieces->at(0), ret);
+        if (ret.returnCode)
+            return;
+        break;
+    default:
+        PrepReturn(ret, L"Malformed Class Statement detected!", L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
+        return;
+    }
+
+    if (!statement->statementVar.Get())
+    {
+        TString message;
+        message.Format(L"INTERNAL ERROR! Failed to set up Js-Class Interpretor for class %ws", pieces->at(0).GetConstantBuffer());
+        PrepReturn(ret, message, L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
+        return;
+    }
+
+    TrecSubPointer<TVariable, TcJavaScriptClassInterpretor> jsClass = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcJavaScriptClassInterpretor>(statement->statementVar);
+
+    jsClass->SetClassName(pieces->at(0));
+    if (hasParent)
+        jsClass->SetSuperClassName(pieces->at(2));
+
+    jsClass->ProcessStatements(ret);
+    if (ret.returnCode)
+        return;
+
+    TClassStruct newClass = jsClass->GetClassData();
+
+    if (!this->SubmitClassType(pieces->at(0), newClass, false))
+    {
+        TString message;
+        message.Format(L"Failed to set up Js-Class Interpretor for class %ws, class likely already exists", pieces->at(0).GetConstantBuffer());
+        PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_NAME, statement->lineStart);
+        return;
+    }
+
+    if(statement->next.Get())
+    Run(statements, index, statement->next);
+}
+
 bool TcJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
 {
     if (!var.Get())
@@ -2373,7 +2447,7 @@ throughString:
 
                 if (attribute == 1)// calling new
                 {
-                    vThis = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_array);
+                    vThis = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
                 }
                 uret += ProcessProcedureCall(parenth, square, index, vThis, var, statement, ret);
 
@@ -2430,78 +2504,110 @@ throughString:
             
             if (attribute == 1)
             {
-                // Expect to deal with a type
-                
-            }
-
-            // Likely dealing with function defintion
-            ret.errorObject.Nullify();
-            UINT jumps = ProcessFunctionExpression(parenth, square, index, statement, ret);
-            index++;
-            if (ret.returnCode)
-                return 0;
-            if (ret.errorObject.Get())
-            {
-                bool worked = true;
-                switch (attribute)
+                // Go ahead an create our object
+                vThis = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+                // Expect to deal with a type, go by type system, since if a function, then it would have been caught in the code above
+                TClassStruct cla;
+                if (this->GetClass(phrase, cla))
                 {
-                case 1: // new
-
-                    break;
-                case 2: // get
-                case 3: // set
-                    wholePhrase.Delete(0, 3);
-                    wholePhrase.Trim();
-                    if (this->methodObject.Get())
+                    TClassAttribute att = cla.GetAttributeByName(L"constructor");
+                    if (att.name.GetSize())
                     {
-                        if (methodObject->GetVarType() == var_type::collection)
-                        {
-                            auto coll = dynamic_cast<TContainerVariable*>(methodObject.Get());
-                            bool accessPres = false;
-                            auto access = coll->GetValue(wholePhrase, accessPres);
-                            if (!access.Get())
-                            {
-                                access = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAccessorVariable>();
-                                coll->SetValue(wholePhrase, access);
-                            }
-                            else if (access->GetVarType() != var_type::accessor)
-                            {
-                                TString message;
-                                message.Format(L"Cannot assign getter/setter to attribute %ws since it is already assigned and not an accessor!", wholePhrase.GetConstantBuffer());
-                                PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
-                            }
-                            auto tAccess = dynamic_cast<TAccessorVariable*>(access.Get());
-                            //if (attribute == 2)
-                            //    tAccess->SetGetter(ret.errorObject);
-                            //else
-                            //    tAccess->SetSetter(ret.errorObject);
-                        }
-                        else if (methodObject->GetVarType() == var_type::accessor)
-                        {
-                            auto tAccess = dynamic_cast<TAccessorVariable*>(methodObject.Get());
-                            //if (attribute == 2)
-                            //    tAccess->SetGetter(ret.errorObject);
-                            //else
-                            //    tAccess->SetSetter(ret.errorObject);
-                        }
-                        else
-                        {
-                            // To-Do: Handle Error
-                        }
+                        uret += ProcessProcedureCall(++parenth, square, ++index, vThis, att.def, statement, ret);
                     }
                     else
                     {
-                        // To-Do: Handle Error!
+                        for (UINT Rust = 0; cla.GetAttributeByIndex(Rust, att); Rust++)
+                        {
+                            dynamic_cast<TContainerVariable*>(vThis.Get())->SetValue(att.name, att.def);
+                        }
+                        int iIndex = statement->statement.Find(L')', index);
+                        if (iIndex < 0)
+                        {
+                            PrepReturn(ret, L"Expected ')' token in expression!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
+                            return;
+                        }
+                        index = static_cast<UINT>(iIndex);
                     }
-                
-                    break;
-                case 4: // Function
-                    wholePhrase.Delete(0, 8);
-                    wholePhrase.Trim();
+                }
+                else
+                {
 
                 }
-                var = ret.errorObject;
-                loopAround = false;
+                var = vThis;
+                
+            }
+            else
+            {
+                // Likely dealing with function defintion
+                ret.errorObject.Nullify();
+                UINT jumps = ProcessFunctionExpression(parenth, square, index, statement, ret);
+                index++;
+                if (ret.returnCode)
+                    return 0;
+                if (ret.errorObject.Get())
+                {
+                    bool worked = true;
+                    switch (attribute)
+                    {
+                    case 1: // new
+
+                        break;
+                    case 2: // get
+                    case 3: // set
+                        wholePhrase.Delete(0, 3);
+                        wholePhrase.Trim();
+                        if (this->methodObject.Get())
+                        {
+                            if (methodObject->GetVarType() == var_type::collection)
+                            {
+                                auto coll = dynamic_cast<TContainerVariable*>(methodObject.Get());
+                                bool accessPres = false;
+                                auto access = coll->GetValue(wholePhrase, accessPres);
+                                if (!access.Get())
+                                {
+                                    access = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAccessorVariable>();
+                                    coll->SetValue(wholePhrase, access);
+                                }
+                                else if (access->GetVarType() != var_type::accessor)
+                                {
+                                    TString message;
+                                    message.Format(L"Cannot assign getter/setter to attribute %ws since it is already assigned and not an accessor!", wholePhrase.GetConstantBuffer());
+                                    PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
+                                }
+                                auto tAccess = dynamic_cast<TAccessorVariable*>(access.Get());
+                                //if (attribute == 2)
+                                //    tAccess->SetGetter(ret.errorObject);
+                                //else
+                                //    tAccess->SetSetter(ret.errorObject);
+                            }
+                            else if (methodObject->GetVarType() == var_type::accessor)
+                            {
+                                auto tAccess = dynamic_cast<TAccessorVariable*>(methodObject.Get());
+                                //if (attribute == 2)
+                                //    tAccess->SetGetter(ret.errorObject);
+                                //else
+                                //    tAccess->SetSetter(ret.errorObject);
+                            }
+                            else
+                            {
+                                // To-Do: Handle Error
+                            }
+                        }
+                        else
+                        {
+                            // To-Do: Handle Error!
+                        }
+
+                        break;
+                    case 4: // Function
+                        wholePhrase.Delete(0, 8);
+                        wholePhrase.Trim();
+
+                    }
+                    var = ret.errorObject;
+                    loopAround = false;
+                }
             }
         }
 
