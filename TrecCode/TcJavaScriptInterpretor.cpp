@@ -2525,7 +2525,7 @@ throughString:
                         if (iIndex < 0)
                         {
                             PrepReturn(ret, L"Expected ')' token in expression!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
-                            return;
+                            return 0;
                         }
                         index = static_cast<UINT>(iIndex);
                     }

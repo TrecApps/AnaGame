@@ -385,9 +385,6 @@ public:
      */
     void PrepReturn(ReturnObject& ret, const TString& mess, const TString& stackMess, USHORT code, LONG64 line);
 
-    bool GetClass(const TString& className, TClassStruct& classStruct);
-
-    bool SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating);
 protected:
 
     /**
@@ -406,9 +403,5 @@ protected:
     
     TString selfWord;
 
-    /**
-     * The list of Types held by the Interpretor
-     */
-    TDataMap<TClassStruct> classes;
 };
 
