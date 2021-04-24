@@ -4,6 +4,7 @@
 #include <TClassStruct.h>
 class TcJavaScriptClassInterpretor : public TcJavaScriptInterpretor
 {
+    friend class TcJavaScriptInterpretor;
 public:
 	TcJavaScriptClassInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env);
 

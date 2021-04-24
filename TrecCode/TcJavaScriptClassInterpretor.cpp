@@ -68,7 +68,7 @@ void TcJavaScriptClassInterpretor::ProcessStatements(ReturnObject& ret)
 					return;
 				}
 
-				// ProcessMethod(L"constructor", startStatement, startParenth, ro);
+				ProcessMethod(L"constructor", state, ret, 0);
 				if (ret.returnCode)
 					return;
 
@@ -128,7 +128,7 @@ void TcJavaScriptClassInterpretor::ProcessStatements(ReturnObject& ret)
 				CheckVarName(name,ret);
 				if (ret.returnCode)
 					return;
-				//ProcessMethod(name, startStatement, startParenth, ro, attributes);
+				ProcessMethod(name, state, ret, attributes);
 			}
 			else
 			{
@@ -179,7 +179,7 @@ TClassStruct TcJavaScriptClassInterpretor::GetClassData()
 
 void TcJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TrecPointer<CodeStatement> state, ReturnObject& ro, UCHAR att)
 {
-	UINT parenth = 0, square = 0, index;
+	UINT parenth = 0, square = 0, index = state->statement.Find(L'(');
 	ProcessFunctionExpression(parenth, square, index, state, ro);
 
 	if (ro.returnCode)

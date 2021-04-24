@@ -385,7 +385,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
         ret.mode = return_mode::rm_break;
         break;
     case code_statement_type::cst_class:
-
+        ProcessClass(statements, index, statement, ret);
         break;
     case code_statement_type::cst_const:
     case code_statement_type::cst_let:
@@ -1855,6 +1855,8 @@ void TcJavaScriptInterpretor::ProcessClass(TDataArray<TrecPointer<CodeStatement>
     if (hasParent)
         jsClass->SetSuperClassName(pieces->at(2));
 
+    jsClass->SetStatements(statement->block);
+
     jsClass->ProcessStatements(ret);
     if (ret.returnCode)
         return;
@@ -2508,7 +2510,7 @@ throughString:
                 vThis = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
                 // Expect to deal with a type, go by type system, since if a function, then it would have been caught in the code above
                 TClassStruct cla;
-                if (this->GetClass(phrase, cla))
+                if (this->GetClass(wholePhrase, cla))
                 {
                     TClassAttribute att = cla.GetAttributeByName(L"constructor");
                     if (att.name.GetSize())

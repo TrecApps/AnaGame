@@ -366,6 +366,8 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 					}
 					else statements.push_back(currentStatement);
 					currentStatement = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+					if(parentStatement.Get())
+						currentStatement->parent = TrecPointerKey::GetSoftPointerFromTrec<>(parentStatement);
 					currentIndex = statement_;
 				}
 				
