@@ -294,6 +294,12 @@ void TcInterpretor::PrepReturn(ReturnObject& ret, const TString& mess, const TSt
 	}
 }
 
+TrecPointer<TVariable> TcInterpretor::Clone()
+{
+	auto subSelf = TrecPointerKey::GetSubPointerFromSoft<>(self);
+	return TrecPointerKey::GetTrecPointerFromSub<>(subSelf);
+}
+
 
 /**
  * Method: TCInterpretor::SetParamNames

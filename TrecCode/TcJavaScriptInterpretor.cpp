@@ -2512,25 +2512,27 @@ throughString:
                 TClassStruct cla;
                 if (this->GetClass(wholePhrase, cla))
                 {
-                    TClassAttribute att = cla.GetAttributeByName(L"constructor");
+                    TClassAttribute att;
+                    for (UINT Rust = 0; cla.GetAttributeByIndex(Rust, att); Rust++)
+                    {
+                        dynamic_cast<TContainerVariable*>(vThis.Get())->SetValue(att.name, att.def.Get() ? att.def->Clone() : att.def);
+                    }
+                    int iIndex = statement->statement.Find(L')', index);
+                    if (iIndex < 0)
+                    {
+                        PrepReturn(ret, L"Expected ')' token in expression!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
+                        return 0;
+                    }
+                    
+                    
+                    att = cla.GetAttributeByName(L"constructor");
                     if (att.name.GetSize())
                     {
                         uret += ProcessProcedureCall(++parenth, square, ++index, vThis, att.def, statement, ret);
                     }
-                    else
-                    {
-                        for (UINT Rust = 0; cla.GetAttributeByIndex(Rust, att); Rust++)
-                        {
-                            dynamic_cast<TContainerVariable*>(vThis.Get())->SetValue(att.name, att.def);
-                        }
-                        int iIndex = statement->statement.Find(L')', index);
-                        if (iIndex < 0)
-                        {
-                            PrepReturn(ret, L"Expected ')' token in expression!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
-                            return 0;
-                        }
-                        index = static_cast<UINT>(iIndex);
-                    }
+
+                    index = static_cast<UINT>(iIndex) + 1;
+                    
                 }
                 else
                 {

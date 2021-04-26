@@ -385,6 +385,10 @@ public:
      */
     void PrepReturn(ReturnObject& ret, const TString& mess, const TString& stackMess, USHORT code, LONG64 line);
 
+    virtual TrecPointer<TVariable> Clone() override;
+
+
+
 protected:
 
     /**
