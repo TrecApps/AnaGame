@@ -436,6 +436,9 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     case code_statement_type::cst_while:
         ProcessWhile(statement, index, ret);
         break;
+    case code_statement_type::cst_virtual_assign:
+        ProcessPrototypeAssign(statement, ret);
+        break;
     }
 
     return ret;
@@ -3552,6 +3555,12 @@ void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>
                 ro = ProcessPrototypeOperation(pieces->at(0), pieces->at(2), left, JS_Prototype_Op::jpo_add_const);
                 return;
             }*/
+            auto pieces = expressions[Rust].varName.split(L'.', 3);
+            if (pieces->Size() == 3 && !pieces->at(1).Compare(L"prototype"))
+            {
+                AddAssignStatement(pieces->at(0), pieces->at(2), left, ro);
+                return;
+            }
         }
         else if (!ops[Rust].Compare(L"+="))
         {
