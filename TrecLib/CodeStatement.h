@@ -72,6 +72,8 @@ typedef enum class code_statement_type
 
     cst_module,         // Signifies some module of code
     cst_include,        // Points to code outside the file that shoud be relevent to code in this file
+
+    cst_virtual_assign, // Used by JS interpretor to run assignment
     
     cst_regular         // Statement that does not fall under other statement types
 } code_statement_type;

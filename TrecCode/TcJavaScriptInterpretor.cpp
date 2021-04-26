@@ -1875,6 +1875,23 @@ void TcJavaScriptInterpretor::ProcessClass(TDataArray<TrecPointer<CodeStatement>
     Run(statements, index, statement->next);
 }
 
+void TcJavaScriptInterpretor::ProcessPrototypeAssign(TrecPointer<CodeStatement> state, ReturnObject& ret)
+{
+    assert(state.Get() && state->statementType == code_statement_type::cst_virtual_assign);
+
+    if (!this->methodObject.Get() || methodObject->GetVarType() != var_type::collection)
+    {
+        TString message;
+        message.Format(L"Error Setting Prototype Attribute %ws", state->statement.GetConstantBuffer());
+        PrepReturn(ret, message, L"", ReturnObject::ERR_BROKEN_REF, 0);
+        return;
+    }
+
+    TrecSubPointer<TVariable, TContainerVariable> mObject = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(methodObject);
+
+    mObject->SetValue(state->statement, state->statementVar.Get() ? state->statementVar->Clone() : state->statementVar);
+}
+
 bool TcJavaScriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
 {
     if (!var.Get())
@@ -3749,4 +3766,54 @@ TrecPointer<TVariable> TcJavaScriptInterpretor::GetJsConsole()
 
 
     return console;
+}
+
+void TcJavaScriptInterpretor::AddAssignStatement(const TString& type, const TString& att, TrecPointer<TVariable> value, ReturnObject& ret)
+{
+    CheckVarName(att, ret);
+    if (ret.returnCode)
+        return;
+
+    TClassStruct classStruct;
+    if (GetClass(type, classStruct))
+    {
+        TClassAttribute cons = classStruct.GetAttributeByName(L"constructor");
+        TcJavaScriptInterpretor* jsInt = dynamic_cast<TcJavaScriptInterpretor*>(cons.def.Get());
+        if (cons.name.GetSize() && cons.def.Get() && cons.def->GetVarType() == var_type::interpretor)
+        {
+            TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+            newState->statement.Set(att);
+            newState->statementVar = value.Get() ? value->Clone() : value;
+            newState->statementType = code_statement_type::cst_virtual_assign;
+            jsInt->statements.push_back(newState);
+        }
+        else
+        {
+            cons.name.Set(att);
+            cons.def = value.Get() ? value->Clone(): value;
+            classStruct.AddAttribute(cons);
+            this->SubmitClassType(type, classStruct, true);
+        }
+    }
+    else
+    {
+        // Check for a method with that name
+        bool present;
+        TString tType(type);
+        TrecPointer<TVariable> func = GetVariable(tType, present);
+
+        TcJavaScriptInterpretor* jsInt = dynamic_cast<TcJavaScriptInterpretor*>(func.Get());
+        if (!jsInt)
+        {
+            TString message;
+            message.Format(L"Failed to Find Class or Function with the name %ws", type.GetConstantBuffer());
+            PrepReturn(ret, message, L"", ReturnObject::ERR_BROKEN_REF, 0);
+            return;
+        }
+        TrecPointer<CodeStatement> newState = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+        newState->statement.Set(att);
+        newState->statementVar = value.Get() ? value->Clone() : value;
+        newState->statementType = code_statement_type::cst_virtual_assign;
+        jsInt->statements.push_back(newState);
+    }
 }

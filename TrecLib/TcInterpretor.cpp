@@ -219,7 +219,7 @@ void TcInterpretor::SetSelf(TrecPointer<TVariable> self)
  *              ReportObject& ro - the Object to modify based off of the findings
  * Returns: void
  */
-void TcInterpretor::CheckVarName(TString& varname, ReturnObject& ro)
+void TcInterpretor::CheckVarName(const TString& varname, ReturnObject& ro)
 {
 	int badChar = varname.FindOneOf(L"!@#$%^&*(){}[]-=+/,;:'\"\\`~");
 	if (badChar != -1)

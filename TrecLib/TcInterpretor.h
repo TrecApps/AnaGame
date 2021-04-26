@@ -345,11 +345,11 @@ public:
     /**
      * Method: TcInterpretor::CheckVarName
      * Purpose: Method Interpreters can use to inspect the variable name to make sure it is valid
-     * Parameters: TString& varname - the variable name to check
+     * Parameters: const  TString& varname - the variable name to check
      *              ReportObject& ro - the Object to modify based off of the findings
      * Returns: void
      */
-    void CheckVarName(TString& varname, ReturnObject& ro);
+    void CheckVarName(const TString& varname, ReturnObject& ro);
 
     /**
      * Method: TcInterpretor::ProcessIndividualStatement

@@ -248,6 +248,8 @@ protected:
         TrecPointer<TVariable> var, bool& hadDefault, ReturnObject& ret);                                                                  // Call for case statements
     void ProcessClass(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
 
+    void ProcessPrototypeAssign(TrecPointer<CodeStatement> state, ReturnObject& ret);
+
     // Helper Methods for the Process-Methods
     bool IsTruthful(TrecPointer<TVariable> var);
 
@@ -293,7 +295,8 @@ protected:
     // Sets up a console Object
     TrecPointer<TVariable> GetJsConsole();
 
-
+    // Support for JS Prototyping
+    void AddAssignStatement(const TString& type, const TString& att, TrecPointer<TVariable> value, ReturnObject& ret);
 
     // Variables to not erase
     
