@@ -371,7 +371,7 @@ public:
      *              bool currentScope - whether to only check the current scope (don't check parent interpretors), default of false
      * Returns: TrecPointer<TVariable> - the variable requested (null if not found)
      */
-    TrecPointer<TVariable> GetVariable(TString& varName, bool& present, bool currentScope = false);
+    virtual TrecPointer<TVariable> GetVariable(TString& varName, bool& present, bool currentScope = false);
 
     /**
      * Method: TcInterprtor::PrepReturn

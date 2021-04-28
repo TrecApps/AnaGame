@@ -2008,6 +2008,18 @@ void JavaScriptExpression2::operator=(const JavaScriptExpression2& orig)
     value = orig.value;
 }
 
+TrecPointer<TVariable> TcJavaScriptInterpretor::GetVariable(TString& varName, bool& present, bool currentScope)
+{
+    TrecPointer<TVariable> ret = TcInterpretor::GetVariable(varName, present, currentScope);
+
+    if (!ret.Get() && !varName.Compare(L"super") && dynamic_cast<TContainerVariable*>(methodObject.Get()))
+    {
+        present = true;
+        ret = dynamic_cast<TContainerVariable*>(methodObject.Get())->GetValue(varName, present);
+    }
+    return ret;
+}
+
 UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret )
 {
     if (!statement->statement.GetSize())
@@ -2835,6 +2847,17 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
     UINT nextRet = 0;
 
     TDataArray<TrecPointer<TVariable>> params;
+
+    // Retrieve the Parent Object if Super is being called
+    if (statement->statement.StartsWith(L"super", false, true) || statement->statement.StartsWith(L"super("))
+    {
+        if (dynamic_cast<TContainerVariable*>(methodObject.Get()))
+        {
+            bool present;
+            object = dynamic_cast<TContainerVariable*>(methodObject.Get())->GetValue(L"__proto__", present);
+        }
+    }
+
 
     while (parenth >= curParenth)
     {

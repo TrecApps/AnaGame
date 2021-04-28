@@ -254,6 +254,18 @@ protected:
     // Helper Methods for the Process-Methods
     bool IsTruthful(TrecPointer<TVariable> var);
 
+
+
+    /**
+     * Method: TcInterpretor::GetVariable
+     * Purpose: Retrieves the variable specified
+     * Parameters: TString& varName - the name of the variable requested
+     *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
+     *              bool currentScope - whether to only check the current scope (don't check parent interpretors), default of false
+     * Returns: TrecPointer<TVariable> - the variable requested (null if not found)
+     */
+    virtual TrecPointer<TVariable> GetVariable(TString& varName, bool& present, bool currentScope = false) override;
+
     /// Process Expression Methods. They follow a certain pattern as they may or may not encompass the whole expression provided
     /// Parameters:
     ///     UINT& parenth - How many Parenthesis have already been processed
