@@ -2367,10 +2367,128 @@ UINT TcJavaScriptInterpretor::ProcessArrayExpression(UINT& parenth, UINT& square
     return nodeRet;
 }
 
+UINT TcJavaScriptInterpretor::ProcessJsonPiece(TrecPointer<CodeStatement> statement, const TString& piece, TrecSubPointer<TVariable, TContainerVariable> obj, UINT stateIndex, ReturnObject& ret)
+{
+    auto pieces = piece.splitn(L':', 2);
+
+    if (pieces->Size() == 1)
+    {
+        UINT parenth = 0, square = 0;
+        return ProcessExpression(parenth, square, stateIndex, statement, ret);
+    }
+
+    if (pieces->Size() == 2)
+    {
+        CheckVarName(pieces->at(0), ret);
+        if (ret.returnCode)
+            return 0;
+
+        ProcessIndividualStatement(pieces->at(1), ret);
+        if (ret.returnCode)
+            return;
+
+        obj->SetValue(pieces->at(0), ret.errorObject);
+        ret.errorObject.Nullify();
+    }
+    return 0;
+}
+
+
 UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
+    TrecSubPointer<TVariable, TContainerVariable> obj = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+    for (UINT Rust = 0; Rust < statement->block.Size(); Rust++)
+    {
+        TrecPointer<CodeStatement> curStatement = statement->block[Rust];
+        TString subState;
+        WCHAR quote = L'\0';
+        UINT subStart = 0;
+        UINT transfer = 0;
 
-    return 0;
+        UINT newParenth = 0, newSquare = 0;
+    throughStatement:
+        for (UINT C = 0; C < curStatement->statement.GetSize(); C++)
+        {
+            WCHAR ch = curStatement->statement[C];
+
+            if (!quote && !newParenth && !newSquare && ch == L',')
+            {
+                subStart = C + 1;
+                ProcessJsonPiece(curStatement, subState, obj, subStart, ret);
+                if (ret.returnCode)
+                    return;
+                subState.Empty();
+            }
+
+            switch (ch)
+            {
+            case L'\'':
+            case L'\"':
+            case L'`':
+                if (!quote)
+                    quote = ch;
+                else if (quote == ch)
+                    quote = L'\0';
+                break;
+
+            case L'(':
+                if (!quote)
+                    newParenth++;
+                break;
+            case L'[':
+                if (!quote)
+                    newSquare++;
+                break;
+            case L')':
+                if (!quote)
+                {
+                    if (!newParenth)
+                    {
+                        PrepReturn(ret, L"Unexpected ')' detected!", L"", ReturnObject::ERR_PARENTH_MISMATCH, curStatement->lineStart);
+                        return;
+                    }
+                    newParenth--;
+                }
+                break;
+            case L']':
+                if (!quote)
+                {
+                    if (!newSquare)
+                    {
+                        PrepReturn(ret, L"Unexpected ']' detected!", L"", ReturnObject::ERR_BRACKET_MISMATCH, curStatement->lineStart);
+                        return;
+                    }
+                    newSquare--;
+                }
+            }
+
+            subState.AppendChar(ch);
+
+        }
+        subState.Trim();
+        if (subState.GetSize())
+        {
+            transfer = ProcessJsonPiece(curStatement, subState, obj, subStart, ret);
+            if (ret.returnCode)
+                return;
+
+            while (transfer-- && curStatement->next.Get())
+                curStatement = curStatement->next;
+        }
+        curStatement = curStatement->next;
+
+        if (curStatement.Get())
+        {
+            quote = L'\0';
+            subStart = 0;
+            transfer = 0;
+
+            newParenth = 0; newSquare = 0;
+            subState.Empty();
+            goto throughStatement;
+        }
+    }
+    return 1;
 }
 
 UINT TcJavaScriptInterpretor::ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)

@@ -276,6 +276,7 @@ protected:
     /// Returns: UINT - how many times the operation moved into the 'next'  statement
     UINT ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
     UINT ProcessArrayExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    UINT ProcessJsonPiece(TrecPointer<CodeStatement> statement, const TString& piece, TrecSubPointer<TVariable, TContainerVariable> obj, UINT stateIndex, ReturnObject& ret);
     UINT ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
     UINT ProcessVariableExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
     UINT ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
