@@ -3,6 +3,7 @@
 #include <CodeStatement.h>
 #include <DefaultObjectOperator.h>
 #include "TrecCode.h"
+#include <TContainerVariable.h>
 /**
  * Class: JsObjectOperator
  * Purpose: Provides JavaScript specific functionality to code interpretation.
@@ -297,6 +298,7 @@ protected:
 
     // Support for JS Prototyping
     void AddAssignStatement(const TString& type, const TString& att, TrecPointer<TVariable> value, ReturnObject& ret);
+    TrecSubPointer<TVariable, TContainerVariable> ConstructObject(const TString& type);
 
     // Variables to not erase
     

@@ -218,6 +218,7 @@ ReturnObject TcJavaScriptInterpretor::PreProcess()
         {
         case code_statement_type::cst_while:
         case code_statement_type::cst_function:
+        case code_statement_type::cst_class:
             if (state->next.Get())
             {
                 if (!nextState.Get() || !state->next->IsEqual(*nextState.Get()))
@@ -2437,7 +2438,7 @@ throughString:
             {
                 vThis = var;
                 bool pres;
-                var = dynamic_cast<TContainerVariable*>(var.Get())->GetValue(phrase, pres);
+                var = dynamic_cast<TContainerVariable*>(var.Get())->GetValue(phrase, pres, L"__proto__;super");
                 if (!pres)
                 {
                     var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
@@ -2526,38 +2527,45 @@ throughString:
             
             if (attribute == 1)
             {
-                // Go ahead an create our object
-                vThis = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
-                // Expect to deal with a type, go by type system, since if a function, then it would have been caught in the code above
-                TClassStruct cla;
-                if (this->GetClass(wholePhrase, cla))
+                // Try to create the Object through the Class SYstem. If present, it will set up all the Objects and SuperObjects for us
+                auto contThis = ConstructObject(wholePhrase);
+                bool present;
+                int iIndex = statement->statement.Find(L')', index);
+                if (iIndex < 0)
                 {
-                    TClassAttribute att;
-                    for (UINT Rust = 0; cla.GetAttributeByIndex(Rust, att); Rust++)
-                    {
-                        dynamic_cast<TContainerVariable*>(vThis.Get())->SetValue(att.name, att.def.Get() ? att.def->Clone() : att.def);
-                    }
-                    int iIndex = statement->statement.Find(L')', index);
-                    if (iIndex < 0)
-                    {
-                        PrepReturn(ret, L"Expected ')' token in expression!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
-                        return 0;
-                    }
-                    
-                    
-                    att = cla.GetAttributeByName(L"constructor");
-                    if (att.name.GetSize())
-                    {
-                        uret += ProcessProcedureCall(++parenth, square, ++index, vThis, att.def, statement, ret);
-                    }
+                    PrepReturn(ret, L"Expected ')' token in expression!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
+                    return 0;
+                }
+                if (contThis.Get())
+                {
+                    // If Present, will attempt to call it's constructor
+                    vThis = TrecPointerKey::GetTrecPointerFromSub<>(contThis);
 
-                    index = static_cast<UINT>(iIndex) + 1;
+                    
+
+                    TrecPointer<TVariable> att = contThis->GetValue(L"constructor", present);
+
+                    if (dynamic_cast<TcJavaScriptInterpretor*>(att.Get()))
+                    {
+                        uret += ProcessProcedureCall(++parenth, square, ++index, vThis, att, statement, ret);
+                    }
                     
                 }
                 else
                 {
+                    // No Class Detected, Check for a function
+                    vThis = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
 
+                    TrecPointer<TVariable> func = this->GetVariable(wholePhrase, present);
+
+                    if (dynamic_cast<TcJavaScriptInterpretor*>(func.Get()))
+                    {
+                        uret += ProcessProcedureCall(++parenth, square, ++index, vThis, func, statement, ret);
+                    }
                 }
+                index = static_cast<UINT>(iIndex) + 1;
+
+          
                 var = vThis;
                 
             }
@@ -3558,7 +3566,7 @@ void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>
             auto pieces = expressions[Rust].varName.split(L'.', 3);
             if (pieces->Size() == 3 && !pieces->at(1).Compare(L"prototype"))
             {
-                AddAssignStatement(pieces->at(0), pieces->at(2), left, ro);
+                AddAssignStatement(pieces->at(0), pieces->at(2), right, ro);
                 return;
             }
         }
@@ -3825,4 +3833,34 @@ void TcJavaScriptInterpretor::AddAssignStatement(const TString& type, const TStr
         newState->statementType = code_statement_type::cst_virtual_assign;
         jsInt->statements.push_back(newState);
     }
+}
+
+TrecSubPointer<TVariable, TContainerVariable> TcJavaScriptInterpretor::ConstructObject(const TString& type)
+{
+    TrecSubPointer<TVariable, TContainerVariable> vThis;
+    // Expect to deal with a type, go by type system, since if a function, then it would have been caught in the code above
+    TClassStruct cla, pCla;
+    if (this->GetClass(type, cla))
+    {
+        vThis = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+        // Handle scenario where Type has a parent class
+        TString parent;
+        if (cla.GetParentClass(0, parent) && this->GetClass(parent, pCla))
+        {
+            auto protoThis = ConstructObject(parent);
+            if (protoThis.Get())
+            {
+                vThis->SetValue(L"super", TrecPointerKey::GetTrecPointerFromSub<>(protoThis));
+                vThis->SetValue(L"__proto__", TrecPointerKey::GetTrecPointerFromSub<>(protoThis));
+            }
+        }
+
+        TClassAttribute att;
+        for (UINT Rust = 0; cla.GetAttributeByIndex(Rust, att); Rust++)
+        {
+            dynamic_cast<TContainerVariable*>(vThis.Get())->SetValue(att.name, att.def.Get() ? att.def->Clone() : att.def);
+        }
+
+    }
+    return vThis;
 }
