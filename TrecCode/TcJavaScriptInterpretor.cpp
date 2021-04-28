@@ -2658,6 +2658,12 @@ throughString:
 
         if (ch == L'.' || ch == L'?')
         {
+            if (!wholePhrase.Compare(L"super") && dynamic_cast<TContainerVariable*>(methodObject.Get()))
+            {
+                bool present;
+                var = dynamic_cast<TContainerVariable*>(methodObject.Get())->GetValue(L"__proto__", present);
+            }
+
             index++;
             loopAround = true;
             spaceDetected = false;
