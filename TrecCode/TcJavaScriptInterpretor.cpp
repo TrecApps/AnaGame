@@ -549,6 +549,12 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
 
     state->statement.Trim();
 
+    if (!state->statement.Compare(L";") && !state->block.Size() && !state->next.Get())
+    {
+        state.Nullify();
+        return;
+    }
+
     TString startStatement(state->statement);
 
     if (state->next.Get())
@@ -1343,17 +1349,40 @@ void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStateme
         }
         else
         {
-            TcVariableHolder varHold;
-            varHold.mut = statement->statementType != code_statement_type::cst_const;
-            varHold.value = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
-            variables.addEntry(toks->at(0), varHold);
+            if (Rust == subStatements.Size() - 1)
+            {
+                UINT p = 0, s = 0, i = statement->statement.GetSize();
+                ProcessExpression(p, s, i, statement, ret);
+                if (ret.returnCode)
+                    return;
+                TcVariableHolder varHold;
+                varHold.mut = statement->statementType != code_statement_type::cst_const;
+                varHold.value = ret.errorObject;
+                variables.addEntry(toks->at(0), varHold);
+            }
+            else
+            {
+
+                TcVariableHolder varHold;
+                varHold.mut = statement->statementType != code_statement_type::cst_const;
+                varHold.value = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+                variables.addEntry(toks->at(0), varHold);
+            }
         }
     }
     
     if (statement->next.Get())
     {
-        statement->next->statementType = statement->statementType;
-        ProcessAssignmentStatement(statement->next, ret);
+        TString nStatement(statement->next->statement.GetTrim());
+        if (nStatement.GetSize() == 0 || !nStatement.Compare(L';'))
+        {
+            statement->next.Nullify();
+        }
+        else
+        {
+            statement->next->statementType = statement->statementType;
+            ProcessAssignmentStatement(statement->next, ret);
+        }
     }
 }
 
@@ -2022,7 +2051,7 @@ TrecPointer<TVariable> TcJavaScriptInterpretor::GetVariable(TString& varName, bo
 
 UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret )
 {
-    if (!statement->statement.GetSize())
+    if (!statement->statement.GetSize() || !statement->statement.GetTrim().Compare(L';'))
         return 0;
 
     TDataArray<JavaScriptExpression2> expressions;
@@ -2385,7 +2414,7 @@ UINT TcJavaScriptInterpretor::ProcessJsonPiece(TrecPointer<CodeStatement> statem
 
         ProcessIndividualStatement(pieces->at(1), ret);
         if (ret.returnCode)
-            return;
+            return 0;
 
         obj->SetValue(pieces->at(0), ret.errorObject);
         ret.errorObject.Nullify();
@@ -2397,6 +2426,10 @@ UINT TcJavaScriptInterpretor::ProcessJsonPiece(TrecPointer<CodeStatement> statem
 UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
 {
     TrecSubPointer<TVariable, TContainerVariable> obj = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+
+    auto tempMethodObj = methodObject;
+    methodObject = TrecPointerKey::GetTrecPointerFromSub<>(obj);
+
     for (UINT Rust = 0; Rust < statement->block.Size(); Rust++)
     {
         TrecPointer<CodeStatement> curStatement = statement->block[Rust];
@@ -2413,11 +2446,13 @@ UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square,
 
             if (!quote && !newParenth && !newSquare && ch == L',')
             {
-                subStart = C + 1;
+                
                 ProcessJsonPiece(curStatement, subState, obj, subStart, ret);
+                subStart = C + 1;
                 if (ret.returnCode)
-                    return;
+                    return 0;
                 subState.Empty();
+                continue;
             }
 
             switch (ch)
@@ -2445,7 +2480,7 @@ UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square,
                     if (!newParenth)
                     {
                         PrepReturn(ret, L"Unexpected ')' detected!", L"", ReturnObject::ERR_PARENTH_MISMATCH, curStatement->lineStart);
-                        return;
+                        return 0;
                     }
                     newParenth--;
                 }
@@ -2456,7 +2491,7 @@ UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square,
                     if (!newSquare)
                     {
                         PrepReturn(ret, L"Unexpected ']' detected!", L"", ReturnObject::ERR_BRACKET_MISMATCH, curStatement->lineStart);
-                        return;
+                        return 0;
                     }
                     newSquare--;
                 }
@@ -2470,7 +2505,7 @@ UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square,
         {
             transfer = ProcessJsonPiece(curStatement, subState, obj, subStart, ret);
             if (ret.returnCode)
-                return;
+                return 0;
 
             while (transfer-- && curStatement->next.Get())
                 curStatement = curStatement->next;
@@ -2488,6 +2523,10 @@ UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square,
             goto throughStatement;
         }
     }
+
+    ret.errorObject = methodObject;
+    methodObject = tempMethodObj;
+
     return 1;
 }
 
@@ -2717,7 +2756,7 @@ throughString:
                         break;
                     case 2: // get
                     case 3: // set
-                        wholePhrase.Delete(0, 3);
+                        //wholePhrase.Delete(0, 3);
                         wholePhrase.Trim();
                         if (this->methodObject.Get())
                         {
@@ -2738,18 +2777,18 @@ throughString:
                                     PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
                                 }
                                 auto tAccess = dynamic_cast<TAccessorVariable*>(access.Get());
-                                //if (attribute == 2)
-                                //    tAccess->SetGetter(ret.errorObject);
-                                //else
-                                //    tAccess->SetSetter(ret.errorObject);
+                                if (attribute == 2)
+                                    tAccess->SetGetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(ret.errorObject));
+                                else
+                                    tAccess->SetSetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(ret.errorObject));
                             }
                             else if (methodObject->GetVarType() == var_type::accessor)
                             {
                                 auto tAccess = dynamic_cast<TAccessorVariable*>(methodObject.Get());
-                                //if (attribute == 2)
-                                //    tAccess->SetGetter(ret.errorObject);
-                                //else
-                                //    tAccess->SetSetter(ret.errorObject);
+                                if (attribute == 2)
+                                    tAccess->SetGetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(ret.errorObject));
+                                else
+                                    tAccess->SetSetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(ret.errorObject));
                             }
                             else
                             {
