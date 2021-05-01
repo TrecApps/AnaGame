@@ -349,7 +349,7 @@ public:
      *              ReportObject& ro - the Object to modify based off of the findings
      * Returns: void
      */
-    void CheckVarName(const TString& varname, ReturnObject& ro);
+    static void CheckVarName(const TString& varname, ReturnObject& ro);
 
     /**
      * Method: TcInterpretor::ProcessIndividualStatement

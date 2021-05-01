@@ -2268,6 +2268,9 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
         case L',':
         case L';':
             index++;
+
+            if (!expressions.Size() && !ops.Size())
+                return fullNodes;
             goto crunch;
         }
         
@@ -2290,6 +2293,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
             if (ret.returnCode)
                 return fullNodes;
             fullNodes += nodes;
+            fullNodes++;
             while (nodes && statement->next.Get())
             {
                 statement = statement->next;
@@ -2408,7 +2412,7 @@ UINT TcJavaScriptInterpretor::ProcessJsonPiece(TrecPointer<CodeStatement> statem
 
     if (pieces->Size() == 2)
     {
-        CheckVarName(pieces->at(0), ret);
+        CheckVarName(pieces->at(0).GetTrim(), ret);
         if (ret.returnCode)
             return 0;
 
@@ -2416,7 +2420,7 @@ UINT TcJavaScriptInterpretor::ProcessJsonPiece(TrecPointer<CodeStatement> statem
         if (ret.returnCode)
             return 0;
 
-        obj->SetValue(pieces->at(0), ret.errorObject);
+        obj->SetValue(pieces->at(0).GetTrim(), ret.errorObject);
         ret.errorObject.Nullify();
     }
     return 0;
@@ -2527,6 +2531,34 @@ UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square,
     ret.errorObject = methodObject;
     methodObject = tempMethodObj;
 
+
+    // Check to see if the object should be converted into an accessor variable
+    bool ok = obj->GetSize() > 0;
+    TString key;
+    TrecPointer<TVariable> tVar;
+    TrecSubPointer<TVariable, TAccessorVariable> access = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAccessorVariable>();
+    for (UINT Rust = 0; obj->GetValueAt(Rust, key, tVar); Rust++)
+    {
+        if (!key.Compare(L"get"))
+        {
+            if (dynamic_cast<TcInterpretor*>(tVar.Get()))
+                access->SetGetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(tVar));
+        }
+        else if (!key.Compare("set"))
+        {
+            if (dynamic_cast<TcInterpretor*>(tVar.Get()))
+                access->SetGetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(tVar));
+        }
+        else
+        {
+            ok = false;
+            break;
+        }
+    }
+
+    if (ok)
+        ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(access);
+
     return 1;
 }
 
@@ -2633,7 +2665,7 @@ throughString:
             parenth++;
 
             UINT curIndex = index;
-            if (var->GetVarType() == var_type::interpretor)
+            if (var->GetVarType() == var_type::interpretor || var->GetVarType() == var_type::accessor)
             {
                 UINT curRet = uret;
 
@@ -2657,32 +2689,6 @@ throughString:
                     wholePhrase.Append(statement->statement.SubString(0, index + 1));
                 }
                 var = ret.errorObject;
-            }
-            else if (var->GetVarType() == var_type::accessor)
-            {
-                auto getter = dynamic_cast<TAccessorVariable*>(var.Get())->GetGetter();
-                if (getter.Get())
-                {
-                    auto oRet = getter->Run();
-                    if (oRet.returnCode)
-                    {
-                        // To-Do: Replace Getters and Setters with Interpretors
-                        ret.returnCode = oRet.returnCode;
-                        ret.errorMessage.Set(oRet.errorMessage);
-                        return 0;
-                    }
-                    var = oRet.errorObject;
-                    int iIndex = statement->statement.Find(L')', index);
-
-                    if (iIndex == -1)
-                    {
-                        TString message;
-                        message.Format(L"Incomplete getter call detected on variable expression '%ws'", wholePhrase.GetConstantBuffer());
-                        PrepReturn(ret, message, L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
-                        return 0;
-                    }
-                    index = iIndex;
-                }
             }
             else
                 var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
@@ -2832,7 +2838,20 @@ throughString:
         goto throughString;
 
     ret.errorMessage.Set(wholePhrase);
-    ret.errorObject = var;
+
+    if (var.Get() && var->GetVarType() == var_type::accessor)
+    {
+        auto getter = dynamic_cast<TAccessorVariable*>(var.Get())->GetCGetter();
+
+        if (getter.Get())
+        {
+            getter->SetActiveObject(vThis);
+            ret = getter->Run();
+            ret.mode = return_mode::rm_regular;
+        }
+    }
+    else
+        ret.errorObject = var;
 
 
     return 0;
@@ -3054,7 +3073,37 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
     }
 
     // Convert to a function we can call
-    TrecSubPointer<TVariable, TcInterpretor> function = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(proc);
+    TrecSubPointer<TVariable, TcInterpretor> function;
+    // Check to see if we have an accessor variable, if we do, then assess variable count and choose the function within
+
+    if (proc->GetVarType() == var_type::accessor)
+    {
+        TrecSubPointer<TVariable, TAccessorVariable> accProc = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TAccessorVariable>(proc);
+        assert(accProc.Get());
+        if (!params.Size())
+        {            
+            function = accProc->GetCGetter();
+            if (!function.Get())
+                function = accProc->GetCSetter();
+        }
+        else
+        {
+            function = accProc->GetCSetter();
+            if (!function.Get())
+                function = accProc->GetCGetter();
+        }
+    }
+    else if (proc->GetVarType() == var_type::interpretor)
+    {
+        function = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(proc);
+    }
+
+    if (!function.Get())
+    {
+        PrepReturn(ret, L"found Null or Undefined Getter/Setter!", L"", ReturnObject::ERR_BROKEN_REF, statement->lineStart);
+        return nextRet;
+    }
+    
     assert(function.Get());
 
     // This is a method if object is valid

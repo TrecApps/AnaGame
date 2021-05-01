@@ -107,6 +107,51 @@ namespace JSObject
 
         JsObjectAssign(params, env, ret);
     }
+
+    /**
+     * Function: JSObject::JsObjectDefineProperty
+     * Purpose: Serves as Anagame's implementation of the Object.defineProperty method
+     * Parameters: TDataArray<TrecPointer<TVariable>>& params - objects to work with
+     *              TrecPointer<TEnvironment> env - environment function is being called in
+     *              ReturnObject& ret - return information
+     * Returns: void
+     */
+    void JsObjectDefineProperty(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
+        if (params.Size() < 3)
+        {
+            ret.returnCode = ReturnObject::ERR_TOO_FEW_PARMS;
+            ret.errorMessage.Set("Insufficient Params");
+            return;
+        }
+
+        TrecSubPointer<TVariable, TContainerVariable> obj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+        TrecSubPointer<TVariable, TStringVariable> prop = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[1]);
+        TrecPointer<TVariable> val = params.Size() > 2 ? params[2] : TrecPointer<TVariable>();
+
+        if (!obj.Get())
+        {
+            ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
+            ret.errorMessage.Set(L"Object.defineProperty called on non-object");
+            ret.stackTrace.push_back(L"at Function.defineProperty (<anonymous>)");
+            ret.stackTrace.push_back(L"at <anonymous>:1:8");
+            return;
+        }
+        if (!prop.Get())
+        {
+            ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
+            ret.errorMessage.Format(L"Property description must be an object: %ws", val.Get() ? val->GetString().GetConstantBuffer() : L"null/undefined");
+            ret.stackTrace.push_back(L"at Function.defineProperty (<anonymous>)");
+            ret.stackTrace.push_back(L"at <anonymous>:1:8");
+            return;
+        }
+        TString name(prop->GetString().GetTrim());
+
+        TcInterpretor::CheckVarName(name, ret);
+        if (ret.returnCode)
+            return;
+
+        obj->SetValue(prop->GetString(), val);
+    }
 }
 
 
@@ -511,6 +556,7 @@ TrecPointer<TVariable> JavaScriptFunc::GetJSObectVariable(TrecSubPointer<TVariab
 
     ret->SetValue(L"assign", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSObject::JsObjectAssign, parent, env));
     ret->SetValue(L"create", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSObject::JsObjectCreate, parent, env));
+    ret->SetValue(L"defineProperty", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSObject::JsObjectDefineProperty, parent, env));
 
 
     return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
