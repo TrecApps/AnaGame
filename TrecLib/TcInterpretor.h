@@ -80,6 +80,7 @@ class _TREC_LIB_DLL ReturnObject
 public:
     TString errorMessage;               // String Information
     TrecPointer<TVariable> errorObject; // A Variable Generated
+    TrecPointer<TVariable> errorObject2;// Backup Variable
     USHORT returnCode;                  // 0 if working, error otherwise
     TDataArray<TString> stackTrace;     // stack trace info
     return_mode mode;                   // Mode, the context in which an operation ended
@@ -387,7 +388,7 @@ public:
 
     virtual TrecPointer<TVariable> Clone() override;
 
-
+    UCHAR GetVarStatus(TString& varName);
 
 protected:
 

@@ -300,6 +300,21 @@ TrecPointer<TVariable> TcInterpretor::Clone()
 	return TrecPointerKey::GetTrecPointerFromSub<>(subSelf);
 }
 
+UCHAR TcInterpretor::GetVarStatus(TString& varName)
+{
+	// 0 means not found
+	// 1 means found an mutable
+	// 2 means found and immutable
+	TcVariableHolder hold;
+	if (variables.retrieveEntry(varName, hold))
+	{
+		return hold.mut ? 1 : 2;
+	}
+	auto tParent = dynamic_cast<TcInterpretor*>(parent.Get());
+	if (tParent)
+		return tParent->GetVarStatus(varName);
+	return 0;
+}
 
 /**
  * Method: TCInterpretor::SetParamNames

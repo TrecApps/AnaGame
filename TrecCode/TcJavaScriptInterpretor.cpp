@@ -2163,51 +2163,104 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
 
             JavaScriptExpression2 jExp(expressions[expressions.Size() - 1]);
 
-            jExp.value = (jExp.value.Get()) ? jExp.value->Clone() : jExp.value;
+            if (GetVarStatus(jExp.varName) == 2)
+            {
+                TString message;
+                message.Format(L"Error! Cannot %ws on const variable %ws!", inc ? L"increment" : L"decrement", jExp.varName.GetConstantBuffer());
+                PrepReturn(ret, message, L"", ReturnObject::ERR_UNSUPPORTED_OP, statement->lineStart);
+                return fullNodes;
+            }
 
 
             // Now handle the increment or decrement step
-            bool present;
-            TrecPointer<TVariable> tempValue = GetVariable(jExp.varName, present);
+
+            ProcessIndividualStatement(jExp.varName, ret);
+
+            TrecSubPointer<TVariable, TPrimitiveVariable> tempValue = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(ret.errorObject);
 
             if (!tempValue.Get())
             {
                 ret.returnCode = ret.ERR_BROKEN_REF;
 
-                ret.errorMessage.Format(L"Post-%ws attempt encountered %ws variable!",
-                    inc ? L"Increment" : L"Decrement",
-                    present ? L"Null" : L"Default");
+                ret.errorMessage.Format(L"Post-%ws attempt encountered %ws variable: Could not convert to Primitive Variable!",
+                    inc ? L"Increment" : L"Decrement", L"Null");
                 return fullNodes;
             }
 
-            auto result = inc ? jsOperators->  Add(tempValue, one) :
-                jsOperators->Subtract(tempValue, one);
+            
 
-            if (!result.Get())
+            UINT primType = tempValue->GetType();
+            ULONG64 data = 0;
+            if (primType & TPrimitiveVariable::bit_float)
+            {
+                if (primType & TPrimitiveVariable::type_eight)
+                {
+                    data = tempValue->Get8Value();
+                    double dData = 0.0;
+                    memcpy_s(&dData, sizeof(dData), &data, sizeof(data));
+                    dData += inc ? 1 : -1;
+                    tempValue->Set(dData);
+                }
+                else
+                {
+                    primType = tempValue->Get4Value();
+                    float fData = 0.0f;
+                    memcpy_s(&fData, sizeof(fData), &primType, sizeof(primType));
+                    fData += inc ? 1 : -1;
+                    tempValue->Set(fData);
+                }
+            }
+            else if (primType & TPrimitiveVariable::type_unsigned)
+            {
+                if (primType & TPrimitiveVariable::type_eight)
+                {
+                    data = tempValue->Get8Value();
+                    if (!data)
+                        tempValue->Set(static_cast<LONG64>(-1));
+                    else
+                    {
+                        data += inc ? 1 : -1;
+                        tempValue->Set(data);
+                    }
+                }
+                else
+                {
+                    primType = tempValue->Get4Value();
+                    if (!primType)
+                        tempValue->Set(static_cast<int>(-1));
+                    else
+                    {
+                        primType += inc ? 1 : -1;
+                        tempValue->Set(primType);
+                    }
+                }
+            }
+            else if (primType & TPrimitiveVariable::type_bool || primType & TPrimitiveVariable::type_char)
             {
                 TString message;
-                message.Format(L"Invalid type found for variable '%ws' in pre-%ws operation!", 
+                message.Format(L"Invalid type found for variable '%ws' in pre-%ws operation!",
                     jExp.varName.GetConstantBuffer(), inc ? L"increment" : L"decrement");
                 PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
                 return fullNodes;
             }
-            UINT updateResult = UpdateVariable(jExp.varName, result);
-
-            ret.errorObject.Nullify();
-            if (updateResult == 1)
+            else
             {
-                ret.returnCode = ret.ERR_BROKEN_REF;
-                ret.errorMessage.Format(L"Post-%ws attempt encountered %ws variable!",
-                    inc ? L"Increment" : L"Decrement",
-                    present ? L"Null" : L"Default");
-                return fullNodes;
-            }
-            if (updateResult == 2)
-            {
-                ret.returnCode = ret.ERR_IMPROPER_NAME;
-                ret.errorMessage.Format(L"Post-%ws attempt to update immutable variable!",
-                    inc ? L"Increment" : L"Decrement");
-                return fullNodes;
+                if (primType & TPrimitiveVariable::type_eight)
+                {
+                    data = tempValue->Get8Value();
+                    LONG64 iData = 0;
+                    memcpy_s(&iData, sizeof(iData), &data, sizeof(data));
+                    iData += inc ? 1 : -1;
+                    tempValue->Set(iData);
+                }
+                else
+                {
+                    primType = tempValue->Get8Value();
+                    int iData = 0;
+                    memcpy_s(&iData, sizeof(iData), &primType, sizeof(primType));
+                    iData += inc ? 1 : -1;
+                    tempValue->Set(iData);
+                }
             }
 
             exp.Delete(0, 2);
@@ -2286,24 +2339,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
         ret.errorObject.Nullify();
         exp.varName.Set(ret.errorMessage);
         expressions.push_back(exp);
-        if (statement->next.Get())
-        {
-            index = 0;
-            nodes = ProcessExpression(parenth, square, index, statement->next, ret);
-            if (ret.returnCode)
-                return fullNodes;
-            fullNodes += nodes;
-            fullNodes++;
-            while (nodes && statement->next.Get())
-            {
-                statement = statement->next;
-                nodes--;
-            }
-            if (index)
-            {
-                int e = 0;
-            }
-        }
+        fullNodes++;
     }
 
 crunch:
@@ -2358,6 +2394,8 @@ crunch:
 
     if (expressions.Size() == 1)
         ret.errorObject = expressions[0].value;
+
+    ret.errorObject2.Nullify();
 
     return fullNodes;
 }
@@ -2415,8 +2453,9 @@ UINT TcJavaScriptInterpretor::ProcessJsonPiece(TrecPointer<CodeStatement> statem
         CheckVarName(pieces->at(0).GetTrim(), ret);
         if (ret.returnCode)
             return 0;
-
-        ProcessIndividualStatement(pieces->at(1), ret);
+        UINT p = 0, s = 0, i = statement->statement.Find(L':', stateIndex) + 1;
+        ProcessExpression(p, s, i, statement, ret);
+        // ProcessIndividualStatement(pieces->at(1), ret);
         if (ret.returnCode)
             return 0;
 
@@ -2547,7 +2586,7 @@ UINT TcJavaScriptInterpretor::ProcessJsonExpression(UINT& parenth, UINT& square,
         else if (!key.Compare("set"))
         {
             if (dynamic_cast<TcInterpretor*>(tVar.Get()))
-                access->SetGetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(tVar));
+                access->SetSetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(tVar));
         }
         else
         {
@@ -2842,19 +2881,28 @@ throughString:
     if (var.Get() && var->GetVarType() == var_type::accessor)
     {
         auto getter = dynamic_cast<TAccessorVariable*>(var.Get())->GetCGetter();
-
+        auto setter = dynamic_cast<TAccessorVariable*>(var.Get())->GetCSetter();
         if (getter.Get())
         {
             getter->SetActiveObject(vThis);
             ret = getter->Run();
             ret.mode = return_mode::rm_regular;
         }
+        if (setter.Get())
+        {
+            setter->SetActiveObject(vThis);
+            ret.errorObject2 = TrecPointerKey::GetTrecPointerFromSub<>(setter);
+        }
+    }
+    else if (var.Get() && var->GetVarType() == var_type::native_object)
+    {
+        ret.errorObject2 = var;
     }
     else
         ret.errorObject = var;
 
 
-    return 0;
+    return uret;
 }
 
 UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
@@ -3067,6 +3115,7 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
         {
             uret--;
             statement = statement->next;
+            index = 0;
         }
         // Add the parameter
         params.push_back(ret.errorObject);
@@ -3808,31 +3857,31 @@ void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>
         else if (!ops[Rust].Compare(L"+="))
         {
             found = true;
-            left = jsOperators->Add(left, right);
+            ro.errorObject = jsOperators->Add(left, right);
         }
         else if (!ops[Rust].Compare(L"-="))
         {
             found = true;
-            left = jsOperators->Subtract(left, right);
+            ro.errorObject = jsOperators->Subtract(left, right);
         }
         else if (!ops[Rust].Compare(L"**="))
         {
             found = true;
-            left = jsOperators->Pow(left, right);
+            ro.errorObject = jsOperators->Pow(left, right);
         }
         else if (!ops[Rust].Compare(L"*="))
         {
-            left = jsOperators->Multiply(left, right);
+            ro.errorObject = jsOperators->Multiply(left, right);
             found = true;
         }
         else if (!ops[Rust].Compare(L"/="))
         {
-            left = jsOperators->Divide(left, right);
+            ro.errorObject = jsOperators->Divide(left, right);
             found = true;
         }
         else if (!ops[Rust].Compare(L"%="))
         {
-            left = jsOperators->Mod(left, right);
+            ro.errorObject = jsOperators->Mod(left, right);
             found = true;
         }
         else if (!ops[Rust].Compare(L"<<="))
@@ -3964,7 +4013,23 @@ void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>
                     return;
                 }
 
-                dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetValue(expressions[Rust].varName.SubString(finalDot + 1), holdVal);
+                // Try to get a setter out of the final variable name
+                bool p;
+                TrecPointer<TVariable> setter = dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->GetValue(expressions[Rust].varName.SubString(finalDot + 1), p);
+
+                if (setter.Get() && setter->GetVarType() == var_type::accessor && dynamic_cast<TAccessorVariable*>(setter.Get())->GetCSetter().Get())
+                {
+                    auto setVar = dynamic_cast<TAccessorVariable*>(setter.Get())->GetCSetter();
+                    setVar->SetActiveObject(ro.errorObject);
+                    TDataArray<TrecPointer<TVariable>> params;
+                    params.push_back(holdVal);
+                    setVar->SetIntialVariables(params);
+
+                    holdVal = ro.errorObject;
+                    ro = setVar->Run();
+                }
+                else
+                    dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetValue(expressions[Rust].varName.SubString(finalDot + 1), holdVal);
 
                 ro.errorObject = holdVal;
             }
