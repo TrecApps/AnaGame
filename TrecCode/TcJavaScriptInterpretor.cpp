@@ -8,6 +8,7 @@
 #include <JavaScriptFunc.h>
 #include "JsConsole.h"
 #include "TcJavaScriptClassInterpretor.h"
+#include <JsNumber.h>
 
 
 static TDataArray<TString> standardOperators;
@@ -118,6 +119,9 @@ if (isFirst)
     variables.addEntry(L"console", TcVariableHolder(false, L"", GetJsConsole()));
     // Object Object
     variables.addEntry(L"Object", TcVariableHolder(false, L"", JavaScriptFunc::GetJSObectVariable(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+    // Number methods and final values
+    variables.addEntry(L"Number", TcVariableHolder(false, L"", JsNumber::GetJsNumberObject(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+    // Math Object
 
 }
 }
@@ -2682,6 +2686,33 @@ throughString:
                 if (!pres)
                 {
                     var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+                }
+            }
+            else if (var->GetVarType() == var_type::primitive || var->GetVarType() == var_type::primitive_formatted)
+            {
+                bool present;
+                TString numVar(L"Number");
+                auto NumberClass = GetVariable(numVar, present);
+                if (NumberClass.Get() && NumberClass->GetVarType() == var_type::collection)
+                {
+                    TrecPointer<TVariable> numAtt = dynamic_cast<TContainerVariable*>(NumberClass.Get())->GetValue(phrase, present);
+                    if (numAtt.Get())
+                    {
+                        vThis = var;
+                        var = numAtt;
+                    }
+                    else
+                    {
+                        TString message;
+                        message.Format(L"Failed to id Method/Attribute %ws for primitive variable %ws!", phrase.GetConstantBuffer(), wholePhrase.GetConstantBuffer());
+                        PrepReturn(ret, message, L"", ReturnObject::ERR_BROKEN_REF, statement->lineStart);
+                        return uret;
+                    }
+                }
+                else
+                {
+                    PrepReturn(ret, L"INTERNAL ERROR! Failed to load 'Number' package of methods needed to process this variable", L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
+                    return uret;
                 }
             }
         }

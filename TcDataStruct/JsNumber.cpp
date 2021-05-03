@@ -42,26 +42,26 @@ const LONG64 MIN_SAFE_INT = -9007199254740991;
 
 void JsNumber::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
-    if (params.Size() < 2)
+    if (params.Size() < 1)
     {
         ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
         return;
     }
 
     TDataArray<TrecPointer<TVariable>> sParam;
-    sParam.push_back(params[1]);
+    sParam.push_back(params[0]);
     JavaScriptFunc::isFinite(sParam, env, ret);
 }
 void JsNumber::isInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
-    if (params.Size() < 2)
+    if (params.Size() < 1)
     {
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(false);
         return;
     }
 
     TDataArray<TrecPointer<TVariable>> sParam;
-    sParam.push_back(params[1]);
+    sParam.push_back(params[0]);
     JavaScriptFunc::parseInt(sParam, env, ret);
 
     if (ret.returnCode)
@@ -74,13 +74,13 @@ void JsNumber::isInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPointer
 }
 void JsNumber::isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
-    if (params.Size() < 2 || !params[1].Get())
+    if (params.Size() < 1 || !params[0].Get())
     {
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(false);
         return;
     }
 
-    if (params[1]->GetVarType() == var_type::special_value && dynamic_cast<TSpecialVariable*>(params[1].Get())->GetSpecialValue() == SpecialVar::sp_nan)
+    if (params[0]->GetVarType() == var_type::special_value && dynamic_cast<TSpecialVariable*>(params[0].Get())->GetSpecialValue() == SpecialVar::sp_nan)
     {
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(true);
         return;
@@ -89,13 +89,13 @@ void JsNumber::isNaN(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEn
 }
 void JsNumber::isSafeInteger(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
-    if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
+    if (params.Size() < 1 || !params[0].Get() || (params[0]->GetVarType() != var_type::primitive && params[0]->GetVarType() != var_type::primitive_formatted))
     {
         ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(false);
         return;
     }
 
-    DoubleLong num = DoubleLong::GetValueFromPrimitive(params[1]);
+    DoubleLong num = DoubleLong::GetValueFromPrimitive(params[0]);
 
     switch (num.type)
     {
@@ -145,9 +145,9 @@ void JsNumber::toExponential(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 
     dynamic_cast<TPrimitiveFormatVariable*>(number.Get())->SetUseExponent(true);
 
-    if (params.Size() > 1 && params[1].Get() && (params[1]->GetVarType() == var_type::primitive || params[1]->GetVarType() == var_type::primitive_formatted))
+    if (params.Size() && params[0].Get() && (params[0]->GetVarType() == var_type::primitive || params[0]->GetVarType() == var_type::primitive_formatted))
     {
-        UINT value = params[1]->Get4Value();
+        UINT value = params[0]->Get4Value();
         if (value > 100)
         {
             ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;

@@ -29,7 +29,17 @@ ReturnObject TcNativeInterpretor::Run()
 		result.errorMessage.Set(L"Null Reference to Native Function!\n");
 		return result;
 	}
-	nativeFunction(defaultVars, environment, result);
+
+	if (methodObject.Get())
+	{
+		TDataArray<TrecPointer<TVariable>> newVars;
+		newVars.push_back(methodObject);
+		for (UINT Rust = 0; Rust < defaultVars.Size(); Rust++)
+			newVars.push_back(defaultVars[Rust]);
+		nativeFunction(newVars, environment, result);
+	}
+	else
+		nativeFunction(defaultVars, environment, result);
 	return result;
 }
 
