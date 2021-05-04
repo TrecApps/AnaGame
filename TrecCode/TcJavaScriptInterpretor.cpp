@@ -10,6 +10,7 @@
 #include "TcJavaScriptClassInterpretor.h"
 #include <JsNumber.h>
 #include <JsMath.h>
+#include "JsArray.h"
 
 
 static TDataArray<TString> standardOperators;
@@ -60,6 +61,8 @@ bool IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEq
         return (castType) ? !eqVal : (!eqVal && !eqType);
     }
 }
+
+
 
 COMPILE_TYPE TcJavaScriptInterpretor::CanCompile()
 {
@@ -124,6 +127,8 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
         variables.addEntry(L"Number", TcVariableHolder(false, L"", JsNumber::GetJsNumberObject(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
         // Math Object
         variables.addEntry(L"Math", TcVariableHolder(false, L"", JsMath::GetJsMathObject(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+        // Array Object
+        variables.addEntry(L"Array", TcVariableHolder(false, L"", JsArray::GetJsArrayMehtods(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
     }
 }
 
