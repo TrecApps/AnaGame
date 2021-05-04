@@ -2686,12 +2686,26 @@ throughString:
         {
             if (var->GetVarType() == var_type::collection)
             {
-                vThis = var;
+                auto colVar = dynamic_cast<TContainerVariable*>(var.Get());
                 bool pres;
-                var = dynamic_cast<TContainerVariable*>(var.Get())->GetValue(phrase, pres, L"__proto__;super");
-                if (!pres)
+                vThis = var;
+                if (colVar->GetContainerType() == ContainerType::ct_array)
                 {
-                    var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+                    TString a(L"Array");
+                    colVar = dynamic_cast<TContainerVariable*>(GetVariable(a, pres).Get());
+                    assert(colVar);
+
+                    var = colVar->GetValue(phrase, pres);
+                }
+
+                if (!var.Get())
+                {
+
+                    var = colVar->GetValue(phrase, pres, L"__proto__;super");
+                    if (!pres)
+                    {
+                        var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
+                    }
                 }
             }
             else if (var->GetVarType() == var_type::primitive || var->GetVarType() == var_type::primitive_formatted)

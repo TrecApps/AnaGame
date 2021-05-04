@@ -238,6 +238,14 @@ public:
      */
     bool SetClassName(const TString& name);
 
+    /**
+     * Method: TContainerVariable::GetConteinerType
+     * Purpose: Reports to interpretors the container type
+     * Parameters: void
+     * Return: Container_type - the type of container we're dealing with
+     */
+    ContainerType GetContainerType();
+
 
  private:
     /**

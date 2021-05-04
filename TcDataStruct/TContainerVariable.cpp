@@ -372,3 +372,15 @@ bool TContainerVariable::SetClassName(const TString& name)
     className.Set(name);
     return true;
 }
+
+
+/**
+ * Method: TContainerVariable::GetConteinerType
+ * Purpose: Reports to interpretors the container type
+ * Parameters: void
+ * Return: Container_type - the type of container we're dealing with
+ */
+ContainerType TContainerVariable::GetContainerType()
+{
+    return this->type;
+}
