@@ -7,11 +7,12 @@
 #include "TSpecialVariable.h"
 
 #include <cstdlib>
+#include "DefaultObjectOperator.h"
 
 const double AG_MATH_E = 2.71828182845904523536;
 
 
-TrecPointer<TVariable> JsMath::GetJsMathObject(TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env)
+TrecPointer<TVariable> JsMath::GetJsMathObject(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
 {
     TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
 
@@ -26,47 +27,47 @@ TrecPointer<TVariable> JsMath::GetJsMathObject(TrecSubPointer<TVariable, TInterp
     ret->SetValue(L"SQRT2", TrecPointerKey::GetNewSelfTrecPointerAlt < TVariable, TPrimitiveVariable>(1.41421356237309504880));
 
     // Add all the methods now
-    ret->SetValue(L"abs", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::abs, parent, env));
-    ret->SetValue(L"acos", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::acos, parent, env));
-    ret->SetValue(L"acosh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::acosh, parent, env));
-    ret->SetValue(L"asin", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::asin, parent, env));
-    ret->SetValue(L"asinh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::asinh, parent, env));
-    ret->SetValue(L"atan", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::atan, parent, env));
-    ret->SetValue(L"atan2", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::atan2, parent, env));
-    ret->SetValue(L"atanh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::atanh, parent, env));
-    ret->SetValue(L"cbrt", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::cbrt, parent, env));
-    ret->SetValue(L"ceil", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::ceil, parent, env));
-    ret->SetValue(L"clz32", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::clz32, parent, env));
+    ret->SetValue(L"abs", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::abs, parent, env));
+    ret->SetValue(L"acos", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::acos, parent, env));
+    ret->SetValue(L"acosh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::acosh, parent, env));
+    ret->SetValue(L"asin", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::asin, parent, env));
+    ret->SetValue(L"asinh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::asinh, parent, env));
+    ret->SetValue(L"atan", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::atan, parent, env));
+    ret->SetValue(L"atan2", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::atan2, parent, env));
+    ret->SetValue(L"atanh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::atanh, parent, env));
+    ret->SetValue(L"cbrt", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::cbrt, parent, env));
+    ret->SetValue(L"ceil", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::ceil, parent, env));
+    ret->SetValue(L"clz32", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::clz32, parent, env));
 
-    ret->SetValue(L"cos", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::cos, parent, env));
-    ret->SetValue(L"cosh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::cosh, parent, env));
-    ret->SetValue(L"exp", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::exp, parent, env));
-    ret->SetValue(L"expm1", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::expm1, parent, env));
-    ret->SetValue(L"floor", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::floor, parent, env));
-    ret->SetValue(L"fround", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::fround, parent, env));
-    ret->SetValue(L"log", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::log, parent, env));
-    ret->SetValue(L"log10", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::log10, parent, env));
-    ret->SetValue(L"log1p", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::log1p, parent, env));
-    ret->SetValue(L"log2", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::log2, parent, env));
-    ret->SetValue(L"max", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::max_, parent, env));
+    ret->SetValue(L"cos", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::cos, parent, env));
+    ret->SetValue(L"cosh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::cosh, parent, env));
+    ret->SetValue(L"exp", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::exp, parent, env));
+    ret->SetValue(L"expm1", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::expm1, parent, env));
+    ret->SetValue(L"floor", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::floor, parent, env));
+    ret->SetValue(L"fround", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::fround, parent, env));
+    ret->SetValue(L"log", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::log, parent, env));
+    ret->SetValue(L"log10", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::log10, parent, env));
+    ret->SetValue(L"log1p", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::log1p, parent, env));
+    ret->SetValue(L"log2", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::log2, parent, env));
+    ret->SetValue(L"max", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::max_, parent, env));
 
-    ret->SetValue(L"min", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::min_, parent, env));
-    ret->SetValue(L"pow", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::pow, parent, env));
-    ret->SetValue(L"random", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::random, parent, env));
-    ret->SetValue(L"round", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::round, parent, env));
-    ret->SetValue(L"sign", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::sign, parent, env));
-    ret->SetValue(L"sin", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::sin, parent, env));
-    ret->SetValue(L"sinh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::sinh, parent, env));
-    ret->SetValue(L"sqrt", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::sqrt, parent, env));
-    ret->SetValue(L"tan", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::tan, parent, env));
-    ret->SetValue(L"tanh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::tanh, parent, env));
-    ret->SetValue(L"trunc", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsMath::trunc, parent, env));
+    ret->SetValue(L"min", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::min_, parent, env));
+    ret->SetValue(L"pow", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::pow, parent, env));
+    ret->SetValue(L"random", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::random, parent, env));
+    ret->SetValue(L"round", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::round, parent, env));
+    ret->SetValue(L"sign", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::sign, parent, env));
+    ret->SetValue(L"sin", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::sin, parent, env));
+    ret->SetValue(L"sinh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::sinh, parent, env));
+    ret->SetValue(L"sqrt", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::sqrt, parent, env));
+    ret->SetValue(L"tan", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::tan, parent, env));
+    ret->SetValue(L"tanh", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::tanh, parent, env));
+    ret->SetValue(L"trunc", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsMath::trunc, parent, env));
 
     return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
 }
 
 
-void JsMath::abs(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::abs(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() > 1)
     {
@@ -99,7 +100,7 @@ void JsMath::abs(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnviro
     ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
 }
 
-void JsMath::acos(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::acos(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -134,7 +135,7 @@ void JsMath::acos(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
     }
 }
 
-void JsMath::acosh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::acosh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -169,7 +170,7 @@ void JsMath::acosh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
     }
 }
 
-void JsMath::asin(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::asin(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -204,7 +205,7 @@ void JsMath::asin(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
     }
 }
 
-void JsMath::asinh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::asinh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -238,7 +239,7 @@ void JsMath::asinh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
         ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
     }
 }
-void JsMath::atan(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::atan(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -264,7 +265,7 @@ void JsMath::atan(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
     }
 }
 
-void JsMath::atan2(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::atan2(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 3 || !params[1].Get() || !params[2].Get() ||
         (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted) ||
@@ -310,7 +311,7 @@ void JsMath::atan2(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
 
 }
 
-void JsMath::atanh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::atanh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -345,7 +346,7 @@ void JsMath::atanh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
     }
 }
 
-void JsMath::cbrt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::cbrt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -371,7 +372,7 @@ void JsMath::cbrt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
     }
 }
 
-void JsMath::ceil(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::ceil(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -392,7 +393,7 @@ void JsMath::ceil(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
     }
 }
 
-void JsMath::clz32(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::clz32(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -412,7 +413,7 @@ void JsMath::clz32(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(data);
 }
 
-void JsMath::cos(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::cos(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -438,7 +439,7 @@ void JsMath::cos(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnviro
     }
 }
 
-void JsMath::cosh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::cosh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -464,7 +465,7 @@ void JsMath::cosh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
     }
 }
 
-void JsMath::exp(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::exp(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -490,7 +491,7 @@ void JsMath::exp(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnviro
     }
 }
 
-void JsMath::expm1(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::expm1(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -518,7 +519,7 @@ void JsMath::expm1(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
 
 
 
-void JsMath::floor(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::floor(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -539,7 +540,7 @@ void JsMath::floor(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
     }
 }
 
-void JsMath::fround(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::fround(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -564,7 +565,7 @@ void JsMath::fround(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnv
         ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
     }
 }
-void JsMath::log(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::log(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -590,7 +591,7 @@ void JsMath::log(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnviro
     }
 }
 
-void JsMath::log10(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::log10(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -616,7 +617,7 @@ void JsMath::log10(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
     }
 }
 
-void JsMath::log1p(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::log1p(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -641,7 +642,7 @@ void JsMath::log1p(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
         ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
     }
 }
-void JsMath::log2(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::log2(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -666,7 +667,7 @@ void JsMath::log2(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
         ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
     }
 }
-void JsMath::max_(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::max_(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -708,7 +709,7 @@ void JsMath::max_(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
 
 }
 
-void JsMath::min_(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::min_(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
 
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
@@ -751,7 +752,7 @@ void JsMath::min_(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
 
 
 }
-void JsMath::pow(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::pow(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 3 || !params[1].Get() || !params[2].Get() ||
         (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted) ||
@@ -796,7 +797,7 @@ void JsMath::pow(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnviro
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(res);
 }
 
-void JsMath::random(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::random(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     // Here, no parameters to worry about
 
@@ -811,7 +812,7 @@ void JsMath::random(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnv
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(dRandom / divisor);
     
 }
-void JsMath::round(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::round(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -831,7 +832,7 @@ void JsMath::round(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvi
         ret.errorObject = params[1];
     }
 }
-void JsMath::sign(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::sign(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -869,7 +870,7 @@ void JsMath::sign(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
 
 }
 
-void JsMath::sin(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::sin(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -895,7 +896,7 @@ void JsMath::sin(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnviro
     }
 }
 
-void JsMath::sinh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::sinh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -921,7 +922,7 @@ void JsMath::sinh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
     }
 }
 
-void JsMath::sqrt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::sqrt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -953,7 +954,7 @@ void JsMath::sqrt(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
     }
 }
 
-void JsMath::tan(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::tan(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -979,7 +980,7 @@ void JsMath::tan(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnviro
     }
 }
 
-void JsMath::tanh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret) 
+void JsMath::tanh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {
@@ -1004,7 +1005,7 @@ void JsMath::tanh(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvir
         ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_nan);
     }
 }
-void JsMath::trunc(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsMath::trunc(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     if (params.Size() < 2 || !params[1].Get() || (params[1]->GetVarType() != var_type::primitive && params[1]->GetVarType() != var_type::primitive_formatted))
     {

@@ -9,6 +9,7 @@
 #include "JsConsole.h"
 #include "TcJavaScriptClassInterpretor.h"
 #include <JsNumber.h>
+#include <JsMath.h>
 
 
 static TDataArray<TString> standardOperators;
@@ -89,41 +90,41 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
         return;
     }
 
-StatementCollector collector;
-UINT line = 0;
-TString stack;
-switch (collector.RunCollector(codeFile, ret.errorMessage, line))
-{
-case 1:
-    ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", codeFile->GetPath().GetConstantBuffer());
-    ret.returnCode = ReturnObject::ERR_INVALID_FILE_PARAM;
-    return;
-case 2:
-    ret.returnCode = ReturnObject::ERR_GENERIC_ERROR;
-    stack.Format(L"In File '%ws'", codeFile->GetPath().GetConstantBuffer());
-    ret.stackTrace.push_back(stack);
-    stack.Format(L"At Line: %d", line);
-    ret.stackTrace.push_back(stack);
-    return;
-}
+    StatementCollector collector;
+    UINT line = 0;
+    TString stack;
+    switch (collector.RunCollector(codeFile, ret.errorMessage, line))
+    {
+    case 1:
+        ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", codeFile->GetPath().GetConstantBuffer());
+        ret.returnCode = ReturnObject::ERR_INVALID_FILE_PARAM;
+        return;
+    case 2:
+        ret.returnCode = ReturnObject::ERR_GENERIC_ERROR;
+        stack.Format(L"In File '%ws'", codeFile->GetPath().GetConstantBuffer());
+        ret.stackTrace.push_back(stack);
+        stack.Format(L"At Line: %d", line);
+        ret.stackTrace.push_back(stack);
+        return;
+    }
 
-collector.CollectStatement(statements);
-readyToRun = false;
+    collector.CollectStatement(statements);
+    readyToRun = false;
 
-if (isFirst)
-{
-    // Initialize Objects meant for the main Interpretor
+    if (isFirst)
+    {
+        // Initialize Objects meant for the main Interpretor
 
-    // Intitialize a Console Object
-    // Console Object
-    variables.addEntry(L"console", TcVariableHolder(false, L"", GetJsConsole()));
-    // Object Object
-    variables.addEntry(L"Object", TcVariableHolder(false, L"", JavaScriptFunc::GetJSObectVariable(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
-    // Number methods and final values
-    variables.addEntry(L"Number", TcVariableHolder(false, L"", JsNumber::GetJsNumberObject(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
-    // Math Object
-
-}
+        // Intitialize a Console Object
+        // Console Object
+        variables.addEntry(L"console", TcVariableHolder(false, L"", GetJsConsole()));
+        // Object Object
+        variables.addEntry(L"Object", TcVariableHolder(false, L"", JavaScriptFunc::GetJSObectVariable(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+        // Number methods and final values
+        variables.addEntry(L"Number", TcVariableHolder(false, L"", JsNumber::GetJsNumberObject(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+        // Math Object
+        variables.addEntry(L"Math", TcVariableHolder(false, L"", JsMath::GetJsMathObject(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+    }
 }
 
 ReturnObject TcJavaScriptInterpretor::Run()
