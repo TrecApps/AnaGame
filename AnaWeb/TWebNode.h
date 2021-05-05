@@ -359,7 +359,7 @@ public:
      *              TrecPointerSoft<TWebNode> parent - the node that called this method
      * Returns: UINT - Error Code
      */
-    UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window);
+    virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window);
 
     /**
      * Method: TWebNode::GetLocation
