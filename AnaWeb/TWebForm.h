@@ -64,6 +64,15 @@ public:
 
 protected:
 
+
+    /**
+     * Method: TWebForm::CompileProperties_
+     * Purpose: Finalize propertie form the generated lists (virtual so that special nodes can look for special attributes)
+     * Parameters: const TrecPointer<TArray<styleTable>>& atts - list of CSS
+     * Returns: void
+     */
+    virtual void CompileProperties(TDataMap<TString>& atts)override;
+
     /**
      * Whether a GET or Post should be performed
      */
@@ -110,6 +119,14 @@ class TWebInput : public TWebNode
     virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window) override;
 
 protected:
+
+    /**
+     * Method: TWebInput::CompileProperties_
+     * Purpose: Finalize propertie form the generated lists (virtual so that special nodes can look for special attributes)
+     * Parameters: const TrecPointer<TArray<styleTable>>& atts - list of CSS
+     * Returns: void
+     */
+    virtual void CompileProperties(TDataMap<TString>& atts)override;
 
     /**
      * Input type

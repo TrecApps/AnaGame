@@ -1660,6 +1660,12 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 			atts.addEntry(entry.key, entry.object);
 	}
 
+	CompileProperties(atts);
+	
+}
+
+void TWebNode::CompileProperties(TDataMap<TString>& atts)
+{
 	TString val;
 
 	if (atts.retrieveEntry(L"display", val))
@@ -1853,7 +1859,7 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 
 		if (ch->type == NodeContainerType::nct_web)
 		{
-			if(!ch->webNode.Get())
+			if (!ch->webNode.Get())
 			{
 				childNodes.RemoveAt(Rust--);
 				continue;
@@ -1862,7 +1868,6 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 			ch->webNode->CompileProperties(styles);
 		}
 	}
-	
 }
 
 bool TWebNode::IsText()

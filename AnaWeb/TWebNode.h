@@ -441,6 +441,14 @@ protected:
     void CompileProperties(TrecPointer<TArray<styleTable>>& styles);
 
     /**
+     * Method: TWebNode::CompileProperties_
+     * Purpose: Finalize propertie form the generated lists (virtual so that special nodes can look for special attributes)
+     * Parameters: const TrecPointer<TArray<styleTable>>& atts - list of CSS
+     * Returns: void
+     */
+    virtual void CompileProperties(TDataMap<TString>& atts);
+
+    /**
      * Method: TWebNode::IsText
      * Purpose: Reports whether this Node chiefly holds Text that can be inserted into parent text
      * Parameters: void
