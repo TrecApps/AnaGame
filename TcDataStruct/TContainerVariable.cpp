@@ -226,7 +226,10 @@ bool TContainerVariable::AppendValue(TrecPointer<TVariable> value)
     if (type == ContainerType::ct_tuple)
         return false;
 
-    values.addEntry(L"", value);
+    // Otherwise, set value to the index it would be
+    TString strIndex;
+    strIndex.Format(L"%d", values.count());
+    values.addEntry(strIndex, value);
 
     return true;
 }

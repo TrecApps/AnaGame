@@ -6,6 +6,9 @@
 #include <TSpecialVariable.h>
 #include "TcJavaScriptInterpretor.h"
 
+JsObjectOperator jsOps;
+
+
 TrecPointer<TVariable> JsArray::GetJsArrayMehtods(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
 {
 
@@ -431,44 +434,179 @@ void JsArray::JsArrayIncludes(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 {
 	if (!CheckMethodObject(params, ret))
 		return;
-	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> methodObject = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+
+	bool result = false;
+
+	if (params.Size() > 1)
+	{
+		UINT Rust = (params.Size() > 2 && dynamic_cast<TPrimitiveVariable*>(params[2].Get())) ? dynamic_cast<TPrimitiveVariable*>(params[2].Get())->Get4Value() : 0;
+		TString tName;
+		TrecPointer<TVariable> tVal;
+		for (; methodObject->GetValueAt(Rust, tName, tVal); Rust++)
+		{
+			auto eqRes = jsOps.Equality(params[1], tVal, equality_op::eo_equals);
+			if (TcJavaScriptInterpretor::IsTruthful(eqRes))
+			{
+				result = true; break;
+			}
+		}
+	}
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(result);
 }
 
 void JsArray::JsArrayIndexOf(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
 	if (!CheckMethodObject(params, ret))
 		return;
-	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> methodObject = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+
+	int result = 0;
+
+	if (params.Size() > 1)
+	{
+		UINT Rust = (params.Size() > 2 && dynamic_cast<TPrimitiveVariable*>(params[2].Get())) ? dynamic_cast<TPrimitiveVariable*>(params[2].Get())->Get4Value() : 0;
+		TString tName;
+		TrecPointer<TVariable> tVal;
+		for (; methodObject->GetValueAt(Rust, tName, tVal); Rust++)
+		{
+			auto eqRes = jsOps.Equality(params[1], tVal, equality_op::eo_equals);
+			if (TcJavaScriptInterpretor::IsTruthful(eqRes))
+			{
+				result = Rust; break;
+			}
+		}
+	}
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(result);
 }
-void JsArray::JsArrayJoin(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
+
+
+void JsArray::JsArrayJoin(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
+{
+	if (!CheckMethodObject(params, ret))
+		return;
+	TrecSubPointer<TVariable, TContainerVariable> methodObject = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+
+	TString seperator((params.Size() > 1 && params[1].Get())? params[1]->GetString() : L',');
+
+	TString result;
+
+	if (params.Size() > 1)
+	{
+		TString tName;
+		TrecPointer<TVariable> tVal;
+		for (UINT Rust = 0; methodObject->GetValueAt(Rust, tName, tVal); Rust++)
+		{
+			if (Rust)
+				result.Append(seperator);
+			result.Append(tVal.Get() ? tVal->GetString() : L"null");
+		}
+	}
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(result);
+}
+
+// To-Do
+void JsArray::JsArrayKeys(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
+{
 	if (!CheckMethodObject(params, ret))
 		return;
 	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
 }
-void JsArray::JsArrayKeys(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
+
+void JsArray::JsArrayLastIndexOf(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
+{
+	if (!CheckMethodObject(params, ret))
+		return;
+	TrecSubPointer<TVariable, TContainerVariable> methodObject = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+
+	int result = 0;
+
+	if (params.Size() > 1)
+	{
+		UINT Rust = (params.Size() > 2 && dynamic_cast<TPrimitiveVariable*>(params[2].Get())) ? dynamic_cast<TPrimitiveVariable*>(params[2].Get())->Get4Value() : methodObject->GetSize() -1;
+		TString tName;
+		TrecPointer<TVariable> tVal;
+		for (; methodObject->GetValueAt(Rust, tName, tVal); Rust--)
+		{
+			auto eqRes = jsOps.Equality(params[1], tVal, equality_op::eo_equals);
+			if (TcJavaScriptInterpretor::IsTruthful(eqRes))
+			{
+				result = Rust; break;
+			}
+		}
+	}
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(result);
+}
+
+void JsArray::JsArrayMap(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
+{
+	if (!CheckMethodObject(params, ret))
+		return;
+	TrecSubPointer<TVariable, TContainerVariable> methodArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
+	if (params.Size() > 1)
+	{
+		TrecSubPointer<TVariable, TcInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(params[1]);
+
+		if (!func.Get())
+		{
+			ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+			ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
+			return;
+		}
+		TString tempStr; TrecPointer<TVariable> tempVar;
+		for (UINT Rust = 0; methodArray->GetValueAt(Rust, tempStr, tempVar); Rust++)
+		{
+
+			TDataArray<TrecPointer<TVariable>> paramSub;
+			paramSub.push_back(tempVar);
+			paramSub.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(Rust));
+			paramSub.push_back(TrecPointerKey::GetTrecPointerFromSub<>(methodArray));
+			func->SetIntialVariables(paramSub);
+
+			ret = func->Run();
+			if (ret.returnCode)
+				return;
+			rreturnArray->AppendValue(ret.errorObject);
+		}
+	}
+
+	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(rreturnArray);
+}
+
+void JsArray::JsArrayPop(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) 
+{
 	if (!CheckMethodObject(params, ret))
 		return;
 	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	UINT size = rreturnArray->GetSize();
+	if (size)
+	{
+		bool pres;
+		ret.errorObject = rreturnArray->GetValue(size - 1,pres);
+		TString strIndex;
+		strIndex.Format(L"%d", size - 1);
+		rreturnArray->RemoveByKey(strIndex);
+	}
+	else
+		ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
 }
-void JsArray::JsArrayLastIndexOf(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
-	if (!CheckMethodObject(params, ret))
-		return;
-	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
-}
-void JsArray::JsArrayMap(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
-	if (!CheckMethodObject(params, ret))
-		return;
-	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
-}
-void JsArray::JsArrayPop(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
-	if (!CheckMethodObject(params, ret))
-		return;
-	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
-}
+
 void JsArray::JsArrayPush(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
 	if (!CheckMethodObject(params, ret))
 		return;
-	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> methodObject = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+
+	for (UINT Rust = 1; Rust < params.Size(); Rust++)
+	{
+		methodObject->AppendValue(params[Rust].Get() ? params[Rust]->Clone() : params[Rust]);
+	}
+
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(methodObject->GetSize());
+
 }
+
+
+
 void JsArray::JsArrayReduce(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
 	if (!CheckMethodObject(params, ret))
 		return;
@@ -482,12 +620,32 @@ void JsArray::JsArrayReduceRight(TDataArray<TrecPointer<TVariable>>& params, Tre
 void JsArray::JsArrayReverse(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
 	if (!CheckMethodObject(params, ret))
 		return;
-	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> methodArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
+	TString tName;
+	TrecPointer<TVariable> tVal;
+	for (UINT Rust = methodArray->GetSize() - 1; methodArray->GetValueAt(Rust, tName, tVal); Rust--)
+	{
+		rreturnArray->AppendValue(tVal);
+	}
+
+	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(rreturnArray);
 }
 void JsArray::JsArrayShift(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
 	if (!CheckMethodObject(params, ret))
 		return;
 	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	UINT size = rreturnArray->GetSize();
+	if (size)
+	{
+		bool pres;
+		ret.errorObject = rreturnArray->GetValue( 0, pres);
+		TString strIndex;
+		strIndex.Format(L"%d", 0);
+		rreturnArray->RemoveByKey(strIndex);
+	}
+	else
+		ret.errorObject = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
 }
 void JsArray::JsArraySlice(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
 	if (!CheckMethodObject(params, ret))
@@ -498,6 +656,36 @@ void JsArray::JsArraySome(TDataArray<TrecPointer<TVariable>>& params, TrecPointe
 	if (!CheckMethodObject(params, ret))
 		return;
 	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
+	{
+		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
+		return;
+	}
+
+	bool affirm = false;
+	TString tempStr; TrecPointer<TVariable> tempVar;
+	auto func = dynamic_cast<TcInterpretor*>(params[1].Get());
+	for (UINT Rust = 0; rreturnArray->GetValueAt(Rust, tempStr, tempVar) && affirm; Rust++)
+	{
+
+		TDataArray<TrecPointer<TVariable>> paramSub;
+		paramSub.push_back(tempVar);
+		paramSub.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(Rust));
+		paramSub.push_back(TrecPointerKey::GetTrecPointerFromSub<>(rreturnArray));
+		func->SetIntialVariables(paramSub);
+
+		ret = func->Run();
+		if (ret.returnCode)
+			return;
+		if (TcJavaScriptInterpretor::IsTruthful(ret.errorObject))
+		{
+			affirm = true;
+			break;
+		}
+	}
+
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(affirm);
 }
 void JsArray::JsArraySort(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret) {
 	if (!CheckMethodObject(params, ret))
