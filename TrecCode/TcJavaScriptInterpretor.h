@@ -137,6 +137,8 @@ public:
      */
     TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env);
 
+
+    static bool IsTruthful(TrecPointer<TVariable> var);
 protected:
 
     /**
@@ -252,7 +254,7 @@ protected:
     void ProcessPrototypeAssign(TrecPointer<CodeStatement> state, ReturnObject& ret);
 
     // Helper Methods for the Process-Methods
-    bool IsTruthful(TrecPointer<TVariable> var);
+
 
 
 
