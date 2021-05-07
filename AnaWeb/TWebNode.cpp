@@ -1661,7 +1661,26 @@ void TWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 	}
 
 	CompileProperties(atts);
-	
+	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+	{
+		auto ch = childNodes[Rust];
+		if (!ch.Get() || ch->type == NodeContainerType::ntc_null)
+		{
+			childNodes.RemoveAt(Rust--);
+			continue;
+		}
+
+		if (ch->type == NodeContainerType::nct_web)
+		{
+			if (!ch->webNode.Get())
+			{
+				childNodes.RemoveAt(Rust--);
+				continue;
+			}
+
+			ch->webNode->CompileProperties(styles);
+		}
+	}
 }
 
 void TWebNode::CompileProperties(TDataMap<TString>& atts)
@@ -1848,26 +1867,12 @@ void TWebNode::CompileProperties(TDataMap<TString>& atts)
 			columnSpan = cSpan;
 	}
 
-	for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
-	{
-		auto ch = childNodes[Rust];
-		if (!ch.Get() || ch->type == NodeContainerType::ntc_null)
-		{
-			childNodes.RemoveAt(Rust--);
-			continue;
-		}
 
-		if (ch->type == NodeContainerType::nct_web)
-		{
-			if (!ch->webNode.Get())
-			{
-				childNodes.RemoveAt(Rust--);
-				continue;
-			}
+	if (atts.retrieveEntry(L"name", val))
+		name.Set(val);
+	if (atts.retrieveEntry(L"value", val))
+		value.Set(val);
 
-			ch->webNode->CompileProperties(styles);
-		}
-	}
 }
 
 bool TWebNode::IsText()

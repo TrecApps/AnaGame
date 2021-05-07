@@ -643,7 +643,7 @@ protected:
     /**
      * Basic string attributes
      */
-    TString tagName, id, nodeClass, name;
+    TString tagName, id, nodeClass, name, value;
 
     /**
      * The attributes gained

@@ -1,4 +1,6 @@
 #include "TWebForm.h"
+#include <TCheckBox.h>
+#include <TRadioButton.h>
 
 TWebForm::TWebForm(TrecPointer<DrawingBoard> board) : TWebNode(board)
 {
@@ -35,6 +37,58 @@ TWebInput::TWebInput(TrecPointer<DrawingBoard> board) : TWebNode(board)
 
 UINT TWebInput::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window)
 {
+    childNodes.RemoveAll();
+
+    TrecPointer<TControl> control;
+
+    switch (inputType)
+    {
+        // Type that just require a regular TControl
+    case web_input_type::wit_button:
+    case web_input_type::wit_reset:
+    case web_input_type::wit_submit:
+    case web_input_type::wit_color:
+    case web_input_type::wit_date:
+    case web_input_type::wit_datetime_local:
+    case web_input_type::wit_file:
+    case web_input_type::wit_image:
+        control = TrecPointerKey::GetNewSelfTrecPointer<TControl>(board, TrecPointer<TArray<styleTable>>());
+        break;
+        // Requires a Checkbox
+    case web_input_type::wit_checkbox:
+        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TCheckBox>(board, TrecPointer<TArray<styleTable>>());
+        break;
+        // Requires Text Controls
+    case web_input_type::wit_email:
+    case web_input_type::wit_number:
+    case web_input_type::wit_password:
+    case web_input_type::wit_tel:
+    case web_input_type::wit_text:
+        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>());
+
+        if (inputType == web_input_type::wit_number)
+        {
+            control->addAttribute(L"|IsNumberControl", TrecPointerKey::GetNewTrecPointer<TString>(L"true"));
+        }
+        else if (inputType == web_input_type::wit_password)
+        {
+            control->addAttribute(L"|IsPassword", TrecPointerKey::GetNewTrecPointer<TString>(L"true"));
+        }
+
+        break;
+        // Requires Radio Button
+    case web_input_type::wit_radio:
+        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TRadioButton>(board, TrecPointer<TArray<styleTable>>());
+        if (name.GetSize())
+            control->addAttribute(L"|RadioClass", TrecPointerKey::GetNewTrecPointer<TString>(name));
+    }
+    if (control.Get())
+    {
+        control->addAttribute(L"|caption", TrecPointerKey::GetNewTrecPointer<TString>(value));
+
+
+        childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNodeContainer>(control));
+    }
     return TWebNode::CreateWebNode(location, d3dEngine, window);
 }
 
