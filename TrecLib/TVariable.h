@@ -17,7 +17,8 @@ typedef enum class var_type
     string,              // References a String
     interpretor,         // References an Interpretor (i.e. procedures/functions that are stored as variables
     accessor,            // Type of variable that holds a Getter and Setter method
-    special_value        // Holds a special value that doesn't fit in any of the other categories
+    special_value,        // Holds a special value that doesn't fit in any of the other categories
+    iterator            // Serves as an iterator
 }var_type;
 
 
