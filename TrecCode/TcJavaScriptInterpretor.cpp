@@ -10,6 +10,7 @@
 #include "TcJavaScriptClassInterpretor.h"
 #include <JsNumber.h>
 #include <JsMath.h>
+#include <TIteratorVariable.h>
 #include "JsArray.h"
 
 
@@ -20,6 +21,28 @@ static TrecPointer<ObjectOperator> jsOperators;
 static TrecPointer<TVariable> one;
 
 static TDataArray<WCHAR> noSemiColonEnd;
+
+/***/
+void JsIteratorNext(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
+{
+    if (!params.Size() || !dynamic_cast<TIteratorVariable*>(params[0].Get()))
+    {
+        ret.returnCode = ret.ERR_BROKEN_REF;
+        ret.errorMessage.Set(L"Expected an Iterator!");
+        return;
+    }
+
+    ret.errorObject = dynamic_cast<TIteratorVariable*>(params[0].Get())->Traverse(1, 0b00000101, ret);
+}
+
+TrecPointer<TVariable> GetJsIteratorMethods(TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
+{
+    TrecSubPointer<TVariable, TContainerVariable> con = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+
+    con->SetValue(L"next", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsIteratorNext, parent, env));
+    return TrecPointerKey::GetTrecPointerFromSub<>(con);
+}
+
 
 bool IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEqual, bool castType)
 {
@@ -129,6 +152,9 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
         variables.addEntry(L"Math", TcVariableHolder(false, L"", JsMath::GetJsMathObject(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
         // Array Object
         variables.addEntry(L"Array", TcVariableHolder(false, L"", JsArray::GetJsArrayMehtods(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+
+        // Iterator
+        variables.addEntry(L"Iterator", TcVariableHolder(false, L"", GetJsIteratorMethods(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
     }
 }
 
