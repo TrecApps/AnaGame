@@ -13,6 +13,10 @@ UINT TWebForm::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
     return TWebNode::CreateWebNode(location, d3dEngine, window);
 }
 
+void TWebForm::OnSubmit()
+{
+}
+
 void TWebForm::CompileProperties(TDataMap<TString>& atts)
 {
     TString valpoint;

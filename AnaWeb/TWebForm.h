@@ -62,6 +62,15 @@ public:
      */
     virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window) override;
 
+
+    /**
+     * Method: TWebNode::OnSubmit
+     * Purpose: Allows the Node to handle OnSumit events, submitting the form
+     * Parameters: void
+     * Returns: void
+     */
+    virtual void OnSubmit() override;
+
 protected:
 
 

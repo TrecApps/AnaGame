@@ -413,6 +413,14 @@ public:
      */
     void OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPointer>& thisCollection, TDataArray<TrecPointer<TWebNode>>& nodeCollection, const TPoint& point);
 
+    /**
+     * Method: TWebNode::OnSubmit
+     * Purpose: Allows the Node to handle OnSumit events
+     * Parameters: void
+     * Returns: void
+     */
+    virtual void OnSubmit();
+
     /** 
      * Method: TWebNode::OnLoseFocus
      * Purpose: Alert the WebNode that it has lost focus

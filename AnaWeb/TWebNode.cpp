@@ -1522,6 +1522,22 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 }
 
 /**
+ * Method: TWebNode::OnSubmit
+ * Purpose: Allows the Node to handle OnSumit events
+ * Parameters: void
+ * Returns: void
+ */
+void TWebNode::OnSubmit()
+{
+	if (parent.Get())
+	{
+		TrecPointer<TWebNode> fullParent = TrecPointerKey::GetTrecPointerFromSoft<>(parent);
+		if (fullParent.Get())
+			fullParent->OnSubmit();
+	}
+}
+
+/**
  * Method: TWebNode::OnLoseFocus
  * Purpose: Alert the WebNode that it has lost focus
  * Parameters: void
