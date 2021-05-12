@@ -2768,7 +2768,7 @@ throughString:
             var = GetVariable(phrase, pres);
         }
         wholePhrase.Append(phrase);
-        phrase.Empty();
+        
     }
 
     if (index < statement->statement.GetSize())
@@ -2949,6 +2949,7 @@ throughString:
             wholePhrase.AppendChar(ch);
         }
     }
+    phrase.Empty();
 
     if (loopAround)
         goto throughString;
