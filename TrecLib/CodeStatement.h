@@ -57,6 +57,7 @@ typedef enum class code_statement_type
     cst_return,         // Return statement
     cst_break,          // Break statement
     cst_continue,       // Continue statement
+    cst_yield,          // Yield Statement
 
     // Class/Function blocks
 

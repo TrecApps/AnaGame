@@ -283,7 +283,7 @@ TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInt
     TcTypeInterpretor(parentInterpretor, env)
 {
     readyToRun = false;
-
+    yieldIndex = 0;
     selfWord.Set(L"this");
 
     if (!jsOperators.Get())
@@ -399,9 +399,14 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
     ReturnObject ret;
     for (UINT Rust = start; Rust < statements.Size(); Rust++)
     {
-        ret = Run(statements, Rust, TrecPointer<CodeStatement>());
+        yieldIndex = 0;
+        ret = Run(statements, Rust, yieldStatement);
         if (ret.returnCode || (ret.mode != return_mode::rm_regular))
+        {
+            if (ret.mode == return_mode::rm_yield)
+                yieldIndex = Rust;
             break;
+        }
     }
 
 
@@ -415,6 +420,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
 
     if(!statement.Get())
         statement = statements[index];
+    yieldStatement.Nullify();
 
     switch (statement->statementType)
     {
@@ -451,6 +457,14 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
         ProcessExpression(statement, ret);
         if (!ret.returnCode)
             ret.mode = return_mode::rm_return;
+        break;
+    case code_statement_type::cst_yield:
+        ProcessExpression(statement, ret);
+        if (!ret.returnCode)
+        {
+            ret.mode = return_mode::rm_yield;
+            yieldStatement = statement;
+        }
         break;
     case code_statement_type::cst_switch:
         ProcessSwitch(statement, ret);
@@ -912,6 +926,16 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
     {
         state->statementType = code_statement_type::cst_return;
         state->statement.Delete(0, 6);
+        state->statement.Trim();
+
+        PreProcess(ret, state->block);
+        if (ret.returnCode)return;
+    }
+
+    if (startStatement.StartsWith(L"yield", false, true) || startStatement.StartsWith(L"yield;"))
+    {
+        state->statementType = code_statement_type::cst_yield;
+        state->statement.Delete(0, 5);
         state->statement.Trim();
 
         PreProcess(ret, state->block);

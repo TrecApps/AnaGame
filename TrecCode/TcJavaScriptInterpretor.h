@@ -315,7 +315,9 @@ protected:
     void AddAssignStatement(const TString& type, const TString& att, TrecPointer<TVariable> value, ReturnObject& ret);
     TrecSubPointer<TVariable, TContainerVariable> ConstructObject(const TString& type);
 
-    // Variables to not erase
+    // Yield Support
+    UINT yieldIndex;
+    TrecPointer<CodeStatement> yieldStatement;
     
 };
 
