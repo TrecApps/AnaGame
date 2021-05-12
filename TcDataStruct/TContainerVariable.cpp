@@ -181,6 +181,11 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
 
                 return true;
             }
+            else
+            {
+                entry->object = value;
+                return true;
+            }
         }
     }
 
