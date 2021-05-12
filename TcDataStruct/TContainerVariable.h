@@ -32,6 +32,14 @@ public:
     virtual TrecPointer<TVariable> Clone();
 
     /**
+     * Method: TContainerVariable::Clear
+     * Purpose: Empties the container
+     * Parameters: void
+     * Returns: void
+     */
+    void Clear();
+
+    /**
      * Method: TContainerVariable
      * Purpose: Constructor
      * Parameters: ContainerType type - specified the restrictions on this container

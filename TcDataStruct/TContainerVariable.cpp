@@ -29,6 +29,17 @@ TrecPointer<TVariable> TContainerVariable::Clone()
 }
 
 /**
+ * Method: TContainerVariable::Clear
+ * Purpose: Empties the container
+ * Parameters: void
+ * Returns: void
+ */
+void TContainerVariable::Clear()
+{
+    values.clear();
+}
+
+/**
  * Method: TContainerVariable
  * Purpose: Constructor
  * Parameters: ContainerType type - specified the restrictions on this container
