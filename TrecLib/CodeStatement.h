@@ -62,6 +62,7 @@ typedef enum class code_statement_type
     // Class/Function blocks
 
     cst_function,       // Statement declares a function (or a method)
+    cst_function_gen,   // Generates an iterator that holds a function
     cst_method,         // Statement is a method declaration
     cst_constructor,    // Special method type
     cst_destructor,     // Special method type (used in C++)

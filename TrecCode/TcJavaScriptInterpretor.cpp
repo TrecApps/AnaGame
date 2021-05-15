@@ -445,6 +445,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
 
         break;
     case code_statement_type::cst_function:
+    case code_statement_type::cst_function_gen:
         ProcessFunctionExpression(statement, ret);
         break;
     case code_statement_type::cst_if:
@@ -873,11 +874,30 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         return;
     }
 
+    if (startStatement.StartsWith(L"function*", false, true))
+    {
+        state->statementType = code_statement_type::cst_function_gen;
+        state->statement.Delete(0, 9);
+        state->statement.Trim();
+
+        PreProcess(ret, state->block);
+        if (ret.returnCode)return;
+        PreProcess(ret, state->next);
+        return;
+    }
+
     if (startStatement.StartsWith(L"function", false, true))
     {
         state->statementType = code_statement_type::cst_function;
         state->statement.Delete(0, 8);
         state->statement.Trim();
+
+        if (state->statement.StartsWith(L"*"))
+        {
+            state->statementType = code_statement_type::cst_function_gen;
+            state->statement.Delete(0, 1);
+            state->statement.Trim();
+        }
 
         PreProcess(ret, state->block);
         if (ret.returnCode)return;
@@ -3302,6 +3322,13 @@ void TcJavaScriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatemen
     CheckVarName(obj.errorMessage, obj);
     if (obj.returnCode)
         return;
+
+    if (statement->statementType == code_statement_type::cst_function_gen)
+    {
+        TrecSubPointer<TVariable, TcInterpretor> newFunc = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(obj.errorObject);
+        assert(newFunc.Get());
+        obj.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TIteratorVariable>(newFunc);
+    }
 
     UpdateVariable(obj.errorMessage, obj.errorObject, true);
     UINT run = 0;
