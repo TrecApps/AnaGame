@@ -84,6 +84,9 @@
     <ClInclude Include="TIteratorVariable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TFunctionGen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -147,6 +150,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TIteratorVariable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TFunctionGen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

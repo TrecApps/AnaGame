@@ -12,6 +12,7 @@
 #include <JsMath.h>
 #include <TIteratorVariable.h>
 #include "JsArray.h"
+#include <TFunctionGen.h>
 
 
 static TDataArray<TString> standardOperators;
@@ -254,6 +255,7 @@ ReturnObject TcJavaScriptInterpretor::PreProcess()
         {
         case code_statement_type::cst_while:
         case code_statement_type::cst_function:
+        case code_statement_type::cst_function_gen:
         case code_statement_type::cst_class:
             if (state->next.Get())
             {
@@ -2825,7 +2827,7 @@ throughString:
             parenth++;
 
             UINT curIndex = index;
-            if (var->GetVarType() == var_type::interpretor || var->GetVarType() == var_type::accessor)
+            if (var->GetVarType() == var_type::interpretor || var->GetVarType() == var_type::accessor || var->GetVarType() == var_type::interpretor_gen)
             {
                 UINT curRet = uret;
 
@@ -3268,6 +3270,13 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
     {
         function = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(proc);
     }
+    else if (proc->GetVarType() == var_type::interpretor_gen)
+    {
+        function = dynamic_cast<TFunctionGen*>(proc.Get())->Generate(params);
+        assert(function.Get());
+        ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(function);
+        return nextRet;
+    }
 
     if (!function.Get())
     {
@@ -3327,7 +3336,7 @@ void TcJavaScriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatemen
     {
         TrecSubPointer<TVariable, TcInterpretor> newFunc = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(obj.errorObject);
         assert(newFunc.Get());
-        obj.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TIteratorVariable>(newFunc);
+        obj.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TFunctionGen>(newFunc);
     }
 
     UpdateVariable(obj.errorMessage, obj.errorObject, true);
