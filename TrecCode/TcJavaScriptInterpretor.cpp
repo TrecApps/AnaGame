@@ -2765,11 +2765,9 @@ throughString:
                 {
                     TString a(L"Array");
                     colVar = dynamic_cast<TContainerVariable*>(GetVariable(a, pres).Get());
-                    assert(colVar);
-
-                    var = colVar->GetValue(phrase, pres);
+                    assert(colVar); 
                 }
-
+                var = colVar->GetValue(phrase, pres);
                 if (!var.Get())
                 {
 
@@ -2806,6 +2804,15 @@ throughString:
                     PrepReturn(ret, L"INTERNAL ERROR! Failed to load 'Number' package of methods needed to process this variable", L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
                     return uret;
                 }
+            }
+            else if (var->GetVarType() == var_type::iterator)
+            {
+                vThis = var;
+                TString a(L"Iterator");
+                bool pres;
+                auto colVar = dynamic_cast<TContainerVariable*>(GetVariable(a, pres).Get());
+                assert(colVar);
+                var = colVar->GetValue(phrase, pres);
             }
         }
         else
@@ -3274,7 +3281,7 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
     {
         function = dynamic_cast<TFunctionGen*>(proc.Get())->Generate(params);
         assert(function.Get());
-        ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(function);
+        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TIteratorVariable>(function);
         return nextRet;
     }
 
