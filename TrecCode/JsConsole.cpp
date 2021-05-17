@@ -9,14 +9,14 @@ namespace JsConsole
 	void Log(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 		// Not an error, but silently fail if we don't have an environment or text to display.
-		if (!env.Get() || params.Size() < 1)
+		if (!env.Get() || params.Size() < 2)
 			return;
 
-		if (!params.at(0).Get())
+		if (!params.at(1).Get())
 			env->PrintLine(L"undefined");
 		else
 		{
-			auto message = params.at(0);
+			auto message = params.at(1);
 
 			TString finalMessage;
 

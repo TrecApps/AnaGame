@@ -190,7 +190,7 @@ ReturnObject TcJavaScriptInterpretor::Run()
         }
     }
 
-    return Run(statements);
+    return Run(statements, yieldIndex);
 }
 
 void TcJavaScriptInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
@@ -406,7 +406,12 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
         if (ret.returnCode || (ret.mode != return_mode::rm_regular))
         {
             if (ret.mode == return_mode::rm_yield)
+            {
                 yieldIndex = Rust;
+                if (yieldStatement.Get())
+                    yieldIndex++;
+                yieldStatement.Nullify();
+            }
             break;
         }
     }
@@ -1567,6 +1572,8 @@ void TcJavaScriptInterpretor::ProcessWhile(TrecPointer<CodeStatement> statement,
         // For loop is responsible for handling break and for
         if (ret.mode != return_mode::rm_regular)
         {
+            if (ret.mode == return_mode::rm_return || ret.mode == return_mode::rm_yield)
+                return;
             // here, we either break or continue
             return_mode m = ret.mode;
             ret.mode = return_mode::rm_regular;
@@ -1722,6 +1729,8 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
             // For loop is responsible for handling break and for
             if (ret.mode != return_mode::rm_regular)
             {
+                if (ret.mode == return_mode::rm_return || ret.mode == return_mode::rm_yield)
+                    return;
                 // here, we either break or continue
                 return_mode m = ret.mode;
                 ret.mode = return_mode::rm_regular;
@@ -2297,7 +2306,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
                 if (primType & TPrimitiveVariable::type_eight)
                 {
                     data = tempValue->Get8Value();
-                    if (!data)
+                    if (!data && !inc)
                         tempValue->Set(static_cast<LONG64>(-1));
                     else
                     {
@@ -2308,7 +2317,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
                 else
                 {
                     primType = tempValue->Get4Value();
-                    if (!primType)
+                    if (!primType && !inc)
                         tempValue->Set(static_cast<int>(-1));
                     else
                     {
