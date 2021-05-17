@@ -68,7 +68,7 @@ UINT TWebInput::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
     case web_input_type::wit_password:
     case web_input_type::wit_tel:
     case web_input_type::wit_text:
-        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>());
+        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), window);
 
         if (inputType == web_input_type::wit_number)
         {

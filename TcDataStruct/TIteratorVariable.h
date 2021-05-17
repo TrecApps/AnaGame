@@ -10,7 +10,7 @@
  * 
  * SuperClass: TVariable - enables 
  */
-class TIteratorVariable :
+class TC_DATA_STRUCT TIteratorVariable :
     public TVariable
 {
 public:

@@ -75,7 +75,7 @@ TrecPointer<TVariable> TIteratorVariable::Traverse(int moves, UINT attributes, R
 
         if (attributes)
         {
-            TrecSubPointer<TVariable, TContainerVariable> sValue = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>();
+            TrecSubPointer<TVariable, TContainerVariable> sValue = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
             if (attributes & 0x0001)
                 sValue->SetValue(L"value", value);
             if (attributes & 0x0002)
@@ -98,7 +98,7 @@ TrecPointer<TVariable> TIteratorVariable::Traverse(int moves, UINT attributes, R
 
         if (attributes)
         {
-            TrecSubPointer<TVariable, TContainerVariable> sValue = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>();
+            TrecSubPointer<TVariable, TContainerVariable> sValue = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
             if (attributes & 0x0001)
                 sValue->SetValue(L"value", ret.errorObject);
             if (attributes & 0x0002)
