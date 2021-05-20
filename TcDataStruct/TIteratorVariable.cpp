@@ -69,7 +69,7 @@ TrecPointer<TVariable> TIteratorVariable::Traverse(int moves, UINT attributes, R
             index = -1;
         else
         {
-            value = collection->GetValueAt(static_cast<UINT>(index));
+            value = collection->GetValueAt(static_cast<UINT>(curIndex));
             done = false;
         }
 
