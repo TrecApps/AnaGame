@@ -33,6 +33,7 @@ HRESULT TStreamSink::Flush(void)
     /*ThreadLock();
     samples.Flush();
     ThreadRelease();*/
+    //processFrames = false;
     return E_NOTIMPL;
 }
 
@@ -289,6 +290,11 @@ HRESULT TStreamSink::DispatchEvent(IMFAsyncResult* result)
     return E_NOTIMPL;
 }
 
+HRESULT TStreamSink::PresentFrame()
+{
+    return E_NOTIMPL;
+}
+
 TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
     callBack(this, TStreamSink::DispatchEvent)
 
@@ -296,6 +302,7 @@ TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
     presenter = present;
     state = PlayState::State_TypeNotSet;
     isShutdown = false;
+    processFrames = true;
     queueId = 0;
     startTime = 0;
 }

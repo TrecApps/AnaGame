@@ -43,6 +43,8 @@ public:
     // Callback
     HRESULT DispatchEvent(IMFAsyncResult* result);
 
+    HRESULT PresentFrame();
+
 private:
     enum class PlayState
     {
@@ -89,6 +91,7 @@ private:
     TStreamSink(TrecComPointer<TPresenter> present);
 
     bool isShutdown;
+    bool processFrames;
     bool CheckShutdown();
 
     TrecComPointer<TMediaSink> mediaSink;

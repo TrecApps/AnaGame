@@ -4,6 +4,7 @@
 #include <TrecReference.h>
 #include <TDataArray.h> 
 #include "DrawingBoard.h"
+#include "TScheduler.h"
 
 /**
  * Class: TMediaSink
@@ -52,5 +53,6 @@ private:
     long m_nRefCount;
     bool isShutdown;
     TrecComPointer<IMFStreamSink> streamSink;
+    TrecPointer<TScheduler> schedule;
 };
 

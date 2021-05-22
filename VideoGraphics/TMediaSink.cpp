@@ -28,6 +28,8 @@ TrecComPointer<TMediaSink> TMediaSink::CreateInstance(TrecPointer<DrawingBoard> 
        return TrecComPointer<TMediaSink>();
     ret->AddStreamSink(streamsink);
     dynamic_cast<TStreamSink*>(streamsink.Get())->Initialize();
+
+    ret->schedule = TrecPointerKey::GetNewTrecPointer<TScheduler>(streamsink);
     return ret;
 }
 
