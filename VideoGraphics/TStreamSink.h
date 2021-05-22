@@ -5,6 +5,8 @@
 #include "TMediaSink.h"
 #include <TLinkedList.h>
 #include "TPresenter.h"
+#include "TComCommon.h"
+
 class TStreamSink : public IMFStreamSink, public TObject
 {
     friend class TMediaSink;
@@ -38,7 +40,51 @@ public:
     HRESULT Start(MFTIME start);
     HRESULT Stop(void);
 
+    // Callback
+    HRESULT DispatchEvent(IMFAsyncResult* result);
+
 private:
+    enum class PlayState
+    {
+        State_TypeNotSet = 0,   // No media type is set
+        State_Ready,            // Media type is set, Start has never been called.
+        State_Started,
+        State_Paused,
+        State_Stopped
+    };
+
+    enum class StreamOperation
+    {
+        OpSetMediaType = 0,
+        OpStart,
+        OpRestart,
+        OpPause,
+        OpStop,
+        OpProcessSample,
+        OpPlaceMarker
+    };
+
+    class TAsyncOp : public IUnknown
+    {
+    public:
+
+        TAsyncOp(StreamOperation op);
+
+        // IUnknown methods.
+        STDMETHODIMP_(ULONG) AddRef(void);
+        STDMETHODIMP QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv);
+        STDMETHODIMP_(ULONG) Release(void);
+
+        // Structure data.
+        StreamOperation m_op;   // The operation to perform.
+
+    private:
+
+        long refCount;
+    };
+
+    PlayState state;
+    DWORD queueId;
 
     TStreamSink(TrecComPointer<TPresenter> present);
 
@@ -50,8 +96,10 @@ private:
     long m_nRefCount;
 
     TLinkedList<IUnknown*> samples;
+    MFTIME startTime;
 
     // Stream Specific References
     IMFMediaEventQueue* m_pEventQueue;                  // Event queue
+    TComCallback<TStreamSink> callBack;                 // Callback mechanism
 };
 

@@ -198,51 +198,142 @@ HRESULT TStreamSink::Initialize()
     HRESULT ret = S_OK;
     TObject::ThreadLock();
     ret = MFCreateEventQueue(&this->m_pEventQueue);
+    if (SUCCEEDED(ret))
+        ret = MFAllocateWorkQueue(&queueId);
     TObject::ThreadRelease();
     return ret;
 }
 
 HRESULT TStreamSink::Pause(void)
 {
-    return E_NOTIMPL;
+    TObject::ThreadLock();
+    HRESULT ret = (state == PlayState::State_TypeNotSet || state == PlayState::State_Stopped) ? MF_E_INVALIDREQUEST : S_OK;
+    if (SUCCEEDED(ret))
+    {
+        state = PlayState::State_Paused;
+        TAsyncOp* newOp = new TAsyncOp(StreamOperation::OpPause);
+        ret = MFPutWorkItem(this->queueId, &callBack, newOp);
+    }
+    TObject::ThreadRelease();
+    return ret;
 }
 
 HRESULT TStreamSink::Preroll(void)
 {
+    ///TObject::ThreadLock();
+    //HRESULT ret = S_OK;
+    //TObject::ThreadRelease();
+    //return ret;
     return E_NOTIMPL;
 }
 
 HRESULT TStreamSink::Restart(void)
 {
-    return E_NOTIMPL;
+    TObject::ThreadLock();
+    HRESULT ret = (state != PlayState::State_Ready && state != PlayState::State_Paused) ? MF_E_INVALIDREQUEST : S_OK;
+    if (SUCCEEDED(ret))
+    {
+        state = PlayState::State_Paused;
+        TAsyncOp* newOp = new TAsyncOp(StreamOperation::OpRestart);
+        ret = MFPutWorkItem(this->queueId, &callBack, newOp);
+    }
+    TObject::ThreadRelease();
+    return ret;
 }
 
 HRESULT TStreamSink::Shutdown(void)
 {
     if (!m_pEventQueue)
         return E_POINTER;
+    ThreadLock();
     m_pEventQueue->Shutdown();
     m_pEventQueue->Release();
     m_pEventQueue = nullptr;
+    isShutdown = true;
+    ThreadRelease();
     return S_OK;
 }
 
 HRESULT TStreamSink::Start(MFTIME start)
 {
-    return E_NOTIMPL;
+    TObject::ThreadLock();
+    HRESULT ret = (state == PlayState::State_TypeNotSet) ? MF_E_INVALIDREQUEST : S_OK;
+    if (SUCCEEDED(ret))
+    {
+        if (start != PRESENTATION_CURRENT_POSITION)
+            startTime = start;
+        state = PlayState::State_Started;
+        TAsyncOp* newOp = new TAsyncOp(StreamOperation::OpStart);
+        ret = MFPutWorkItem(this->queueId, &callBack, newOp);
+    }
+    TObject::ThreadRelease();
+    return ret;
 }
 
 HRESULT TStreamSink::Stop(void)
 {
+    TObject::ThreadLock();
+    HRESULT ret = (state == PlayState::State_TypeNotSet) ? MF_E_INVALIDREQUEST : S_OK;
+    if (SUCCEEDED(ret))
+    {
+        state = PlayState::State_Stopped;
+        TAsyncOp* newOp = new TAsyncOp(StreamOperation::OpStop);
+        ret = MFPutWorkItem(this->queueId, &callBack, newOp);
+    }
+    TObject::ThreadRelease();
+    return ret;
+}
+
+HRESULT TStreamSink::DispatchEvent(IMFAsyncResult* result)
+{
     return E_NOTIMPL;
 }
 
-TStreamSink::TStreamSink(TrecComPointer<TPresenter> present)
+TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
+    callBack(this, TStreamSink::DispatchEvent)
+
 {
     presenter = present;
+    state = PlayState::State_TypeNotSet;
+    isShutdown = false;
+    queueId = 0;
+    startTime = 0;
 }
 
 bool TStreamSink::CheckShutdown()
 {
     return isShutdown;
+}
+
+TStreamSink::TAsyncOp::TAsyncOp(StreamOperation op)
+{
+    m_op = op;
+    refCount = 1;
+}
+
+STDMETHODIMP_(ULONG __stdcall) TStreamSink::TAsyncOp::AddRef(void)
+{
+    return InterlockedIncrement(&refCount);
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TStreamSink::TAsyncOp::QueryInterface(REFIID iid, void** ppv)
+{
+    if (!ppv)
+        return E_POINTER;
+    if (iid == IID_IUnknown)
+        *ppv = static_cast<IUnknown*>(this);
+    else{
+        *ppv = NULL;
+        return E_NOINTERFACE;
+    }
+    AddRef();
+    return S_OK;
+}
+
+STDMETHODIMP_(ULONG __stdcall) TStreamSink::TAsyncOp::Release(void)
+{
+    auto ret = InterlockedDecrement(&refCount);
+    if (!ret)
+        delete this;
+    return ret;
 }

@@ -172,6 +172,7 @@
     <ClInclude Include="TBrush.h" />
     <ClInclude Include="TCamera.h" />
     <ClInclude Include="TColor.h" />
+    <ClInclude Include="TComCommon.h" />
     <ClInclude Include="TGeometry.h" />
     <ClInclude Include="TGradientStop.h" />
     <ClInclude Include="TGradientStopCollection.h" />

@@ -84,6 +84,9 @@
     <ClInclude Include="TPresenter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TComCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

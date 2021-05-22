@@ -182,18 +182,24 @@ HRESULT TMediaSink::Shutdown(void)
 {
     ThreadLock();
     isShutdown = true;
-    
+    ThreadRelease();
     return MF_E_SHUTDOWN;
 }
 
 HRESULT TMediaSink::OnClockPause(MFTIME time)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    HRESULT ret = isShutdown ? MF_E_SHUTDOWN : reinterpret_cast<TStreamSink*>(streamSink.Get())->Pause();
+    ThreadRelease();
+    return ret;
 }
 
 HRESULT TMediaSink::OnClockRestart(MFTIME time)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    HRESULT ret = isShutdown ? MF_E_SHUTDOWN : reinterpret_cast<TStreamSink*>(streamSink.Get())->Restart();
+    ThreadRelease();
+    return ret;
 }
 
 HRESULT TMediaSink::OnClockSetRate(MFTIME time, float rate)
@@ -203,12 +209,24 @@ HRESULT TMediaSink::OnClockSetRate(MFTIME time, float rate)
 
 HRESULT TMediaSink::OnClockStart(MFTIME time, LONGLONG startOffset)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    HRESULT ret = isShutdown ? MF_E_SHUTDOWN : reinterpret_cast<TStreamSink*>(streamSink.Get())->Start(startOffset);
+    ThreadRelease();
+    return ret;
 }
 
 HRESULT TMediaSink::OnClockStop(MFTIME time)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    HRESULT ret = isShutdown ? MF_E_SHUTDOWN : reinterpret_cast<TStreamSink*>(streamSink.Get())->Stop();
+
+    if (SUCCEEDED(ret))
+    {
+        // To-Do: Handle Scheduler once it is added
+    }
+
+    ThreadRelease();
+    return ret;
 }
 
 bool TMediaSink::AddStreamSink(TrecComPointer<IMFStreamSink> sink)
