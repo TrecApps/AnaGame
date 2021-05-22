@@ -36,6 +36,7 @@ public:
     void Shutdown();
     HRESULT ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample = NULL);
     HRESULT SetCurrentMediaType(IMFMediaType* pMediaType);
+    HRESULT PresentFrame();
 
 private:
     TPresenter(TrecPointer<TWindowEngine> engine, TrecPointer<DrawingBoard> board);

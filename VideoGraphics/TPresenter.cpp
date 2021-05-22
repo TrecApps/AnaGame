@@ -281,3 +281,15 @@ HRESULT TPresenter::SetCurrentMediaType(IMFMediaType* pMediaType)
 
     return res;
 }
+
+HRESULT TPresenter::PresentFrame()
+{
+    ThreadLock();
+    HRESULT ret = S_OK;
+    if (board.Get())
+        board->PresentFrame(boardSlot);
+    else
+        ret = E_POINTER;
+    ThreadRelease();
+    return S_OK;
+}

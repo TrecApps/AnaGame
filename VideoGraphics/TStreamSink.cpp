@@ -287,12 +287,83 @@ HRESULT TStreamSink::Stop(void)
 
 HRESULT TStreamSink::DispatchEvent(IMFAsyncResult* result)
 {
+    ThreadLock();
+
+    if (isShutdown)
+        return MF_E_SHUTDOWN;
+
+    IUnknown* pState = nullptr;
+    HRESULT ret = result->GetState(&pState);
+    if (SUCCEEDED(ret))
+    {
+        TAsyncOp* asyncOp = (TAsyncOp*)pState;
+        StreamOperation op = asyncOp->m_op;
+
+        switch (op)
+        {
+        case StreamOperation::OpStart:
+        case StreamOperation::OpRestart:
+            ret = QueueEvent(MEStreamSinkStarted, GUID_NULL, ret, nullptr);
+            
+            if (SUCCEEDED(ret))
+            {
+                sampleRequests++;
+                ret = QueueEvent(MEStreamSinkRequestSample, GUID_NULL, ret, NULL);
+            }
+
+            if (SUCCEEDED(ret))
+            {
+                // To-Do: Process Samples
+            }
+            break;
+        case StreamOperation::OpStop:
+            presenter->SetFullscreen(FALSE);
+            Flush();
+            sampleRequests = 0;
+            ret = QueueEvent(MEStreamSinkStopped, GUID_NULL, ret, nullptr);
+            break;
+        case StreamOperation::OpPause:
+            ret = QueueEvent(MEStreamSinkPaused, GUID_NULL, ret, nullptr);
+            break;
+        case StreamOperation::OpProcessSample:
+        case StreamOperation::OpPlaceMarker:
+                // To-Do
+            break;
+        }
+    }
+
+    if (pState)
+        pState->Release();
+
+    ThreadRelease();
     return E_NOTIMPL;
 }
 
 HRESULT TStreamSink::PresentFrame()
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    HRESULT ret = S_OK;
+
+    if (processFrames)
+    {
+        ret = isShutdown ? MF_E_SHUTDOWN : presenter->PresentFrame();
+    }
+    if (SUCCEEDED(ret))
+    {
+        if (state == PlayState::State_Stopped || state == PlayState::State_Paused)
+        {
+            TAsyncOp* newOp = new TAsyncOp(StreamOperation::OpProcessSample);
+            ret = MFPutWorkItem(queueId, &callBack, newOp);
+            newOp->Release();
+        }
+    }
+    else
+    {
+        ret = QueueEvent(MEError, GUID_NULL, ret, nullptr);
+    }
+
+    ThreadRelease();
+    return ret;
 }
 
 TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
@@ -305,6 +376,7 @@ TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
     processFrames = true;
     queueId = 0;
     startTime = 0;
+    sampleRequests = 0;
 }
 
 bool TStreamSink::CheckShutdown()

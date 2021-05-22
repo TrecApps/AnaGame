@@ -87,6 +87,7 @@ private:
 
     PlayState state;
     DWORD queueId;
+    DWORD sampleRequests;   // Outstanding reuqests for samples.
 
     TStreamSink(TrecComPointer<TPresenter> present);
 
