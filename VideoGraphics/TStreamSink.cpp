@@ -129,22 +129,51 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
 
 HRESULT TStreamSink::BeginGetEvent(IMFAsyncCallback* pCallback, IUnknown* punkState)
 {
-    return E_NOTIMPL;
+    if (!pCallback || !punkState)
+        return E_POINTER;
+    HRESULT ret = S_OK;
+
+    TObject::ThreadLock();
+    ret = CheckShutdown() ? MF_E_SHUTDOWN : m_pEventQueue->BeginGetEvent(pCallback, punkState);
+    TObject::ThreadRelease();
+    return ret;
 }
 
 HRESULT TStreamSink::EndGetEvent(IMFAsyncResult* pResult, _Out_ IMFMediaEvent** ppEvent)
 {
-    return E_NOTIMPL;
+    HRESULT ret = S_OK;
+
+    TObject::ThreadLock();
+    ret = CheckShutdown() ? MF_E_SHUTDOWN : m_pEventQueue->EndGetEvent(pResult, ppEvent);
+    TObject::ThreadRelease();
+    return ret;
 }
 
 HRESULT TStreamSink::GetEvent(DWORD dwFlags, __RPC__deref_out_opt IMFMediaEvent** ppEvent)
 {
-    return E_NOTIMPL;
+    IMFMediaEventQueue* pQueue = NULL;
+    TObject::ThreadLock();
+    HRESULT ret = CheckShutdown() ? MF_E_SHUTDOWN : S_OK;
+    if (SUCCEEDED(ret))
+    {
+        pQueue = m_pEventQueue;
+        pQueue->AddRef();
+    }
+    TObject::ThreadRelease();
+    if (SUCCEEDED(ret))
+    {
+        pQueue->GetEvent(dwFlags, ppEvent);
+        pQueue->Release();
+    }
+    return ret;
 }
 
 HRESULT TStreamSink::QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtendedType, HRESULT hrStatus, __RPC__in_opt const PROPVARIANT* pvValue)
 {
-    return E_NOTIMPL;
+    TObject::ThreadLock();
+    HRESULT ret = CheckShutdown() ? MF_E_SHUTDOWN : m_pEventQueue->QueueEventParamVar(met, guidExtendedType, hrStatus, pvValue);
+    TObject::ThreadRelease();
+    return ret;
 }
 
 TrecComPointer<IMFStreamSink> TStreamSink::GetStreamSink(TrecComPointer<TMediaSink> sink, TrecPointer<DrawingBoard> board)
@@ -167,9 +196,9 @@ TrecComPointer<IMFStreamSink> TStreamSink::GetStreamSink(TrecComPointer<TMediaSi
 HRESULT TStreamSink::Initialize()
 {
     HRESULT ret = S_OK;
-
+    TObject::ThreadLock();
     ret = MFCreateEventQueue(&this->m_pEventQueue);
-
+    TObject::ThreadRelease();
     return ret;
 }
 
