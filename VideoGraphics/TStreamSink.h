@@ -30,6 +30,14 @@ public:
 
     static TrecComPointer<IMFStreamSink> GetStreamSink(TrecComPointer<TMediaSink> sink, TrecPointer<DrawingBoard> board);
 
+    HRESULT Initialize();
+    HRESULT Pause(void);
+    HRESULT Preroll(void);
+    HRESULT Restart(void);
+    HRESULT Shutdown(void);
+    HRESULT Start(MFTIME start);
+    HRESULT Stop(void);
+
 private:
 
     TStreamSink(TrecComPointer<TPresenter> present);
@@ -42,5 +50,8 @@ private:
     long m_nRefCount;
 
     TLinkedList<IUnknown*> samples;
+
+    // Stream Specific References
+    IMFMediaEventQueue* m_pEventQueue;                  // Event queue
 };
 

@@ -2,6 +2,7 @@
 #include <Shlwapi.h>
 #include <Mferror.h>
 #include "TVideoMarker.h"
+#include <mfapi.h>
 
 STDMETHODIMP_(ULONG __stdcall) TStreamSink::AddRef(void)
 {
@@ -21,6 +22,7 @@ STDMETHODIMP_(ULONG __stdcall) TStreamSink::Release(void)
     ULONG c = InterlockedDecrement(&m_nRefCount);
     if (!c)
     {
+        Shutdown();
         delete this;
     }
     return c;
@@ -160,6 +162,50 @@ TrecComPointer<IMFStreamSink> TStreamSink::GetStreamSink(TrecComPointer<TMediaSi
     tsink->m_nRefCount = 1;
     tsink->isShutdown = false;
     return holder.Extract();
+}
+
+HRESULT TStreamSink::Initialize()
+{
+    HRESULT ret = S_OK;
+
+    ret = MFCreateEventQueue(&this->m_pEventQueue);
+
+    return ret;
+}
+
+HRESULT TStreamSink::Pause(void)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TStreamSink::Preroll(void)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TStreamSink::Restart(void)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TStreamSink::Shutdown(void)
+{
+    if (!m_pEventQueue)
+        return E_POINTER;
+    m_pEventQueue->Shutdown();
+    m_pEventQueue->Release();
+    m_pEventQueue = nullptr;
+    return S_OK;
+}
+
+HRESULT TStreamSink::Start(MFTIME start)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TStreamSink::Stop(void)
+{
+    return E_NOTIMPL;
 }
 
 TStreamSink::TStreamSink(TrecComPointer<TPresenter> present)

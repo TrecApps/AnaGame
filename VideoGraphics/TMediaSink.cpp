@@ -27,6 +27,7 @@ TrecComPointer<TMediaSink> TMediaSink::CreateInstance(TrecPointer<DrawingBoard> 
     if(!streamsink.Get())
        return TrecComPointer<TMediaSink>();
     ret->AddStreamSink(streamsink);
+    dynamic_cast<TStreamSink*>(streamsink.Get())->Initialize();
     return ret;
 }
 
