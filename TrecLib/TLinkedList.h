@@ -66,6 +66,18 @@ public:
 		return current;
 	}
 
+	bool Dequeue(T& data)
+	{
+		if (head.Get())
+		{
+			data = head->data;
+			DropHead();
+			return true;
+		}
+		else
+			return false;
+	}
+
 	void Flush() {
 		head = current;
 		size -= currentNode;
