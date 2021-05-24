@@ -165,7 +165,8 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     else
         res = pSample->ConvertToContiguousBuffer(&pBuffer);
 
-    MFVideoInterlaceMode unInterlaceMode = (MFVideoInterlaceMode)MFGetAttributeUINT32(pCurrentType, MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
+    MFVideoInterlaceMode unInterlaceMode = pCurrentType ? (MFVideoInterlaceMode)MFGetAttributeUINT32(pCurrentType, MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) :
+        MFVideoInterlaceMode::MFVideoInterlace_Unknown;
 
     //
         // Check the per-sample attributes

@@ -290,8 +290,10 @@ HRESULT TStreamSink::DispatchEvent(IMFAsyncResult* result)
     ThreadLock();
 
     if (isShutdown)
+    {
+        ThreadRelease();
         return MF_E_SHUTDOWN;
-
+    }
     IUnknown* pState = nullptr;
     HRESULT ret = result->GetState(&pState);
     if (SUCCEEDED(ret))
@@ -313,7 +315,7 @@ HRESULT TStreamSink::DispatchEvent(IMFAsyncResult* result)
 
             if (SUCCEEDED(ret))
             {
-                // To-Do: Process Samples
+                ret = ProcessQueueSamples(processFrames);
             }
             break;
         case StreamOperation::OpStop:
@@ -363,6 +365,69 @@ HRESULT TStreamSink::PresentFrame()
     }
 
     ThreadRelease();
+    return ret;
+}
+
+HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
+{
+    HRESULT ret = S_OK;
+    IUnknown* samp = nullptr;
+
+    bool repeat = true;
+
+    while (samples.Dequeue(samp) && repeat)
+    {
+        TVideoMarker* mSample = nullptr;
+        IMFSample* fSample = nullptr;
+
+        if ((ret = samp->QueryInterface<TVideoMarker>(&mSample)) == E_NOINTERFACE)
+            ret = samp->QueryInterface<IMFSample>(&fSample);
+
+        if (SUCCEEDED(ret))
+        {
+            if (mSample)
+            {
+                PROPVARIANT var;
+                PropVariantInit(&var);
+
+                ret = mSample->GetContext(&var);
+                if (SUCCEEDED(ret))
+                    ret = QueueEvent(MEStreamSinkMarker, GUID_NULL, doProcess ? S_OK : E_ABORT, &var);
+
+                PropVariantClear(&var);
+                mSample->Release();
+            }
+            else if(doProcess)
+            {
+                UINT laceMode = 0;
+                BOOL deviceChanged = false;
+                BOOL processAgain = false;
+                IMFSample* outSamp = nullptr;
+                ret = presenter->ProcessFrame(nullptr, fSample, &laceMode, &deviceChanged, &outSamp);
+
+                if (SUCCEEDED(ret))
+                {
+                    if (deviceChanged)
+                        QueueEvent(MEStreamSinkDeviceChanged, GUID_NULL, S_OK, nullptr);
+                    if (processAgain)
+                        samples.PushHead(samp);
+                }
+                if (SUCCEEDED(ret))
+                {
+                    if (outSamp)
+                    {
+                        ret = schedule->ScheduleSample(fSample, state != PlayState::State_Started);
+                        repeat = false;
+                    }
+                }
+                fSample->Release();
+                if (outSamp)
+                    outSamp->Release();
+            }
+        }
+    }
+
+
     return ret;
 }
 

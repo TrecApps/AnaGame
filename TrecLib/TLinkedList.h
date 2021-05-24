@@ -61,6 +61,23 @@ public:
 		return size;
 	}
 
+	UINT PushHead(T& newData)
+	{
+		TrecPointer<ListNode<T>> node = TrecPointerKey::GetNewTrecPointer<ListNode<T>>();
+		node->data = newData;
+
+		if (!size)
+		{
+			head = tail = current = node;
+		}
+		else
+		{
+			head->prev = node;
+			node->next = head;
+			head = node;
+		}
+	}
+
 	TrecPointer<ListNode<T>> GetCurrentNode()
 	{
 		return current;

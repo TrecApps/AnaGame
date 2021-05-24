@@ -30,6 +30,7 @@ TrecComPointer<TMediaSink> TMediaSink::CreateInstance(TrecPointer<DrawingBoard> 
     dynamic_cast<TStreamSink*>(streamsink.Get())->Initialize();
 
     ret->schedule = TrecPointerKey::GetNewTrecPointer<TScheduler>(streamsink);
+    dynamic_cast<TStreamSink*>(streamsink.Get())->schedule = ret->schedule;
     return ret;
 }
 
@@ -225,6 +226,7 @@ HRESULT TMediaSink::OnClockStop(MFTIME time)
     if (SUCCEEDED(ret))
     {
         // To-Do: Handle Scheduler once it is added
+        ret = schedule->StopScheduler();
     }
 
     ThreadRelease();

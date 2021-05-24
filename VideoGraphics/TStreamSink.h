@@ -46,6 +46,9 @@ public:
     HRESULT PresentFrame();
 
 private:
+
+    HRESULT ProcessQueueSamples(bool doProcess);
+
     enum class PlayState
     {
         State_TypeNotSet = 0,   // No media type is set
@@ -105,5 +108,7 @@ private:
     // Stream Specific References
     IMFMediaEventQueue* m_pEventQueue;                  // Event queue
     TComCallback<TStreamSink> callBack;                 // Callback mechanism
+    IMFMediaType* currType;                             // Type of Media
+    TrecPointer<TScheduler> schedule;
 };
 
