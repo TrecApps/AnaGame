@@ -267,6 +267,7 @@ HRESULT TStreamSink::Start(MFTIME start)
         TAsyncOp* newOp = new TAsyncOp(StreamOperation::OpStart);
         ret = MFPutWorkItem(this->queueId, &callBack, newOp);
     }
+    waitForClock = false;
     TObject::ThreadRelease();
     return ret;
 }
@@ -329,7 +330,10 @@ HRESULT TStreamSink::DispatchEvent(IMFAsyncResult* result)
             break;
         case StreamOperation::OpProcessSample:
         case StreamOperation::OpPlaceMarker:
-                // To-Do
+            if (!waitForClock)
+            {
+                ret = this->DispatchSample(asyncOp);
+            }
             break;
         }
     }
@@ -431,13 +435,48 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
     return ret;
 }
 
+HRESULT TStreamSink::DispatchSample(TAsyncOp* op)
+{
+    if(isShutdown)
+        return MF_E_SHUTDOWN;
+
+    HRESULT ret = ProcessQueueSamples(true);
+
+    if (SUCCEEDED(ret) && op->m_op == StreamOperation::OpProcessSample)
+    {
+        ret = RequestSample();
+    }
+}
+
+HRESULT TStreamSink::RequestSample()
+{
+    HRESULT ret = S_OK;
+
+    while ((sampleRequests + samples.GetSize()) < 5)
+    {
+        if (isShutdown)
+        {
+            ret = MF_E_SHUTDOWN;
+            break;
+        }
+
+        sampleRequests++;
+        ret = QueueEvent(MEStreamSinkRequestSample, GUID_NULL, S_OK, nullptr);
+
+        if (FAILED(ret))
+            ret = QueueEvent(MEError, GUID_NULL, ret, nullptr);
+    }
+
+    return ret;
+}
+
 TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
     callBack(this, TStreamSink::DispatchEvent)
 
 {
     presenter = present;
     state = PlayState::State_TypeNotSet;
-    isShutdown = false;
+    isShutdown = waitForClock = false;
     processFrames = true;
     queueId = 0;
     startTime = 0;

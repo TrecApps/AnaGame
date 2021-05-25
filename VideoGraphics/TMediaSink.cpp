@@ -225,7 +225,6 @@ HRESULT TMediaSink::OnClockStop(MFTIME time)
 
     if (SUCCEEDED(ret))
     {
-        // To-Do: Handle Scheduler once it is added
         ret = schedule->StopScheduler();
     }
 

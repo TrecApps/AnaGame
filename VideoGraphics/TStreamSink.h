@@ -47,8 +47,6 @@ public:
 
 private:
 
-    HRESULT ProcessQueueSamples(bool doProcess);
-
     enum class PlayState
     {
         State_TypeNotSet = 0,   // No media type is set
@@ -88,6 +86,9 @@ private:
         long refCount;
     };
 
+    HRESULT ProcessQueueSamples(bool doProcess);
+    HRESULT DispatchSample(TAsyncOp* op);
+    HRESULT RequestSample();
     PlayState state;
     DWORD queueId;
     DWORD sampleRequests;   // Outstanding reuqests for samples.
@@ -96,6 +97,7 @@ private:
 
     bool isShutdown;
     bool processFrames;
+    bool waitForClock;
     bool CheckShutdown();
 
     TrecComPointer<TMediaSink> mediaSink;
