@@ -17,7 +17,7 @@ TVideoMarker::TVideoMarker(MFSTREAMSINK_MARKER_TYPE t): type(t)
 HRESULT TVideoMarker::QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
 {
     static const QITAB qit[] = {
-    QITABENT(TVideoMarker, IUnknown), {0}
+    QITABENT(IVideoMarker, IUnknown), {0}
     };
     return QISearch(this, qit, riid, ppv);
 }

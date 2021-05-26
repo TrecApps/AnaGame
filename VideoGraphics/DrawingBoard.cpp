@@ -772,7 +772,7 @@ void DrawingBoard::PresentFrame(UINT slot)
 	if (!frameBrush.Get())
 	{
 		// To-Do: Add new means of getting Bitmap Brush
-		frameBrush = TrecPointerKey::GetNewSelfTrecSubPointer<TBrush, TBitmapBrush>(TrecPointerKey::GetTrecPointerFromSoft<DrawingBoard>(self), slots[slot].frame);
+		frameBrush = TrecPointerKey::GetNewTrecSubPointer<TBrush, TBitmapBrush>(TrecPointerKey::GetTrecPointerFromSoft<DrawingBoard>(self), slots[slot].frame);
 
 	}
 	else

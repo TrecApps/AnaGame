@@ -6,7 +6,7 @@ TVideo::TVideo(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> st,
 		throw 1;
 	window = win;
 	HRESULT res;
-	player = TPlayer::CreateInstance(res, window, window);
+	player = TPlayer::CreateInstance(res, rt);
 }
 
 TVideo::~TVideo()

@@ -4,7 +4,7 @@
 template<class T> class TComCallback : public IMFAsyncCallback
 {
 public:
-	typedef HRESULT(T::CallMethod*)(IMFAsyncResult* result);
+	typedef HRESULT(T::*CallMethod)(IMFAsyncResult* result);
 
 	TComCallback(T* obj, CallMethod method) {
 		parent = obj;
@@ -15,13 +15,13 @@ public:
     STDMETHODIMP_(ULONG) AddRef(void)
     {
         // Delegate to parent class.
-        return parent->AddRef();
+        return 1;
     }
 
     STDMETHODIMP_(ULONG) Release(void)
     {
         // Delegate to parent class.
-        return parent->Release();
+        return 1;
     }
 
     STDMETHODIMP QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv)

@@ -28,7 +28,7 @@ HRESULT GetEventObject(IMFMediaEvent* pEvent, Q** ppObject)
 HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource);
 
 HRESULT CreatePlaybackTopology(IMFMediaSource* pSource,
-	IMFPresentationDescriptor* pPD, HWND hVideoWnd, IMFTopology** ppTopology);
+	IMFPresentationDescriptor* pPD, TrecPointer<DrawingBoard> board, IMFTopology** ppTopology);
 
 
 

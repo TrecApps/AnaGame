@@ -30,6 +30,10 @@ public:
 
     UINT GetSampleCount();
 
+    //ULONG AddRef();
+    //ULONG Release();
+    //HRESULT QueryInterface(,void** ppv);
+
 protected:
     HRESULT StartProcessSample();
     HRESULT OnTimer(__RPC__in_opt IMFAsyncResult* pResult);
@@ -43,7 +47,7 @@ protected:
     HANDLE waitTimer;           // Handle to the wait timer 
     LONG waiter;
     LONGLONG nextSleep;
-    MFWORKITEM_KEY timerKey;
+    ULONG64 timerKey;
 
     TrecComPointer<IMFStreamSink> streamer;
     TLinkedList<IMFSample*> samples;

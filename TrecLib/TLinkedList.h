@@ -72,10 +72,12 @@ public:
 		}
 		else
 		{
-			head->prev = node;
+			head->prev = TrecPointerKey::GetSoftPointerFromTrec<>( node);
 			node->next = head;
 			head = node;
 		}
+		size++;
+		return size;
 	}
 
 	TrecPointer<ListNode<T>> GetCurrentNode()

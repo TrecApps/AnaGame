@@ -381,20 +381,21 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
 
     while (samples.Dequeue(samp) && repeat)
     {
-        TVideoMarker* mSample = nullptr;
+        IVideoMarker* mSample = nullptr;
         IMFSample* fSample = nullptr;
 
-        if ((ret = samp->QueryInterface<TVideoMarker>(&mSample)) == E_NOINTERFACE)
+        if ((ret = samp->QueryInterface<IVideoMarker>(&mSample)) == E_NOINTERFACE)
             ret = samp->QueryInterface<IMFSample>(&fSample);
 
         if (SUCCEEDED(ret))
         {
             if (mSample)
             {
+                TVideoMarker* tMSample = (TVideoMarker*)mSample;
                 PROPVARIANT var;
                 PropVariantInit(&var);
 
-                ret = mSample->GetContext(&var);
+                ret = tMSample->GetContext(&var);
                 if (SUCCEEDED(ret))
                     ret = QueueEvent(MEStreamSinkMarker, GUID_NULL, doProcess ? S_OK : E_ABORT, &var);
 
@@ -471,7 +472,7 @@ HRESULT TStreamSink::RequestSample()
 }
 
 TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
-    callBack(this, TStreamSink::DispatchEvent)
+    callBack(this, &TStreamSink::DispatchEvent)
 
 {
     presenter = present;

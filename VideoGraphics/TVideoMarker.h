@@ -2,7 +2,14 @@
 #include <Unknwnbase.h>
 #include <mfidl.h>
 
-class TVideoMarker: public IUnknown
+MIDL_INTERFACE("F06BDDE7-AA0A-4D9A-A833-A945481820CC")
+IVideoMarker: public IUnknown
+{
+
+};
+
+
+class TVideoMarker: public IVideoMarker
 {
 public:
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override;

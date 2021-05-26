@@ -4,11 +4,11 @@
 #include <Mferror.h>
 
 TScheduler::TScheduler(TrecComPointer<IMFStreamSink> s):
-	callBack(this, TScheduler::OnTimer)
+	callBack(this, &TScheduler::OnTimer)
 {
 	streamer = s;
 	waiter = 0;
-	timerKey = 0;
+	this->timerKey = 0;
 }
 
 TScheduler::~TScheduler()
@@ -215,7 +215,7 @@ HRESULT TScheduler::OnTimer(IMFAsyncResult* pResult)
 {
 	ThreadLock();
 
-	timerKey = 0;
+	this->timerKey = 0;
 	HRESULT ret = StartProcessSample();
 
 	ThreadRelease();
