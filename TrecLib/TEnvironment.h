@@ -3,7 +3,6 @@
 #include "TFile.h"
 #include "TMap.h"
 #include "TrecLib.h"
-#include "TType.h"
 #include "TDirectory.h"
 #include "TObjectNode.h"
 #include "TVariable.h"

@@ -295,6 +295,10 @@ bool TShaderParser::Attribute(TrecPointer<TString> v, TString& e)
  * Parameters: TSTring v - the TML file Type
  * Return: bool - false for now
  */
+bool TShaderParser::Attribute(TString& v, TString e)
+{
+	return Attribute(TrecPointerKey::GetNewTrecPointer<TString>(v), e);
+}
 bool TShaderParser::submitType(TString v)
 {
 	return false;
@@ -529,4 +533,9 @@ bool TShaderParser::SetTextureCount(TString& v)
 		return true;
 	}
 	return false;
+}
+
+BasicShaderDetails::BasicShaderDetails()
+{
+	vertexFileSet = pixelFileSet = vertexFunctionSet = pixelFunctionSet = false;
 }

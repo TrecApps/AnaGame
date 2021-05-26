@@ -8,6 +8,34 @@
 
 class TWindow;
 
+typedef enum class stroke_style
+{
+	bs_not_set,
+	bs_dotted,
+	bs_dashed,
+	bs_solid,
+	bs_double,
+	bs_groove,
+	bs_ridge,
+	bs_inset,
+	bs_outset,
+	bs_none,
+	bs_hidden
+};
+
+bool _VIDEO_GRAPHICS hasStyle(stroke_style style);
+
+class _VIDEO_GRAPHICS StrokeStyle
+{
+public:
+	StrokeStyle();
+	StrokeStyle(const StrokeStyle& copy);
+	StrokeStyle(stroke_style tag, TrecComPointer<ID2D1StrokeStyle> value);
+	stroke_style tag;
+	TrecComPointer<ID2D1StrokeStyle> value;
+};
+
+
 /**
  * Enum Class: TShape
  * Purpose: Determines the basic size of the TControl
@@ -426,6 +454,14 @@ public:
 	 */
 	bool SetVideoPosition(UINT slot, const D2D1_RECT_F& loc);
 
+	/**
+	 * Method: DrawingBoard::GetStrokeStyle
+	 * Purpose: Returns the actual stroke style based off of the provided tag
+	 * Parameters: stroke_style tag - the stroke style requested
+	 * Returns: TrecComPointer<ID2D1StrokeStyle> - the stroke style
+	 */
+	TrecComPointer<ID2D1StrokeStyle> GetStrokeStyle(stroke_style tag);
+
 private:
 
 	TDataArray<TVideoSlot> slots;
@@ -433,6 +469,13 @@ private:
 	TrecSubPointer<TBrush, TBitmapBrush> frameBrush;
 
 	TrecPointer<TBrush> defaultBrush;
+
+	/**
+	 * Holds the Stroke Styles
+	 */
+	TDataArray<StrokeStyle> strokeStyles;
+
+	void PrepStyles();
 
 	/**
 	 * Default colors for controls to use if no color is specified

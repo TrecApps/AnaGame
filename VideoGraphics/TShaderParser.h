@@ -19,8 +19,10 @@ typedef struct ConstantBufferDescription
 * struct BasicShaderDetails
 * Purpose: Provides the bare miminum resources needed to produce a shader
 */
-typedef struct BasicShaderDetails
+class BasicShaderDetails
 {
+public:
+	BasicShaderDetails();
 	TrecPointer<TString> vertexFile;
 	bool vertexFileSet;
 	TrecPointer<TString> pixelFile;
@@ -29,7 +31,7 @@ typedef struct BasicShaderDetails
 	bool vertexFunctionSet;
 	TrecPointer<TString> pixelFunction;
 	bool pixelFunctionSet;
-}BasicShaderDetails;
+};
 
 /**
  * Class: TShaderParser
@@ -93,6 +95,17 @@ public:
 	 */
 	virtual bool Attribute(TrecPointer<TString> v, TString& e) override;
 	// for the attribute value (here it may be good that TStrings are used)
+
+		/*
+	 * Method: Parser_::Attribute
+	 * Purpose: Sets up attributes for the current object being analyzed
+	 * Parameters: TString* v - the value to parse in an attribute
+	 *			TString e - the attribute name
+	 * Returns: bool - success result
+	 *
+	 * Attributes: virtual
+	 */
+	virtual bool Attribute(TString& v, TString e) override;
 
 
 	/**

@@ -28,7 +28,7 @@
 #include <TMap.h>
 #include <TObjectNode.h>
 
-#define RADIAN_DEGREE_RATIO 57.2957795
+#define RADIAN_DEGREE_RATIO 57.2957795f
 
 #define afx_msg
 
@@ -603,9 +603,17 @@ public:
 	 * Method: TText::GetMinWidth
 	 * Purpose: Retirvees the minimum width needed before DirectWrtie has to add emergency breaks in line
 	 * Parameters: bool& worked - whether the value returned is truely the reported value
-	 * Return: float - the min width needed. If inspection fails, this represents the width currently used
+	 * Returns: float - the min width needed. If inspection fails, this represents the width currently used
 	 */
 	float GetMinWidth(bool& worked);
+
+	/**
+	 * Method: TText::GetMinHeight
+	 * Purpose: Retrieves the minimum height needed
+	 * Parameters: bool& worked - whether the value returned is truely the reported value
+	 * Returns: void
+	 */
+	float GetMinHeight(bool& worked);
 
 	// More Set Methods
 

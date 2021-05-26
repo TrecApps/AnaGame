@@ -142,8 +142,24 @@ public:
      */
     virtual TString GetString()override;
 
+    /**
+     * Method: TPrimitiveFormatVariable::GetUseExponent
+     * Purpose: Reports whether the useExponent flag has been set
+     * Parameters: void
+     * Returns: bool - whether variable is using scientific notation
+     */
+    bool GetUseExponent();
+
+    /**
+     * Method: TPrimitiveFormatVariable::SetUseExponent
+     * Purpose: Sets the useExponent flag
+     * Parameters: bool - whether variable should use scientific notation
+     * Returns: void
+     */
+    void SetUseExponent(bool useExponent);
+
 protected:
     UCHAR flags, width, precision;
-
+    bool useExponent;
 };
 

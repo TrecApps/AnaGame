@@ -4,6 +4,7 @@
 #include <SSGenerator.h>
 #include <DirectoryInterface.h>
 
+
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): Page(board)
 {
 	windowHandle = win;
@@ -90,8 +91,10 @@ int WebPage::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 			return 5;
 		}
 		TrecPointer<TWindow> win = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
-		rootNode->PreCreate(TrecPointerSoft<TWebNode>());
-		UINT createResult = rootNode->CreateWebNode(area, win->GetWindowEngine(), styles, win->GetWindowHandle());
+		rootNode->PreCreate(TrecPointerSoft<TWebNode>(), styles);
+		D2D1_RECT_F tempArea = area;
+		tempArea.bottom = 50000.0f;
+		UINT createResult = rootNode->CreateWebNode(tempArea, win->GetWindowEngine(), win->GetWindowHandle());
 		
 	}
 	else if (file->GetFileName().EndsWith(L".tml"))
@@ -109,7 +112,7 @@ void WebPage::Draw(TWindowEngine* twe)
 	ThreadLock();
 	if (rootNode.Get())
 	{
-
+		rootNode->OnDraw();
 	}
 	else
 		Page::Draw(twe);
@@ -261,10 +264,24 @@ TString WebPage::SetUpCSS()
 		for (TrecPointer<HtmlLink> link = header->GetLink(linkIndex++); link.Get(); link = header->GetLink(linkIndex++))
 		{
 			TString relation(link->getVariableValueStr(L"rel"));
+			TString val(link->getVariableValueStr(L"href"));
 
 			if (!relation.CompareNoCase(L"stylesheet"))
 			{
 				// To-Do: Manage retrieval of Stylesheets in a URL
+				TString fullPath(directory + val);
+				TFile tcssFile(fullPath, TFile::t_file_read | TFile::t_file_open_always);
+
+				if (!tcssFile.IsOpen())
+				{
+
+				}
+
+				if (tcssFile.IsOpen())
+				{
+					cssFiles.push_back(TFileShell::GetFileInfo(tcssFile.GetFilePath()));
+					tcssFile.Close();
+				}
 			}
 		}
 

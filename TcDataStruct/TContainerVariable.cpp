@@ -31,6 +31,17 @@ TrecPointer<TVariable> TContainerVariable::Clone()
 }
 
 /**
+ * Method: TContainerVariable::Clear
+ * Purpose: Empties the container
+ * Parameters: void
+ * Returns: void
+ */
+void TContainerVariable::Clear()
+{
+    values.clear();
+}
+
+/**
  * Method: TContainerVariable
  * Purpose: Constructor
  * Parameters: ContainerType type - specified the restrictions on this container
@@ -205,6 +216,11 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
                 ThreadRelease();
                 return true;
             }
+            else
+            {
+                entry->object = value;
+                return true;
+            }
         }
     }
 
@@ -260,7 +276,11 @@ bool TContainerVariable::AppendValue(TrecPointer<TVariable> value)
         ThreadRelease();
         return false;
     }
-    values.addEntry(L"", value);
+    
+    // Otherwise, set value to the index it would be
+    TString strIndex;
+    strIndex.Format(L"%d", values.count());
+    values.addEntry(strIndex, value);
     ThreadRelease();
     return true;
 }
@@ -425,4 +445,16 @@ bool TContainerVariable::SetClassName(const TString& name)
     className.Set(name);
     ThreadRelease();
     return true;
+}
+
+
+/**
+ * Method: TContainerVariable::GetConteinerType
+ * Purpose: Reports to interpretors the container type
+ * Parameters: void
+ * Return: Container_type - the type of container we're dealing with
+ */
+ContainerType TContainerVariable::GetContainerType()
+{
+    return this->type;
 }

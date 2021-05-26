@@ -148,7 +148,7 @@ void InitializeDirectories()
 	// User
 	shadowDirectories[15].Set(baseShadow);
 
-	for (UINT c = 0; c < 9; c++)
+	for (UINT C = 0; C < 9; C++)
 	{
 		CreateDirectoryW(shadowDirectories[c].GetConstantBuffer().getBuffer(), 0);
 	}

@@ -12,7 +12,7 @@ void fillWhiteChar()
 		return;
 
 	whiteChar.push_back(L' ');
-	whiteChar.push_back(L'\s');
+	// whiteChar.push_back(L'\s');
 	whiteChar.push_back(L'\n');
 	whiteChar.push_back(L'\r');
 	whiteChar.push_back(L'\t');
@@ -44,6 +44,165 @@ void TString::DecrementBuffer() const
 	BufferCounter--;
 	if (!BufferCounter)
 		TObject::ThreadRelease();
+}
+
+bool ConvertTStringToBinary(const TString& string, UINT& val)
+{
+	if (string.GetSize() > 32)
+		return false;
+	UINT tempVal = 0;
+	for (UINT Rust = string.GetSize() - 1, mark = 0x00000001; Rust < string.GetSize() && mark; Rust--, mark = mark << 1)
+	{
+		WCHAR ch = string.GetAt(Rust);
+		switch (ch)
+		{
+		case L'0':
+			break;
+		case L'1':
+			tempVal = tempVal | mark;
+			break;
+		default:
+			return false;
+		}
+	}
+	val = tempVal;
+	return true;
+}
+
+bool ConvertTStringToOctal(const TString& string, UINT& val)
+{
+	UINT stringSize = string.GetSize();
+	
+	// Max number is 37777777777.
+	if (stringSize > 11)
+		return false;
+	if (stringSize == 11)
+	{
+		WCHAR ch = string.GetAt(0);
+		if (ch > L'3' || ch < L'0')
+			return false;
+	}
+
+	UINT tempVal = 0, shift = 0;
+
+	for (UINT Rust = string.GetSize() - 1; Rust < stringSize; Rust--, shift += 3)
+	{
+		WCHAR ch = string.GetAt(Rust);
+		if (ch > L'7' || ch < L'0')
+			return false;
+		UINT charVal = ch - L'0';
+
+		tempVal += (charVal << shift);
+	}
+	val = tempVal;
+	return true;
+}
+
+bool ConvertTStringToHex(const TString& string, UINT& val)
+{
+	if (string.GetSize() > 8)
+		return false;
+	UINT tempVal = 0, shift = 0;
+
+	for (UINT Rust = string.GetSize() - 1; Rust < string.GetSize(); Rust--, shift += 4)
+	{
+		WCHAR ch = string.GetAt(Rust);
+		UINT charVal = 0;
+
+		if (ch <= L'9' && ch >= L'0')
+			charVal = ch - L'0';
+		else if (ch <= L'f' && ch >= L'a')
+			charVal = ch - L'a' + 10;
+		else
+			return false;
+
+		tempVal += (charVal << shift);
+	}
+	val = tempVal;
+	return true;
+}
+
+/**
+ * Method: TString::ConvertStringToUint
+ * Purpose: Allows TString class to convert itself into a numeral representation
+ * Parameters: const TString& string - the string to convert
+ *				UINT& num - the number to hold the data in
+ *				number_base base - the base to assume
+ * Returns: bool - whether the string could be converted into an int
+ *
+ * Note: if the String starts with a number specifier (0x or 0b), then the base param must
+ *		match the specifier or be 'generic'. Otherwise it will fail and false is returned.
+ *		Also, if 'generic' is set and string has no specifier, then decimal will be considered followed by hex.
+ *		Finally, if you dont want octal, then add a binary/hex specifier tot he string, remove all leading zeros, or
+ *		don't use 'generic' as the base parameter
+ */
+bool TString::ConvertStringToUint(const TString& string, UINT& num, number_base base)
+{
+	number_base assumeBase = number_base::nb_generic;
+	
+	// Easier to just deal with lowercase than worry about both lower and upper case
+	TString tempString(string.GetLower().GetTrim());
+	if (tempString.StartsWith(L"0x", true) || tempString.StartsWith(L"x", true))
+	{
+		assumeBase = number_base::nb_hexadecimal;
+		tempString.Delete(0, tempString.Find(L'x') + 1);
+	}
+	else if (tempString.StartsWith(L"0b", true) || tempString.StartsWith(L"b", true))
+	{
+		assumeBase = number_base::nb_binary;
+		tempString.Delete(0, tempString.Find(L'b') + 1);
+	}
+	else if (tempString.StartsWith(L'0'))
+	{
+		assumeBase = number_base::nb_octal;
+	}
+	
+
+	// Now make sure that there is no inconsistancy in what the user is asking for and what the string provides
+	bool works = false;
+	switch (base)
+	{
+	case number_base::nb_generic:	// User has no preference, use the assumed
+		works = true;
+		break;
+	case number_base::nb_binary:	// User has a preference. Make sure our assumption is generic or octal or matches the user preference
+	case number_base::nb_decimal:
+	case number_base::nb_hexadecimal:
+	case number_base::nb_octal:
+		if (assumeBase == number_base::nb_generic || assumeBase == number_base::nb_octal)
+			assumeBase = base;
+		works = (assumeBase == base);
+	}
+
+	if (!works)
+		return false;
+	int iNum = 0;
+
+	switch (assumeBase)
+	{
+	case number_base::nb_binary:
+		works = ConvertTStringToBinary(tempString, num);
+		break;
+	case number_base::nb_decimal:
+		works = (tempString.ConvertToInt(iNum) == 0);
+		if (works)
+			num = static_cast<UINT>(iNum);
+		break;
+	case number_base::nb_hexadecimal:
+		works = ConvertTStringToHex(tempString, num);
+		break;
+	case number_base::nb_octal:
+		works = ConvertTStringToOctal(tempString, num);
+		break;
+	default: // i.e. Generic
+		works = (tempString.ConvertToInt(iNum) == 0);
+		if (works)
+			num = static_cast<UINT>(iNum);
+		else
+			works = ConvertTStringToHex(tempString, num);
+	}
+
+	return works;
 }
 
 /**
@@ -1423,10 +1582,16 @@ bool TString::operator!=(WCHAR * s)
  * Parameters: UINT loc - the index of the character
  * Returns: WCHAR - the character at the index, '\0' if index is out of bounds
  */
-WCHAR TString::operator[](UINT loc) const 
+WCHAR& TString::operator[](UINT loc) const 
 {
-	AG_THREAD_LOCK
-	RETURN_THREAD_UNLOCK GetAt(loc);
+	ThreadLock();
+	if (loc > size)
+	{
+		ThreadRelease();
+		throw L"IndexOutOfBounds";
+	}
+	ThreadRelease();
+	return string[loc];
 }
 
 /*
@@ -2091,9 +2256,10 @@ bool TString::EndsWith(const TString& seq, bool ignoreCase)const
  * Parameters: const TString& sub - the string to search for
  *				int start - the index to begin the search from 
  *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
+	 *				bool notAlphaNum - false if you don't care if entry is surrounded by alpha-numberic characters, true if you want it isolated from alphanumeric characters
  * Returns: int - the index of the string found
  */
-int TString::Find(const TString& sub, int start, bool ignoreEscape) const
+int TString::Find(const TString& sub, int start, bool ignoreEscape, bool notAlphaNum) const
 {
 	AG_THREAD_LOCK
 	int indexStart = start;
@@ -2122,7 +2288,21 @@ int TString::Find(const TString& sub, int start, bool ignoreEscape) const
 
 		if (works)
 		{
-			RETURN_THREAD_UNLOCK indexStart;
+			if(!notAlphaNum) // If we don't care about what surrounds our entry, go ahead and return it
+			{
+				RETURN_THREAD_UNLOCK indexStart;
+			}// Otherwise, check to see if it is isolated from other alpha numeric characters
+			// Use this to track the ends. 1 = clear from beginning, 2 means clear from end, need three to return
+			UCHAR uWorks = 0;
+			if (indexStart == 0 || !isalnum(string[indexStart - 1]))
+				uWorks += 1;
+			int indexEnd = indexStart + sub.GetSize();
+			if (indexEnd >= size || !isalnum(string[indexEnd]))
+				uWorks += 2;
+			if (uWorks == 3)
+			{
+				RETURN_THREAD_UNLOCK indexStart;
+			}
 		}
 		indexStart++;
 	}

@@ -1,6 +1,23 @@
 
 #include "SSGenerator.h"
 
+
+
+void ClearCSSComment(TString& text)
+{
+	while (true)
+	{
+		int beginLoc = text.Find(L"/*");
+		int endLoc = text.Find(L"*/");
+
+		if (beginLoc == -1 || endLoc == -1)
+			return;
+		if (endLoc < beginLoc)
+			return;
+		text.Delete(beginLoc, (endLoc + 2) - beginLoc);
+	}
+}
+
 /*
 * Method: (CSSGenerator) (Constructor) 
 * Purpose: Sets up a CSSGenerator with a file to read
@@ -11,7 +28,6 @@ CSSGenerator::CSSGenerator(TFile& a)
 {
 	Arch = &a;
 	styleList = TrecPointerKey::GetNewTrecPointer<TArray<styleTable>>();
-	charDeduced = false;
 }
 
 /*
@@ -25,8 +41,6 @@ CSSGenerator::CSSGenerator(TString t)
 	Arch = nullptr;
 	parsable = t;
 	styleList = TrecPointerKey::GetNewTrecPointer<TArray<styleTable>>();
-	charDeduced = true;
-	usingWide = true;
 }
 
 /*
@@ -49,52 +63,12 @@ CSSGenerator::~CSSGenerator()
 bool CSSGenerator::Parse()
 {
 	if (Arch)
-	{
-		UCHAR bytes[2];
-		Arch->Read(bytes, 2);
-
-		DeduceCharType(bytes);
-		ParseArchive();
-	}
+		return ParseArchive();
 	else
-		ParseString();
-	return true;
+		return ParseString();
+
 }
 
-/*
-* Method: CSSGenerator - DeduceCharType
-* Purpose: Deduces the type of character encoding between Unicode and char
-* Parameters: unsigned char * bytes - the characters to analyze
-* Returns: void
-*/
-void CSSGenerator::DeduceCharType(unsigned char * bytes)
-{
-	if (!bytes)
-		return;
-	WCHAR w_char;
-	memcpy(&w_char, bytes, 2);
-	char s_char = static_cast<char>(*bytes);
-
-	if (w_char == L'<' || isWhiteSpace(w_char) || (w_char >= L'a' && w_char <= L'z') 
-		|| (w_char >= L'A' && w_char <= L'Z'))
-	{
-		charDeduced = true;
-		usingWide = true;
-		BuildString(w_char);
-	}
-	else if (s_char == ' ' || s_char == '<' || s_char == '\n' || s_char == '\t'
-		|| (s_char >= 'a' && s_char <= 'z')
-		|| (s_char >= 'A' && s_char <= 'Z'))
-	{
-		charDeduced = true;
-		usingWide = false;
-		BuildString(ReturnWCharType(s_char));
-	}
-	else
-	{
-		charDeduced = false;
-	}
-}
 
 /*
 * Method: CSSGenerator - ReturnWCharType
@@ -154,26 +128,13 @@ bool CSSGenerator::ParseArchive()
 {
 	if(!Arch)
 		return false;
-	if (!charDeduced)
-		return false;
-	if (usingWide)
+	while (Arch->ReadString(piece, L'}'))
 	{
-		WCHAR w_char = L'\0';
-		while (Arch->Read(&w_char, 2) == 2)
-		{
-			BuildString(w_char);
-		}
+		if (!ParseGroup())
+			return false;
 	}
-	else
-	{
-		char s_char = 0;
-		WCHAR w_char = 0;
-		while (Arch->Read(&s_char, 1))
-		{
-			w_char = ReturnWCharType(s_char);
-			BuildString(w_char);
-		}
-	}
+
+
 	return true;
 }
 
@@ -204,6 +165,7 @@ bool CSSGenerator::ParseString()
 */
 bool CSSGenerator::ParseGroup()
 {
+	ClearCSSComment(piece);
 	TrecPointer<styleTable> st = TrecPointerKey::GetNewTrecPointer<styleTable>();
 
 	

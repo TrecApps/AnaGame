@@ -576,17 +576,22 @@ void TLayout::onDraw(TObject* obj)
 	}
 	TControl::onDraw(obj);
 
+	for (UINT c = 0; c < lChildren.Count(); c++)
+	{
+		if(lChildren.ElementAt(c)->contain.Get())
+		lChildren.ElementAt(c)->contain->onDraw(obj);
+	}
 	if (internalBrush.Get())
 	{
-		for (int c = 0; c < rowLines.Size();c++)
+		for (UINT c = 0; c < rowLines.Size();c++)
 		{
-			int add = rowLines[c];
+			float add = rowLines[c];
 			internalBrush->DrawLine(D2D1::Point2F(location.left, location.top + add),
 				D2D1::Point2F(location.right, location.top + add), thickness);
 		}
-		for (int c = 0; c < columnLines.Size();c++)
+		for (UINT c = 0; c < columnLines.Size();c++)
 		{
-			int add = columnLines[c];
+			float add = columnLines[c];
 			internalBrush->DrawLine(D2D1::Point2F(location.left + add, location.top),
 				D2D1::Point2F(location.left + add, location.bottom), thickness);
 		}
@@ -608,7 +613,7 @@ int TLayout::returnMinX(bool newColumn)
 		ThreadRelease();
 		return 0;
 	}
-	for (int c = 0; c < lChildren.Count(); c++)
+	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
 		bool found = false;
 		int ret = 0;
@@ -646,7 +651,7 @@ int TLayout::returnMinY(bool newRow)
 		ThreadRelease();
 		return 0;
 	}
-	for (int c = 0; c < lChildren.Count(); c++)
+	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
 		bool found = false;
 		int ret = 0;
@@ -680,7 +685,7 @@ D2D1_RECT_F TLayout::returnRectX(int x)
 {
 	ThreadLock();
 	auto ret =  D2D1_RECT_F();
-	for (int c = 0; c < lChildren.Count(); c++)
+	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
 		if (lChildren.ElementAt(c)->x == x)
 		{
@@ -702,7 +707,7 @@ D2D1_RECT_F TLayout::returnRectY(int y)
 {
 	ThreadLock();
 	auto ret = D2D1_RECT_F();
-	for (int c = 0; c < lChildren.Count(); c++)
+	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
 		if (lChildren.ElementAt(c)->y == y)
 		{
@@ -920,7 +925,7 @@ void TLayout::Resize(D2D1_RECT_F& r)
 	{
 
 
-		for (int c = 0; c < columnLines.Size(); c++)
+		for (UINT c = 0; c < columnLines.Size(); c++)
 		{
 			if (GetColumnFlexAt(c))
 			{
@@ -936,7 +941,7 @@ void TLayout::Resize(D2D1_RECT_F& r)
 	}
 	if (!vScroll.Get() || (organization != orgLayout::VStack)) // Ditto with a vertical Scroll bar and rows
 	{
-		for (int c = 0; c < rowLines.Size(); c++)
+		for (UINT c = 0; c < rowLines.Size(); c++)
 		{
 			if (GetRowFlexAt(c))
 			{
@@ -957,7 +962,7 @@ void TLayout::Resize(D2D1_RECT_F& r)
 		if (rowLines.Size())
 		{
 			location.bottom = location.top;
-			for (int c = 0; c < rowLines.Size(); c++)
+			for (UINT c = 0; c < rowLines.Size(); c++)
 				location.bottom += rowLines[c];
 		}
 	}
@@ -967,7 +972,7 @@ void TLayout::Resize(D2D1_RECT_F& r)
 		if (columnLines.Size())
 		{
 			location.right = location.left;
-			for (int c = 0; c < columnLines.Size(); c++)
+			for (UINT c = 0; c < columnLines.Size(); c++)
 				location.right += columnLines[c];
 		}
 	}
@@ -1353,7 +1358,7 @@ TrecPointer<TControl> TLayout::GetLayoutChild(int x, int y)
 {
 	containerControl cc;
 	ThreadLock();
-	for (int c = 0; c < lChildren.Count(); c++)
+	for (UINT c = 0; c < lChildren.Count();c++)
 	{
 		if (!lChildren.ElementAt(c).Get())
 			continue;

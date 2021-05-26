@@ -970,3 +970,13 @@ ShaderProgram::ShaderProgram()
 	modelLoc = -1;
 	viewLoc = -1;
 }
+
+ConstantBufferMark::ConstantBufferMark()
+{
+	label = 0;
+}
+
+DefaultShaderProgram::DefaultShaderProgram()
+{
+	type = DefaultShader::default_shader_uninitialized;
+}

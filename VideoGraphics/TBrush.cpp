@@ -165,6 +165,14 @@ void TBrush::DrawLine(const POINT_2D& p1, const POINT_2D& p2, float thickness)
 	ThreadRelease();
 }
 
+void TBrush::DrawLine(const POINT_2D& p1, const POINT_2D& p2, TrecComPointer<ID2D1StrokeStyle> style, float thickness)
+{
+	if (Refresh())
+	{
+		currentRenderer->DrawLine(p1, p2, brush.Get(), thickness), style.Get();
+	}
+}
+
 /**
  * Method: TBrush::GetMaxColors
  * Purpose: Reports the number of gradients held by the brush. Use to ensure successful calls to SetColor() and GetColor()

@@ -32,6 +32,14 @@ public:
     virtual TrecPointer<TVariable> Clone();
 
     /**
+     * Method: TContainerVariable::Clear
+     * Purpose: Empties the container
+     * Parameters: void
+     * Returns: void
+     */
+    void Clear();
+
+    /**
      * Method: TContainerVariable
      * Purpose: Constructor
      * Parameters: ContainerType type - specified the restrictions on this container
@@ -237,6 +245,14 @@ public:
      * Note: This Method call will only work once
      */
     bool SetClassName(const TString& name);
+
+    /**
+     * Method: TContainerVariable::GetConteinerType
+     * Purpose: Reports to interpretors the container type
+     * Parameters: void
+     * Return: Container_type - the type of container we're dealing with
+     */
+    ContainerType GetContainerType();
 
 
  private:

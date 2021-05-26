@@ -35,7 +35,7 @@ article, aside {
 
 b , strong{
   font-weight: bold;
-  display: parent-control; /* Unique to Anagame, serves as a signal to use the control held by the parent node */
+  display: inline; /* Unique to Anagame, serves as a signal to use the control held by the parent node */
 }
 
 bdo {
@@ -71,7 +71,7 @@ caption {
 
 cite {
   font-style: italic;
-  display: parent-control
+  display: inline
 }
 
 code, samp {
@@ -97,7 +97,7 @@ dd {
 
 del, s {
   text-decoration: line-through;
-  display: parent-control;
+  display: inline;
 }
 
 details, section {
@@ -106,7 +106,7 @@ details, section {
 
 dfn , em, i, var{
   font-style: italic;
-  display: parent-control;
+  display: inline;
 }
 
 div {
@@ -249,7 +249,7 @@ img {
 
 ins {
   text-decoration: underline;
-  display: parent-control;
+  display: inline;
 }
 
 kbd {
@@ -278,7 +278,7 @@ map {
 mark {
   background-color: yellow;
   color: black;
-  display: parent-control;
+  display: inline;
 }
 
 nav {
@@ -336,17 +336,17 @@ rt {
 
 small {
   font-size: smaller;
-  display: parent-control;
+  display: inline;
 }
 
 span {
-	display: parent-control
+	display: inline
 }
 
 sub {
   vertical-align: sub;
   font-size: smaller;
-  display: parent-control;
+  display: inline;
 }
 
 summary {
@@ -356,7 +356,7 @@ summary {
 sup {
   vertical-align: super;
   font-size: smaller;
-  display: parent-control;
+  display: inline;
 }
 
 table {
@@ -408,7 +408,7 @@ tr {
 
 u {
   text-decoration: underline;
-  display: parent-control;
+  display: inline;
 }
 
 ul {

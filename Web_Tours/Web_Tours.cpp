@@ -68,7 +68,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (webWindow.Get())
     {
         // Web Based Initialization here
-        webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>());
+        webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>(mainInstance, mainInstance->GetMainWindow()));
         webWindow->AddNewTab();
     }
 

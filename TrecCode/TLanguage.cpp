@@ -536,8 +536,8 @@ bool TLanguage::RunBlockFilter(TrecPointer<TFile> file, TString& newFileName)
 			{
 				if (line[0] == L'\t')
 					indent = L'\t';
-				else if (line[0] == L'\s')
-					indent = L'\s';
+				else if (line[0] == L' ')
+					indent = L' ';
 			}
 			UINT Rust;
 			for (Rust = 0; Rust < line.GetSize(); Rust++)

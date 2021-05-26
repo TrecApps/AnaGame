@@ -80,7 +80,11 @@ bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	if (bSize > 30)
 		bSize = 30;
 
-	if (!content1.Get())
+	TrecPointer<TString> valpoint = attributes.retrieveEntry(L"|AutoGenContent");
+
+	bool setContent = (valpoint.Get() && !valpoint->CompareNoCase(L"false")) ? false : true;
+
+	if (!content1.Get() && setContent)
 	{
 		content1 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, this);
 		content1->stopCollection.AddGradient(TGradientStop(TColor(D2D1::ColorF(D2D1::ColorF::White)), 0.0f));
@@ -89,7 +93,7 @@ bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	}
 
 
-	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|BoxSize"));
+	valpoint = attributes.retrieveEntry(TString(L"|BoxSize"));
 	if(valpoint.Get())
 	{
 		int tSize = bSize;

@@ -11,7 +11,8 @@ typedef enum class JsClassBlockType {
 
 class TJavaScriptClassInterpretor :
     public TJavaScriptInterpretor
-{public:
+{
+public:
     /**
      * Method: TJavaScriptInterpretor::TInterpretor
      * Purpose: Constructor

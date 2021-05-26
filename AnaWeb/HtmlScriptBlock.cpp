@@ -109,6 +109,10 @@ TString HtmlScriptBlock::ProcessHtml(TrecPointer<TFile> file, const TString& dat
 
 		TString fileLoc(env->GetRootDirectory()->GetPath() + L"\\html.");
 
+		fileLoc.Replace(L"/\\", L"\\");
+		fileLoc.Replace(L"//", L"\\");
+		fileLoc.Replace(L"\\\\", L"\\");
+
 		// Most Browsers support JavaScript, so check for JavaScript first
 		if (language.EndsWith(L"javascript", true))
 			fileLoc.Append(L"js");
@@ -121,7 +125,7 @@ TString HtmlScriptBlock::ProcessHtml(TrecPointer<TFile> file, const TString& dat
 
 		if (scriptFile.IsOpen())
 		{
-			scriptFile.Seek(scriptFile.GetLength(), 0);
+			scriptFile.Seek(0, 0);
 
 			scriptFile.WriteString(srcEntry);
 			scriptFile.Close();

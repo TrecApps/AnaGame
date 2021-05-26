@@ -2,7 +2,6 @@
 #include "TShaderHost.h"
 
 // Create Macros for error
-#define NO_ERROR         0
 #define NO_DEVICE        1
 #define NO_SWAP_CHAIN    2
 #define NO_RENDER_TARGET 3

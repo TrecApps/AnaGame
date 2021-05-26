@@ -94,10 +94,11 @@ TrecPointer<TVariable> TVariableMarker::GetVariable()const
  * Parameters: void
  * Returns: bool - mutability status
  */
-bool TVariableMarker::IsMutable()const 
+bool TVariableMarker::IsMutable()const
 {
 	return this->mutableVar;
 }
+
 
 TrecPointer<TVariable> TVariable::Clone()
 {

@@ -510,7 +510,7 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags, UINT
 				}
 
 				// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
-				if ((!(flags & 0b00000010) || !quote) && chars.Find(letter[0]) != 1)
+				if ((!(flags & 0b00000010) || !quote) && chars.Find(letter[0]) != -1)
 				{
 					// If we want to add the terminating character, then do so here
 					if (flags & 0b00000001)
@@ -580,7 +580,7 @@ UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags, UINT
 				}
 
 				// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
-				if ((!(flags & 0b00000010) || !quote) && chars.Find(cLetter) != 1)
+				if ((!(flags & 0b00000010) || !quote) && chars.Find(cLetter) != -1)
 				{
 
 

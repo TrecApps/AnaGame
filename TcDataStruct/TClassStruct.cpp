@@ -28,7 +28,7 @@ TClassStruct::TClassStruct()
 	classType = tc_class_type::tct_class;
 }
 
-bool TClassStruct::AddAttribute(const TClassAttribute& att)
+bool TClassStruct::AddAttribute(const TClassAttribute& att, bool doOverride)
 {
 	ThreadLock();
 	if (!att.name.GetSize())
@@ -40,8 +40,14 @@ bool TClassStruct::AddAttribute(const TClassAttribute& att)
 	{
 		if ((caseSensitive) ? (!att.name.Compare(attributes[Rust].name)) : (!att.name.CompareNoCase(attributes[Rust].name)))
 		{
+			bool ret = false;
+			if (doOverride)
+			{
+				ret = true;
+				attributes[Rust] = att;
+			}
 			ThreadRelease();
-			return false;
+			return ret;
 		}
 	}
 	attributes.push_back(att);

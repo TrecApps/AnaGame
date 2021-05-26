@@ -433,10 +433,13 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 		ThreadRelease();
 		return false;
 	}
-	for (int c = 0; c < details.Size(); c++)
+	for (UINT c = 0; c < details.Size(); c++)
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
+
+		if (details[c].color.Get())
+			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
 	ThreadRelease();
 	return true;
@@ -542,13 +545,14 @@ void TTextField::SetNewLocation(const D2D1_RECT_F& r)
 		return;
 	}
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
-	if (layout)
+	if (!layout)
+		return ;
+	for (UINT c = 0; c < details.Size(); c++)
 	{
-		for (int c = 0; c < details.Size(); c++)
-		{
-			layout->SetFontStyle(details[c].style, details[c].range);
-			layout->SetFontWeight(details[c].weight, details[c].range);
-		}
+		layout->SetFontStyle(details[c].style, details[c].range);
+		layout->SetFontWeight(details[c].weight, details[c].range);
+		if (details[c].color.Get())
+			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
 	ThreadRelease();
 }
@@ -626,7 +630,7 @@ afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput*
 			highlighter.SetFirstPosition(caretLoc);
 		
 		TTextField* feild = nullptr;
-		for (int c = 0; c < TextList.Size(); c++)
+		for (UINT c = 0; c < TextList.Size(); c++)
 		{
 			feild = TextList[c];
 			if (feild)
@@ -688,7 +692,7 @@ parentCall:
 	{
 		
 		TTextField* feild = nullptr;
-		for (int c = 0; c < TextList.Size(); c++)
+		for (UINT c = 0; c < TextList.Size(); c++)
 		{
 			feild = TextList[c];
 			if (feild)
@@ -778,7 +782,7 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 		else
 		{
 			POINT caretPoint;
-			for (int c = 0; c < nRepCnt;c++)
+			for (UINT c = 0; c < nRepCnt;c++)
 			{
 				switch (nChar)
 				{
@@ -1038,7 +1042,7 @@ void TTextField::AppendNormalText(const TString & t)
 bool TTextField::ApplyFormatting(FormattingDetails ds)
 {
 	ThreadLock();
-	if ((ds.range.startPosition + ds.range.length) >= text.GetSize())
+	if ((ds.range.startPosition + ds.range.length) > text.GetSize())
 	{
 		ThreadRelease();
 		return false;
@@ -1354,7 +1358,7 @@ void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 void TTextField::RemoveFocus()
 {
 	TTextField* feild = nullptr;
-	for (int c = 0; c < TextList.Size(); c++)
+	for (UINT c = 0; c < TextList.Size(); c++)
 	{
 		feild = TextList[c];
 		if (feild)
@@ -1385,6 +1389,28 @@ TrecPointer<LineMetrics> TTextField::GetLineMetrics()
 	return TrecPointer<LineMetrics>();
 }
 
+void TTextField::ShrinkHeight()
+{
+	if (text1.Get())
+	{
+		bool worked;
+		float height = text1->GetMinHeight(worked);
+		if (worked) {
+			location.bottom = location.top + height;
+			text1->bounds.bottom = location.bottom;
+			updateTextString();
+		}
+	}
+}
+
+float TTextField::GetMinWidth()
+{
+	bool w;
+	if (text1.Get())
+		return text1->GetMinWidth(w);
+	return 0.0f;
+}
+
 /*
 * Method: TTextField::updateTextString
 * Purpose: Refreshes the Text string formating
@@ -1406,10 +1432,15 @@ void TTextField::updateTextString()
 		ThreadRelease();
 		return;
 	}
-	for (int c = 0; c < details.Size(); c++)
+	HRESULT res = 0;
+	for (UINT c = 0; c < details.Size(); c++)
 	{
-		layout->SetFontStyle(details[c].style, details[c].range);
-		layout->SetFontWeight(details[c].weight, details[c].range);
+		res = layout->SetFontStyle(details[c].style, details[c].range);
+		res = layout->SetFontWeight(details[c].weight, details[c].range);
+		res = layout->SetFontSize(details[c].fontSize, details[c].range);
+
+		if (details[c].color.Get())
+			res = layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
 	highlighter.SetLayout(text1->fontLayout);
 	ThreadRelease();
@@ -2058,6 +2089,7 @@ FormattingDetails::FormattingDetails()
 {
 	this->style = DWRITE_FONT_STYLE_NORMAL;
 	this->weight = DWRITE_FONT_WEIGHT_NORMAL;
+	this->fontSize = 12.0f;
 	this->range = { 0,0 };
 }
 
@@ -2066,6 +2098,8 @@ FormattingDetails::FormattingDetails(const FormattingDetails& copy)
 	this->style = copy.style;
 	this->weight = copy.weight;
 	this->range = copy.range;
+	this->color = copy.color;
+	this->fontSize = copy.fontSize;
 }
 
 /*

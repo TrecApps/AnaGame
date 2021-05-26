@@ -117,7 +117,7 @@ void ArenaHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 	}
 	TString strMessage(message->GetMessage_());
 
-	auto messages = strMessage.split(L"\s ");
+	auto messages = strMessage.split(L" ");
 
 	if (!messages.Get() || messages->Size() < 3)
 	{

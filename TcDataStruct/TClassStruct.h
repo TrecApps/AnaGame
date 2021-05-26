@@ -21,6 +21,9 @@ class TInterpretor;
 #define ATTRIBUTE_STATIC   0b00000001  // The Attribute is considered Static
 #define ATTRIBUTE_CONST    0b00000010  // Attribute is constant, needs to be set either in a constructor or on launch
 #define ATTRIBUTE_ARRAY    0b00000100  // Attribute is an array
+#define ATTRIBUTE_MUTABLE  0b00001000  // Attribute is mutable, even in a const object
+#define ATTRIBUTE_GETTER   0b00010000  // Attribute is a getter
+#define ATTRIBUTE_SETTER   0b00100000  // Attribute is a setter
 
 // ADVANCED: For Lower level langauges like C++ and Rust
 #define ATTRIBUTE_VIRTUAL  0b00010000  // For methods, considered virtual, attributes, considered pointers
@@ -55,7 +58,7 @@ class TC_DATA_STRUCT TClassStruct :
 {
 public:
     TClassStruct();
-    bool AddAttribute(const TClassAttribute& att);
+    bool AddAttribute(const TClassAttribute& att, bool doOverride = false);
     TClassAttribute GetAttributeByName(const TString& name);
 
     bool GetAttributeByIndex(UINT index, TClassAttribute& att);

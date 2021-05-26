@@ -7,6 +7,21 @@
 #include "AnaWeb.h"
 
 /**
+ * Enum Class: WebSizeUnit
+ * Purpose: Represents a unit a size value is given in
+ */
+typedef enum class WebSizeUnit
+{
+    wsu_px, // pixel
+    wsu_in, // inch
+    wsu_pt, // points
+    wsu_cm, // centimeter
+    wsu_mm, // millimeter
+    wsu_em, // element relativity
+    wsu_bl  // Blank
+}WebSizeUnit;
+
+/**
  * Enum Class: WebNodeDisplayOutside
  * Purpose: Easy means of managing how the Node is supposed to appear
  */
@@ -90,6 +105,109 @@ public:
 };
 
 
+
+typedef enum class border_side
+{
+    bs_all,
+    bs_top,
+    bs_bottom,
+    bs_left,
+    bs_right
+};
+
+typedef enum class list_style
+{
+    ls_disc,
+    ls_circle,
+    ls_none,
+    ls_square,
+
+    ls_armenian,
+    ls_cjk,
+    ls_decimal,
+    ls_decimal_0,
+    ls_georgian,
+    ls_hebrew,
+    ls_hiragana,
+    ls_hiragana_iroha,
+    ls_katakana,
+    ls_katakana_iroha,
+    ls_lower_alph,
+    ls_lower_greek,
+    ls_lower_latin,
+    ls_lower_roman,
+    ls_upper_alpha,
+    ls_upper_greek,
+    ls_upper_latin,
+    ls_upper_roman
+};
+
+/**
+ * Class: TextData
+ * Purpose: Holds data about the text provided, enabling child nodes to inject text into parent nodes if they are inline
+ */
+class ANA_WEB_DLL TextData
+{
+public:
+    TextData();
+    TextData(const TextData&);
+
+    void Update(const TextData& copy);
+
+    TString text;
+    USHORT fontSize;
+    DWRITE_FLOW_DIRECTION flowDirection;
+    DWRITE_FONT_STRETCH fontStretch;
+    DWRITE_FONT_STYLE fontStyle;
+    DWRITE_FONT_WEIGHT fontWeight;
+    DWRITE_LINE_SPACING_METHOD lineSpacing;
+    TColor textColor, backgroundColor;
+    bool hasBackgroundColor;
+
+    bool fontSizeUpdated, flowDirectionUpdated, fontStretchUpdated, 
+        fontStyleUpdated, fontWeightUpdated, lineSpacingUpdated, textColorUpdated;
+};
+
+class ANA_WEB_DLL TColorSet
+{
+public:
+    TColorSet();
+    TColorSet(const TColorSet& copy);
+    TColorSet operator=(const TColorSet& color);
+    TColorSet operator=(const TColor& color);
+
+    TColor color;
+    bool set;
+};
+
+class ANA_WEB_DLL BorderData
+{
+public:
+    BorderData();
+    BorderData(const BorderData& copy);
+
+    void CompileAttributes(TString& atts, border_side side);
+
+    void CompileBorder(TString& atts, border_side side);
+
+    void CompileColor(TString& atts, border_side side);
+
+    bool CompileStyle(TString& atts, border_side side);
+
+    USHORT GetBorderThickness(border_side side);
+
+    bool GetBorderColor(TColor& color, border_side);
+
+    stroke_style GetStrokeStyle(border_side side);
+
+    stroke_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
+    USHORT thick, topThick, bottomThick, rightThick, leftThick;
+    TColor color;
+    TColorSet topColor, bottomColor, rightColor, leftColor;
+    TrecPointer<TBrush> brush;
+
+};
+
 /**
  * Class: TWebNode
  * Purpose: Represents HTML body Nodes, holds on to the Appropriate TControl (if necessary)
@@ -99,6 +217,7 @@ public:
 class ANA_WEB_DLL TWebNode :
     public TObject
 {
+    friend class TWebNode;
 protected:
 
     typedef enum class NodeContainerType
@@ -115,13 +234,20 @@ protected:
         TWebNodeContainer(TrecSubPointer<TControl, TTextField> text);
         TWebNodeContainer(TrecPointer<TControl> control);
         TWebNodeContainer(TrecPointer<TWebNode> webNode);
+
+        D2D1_RECT_F GetLocation();
+
         TrecPointer<TControl> control;
         TrecPointer<TWebNode> webNode;
         NodeContainerType type;
+        UINT initTextSize;                  // Text From this Node
+        TDataArray<TextData> textDataList;
     };
 
 
 public:
+    float ConvertMeasurement(TString& atts);
+
     /**
      * Method: TWebNode::TWebNode
      * Purpose: Constructor
@@ -210,9 +336,10 @@ public:
      * Method: TWebNode::PreCreate
      * Purpose: Allows Node to predict ahead of time what space it will need and how it will be shown
      * Parameters: TrecPointerSoft<TWebNode> parent - the Web Node that called the method
+     *              TrecPointer<TArray<styleTable>> styles - list of CSS styles that the node should adhere to
      * Returns: void
      */
-    void PreCreate(TrecPointerSoft<TWebNode> parent);
+    void PreCreate(TrecPointerSoft<TWebNode> parent, TrecPointer<TArray<styleTable>>& styles);
 
     /**
      * Method: TWebNode::SetDisplay
@@ -228,12 +355,11 @@ public:
      * Purpose: Sets up the Web Node for Rendering, same purpose as TControl::onCreate()
      * Parameters: D2D1_RECT_F location - the location within the Window the Node is expected to operate in
      *              TrecPointer<TWindowEngine> d3dEngine - Pointer to the 3D manager, for controls with a 3D component to them
-     *              TrecPointer<TArray<styleTable>> styles - list of CSS styles that the node should adhere to
      *              HWND window - handle to the window the node is operating in
      *              TrecPointerSoft<TWebNode> parent - the node that called this method
      * Returns: UINT - Error Code
      */
-    UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, TrecPointer<TArray<styleTable>> styles, HWND window);
+    virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window);
 
     /**
      * Method: TWebNode::GetLocation
@@ -287,6 +413,14 @@ public:
      */
     void OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPointer>& thisCollection, TDataArray<TrecPointer<TWebNode>>& nodeCollection, const TPoint& point);
 
+    /**
+     * Method: TWebNode::OnSubmit
+     * Purpose: Allows the Node to handle OnSumit events
+     * Parameters: void
+     * Returns: void
+     */
+    virtual void OnSubmit();
+
     /** 
      * Method: TWebNode::OnLoseFocus
      * Purpose: Alert the WebNode that it has lost focus
@@ -294,13 +428,177 @@ public:
      * Returns: the script to run (empty if no script is found)
      */
     TString OnLoseFocus();
+
+    /**
+     * Method: TWebNode::OnDraw
+     * Purpose: Draws the Node
+     * Parameters: void
+     * Returns: void
+     */
+    void OnDraw();
+
 protected:
     /// Display Properties
+
+    /**
+     * Method: TWebNode::CompileProperties
+     * Purpose: Takes CSS Attributes this node has and generates them into styling data
+     * Parameters: const TrecPointer<TArray<styleTable>>& styles - list of CSS styles to look at
+     * Returns: void
+     */
+    void CompileProperties(TrecPointer<TArray<styleTable>>& styles);
+
+    /**
+     * Method: TWebNode::CompileProperties_
+     * Purpose: Finalize propertie form the generated lists (virtual so that special nodes can look for special attributes)
+     * Parameters: const TrecPointer<TArray<styleTable>>& atts - list of CSS
+     * Returns: void
+     */
+    virtual void CompileProperties(TDataMap<TString>& atts);
+
+    /**
+     * Method: TWebNode::IsText
+     * Purpose: Reports whether this Node chiefly holds Text that can be inserted into parent text
+     * Parameters: void
+     * Returns: bool - whether the Node can be treated as text that can be inserted into parent text
+     */
+    bool IsText();
+
+    /**
+     * Method: TWebNode::RetrieveText
+     * Purpose: Retrieves Text Data for the Parent Node, allowing the root Text node to compile text
+     * Parameters: TDataArray<TextData>& textDataList - List of Data to create
+     * Returns: void
+     */
+    void RetrieveText(TDataArray<TextData>& textDataList);
+
+    /**
+     * Method: TWebNode::CompileText
+     * Purpose: Compiles Text Nodes according to the text Data it contains
+     * Parameters: TrecPointer<TWebNode::TWebNodeContainer> textNode - the text node to compile
+     *              D2D1_RECT_F loc - the space the text has been allocated
+     * Returns: void
+     */
+    void CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2D1_RECT_F loc);
+
+    // Methods for Inter-Node Communication
+
+    /**
+     * Method: TWebNode::AddColumn
+     * Purpose: Adds a Column to the table, if there is one
+     * Parameters: UCHAR count - number of columns to add
+     * Returns: void
+     * 
+     * Note: 
+     */
+    void AddColumn(UCHAR count = 1);
+
+    /**
+     * Method: TWebNode::AddRow
+     * Purpose: Adds a Row to the table, if there is one
+     * Parameters: void
+     * Returns: void
+     */
+    void AddRow();
+
+    /**
+     * Method: TWebNode::SetColumnsAndRows
+     * Purpose: Sets the attributes for the Columns and rows
+     * Parameters: TDataArray<UINT>& cols - set of columns
+     *              TDataArray<UINT>& rows - set of rows
+     * Returns: void
+     */
+    void SetColumnsAndRows(TDataArray<UINT>& cols, TDataArray<UINT>& rows);
+
+    /**
+     * Method: TWebNode::PreEstablishTable
+     * Purpose: Allows Table Elements to establish their elements and determine the dimensions they have
+     * Parameters: void
+     * Returns: void
+     */
+    void PreEstablishTable();
+
+    /**
+     * Method: TWebNode::ShrinkHeight
+     * Purpose: Shrinks the Node to the minimum neccesary to display
+     * Parameters: void
+     * Returns: void
+     */
+    void ShrinkHeight();
+
+    /**
+     * Method: TWebNode::ShrinkWidth
+     * Purpose: Shrinks the Node to the minimum neccessary width to display
+     * Parameters: UINT minWidth - The absolute minimum width to allow the Node to shrink
+     * Returns: void
+     */
+    void ShrinkWidth(UINT minWidth);
+    /**
+     * Method: TWebNode::ShrinkWidth
+     * Purpose: Shrinks the Node to the minimum neccessary width to display
+     * Parameters: UINT column - The Column in Question (if Node is not a row, this parameter is ignored
+     * Returns: float - the width needed
+     */
+    float NeedsWidth(UINT column);
+
+    /**
+     * Method: TWebNode::GetListPrePend
+     * Purpose: Called by list-items, provides the list item with the Prepend String
+     * Parameters: void
+     * Returns: TString - the current prepender
+     */
+    TString GetListPrepend();
+
+    /**
+     * Method: TWebNode::HandleRowSpan
+     * Purpose: Called by a node identifying as a table to allow row nodes to update cells that extend the rowspan
+     * Parameters: void
+     * Returns: void
+     */
+    void HandleRowSpan();
+
+    /**
+     * Method: TWebNode::HandleColGroup
+     * Purpose: Called by table to handle attributes provided by colgroups and col nodes
+     * Parameters: TDataArray<TDataMap<String>>& groups - collection of attribute to add
+     * Returns: void
+     */
+    void HandleColGroup(TDataArray<TDataMap<TString>>& groups);
+
+    /**
+     * Method: TWebNode::ProbeColAtts
+     * Purpose: Called By table to probe for column attributes 
+     * Parameters: TDataArray<TDataMap<String>>& groups - collection of attribute to add
+     * Returns: void
+     */
+    void ProbeColAtts(TDataArray<TDataMap<TString >> &groups);
+
+    // Other Helper Methods
+
+    /**
+     * Method: TWebNode::DrawBorder
+     * Purpose: Holds the logic for actually drawing a border around the content
+     * Parameters: void
+     * Returns: void
+     */
+    void DrawBorder();
+
+    /**
+     * Method: TWebNode::CompileMargin
+     * Purpose: Converts String data into a margin
+     * Parameters: const TSTring& marginString
+     *              border_side side - the border side to focus on
+     *              bool inner - inner border
+     * Returns: void
+     */
+    void CompileMargin(const TString& marginString, border_side side, bool inner);
+
+    // Basic Core atributes of the node
     
     /**
      * Whether to display at all
      */
-    bool doDisplay;
+    bool doDisplay, shouldDraw;
 
     /**
      * The Display outside Property
@@ -346,14 +644,19 @@ protected:
     D2D1_RECT_F location;
 
     /**
+     * Margins of the App (inner between text/content and border, outer between border and boundaries)
+     */
+    D2D1_RECT_F innerMargin, outerMargin;
+
+    /**
      * Basic string attributes
      */
-    TString tagName, id, nodeClass, name;
+    TString tagName, id, nodeClass, name, value;
 
     /**
      * The attributes gained
      */
-    TDataMap<TString> attributes;
+    TDataMap<TString> attributes, exAttributes;
 
     /**
      * Hold the Drawing board being held
@@ -366,5 +669,45 @@ protected:
     TrecPointerSoft<TWebNode> self, parent;
 
     TDataArray<FormattingDetails> formattingDetails;
+
+    TextData thisTextData;
+
+    BorderData borderData;
+
+    /**
+     * For list objects, what to send to the next list item that asks, for List items, what to prepend to the text
+     */
+    TString listInfo;
+
+    /**
+     * whether to send the list forward, or backwards
+     */
+    bool listForward;
+
+    /**
+     * list Style Mode
+     */
+    list_style listStyle;
+
+    HWND win;
+
+    TrecPointer<TWindowEngine> d3dEngine;
+
+    /// Table resources
+
+    /**
+     * Column and Row Data
+     */
+    TDataArray<UINT> columnSizes, rowSizes;
+
+    /**
+     * Column and Row Spans
+     */
+    UCHAR columnSpan, rowSpan;
+
+    /**
+     * Whether the node should attempt to shrink height
+     */
+    bool doShrink;
 };
 

@@ -360,7 +360,7 @@ private:
 
 protected:
 
-    TString GetString(TString format);
+    TString GetString(TString format, bool useExponent = false);
     
 
 public:

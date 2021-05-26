@@ -41,6 +41,18 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 	this->fact = fact;
 
 	ZeroMemory(&r, sizeof(r));
+	PrepStyles();
+
+	D2D1_RENDER_TARGET_PROPERTIES props;
+	ZeroMemory(&props, sizeof(props));
+
+	props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+	props.pixelFormat = D2D1::PixelFormat();
+
+	props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
+	props.dpiX = props.dpiY = 0.0f;
+	props.usage = D2D1_RENDER_TARGET_USAGE_NONE;
+	props.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 
 	RECT area;
 
@@ -685,6 +697,53 @@ void DrawingBoard::SetDefaultColor(const D2D1_COLOR_F& color)
 	ThreadRelease();
 }
 
+
+TrecComPointer<ID2D1StrokeStyle> DrawingBoard::GetStrokeStyle(stroke_style tag)
+{
+	return strokeStyles.at(static_cast<UINT>(tag)).value;
+}
+
+void DrawingBoard::PrepStyles()
+{
+	D2D1_STROKE_STYLE_PROPERTIES props;
+	float dashes[] = { 10.0f, 10.0f };
+	TrecComPointer<ID2D1StrokeStyle>::TrecComHolder holder;
+
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_not_set, TrecComPointer<ID2D1StrokeStyle>()));
+
+
+	props.dashCap = D2D1_CAP_STYLE_ROUND;
+	props.dashOffset = 0.0f;
+	props.dashStyle = D2D1_DASH_STYLE_CUSTOM;
+	props.endCap = D2D1_CAP_STYLE_ROUND;
+	props.lineJoin = D2D1_LINE_JOIN_ROUND;
+	props.miterLimit = 10.0f;
+	props.startCap = D2D1_CAP_STYLE_ROUND;
+	HRESULT res = fact->CreateStrokeStyle(props, dashes, 2, holder.GetPointerAddress());
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_dotted, holder.Extract()));
+
+
+	props.dashCap = D2D1_CAP_STYLE_FLAT;
+	props.dashOffset = 0.0f;
+	props.endCap = D2D1_CAP_STYLE_FLAT;
+	props.startCap = D2D1_CAP_STYLE_FLAT;
+	props.dashStyle = D2D1_DASH_STYLE_DASH;
+	props.lineJoin = D2D1_LINE_JOIN_BEVEL;
+	fact->CreateStrokeStyle(props, nullptr, 0, holder.GetPointerAddress());
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_dashed, holder.Extract()));
+
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_solid, TrecComPointer<ID2D1StrokeStyle>()));
+
+
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_double, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_groove, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_ridge, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_inset, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_outset, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_none, TrecComPointer<ID2D1StrokeStyle>()));
+	strokeStyles.push_back(StrokeStyle(stroke_style::bs_hidden, TrecComPointer<ID2D1StrokeStyle>()));
+}
+
 /**
  * Method: DrawingBoard::SetDefaultTextColor
  * Purpose: Sets the default text color to use
@@ -858,3 +917,24 @@ TVideoSlot::TVideoSlot(const TVideoSlot& copy)
 	frame = copy.frame;
 }
 
+StrokeStyle::StrokeStyle()
+{
+	tag = stroke_style::bs_not_set;
+}
+
+StrokeStyle::StrokeStyle(const StrokeStyle& copy)
+{
+	tag = copy.tag;
+	value = copy.value;
+}
+
+StrokeStyle::StrokeStyle(stroke_style tag, TrecComPointer<ID2D1StrokeStyle> value)
+{
+	this->tag = tag;
+	this->value = value;
+}
+
+bool hasStyle(stroke_style style)
+{
+	return !(style == stroke_style::bs_none || style == stroke_style::bs_not_set || style == stroke_style::bs_hidden);
+}

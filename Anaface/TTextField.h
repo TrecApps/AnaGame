@@ -39,6 +39,8 @@ public:
 	DWRITE_FONT_WEIGHT weight; // For handling boldness
 	DWRITE_FONT_STYLE style;   // For handling italics
 	DWRITE_TEXT_RANGE range;   // the Range through which it should be done
+	TrecPointer<TBrush> color; // The color of the Text
+	float fontSize;
 };
 
 /**
@@ -666,6 +668,19 @@ public:
 	static void RemoveFocus();
 
 	TrecPointer<LineMetrics> GetLineMetrics();
+
+	/**
+	 * Method: TTextField::ShrinkHeight
+	 * Purpose: Reduces the height of the control down to what is needed --> just shrinks its children
+	 *		some of whom might find ways to shrink themselves
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void ShrinkHeight() override;
+
+	float GetMinWidth();
 
 protected:
 

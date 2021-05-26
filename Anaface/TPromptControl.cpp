@@ -309,7 +309,7 @@ bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags
 		else
 		{
 			POINT caretPoint;
-			for (int c = 0; c < nRepCnt; c++)
+			for (UINT c = 0; c < nRepCnt; c++)
 			{
 				switch (nChar)
 				{

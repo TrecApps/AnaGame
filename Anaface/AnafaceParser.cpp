@@ -424,6 +424,11 @@ bool AnafaceParser::Attribute(TrecPointer<TString> v, TString& e)
 	return true;
 }
 
+bool AnafaceParser::Attribute(TString& v, TString e)
+{
+	return Attribute(TrecPointerKey::GetNewTrecPointer<TString>(v), e);
+}
+
 /*
 * Method: AnafaceParser::submitType
 * Purpose: Whether the TML file is written for this parser

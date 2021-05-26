@@ -137,7 +137,7 @@ TPrimitiveVariable::TPrimitiveVariable()
     Set(0ull);
 }
 
-TString TPrimitiveVariable::GetString(TString format)
+TString TPrimitiveVariable::GetString(TString format, bool useExponent)
 {
     ThreadLock();
     TString ret;
@@ -148,15 +148,16 @@ TString TPrimitiveVariable::GetString(TString format)
         else
             ret.Set("false");
     }
+
     else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_one)
     {
         char v = static_cast<char>(value);
-        ret.Format(format + L"c", v);
+        ret.Format(format + (useExponent ? L"e" : L"c"), v);
     }
     else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_two)
     {
         WCHAR v[2] = { static_cast<WCHAR>(value), L'\0' };
-        ret.Format(format + L"ls", v);
+        ret.Format(format + (useExponent ? L"e" : L"ls"), v);
     }
     else if (type & TPrimitiveVariable::type_float)
     {
@@ -164,17 +165,17 @@ TString TPrimitiveVariable::GetString(TString format)
 
         memcpy_s(&d, sizeof(d), &value, sizeof(value));
 
-        ret.Format(format + L"f", d);
+        ret.Format(format + (useExponent ? L"e" : L"f"), d);
     }
     else if (type & TPrimitiveVariable::type_unsigned)
     {
-        ret.Format(format + L"llu", value);
+        ret.Format(format + (useExponent ? L"e" : L"llu"), value);
     }
     else
     {
         LONG64 l = static_cast<LONG64>(value);
 
-        ret.Format(format + L"lld", l);
+        ret.Format(format + (useExponent ? L"e" : L"lld"), l);
     }
     ThreadRelease();
     return ret;
@@ -213,8 +214,9 @@ TPrimitiveVariable::TPrimitiveVariable(bool value)
 void TPrimitiveVariable::Set(float value)
 {
     ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 4);
-    this->value = this->value >> 32;
+    // this->value = this->value >> 32;
 
     type = type_four | type_float;
     ThreadRelease();
@@ -292,8 +294,9 @@ void TPrimitiveVariable::Set(UCHAR value)
 void TPrimitiveVariable::Set(short value)
 {
     ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 2);
-    this->value = this->value >> 48;
+    // this->value = this->value >> 48;
 
     type = type_two;
     ThreadRelease();
@@ -308,8 +311,9 @@ void TPrimitiveVariable::Set(short value)
 void TPrimitiveVariable::Set(USHORT value)
 {
     ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 2);
-    this->value = this->value >> 48;
+    // this->value = this->value >> 48;
 
     type = type_two | type_char;
     ThreadRelease();
@@ -324,8 +328,9 @@ void TPrimitiveVariable::Set(USHORT value)
 void TPrimitiveVariable::Set(WCHAR value)
 {
     ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 2);
-    this->value = this->value >> 48;
+    // this->value = this->value >> 48;
 
     type = type_two | type_char;
     ThreadRelease();
@@ -357,8 +362,9 @@ void TPrimitiveVariable::Set(int value)
 void TPrimitiveVariable::Set(UINT value)
 {
     ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 4);
-    this->value = this->value >> 32;
+    //this->value = this->value >> 32;
 
     type = type_four | type_unsigned;
     ThreadRelease();
