@@ -5,6 +5,7 @@
 
 #include "TDialog.h"
 #include <TBlankNode.h>
+#include <TScrollerControl.h>
 
 // Declare Handler Functions in String form
 TString on_SelectNode(L"OnSelectNode");
@@ -150,6 +151,9 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 	assert(subLayout.Get());
 
 	toggleFavoriteDirectory = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(0, 0));
+	TrecSubPointer<TControl, TScrollerControl> toggleScroller = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TScrollerControl>(subLayout->GetLayoutChild(0, 0));
+	if (toggleScroller.Get())
+		toggleFavoriteDirectory = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField> (toggleScroller->GetChildControl());
 	assert(toggleFavoriteDirectory.Get());
 
 	// Get contents

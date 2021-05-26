@@ -1058,7 +1058,9 @@ FileEncodingType TFile::DeduceEncodingType()
 			RETURN_THREAD_UNLOCK FileEncodingType::fet_acsii;
 		}
 		else
+		{
 			RETURN_THREAD_UNLOCK FileEncodingType::fet_unknown;
+		}
 	}
 	else
 	{
@@ -1139,9 +1141,10 @@ TString TFile::GetFileName() const
 	TString sep(L"/\\");
 	int seperate = filePath.FindLastOneOf(sep);
 
-	if(seperate == -1)
+	if (seperate == -1)
+	{
 		RETURN_THREAD_UNLOCK TString();
-
+	}
 	RETURN_THREAD_UNLOCK filePath.SubString(seperate + 1);
 }
 
@@ -1214,8 +1217,10 @@ ULONGLONG TFile::GetPosition() const
 UINT TFile::Read(void* buffer, UINT count)
 {
 	AG_THREAD_LOCK
-	if(!fileHandle)
+	if (!fileHandle)
+	{
 		RETURN_THREAD_UNLOCK 0;
+	}
 	LPDWORD resCount = new DWORD;
 	LPDWORD resCount2 = resCount;
 	LPOVERLAPPED lap = new _OVERLAPPED;

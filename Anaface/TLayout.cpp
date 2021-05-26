@@ -53,7 +53,7 @@ TLayout::~TLayout()
 bool TLayout::setLayout(orgLayout ol)
 {
 	ThreadLock();
-	bool ret = lChildren.Count() > 0;
+	bool ret = lChildren.Count() == 0;
 	if(ret)
 		organization = ol;
 	ThreadRelease();
