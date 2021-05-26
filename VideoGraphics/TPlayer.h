@@ -15,6 +15,7 @@
 
 #include "VideoGraphics.h"
 #include "TWindowEngine.h"
+#include "TActivate.h"
 
 const UINT WM_APP_PLAYER_EVENT = WM_APP + 1;
 
@@ -34,7 +35,7 @@ class _VIDEO_GRAPHICS TPlayer : public IMFAsyncCallback
 {
 public:
 
-	static TrecComPointer<TPlayer> CreateInstance(HRESULT& res, HWND window, HWND ev);
+	static TrecComPointer<TPlayer> CreateInstance(HRESULT& res, TrecPointer<DrawingBoard> board);
 
     // IUnknown methods
     STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
@@ -67,7 +68,7 @@ public:
 protected:
 
     // Constructor is private. Use static CreateInstance method to instantiate.
-    TPlayer(HWND hVideo, HWND hEvent);
+    TPlayer(TrecPointer<DrawingBoard> board);
 
     // Destructor is private. Caller should call Release.
     virtual ~TPlayer();
@@ -94,9 +95,9 @@ protected:
     IMFMediaSession* m_pSession;
     IMFMediaSource* m_pSource;
     IMFVideoDisplayControl* m_pVideoDisplay;
+    // TrecComPointer<TActivate> activate;
+    TrecPointer<DrawingBoard> board;
 
-    HWND                    m_hwndVideo;        // Video window.
-    HWND                    m_hwndEvent;        // App window to receive events.
     PlayerState             m_state;            // Current state of the media session.
     HANDLE                  m_hCloseEvent;      // Event to wait on while closing.
 };

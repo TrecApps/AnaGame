@@ -15,6 +15,10 @@ static D2D1_BITMAP_PROPERTIES bmpprops = { desc2d , 96.0f, 96.0f};
  * Parameters: void
  * Returns: TString - representation of the object type
  */
+HWND DrawingBoard::GetWindowHandle()
+{
+	return window;
+}
 TString DrawingBoard::GetType()
 {
 	return TString(L"DrawingBoard;") + TObject::GetType();

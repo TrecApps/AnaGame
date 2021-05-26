@@ -57,11 +57,11 @@ ULONG TPlayer::Release()
 	return c;
 }
 
-TrecComPointer<TPlayer> TPlayer::CreateInstance(HRESULT& res, HWND vid, HWND ev)
+TrecComPointer<TPlayer> TPlayer::CreateInstance(HRESULT& res, TrecPointer<DrawingBoard> board)
 {
 	TrecComPointer<TPlayer> ret;
 
-	TPlayer* play = new (std::nothrow) TPlayer(vid, ev);
+	TPlayer* play = new (std::nothrow) TPlayer(board);
 	if (!play)
 	{
 		res = E_OUTOFMEMORY;
@@ -93,16 +93,15 @@ HRESULT TPlayer::Initialize()
 	return hr;
 }
 
-TPlayer::TPlayer(HWND hVideo, HWND hEvent) :
+TPlayer::TPlayer(TrecPointer<DrawingBoard> board) :
 	m_pSession(NULL),
 	m_pSource(NULL),
 	m_pVideoDisplay(NULL),
-	m_hwndVideo(hVideo),
-	m_hwndEvent(hEvent),
 	m_state(PlayerState::ps_closed),
 	m_hCloseEvent(NULL),
 	m_nRefCount(1)
 {
+	this->board = board;
 }
 
 TPlayer::~TPlayer()
@@ -125,7 +124,7 @@ HRESULT TPlayer::OpenURL(const TString& url, TrecPointer<TWindowEngine> en)
 	hr = m_pSource->CreatePresentationDescriptor(&present);
 	if (FAILED(hr))
 		goto done;
-	hr = CreatePlaybackTopology(m_pSource, present, m_hwndVideo, &top);
+	hr = CreatePlaybackTopology(m_pSource, present, board, &top);
 	if (FAILED(hr))
 		goto done;
 	hr = m_pSession->SetTopology(0, top);
@@ -224,7 +223,7 @@ HRESULT TPlayer::Invoke(IMFAsyncResult* res)
 	{
 		event->AddRef();
 
-		PostMessageW(m_hwndEvent, WM_APP_PLAYER_EVENT, (WPARAM)event, (LPARAM)meType);
+		PostMessageW(board->GetWindowHandle(), WM_APP_PLAYER_EVENT, (WPARAM)event, (LPARAM)meType);
 	}
 
 done:
@@ -309,7 +308,7 @@ HRESULT TPlayer::OnNewPresentation(IMFMediaEvent* ev)
 	if (FAILED(hr))
 		goto done;
 
-	hr = CreatePlaybackTopology(m_pSource, present, m_hwndVideo, &top);
+	hr = CreatePlaybackTopology(m_pSource, present, board, &top);
 	if (FAILED(hr))
 		goto done;
 
@@ -471,13 +470,13 @@ HRESULT TPlayer::Shutdown()
 
 HRESULT CreateMediaSinkActivate(
 	IMFStreamDescriptor* pSourceSD,     // Pointer to the stream descriptor.
-	HWND hVideoWindow,                  // Handle to the video clipping window.
+	TrecPointer<DrawingBoard> board,                  // Handle to the video clipping window.
 	IMFActivate** ppActivate
 )
 {
 	IMFMediaTypeHandler* pHandler = NULL;
 	IMFActivate* pActivate = NULL;
-
+	TrecComPointer<TActivate> activate;
 	// Get the media type handler for the stream.
 	HRESULT hr = pSourceSD->GetMediaTypeHandler(&pHandler);
 	if (FAILED(hr))
@@ -492,7 +491,7 @@ HRESULT CreateMediaSinkActivate(
 	{
 		goto done;
 	}
-
+	
 	// Create an IMFActivate object for the renderer, based on the media type.
 	if (MFMediaType_Audio == guidMajorType)
 	{
@@ -502,7 +501,13 @@ HRESULT CreateMediaSinkActivate(
 	else if (MFMediaType_Video == guidMajorType)
 	{
 		// Create the video renderer.
-		hr = MFCreateVideoRendererActivate(hVideoWindow, &pActivate);
+		activate = TActivate::CreateInstance(board);
+		if (activate.Get())
+		{
+			pActivate = reinterpret_cast<IMFActivate*>(activate.Get());
+			pActivate->AddRef();
+			hr = S_OK;
+		}
 	}
 	else
 	{
@@ -635,7 +640,7 @@ HRESULT AddBranchToPartialTopology(
 	IMFMediaSource* pSource,        // Media source.
 	IMFPresentationDescriptor* pPD, // Presentation descriptor.
 	DWORD iStream,                  // Stream index.
-	HWND hVideoWnd)                 // Window for video playback.
+	TrecPointer<DrawingBoard> board)                 // Window for video playback.
 {
 	IMFStreamDescriptor* pSD = NULL;
 	IMFActivate* pSinkActivate = NULL;
@@ -654,7 +659,7 @@ HRESULT AddBranchToPartialTopology(
 	{
 		LockWindowUpdate(nullptr);
 		// Create the media sink activation object.
-		hr = CreateMediaSinkActivate(pSD, hVideoWnd, &pSinkActivate);
+		hr = CreateMediaSinkActivate(pSD, board, &pSinkActivate);
 		if (FAILED(hr))
 		{
 			goto done;
@@ -733,7 +738,7 @@ done:
 	return hr;
 }
 
-HRESULT CreatePlaybackTopology(IMFMediaSource* pSource, IMFPresentationDescriptor* pPD, HWND hVideoWnd, IMFTopology** ppTopology)
+HRESULT CreatePlaybackTopology(IMFMediaSource* pSource, IMFPresentationDescriptor* pPD, TrecPointer<DrawingBoard> board, IMFTopology** ppTopology)
 {
 	IMFTopology* pTopology = NULL;
 	DWORD cSourceStreams = 0;
@@ -758,7 +763,7 @@ HRESULT CreatePlaybackTopology(IMFMediaSource* pSource, IMFPresentationDescripto
 	// For each stream, create the topology nodes and add them to the topology.
 	for (DWORD i = 0; i < cSourceStreams; i++)
 	{
-		hr = AddBranchToPartialTopology(pTopology, pSource, pPD, i, hVideoWnd);
+		hr = AddBranchToPartialTopology(pTopology, pSource, pPD, i, board);
 		if (FAILED(hr))
 		{
 			goto done;

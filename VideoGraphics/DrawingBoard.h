@@ -46,6 +46,13 @@ class _VIDEO_GRAPHICS DrawingBoard : public TObject
 {
 public:
 
+	/**
+	 * Method: DrawingBoard::GetWindowHandle
+	 * Purpose: Retirevs the Window Handle being used by the Board
+	 * Parameters: void
+	 * Returns: HWND - the window handle
+	 */
+	HWND GetWindowHandle();
 
 	/**
 	 * Method: DrawingBoard::GetType
