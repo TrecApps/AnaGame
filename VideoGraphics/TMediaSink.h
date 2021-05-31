@@ -44,6 +44,7 @@ public:
     // Anagame Alternative Methods
     
 
+
 private:
     bool AddStreamSink(TrecComPointer<IMFStreamSink> sink);
     TMediaSink();

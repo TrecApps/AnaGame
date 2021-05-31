@@ -463,6 +463,7 @@ public:
 	{
 		if(pointer)
 			pointer->DecrementSoft();
+		pointer = nullptr;
 	}
 
 	/**
@@ -552,6 +553,7 @@ public:
 	{
 		if (pointer)
 			pointer->DecrementSoft();
+		pointer = nullptr;
 	}
 
 	/**

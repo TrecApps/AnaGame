@@ -21,7 +21,7 @@ typedef enum class stroke_style
 	bs_outset,
 	bs_none,
 	bs_hidden
-};
+}stroke_style;
 
 bool _VIDEO_GRAPHICS hasStyle(stroke_style style);
 

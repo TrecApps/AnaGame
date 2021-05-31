@@ -17,8 +17,8 @@ TrecComPointer<TMediaSink> TMediaSink::CreateInstance(TrecPointer<DrawingBoard> 
     msink->isShutdown = false;
     msink->m_clock = nullptr;
     msink->m_nRefCount = 1;
-    auto hsink = holder.GetPointerAddress();
-    hsink = &msink;
+    TMediaSink** hsink = holder.GetPointerAddress();
+    *hsink = msink;
 
     auto ret = holder.Extract();
 

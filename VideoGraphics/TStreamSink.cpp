@@ -186,9 +186,9 @@ TrecComPointer<IMFStreamSink> TStreamSink::GetStreamSink(TrecComPointer<TMediaSi
     TrecComPointer<IMFStreamSink>::TrecComHolder holder;
     TStreamSink* tsink = new TStreamSink(TPresenter::GetTPresenter(board->GetWindowEngine(), board));
 
-    auto mem = holder.GetPointerAddress();
-    auto isink = (IMFStreamSink*)tsink;
-    mem = &isink;
+    IMFStreamSink** mem = holder.GetPointerAddress();
+    IMFStreamSink* isink = (IMFStreamSink*)tsink;
+    *mem = isink;
     tsink->m_nRefCount = 1;
     tsink->isShutdown = false;
     return holder.Extract();

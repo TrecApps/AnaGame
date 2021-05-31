@@ -58,7 +58,7 @@ STDMETHODIMP_(HRESULT __stdcall) TActivate::ActivateObject(REFIID riid, void** p
             return E_POINTER;
         sink = TMediaSink::CreateInstance(board);
     }
-    return S_OK;
+    return sink->QueryInterface(riid, ppvObject);
 }
 
 STDMETHODIMP_(HRESULT __stdcall) TActivate::DetachObject(void)
