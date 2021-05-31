@@ -87,14 +87,14 @@ public:
 
 
     /**
-     * Method: TIteratorVariable::GetType
+     * Method: TIteratorVariable::GetVType
      * Purpose: Returns the basic type of the object
      * Parameters: void
      * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
      *
      * Attributes: abstract
      */
-    virtual UINT GetType() override;
+    virtual UINT GetVType() override;
 
     /**
      * Method: TIteratorVariable::TIteratorVariable

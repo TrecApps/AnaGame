@@ -380,7 +380,7 @@ UINT TContainerVariable::GetSize()
 }
 
 /**
- * Method: TContainerVariable::GetType
+ * Method: TContainerVariable::GetVType
  * Purpose: Returns the basic type of the object
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)

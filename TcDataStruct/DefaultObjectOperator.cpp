@@ -2,6 +2,312 @@
 #include "TPrimitiveVariable.h"
 #include "TStringVariable.h"
 
+DoubleLong::DoubleLong(ULONG64 val)
+{
+	value.u = val;
+	type = double_long::dl_unsign;
+}
+
+DoubleLong::DoubleLong(LONG64 val)
+{
+	value.s = val;
+	type = double_long::dl_sign;
+}
+
+DoubleLong::DoubleLong(double val)
+{
+	value.d = val;
+	type = double_long::dl_double;
+}
+
+DoubleLong::DoubleLong()
+{
+	type = double_long::dl_invalid;
+	value.u = 0ULL;
+}
+
+bool DoubleLong::operator<(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d < o.value.d;
+		case double_long::dl_sign:
+			return value.d < o.value.s;
+		case double_long::dl_unsign:
+			return value.d < o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s < o.value.d;
+		case double_long::dl_sign:
+			return value.s < o.value.s;
+		case double_long::dl_unsign:
+			return value.s < o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u < o.value.d;
+		case double_long::dl_sign:
+			return value.u < o.value.s;
+		case double_long::dl_unsign:
+			return value.u < o.value.u;
+		}
+	}
+
+	return false;
+}
+
+bool DoubleLong::operator==(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d == o.value.d;
+		case double_long::dl_sign:
+			return value.d == o.value.s;
+		case double_long::dl_unsign:
+			return value.d == o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s == o.value.d;
+		case double_long::dl_sign:
+			return value.s == o.value.s;
+		case double_long::dl_unsign:
+			return value.s == o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u == o.value.d;
+		case double_long::dl_sign:
+			return value.u == o.value.s;
+		case double_long::dl_unsign:
+			return value.u == o.value.u;
+		}
+	}
+	return type == o.type;
+}
+
+ULONG64 DoubleLong::ToUnsignedLong()const
+{
+	ULONG64 ret;
+
+	switch (type)
+	{
+	case double_long::dl_double:
+		memcpy_s(&ret, sizeof(ret), &value.d, sizeof(value.d));
+		break;
+	case double_long::dl_sign:
+		memcpy_s(&ret, sizeof(ret), &value.s, sizeof(value.s));
+		break;
+	case double_long::dl_unsign:
+		ret = value.u;
+		break;
+	default:
+		ret = 0ULL;
+	}
+
+	return ret;
+}
+
+ULONG64 DoubleLong::GetBitAnd(const DoubleLong& o)
+{
+	return ToUnsignedLong() & o.ToUnsignedLong();
+}
+
+ULONG64 DoubleLong::GetBitOr(const DoubleLong& o)
+{
+	return ToUnsignedLong() | o.ToUnsignedLong();
+}
+
+ULONG64 DoubleLong::GetBitXor(const DoubleLong& o)
+{
+	return ToUnsignedLong() ^ o.ToUnsignedLong();
+}
+
+DoubleLong DoubleLong::GetValueFromPrimitive(TrecPointer<TVariable> var)
+{
+	if (!var.Get() || var->GetVarType() != var_type::primitive)
+		return DoubleLong();
+
+	double f_value = 0.0;
+	ULONG64 u_value = 0ULL;
+	LONG64 s_value = 0LL;
+
+	switch (var->GetVType())
+	{
+	case (TPrimitiveVariable::type_bool):
+		return DoubleLong(1ULL);
+
+	case (0b00110010):						// Indicates a four-byte float
+		u_value = var->Get4Value();
+		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
+		return DoubleLong(f_value);
+
+	case (0b01000010):						// Indicates an eight-byte float
+		u_value = var->Get8Value();
+		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
+		return DoubleLong(f_value);
+
+	case (0b00010000):						// Indicates a 1-byte int
+	case (0b00100000):						// Indicates a 2-byte int
+	case (0b00110000):						// Indicates a 4-byte int
+	case (0b01000000):						// Indicates an 8-byte int
+		u_value = var->Get8Value();
+		memcpy_s(&s_value, sizeof(s_value), &u_value, sizeof(u_value));
+		return DoubleLong(s_value);
+
+	case (0b00011000):						// Indicates a 1-byte uint
+	case (0b00101000):						// Indicates a 2-byte uint
+	case (0b00111000):						// Indicates a 4-byte uint
+	case (0b01001000):						// Indicates an 8-byte uint
+		u_value = var->Get8Value();
+		return DoubleLong(static_cast<ULONG64>(u_value));
+
+
+	}
+	return DoubleLong();
+}
+
+bool DoubleLong::operator<=(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d <= o.value.d;
+		case double_long::dl_sign:
+			return value.d <= o.value.s;
+		case double_long::dl_unsign:
+			return value.d <= o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s <= o.value.d;
+		case double_long::dl_sign:
+			return value.s <= o.value.s;
+		case double_long::dl_unsign:
+			return value.s <= o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u <= o.value.d;
+		case double_long::dl_sign:
+			return value.u <= o.value.s;
+		case double_long::dl_unsign:
+			return value.u <= o.value.u;
+		}
+	}
+	return false;
+}
+
+bool DoubleLong::operator>=(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d >= o.value.d;
+		case double_long::dl_sign:
+			return value.d >= o.value.s;
+		case double_long::dl_unsign:
+			return value.d >= o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s >= o.value.d;
+		case double_long::dl_sign:
+			return value.s >= o.value.s;
+		case double_long::dl_unsign:
+			return value.s >= o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u >= o.value.d;
+		case double_long::dl_sign:
+			return value.u >= o.value.s;
+		case double_long::dl_unsign:
+			return value.u >= o.value.u;
+		}
+	}
+	return false;
+}
+
+bool DoubleLong::operator>(const DoubleLong& o)
+{
+	switch (type)
+	{
+	case double_long::dl_double:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.d > o.value.d;
+		case double_long::dl_sign:
+			return value.d > o.value.s;
+		case double_long::dl_unsign:
+			return value.d > o.value.u;
+		}
+		break;
+	case double_long::dl_sign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.s > o.value.d;
+		case double_long::dl_sign:
+			return value.s > o.value.s;
+		case double_long::dl_unsign:
+			return value.s > o.value.u;
+		}
+		break;
+	case double_long::dl_unsign:
+		switch (o.type)
+		{
+		case double_long::dl_double:
+			return value.u > o.value.d;
+		case double_long::dl_sign:
+			return value.u > o.value.s;
+		case double_long::dl_unsign:
+			return value.u > o.value.u;
+		}
+	}
+	return false;
+}
+
 TrecPointer<TVariable> DefaultObjectOperator::Add(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2)
 {
 	if (!var1.Get() || !var2.Get())
@@ -497,7 +803,7 @@ TString GetStringFromPrimitive(TrecPointer<TVariable> var)
 	if (!var.Get() || var->GetVarType() != var_type::primitive)
 		return TString();
 	TString strValue;
-	auto v1Type = var->GetType();
+	UINT v1Type = var->GetVType();
 
 	if (v1Type == (TPrimitiveVariable::type_char & TPrimitiveVariable::type_one))
 		strValue.Set(static_cast<char>(var->Get4Value()));

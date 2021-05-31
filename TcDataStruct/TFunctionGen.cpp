@@ -66,7 +66,7 @@ UINT TFunctionGen::GetSize()
 	return 0;
 }
 
-UINT TFunctionGen::GetType()
+UINT TFunctionGen::GetVType()
 {
 	return 0;
 }

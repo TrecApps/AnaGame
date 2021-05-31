@@ -54,7 +54,7 @@ bool IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEq
         DoubleLong dl1 = DoubleLong::GetValueFromPrimitive(var1);
         DoubleLong dl2 = DoubleLong::GetValueFromPrimitive(var2);
 
-        eqType = dl1.type == dl2.type && var1->GetVarType() == var2->GetVarType() && var1->GetType();
+        eqType = dl1.type == dl2.type && var1->GetVarType() == var2->GetVarType() && var1->GetVType();
 
         eqVal = dl1 == dl2;
     }
@@ -2068,7 +2068,7 @@ TrecPointer<TVariable> JsObjectOperator::Add(TrecPointer<TVariable> var1, TrecPo
             for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
             {
                 auto val = varColl->GetValueAt(Rust);
-                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer() : L"null");
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer().getBuffer() : L"null");
             }
             if (value.StartsWith(L","))
                 value.Delete(0);
@@ -2090,7 +2090,7 @@ TrecPointer<TVariable> JsObjectOperator::Add(TrecPointer<TVariable> var1, TrecPo
             for (UINT Rust = 0; Rust < varColl->GetSize(); Rust++)
             {
                 auto val = varColl->GetValueAt(Rust);
-                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer() : L"null");
+                value.AppendFormat(L",%ws", val.Get() ? val->GetString().GetConstantBuffer().getBuffer() : L"null");
             }
             if (value.StartsWith(L","))
                 value.Delete(0);
@@ -2280,7 +2280,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
 
             
 
-            UINT primType = tempValue->GetType();
+            UINT primType = tempValue->GetVType();
             ULONG64 data = 0;
             if (primType & TPrimitiveVariable::bit_float)
             {

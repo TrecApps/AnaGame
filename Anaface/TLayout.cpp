@@ -583,7 +583,14 @@ void TLayout::onDraw(TObject* obj)
 	}
 	if (internalBrush.Get())
 	{
-		for (UINT c = 0; c < rowLines.Size();c++)
+		for (UINT Rust = 0; Rust < lChildren.Count(); Rust++)
+		{
+			auto ch = lChildren.ElementAt(Rust);
+			if (ch.Get())
+				internalBrush->DrawRectangle(getRawSectionLocation(ch->y, ch->x));
+		}
+
+		/*for (UINT c = 0; c < rowLines.Size();c++)
 		{
 			float add = rowLines[c];
 			internalBrush->DrawLine(D2D1::Point2F(location.left, location.top + add),
@@ -594,7 +601,7 @@ void TLayout::onDraw(TObject* obj)
 			float add = columnLines[c];
 			internalBrush->DrawLine(D2D1::Point2F(location.left + add, location.top),
 				D2D1::Point2F(location.left + add, location.bottom), thickness);
-		}
+		}*/
 	}
 	ThreadRelease();
 }
@@ -728,7 +735,7 @@ D2D1_RECT_F TLayout::returnRectY(int y)
 bool TLayout::GetColumnFlexAt(UINT col)
 {
 	ThreadLock();
-	bool ret = (col >= columnLines.Size() || col / 8 >= columnFlex.Size());
+	bool ret = (col < columnLines.Size() && (col / 8) < columnFlex.Size());
 	if (ret)
 	{
 		UCHAR comp = 0b10000000 >> (col % 8);
@@ -747,7 +754,7 @@ bool TLayout::GetColumnFlexAt(UINT col)
 bool TLayout::GetRowFlexAt(UINT row)
 {
 	ThreadLock();
-	bool ret = (row >= rowLines.Size() || row / 8 >= rowFlex.Size());
+	bool ret = (row < rowLines.Size() < (row / 8) < rowFlex.Size());
 	if (ret)
 	{
 		UCHAR comp = 0b10000000 >> (row % 8);

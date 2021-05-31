@@ -1275,7 +1275,7 @@ public:
 	{
 		TrecPointer<t> ret;
 		ret.pointer = sub.pointer;
-		if (ret.pointer && ret.pointer)
+		if (ret.pointer && ret.pointer->counter)
 			ret.pointer->Increment();
 		return ret;
 	}

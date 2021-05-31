@@ -144,7 +144,7 @@ UINT TInterpretor::GetSize()
 }
 
 /**
- * Method: TInterpretor::GetType
+ * Method: TInterpretor::GetVType
  * Purpose: Returns the basic type of the object
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)

@@ -95,7 +95,7 @@ void JsArray::JsArrayFrom(TDataArray<TrecPointer<TVariable>>& params, TrecPointe
 
 		if (!func.Get())
 		{
-			ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+			ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 			ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 			return;
 		}
@@ -342,7 +342,7 @@ void JsArray::JsArrayEvery(TDataArray<TrecPointer<TVariable>>& params, TrecPoint
 
 	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
 	{
-		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 		return;
 	}
@@ -436,7 +436,7 @@ void JsArray::JsArrayFilter(TDataArray<TrecPointer<TVariable>>& params, TrecPoin
 
 	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
 	{
-		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 		return;
 	}
@@ -471,7 +471,7 @@ void JsArray::JsArrayFind(TDataArray<TrecPointer<TVariable>>& params, TrecPointe
 
 	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
 	{
-		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 		return;
 	}
@@ -509,7 +509,7 @@ void JsArray::JsArrayFindIndex(TDataArray<TrecPointer<TVariable>>& params, TrecP
 
 	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
 	{
-		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 		return;
 	}
@@ -547,7 +547,7 @@ void JsArray::JsArrayForEach(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 
 	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
 	{
-		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 		return;
 	}
@@ -688,7 +688,7 @@ void JsArray::JsArrayMap(TDataArray<TrecPointer<TVariable>>& params, TrecPointer
 
 		if (!func.Get())
 		{
-			ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+			ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 			ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 			return;
 		}
@@ -751,7 +751,7 @@ void JsArray::JsArrayReduce(TDataArray<TrecPointer<TVariable>>& params, TrecPoin
 	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
 	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
 	{
-		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 		return;
 	}
@@ -787,7 +787,7 @@ void JsArray::JsArrayReduceRight(TDataArray<TrecPointer<TVariable>>& params, Tre
 
 	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
 	{
-		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 		return;
 	}
@@ -857,7 +857,7 @@ void JsArray::JsArraySome(TDataArray<TrecPointer<TVariable>>& params, TrecPointe
 	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
 	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
 	{
-		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer() : L"null");
+		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
 		return;
 	}

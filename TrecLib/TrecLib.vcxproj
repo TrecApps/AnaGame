@@ -214,8 +214,6 @@
     <ClCompile Include="TVariable.cpp" />
     <ClCompile Include="TcBashInterpretor.cpp" />
     <ClCompile Include="TcInterpretor.cpp" />
-    <ClCompile Include="TSliceManager.cpp" />
-    <ClCompile Include="TStringSlice.cpp" />
     <ClCompile Include="TEnvironment.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Configuration.cpp" />
@@ -251,7 +249,6 @@
     <ClCompile Include="TSocket.cpp" />
     <ClCompile Include="TShell.cpp" />
     <ClCompile Include="TString.cpp" />
-    <ClCompile Include="TVariable.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

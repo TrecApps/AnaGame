@@ -32,7 +32,7 @@ UINT TIteratorVariable::GetSize()
     return 1;
 }
 
-UINT TIteratorVariable::GetType()
+UINT TIteratorVariable::GetVType()
 {
     return 0;
 }

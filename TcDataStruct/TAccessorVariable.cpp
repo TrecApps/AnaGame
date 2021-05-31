@@ -93,14 +93,14 @@ UINT TAccessorVariable::GetSize()
 }
 
 /**
- * Method: TAccessorVariable::GetType
+ * Method: TAccessorVariable::GetVType
  * Purpose: Returns the basic type of the object
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
  *
  * Attributes: override
  */
-UINT TAccessorVariable::GetType()
+UINT TAccessorVariable::GetVType()
 {
     return 0;
 }

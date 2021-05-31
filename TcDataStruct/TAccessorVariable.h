@@ -86,14 +86,14 @@ public:
 
 
     /**
-     * Method: TAccessorVariable::GetType
+     * Method: TAccessorVariable::GetVType
      * Purpose: Returns the basic type of the object
      * Parameters: void
      * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
      *
      * Attributes: override
      */
-    virtual UINT GetType() override;
+    virtual UINT GetVType() override;
 
     /**
      * Method: TAccessorVariable::TAccessorVariable

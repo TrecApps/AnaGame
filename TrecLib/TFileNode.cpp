@@ -33,9 +33,10 @@ TString TFileNode::GetType()
 TString TFileNode::GetContent()
 {
 	AG_THREAD_LOCK
-	if (!data.Get())
-		RETURN_THREAD_UNLOCK TString();
-
+		if (!data.Get())
+		{
+			RETURN_THREAD_UNLOCK TString();
+		}
 	TString ret(data->GetName());
 	RETURN_THREAD_UNLOCK ret;
 }

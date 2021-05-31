@@ -176,7 +176,7 @@ UINT TcInterpretor::GetSize()
  *
  * Attributes: override
  */
-UINT TcInterpretor::GetType()
+UINT TcInterpretor::GetVType()
 {
 	return 0;
 }

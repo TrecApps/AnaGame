@@ -139,7 +139,7 @@ namespace JSObject
         if (!prop.Get())
         {
             ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
-            ret.errorMessage.Format(L"Property description must be an object: %ws", val.Get() ? val->GetString().GetConstantBuffer() : L"null/undefined");
+            ret.errorMessage.Format(L"Property description must be an object: %ws", val.Get() ? val->GetString().GetConstantBuffer().getBuffer() : L"null/undefined");
             ret.stackTrace.push_back(L"at Function.defineProperty (<anonymous>)");
             ret.stackTrace.push_back(L"at <anonymous>:1:8");
             return;
@@ -180,7 +180,7 @@ void JavaScriptFunc::isFinite(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 
         auto prim = dynamic_cast<TPrimitiveVariable*>(ret.errorObject.Get());
 
-        if (!(prim->GetType() & TPrimitiveVariable::type_float))
+        if (!(prim->GetVType() & TPrimitiveVariable::type_float))
         {
             // Only a floa can hold infinite
             ret.returnCode = 0;
@@ -378,7 +378,7 @@ void JavaScriptFunc::DecodeURI(TDataArray<TrecPointer<TVariable>>& params, TrecP
             val2.AppendChar(val[Rust]);
             break;
         case 3:
-            charVal = wcstol(val2.GetConstantBuffer(), nullptr, 16);
+            charVal = wcstol(val2.GetConstantBuffer().getBuffer(), nullptr, 16);
             if (!charVal)
             {
                 ret.returnCode = ReturnObject::ERR_IMPROPER_NAME;
@@ -422,7 +422,7 @@ void JavaScriptFunc::DecodeURIComponent(TDataArray<TrecPointer<TVariable>>& para
             val2.AppendChar(val[Rust]);
             break;
         case 3:
-            charVal = wcstol(val2.GetConstantBuffer(), nullptr, 16);
+            charVal = wcstol(val2.GetConstantBuffer().getBuffer(), nullptr, 16);
             if (!charVal)
             {
                 ret.returnCode = ReturnObject::ERR_IMPROPER_NAME;
@@ -489,7 +489,7 @@ void JavaScriptFunc::JsUnEscape(TDataArray<TrecPointer<TVariable>>& params, Trec
             val2.AppendChar(val[Rust]);
             break;
         case 3:
-            charVal = wcstol(val2.GetConstantBuffer(), nullptr, 16);
+            charVal = wcstol(val2.GetConstantBuffer().getBuffer(), nullptr, 16);
             if (!charVal)
             {
                 ret.returnCode = ReturnObject::ERR_IMPROPER_NAME;
