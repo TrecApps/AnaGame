@@ -27,10 +27,12 @@ TrecComPointer<TMediaSink> TMediaSink::CreateInstance(TrecPointer<DrawingBoard> 
     if(!streamsink.Get())
        return TrecComPointer<TMediaSink>();
     ret->AddStreamSink(streamsink);
+    
     dynamic_cast<TStreamSink*>(streamsink.Get())->Initialize();
 
     ret->schedule = TrecPointerKey::GetNewTrecPointer<TScheduler>(streamsink);
     dynamic_cast<TStreamSink*>(streamsink.Get())->schedule = ret->schedule;
+    dynamic_cast<TStreamSink*>(streamsink.Get())->mediaSink = ret;
     return ret;
 }
 
@@ -41,10 +43,29 @@ ULONG TMediaSink::AddRef(void)
 
 HRESULT TMediaSink::QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
 {
-    static const QITAB qit[] = {
-    QITABENT(TMediaSink, IMFMediaSink), {0}
-    };
-    return QISearch(this, qit, riid, ppv);
+    if (!ppv)
+    {
+        return E_POINTER;
+    }
+    if (riid == IID_IUnknown)
+    {
+        *ppv = static_cast<IUnknown*>(static_cast<IMFMediaSink*>(this));
+    }
+    else if (riid == __uuidof(IMFMediaSink))
+    {
+        *ppv = static_cast<IMFMediaSink*>(this);
+    }
+    else if (riid == __uuidof(IMFClockStateSink))
+    {
+        *ppv = static_cast<IMFClockStateSink*>(this);
+    }
+    else
+    {
+        *ppv = NULL;
+        return E_NOINTERFACE;
+    }
+    AddRef();
+    return S_OK;
 }
 
 ULONG TMediaSink::Release(void)
@@ -226,6 +247,20 @@ HRESULT TMediaSink::OnClockStop(MFTIME time)
     if (SUCCEEDED(ret))
     {
         ret = schedule->StopScheduler();
+    }
+
+    ThreadRelease();
+    return ret;
+}
+
+TrecComPointer<TPresenter> TMediaSink::GetPresenter()
+{
+    ThreadLock();
+    TStreamSink* sSink = dynamic_cast<TStreamSink*>(streamSink.Get());
+    TrecComPointer<TPresenter> ret;
+    if (sSink)
+    {
+        ret = sSink->presenter;
     }
 
     ThreadRelease();

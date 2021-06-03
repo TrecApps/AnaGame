@@ -28,7 +28,7 @@ HRESULT GetEventObject(IMFMediaEvent* pEvent, Q** ppObject)
 HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource);
 
 HRESULT CreatePlaybackTopology(IMFMediaSource* pSource,
-	IMFPresentationDescriptor* pPD, TrecPointer<DrawingBoard> board, IMFTopology** ppTopology);
+	IMFPresentationDescriptor* pPD, TrecPointer<DrawingBoard> board, IMFTopology** ppTopology, TrecComPointer<TMediaSink>& sink);
 
 
 
@@ -96,7 +96,6 @@ HRESULT TPlayer::Initialize()
 TPlayer::TPlayer(TrecPointer<DrawingBoard> board) :
 	m_pSession(NULL),
 	m_pSource(NULL),
-	m_pVideoDisplay(NULL),
 	m_state(PlayerState::ps_closed),
 	m_hCloseEvent(NULL),
 	m_nRefCount(1)
@@ -109,13 +108,13 @@ TPlayer::~TPlayer()
 	Shutdown();
 }
 
-HRESULT TPlayer::OpenURL(const TString& url, TrecPointer<TWindowEngine> en)
+HRESULT TPlayer::OpenURL(const TString& url)
 {
 	// assert(m_pSession);
 	IMFTopology* top = nullptr;
 	IMFPresentationDescriptor* present = nullptr;
 
-	HRESULT hr = CreateSession(en);
+	HRESULT hr = CreateSession();
 	if (FAILED(hr))
 		goto done;
 	hr = CreateMediaSource(url.GetConstantBuffer().getBuffer(), &m_pSource);
@@ -124,9 +123,13 @@ HRESULT TPlayer::OpenURL(const TString& url, TrecPointer<TWindowEngine> en)
 	hr = m_pSource->CreatePresentationDescriptor(&present);
 	if (FAILED(hr))
 		goto done;
-	hr = CreatePlaybackTopology(m_pSource, present, board, &top);
+	hr = CreatePlaybackTopology(m_pSource, present, board, &top, this->m_sink);
 	if (FAILED(hr))
 		goto done;
+
+	if (m_sink.Get())
+		m_pVideoDisplay = m_sink->GetPresenter();
+
 	hr = m_pSession->SetTopology(0, top);
 
 
@@ -143,47 +146,47 @@ HRESULT TPlayer::OpenURL(const TString& url, TrecPointer<TWindowEngine> en)
 	return hr;
 }
 
-HRESULT TPlayer::CreateSession(TrecPointer<TWindowEngine> en)
+HRESULT TPlayer::CreateSession()
 {
 	HRESULT hr = CloseSession();
 
 	if (FAILED(hr))
 		return hr;
 
-	if (en.Get() && en->getDeviceD().Get())
-	{
-		TrecComPointer<IMFAttributes>::TrecComHolder attsHolder;
-		MFCreateAttributes(attsHolder.GetPointerAddress(), 5);
-		TrecComPointer<IMFAttributes> atts = attsHolder.Extract();
+	//if (en.Get() && en->getDeviceD().Get())
+	//{
+	//	TrecComPointer<IMFAttributes>::TrecComHolder attsHolder;
+	//	MFCreateAttributes(attsHolder.GetPointerAddress(), 5);
+	//	TrecComPointer<IMFAttributes> atts = attsHolder.Extract();
 
-		UINT token = 0;
-		TrecComPointer<IMFDXGIDeviceManager>::TrecComHolder manHolder;
-		MFCreateDXGIDeviceManager(&token, manHolder.GetPointerAddress());
-		TrecComPointer<IMFDXGIDeviceManager> man = manHolder.Extract();
-
-
-		TrecComPointer<ID3D11Device> dev = en->getDeviceD();
-		ID3D10Multithread* multi = nullptr;
-		if (SUCCEEDED(dev->QueryInterface(__uuidof(ID3D10Multithread), (void**)&multi)))
-		{
-			multi->SetMultithreadProtected(TRUE);
-			multi->Release();
-		}
-
-		man->ResetDevice(dev.Get(), token);
-		atts->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
-		atts->SetUnknown(MF_SOURCE_READER_D3D_MANAGER, man.Get());
-		atts->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE);
-		atts->SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, TRUE);
-		atts->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
-		
+	//	UINT token = 0;
+	//	TrecComPointer<IMFDXGIDeviceManager>::TrecComHolder manHolder;
+	//	MFCreateDXGIDeviceManager(&token, manHolder.GetPointerAddress());
+	//	TrecComPointer<IMFDXGIDeviceManager> man = manHolder.Extract();
 
 
+	//	TrecComPointer<ID3D11Device> dev = en->getDeviceD();
+	//	ID3D10Multithread* multi = nullptr;
+	//	if (SUCCEEDED(dev->QueryInterface(__uuidof(ID3D10Multithread), (void**)&multi)))
+	//	{
+	//		multi->SetMultithreadProtected(TRUE);
+	//		multi->Release();
+	//	}
 
-		hr = MFCreateMediaSession(atts.Get(), &m_pSession);
+	//	man->ResetDevice(dev.Get(), token);
+	//	atts->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
+	//	atts->SetUnknown(MF_SOURCE_READER_D3D_MANAGER, man.Get());
+	//	atts->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE);
+	//	atts->SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, TRUE);
+	//	atts->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
+	//	
 
-	}
-	else
+
+
+	//	hr = MFCreateMediaSession(atts.Get(), &m_pSession);
+
+	//}
+	//else
 		hr = MFCreateMediaSession(nullptr, &m_pSession);
 	if (FAILED(hr))
 		return hr;
@@ -282,11 +285,6 @@ HRESULT TPlayer::OnTopologyStatus(IMFMediaEvent* ev)
 	HRESULT hr = ev->GetUINT32(MF_EVENT_TOPOLOGY_STATUS, &status);
 	if (SUCCEEDED(hr) && (status == MF_TOPOSTATUS_READY))
 	{
-		if (m_pVideoDisplay) m_pVideoDisplay->Release();
-		m_pVideoDisplay = nullptr;
-
-		MFGetService(m_pSession, MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&m_pVideoDisplay));
-
 		hr = StartPlayback();
 	}
 	return hr;
@@ -308,9 +306,12 @@ HRESULT TPlayer::OnNewPresentation(IMFMediaEvent* ev)
 	if (FAILED(hr))
 		goto done;
 
-	hr = CreatePlaybackTopology(m_pSource, present, board, &top);
+	hr = CreatePlaybackTopology(m_pSource, present, board, &top, m_sink);
 	if (FAILED(hr))
 		goto done;
+
+	if (m_sink.Get())
+		m_pVideoDisplay = m_sink->GetPresenter();
 
 	hr = m_pSession->SetTopology(0, top);
 
@@ -396,22 +397,22 @@ HRESULT TPlayer::Stop()
 
 HRESULT TPlayer::Repaint()
 {
-	if (m_pVideoDisplay)
+	if (m_pVideoDisplay.Get())
 		return m_pVideoDisplay->RepaintVideo();
 	return S_OK;
 }
 
 HRESULT TPlayer::ResizeVideo(RECT& loc)
 {
-	if (m_pVideoDisplay)
+	if (m_pVideoDisplay.Get())
 		return m_pVideoDisplay->SetVideoPosition(nullptr, &loc);
 	return S_OK;
 }
 
 HRESULT TPlayer::CloseSession()
 {
-	if (m_pVideoDisplay) m_pVideoDisplay->Release();
-	m_pVideoDisplay = nullptr;
+	if (m_pVideoDisplay.Get()) m_pVideoDisplay->Release();
+	m_pVideoDisplay.Nullify();
 
 	HRESULT hr = S_OK;
 
@@ -471,7 +472,8 @@ HRESULT TPlayer::Shutdown()
 HRESULT CreateMediaSinkActivate(
 	IMFStreamDescriptor* pSourceSD,     // Pointer to the stream descriptor.
 	TrecPointer<DrawingBoard> board,                  // Handle to the video clipping window.
-	IMFActivate** ppActivate
+	IMFActivate** ppActivate,
+	TrecComPointer<TMediaSink>& sink
 )
 {
 	IMFMediaTypeHandler* pHandler = NULL;
@@ -506,6 +508,9 @@ HRESULT CreateMediaSinkActivate(
 		{
 			pActivate = reinterpret_cast<IMFActivate*>(activate.Get());
 			pActivate->AddRef();
+			void* v = nullptr;
+			activate->ActivateObject(__uuidof(IMFMediaSink), &v);
+			sink = activate->GetSink();
 			hr = S_OK;
 		}
 	}
@@ -585,7 +590,7 @@ done:
 // Add an output node to a topology.
 HRESULT AddOutputNode(
 	IMFTopology* pTopology,     // Topology.
-	IMFActivate* pActivate,     // Media sink activation object.
+	IMFStreamSink* pActivate,     // Media sink activation object.
 	DWORD dwId,                 // Identifier of the stream sink.
 	IMFTopologyNode** ppNode)   // Receives the node pointer.
 {
@@ -606,11 +611,11 @@ HRESULT AddOutputNode(
 	}
 
 	// Set the stream sink ID attribute.
-	hr = pNode->SetUINT32(MF_TOPONODE_STREAMID, dwId);
-	if (FAILED(hr))
-	{
-		goto done;
-	}
+	//hr = pNode->SetUINT32(MF_TOPONODE_STREAMID, dwId);
+	//if (FAILED(hr))
+	//{
+	//	goto done;
+	//}
 
 	hr = pNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, FALSE);
 	if (FAILED(hr))
@@ -640,10 +645,10 @@ HRESULT AddBranchToPartialTopology(
 	IMFMediaSource* pSource,        // Media source.
 	IMFPresentationDescriptor* pPD, // Presentation descriptor.
 	DWORD iStream,                  // Stream index.
-	TrecPointer<DrawingBoard> board)                 // Window for video playback.
+	TrecPointer<DrawingBoard> board,
+	TrecComPointer<TMediaSink>& sink)                 // Window for video playback.
 {
 	IMFStreamDescriptor* pSD = NULL;
-	IMFActivate* pSinkActivate = NULL;
 	IMFTopologyNode* pSourceNode = NULL;
 	IMFTopologyNode* pOutputNode = NULL;
 
@@ -659,9 +664,13 @@ HRESULT AddBranchToPartialTopology(
 	{
 		LockWindowUpdate(nullptr);
 		// Create the media sink activation object.
-		hr = CreateMediaSinkActivate(pSD, board, &pSinkActivate);
-		if (FAILED(hr))
+
+		sink = TMediaSink::CreateInstance(board);
+
+		
+		if (!sink.Get())
 		{
+			hr = E_FAIL;
 			goto done;
 		}
 
@@ -673,7 +682,9 @@ HRESULT AddBranchToPartialTopology(
 		}
 
 		// Create the output node for the renderer.
-		hr = AddOutputNode(pTopology, pSinkActivate, 0, &pOutputNode);
+		IMFStreamSink* streamer = nullptr;
+		sink->GetStreamSinkByIndex(0, &streamer);
+		hr = AddOutputNode(pTopology, streamer, 0, &pOutputNode);
 		if (FAILED(hr))
 		{
 			goto done;
@@ -686,7 +697,6 @@ HRESULT AddBranchToPartialTopology(
 
 done:
 	SafeRelease(pSD);
-	SafeRelease(pSinkActivate);
 	SafeRelease(pSourceNode);
 	SafeRelease(pOutputNode);
 	return hr;
@@ -738,7 +748,7 @@ done:
 	return hr;
 }
 
-HRESULT CreatePlaybackTopology(IMFMediaSource* pSource, IMFPresentationDescriptor* pPD, TrecPointer<DrawingBoard> board, IMFTopology** ppTopology)
+HRESULT CreatePlaybackTopology(IMFMediaSource* pSource, IMFPresentationDescriptor* pPD, TrecPointer<DrawingBoard> board, IMFTopology** ppTopology, TrecComPointer<TMediaSink>& sink)
 {
 	IMFTopology* pTopology = NULL;
 	DWORD cSourceStreams = 0;
@@ -763,7 +773,7 @@ HRESULT CreatePlaybackTopology(IMFMediaSource* pSource, IMFPresentationDescripto
 	// For each stream, create the topology nodes and add them to the topology.
 	for (DWORD i = 0; i < cSourceStreams; i++)
 	{
-		hr = AddBranchToPartialTopology(pTopology, pSource, pPD, i, board);
+		hr = AddBranchToPartialTopology(pTopology, pSource, pPD, i, board,sink);
 		if (FAILED(hr))
 		{
 			goto done;

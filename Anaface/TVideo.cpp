@@ -18,7 +18,7 @@ TVideo::~TVideo()
 bool TVideo::setVideo(const WCHAR* str)
 {
 	ThreadLock();
-	bool ret = player.Get() && SUCCEEDED(player->OpenURL(str, windowEngine));
+	bool ret = player.Get() && SUCCEEDED(player->OpenURL(str));
 	ThreadRelease();
 	return ret;
 }

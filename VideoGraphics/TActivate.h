@@ -81,6 +81,9 @@ public:
 
     virtual HRESULT STDMETHODCALLTYPE CopyAllItems(__RPC__in_opt IMFAttributes* pDest) override;
 
+    // Anagame Specific Methods
+    TrecComPointer<TMediaSink> GetSink();
+
 private:
     TActivate();
     UINT count = 0;

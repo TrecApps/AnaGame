@@ -51,7 +51,7 @@ public:
     STDMETHODIMP  Invoke(IMFAsyncResult* pAsyncResult);
 
     // Playback
-    HRESULT       OpenURL(const TString& url, TrecPointer<TWindowEngine> en);
+    HRESULT       OpenURL(const TString& url);
     HRESULT       Play();
     HRESULT       Pause();
     HRESULT       Stop();
@@ -63,7 +63,7 @@ public:
     HRESULT       Repaint();
     HRESULT       ResizeVideo(RECT& loc);
 
-    BOOL          HasVideo() const { return (m_pVideoDisplay != NULL); }
+    BOOL          HasVideo() { return (m_pVideoDisplay.Get() != nullptr); }
 
 protected:
 
@@ -74,7 +74,7 @@ protected:
     virtual ~TPlayer();
 
     HRESULT Initialize();
-    HRESULT CreateSession(TrecPointer<TWindowEngine> en);
+    HRESULT CreateSession();
     HRESULT CloseSession();
     HRESULT StartPlayback();
 
@@ -94,7 +94,8 @@ protected:
 
     IMFMediaSession* m_pSession;
     IMFMediaSource* m_pSource;
-    IMFVideoDisplayControl* m_pVideoDisplay;
+    TrecComPointer<TPresenter> m_pVideoDisplay;
+    TrecComPointer<TMediaSink> m_sink;
     // TrecComPointer<TActivate> activate;
     TrecPointer<DrawingBoard> board;
 

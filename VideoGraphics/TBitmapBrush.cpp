@@ -353,7 +353,7 @@ TBitmapBrush::TBitmapBrush(TrecPointer<DrawingBoard> rt, TrecComPointer<ID2D1Bit
 	converter = nullptr;
 	location = { 0,0,0,0 };
 	currentFrame = 0;
-	if (!rt.Get() || !map.Get())
+	if (!rt.Get())
 	{
 		
 		return;

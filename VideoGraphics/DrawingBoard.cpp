@@ -807,17 +807,22 @@ UINT DrawingBoard::AddFrameSlot()
 
 bool DrawingBoard::SetFrame(DXGI_MAPPED_RECT& data, D2D1_SIZE_U& size, UINT slot)
 {
+	ThreadLock();
 	if (!renderer.Get() || slot >= slots.Size() || !slots[slot].set)
+	{
+		ThreadRelease();
 		return false;
-
+	}
 
 	TrecComPointer<ID2D1Bitmap>::TrecComHolder bHolder;
+	bool ret = false;
 	if (SUCCEEDED(renderer->CreateBitmap(size, data.pBits, data.Pitch, bmpprops, bHolder.GetPointerAddress())))
 	{
 		slots[slot].frame = bHolder.Extract();
-		return true;
+		ret = true;
 	}
-	return false;
+	ThreadLock();
+	return ret;
 }
 
 void DrawingBoard::PresentFrame(UINT slot)

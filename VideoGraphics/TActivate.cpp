@@ -227,6 +227,11 @@ HRESULT __stdcall TActivate::CopyAllItems(IMFAttributes* pDest)
     return atts.Get() ? atts->CopyAllItems(pDest) : E_POINTER;
 }
 
+TrecComPointer<TMediaSink> TActivate::GetSink()
+{
+    return sink;
+}
+
 TActivate::TActivate()
 {
     TrecComPointer<IMFAttributes>::TrecComHolder attsHolder;

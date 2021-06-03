@@ -86,7 +86,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		for (UINT c = 0; c < windowList.Size(); c++)
 		{
-			if (windowList[c].Get() && windowList[c]->window.Get()->GetWindowHandle() == hWnd)
+			if (windowList[c].Get() && windowList[c]->window.Get() && windowList[c]->window.Get()->GetWindowHandle() == hWnd)
 			{
 				win = windowList[c]->window.Get();
 				windowIndex = c;

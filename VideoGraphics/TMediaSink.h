@@ -5,6 +5,7 @@
 #include <TDataArray.h> 
 #include "DrawingBoard.h"
 #include "TScheduler.h"
+#include "TPresenter.h"
 
 /**
  * Class: TMediaSink
@@ -43,7 +44,7 @@ public:
     HRESULT STDMETHODCALLTYPE OnClockStop(MFTIME time) override;
     // Anagame Alternative Methods
     
-
+    TrecComPointer<TPresenter> GetPresenter();
 
 private:
     bool AddStreamSink(TrecComPointer<IMFStreamSink> sink);
