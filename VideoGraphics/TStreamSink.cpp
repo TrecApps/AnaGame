@@ -33,12 +33,35 @@ STDMETHODIMP_(ULONG __stdcall) TStreamSink::AddRef(void)
     return InterlockedIncrement(&m_nRefCount);
 }
 
-HRESULT TStreamSink::QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
+HRESULT TStreamSink::QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
 {
-    static const QITAB qit[] = {
-    QITABENT(TStreamSink, IMFStreamSink), {0}
-    };
-    return QISearch(this, qit, riid, ppv);
+    if (!ppv)
+    {
+        return E_POINTER;
+    }
+    if (iid == IID_IUnknown)
+    {
+        *ppv = static_cast<IUnknown*>(static_cast<IMFStreamSink*>(this));
+    }
+    else if (iid == __uuidof(IMFStreamSink))
+    {
+        *ppv = static_cast<IMFStreamSink*>(this);
+    }
+    else if (iid == __uuidof(IMFMediaEventGenerator))
+    {
+        *ppv = static_cast<IMFMediaEventGenerator*>(this);
+    }
+    else if (iid == __uuidof(IMFMediaTypeHandler))
+    {
+        *ppv = static_cast<IMFMediaTypeHandler*>(this);
+    }
+    else
+    {
+        *ppv = NULL;
+        return E_NOINTERFACE;
+    }
+    AddRef();
+    return S_OK;
 }
 
 STDMETHODIMP_(ULONG __stdcall) TStreamSink::Release(void)
