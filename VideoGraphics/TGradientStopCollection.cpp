@@ -87,8 +87,10 @@ bool TGradientStopCollection::IsValid(UINT index) const
 TGradientStop TGradientStopCollection::GetGradientStopAt(UINT index)const
 {
 	AG_THREAD_LOCK
-	if (!IsValid(index))
-		RETURN_THREAD_UNLOCK TGradientStop();
+		if (!IsValid(index))
+		{
+			RETURN_THREAD_UNLOCK TGradientStop();
+		}
 	auto ret =  gradients.data()[index];
 	RETURN_THREAD_UNLOCK ret;
 }
@@ -104,8 +106,10 @@ TGradientStop TGradientStopCollection::GetGradientStopAt(UINT index)const
 TColor TGradientStopCollection::GetColorAt(UINT index)
 {
 	AG_THREAD_LOCK
-	if(!IsValid(index))
-		RETURN_THREAD_UNLOCK TColor();
+		if (!IsValid(index))
+		{
+			RETURN_THREAD_UNLOCK TColor();
+		}
 	TColor ret = gradients.data()[index].GetColor();
 	RETURN_THREAD_UNLOCK ret;
 }
@@ -120,8 +124,10 @@ TColor TGradientStopCollection::GetColorAt(UINT index)
 bool TGradientStopCollection::SetGradientAt(const TGradientStop& gradient, UINT index)
 {
 	AG_THREAD_LOCK
-	if (!IsValid(index))
-		RETURN_THREAD_UNLOCK false;
+		if (!IsValid(index))
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
 	gradients[index].SetGradient(gradient.GetGradient());
 	RETURN_THREAD_UNLOCK true;
 }
@@ -136,8 +142,10 @@ bool TGradientStopCollection::SetGradientAt(const TGradientStop& gradient, UINT 
 bool TGradientStopCollection::SetColorAt(const TColor& color, UINT index)
 {
 	AG_THREAD_LOCK
-	if (!IsValid(index))
-		RETURN_THREAD_UNLOCK false;
+		if (!IsValid(index))
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
 	gradients[index].SetColor(color);
 	RETURN_THREAD_UNLOCK true;
 }
@@ -152,8 +160,10 @@ bool TGradientStopCollection::SetColorAt(const TColor& color, UINT index)
 bool TGradientStopCollection::SetPositionAt(float position, UINT index)
 {
 	AG_THREAD_LOCK
-	if (!IsValid(index))
-		RETURN_THREAD_UNLOCK false;
+		if (!IsValid(index))
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
 	gradients[index].SetPosition(position);
 	RETURN_THREAD_UNLOCK true;
 }

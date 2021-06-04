@@ -148,7 +148,7 @@ bool TLayout::addRow(int y, bool markDetected)
 	D2D1_RECT_F tempRect = D2D1_RECT_F{ 0,0,0,0 };
 
 	bool AcceptMark = true;
-
+	ThreadLock();
 	switch (organization)
 	{
 	case orgLayout::VStack:

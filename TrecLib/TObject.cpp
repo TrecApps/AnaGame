@@ -1,6 +1,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TThread.h"
+#include <cassert>
 
 UCHAR TObjectType[] = { 1, 0b10000000 };
 
@@ -115,7 +116,7 @@ void TObject::ThreadLock() const
 {
 	
 	EnterCriticalSection(&thread);
-	threadCounter++;
+	//threadCounter++;
 }
 
 /**
@@ -126,8 +127,9 @@ void TObject::ThreadLock() const
  */
 void TObject::ThreadRelease() const
 {
-	threadCounter--;
-	if(!threadCounter)
+	//assert(threadCounter > 0);
+	//threadCounter--;
+	//if(!threadCounter)
 		LeaveCriticalSection(&thread);
 	
 }

@@ -246,6 +246,7 @@ bool TScrollerControl::onScroll(float x,float y)
  */
 void TScrollerControl::RefreshScroll()
 {
+	ThreadLock();
 	if (!childControl.Get())
 	{
 		ThreadRelease();

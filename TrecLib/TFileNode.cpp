@@ -50,9 +50,10 @@ TString TFileNode::GetContent()
 bool TFileNode::IsExtendable()
 {
 	AG_THREAD_LOCK
-	if (!data.Get())
-		RETURN_THREAD_UNLOCK false;
-
+		if (!data.Get())
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
 	RETURN_THREAD_UNLOCK data->IsDirectory();
 }
 
