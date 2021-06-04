@@ -515,8 +515,10 @@ void TInstance::CleanWindows()
 		if (windowList[Rust].Get() && windowList[Rust]->destroy && !windowList[Rust]->messageStack)
 		{
 			// windowList[Rust]->window.Delete();
-			windowList.RemoveAt(Rust);
+			windowList.RemoveAt(Rust--);
 		}
+		else if (windowList[Rust].Get() && !windowList[Rust]->window.Get())
+			windowList.RemoveAt(Rust--);
 	}
 	ThreadRelease();
 }

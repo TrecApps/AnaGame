@@ -7,7 +7,7 @@
 #include "TPresenter.h"
 #include "TComCommon.h"
 
-class TStreamSink : public IMFStreamSink, public TObject
+class TStreamSink : public IMFStreamSink, public IMFMediaTypeHandler, public TObject
 {
     friend class TMediaSink;
 public:
@@ -29,6 +29,14 @@ public:
     STDMETHODIMP EndGetEvent(IMFAsyncResult* pResult, _Out_ IMFMediaEvent** ppEvent) override;
     STDMETHODIMP GetEvent(DWORD dwFlags, __RPC__deref_out_opt IMFMediaEvent** ppEvent) override;
     STDMETHODIMP QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtendedType, HRESULT hrStatus, __RPC__in_opt const PROPVARIANT* pvValue) override;
+
+    // IMFMediaTypeHandler
+    STDMETHODIMP GetCurrentMediaType(_Outptr_ IMFMediaType** ppMediaType) override;
+    STDMETHODIMP GetMajorType(__RPC__out GUID* pguidMajorType) override;
+    STDMETHODIMP GetMediaTypeByIndex(DWORD dwIndex, _Outptr_ IMFMediaType** ppType) override;
+    STDMETHODIMP GetMediaTypeCount(__RPC__out DWORD* pdwTypeCount) override;
+    STDMETHODIMP IsMediaTypeSupported(IMFMediaType* pMediaType, _Outptr_opt_result_maybenull_ IMFMediaType** ppMediaType) override;
+    STDMETHODIMP SetCurrentMediaType(IMFMediaType* pMediaType) override;
 
     static TrecComPointer<IMFStreamSink> GetStreamSink(TrecComPointer<TMediaSink> sink, TrecPointer<DrawingBoard> board);
 

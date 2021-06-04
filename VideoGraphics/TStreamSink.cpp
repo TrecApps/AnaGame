@@ -4,6 +4,30 @@
 #include "TVideoMarker.h"
 #include <mfapi.h>
 
+GUID const* const s_pVideoFormats[] =
+{
+    &MFVideoFormat_NV12,
+    &MFVideoFormat_IYUV,
+    &MFVideoFormat_YUY2,
+    &MFVideoFormat_YV12,
+    &MFVideoFormat_RGB32,
+    &MFVideoFormat_RGB32,
+    &MFVideoFormat_RGB24,
+    &MFVideoFormat_RGB555,
+    &MFVideoFormat_RGB565,
+    &MFVideoFormat_RGB8,
+    &MFVideoFormat_AYUV,
+    &MFVideoFormat_UYVY,
+    &MFVideoFormat_YVYU,
+    &MFVideoFormat_YVU9,
+    &MFVideoFormat_v410,
+    &MFVideoFormat_I420,
+    &MFVideoFormat_NV11,
+    &MFVideoFormat_420O
+};
+
+const DWORD s_dwNumVideoFormats = sizeof(s_pVideoFormats) / sizeof(s_pVideoFormats[0]);
+
 STDMETHODIMP_(ULONG __stdcall) TStreamSink::AddRef(void)
 {
     return InterlockedIncrement(&m_nRefCount);
@@ -174,6 +198,161 @@ HRESULT TStreamSink::QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtend
     TObject::ThreadLock();
     HRESULT ret = CheckShutdown() ? MF_E_SHUTDOWN : m_pEventQueue->QueueEventParamVar(met, guidExtendedType, hrStatus, pvValue);
     TObject::ThreadRelease();
+    return ret;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetCurrentMediaType(_Outptr_ IMFMediaType** ppMediaType)
+{
+    if (!ppMediaType)
+        return E_POINTER;
+
+    if (CheckShutdown())
+        return MF_E_SHUTDOWN;
+
+    ThreadLock();
+    HRESULT ret = S_OK;
+    if (currType)
+    {
+        *ppMediaType = currType;
+        currType->AddRef();
+    }
+    else
+        ret = MF_E_NOT_INITIALIZED;
+
+        ThreadRelease();
+    return ret;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetMajorType(__RPC__out GUID* pguidMajorType)
+{
+    if (!pguidMajorType)
+        return E_POINTER;
+
+    if (CheckShutdown())
+        return MF_E_SHUTDOWN;
+
+    ThreadLock();
+    HRESULT ret = S_OK;
+    if (currType)
+    {
+        currType->GetGUID(MF_MT_MAJOR_TYPE, pguidMajorType);
+    }
+    else
+        ret = MF_E_NOT_INITIALIZED;
+
+    ThreadRelease();
+    return ret;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetMediaTypeByIndex(DWORD dwIndex, _Outptr_ IMFMediaType** ppType)
+{
+    if (!ppType)
+        return E_POINTER;
+
+    if (CheckShutdown())
+        return MF_E_SHUTDOWN;
+
+    if (dwIndex >= s_dwNumVideoFormats)
+        return MF_E_NO_MORE_TYPES;
+
+    IMFMediaType* pType = nullptr;
+
+    ThreadLock();
+
+    HRESULT ret = MFCreateMediaType(&pType);
+    if (FAILED(ret))
+        goto done;
+
+    ret = pType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+    if (FAILED(ret))
+        goto done;
+
+    ret = pType->SetGUID(MF_MT_SUBTYPE, *(s_pVideoFormats[dwIndex]));
+    if (FAILED(ret))
+        goto done;
+
+    pType->AddRef();
+    *ppType = pType;
+
+done:
+    if (pType) { pType->Release(); pType = nullptr; }
+    ThreadRelease();
+    return ret;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetMediaTypeCount(__RPC__out DWORD* pdwTypeCount)
+{
+    if (!pdwTypeCount)
+        return E_POINTER;
+
+    if (CheckShutdown())
+        return MF_E_SHUTDOWN;
+
+    *pdwTypeCount = s_dwNumVideoFormats;
+    return S_OK;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TStreamSink::IsMediaTypeSupported(IMFMediaType* pMediaType, _Outptr_opt_result_maybenull_ IMFMediaType** ppMediaType)
+{
+    if (!pMediaType)
+        return E_POINTER;
+
+    if (CheckShutdown())
+        return MF_E_SHUTDOWN;
+
+    
+
+    GUID subType = GUID_NULL;
+    HRESULT ret = pMediaType->GetGUID(MF_MT_SUBTYPE, &subType);
+    if (FAILED(ret))
+        return ret;
+    ret = MF_E_INVALIDMEDIATYPE;
+
+    for (DWORD i = 0; i < s_dwNumVideoFormats; i++)
+    {
+        if (subType == (*s_pVideoFormats[i]))
+        {
+            ret = S_OK;
+            break;
+        }
+    }
+    if(ppMediaType)
+        *ppMediaType = nullptr;
+
+    return ret;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TStreamSink::SetCurrentMediaType(IMFMediaType* pMediaType)
+{
+    if (!pMediaType)
+        return E_POINTER;
+
+    if (CheckShutdown())
+        return MF_E_SHUTDOWN;
+
+    ThreadLock();
+    HRESULT ret = IsMediaTypeSupported(pMediaType, nullptr);
+    if (FAILED(ret))
+        goto done;
+
+    if (currType)
+        currType->Release();
+    currType = pMediaType;
+    currType->AddRef();
+
+    if (PlayState::State_Started != this->state && PlayState::State_Paused != state)
+    {
+        state = PlayState::State_Ready;
+    }
+    else
+    {
+        //Flush all current samples in the Queue as this is a format change
+        ret = Flush();
+    }
+
+    done:
+    ThreadRelease();
+
     return ret;
 }
 

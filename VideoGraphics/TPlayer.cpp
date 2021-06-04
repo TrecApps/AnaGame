@@ -1,7 +1,7 @@
 #include "TPlayer.h"
 #include <mfreadwrite.h>
 
-#define SafeRelease(value) if(value) value->Release(); value = nullptr;
+#define SafeRelease(value) if(value){ value->Release(); value = nullptr;}
 
 template <class Q>
 HRESULT GetEventObject(IMFMediaEvent* pEvent, Q** ppObject)
@@ -590,7 +590,7 @@ done:
 // Add an output node to a topology.
 HRESULT AddOutputNode(
 	IMFTopology* pTopology,     // Topology.
-	IMFStreamSink* pActivate,     // Media sink activation object.
+	IUnknown* pActivate,     // Media sink activation object.
 	DWORD dwId,                 // Identifier of the stream sink.
 	IMFTopologyNode** ppNode)   // Receives the node pointer.
 {
@@ -611,11 +611,11 @@ HRESULT AddOutputNode(
 	}
 
 	// Set the stream sink ID attribute.
-	//hr = pNode->SetUINT32(MF_TOPONODE_STREAMID, dwId);
-	//if (FAILED(hr))
-	//{
-	//	goto done;
-	//}
+	hr = pNode->SetUINT32(MF_TOPONODE_STREAMID, dwId);
+	if (FAILED(hr))
+	{
+		goto done;
+	}
 
 	hr = pNode->SetUINT32(MF_TOPONODE_NOSHUTDOWN_ON_REMOVE, FALSE);
 	if (FAILED(hr))
@@ -651,47 +651,67 @@ HRESULT AddBranchToPartialTopology(
 	IMFStreamDescriptor* pSD = NULL;
 	IMFTopologyNode* pSourceNode = NULL;
 	IMFTopologyNode* pOutputNode = NULL;
+	GUID streamType;
 
 	BOOL fSelected = FALSE;
-
+	IMFMediaTypeHandler* typeHand = nullptr;
 	HRESULT hr = pPD->GetStreamDescriptorByIndex(iStream, &fSelected, &pSD);
 	if (FAILED(hr))
 	{
 		goto done;
 	}
+	
 
-	if (fSelected)
+	if (fSelected && SUCCEEDED(pSD->GetMediaTypeHandler(&typeHand)) && SUCCEEDED(typeHand->GetMajorType(&streamType)))
 	{
 		LockWindowUpdate(nullptr);
 		// Create the media sink activation object.
-
-		sink = TMediaSink::CreateInstance(board);
-
-		
-		if (!sink.Get())
-		{
-			hr = E_FAIL;
-			goto done;
-		}
-
-		// Add a source node for this stream.
+					// Add a source node for this stream.
 		hr = AddSourceNode(pTopology, pSource, pPD, pSD, &pSourceNode);
 		if (FAILED(hr))
 		{
 			goto done;
 		}
 
-		// Create the output node for the renderer.
-		IMFStreamSink* streamer = nullptr;
-		sink->GetStreamSinkByIndex(0, &streamer);
-		hr = AddOutputNode(pTopology, streamer, 0, &pOutputNode);
-		if (FAILED(hr))
-		{
-			goto done;
-		}
 
-		// Connect the source node to the output node.
-		hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
+		if (streamType == MFMediaType_Audio)
+		{
+			IMFActivate* musicActivate = nullptr;
+			hr = MFCreateAudioRendererActivate(&musicActivate);
+			if (SUCCEEDED(hr))
+			{
+				hr = AddOutputNode(pTopology, musicActivate, 0, &pOutputNode);
+			}
+			if (SUCCEEDED(hr))
+			{
+				hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
+			}
+		}
+		else if (MFMediaType_Video == streamType)
+		{
+			sink = TMediaSink::CreateInstance(board);
+
+
+			if (!sink.Get())
+			{
+				hr = E_FAIL;
+				goto done;
+			}
+
+
+
+			// Create the output node for the renderer.
+			IMFStreamSink* streamer = nullptr;
+			sink->GetStreamSinkByIndex(0, &streamer);
+			hr = AddOutputNode(pTopology, streamer, 0, &pOutputNode);
+			if (FAILED(hr))
+			{
+				goto done;
+			}
+
+			// Connect the source node to the output node.
+			hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
+		}
 	}
 	// else: If not selected, don't add the branch. 
 
