@@ -24,9 +24,10 @@ void TScheduler::SetFrameRate(const MFRatio& fps)
 	perFrameQuarter = perFrameInterval / 4;
 }
 
-void TScheduler::SetClockRate(float fRate)
+HRESULT TScheduler::SetClockRate(float fRate)
 {
 	frameRate = fRate;
+	return S_OK;
 }
 
 const LONGLONG& TScheduler::LastSampleTime(void) const

@@ -51,7 +51,7 @@ public:
     STDMETHODIMP  Invoke(IMFAsyncResult* pAsyncResult);
 
     // Playback
-    HRESULT       OpenURL(const TString& url);
+    HRESULT       OpenURL(const TString& url, TrecPointer<TWindowEngine> en);
     HRESULT       Play();
     HRESULT       Pause();
     HRESULT       Stop();
@@ -74,7 +74,7 @@ protected:
     virtual ~TPlayer();
 
     HRESULT Initialize();
-    HRESULT CreateSession();
+    HRESULT CreateSession(TrecPointer<TWindowEngine> en);
     HRESULT CloseSession();
     HRESULT StartPlayback();
 

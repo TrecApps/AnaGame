@@ -28,6 +28,8 @@ GUID const* const s_pVideoFormats[] =
 
 const DWORD s_dwNumVideoFormats = sizeof(s_pVideoFormats) / sizeof(s_pVideoFormats[0]);
 
+const MFRatio s_DefaultFrameRate = { 30, 1 };
+
 STDMETHODIMP_(ULONG __stdcall) TStreamSink::AddRef(void)
 {
     return InterlockedIncrement(&m_nRefCount);
@@ -77,11 +79,11 @@ STDMETHODIMP_(ULONG __stdcall) TStreamSink::Release(void)
 
 HRESULT TStreamSink::Flush(void)
 {
-    /*ThreadLock();
+    ThreadLock();
     samples.Flush();
-    ThreadRelease();*/
-    //processFrames = false;
-    return E_NOTIMPL;
+    ThreadRelease();
+    processFrames = false;
+    return S_OK;
 }
 
 HRESULT TStreamSink::GetIdentifier(__RPC__out DWORD* pdwIdentifier)
@@ -170,6 +172,17 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
     }
     auto uSample = (IUnknown*)pSample;
     samples.Push(uSample);
+
+    if (isPrerolling)
+    {
+        isPrerolling = false;
+        ret = QueueEvent(MEStreamSinkPrerolled, GUID_NULL, ret, nullptr);
+    }
+    else if(state != PlayState::State_Paused && state != PlayState::State_Stopped)
+    {
+        TAsyncOp* newOp = new TAsyncOp(StreamOperation::OpProcessSample);
+        ret = MFPutWorkItem(this->queueId, &callBack, newOp);
+    }
 
     ThreadRelease();
     return S_OK;
@@ -355,8 +368,36 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::SetCurrentMediaType(IMFMediaType* 
 
     ThreadLock();
     HRESULT ret = IsMediaTypeSupported(pMediaType, nullptr);
+
+    MFRatio fps = { 0, 0 };
+
     if (FAILED(ret))
         goto done;
+
+    pMediaType->GetUINT32(MF_MT_INTERLACE_MODE, &m_unInterlaceMode);
+
+    // Set the frame rate on the scheduler.
+    if (SUCCEEDED(MFGetAttributeRatio(pMediaType, MF_MT_FRAME_RATE, (UINT32*)&fps.Numerator, (UINT32*)&fps.Denominator)) 
+        && (fps.Numerator != 0) && (fps.Denominator != 0))
+    {
+        if (MFVideoInterlace_FieldInterleavedUpperFirst == m_unInterlaceMode ||
+            MFVideoInterlace_FieldInterleavedLowerFirst == m_unInterlaceMode ||
+            MFVideoInterlace_FieldSingleUpper == m_unInterlaceMode ||
+            MFVideoInterlace_FieldSingleLower == m_unInterlaceMode ||
+            MFVideoInterlace_MixedInterlaceOrProgressive == m_unInterlaceMode)
+        {
+            fps.Numerator *= 2;
+        }
+
+        schedule->SetFrameRate(fps);
+    }
+    else
+    {
+        // NOTE: The mixer's proposed type might not have a frame rate, in which case
+        // we'll use an arbitary default. (Although it's unlikely the video source
+        // does not have a frame rate.)
+        schedule->SetFrameRate(s_DefaultFrameRate);
+    }
 
     if (currType)
         currType->Release();
@@ -423,11 +464,17 @@ HRESULT TStreamSink::Pause(void)
 
 HRESULT TStreamSink::Preroll(void)
 {
-    ///TObject::ThreadLock();
-    //HRESULT ret = S_OK;
-    //TObject::ThreadRelease();
-    //return ret;
-    return E_NOTIMPL;
+    TObject::ThreadLock();
+    HRESULT ret = MF_E_SHUTDOWN;
+    if (!isShutdown)
+    {
+        isPrerolling = waitForClock = true;
+        this->sampleRequests++;
+        ret = S_OK;
+        ret = QueueEvent(MEStreamSinkRequestSample, GUID_NULL, ret, nullptr);
+    }
+    TObject::ThreadRelease();
+    return ret;
 }
 
 HRESULT TStreamSink::Restart(void)
@@ -544,7 +591,7 @@ HRESULT TStreamSink::DispatchEvent(IMFAsyncResult* result)
         pState->Release();
 
     ThreadRelease();
-    return E_NOTIMPL;
+    return ret;
 }
 
 HRESULT TStreamSink::PresentFrame()
@@ -572,6 +619,11 @@ HRESULT TStreamSink::PresentFrame()
 
     ThreadRelease();
     return ret;
+}
+
+bool TStreamSink::IsActive()
+{
+    return ((state == PlayState::State_Started) || (state == PlayState::State_Paused));
 }
 
 HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
@@ -610,7 +662,7 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
                 BOOL deviceChanged = false;
                 BOOL processAgain = false;
                 IMFSample* outSamp = nullptr;
-                ret = presenter->ProcessFrame(nullptr, fSample, &laceMode, &deviceChanged, &outSamp);
+                ret = presenter->ProcessFrame(this->currType, fSample, &laceMode, &deviceChanged, &outSamp);
 
                 if (SUCCEEDED(ret))
                 {
@@ -649,6 +701,7 @@ HRESULT TStreamSink::DispatchSample(TAsyncOp* op)
     {
         ret = RequestSample();
     }
+    return ret;
 }
 
 HRESULT TStreamSink::RequestSample()
@@ -679,11 +732,12 @@ TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
 {
     presenter = present;
     state = PlayState::State_TypeNotSet;
-    isShutdown = waitForClock = false;
+    isShutdown = waitForClock = isPrerolling = false;
     processFrames = true;
     queueId = 0;
     startTime = 0;
     sampleRequests = 0;
+    m_unInterlaceMode = 0;
 }
 
 bool TStreamSink::CheckShutdown()

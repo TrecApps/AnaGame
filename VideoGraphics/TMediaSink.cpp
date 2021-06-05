@@ -59,6 +59,10 @@ HRESULT TMediaSink::QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonf
     {
         *ppv = static_cast<IMFClockStateSink*>(this);
     }
+    else if (riid == IID_IMFMediaSinkPreroll)
+    {
+        *ppv = static_cast<IMFMediaSinkPreroll*>(this);
+    }
     else
     {
         *ppv = NULL;
@@ -92,7 +96,7 @@ HRESULT TMediaSink::GetCharacteristics(__RPC__out DWORD* pdwCharacteristics)
     ThreadRelease();
     if (tempShutdown)
         return MF_E_SHUTDOWN;
-    *pdwCharacteristics = MEDIASINK_FIXED_STREAMS;
+    *pdwCharacteristics = MEDIASINK_FIXED_STREAMS;// | MEDIASINK_CAN_PREROLL;
     return S_OK;
 }
 
@@ -228,13 +232,28 @@ HRESULT TMediaSink::OnClockRestart(MFTIME time)
 
 HRESULT TMediaSink::OnClockSetRate(MFTIME time, float rate)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    HRESULT ret = schedule.Get() ? schedule->SetClockRate(rate) : E_NOT_SET;
+    ThreadRelease();
+    return ret;
 }
 
 HRESULT TMediaSink::OnClockStart(MFTIME time, LONGLONG startOffset)
 {
     ThreadLock();
-    HRESULT ret = isShutdown ? MF_E_SHUTDOWN : reinterpret_cast<TStreamSink*>(streamSink.Get())->Start(startOffset);
+    HRESULT ret = S_OK;
+    if (isShutdown)
+        ret = MF_E_SHUTDOWN;
+    else {
+        TStreamSink* streamer = reinterpret_cast<TStreamSink*>(streamSink.Get());
+        assert(streamer);
+        if (streamer->IsActive())
+            ret = streamer->Flush();
+        else if (schedule.Get())
+            ret = schedule->StartScheduler(m_clock);
+        
+        if(SUCCEEDED(ret))streamer->Start(startOffset);
+    }
     ThreadRelease();
     return ret;
 }
@@ -250,6 +269,15 @@ HRESULT TMediaSink::OnClockStop(MFTIME time)
     }
 
     ThreadRelease();
+    return ret;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TMediaSink::NotifyPreroll(MFTIME hnsUpcomingStartTime)
+{
+    ThreadLock();
+    HRESULT ret = isShutdown ? MF_E_SHUTDOWN : reinterpret_cast<TStreamSink*>(streamSink.Get())->Preroll();
+    ThreadRelease();
+
     return ret;
 }
 

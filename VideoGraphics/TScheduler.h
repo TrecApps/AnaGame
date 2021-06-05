@@ -15,7 +15,7 @@ public:
     virtual ~TScheduler();
 
     void SetFrameRate(const MFRatio& fps);
-    void SetClockRate(float fRate);// { m_fRate = fRate; }
+    HRESULT SetClockRate(float fRate);// { m_fRate = fRate; }
 
     const LONGLONG& LastSampleTime(void) const;// { return m_LastSampleTime; }
     const LONGLONG& FrameDuration(void) const;// { return m_PerFrameInterval; }

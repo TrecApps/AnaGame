@@ -2,6 +2,7 @@
 #include <Shlwapi.h>
 #include <Mferror.h>
 #include <mfapi.h>
+#include <atlbase.h>
 
 TPresenter::TPresenter(TrecPointer<TWindowEngine> engine, TrecPointer<DrawingBoard> board)
 {
@@ -13,6 +14,7 @@ TPresenter::TPresenter(TrecPointer<TWindowEngine> engine, TrecPointer<DrawingBoa
     isShutdown = false;
 
     frameWidth = frameHeight = 0;
+    m_pSampleAllocatorEx = nullptr;
 
     videoDevice = nullptr;
     SUCCEEDED(engine->getDeviceD()->QueryInterface<ID3D11VideoDevice>(&videoDevice));
@@ -145,7 +147,7 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
         TObject::ThreadRelease();
         return res;
     }
-    IMFMediaBuffer* pBuffer = nullptr;
+    CComPtr<IMFMediaBuffer> pBuffer = nullptr;
     IMFMediaBuffer* pEVBuffer = nullptr;
     if (1 == cBuffers)
     {
@@ -187,15 +189,17 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     }
     TrecComPointer<ID3D11Device> d3dDevice = engine->getDeviceD();
     TrecComPointer<ID3D11DeviceContext> d3dContext = engine->getDevice();
-    if (d3dDevice.Get() || d3dContext.Get())
+    if (!d3dDevice.Get() || !d3dContext.Get())
     {
         ThreadRelease();
         return E_POINTER;
     }
-    IMFDXGIBuffer* mfdxgiBuff = nullptr;
+    CComPtr< IMFDXGIBuffer> mfdxgiBuff;
     ID3D11Texture2D* d3dText = nullptr;
     UINT resourceIndex = 0;
-    res = pBuffer->QueryInterface<IMFDXGIBuffer>(&mfdxgiBuff);
+    res = pBuffer.QueryInterface<IMFDXGIBuffer>(&mfdxgiBuff.p);
+
+
     if (SUCCEEDED(res))
         res = mfdxgiBuff->QueryInterface<ID3D11Texture2D>(&d3dText);
     if (SUCCEEDED(res))
@@ -203,7 +207,7 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     if (FAILED(res))
     {
         ThreadRelease();
-        if (mfdxgiBuff) mfdxgiBuff->Release();
+        if (mfdxgiBuff) mfdxgiBuff.Release();
         if (d3dText) d3dText->Release();
         return res;
     }
@@ -212,7 +216,7 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     if (!videoDevice && FAILED(res = d3dDevice->QueryInterface<>(&videoDevice)))
     {
         ThreadRelease();
-        if (mfdxgiBuff) mfdxgiBuff->Release();
+        if (mfdxgiBuff) mfdxgiBuff.Release();
         if (d3dText) d3dText->Release();
         return res;
     }
@@ -228,7 +232,7 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     if (FAILED(res))
     {
         ThreadRelease();
-        if (mfdxgiBuff) mfdxgiBuff->Release();
+        if (mfdxgiBuff) mfdxgiBuff.Release();
         if (d3dText) d3dText->Release();
         return res;
     }
@@ -248,7 +252,7 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
         res = E_CHANGED_STATE;
     dxgiSurf->Unmap();
     dxgiSurf->Release();
-    if (mfdxgiBuff) mfdxgiBuff->Release();
+    if (mfdxgiBuff) mfdxgiBuff.Release();
     if (d3dText) d3dText->Release();
     return res;
 }
@@ -293,4 +297,14 @@ HRESULT TPresenter::PresentFrame()
         ret = E_POINTER;
     ThreadRelease();
     return S_OK;
+}
+
+STDMETHODIMP_(HRESULT __stdcall) TPresenter::GetService(REFGUID guidService, REFIID riid, LPVOID* ppvObject)
+{
+    HRESULT hr = S_OK;
+
+     hr = (guidService == MR_VIDEO_RENDER_SERVICE) ? QueryInterface(riid, ppvObject) : MF_E_UNSUPPORTED_SERVICE;
+
+
+    return hr;
 }

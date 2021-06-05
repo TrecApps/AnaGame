@@ -14,7 +14,8 @@
 class TMediaSink :
     public TObject,
     public IMFMediaSink,
-    public IMFClockStateSink
+    public IMFClockStateSink,
+    public IMFMediaSinkPreroll
 {
 public:
     // Static method to create the object.
@@ -42,6 +43,10 @@ public:
     HRESULT STDMETHODCALLTYPE OnClockSetRate(MFTIME time, float rate) override;
     HRESULT STDMETHODCALLTYPE OnClockStart(MFTIME time, LONGLONG startOffset) override;
     HRESULT STDMETHODCALLTYPE OnClockStop(MFTIME time) override;
+
+    // IMFMediaSinkPreroll
+    STDMETHODIMP NotifyPreroll(MFTIME hnsUpcomingStartTime);
+
     // Anagame Alternative Methods
     
     TrecComPointer<TPresenter> GetPresenter();

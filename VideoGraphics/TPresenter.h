@@ -4,7 +4,9 @@
 #include "TWindowEngine.h"
 #include "DrawingBoard.h"
 class TPresenter :
-    public IMFVideoDisplayControl, public TObject
+    public IMFVideoDisplayControl,
+    public IMFGetService,
+    public TObject
 {
 public:
     static TrecComPointer<TPresenter> GetTPresenter(TrecPointer<TWindowEngine> engine, TrecPointer<DrawingBoard> board);
@@ -38,6 +40,9 @@ public:
     HRESULT SetCurrentMediaType(IMFMediaType* pMediaType);
     HRESULT PresentFrame();
 
+    // IMFGetService
+    STDMETHODIMP GetService(__RPC__in REFGUID guidService, __RPC__in REFIID riid, __RPC__deref_out_opt LPVOID* ppvObject);
+
 private:
     TPresenter(TrecPointer<TWindowEngine> engine, TrecPointer<DrawingBoard> board);
 
@@ -51,5 +56,7 @@ private:
     //Presenter Details
     ID3D11VideoDevice* videoDevice;
     UINT frameWidth, frameHeight;
+
+    IMFVideoSampleAllocatorEx* m_pSampleAllocatorEx;
 };
 

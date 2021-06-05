@@ -53,6 +53,9 @@ public:
 
     HRESULT PresentFrame();
 
+    //Anagame Methods
+    bool IsActive();
+
 private:
 
     enum class PlayState
@@ -101,11 +104,14 @@ private:
     DWORD queueId;
     DWORD sampleRequests;   // Outstanding reuqests for samples.
 
+    UINT32                      m_unInterlaceMode;
+
     TStreamSink(TrecComPointer<TPresenter> present);
 
     bool isShutdown;
     bool processFrames;
     bool waitForClock;
+    bool isPrerolling;
     bool CheckShutdown();
 
     TrecComPointer<TMediaSink> mediaSink;
