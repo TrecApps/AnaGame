@@ -641,6 +641,57 @@ done:
 }
 
 
+HRESULT CreateDirectXNode(IMFTopologyNode** node, TrecPointer<DrawingBoard> board)
+{
+	if (!board.Get() || !node)
+		return E_POINTER;
+	auto windowEngine = board->GetWindowEngine();
+	if (!windowEngine.Get())
+		return E_NOT_SET;
+
+	// Create a Device Manager
+	UINT token = 0;
+	TrecComPointer<IMFDXGIDeviceManager>::TrecComHolder manHolder;
+	MFCreateDXGIDeviceManager(&token, manHolder.GetPointerAddress());
+	TrecComPointer<IMFDXGIDeviceManager> man = manHolder.Extract();
+
+	// Connect the Device Manager with Our Direct3D resources
+	TrecComPointer<ID3D11Device> dev = windowEngine->getDeviceD();
+	man->ResetDevice(dev.Get(), token);
+
+	IMFTransform* transform = nullptr;
+	IMFTopologyNode* transformNode = nullptr;
+	IMFAttributes* atts = nullptr;
+	HRESULT hr = CoCreateInstance(CLSID_VideoProcessorMFT, nullptr, CLSCTX_INPROC_SERVER, IID_IMFTransform, (void**)&transform);
+
+	if (FAILED(hr))
+		goto done;
+
+	hr = transform->GetAttributes(&atts);
+	if (FAILED(hr))
+		goto done;
+	hr = atts->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
+	
+	if (FAILED(hr))
+		goto done;
+	
+	hr = transform->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, ULONG_PTR(man.Get()));
+	if(FAILED(hr)) goto done;
+
+	hr = MFCreateTopologyNode(MF_TOPOLOGY_TYPE::MF_TOPOLOGY_TRANSFORM_NODE, &transformNode);
+	if (FAILED(hr)) goto done;
+
+	hr = transformNode->SetObject(transform);
+	if (SUCCEEDED(hr))
+		*node = transformNode;
+done:
+	SafeRelease(transform);
+	SafeRelease(atts);
+	SafeRelease(transformNode);
+
+	return hr;
+}
+
 HRESULT AddBranchToPartialTopology(
 	IMFTopology* pTopology,         // Topology.
 	IMFMediaSource* pSource,        // Media source.
@@ -651,6 +702,7 @@ HRESULT AddBranchToPartialTopology(
 {
 	IMFStreamDescriptor* pSD = NULL;
 	IMFTopologyNode* pSourceNode = NULL;
+	IMFTopologyNode* pTransformNode = nullptr;
 	IMFTopologyNode* pOutputNode = NULL;
 	GUID streamType;
 
@@ -703,15 +755,22 @@ HRESULT AddBranchToPartialTopology(
 
 			// Create the output node for the renderer.
 			IMFStreamSink* streamer = nullptr;
+
+			hr = CreateDirectXNode(&pTransformNode, board);
+			if (FAILED(hr)) goto done;
+			
 			sink->GetStreamSinkByIndex(0, &streamer);
 			hr = AddOutputNode(pTopology, streamer, 0, &pOutputNode);
 			if (FAILED(hr))
 			{
 				goto done;
 			}
+			
+			hr = pSourceNode->ConnectOutput(0, pTransformNode, 0);
+			if (FAILED(hr)) goto done;
 
 			// Connect the source node to the output node.
-			hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
+			hr = pTransformNode->ConnectOutput(0, pOutputNode, 0);
 		}
 	}
 	// else: If not selected, don't add the branch. 
@@ -804,6 +863,10 @@ HRESULT CreatePlaybackTopology(IMFMediaSource* pSource, IMFPresentationDescripto
 	// Return the IMFTopology pointer to the caller.
 	*ppTopology = pTopology;
 	(*ppTopology)->AddRef();
+
+	// Adjust Topology settings for Direct3D Compatibility
+	pTopology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_HARDWARE);
+	pTopology->SetUINT32(MF_TOPOLOGY_DXVA_MODE, MFTOPOLOGY_DXVA_FULL);
 
 done:
 	SafeRelease(pTopology);
