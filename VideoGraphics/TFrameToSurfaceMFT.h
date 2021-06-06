@@ -1,4 +1,5 @@
 #pragma once
+#include <mfapi.h>
 #include <mftransform.h>
 #include <TLinkedList.h>
 
@@ -11,6 +12,13 @@ class TFrameToSurfaceMFT :
     public IMFTransform
 {
 public:
+    virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override;
+
+    virtual ULONG STDMETHODCALLTYPE AddRef(void) override;
+
+    virtual ULONG STDMETHODCALLTYPE Release(void) override;
+
+
     virtual HRESULT STDMETHODCALLTYPE GetStreamLimits(
         __RPC__out DWORD* pdwInputMinimum,
         __RPC__out DWORD* pdwInputMaximum,
@@ -111,9 +119,19 @@ public:
         MFT_OUTPUT_DATA_BUFFER* pOutputSamples,
         DWORD* pdwStatus) override;
 
+    HRESULT CreateInstance(TFrameToSurfaceMFT** in);
+
     protected:
+
+        TFrameToSurfaceMFT();
+        ~TFrameToSurfaceMFT();
+
         TLinkedList<IMFSample*> samples;
 
         IMFDXGIDeviceManager* manager;
+        DWORD inputId, outputId;
+
+        IMFAttributes* atts;
+        ULONG counter;
 };
 
