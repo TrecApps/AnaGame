@@ -4,6 +4,7 @@
 #include <DefaultObjectOperator.h>
 #include "TrecCode.h"
 #include <TContainerVariable.h>
+#include <TAsyncVariable.h>
 /**
  * Class: JsObjectOperator
  * Purpose: Provides JavaScript specific functionality to code interpretation.
@@ -319,5 +320,8 @@ protected:
     UINT yieldIndex;
     TrecPointer<CodeStatement> yieldStatement;
     
+    // Async functionality
+    bool isAsync;
+    TrecSubPointer<TVariable, TAsyncVariable> asyncVar;
 };
 

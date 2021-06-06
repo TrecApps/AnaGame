@@ -134,7 +134,7 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
         ret.stackTrace.push_back(stack);
         return;
     }
-
+    ThreadLock();
     collector.CollectStatement(statements);
     readyToRun = false;
 
@@ -157,15 +157,18 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
         // Iterator
         variables.addEntry(L"Iterator", TcVariableHolder(false, L"", GetJsIteratorMethods(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
     }
+    ThreadRelease();
 }
 
 ReturnObject TcJavaScriptInterpretor::Run()
 {
+    ThreadLock();
     ReturnObject ret;
     if (!readyToRun)
     {
         ret.errorMessage.Set(L"Interpretor not ready to run. Make sure you are successful in calling 'SetFile' and 'PreProcess' before calling this method");
         ret.returnCode = ReturnObject::ERR_UNSUPPORTED_OP;
+        ThreadRelease();
         return ret;
     }
 
@@ -189,12 +192,14 @@ ReturnObject TcJavaScriptInterpretor::Run()
             state = state->next;
         }
     }
-
-    return Run(statements, yieldIndex);
+    ret =  Run(statements, yieldIndex);
+    ThreadRelease();
+    return ret;
 }
 
 void TcJavaScriptInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
 {
+    ThreadLock();
     variables.clear();
     bool onDefault = false;
 
@@ -229,14 +234,18 @@ void TcJavaScriptInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariabl
             variables.addEntry(entry.key, entry.object);
         }
     }
+    ThreadRelease();
 }
 
 void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret)
 {
-    if (readyToRun)
-        return;
-    this->HandleSemiColon();
-    ret = PreProcess();
+    ThreadLock();
+    if (!readyToRun)
+    {
+        this->HandleSemiColon();
+        ret = PreProcess();
+    }
+    ThreadRelease();
 }
 
 ReturnObject TcJavaScriptInterpretor::PreProcess()
@@ -284,7 +293,7 @@ void TcJavaScriptInterpretor::ProcessIndividualStatement(const TString& statemen
 TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env):
     TcTypeInterpretor(parentInterpretor, env)
 {
-    readyToRun = false;
+    readyToRun = isAsync = false;
     yieldIndex = 0;
     selfWord.Set(L"this");
 
