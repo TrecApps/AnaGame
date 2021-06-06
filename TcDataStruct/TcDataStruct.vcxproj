@@ -159,6 +159,7 @@
     <ClInclude Include="JsMath.h" />
     <ClInclude Include="JsNumber.h" />
     <ClInclude Include="TAccessorVariable.h" />
+    <ClInclude Include="TAsyncVariable.h" />
     <ClInclude Include="TcDataStruct.h" />
     <ClInclude Include="JavaScriptFunc.h" />
     <ClInclude Include="Operator.h" />
@@ -192,6 +193,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TAccessorVariable.cpp" />
+    <ClCompile Include="TAsyncVariable.cpp" />
     <ClCompile Include="TClassStruct.cpp" />
     <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
