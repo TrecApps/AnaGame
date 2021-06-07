@@ -1,5 +1,6 @@
 #include "TFrameToSurfaceMFT.h"
 #include <mfreadwrite.h>
+#include <Mferror.h>
 HRESULT __stdcall TFrameToSurfaceMFT::QueryInterface(REFIID iid, void** ppv)
 {
     if (!ppv)
@@ -85,32 +86,33 @@ HRESULT __stdcall TFrameToSurfaceMFT::GetOutputStreamAttributes(DWORD dwOutputSt
 
 HRESULT __stdcall TFrameToSurfaceMFT::DeleteInputStream(DWORD dwStreamID)
 {
-    return E_NOTIMPL;
+    return E_NOTIMPL; // Fixed Input Streams
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::AddInputStreams(DWORD cStreams, DWORD* adwStreamIDs)
 {
+    // Fixed Streams
     return E_NOTIMPL;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetInputAvailableType(DWORD dwInputStreamID, DWORD dwTypeIndex, IMFMediaType** ppType)
 {
-    return E_NOTIMPL;
+    return E_NOTIMPL; // We Don't care about the stream type
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetOutputAvailableType(DWORD dwOutputStreamID, DWORD dwTypeIndex, IMFMediaType** ppType)
 {
-    return E_NOTIMPL;
+    return E_NOTIMPL; // We don't care about the Output
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::SetInputType(DWORD dwInputStreamID, IMFMediaType* pType, DWORD dwFlags)
 {
-    return E_NOTIMPL;
+    return MF_E_TRANSFORM_TYPE_NOT_SET; 
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::SetOutputType(DWORD dwOutputStreamID, IMFMediaType* pType, DWORD dwFlags)
 {
-    return E_NOTIMPL;
+    return S_OK;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetInputCurrentType(DWORD dwInputStreamID, IMFMediaType** ppType)
@@ -145,6 +147,28 @@ HRESULT __stdcall TFrameToSurfaceMFT::ProcessEvent(DWORD dwInputStreamID, IMFMed
 
 HRESULT __stdcall TFrameToSurfaceMFT::ProcessMessage(MFT_MESSAGE_TYPE eMessage, ULONG_PTR ulParam)
 {
+    if (MFT_MESSAGE_SET_D3D_MANAGER == eMessage)
+    {
+        IUnknown* unknownParam =(IUnknown*) ulParam;
+
+        if (!unknownParam)
+            return E_POINTER;
+
+
+        if (manager)
+            manager->Release();
+        manager = nullptr;
+
+        HRESULT ret = unknownParam->QueryInterface<IMFDXGIDeviceManager>(&manager);
+        if (FAILED(ret))
+            return ret;
+
+        // To-Do: Set up Use of the video Service
+
+        //manager->GetVideoService()
+
+        return S_OK;
+    }
     return E_NOTIMPL;
 }
 
@@ -170,6 +194,8 @@ HRESULT TFrameToSurfaceMFT::CreateInstance(TFrameToSurfaceMFT** in)
         i->Release();
         return ret;
     }
+
+    atts->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
 
     return ret;
 }
