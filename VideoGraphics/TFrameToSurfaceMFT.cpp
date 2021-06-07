@@ -58,6 +58,106 @@ HRESULT __stdcall TFrameToSurfaceMFT::GetStreamIDs(DWORD dwInputIDArraySize, __R
     return S_OK;
 }
 
+HRESULT __stdcall TFrameToSurfaceMFT::GetInputStreamInfo(DWORD dwInputStreamID, MFT_INPUT_STREAM_INFO* pStreamInfo)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetOutputStreamInfo(DWORD dwOutputStreamID, MFT_OUTPUT_STREAM_INFO* pStreamInfo)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetAttributes(IMFAttributes** pAttributes)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetInputStreamAttributes(DWORD dwInputStreamID, IMFAttributes** pAttributes)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetOutputStreamAttributes(DWORD dwOutputStreamID, IMFAttributes** pAttributes)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::DeleteInputStream(DWORD dwStreamID)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::AddInputStreams(DWORD cStreams, DWORD* adwStreamIDs)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetInputAvailableType(DWORD dwInputStreamID, DWORD dwTypeIndex, IMFMediaType** ppType)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetOutputAvailableType(DWORD dwOutputStreamID, DWORD dwTypeIndex, IMFMediaType** ppType)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::SetInputType(DWORD dwInputStreamID, IMFMediaType* pType, DWORD dwFlags)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::SetOutputType(DWORD dwOutputStreamID, IMFMediaType* pType, DWORD dwFlags)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetInputCurrentType(DWORD dwInputStreamID, IMFMediaType** ppType)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetOutputCurrentType(DWORD dwOutputStreamID, IMFMediaType** ppType)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetInputStatus(DWORD dwInputStreamID, DWORD* pdwFlags)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::GetOutputStatus(DWORD* pdwFlags)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::SetOutputBounds(LONGLONG hnsLowerBound, LONGLONG hnsUpperBound)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::ProcessEvent(DWORD dwInputStreamID, IMFMediaEvent* pEvent)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::ProcessMessage(MFT_MESSAGE_TYPE eMessage, ULONG_PTR ulParam)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::ProcessInput(DWORD dwInputStreamID, IMFSample* pSample, DWORD dwFlags)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall TFrameToSurfaceMFT::ProcessOutput(DWORD dwFlags, DWORD cOutputBufferCount, MFT_OUTPUT_DATA_BUFFER* pOutputSamples, DWORD* pdwStatus)
+{
+    return E_NOTIMPL;
+}
+
 HRESULT TFrameToSurfaceMFT::CreateInstance(TFrameToSurfaceMFT** in)
 {
     if (!in) return E_POINTER;
