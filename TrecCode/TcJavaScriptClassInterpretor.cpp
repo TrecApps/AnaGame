@@ -112,6 +112,14 @@ void TcJavaScriptClassInterpretor::ProcessStatements(ReturnObject& ret)
 					inspectAtts = true;
 				}
 
+				if (startStatement.StartsWith(L"async", false, true))
+				{
+					attributes |= ATTRIBUTE_ASYNC;
+					startStatement.Delete(0, 5);
+					startStatement.Trim();
+					inspectAtts = true;
+				}
+
 			} while (inspectAtts);
 
 			if (startParenth != -1)
@@ -182,8 +190,14 @@ void TcJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, Trec
 	UINT parenth = 0, square = 0, index = state->statement.Find(L'(');
 	ProcessFunctionExpression(parenth, square, index, state, ro);
 
+
 	if (ro.returnCode)
 		return;
+
+	if (att & ATTRIBUTE_ASYNC)
+	{
+		dynamic_cast<TcJavaScriptInterpretor*>(ro.errorObject.Get())->isAsync = true;
+	}
 
 	TrecPointer<TVariable> superConstructor;
 	if (!methodName.Compare(L"constructor") && this->superName.GetSize())

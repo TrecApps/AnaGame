@@ -47,6 +47,7 @@ public:
  */
 class _TREC_CODE_DLL TcJavaScriptInterpretor : public TcTypeInterpretor
 {
+    friend class TcJavaScriptClassInterpretor;
 public:
 
     /**

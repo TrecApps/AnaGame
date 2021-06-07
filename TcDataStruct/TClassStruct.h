@@ -24,6 +24,7 @@ class TInterpretor;
 #define ATTRIBUTE_MUTABLE  0b00001000  // Attribute is mutable, even in a const object
 #define ATTRIBUTE_GETTER   0b00010000  // Attribute is a getter
 #define ATTRIBUTE_SETTER   0b00100000  // Attribute is a setter
+#define ATTRIBUTE_ASYNC    0b01000000  // Attribute is async
 
 // ADVANCED: For Lower level langauges like C++ and Rust
 #define ATTRIBUTE_VIRTUAL  0b00010000  // For methods, considered virtual, attributes, considered pointers

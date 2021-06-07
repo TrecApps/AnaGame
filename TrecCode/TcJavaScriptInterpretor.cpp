@@ -901,6 +901,13 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
         PreProcess(ret, state->next);
         return;
     }
+    bool isAsync = startStatement.StartsWith(L"async", false, true);
+
+    if (isAsync)
+    {
+        startStatement.Delete(0, 5);
+        startStatement.Trim();
+    }
 
     if (startStatement.StartsWith(L"function", false, true))
     {
@@ -914,6 +921,9 @@ void TcJavaScriptInterpretor::PreProcess(ReturnObject& ret, TrecPointer<CodeStat
             state->statement.Delete(0, 1);
             state->statement.Trim();
         }
+
+        if (isAsync)
+            state->statement.Set(TString(L"async ") + state->statement);
 
         PreProcess(ret, state->block);
         if (ret.returnCode)return;
@@ -2711,6 +2721,7 @@ UINT TcJavaScriptInterpretor::ProcessVariableExpression(UINT& parenth, UINT& squ
 
     UCHAR attribute = 0;
     bool loopAround;
+    bool isAsync = false;
 
     TrecPointer<TVariable> var, vThis;
 
@@ -2732,6 +2743,8 @@ throughString:
                     attribute = 3;
                 else if (!phrase.Compare(L"function"))
                     attribute = 4;
+                else if (!phrase.Compare(L"async"))
+                    isAsync = true;
                 else
                 {
                     TString message;
@@ -2772,6 +2785,8 @@ throughString:
             attribute = 2;
         else if (!phrase.Compare(L"set"))
             attribute = 3;
+        else if (!phrase.Compare(L"async"))
+            isAsync = true;
         else if (var.Get())
         {
             if (var->GetVarType() == var_type::collection)
@@ -2997,7 +3012,16 @@ throughString:
                     case 4: // Function
                         wholePhrase.Delete(0, 8);
                         wholePhrase.Trim();
-
+                        if (isAsync)
+                        {
+                            if (dynamic_cast<TcJavaScriptInterpretor*>(ret.errorObject.Get()))
+                                dynamic_cast<TcJavaScriptInterpretor*>(ret.errorObject.Get())->isAsync = true;
+                            else
+                            {
+                                PrepReturn(ret, L"Unexpected Keyword 'async' detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                                return uret;
+                            }
+                        }
                     }
                     var = ret.errorObject;
                     loopAround = false;
@@ -3336,7 +3360,8 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
 
 void TcJavaScriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatement> statement, ReturnObject& obj)
 {
-    UINT p = 0, s = 0, i = 0;
+    bool isAsync = statement->statement.StartsWith(L"async ");
+    UINT p = 0, s = 0, i = isAsync ? 6 : 0;
     ProcessFunctionExpression(p, s, i, statement, obj);
 
     if (!obj.errorObject.Get())
@@ -3362,6 +3387,11 @@ void TcJavaScriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatemen
         TrecSubPointer<TVariable, TcInterpretor> newFunc = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(obj.errorObject);
         assert(newFunc.Get());
         obj.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TFunctionGen>(newFunc);
+    }
+
+    if (isAsync)
+    {
+        dynamic_cast<TcJavaScriptInterpretor*>(obj.errorObject.Get())->isAsync = true;
     }
 
     UpdateVariable(obj.errorMessage, obj.errorObject, true);
