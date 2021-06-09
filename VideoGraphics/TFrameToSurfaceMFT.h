@@ -1,8 +1,12 @@
 #pragma once
 #include <mfapi.h>
+#include <d3d11.h>
 #include <mftransform.h>
 #include <TLinkedList.h>
-
+#include <evr.h>
+#include <TDataArray.h>
+#include <D3D9Types.h>
+#include <dxva2api.h>
 
 /**
  * Class: IMFTransform
@@ -126,12 +130,24 @@ public:
         TFrameToSurfaceMFT();
         ~TFrameToSurfaceMFT();
 
+        HRESULT SetUpDevices();
+
         TLinkedList<IMFSample*> samples;
 
         IMFDXGIDeviceManager* manager;
+        IDirectXVideoProcessor* vService;
+        ID3D11VideoDevice* vDevice;
+        ID3D11Device* device;
         DWORD inputId, outputId;
+        UINT decoderCount;
+        TDataArray<GUID> guids;
+        TDataArray<D3D11_VIDEO_DECODER_CONFIG> decodeConfigs;
+        GUID inputType;
+        D3D11_VIDEO_DECODER_DESC decodeDesc;
 
         IMFAttributes* atts;
         ULONG counter;
+        HANDLE devHand;
+        D3D11_TEXTURE2D_DESC textureDesc;
 };
 
