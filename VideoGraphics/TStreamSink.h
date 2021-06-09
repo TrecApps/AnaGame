@@ -121,10 +121,13 @@ private:
     TLinkedList<IUnknown*> samples;
     MFTIME startTime;
 
+    D3D11_TEXTURE2D_DESC textureDesc;
+
     // Stream Specific References
     IMFMediaEventQueue* m_pEventQueue;                  // Event queue
     TComCallback<TStreamSink> callBack;                 // Callback mechanism
     IMFMediaType* currType;                             // Type of Media
     TrecPointer<TScheduler> schedule;
+    TrecComPointer<ID3D11Device> device;
 };
 

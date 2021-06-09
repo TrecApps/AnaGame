@@ -73,7 +73,7 @@ STDMETHODIMP_(HRESULT __stdcall) TPresenter::GetVideoPosition(__RPC__out MFVideo
         
     }
     ThreadRelease();
-    return E_NOTIMPL;
+    return ret;
 }
 
 STDMETHODIMP_(HRESULT __stdcall) TPresenter::RepaintVideo(void)
@@ -122,7 +122,7 @@ void TPresenter::Shutdown()
     TObject::ThreadRelease();
 }
 
-HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample)
+HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, TSampleTexture* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample)
 {
     TObject::ThreadLock();
 
@@ -139,33 +139,10 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     }
 
     *pbDeviceChanged = FALSE;
-    DWORD cBuffers = 0;
-    HRESULT res = pSample->GetBufferCount(&cBuffers);
+ 
+    IMFSample* samp = nullptr;
 
-    if (FAILED(res))
-    {
-        TObject::ThreadRelease();
-        return res;
-    }
-    CComPtr<IMFMediaBuffer> pBuffer = nullptr;
-    IMFMediaBuffer* pEVBuffer = nullptr;
-    if (1 == cBuffers)
-    {
-        res = pSample->GetBufferByIndex(0, &pBuffer);
-    }
-    //else if (2 == cBuffers && m_b3DVideo && 0 != m_vp3DOutput)
-    //{
-    //    res = pSample->GetBufferByIndex(0, &pBuffer);
-    //    if (FAILED(res))
-    //    {
-    //        ThreadRelease();
-    //        return res;
-    //    }
-
-    //    res = pSample->GetBufferByIndex(1, &pEVBuffer);
-    //}
-    else
-        res = pSample->ConvertToContiguousBuffer(&pBuffer);
+    pSample->QueryInterface(__uuidof(IMFSample), (void**)&samp);
 
     MFVideoInterlaceMode unInterlaceMode = pCurrentType ? (MFVideoInterlaceMode)MFGetAttributeUINT32(pCurrentType, MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) :
         MFVideoInterlaceMode::MFVideoInterlace_Unknown;
@@ -175,18 +152,20 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
         //
     if (MFVideoInterlace_MixedInterlaceOrProgressive == unInterlaceMode)
     {
-        BOOL fInterlaced = MFGetAttributeUINT32(pSample, MFSampleExtension_Interlaced, FALSE);
+        BOOL fInterlaced = MFGetAttributeUINT32(samp, MFSampleExtension_Interlaced, FALSE);
         if (!fInterlaced) // Progressive sample
             *punInterlaceMode = MFVideoInterlace_Progressive;
        else
         {
-            BOOL fBottomFirst = MFGetAttributeUINT32(pSample, MFSampleExtension_BottomFieldFirst, FALSE);
+            BOOL fBottomFirst = MFGetAttributeUINT32(samp, MFSampleExtension_BottomFieldFirst, FALSE);
             if (fBottomFirst)
                 *punInterlaceMode = MFVideoInterlace_FieldInterleavedLowerFirst;
             else
                 *punInterlaceMode = MFVideoInterlace_FieldInterleavedUpperFirst;
         }
     }
+
+    samp->Release();
     TrecComPointer<ID3D11Device> d3dDevice = engine->getDeviceD();
     TrecComPointer<ID3D11DeviceContext> d3dContext = engine->getDevice();
     if (!d3dDevice.Get() || !d3dContext.Get())
@@ -194,20 +173,16 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
         ThreadRelease();
         return E_POINTER;
     }
-    CComPtr< IMFDXGIBuffer> mfdxgiBuff;
+    
     ID3D11Texture2D* d3dText = nullptr;
     UINT resourceIndex = 0;
-    res = pBuffer.QueryInterface<IMFDXGIBuffer>(&mfdxgiBuff.p);
+    
 
 
-    if (SUCCEEDED(res))
-        res = mfdxgiBuff->QueryInterface<ID3D11Texture2D>(&d3dText);
-    if (SUCCEEDED(res))
-        res = mfdxgiBuff->GetSubresourceIndex(&resourceIndex);
+    HRESULT res = pSample->QueryInterface(__uuidof(ID3D11Texture2D), (void**)&d3dText);
     if (FAILED(res))
     {
         ThreadRelease();
-        if (mfdxgiBuff) mfdxgiBuff.Release();
         if (d3dText) d3dText->Release();
         return res;
     }
@@ -216,7 +191,6 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     if (!videoDevice && FAILED(res = d3dDevice->QueryInterface<>(&videoDevice)))
     {
         ThreadRelease();
-        if (mfdxgiBuff) mfdxgiBuff.Release();
         if (d3dText) d3dText->Release();
         return res;
     }
@@ -232,7 +206,6 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     if (FAILED(res))
     {
         ThreadRelease();
-        if (mfdxgiBuff) mfdxgiBuff.Release();
         if (d3dText) d3dText->Release();
         return res;
     }
@@ -252,7 +225,6 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
         res = E_CHANGED_STATE;
     dxgiSurf->Unmap();
     dxgiSurf->Release();
-    if (mfdxgiBuff) mfdxgiBuff.Release();
     if (d3dText) d3dText->Release();
     return res;
 }

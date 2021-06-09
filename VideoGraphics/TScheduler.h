@@ -5,6 +5,7 @@
 #include <TLinkedList.h>
 #include <mfobjects.h>
 #include "TComCommon.h"
+#include "TSampleTexture.h"
 
 class TScheduler :
     public TObject
@@ -23,9 +24,9 @@ public:
     HRESULT StartScheduler(IMFClock* pClock);
     HRESULT StopScheduler(void);
 
-    HRESULT ScheduleSample(IMFSample* pSample, bool bPesentNow);
+    HRESULT ScheduleSample(TSampleTexture* pSample, bool bPesentNow);
     HRESULT ProcessSamplesInQueue(LONG* plNextSleep);
-    HRESULT ProcessSample(IMFSample* pSample, LONG* plNextSleep);
+    HRESULT ProcessSample(TSampleTexture* pSample, LONG* plNextSleep);
     HRESULT Flush(void);
 
     UINT GetSampleCount();
@@ -50,6 +51,6 @@ protected:
     ULONG64 timerKey;
 
     TrecComPointer<IMFStreamSink> streamer;
-    TLinkedList<IMFSample*> samples;
+    TLinkedList<TSampleTexture*> samples;
 };
 

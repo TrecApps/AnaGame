@@ -3,6 +3,7 @@
 #include <TObject.h>
 #include "TWindowEngine.h"
 #include "DrawingBoard.h"
+#include "TSampleTexture.h"
 class TPresenter :
     public IMFVideoDisplayControl,
     public IMFGetService,
@@ -36,7 +37,7 @@ public:
 
     // Other
     void Shutdown();
-    HRESULT ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample = NULL);
+    HRESULT ProcessFrame(IMFMediaType* pCurrentType, TSampleTexture* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample = NULL);
     HRESULT SetCurrentMediaType(IMFMediaType* pMediaType);
     HRESULT PresentFrame();
 

@@ -144,6 +144,7 @@ public:
         TDataArray<D3D11_VIDEO_DECODER_CONFIG> decodeConfigs;
         GUID inputType;
         D3D11_VIDEO_DECODER_DESC decodeDesc;
+        D3D11_VIDEO_DECODER_OUTPUT_VIEW_DESC outputDesc;
 
         IMFAttributes* atts;
         ULONG counter;

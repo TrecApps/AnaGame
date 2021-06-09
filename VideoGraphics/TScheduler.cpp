@@ -69,7 +69,7 @@ HRESULT TScheduler::StopScheduler(void)
 	return S_OK;
 }
 
-HRESULT TScheduler::ScheduleSample(IMFSample* pSample, bool now)
+HRESULT TScheduler::ScheduleSample(TSampleTexture* pSample, bool now)
 {
 	if (!streamer.Get())
 		return MF_E_NOT_INITIALIZED;
@@ -95,7 +95,7 @@ HRESULT TScheduler::ProcessSamplesInQueue(LONG* plNextSleep)
 	HRESULT ret = S_OK;
 	LONG wait = 0;
 	ThreadLock();
-	IMFSample* sample = nullptr;
+	TSampleTexture* sample = nullptr;
 	while (samples.Dequeue(sample) && sample)
 	{
 		ret = ProcessSample(sample, &wait);
@@ -111,7 +111,7 @@ HRESULT TScheduler::ProcessSamplesInQueue(LONG* plNextSleep)
 	return ret;
 }
 
-HRESULT TScheduler::ProcessSample(IMFSample* pSample, LONG* plNextSleep)
+HRESULT TScheduler::ProcessSample(TSampleTexture* pSample, LONG* plNextSleep)
 {
 	ThreadLock();
 	
@@ -125,7 +125,10 @@ HRESULT TScheduler::ProcessSample(IMFSample* pSample, LONG* plNextSleep)
 		MFTIME   systemTime = 0;
 		LONGLONG delta = 0;
 
-		ret = pSample->GetSampleTime(&presentTime);
+		IMFSample* samp = nullptr;
+		pSample->QueryInterface(__uuidof(IMFSample), (void**)&samp);
+
+		ret = samp->GetSampleTime(&presentTime);
 		if (SUCCEEDED(ret))
 		{
 			ret =clock->GetCorrelatedTime(0, &currentTime, &systemTime);

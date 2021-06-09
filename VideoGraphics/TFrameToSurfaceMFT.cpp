@@ -132,7 +132,7 @@ HRESULT TFrameToSurfaceMFT::GetOutputAvailableType(DWORD dwOutputStreamID, DWORD
     // Go ahead and set the texture description here
     textureDesc.Width = decodeDesc.SampleWidth;
     textureDesc.Height = decodeDesc.SampleHeight;
-    textureDesc.ArraySize = 5;
+    textureDesc.ArraySize = 1;
     textureDesc.Format = DXGI_FORMAT_NV12;
     textureDesc.SampleDesc.Count = 1;
     textureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -197,6 +197,8 @@ HRESULT  TFrameToSurfaceMFT::SetInputType(DWORD dwInputStreamID, IMFMediaType* p
         decodeConfigs.push_back(decodeConfig);
     }
 
+
+    //outputDesc.DecodeProfile = ;
 
     return decodeConfigs.Size() ? S_OK : MF_E_UNSUPPORTED_D3D_TYPE;
 }
@@ -302,7 +304,62 @@ HRESULT __stdcall TFrameToSurfaceMFT::ProcessOutput(DWORD dwFlags, DWORD cOutput
             if(FAILED(ret = SetUpDevices()))
                 return ret;
         }
-        if (!vDecode)
+
+        IMFSample* samp = nullptr;
+        if (!samples.Dequeue(samp))
+            return MF_E_TRANSFORM_NEED_MORE_INPUT;
+        DWORD cBuffers;
+        ret = samp->GetBufferCount(&cBuffers);
+        if (FAILED(ret)) return ret;
+
+        IMFMediaBuffer* pBuffer = nullptr;
+        if (1 == cBuffers)
+        {
+            ret = samp->GetBufferByIndex(0, &pBuffer);
+        }
+        else
+            ret = samp->ConvertToContiguousBuffer(&pBuffer);
+
+        if (FAILED(ret))
+            return ret;
+
+        IMF2DBuffer* p2Buff = nullptr;
+        ret = pBuffer->QueryInterface<IMF2DBuffer>(&p2Buff);
+        if (FAILED(ret))
+        {
+            pBuffer->Release();
+            return ret;
+        }
+        BYTE* picByte = nullptr;
+        LONG picLen = 0;
+        D3D11_SUBRESOURCE_DATA resourceData;
+        ZeroMemory(&resourceData, sizeof(resourceData));
+
+
+        ret = p2Buff->Lock2D((BYTE**)(&resourceData.pSysMem), &picLen);
+
+        if (FAILED(ret))
+        {
+            pBuffer->Release();
+            p2Buff->Release();
+            return ret;
+        }
+
+        if (picLen < 0)
+        {
+            // To-Do: Handle Scenario
+            int e = 0;
+        }
+        resourceData.SysMemPitch = picLen;
+
+        ID3D11Texture2D* textures = nullptr;
+        ret = device->CreateTexture2D(&textureDesc, &resourceData, &textures);
+
+        
+
+
+
+        /*if (!vDecode)
             ret = vDevice->CreateVideoDecoder(&decodeDesc, &decodeConfigs[0], &vDecode);
         if (FAILED(ret))
             return ret;
@@ -314,8 +371,8 @@ HRESULT __stdcall TFrameToSurfaceMFT::ProcessOutput(DWORD dwFlags, DWORD cOutput
 
         for (UINT C = 0; C < textureDesc.ArraySize; C++)
         {
-            //ret = vDevice->CreateVideoDecoderOutputView()
-        }
+            ret = vDevice->CreateVideoDecoderOutputView(&textures[C], )
+        }*/
     }
 
 
@@ -350,6 +407,7 @@ TFrameToSurfaceMFT::TFrameToSurfaceMFT()
     counter = 1;
     ZeroMemory(&this->decodeDesc, sizeof(decodeDesc));
     ZeroMemory(&textureDesc, sizeof(textureDesc));
+    ZeroMemory(&outputDesc, sizeof(&outputDesc));
 }
 
 TFrameToSurfaceMFT::~TFrameToSurfaceMFT()

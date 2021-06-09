@@ -755,9 +755,6 @@ HRESULT AddBranchToPartialTopology(
 
 			// Create the output node for the renderer.
 			IMFStreamSink* streamer = nullptr;
-
-			hr = CreateDirectXNode(&pTransformNode, board);
-			if (FAILED(hr)) goto done;
 			
 			sink->GetStreamSinkByIndex(0, &streamer);
 			hr = AddOutputNode(pTopology, streamer, 0, &pOutputNode);
@@ -766,11 +763,7 @@ HRESULT AddBranchToPartialTopology(
 				goto done;
 			}
 			
-			hr = pSourceNode->ConnectOutput(0, pTransformNode, 0);
-			if (FAILED(hr)) goto done;
-
-			// Connect the source node to the output node.
-			hr = pTransformNode->ConnectOutput(0, pOutputNode, 0);
+			hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
 		}
 	}
 	// else: If not selected, don't add the branch. 

@@ -3,6 +3,7 @@
 #include <Mferror.h>
 #include "TVideoMarker.h"
 #include <mfapi.h>
+#include "TSampleTexture.h"
 
 GUID const* const s_pVideoFormats[] =
 {
@@ -170,7 +171,55 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
         ThreadRelease();
         return ret;
     }
-    auto uSample = (IUnknown*)pSample;
+
+    IMFMediaBuffer* pBuffer = nullptr;
+    if (1 == sampleSize)
+    {
+        ret = pSample->GetBufferByIndex(0, &pBuffer);
+    }
+    else
+        ret = pSample->ConvertToContiguousBuffer(&pBuffer);
+
+    if (FAILED(ret))
+        return ret;
+
+    IMF2DBuffer* p2Buff = nullptr;
+    ret = pBuffer->QueryInterface<IMF2DBuffer>(&p2Buff);
+    if (FAILED(ret))
+    {
+        pBuffer->Release();
+        return ret;
+    }
+    BYTE* picByte = nullptr;
+    LONG picLen = 0;
+    D3D11_SUBRESOURCE_DATA resourceData;
+    ZeroMemory(&resourceData, sizeof(resourceData));
+
+    ret = p2Buff->Lock2D((BYTE**)(&resourceData.pSysMem), &picLen);
+
+    if (FAILED(ret))
+    {
+        pBuffer->Release();
+        p2Buff->Release();
+        return ret;
+    }
+
+    if (picLen < 0)
+    {
+        // To-Do: Handle Scenario
+        int e = 0;
+    }
+    resourceData.SysMemPitch = picLen;
+
+    if (!textureDesc.Width || !textureDesc.Height)
+    {
+        return E_NOT_SET;    
+    }
+
+    ID3D11Texture2D* textures = nullptr;
+    ret = device->CreateTexture2D(&textureDesc, &resourceData, &textures);
+
+    auto uSample = (IUnknown*)textures;
     samples.Push(uSample);
 
     if (isPrerolling)
@@ -399,11 +448,15 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::SetCurrentMediaType(IMFMediaType* 
         schedule->SetFrameRate(s_DefaultFrameRate);
     }
 
+    
+
     if (currType)
         currType->Release();
-    currType = pMediaType;
-    currType->AddRef();
-
+    if (SUCCEEDED(MFGetAttributeSize(pMediaType, MF_MT_FRAME_SIZE, &textureDesc.Width, &textureDesc.Height)))
+    {
+        currType = pMediaType;
+        currType->AddRef();
+    }
     if (PlayState::State_Started != this->state && PlayState::State_Paused != state)
     {
         state = PlayState::State_Ready;
@@ -427,13 +480,15 @@ TrecComPointer<IMFStreamSink> TStreamSink::GetStreamSink(TrecComPointer<TMediaSi
 
 
     TrecComPointer<IMFStreamSink>::TrecComHolder holder;
-    TStreamSink* tsink = new TStreamSink(TPresenter::GetTPresenter(board->GetWindowEngine(), board));
+    auto engine = board->GetWindowEngine();
+    TStreamSink* tsink = new TStreamSink(TPresenter::GetTPresenter(engine, board));
 
     IMFStreamSink** mem = holder.GetPointerAddress();
     IMFStreamSink* isink = (IMFStreamSink*)tsink;
     *mem = isink;
     tsink->m_nRefCount = 1;
     tsink->isShutdown = false;
+    tsink->device = engine->getDeviceD();
     return holder.Extract();
 }
 
@@ -636,10 +691,10 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
     while (samples.Dequeue(samp) && repeat)
     {
         IVideoMarker* mSample = nullptr;
-        IMFSample* fSample = nullptr;
+        TSampleTexture* fSample = nullptr;
 
         if ((ret = samp->QueryInterface<IVideoMarker>(&mSample)) == E_NOINTERFACE)
-            ret = samp->QueryInterface<IMFSample>(&fSample);
+            ret = samp->QueryInterface<TSampleTexture>(&fSample);
 
         if (SUCCEEDED(ret))
         {
@@ -738,6 +793,13 @@ TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
     startTime = 0;
     sampleRequests = 0;
     m_unInterlaceMode = 0;
+
+    textureDesc.ArraySize = 1;
+    textureDesc.Format = DXGI_FORMAT_NV12;
+    textureDesc.SampleDesc.Count = 1;
+    textureDesc.Usage = D3D11_USAGE_DEFAULT;
+    textureDesc.BindFlags = D3D11_BIND_DECODER;
+    textureDesc.Height = textureDesc.Width = 0; // Set those when we have samples to process
 }
 
 bool TStreamSink::CheckShutdown()
