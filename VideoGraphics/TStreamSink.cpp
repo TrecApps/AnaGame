@@ -187,6 +187,7 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
     ret = pBuffer->QueryInterface<IMF2DBuffer>(&p2Buff);
     if (FAILED(ret))
     {
+        ThreadRelease();
         pBuffer->Release();
         return ret;
     }
@@ -199,6 +200,7 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
 
     if (FAILED(ret))
     {
+        ThreadRelease();
         pBuffer->Release();
         p2Buff->Release();
         return ret;
@@ -213,13 +215,27 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
 
     if (!textureDesc.Width || !textureDesc.Height)
     {
+        ThreadRelease();
+        pBuffer->Release();
+        p2Buff->Release();
         return E_NOT_SET;    
     }
 
     ID3D11Texture2D* textures = nullptr;
     ret = device->CreateTexture2D(&textureDesc, &resourceData, &textures);
 
-    auto uSample = (IUnknown*)textures;
+    if(FAILED(ret))
+    {
+        ThreadRelease();
+        pBuffer->Release();
+        p2Buff->Release();
+        return ret;
+    }
+
+    TSampleTexture* tst = nullptr;
+    TSampleTexture::GetTSampleTexture(pSample, textures, &tst);
+
+    auto uSample = (IUnknown*)tst;
     samples.Push(uSample);
 
     if (isPrerolling)

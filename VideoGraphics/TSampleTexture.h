@@ -16,7 +16,7 @@ public:
 
     virtual ULONG STDMETHODCALLTYPE Release(void) override;
 
-    HRESULT GetTSampleTexture(IMFSample* sample,
+    static HRESULT GetTSampleTexture(IMFSample* sample,
     ID3D11Texture2D* texture, TSampleTexture** text);
 private:
     TSampleTexture(IMFSample* sample, ID3D11Texture2D* texture);
