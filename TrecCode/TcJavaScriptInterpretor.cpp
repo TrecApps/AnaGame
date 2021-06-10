@@ -10,6 +10,7 @@
 #include "TcJavaScriptClassInterpretor.h"
 #include <JsNumber.h>
 #include <JsMath.h>
+#include "JsPromise.h"
 #include <TIteratorVariable.h>
 #include "JsArray.h"
 #include <TFunctionGen.h>
@@ -156,6 +157,8 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
 
         // Iterator
         variables.addEntry(L"Iterator", TcVariableHolder(false, L"", GetJsIteratorMethods(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
+        //Promise
+        this->classes.addEntry(L"Promise", JsPromise::GetPromiseClass(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment));
     }
     ThreadRelease();
 }

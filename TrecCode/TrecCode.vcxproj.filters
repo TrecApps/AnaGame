@@ -63,6 +63,9 @@
     <ClInclude Include="JsArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="JsPromise.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -108,6 +111,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="JsArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JsPromise.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
