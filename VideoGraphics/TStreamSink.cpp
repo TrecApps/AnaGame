@@ -5,29 +5,107 @@
 #include <mfapi.h>
 #include "TSampleTexture.h"
 
+typedef struct guid_to_dxgi_vid_formats
+{
+    GUID guidFormat;
+    DXGI_FORMAT dxgiFormat;
+}guid_to_dxgi_vid_formats;
+
+
+guid_to_dxgi_vid_formats const formatTable[] = {
+    {MFVideoFormat_NV12, DXGI_FORMAT_NV12},
+    {MFVideoFormat_YUY2, DXGI_FORMAT_YUY2},
+    {MFVideoFormat_RGB32, DXGI_FORMAT_R32G32B32_FLOAT},
+    //{MFVideoFormat_RGB24, DXGI_FORMAT_RGB24},
+    //{MFVideoFormat_RGB555, DXGI_FORMAT_RGB555},
+    //{MFVideoFormat_RGB565, DXGI_FORMAT_RGB565},
+    //{MFVideoFormat_RGB8, DXGI_FORMAT_RGB8},
+    {MFVideoFormat_AYUV, DXGI_FORMAT_AYUV},
+    {MFVideoFormat_NV11, DXGI_FORMAT_NV11}
+};
+
+
+void GetBytesPerPixel(GUID guidSubtype, sFraction& m_imageBytesPP)
+{
+    if ((guidSubtype == MFVideoFormat_NV12) ||
+        (guidSubtype == MFVideoFormat_YV12) ||
+        (guidSubtype == MFVideoFormat_IYUV) ||
+        (guidSubtype == MFVideoFormat_YVU9) ||
+        (guidSubtype == MFVideoFormat_I420))
+    {
+        m_imageBytesPP.Numerator = 3;
+        m_imageBytesPP.Denominator = 2;
+    }
+    else if ((guidSubtype == MFVideoFormat_YUY2) ||
+        (guidSubtype == MFVideoFormat_RGB555) ||
+        (guidSubtype == MFVideoFormat_RGB565) ||
+        (guidSubtype == MFVideoFormat_UYVY) ||
+        (guidSubtype == MFVideoFormat_YVYU))
+    {
+        m_imageBytesPP.Numerator = 2;
+        m_imageBytesPP.Denominator = 1;
+    }
+    else if (guidSubtype == MFVideoFormat_RGB24)
+    {
+        m_imageBytesPP.Numerator = 3;
+        m_imageBytesPP.Denominator = 1;
+    }
+    else if (guidSubtype == MFVideoFormat_RGB32)
+    {
+        m_imageBytesPP.Numerator = 4;
+        m_imageBytesPP.Denominator = 1;
+    }
+    else if (guidSubtype == MFVideoFormat_v410)
+    {
+        m_imageBytesPP.Numerator = 5;
+        m_imageBytesPP.Denominator = 4;
+    }
+    else // includes:
+        // MFVideoFormat_RGB8
+        // MFVideoFormat_AYUV
+        // MFVideoFormat_NV11
+    {
+        // This is just a fail-safe
+        m_imageBytesPP.Numerator = 1;
+        m_imageBytesPP.Denominator = 1;
+    }
+}
+
+
+
 GUID const* const s_pVideoFormats[] =
 {
     &MFVideoFormat_NV12,
-    &MFVideoFormat_IYUV,
+    //&MFVideoFormat_IYUV,
     &MFVideoFormat_YUY2,
-    &MFVideoFormat_YV12,
+    //&MFVideoFormat_YV12,
     &MFVideoFormat_RGB32,
-    &MFVideoFormat_RGB32,
-    &MFVideoFormat_RGB24,
-    &MFVideoFormat_RGB555,
-    &MFVideoFormat_RGB565,
-    &MFVideoFormat_RGB8,
+    //&MFVideoFormat_RGB32,
+    //&MFVideoFormat_RGB24,
+    //&MFVideoFormat_RGB555,
+    //&MFVideoFormat_RGB565,
+    //&MFVideoFormat_RGB8,
     &MFVideoFormat_AYUV,
-    &MFVideoFormat_UYVY,
-    &MFVideoFormat_YVYU,
-    &MFVideoFormat_YVU9,
-    &MFVideoFormat_v410,
-    &MFVideoFormat_I420,
-    &MFVideoFormat_NV11,
-    &MFVideoFormat_420O
+    //&MFVideoFormat_UYVY,
+    //&MFVideoFormat_YVYU,
+    //&MFVideoFormat_YVU9,
+    //&MFVideoFormat_v410,
+    //&MFVideoFormat_I420,
+    &MFVideoFormat_NV11//,
+    //&MFVideoFormat_420O
 };
 
 const DWORD s_dwNumVideoFormats = sizeof(s_pVideoFormats) / sizeof(s_pVideoFormats[0]);
+
+DXGI_FORMAT GetFormatFromVideoFormat(GUID vidForm)
+{
+    for (UINT Rust = 0; Rust < s_dwNumVideoFormats; Rust++)
+    {
+        if (formatTable[Rust].guidFormat == vidForm)
+            return formatTable[Rust].dxgiFormat;
+    }
+    return DXGI_FORMAT_UNKNOWN;
+}
 
 const MFRatio s_DefaultFrameRate = { 30, 1 };
 
@@ -164,6 +242,13 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
     if (!pSample)
         return E_POINTER;
     ThreadLock();
+
+    if (!textureDesc.Width || !textureDesc.Height)
+    {
+        ThreadRelease();
+        return E_NOT_SET;
+    }
+
     DWORD sampleSize = 0;
     HRESULT ret = pSample->GetBufferCount(&sampleSize);
     if (FAILED(ret))
@@ -185,41 +270,50 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
 
     IMF2DBuffer* p2Buff = nullptr;
     ret = pBuffer->QueryInterface<IMF2DBuffer>(&p2Buff);
-    if (FAILED(ret))
-    {
-        ThreadRelease();
-        pBuffer->Release();
-        return ret;
-    }
     BYTE* picByte = nullptr;
     LONG picLen = 0;
     D3D11_SUBRESOURCE_DATA resourceData;
     ZeroMemory(&resourceData, sizeof(resourceData));
 
-    ret = p2Buff->Lock2D((BYTE**)(&resourceData.pSysMem), &picLen);
 
     if (FAILED(ret))
     {
-        ThreadRelease();
-        pBuffer->Release();
-        p2Buff->Release();
-        return ret;
-    }
+        p2Buff = nullptr;
+        DWORD maxLen = 0, curLen = 0;
+        ret = pBuffer->Lock((BYTE**)(&resourceData.pSysMem), &maxLen, &curLen);
+        if (FAILED(ret))
+        {
+            pBuffer->Release();
+            return ret;
+        }
+        picLen = maxLen / textureDesc.Height;
 
-    if (picLen < 0)
-    {
-        // To-Do: Handle Scenario
-        int e = 0;
+
     }
+    else
+    {
+        ret = p2Buff->Lock2D((BYTE**)(&resourceData.pSysMem), &picLen);
+        if (FAILED(ret))
+        {
+            ThreadRelease();
+            pBuffer->Release();
+            p2Buff->Release();
+            return ret;
+        }
+        if (picLen < 0)
+        {
+            // To-Do: Handle Scenario
+            int e = 0;
+        }
+    }
+    
+    picLen = textureDesc.Width;
+
+
+
     resourceData.SysMemPitch = picLen;
 
-    if (!textureDesc.Width || !textureDesc.Height)
-    {
-        ThreadRelease();
-        pBuffer->Release();
-        p2Buff->Release();
-        return E_NOT_SET;    
-    }
+
 
     ID3D11Texture2D* textures = nullptr;
     ret = device->CreateTexture2D(&textureDesc, &resourceData, &textures);
@@ -228,7 +322,7 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
     {
         ThreadRelease();
         pBuffer->Release();
-        p2Buff->Release();
+        if(p2Buff) p2Buff->Release();
         return ret;
     }
 
@@ -435,11 +529,17 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::SetCurrentMediaType(IMFMediaType* 
     HRESULT ret = IsMediaTypeSupported(pMediaType, nullptr);
 
     MFRatio fps = { 0, 0 };
-
+    GUID formatType = GUID_NULL;
     if (FAILED(ret))
         goto done;
 
     pMediaType->GetUINT32(MF_MT_INTERLACE_MODE, &m_unInterlaceMode);
+
+    
+    pMediaType->GetGUID(MF_MT_SUBTYPE, &formatType);
+
+    textureDesc.Format = GetFormatFromVideoFormat(formatType);
+    GetBytesPerPixel(formatType, this->m_imageBytesPP);
 
     // Set the frame rate on the scheduler.
     if (SUCCEEDED(MFGetAttributeRatio(pMediaType, MF_MT_FRAME_RATE, (UINT32*)&fps.Numerator, (UINT32*)&fps.Denominator)) 
@@ -707,10 +807,10 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
     while (samples.Dequeue(samp) && repeat)
     {
         IVideoMarker* mSample = nullptr;
-        TSampleTexture* fSample = nullptr;
+        ISampleTexture* fSample = nullptr;
 
         if ((ret = samp->QueryInterface<IVideoMarker>(&mSample)) == E_NOINTERFACE)
-            ret = samp->QueryInterface<TSampleTexture>(&fSample);
+            ret = samp->QueryInterface<ISampleTexture>(&fSample);
 
         if (SUCCEEDED(ret))
         {
@@ -733,7 +833,7 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
                 BOOL deviceChanged = false;
                 BOOL processAgain = false;
                 IMFSample* outSamp = nullptr;
-                ret = presenter->ProcessFrame(this->currType, fSample, &laceMode, &deviceChanged, &outSamp);
+                ret = presenter->ProcessFrame(this->currType, (TSampleTexture*)fSample, &laceMode, &deviceChanged, &outSamp);
 
                 if (SUCCEEDED(ret))
                 {
@@ -744,11 +844,9 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
                 }
                 if (SUCCEEDED(ret))
                 {
-                    if (outSamp)
-                    {
-                        ret = schedule->ScheduleSample(fSample, state != PlayState::State_Started);
+
+                        ret = schedule->ScheduleSample((TSampleTexture*)fSample, state != PlayState::State_Started);
                         repeat = false;
-                    }
                 }
                 fSample->Release();
                 if (outSamp)
@@ -816,6 +914,8 @@ TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
     textureDesc.Usage = D3D11_USAGE_DEFAULT;
     textureDesc.BindFlags = D3D11_BIND_DECODER;
     textureDesc.Height = textureDesc.Width = 0; // Set those when we have samples to process
+    textureDesc.MipLevels = 1;
+    m_imageBytesPP.Denominator = m_imageBytesPP.Numerator = 1;
 }
 
 bool TStreamSink::CheckShutdown()

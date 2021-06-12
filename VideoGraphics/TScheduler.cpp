@@ -82,6 +82,7 @@ HRESULT TScheduler::ScheduleSample(TSampleTexture* pSample, bool now)
 	}
 	else
 	{
+		pSample->AddRef();
 		samples.Push(pSample);
 		ret = MFPutWorkItem(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, &callBack, nullptr);
 	}
@@ -153,8 +154,10 @@ HRESULT TScheduler::ProcessSample(TSampleTexture* pSample, LONG* plNextSleep)
 	if (doPresent)
 		ret = dynamic_cast<TStreamSink*>(streamer.Get())->PresentFrame();
 	else
+	{
+		pSample->AddRef();
 		samples.Push(pSample);
-
+	}
 	ThreadRelease();
 	return ret;
 }

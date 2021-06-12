@@ -454,6 +454,18 @@ public:
 	}
 
 	/**
+	 * Method: TrecPointerSoft::TrecPointerSoft
+	 * Purpose: Copy constructor
+	 * Parameters: const TrecPointerSoft<T>& copy - the soft pointer to copy from
+	 * Returns: New TrecPointerSoft Object
+	 */
+	TrecPointerSoft(const TrecPointerSoft<T>& copy)
+	{
+		pointer = copy.pointer;
+		if (pointer)pointer->IncrementSoft();
+	}
+
+	/**
 	 * Method: TrecPointerSoft::~TrecPointerSoft
 	 * Purpose: Destructor
 	 * Parameters: void
@@ -544,6 +556,19 @@ public:
 	}
 
 	/**
+	 * Method: TrecSubPointerSoft::TrecSubPointerSoft
+	 * Purpose: Copy Constructor
+	 * Parameters: const TrecSubPointerSoft& copy - the pointer to copy from
+	 * Returns: New TrecSubPointerSoft Object
+	 */
+	TrecSubPointerSoft(const TrecSubPointerSoft& copy)
+	{
+		pointer = copy.pointer;
+		if (pointer)pointer->IncrementSoft();
+	}
+
+
+	/**
 	 * Method: TrecSubPointerSoft::~TrecSubPointerSoft
 	 * Purpose: Destructor
 	 * Parameters: void
@@ -586,6 +611,7 @@ public:
 			pointer->DecrementSoft();
 
 		pointer = other.pointer;
+		if (pointer)pointer->IncrementSoft();
 	}
 };
 
@@ -1278,7 +1304,9 @@ public:
 		TrecPointer<t> ret;
 		ret.pointer = sub.pointer;
 		if (ret.pointer && ret.pointer->counter)
+		{
 			ret.pointer->Increment();
+		}
 		return ret;
 	}
 
@@ -1295,8 +1323,9 @@ public:
 		TrecSubPointer<t, u> ret;
 		ret.pointer = tPointer.pointer;
 		if (ret.pointer && ret.pointer)
+		{
 			ret.pointer->Increment();
-		return ret;
+		}return ret;
 	}
 
 	/**
@@ -1359,13 +1388,15 @@ public:
 	 * Parameters: TrecSubPointerSoft<T, U> s - The Soft pointer to get the strong one from
 	 * Returns:TrecSubPointer<T, U> -  the Sub Pointer sought 
 	 */
-	template <class T, class U> static TrecSubPointer<T, U> GetSubPointerFromSoft(TrecSubPointerSoft<T, U> s)
+	template <class T, class U> static TrecSubPointer<T, U> GetSubPointerFromSoft(const TrecSubPointerSoft<T, U>& s)
 	{
 		TrecSubPointer<T, U> ret;
 
 		ret.pointer = s.pointer;
 		if (ret.pointer)
+		{
 			ret.pointer->Increment();
+		}
 		return ret;
 	}
 
@@ -1386,11 +1417,16 @@ public:
 	 * Parameters: TrecPointerSoft<T> trec -  the Pointer with the object
 	 * Returns: TrecSubPointerSoft<T, U> trec - the Soft version of the TrecSubPointer
 	 */
-	template <class T, class U> static TrecSubPointerSoft<T, U> GetSoftSubPointerFromSoft(TrecPointerSoft<T> trec)
+	template <class T, class U> static TrecSubPointerSoft<T, U> GetSoftSubPointerFromSoft(const TrecPointerSoft<T>& trec)
 	{
-		if(trec.pointer)
-			return TrecSubPointerSoft<T, U>(trec.pointer);
-		return TrecSubPointerSoft<T, U>();
+		TrecSubPointerSoft<T, U> ret;
+
+		ret.pointer = trec.pointer;
+		if (ret.pointer)
+		{
+			ret.pointer->IncrementSoft();
+		}
+		return ret;
 	}
 
 	/**

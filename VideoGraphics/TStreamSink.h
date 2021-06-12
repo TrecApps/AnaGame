@@ -7,6 +7,12 @@
 #include "TPresenter.h"
 #include "TComCommon.h"
 
+typedef struct sFraction
+{
+    DWORD Numerator;
+    DWORD Denominator;
+}sFraction;
+
 class TStreamSink : public IMFStreamSink, public IMFMediaTypeHandler, public TObject
 {
     friend class TMediaSink;
@@ -122,6 +128,7 @@ private:
     MFTIME startTime;
 
     D3D11_TEXTURE2D_DESC textureDesc;
+    sFraction m_imageBytesPP;
 
     // Stream Specific References
     IMFMediaEventQueue* m_pEventQueue;                  // Event queue

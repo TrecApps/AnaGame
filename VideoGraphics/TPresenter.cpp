@@ -218,7 +218,7 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, TSampleTexture* pSa
 
 
 
-    D2D1_SIZE_U size = D2D1::SizeU(frameWidth, frameHeight);
+    D2D1_SIZE_U size = D2D1::SizeU(td.Width, td.Height);
 
     // To-Do: Add Frame Setting functionality to the Drawing Board and call it
     if (!board->SetFrame(bitmap2Dmap, size, 0))

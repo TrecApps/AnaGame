@@ -3,6 +3,7 @@
 #include <new>
 #include <memory>
 #include "TrecLib.h"
+#include <cassert>
 
 #include "AnagameDef.h"
 

@@ -116,7 +116,7 @@ void TObject::ThreadLock() const
 {
 	
 	EnterCriticalSection(&thread);
-	//threadCounter++;
+	threadCounter++;
 }
 
 /**
@@ -127,9 +127,7 @@ void TObject::ThreadLock() const
  */
 void TObject::ThreadRelease() const
 {
-	//assert(threadCounter > 0);
-	//threadCounter--;
-	//if(!threadCounter)
+	threadCounter--;
 		LeaveCriticalSection(&thread);
 	
 }

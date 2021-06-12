@@ -34,6 +34,11 @@ HRESULT __stdcall TSampleTexture::QueryInterface(REFIID iid, _COM_Outptr_ void _
         *ppv = sample;
         sample->AddRef();
     }
+    else if (iid == __uuidof(ISampleTexture))
+    {
+        *ppv = static_cast<ISampleTexture*>(this);
+        AddRef();
+    }
     else {
         *ppv = NULL;
         return E_NOINTERFACE;

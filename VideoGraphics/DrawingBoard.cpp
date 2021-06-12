@@ -808,7 +808,7 @@ UINT DrawingBoard::AddFrameSlot()
 bool DrawingBoard::SetFrame(DXGI_MAPPED_RECT& data, D2D1_SIZE_U& size, UINT slot)
 {
 	ThreadLock();
-	if (!renderer.Get() || slot >= slots.Size() || !slots[slot].set)
+	if (!renderer.Get() || slot >= slots.Size())
 	{
 		ThreadRelease();
 		return false;
@@ -911,7 +911,7 @@ bool DrawingBoard::GetVideoPosition(UINT slot, D2D1_RECT_F& loc)
 
 TVideoSlot::TVideoSlot()
 {
-	set = false;
+	set = true;
 	loc = { 0.0f,0.0f,0.0f,0.0f };
 }
 
