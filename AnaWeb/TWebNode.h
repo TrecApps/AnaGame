@@ -180,11 +180,17 @@ public:
     bool set;
 };
 
+typedef struct BorderCorners
+{
+    USHORT v, h;
+}BorderCorners;
+
 class ANA_WEB_DLL BorderData
 {
 public:
     BorderData();
     BorderData(const BorderData& copy);
+    ~BorderData();
 
     void CompileAttributes(TString& atts, border_side side);
 
@@ -193,6 +199,8 @@ public:
     void CompileColor(TString& atts, border_side side);
 
     bool CompileStyle(TString& atts, border_side side);
+
+    void CompileCorner(TString& atts, border_side side);
 
     USHORT GetBorderThickness(border_side side);
 
@@ -205,7 +213,10 @@ public:
     TColor color;
     TColorSet topColor, bottomColor, rightColor, leftColor;
     TrecPointer<TBrush> brush;
+    BorderCorners *topLeft, *topRight, *bottomLeft, *bottomRight;
 
+private:
+    void ClearCorner(border_side side);
 };
 
 /**

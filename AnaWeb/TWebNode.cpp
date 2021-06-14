@@ -1870,6 +1870,20 @@ void TWebNode::CompileProperties(TDataMap<TString>& atts)
 	if (atts.retrieveEntry(L"padding-bottom", val))
 		CompileMargin(val, border_side::bs_bottom, true);
 
+	if (atts.retrieveEntry(L"border-radius", val))
+		borderData.CompileCorner(val, border_side::bs_all);
+	if (atts.retrieveEntry(L"border-bottom-right-radius", val))
+		borderData.CompileCorner(val, border_side::bs_bottom);	// Bottom-Right
+	if (atts.retrieveEntry(L"border-bottom-left-radius", val))
+		borderData.CompileCorner(val, border_side::bs_left);	// Bottom_Left
+	if (atts.retrieveEntry(L"border-top-right-radius", val))
+		borderData.CompileCorner(val, border_side::bs_right);	// Top-Right
+	if (atts.retrieveEntry(L"border-top-left-radius", val))
+		borderData.CompileCorner(val, border_side::bs_top);		// Top-Left
+
+
+
+
 	if (atts.retrieveEntry(L"rowspan", val) && internalDisplay != WebNodeDisplayInternal::wndi_row)
 	{
 		UINT rSpan = 0;
@@ -2764,6 +2778,8 @@ BorderData::BorderData()
 {
 	borderStyle = topStyle = bottomStyle = rightStyle = leftStyle = stroke_style::bs_not_set;
 	thick = topThick = bottomThick = rightThick = leftThick = 0;
+
+	topLeft = topRight = bottomLeft = bottomRight = nullptr;
 }
 
 BorderData::BorderData(const BorderData& copy)
@@ -2785,6 +2801,39 @@ BorderData::BorderData(const BorderData& copy)
 	bottomColor = copy.bottomColor;
 	leftColor = copy.leftColor;
 	rightColor = copy.rightColor;
+
+	// First set all corner data to null. If the copy has corner data, then set each corner
+	topLeft = topRight = bottomLeft = bottomRight = nullptr;
+	
+	if (copy.topLeft)
+	{
+		topLeft = new BorderCorners();
+		topLeft->h = copy.topLeft->h;
+		topLeft->v = copy.topLeft->v;
+	}
+	if (copy.topRight)
+	{
+		topRight = new BorderCorners();
+		topRight->h = copy.topRight->h;
+		topRight->v = copy.topRight->v;
+	}
+	if (copy.bottomLeft)
+	{
+		bottomLeft = new BorderCorners();
+		bottomLeft->h = copy.bottomLeft->h;
+		bottomLeft->v = copy.bottomLeft->v;
+	}
+	if (copy.bottomRight)
+	{
+		bottomRight = new BorderCorners();
+		bottomRight->h = copy.bottomRight->h;
+		bottomRight->v = copy.bottomRight->v;
+	}
+}
+
+BorderData::~BorderData()
+{
+	ClearCorner(border_side::bs_all);
 }
 
 void BorderData::CompileAttributes(TString& atts, border_side side)
@@ -3034,6 +3083,137 @@ bool BorderData::CompileStyle(TString& atts, border_side side)
 	return false;
 }
 
+void BorderData::CompileCorner(TString& atts, border_side side)
+{
+	auto d_atts = atts.splitn(L" ", 4);
+	UINT dpi = GetDpiForSystem();
+	float dpif = static_cast<float>(dpi);
+	assert(dpi && dpif);
+	WebSizeUnit unit = WebSizeUnit::wsu_bl;
+
+	float vAtts[] = { 0.0f,0.0f,0.0f,0.0f };
+
+	for (UINT Rust = 0; Rust < d_atts->Size(); Rust++)
+	{
+		if (d_atts->at(Rust).EndsWith(L"px"))
+		{
+			unit = WebSizeUnit::wsu_px;
+		}
+		if (d_atts->at(Rust).EndsWith(L"cm"))
+		{
+			unit = WebSizeUnit::wsu_cm;
+		}
+		if (d_atts->at(Rust).EndsWith(L"mm"))
+		{
+			unit = WebSizeUnit::wsu_mm;
+		}
+		if (d_atts->at(Rust).EndsWith(L"in"))
+		{
+			unit = WebSizeUnit::wsu_in;
+		}
+		if (d_atts->at(Rust).EndsWith(L"em"))
+		{
+			unit = WebSizeUnit::wsu_em;
+		}
+		if (d_atts->at(Rust).EndsWith(L"pt"))
+		{
+			unit = WebSizeUnit::wsu_pt;
+		}
+
+		if (unit != WebSizeUnit::wsu_bl)
+			d_atts->at(Rust).Set(d_atts->at(Rust).SubString(0, d_atts->at(Rust).GetSize() - 2));
+
+		d_atts->at(Rust).Trim();
+
+		if (!atts.ConvertToFloat(vAtts[Rust])) {
+			// We were able to get a value out of what was provided
+			switch (unit)
+			{
+			case WebSizeUnit::wsu_cm:
+				vAtts[Rust] = vAtts[Rust] * 2.54 / dpif;
+				break;
+			case WebSizeUnit::wsu_em:
+
+				break;
+			case WebSizeUnit::wsu_in:
+				vAtts[Rust] = vAtts[Rust] / dpif;
+				break;
+			case WebSizeUnit::wsu_mm:
+				vAtts[Rust] = vAtts[Rust] * 0.254 / dpif;
+				break;
+			case WebSizeUnit::wsu_pt:
+				vAtts[Rust] = vAtts[Rust] * 72.0f / dpif;
+				break;
+			case WebSizeUnit::wsu_bl:
+			case WebSizeUnit::wsu_px:
+				vAtts[Rust] = vAtts[Rust] * (dpif / 96.0f);
+			}
+		}
+	}
+
+	if (!vAtts[1] && side != border_side::bs_all)
+		vAtts[1] = vAtts[0];
+
+	if (vAtts[0])
+	{
+		ClearCorner(side);
+		switch (side)
+		{
+		case border_side::bs_top: // Top-left
+			this->topLeft = new BorderCorners();
+			topLeft->h = vAtts[0];
+			topLeft->v = vAtts[1];
+			break;
+		case border_side::bs_right: // Top-right
+			this->topRight = new BorderCorners();
+			topRight->h = vAtts[0];
+			topRight->v = vAtts[1];
+			break;
+		case border_side::bs_left: // Top-left
+			this->bottomLeft = new BorderCorners();
+			bottomLeft->h = vAtts[0];
+			bottomLeft->v = vAtts[1];
+			break;
+		case border_side::bs_bottom: // Top-left
+			this->bottomRight = new BorderCorners();
+			bottomRight->h = vAtts[0];
+			bottomRight->v = vAtts[1];
+			break;
+		default: // All
+			this->topLeft = new BorderCorners();
+			this->topRight = new BorderCorners();
+			this->bottomLeft = new BorderCorners();
+			this->bottomRight = new BorderCorners();
+			switch (d_atts->Size())
+			{
+			case 1:
+				topLeft->v = topLeft->h = vAtts[0];
+				topRight->v = topRight->h = vAtts[0];
+				bottomLeft->v = bottomLeft->h = vAtts[0];
+				bottomRight->v = bottomRight->h = vAtts[0];
+				break;
+			case 2:
+				topLeft->v = topLeft->h = vAtts[0];
+				topRight->v = topRight->h = vAtts[1];
+				bottomLeft->v = bottomLeft->h = vAtts[1];
+				bottomRight->v = bottomRight->h = vAtts[0];
+				break;
+			case 3:
+				topLeft->v = topLeft->h = vAtts[0];
+				topRight->v = topRight->h = vAtts[1];
+				bottomLeft->v = bottomLeft->h = vAtts[1];
+				bottomRight->v = bottomRight->h = vAtts[2];
+				break;
+			case 4:
+				topLeft->v = topLeft->h = vAtts[0];
+				topRight->v = topRight->h = vAtts[1];
+				bottomLeft->v = bottomLeft->h = vAtts[3];
+				bottomRight->v = bottomRight->h = vAtts[2];
+			}
+		}
+	}
+}
+
 USHORT BorderData::GetBorderThickness(border_side side)
 {
 	if (side == border_side::bs_all)
@@ -3130,6 +3310,39 @@ stroke_style BorderData::GetStrokeStyle(border_side side)
 		return rightStyle;
 	}
 	return borderStyle;
+}
+
+void BorderData::ClearCorner(border_side side)
+{
+	switch (side)
+	{
+	case border_side::bs_all:
+		ClearCorner(border_side::bs_bottom);
+		ClearCorner(border_side::bs_left);
+		ClearCorner(border_side::bs_right);
+		ClearCorner(border_side::bs_top);
+		break;
+	case border_side::bs_bottom:
+		if (bottomRight)
+			delete bottomRight;
+		bottomRight = nullptr;
+		break;
+	case border_side::bs_left:
+		if (bottomLeft)
+			delete bottomLeft;
+		bottomLeft = nullptr;
+		break;
+	case border_side::bs_right:
+		if (topRight)
+			delete topRight;
+		topRight = nullptr;
+		break;
+	case border_side::bs_top:
+		if (topLeft)
+			delete topLeft;
+		topLeft = nullptr;
+		break;
+	}
 }
 
 TColorSet::TColorSet()
