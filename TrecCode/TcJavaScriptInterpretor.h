@@ -288,7 +288,7 @@ protected:
     UINT ProcessStringExpression(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret);
 
     UINT ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object,
-        TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, ReturnObject& ret);
+        TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, ReturnObject& ret, bool doAwait = false);
 
     void ProcessFunctionExpression(TrecPointer<CodeStatement> statement, ReturnObject& obj);
 
@@ -320,9 +320,6 @@ protected:
     // Yield Support
     UINT yieldIndex;
     TrecPointer<CodeStatement> yieldStatement;
-    
-    // Async functionality
-    bool isAsync;
-    TrecSubPointer<TVariable, TAsyncVariable> asyncVar;
+
 };
 

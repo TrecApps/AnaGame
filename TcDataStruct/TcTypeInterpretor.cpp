@@ -3,6 +3,7 @@
 TcTypeInterpretor::TcTypeInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env):
     TcInterpretor(parentInterpretor, env)
 {
+	isAsync = false;
 }
 
 bool TcTypeInterpretor::SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating)
@@ -39,4 +40,14 @@ bool TcTypeInterpretor::GetClass(const TString& className, TClassStruct& classSt
 	if (typeParent.Get())
 		typeParent->GetClass(className, classStruct);
 	return false;
+}
+
+TrecPointer<TVariable> TcTypeInterpretor::PrepAsyncCall()
+{
+	return TrecPointer<TVariable>();
+}
+
+bool TcTypeInterpretor::IsAsync()
+{
+	return isAsync;
 }

@@ -2748,6 +2748,8 @@ throughString:
                     attribute = 4;
                 else if (!phrase.Compare(L"async"))
                     isAsync = true;
+                else if (!phrase.Compare(L"await"))
+                    attribute = 5;
                 else
                 {
                     TString message;
@@ -2790,6 +2792,8 @@ throughString:
             attribute = 3;
         else if (!phrase.Compare(L"async"))
             isAsync = true;
+        else if (!phrase.Compare(L"await"))
+            attribute = 5;
         else if (var.Get())
         {
             if (var->GetVarType() == var_type::collection)
@@ -3247,7 +3251,7 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
 }
 
 UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object, TrecPointer<TVariable> proc,
-    TrecPointer<CodeStatement> statement, ReturnObject& ret)
+    TrecPointer<CodeStatement> statement, ReturnObject& ret, bool doAwait)
 {
     UINT curParenth = parenth;
     UINT nextRet = 0;
@@ -3337,6 +3341,22 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
     }
     
     assert(function.Get());
+
+
+    TrecSubPointer<TVariable, TcTypeInterpretor> typeFunction = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcTypeInterpretor>(proc);
+    if (typeFunction.Get() && typeFunction->IsAsync() && !doAwait)
+    {
+        auto asyncObj = typeFunction->PrepAsyncCall();
+
+        // To-Do: Respond to async Object once one is Fleshed out
+    }
+    else if (doAwait)
+    {
+        // Calling 'await' on a non async function is an error
+        ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
+        ret.errorMessage.Set(L"Cannot call await on non-async function");
+        return nextRet;
+    }
 
     // This is a method if object is valid
     function->SetActiveObject(object);
