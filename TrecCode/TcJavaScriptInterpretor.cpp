@@ -89,6 +89,27 @@ bool IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEq
 
 
 
+TrecPointer<TVariable> TcJavaScriptInterpretor::Clone()
+{
+    TrecSubPointer<TVariable, TcInterpretor> subParent = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(TrecPointerKey::GetTrecPointerFromSoft<>(this->parent));
+    TrecSubPointer<TVariable, TcJavaScriptInterpretor> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(subParent, environment);
+
+    ret->classes = classes;
+    ret->isAsync = isAsync;
+    
+    for (UINT Rust = 0; Rust < defaultVars.Size(); Rust++)
+        ret->defaultVars.push_back(defaultVars[Rust].Get() ? defaultVars[Rust]->Clone() : defaultVars[Rust]);
+
+    ret->methodObject = methodObject.Get() ? methodObject->Clone() : methodObject;
+    ret->paramNames = paramNames;
+    ret->paramTypes = paramTypes;
+    ret->selfWord.Set(selfWord);
+    ret->statements = statements;
+    ret->strictVariables = strictVariables;
+
+    return TrecPointerKey::GetTrecPointerFromSub<>(ret);
+}
+
 COMPILE_TYPE TcJavaScriptInterpretor::CanCompile()
 {
     return COMPILE_TYPE(0);

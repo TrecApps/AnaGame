@@ -50,6 +50,8 @@ class _TREC_CODE_DLL TcJavaScriptInterpretor : public TcTypeInterpretor
     friend class TcJavaScriptClassInterpretor;
 public:
 
+    virtual TrecPointer<TVariable> Clone() override;
+
     /**
      * Method: TcJavaScriptInterpretor::CanCompile
      * Purpose: Whether the Compiler is capable of compiling it's statements into a more compact form

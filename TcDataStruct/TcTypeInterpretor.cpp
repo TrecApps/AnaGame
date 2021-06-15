@@ -44,7 +44,8 @@ bool TcTypeInterpretor::GetClass(const TString& className, TClassStruct& classSt
 
 TrecPointer<TVariable> TcTypeInterpretor::PrepAsyncCall()
 {
-	return TrecPointer<TVariable>();
+	return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAsyncVariable>(GetCurrentThreadId(), 
+		TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(this->Clone()));
 }
 
 bool TcTypeInterpretor::IsAsync()

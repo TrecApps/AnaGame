@@ -1,6 +1,7 @@
 #pragma once
 #include <TVariable.h>
 #include "TcDataStruct.h"
+#include <TcInterpretor.h>
 
 /**
  * Enum Class: async_mode
@@ -119,7 +120,7 @@ public:
      *              TrecPointer<TVariable> var - the variable to hold
      * Returns: New Async Object
      */
-    TAsyncVariable(DWORD thread, TrecPointer<TVariable> var);
+    TAsyncVariable(DWORD thread, TrecSubPointer<TVariable, TcInterpretor> var);
 
     /**
      * Method: TAsyncVariable::GetSetMode
@@ -138,13 +139,47 @@ public:
      */
     UINT GetProgress();
 
+
     /**
-     * Method: TAsyncVariable::GetVariable
-     * Purpose: Retrieves the underlying variable
-     * Parameters: void
-     * Returns: TrecPointer<TVariable> - the variable being held
+     * Method: TAsyncVriable::AppendSuccessResponse
+     * Purpose: Adds a success Response to the Object
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> func - the function to add
+     *              TrecSubPointer<TVariable, TcInterpretor> eFunc - the function to call in case func returns an error
+     * Returns: void
      */
-    TrecPointer<TVariable> GetVariable();
+    void AppendSuccessResponse(TrecSubPointer<TVariable, TcInterpretor> func, TrecSubPointer<TVariable, TcInterpretor> eFunc);
+
+
+    /**
+     * Method: TAsyncVriable::AppendSuccessResponse
+     * Purpose: Adds a success Response to the Object
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> func - the function to add
+     * Returns: void
+     */
+    void AppendSuccessResponse(TrecSubPointer<TVariable, TcInterpretor> func);
+
+    /**
+     * Method: TAsyncVariable::SetErrorResponse
+     * Purpose: Adds a main Error Response
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> func - the function to add
+     * Returns: void
+     * 
+     * Note: This method just sets the main response that is called when the main function or any response function is called
+     *  To set an error response to a specific successResponse, pass it in as the 'eFunc' parameter to the 'AppendSuccessResponse'
+     */
+    void SetErrorResponse(TrecSubPointer<TVariable, TcInterpretor> func);
+
+    /**
+     * Method: TAsyncVariable::RunAsyncObject
+     * Purpose: Runs the object and follows up on the Response
+     * Parameters: TrecSubPointer<TVariable, TAsyncVariable> asyncVar - the async object to run
+     *              ReturnObject& ret - info about the result of the run
+     * Returns: void
+     * 
+     * Attributes: static
+     */
+    static void RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar, ReturnObject& ret);
+
 
 
     // Variables
@@ -153,7 +188,17 @@ protected:
     /**
      * The underlying variable to manipulate
      */
-    TrecPointer<TVariable> var;
+    TrecSubPointer<TVariable, TcInterpretor> mainFunction;
+
+    /**
+     * Successful responses
+     */
+    TDataArray<TrecPointer<TVariable>> successResolve;
+
+    /**
+     * Error Response
+     */
+    TrecPointer<TVariable> mainErrorResolve, subErrorResolve;
 
     /**
      * Thread id of the requester
