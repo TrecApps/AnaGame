@@ -2510,8 +2510,13 @@ void TWebNode::DrawBorder()
 	// Start with the top border
 	float curThick = static_cast<float>(borderData.GetBorderThickness(border_side::bs_top));
 	stroke_style curStyle = borderData.GetStrokeStyle(border_side::bs_top);
+
+	// These values will be used when preparing a rounded corner
+	bool doTop = false, doLeft = false, doBottom = false, doRight = false;
+
 	if (curThick && hasStyle(curStyle))
 	{
+		doTop = true;
 		borderData.GetBorderColor(color, border_side::bs_top);
 		if (!borderData.brush.Get())
 			borderData.brush = board->GetBrush(color);
@@ -2519,7 +2524,8 @@ void TWebNode::DrawBorder()
 		if (borderData.brush.Get())
 		{
 			float top = location.top + (static_cast<float>(curThick) / 2.0f);
-			borderData.brush->DrawLine(D2D1::Point2F(location.left, top), D2D1::Point2F(location.right, top), board->GetStrokeStyle(curStyle), curThick);
+			borderData.brush->DrawLine(D2D1::Point2F(borderData.topLeft ? location.left + borderData.topLeft->h : location.left, top),
+				D2D1::Point2F(borderData.topRight ? location.right - borderData.topRight->h : location.right, top), board->GetStrokeStyle(curStyle), curThick);
 		}
 	}
 
@@ -2528,6 +2534,7 @@ void TWebNode::DrawBorder()
 	curStyle = borderData.GetStrokeStyle(border_side::bs_right);
 	if (curThick && hasStyle(curStyle))
 	{
+		doRight = true;
 		borderData.GetBorderColor(color, border_side::bs_right);
 		if (!borderData.brush.Get())
 			borderData.brush = board->GetBrush(color);
@@ -2535,7 +2542,8 @@ void TWebNode::DrawBorder()
 		if (borderData.brush.Get())
 		{
 			float right = location.right - (static_cast<float>(curThick) / 2.0f);
-			borderData.brush->DrawLine(D2D1::Point2F(right, location.top), D2D1::Point2F(right, location.bottom), board->GetStrokeStyle(curStyle), curThick);
+			borderData.brush->DrawLine(D2D1::Point2F(right, borderData.topRight ? location.top + borderData.topRight->v : location.top),
+				D2D1::Point2F(right, borderData.bottomRight ? location.bottom - borderData.bottomRight->v : location.bottom), board->GetStrokeStyle(curStyle), curThick);
 		}
 	}
 
@@ -2544,6 +2552,7 @@ void TWebNode::DrawBorder()
 	curStyle = borderData.GetStrokeStyle(border_side::bs_left);
 	if (curThick && hasStyle(curStyle))
 	{
+		doLeft = true;
 		borderData.GetBorderColor(color, border_side::bs_left);
 		if (!borderData.brush.Get())
 			borderData.brush = board->GetBrush(color);
@@ -2551,7 +2560,8 @@ void TWebNode::DrawBorder()
 		if (borderData.brush.Get())
 		{
 			float left = location.left + (static_cast<float>(curThick) / 2.0f);
-			borderData.brush->DrawLine(D2D1::Point2F(left, location.top), D2D1::Point2F(left, location.bottom), board->GetStrokeStyle(curStyle), curThick);
+			borderData.brush->DrawLine(D2D1::Point2F(left, borderData.topLeft ? location.top + borderData.topLeft->v : location.top),
+				D2D1::Point2F(left, borderData.bottomLeft ? location.bottom - borderData.bottomLeft->v : location.bottom), board->GetStrokeStyle(curStyle), curThick);
 		}
 	}
 
@@ -2560,6 +2570,7 @@ void TWebNode::DrawBorder()
 	curStyle = borderData.GetStrokeStyle(border_side::bs_bottom);
 	if (curThick && hasStyle(curStyle))
 	{
+		doBottom = true;
 		borderData.GetBorderColor(color, border_side::bs_bottom);
 		if (!borderData.brush.Get())
 			borderData.brush = board->GetBrush(color);
@@ -2567,8 +2578,72 @@ void TWebNode::DrawBorder()
 		if (borderData.brush.Get())
 		{
 			float bottom = location.bottom + (static_cast<float>(curThick) / 2.0f);
-			borderData.brush->DrawLine(D2D1::Point2F(location.left, bottom), D2D1::Point2F(location.right, bottom), board->GetStrokeStyle(curStyle), curThick);
+			borderData.brush->DrawLine(D2D1::Point2F(borderData.bottomLeft ? borderData.bottomLeft->h + location.left : location.left, bottom),
+				D2D1::Point2F(borderData.bottomRight ? location.right - borderData.bottomRight->h : location.right, bottom), board->GetStrokeStyle(curStyle), curThick);
 		}
+	}
+
+	D2D1_ROUNDED_RECT rRect;
+	rRect.rect = location;
+
+	if (borderData.topLeft && doTop && doLeft)
+	{
+		rRect.radiusX = borderData.topLeft->h;
+		rRect.radiusY = borderData.topLeft->v;
+
+		borderData.GetBorderColor(color, border_side::bs_left);
+		if (!borderData.brush.Get())
+			borderData.brush = board->GetBrush(color);
+		else borderData.brush->SetColor(color);
+
+		board->AddLayer(D2D1::RectF(location.left, location.top, location.left + borderData.topLeft->h, location.top + borderData.topLeft->v));
+		borderData.brush->DrawRoundedRectangle(rRect, borderData.GetBorderThickness(border_side::bs_left));
+		board->PopLayer();
+	}
+
+	if (borderData.topRight && doTop && doRight)
+	{
+		rRect.radiusX = borderData.topRight->h;
+		rRect.radiusY = borderData.topRight->v;
+
+		borderData.GetBorderColor(color, border_side::bs_right);
+		if (!borderData.brush.Get())
+			borderData.brush = board->GetBrush(color);
+		else borderData.brush->SetColor(color);
+
+		board->AddLayer(D2D1::RectF(location.right - borderData.topRight->h, location.top, location.right, location.top + borderData.topRight->v));
+		borderData.brush->DrawRoundedRectangle(rRect, borderData.GetBorderThickness(border_side::bs_right));
+		board->PopLayer();
+	}
+
+	if (borderData.bottomLeft && doTop && doLeft)
+	{
+		rRect.radiusX = borderData.bottomLeft->h;
+		rRect.radiusY = borderData.bottomLeft->v;
+
+		borderData.GetBorderColor(color, border_side::bs_left);
+		if (!borderData.brush.Get())
+			borderData.brush = board->GetBrush(color);
+		else borderData.brush->SetColor(color);
+
+		board->AddLayer(D2D1::RectF(location.left, location.bottom - borderData.bottomLeft->v, location.left + borderData.bottomLeft->h, location.bottom));
+		borderData.brush->DrawRoundedRectangle(rRect, borderData.GetBorderThickness(border_side::bs_left));
+		board->PopLayer();
+	}
+
+	if (borderData.bottomRight && doTop && doLeft)
+	{
+		rRect.radiusX = borderData.bottomRight->h;
+		rRect.radiusY = borderData.bottomRight->v;
+
+		borderData.GetBorderColor(color, border_side::bs_right);
+		if (!borderData.brush.Get())
+			borderData.brush = board->GetBrush(color);
+		else borderData.brush->SetColor(color);
+
+		board->AddLayer(D2D1::RectF(location.right - borderData.bottomRight->h, location.bottom - borderData.bottomRight->v, location.right, location.bottom));
+		borderData.brush->DrawRoundedRectangle(rRect, borderData.GetBorderThickness(border_side::bs_right));
+		board->PopLayer();
 	}
 }
 
