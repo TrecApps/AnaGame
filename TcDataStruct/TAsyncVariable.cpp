@@ -18,6 +18,7 @@ DWORD __stdcall RunAsyncObject(LPVOID param)
     {
         TThread::Resume(asyncObj->GetCallingThread());
     }
+    return ret.returnCode;
 }
 
 
