@@ -876,7 +876,7 @@ public:
 	 *				const TString& newStr - the String to replace the old string with
 	 * Returns: TString::The Copy with the Replace operation applied
 	 */
-	TString GetReplace(int& ret, const TString& oldStr, const TString& newStr);
+	TString GetReplace(int& ret, const TString& oldStr, const TString& newStr) const;
 	/**
 	 * Method: TString::Replace
 	 * Purpose: In-place character replacement operation

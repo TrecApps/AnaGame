@@ -72,6 +72,24 @@ public:
 	 */
 	TDataMap() {}
 
+	/**
+	 * Method: TDataMap::TDataMap
+	 * Purpose: Copy Constructor
+	 * Parameters: const TDataMap<T>& copy - the map to copy
+	 * Returns: 
+	 */
+	TDataMap(const TDataMap<T>& copy)
+	{
+		for (UINT Rust = 0; Rust < copy.count(); Rust++)
+		{
+			TDataEntry<T> entry;
+			if (copy.GetEntryAt(Rust, entry))
+			{
+				fields.push_back(entry);
+			}
+		}
+	}
+
 	/*
 	 * Method: TMap::~TMap
 	 * Purpose: Destructor
@@ -133,7 +151,7 @@ public:
 	 *				TDataEntry<T> entry - holds the data if found
 	 * Returns: bool - whether the entry was valid
 	 */
-	bool GetEntryAt(UINT c, TDataEntry<T>& entry)
+	bool GetEntryAt(UINT c, TDataEntry<T>& entry) const
 	{
 		if (c < fields.Size())
 		{
@@ -226,7 +244,7 @@ public:
 	* Parameters: void
 	* Returns: UINT - the count of entries in the TMap
 	*/
-	UINT count() { return fields.Size(); }
+	int count() const { return fields.Size(); }
 
 	/*
 	* Method: TMap::operator=

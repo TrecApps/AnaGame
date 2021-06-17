@@ -1,12 +1,11 @@
-// Anagame_Central.cpp : Defines the entry point for the application.
+// SocketTester.cpp : Defines the entry point for the application.
 //
 
 #include "framework.h"
-#include "Anagame_Central.h"
-#include <DirectoryInterface.h>
+#include "SocketTester.h"
 #include <TInstance.h>
-#include "SwitchHandler.h"
-#include <TThread.h>
+#include <DirectoryInterface.h>
+#include "SocketHandler.h"
 
 #define MAX_LOADSTRING 100
 
@@ -21,8 +20,6 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
-
-
 // AnaGame Globls
 TrecPointer<TInstance> mainInstance;
 
@@ -36,33 +33,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // TODO: Place code here.
 
-	TString tmlFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable));
-	tmlFile.Append(L"Resources\\CentralInterface.tml");
+    TString tmlFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable));
+    tmlFile.Append(L"Resources\\SocketUI.tml");
 
-	TString title(L"Anagame Central");
-	TString winClass(L"CentralWindow");
+    TString title(L"Anagame Central");
+    TString winClass(L"CentralWindow");
 
-    TThread::SetMainThread();
-
-	mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW, nullptr, nCmdShow, hInstance, WndProc);
+    mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW, nullptr, nCmdShow, hInstance, WndProc);
 
 
     WNDCLASSEXW wcex;
 
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ANAGAMECENTRAL));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_ANAGAMECENTRAL);
-	wcex.lpszClassName = winClass.GetConstantBuffer().getBuffer();
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-	mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt<EventHandler, SwitchHandler>(mainInstance));
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SOCKETTESTER));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = MAKEINTRESOURCEW(IDI_SOCKETTESTER);
+    wcex.lpszClassName = winClass.GetConstantBuffer();
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt<EventHandler, SocketHandler>(mainInstance));
 
 
 
@@ -76,7 +71,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }*/
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ANAGAMECENTRAL));
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDI_SOCKETTESTER));
 
     MSG msg;
 
@@ -90,10 +85,36 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
-    return (int) msg.wParam;
+    return (int)msg.wParam;
 }
 
 
+
+//
+//  FUNCTION: MyRegisterClass()
+//
+//  PURPOSE: Registers the window class.
+//
+ATOM MyRegisterClass(HINSTANCE hInstance)
+{
+    WNDCLASSEXW wcex;
+
+    wcex.cbSize = sizeof(WNDCLASSEX);
+
+    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = WndProc;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = hInstance;
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SOCKETTESTER));
+    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
+    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_SOCKETTESTER);
+    wcex.lpszClassName  = szWindowClass;
+    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+    return RegisterClassExW(&wcex);
+}
 
 
 //
@@ -112,15 +133,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         PMINMAXINFO info = reinterpret_cast<LPMINMAXINFO>(lParam);
 
-        info->ptMinTrackSize.x = 600;
-        info->ptMinTrackSize.y = 450;
+        info->ptMinTrackSize.x = 800;
+        info->ptMinTrackSize.y = 650;
         return 0;
     }
-	if (mainInstance.Get())
-		return mainInstance->Proc(hWnd, message, wParam, lParam);
-    
-      return DefWindowProc(hWnd, message, wParam, lParam);
 
+    if (mainInstance.Get())
+        return mainInstance->Proc(hWnd, message, wParam, lParam);
+
+    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 // Message handler for about box.
