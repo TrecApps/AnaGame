@@ -180,7 +180,13 @@ public:
      */
     static void RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar, ReturnObject& ret);
 
-
+    /**
+     * Method: TAsyncVariable::GetCallingThread
+     * Purpose: Retrieves the thread tht created this object
+     * Parameters: void
+     * Returns: DWORD - the thread that created the Object
+     */
+    DWORD GetCallingThread();
 
     // Variables
 protected:
@@ -215,5 +221,12 @@ protected:
      */
     UINT progress;
 
+    /**
+     * Result Information
+     */
+    ReturnObject ret;
+
 };
 
+
+void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar);

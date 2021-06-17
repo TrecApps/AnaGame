@@ -1,5 +1,26 @@
 #include "TAsyncVariable.h"
 #include "TContainerVariable.h"
+#include <TThread.h>
+
+DWORD __stdcall RunAsyncObject(LPVOID param)
+{
+    TrecSubPointer<TVariable, TAsyncVariable> asyncObj;
+    TrecSubPointer<TVariable, TAsyncVariable>* asyncParam = (TrecSubPointer<TVariable, TAsyncVariable>*)param;
+
+    asyncObj = *asyncParam;
+    delete asyncParam;
+
+    ReturnObject ret;
+
+    TAsyncVariable::RunAsyncObject(asyncObj, ret);
+
+    if (asyncObj.Get())
+    {
+        TThread::Resume(asyncObj->GetCallingThread());
+    }
+}
+
+
 
 TrecPointer<TVariable> TAsyncVariable::Clone()
 {
@@ -61,9 +82,11 @@ TAsyncVariable::TAsyncVariable(DWORD thread, TrecSubPointer<TVariable, TcInterpr
 
 void TAsyncVariable::GetSetMode(async_mode& m, bool get)
 {
+    ThreadLock();
     if (get)
         m = this->mode;
     else mode = m;
+    ThreadRelease();
 }
 
 UINT TAsyncVariable::GetProgress()
@@ -113,6 +136,13 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
         ret.errorMessage.Set(L"Error! Null Async Object passed!");
         return;
     }
+    async_mode aMode;
+    asyncVar->GetSetMode(aMode);
+    if (aMode != async_mode::m_waiting)
+        return;
+
+    aMode = async_mode::m_progress;
+    asyncVar->GetSetMode(aMode, false);
 
     ret = asyncVar->mainFunction->Run();
 
@@ -128,7 +158,10 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
             func->SetIntialVariables(initVars);
 
             ret = func->Run();
+            asyncVar->ret = ret;
         }
+        aMode = async_mode::m_error;
+        asyncVar->GetSetMode(aMode, false);
     }
     else
     {
@@ -143,6 +176,7 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
 
             ret = func->Run();
 
+            asyncVar->ret = ret;
             if (ret.returnCode)
             {
                 // Try to get an error
@@ -161,6 +195,7 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
                     initVars.push_back(ret.errorObject);
                     func->SetIntialVariables(initVars);
                     ret = func->Run();
+                    asyncVar->ret = ret;
                     break;
                 }
                 else if (asyncVar->mainErrorResolve.Get())
@@ -173,8 +208,36 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
                     func->SetIntialVariables(initVars);
 
                     ret = func->Run();
+                    asyncVar->ret = ret;
                 }
+                aMode = async_mode::m_error;
+                asyncVar->GetSetMode(aMode, false);
             }
+            else
+                asyncVar->progress++;
         }
+        asyncVar->GetSetMode(aMode);
+        if (aMode != async_mode::m_error)
+        {
+            aMode = async_mode::m_complete;
+            asyncVar->GetSetMode(aMode, false);
+        }
+        
+            
+    }
+}
+
+DWORD TAsyncVariable::GetCallingThread()
+{
+    return requesterId;
+}
+
+void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar)
+{
+    if (asyncVar.Get())
+    {
+        TrecSubPointer<TVariable, TAsyncVariable>* lpParam = new TrecSubPointer<TVariable, TAsyncVariable>(asyncVar);
+
+        TThread::CreateTThread(RunAsyncObject, lpParam);
     }
 }

@@ -1366,6 +1366,12 @@ UINT TcJavaScriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> state
         break;
     default:
         returnable += ProcessExpression(parenth, square, index, statement, ret);
+
+        if (ret.errorObject.Get() && ret.errorObject->GetVarType() == var_type::async)
+        {
+            TrecSubPointer<TVariable, TAsyncVariable> asyncVar = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TAsyncVariable>(ret.errorObject);
+            ProcessTAsyncObject(asyncVar);
+        }
     }
     return returnable;
 }
