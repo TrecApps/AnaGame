@@ -77,7 +77,7 @@ SwitchHandler::SwitchHandler(TrecPointer<TInstance> ins): EventHandler(ins)
 	events.push_back(enid);
 	handlers[enid.eventID] = &SwitchHandler::OnSelectVid;
 
-	enid.eventID = 13
+	enid.eventID = 13;
 	enid.name.Set(L"OnSelectSocket");
 	events.push_back(enid);
 	handlers[enid.eventID] = &SwitchHandler::OnSelectSocket;
@@ -969,7 +969,6 @@ void SwitchHandler::OnSelectGif(TrecPointer<TControl> tc, EventArgs ea)
 	window->PrepAnimations(page);
 }
 
-<<<<<<< HEAD
 void SwitchHandler::OnSelectVid(TrecPointer<TControl> tc, EventArgs ea)
 {
 	auto window = page->GetWindowHandle();
@@ -980,8 +979,8 @@ void SwitchHandler::OnSelectVid(TrecPointer<TControl> tc, EventArgs ea)
 	currentShow.Delete();
 	page->CreateLayout();
 	window->SetUp3D();
-	
-	
+
+
 	TrecPointer<TFileShell> directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Videos));
 	auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app),
 		window->GetWindowHandle(),
@@ -997,7 +996,9 @@ void SwitchHandler::OnSelectVid(TrecPointer<TControl> tc, EventArgs ea)
 	window->submitPlayer(changeControl);
 	rootLayout->addChild(changeControl, 1, 0);
 	page->CreateLayout();
-=======
+
+}
+
 void SwitchHandler::OnSelectSocket(TrecPointer<TControl> tc, EventArgs ea)
 {
 	
@@ -1006,7 +1007,6 @@ void SwitchHandler::OnSelectSocket(TrecPointer<TControl> tc, EventArgs ea)
 void SwitchHandler::OnSubmitSocketCall(TrecPointer<TControl> tc, EventArgs ea)
 {
 
->>>>>>> socket
 }
 
 bool SwitchHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)

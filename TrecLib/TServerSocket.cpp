@@ -35,7 +35,7 @@ UINT TServerSocket::InitializeSocket()
 		hint4.ai_socktype = hint6.ai_socktype = SOCK_DGRAM;
 	}
 
-	int intResults = GetAddrInfoW(nullptr, port.GetConstantBuffer(), &hint6, &results);
+	int intResults = GetAddrInfoW(nullptr, port.GetConstantBuffer().getBuffer(), &hint6, &results);
 
 	if (intResults != 0)
 		return intResults;
