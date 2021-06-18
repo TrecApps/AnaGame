@@ -132,7 +132,7 @@ void THttpRequest::CompileRequest(std::string& request)
 		break;
 	}
 
-	top.AppendFormat(L" %ws %ws", endpoint.GetSize() ? endpoint.GetConstantBuffer() : L"/", L"HTTP/1.1");
+	top.AppendFormat(L" %ws %ws", endpoint.GetSize() ? endpoint.GetConstantBuffer().getBuffer() : L"/", L"HTTP/1.1");
 
 	std::string uBody;
 
@@ -140,7 +140,7 @@ void THttpRequest::CompileRequest(std::string& request)
 	{
 		int requiredSize = WideCharToMultiByte(CP_UTF8, // Http Uses UTF-8
 			0,											// No Special flags
-			body.GetConstantBuffer(),					// The Data to scan
+			body.GetConstantBuffer().getBuffer(),					// The Data to scan
 			-1,											// Dat is null-terminated
 			nullptr,									// no data for output
 			0,											// We are seeking the required space
@@ -155,7 +155,7 @@ void THttpRequest::CompileRequest(std::string& request)
 		// Now covert body to UTF-8
 		WideCharToMultiByte(CP_UTF8,
 			0,
-			body.GetConstantBuffer(),
+			body.GetConstantBuffer().getBuffer(),
 			-1,
 			buffer,
 			requiredSize,
