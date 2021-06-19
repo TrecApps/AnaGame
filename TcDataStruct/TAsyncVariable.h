@@ -158,6 +158,15 @@ public:
      */
     void AppendSuccessResponse(TrecSubPointer<TVariable, TcInterpretor> func);
 
+
+    /**
+     * Method: TAsyncVriable::SetFinally
+     * Purpose: Adds a function to run at the end
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> func - the function to add
+     * Returns: void
+     */
+    void SetFinally(TrecSubPointer<TVariable, TcInterpretor> func);
+
     /**
      * Method: TAsyncVariable::SetErrorResponse
      * Purpose: Adds a main Error Response
@@ -168,6 +177,15 @@ public:
      *  To set an error response to a specific successResponse, pass it in as the 'eFunc' parameter to the 'AppendSuccessResponse'
      */
     void SetErrorResponse(TrecSubPointer<TVariable, TcInterpretor> func);
+
+
+    /**
+     * Method: TAsyncVariable::SetErrorResponse
+     * Purpose: Adds a main Error Response
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> func - the function to add
+     * Returns: void
+     */
+    void SetErrorResponse(TrecSubPointer<TVariable, TcInterpretor> func, UINT c);
 
     /**
      * Method: TAsyncVariable::RunAsyncObject
@@ -188,13 +206,21 @@ public:
      */
     DWORD GetCallingThread();
 
+    /**
+     * Method: TAsyncVariable::GetResolveSize
+     * Purpose: Reports how many resolve functions are included
+     * Parameters: void
+     * Returns: UINT - number of resolve functions in the stack
+     */
+    UINT GetResolveSize();
+
     // Variables
 protected:
 
     /**
-     * The underlying variable to manipulate
+     * The underlying variable to manipulate, and run at the end
      */
-    TrecSubPointer<TVariable, TcInterpretor> mainFunction;
+    TrecSubPointer<TVariable, TcInterpretor> mainFunction, finallyFunction;
 
     /**
      * Successful responses

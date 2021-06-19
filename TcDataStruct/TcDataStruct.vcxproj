@@ -176,6 +176,7 @@
     <ClInclude Include="TPrimitiveFormatVariable.h" />
     <ClInclude Include="TPrimitiveType.h" />
     <ClInclude Include="TPrimitiveVariable.h" />
+    <ClInclude Include="TReturnInterpretor.h" />
     <ClInclude Include="TSpecialVariable.h" />
     <ClInclude Include="TStringVariable.h" />
     <ClInclude Include="TVariableType.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="TPrimitiveFormatVariable.cpp" />
     <ClCompile Include="TPrimitiveType.cpp" />
     <ClCompile Include="TPrimitiveVariable.cpp" />
+    <ClCompile Include="TReturnInterpretor.cpp" />
     <ClCompile Include="TSpecialVariable.cpp" />
     <ClCompile Include="TStringVariable.cpp" />
     <ClCompile Include="TVariableType.cpp" />

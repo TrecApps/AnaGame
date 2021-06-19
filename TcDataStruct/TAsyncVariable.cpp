@@ -124,9 +124,25 @@ void TAsyncVariable::AppendSuccessResponse(TrecSubPointer<TVariable, TcInterpret
     successResolve.push_back(TrecPointerKey::GetTrecPointerFromSub<>(func));
 }
 
+void TAsyncVariable::SetFinally(TrecSubPointer<TVariable, TcInterpretor> func)
+{
+    finallyFunction = func;
+}
+
 void TAsyncVariable::SetErrorResponse(TrecSubPointer<TVariable, TcInterpretor> func)
 {
     mainErrorResolve = TrecPointerKey::GetTrecPointerFromSub<>(func);
+}
+
+void TAsyncVariable::SetErrorResponse(TrecSubPointer<TVariable, TcInterpretor> func, UINT c)
+{   
+    if (c < successResolve.Size() && func.Get())
+    {
+        TrecSubPointer<TVariable, TContainerVariable> cont = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(subErrorResolve);
+        TString cStr;
+        cStr.Format(L"%d", c);
+        cont->SetValue(cStr, TrecPointerKey::GetTrecPointerFromSub<>(func));
+    }
 }
 
 void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar, ReturnObject& ret)
@@ -211,8 +227,16 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
                     ret = func->Run();
                     asyncVar->ret = ret;
                 }
-                aMode = async_mode::m_error;
-                asyncVar->GetSetMode(aMode, false);
+
+                // Catch Methods can reset the error status to 0, meaning we can go on. If this doesn't happen
+                // Then the error remains and we break the loop
+                if (ret.returnCode)
+                {
+                    aMode = async_mode::m_error;
+                    asyncVar->GetSetMode(aMode, false);
+                    break;
+                }
+                asyncVar->progress++;
             }
             else
                 asyncVar->progress++;
@@ -223,14 +247,28 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
             aMode = async_mode::m_complete;
             asyncVar->GetSetMode(aMode, false);
         }
-        
-            
+
+
+    }
+
+    if (asyncVar->finallyFunction.Get())
+    {
+        ReturnObject newRet = asyncVar->finallyFunction->Run();
+
+        if (!asyncVar->ret.returnCode)
+            asyncVar->ret.returnCode = newRet.returnCode;
+
     }
 }
 
 DWORD TAsyncVariable::GetCallingThread()
 {
     return requesterId;
+}
+
+UINT TAsyncVariable::GetResolveSize()
+{
+    return successResolve.Size();
 }
 
 void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar)
