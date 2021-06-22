@@ -2881,11 +2881,29 @@ throughString:
                 assert(colVar);
                 var = colVar->GetValue(phrase, pres);
             }
+            else if (var->GetVarType() == var_type::async)
+            {
+                TClassStruct promise;
+                if (!this->GetClass(L"Promise", promise))
+                {
+                    ret.returnCode = ret.ERR_INTERNAL;
+                    ret.errorMessage.Set(L"INTERNAL ERROR! Promise Resources are not available!");
+                    return uret;
+                }
+                TClassAttribute classAtt = promise.GetAttributeByName(L"phrase");
+
+                if (dynamic_cast<TAsyncVariable*>(var.Get())->GetThreadCaller())
+                    vThis = var;
+
+                var = classAtt.def;
+            }
         }
         else
         {
             bool pres;
             var = GetVariable(phrase, pres);
+            if (!var.Get() && !phrase.Compare(L"Promise"))
+                var = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TAsyncVariable>(0, TrecSubPointer<TVariable, TcInterpretor>());
         }
         wholePhrase.Append(phrase);
         

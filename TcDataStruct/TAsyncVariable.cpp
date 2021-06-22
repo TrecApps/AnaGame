@@ -72,7 +72,7 @@ UINT TAsyncVariable::GetVType()
 
 TAsyncVariable::TAsyncVariable(DWORD thread, TrecSubPointer<TVariable, TcInterpretor> var)
 {
-    if (!var.Get())
+    if (!var.Get() && thread)
         throw L"Null Pointer attached";
     this->mainFunction = var;
     this->mode = async_mode::m_waiting;
@@ -164,6 +164,7 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
     aMode = async_mode::m_progress;
     asyncVar->GetSetMode(aMode, false);
 
+    if(asyncVar->mainFunction.Get())
     ret = asyncVar->mainFunction->Run();
 
     if (ret.returnCode)
@@ -291,6 +292,11 @@ void TAsyncVariable::UpdateThread(DWORD th)
 void TAsyncVariable::GetResult(ReturnObject& ret)
 {
     ret = this->ret;
+}
+
+DWORD TAsyncVariable::GetThreadCaller()
+{
+    return requesterId;
 }
 
 void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar)

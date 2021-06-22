@@ -230,6 +230,14 @@ public:
      */
     void GetResult(ReturnObject& ret);
 
+    /**
+     * Method: TAsyncVariable::GetThreadCaller
+     * Purpose: Retrieves the thread that called it
+     * Parameters: void
+     * Returns DWORD - the thread that owns this object
+     */
+    DWORD GetThreadCaller();
+
     // Variables
 protected:
 
