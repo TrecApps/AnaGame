@@ -222,6 +222,14 @@ public:
      */
     void UpdateThread(DWORD th);
 
+    /**
+     * Method: TAsyncVariable::GetResult
+     * Purpose: Gets the Result of the Object run
+     * Parameters: ReturnObject& ret - the object to return
+     * Returns: void
+     */
+    void GetResult(ReturnObject& ret);
+
     // Variables
 protected:
 

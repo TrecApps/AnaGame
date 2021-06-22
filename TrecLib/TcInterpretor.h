@@ -104,6 +104,8 @@ public:
      */
     ReturnObject(const ReturnObject& copy);
 
+    void operator=(const ReturnObject& copy);
+
     const static USHORT ERR_NO_ERROR = 0;
     const static USHORT ERR_BRACKET_MISMATCH = 1;
     const static USHORT ERR_PARENTH_MISMATCH = 2;

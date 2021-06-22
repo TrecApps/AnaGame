@@ -400,6 +400,20 @@ ReturnObject::ReturnObject(const ReturnObject& copy)
 {
 	errorMessage.Set(copy.errorMessage);
 	errorObject = copy.errorObject;
+	errorObject2 = copy.errorObject2;
+	returnCode = copy.returnCode;
+	mode = copy.mode;
+
+	stackTrace = copy.stackTrace;
+
+	nextCount = copy.nextCount;
+}
+
+void ReturnObject::operator=(const ReturnObject& copy)
+{
+	errorMessage.Set(copy.errorMessage);
+	errorObject = copy.errorObject;
+	errorObject2 = copy.errorObject2;
 	returnCode = copy.returnCode;
 	mode = copy.mode;
 

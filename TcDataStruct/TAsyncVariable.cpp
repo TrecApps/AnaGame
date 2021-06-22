@@ -14,10 +14,10 @@ DWORD __stdcall RunAsyncObject(LPVOID param)
 
     TAsyncVariable::RunAsyncObject(asyncObj, ret);
 
-    if (asyncObj.Get())
-    {
-        TThread::Resume(asyncObj->GetCallingThread());
-    }
+    //if (asyncObj.Get())
+    //{
+    //    TThread::Resume(asyncObj->GetCallingThread());
+    //}
     return ret.returnCode;
 }
 
@@ -286,6 +286,11 @@ void TAsyncVariable::UpdateThread(DWORD th)
     ThreadLock();
     this->requesterId = th;
     ThreadRelease();
+}
+
+void TAsyncVariable::GetResult(ReturnObject& ret)
+{
+    ret = this->ret;
 }
 
 void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar)
