@@ -153,11 +153,14 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
         ret.errorMessage.Set(L"Error! Null Async Object passed!");
         return;
     }
+    asyncVar->ThreadLock();
     async_mode aMode;
     asyncVar->GetSetMode(aMode);
     if (aMode != async_mode::m_waiting)
+    {
+        asyncVar->ThreadRelease();
         return;
-
+    }
     aMode = async_mode::m_progress;
     asyncVar->GetSetMode(aMode, false);
 
@@ -259,6 +262,7 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
             asyncVar->ret.returnCode = newRet.returnCode;
 
     }
+    asyncVar->ThreadRelease();
 }
 
 DWORD TAsyncVariable::GetCallingThread()
@@ -269,6 +273,19 @@ DWORD TAsyncVariable::GetCallingThread()
 UINT TAsyncVariable::GetResolveSize()
 {
     return successResolve.Size();
+}
+
+/**
+ * Method: TAsyncVariable::UpdateThread
+ * Purpose: Updates the thread that should be alerted once the Async Object is resolved
+ * Parameters: DWORD th - the id of the new thread
+ * Returns: void
+ */
+void TAsyncVariable::UpdateThread(DWORD th)
+{
+    ThreadLock();
+    this->requesterId = th;
+    ThreadRelease();
 }
 
 void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar)

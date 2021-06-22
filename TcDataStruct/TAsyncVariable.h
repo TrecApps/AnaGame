@@ -214,6 +214,14 @@ public:
      */
     UINT GetResolveSize();
 
+    /**
+     * Method: TAsyncVariable::UpdateThread
+     * Purpose: Updates the thread that should be alerted once the Async Object is resolved
+     * Parameters: DWORD th - the id of the new thread
+     * Returns: void
+     */
+    void UpdateThread(DWORD th);
+
     // Variables
 protected:
 
