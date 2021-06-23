@@ -2201,6 +2201,14 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
     for (; index < statement->statement.GetSize(); index++)
     {
         bool processed = false; // Did we process some expression upon hitting a certain character
+        ret.errorObject.Nullify();
+        nodes = ProcessPotentalArrowNotation(parenth, square, index, statement, ret);
+        if (ret.errorObject.Get())
+        {
+            processed = true;
+            fullNodes += nodes;
+            break;
+        }
         WCHAR ch = statement->statement[index];
         switch (ch)
         {
@@ -3293,6 +3301,145 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(theString);
 
     return 0;
+}
+
+UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+    int notation = statement->statement.FindOutOfQuotes(L"=>", index);
+    if (notation == -1)
+        return 0;
+
+    // FindOutOfQuotes does not address `, so we'll address it here
+    int startQ = statement->statement.FindOutOfQuotes(L"`", index);
+    int endQ = statement->statement.FindOutOfQuotes(L"`", startQ);
+
+    // If this was true, then startQ cannot be -1 so the notation was found within a multi-level string.
+    // Return and if a real => is present, ProcessExpression will call this method again after the string.
+    if (startQ < notation && startQ != -1)
+        return 0;
+
+    // Handle Comma's, since they 
+    int comma = statement->statement.FindOutOfQuotes(L",", index);
+
+    TString paramList(statement->statement.SubString(0, notation).GetTrim());
+
+    if (paramList.StartsWith(L'(') && paramList.EndsWith(L')'))
+    {
+        paramList.Set(paramList.SubString(1, paramList.GetSize() - 1));
+    }
+    else if (comma < notation && comma != -1)
+        return 0;
+
+    /*comma = notation;
+    endQ = comma;
+    int closeParenth = parenth ? comma : -1;
+    do
+    {
+        startQ = statement->statement.FindOutOfQuotes(L"`", endQ);
+        endQ = statement->statement.FindOutOfQuotes(L"`", startQ);
+        comma = statement->statement.FindOutOfQuotes(L",", startQ);
+        if (parenth)
+            closeParenth = statement->statement.FindOutOfQuotes(L")", startQ);
+    } while (startQ != -1 && (startQ < comma && comma < endQ));*/
+
+    WCHAR quote = L'\0';
+    UINT curParenth = parenth;
+    UINT curSquare = square;
+    bool continueFor = true;
+
+    for (index = notation + 2; index < statement->statement.GetSize() && continueFor; index++)
+    {
+        WCHAR curChar = statement->statement.GetAt(index);
+
+        switch (curChar)
+        {
+        case L'\'':
+        case L'"':
+        case L'`':
+            index = statement->statement.Find(curChar, index + 1);
+            break;
+        case L')':
+            if (!curParenth)
+            {
+                PrepReturn(ret, L"Unexpected ')' detected in Expression!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart + statement->statement.CountFinds(L'\n', index));
+                return;
+            }
+            curParenth--;
+            if (curParenth < parenth)
+                continueFor = false;
+            break;
+        case L']':
+            if (!curSquare)
+            {
+                PrepReturn(ret, L"Unexpected ']' detected in Expression!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart + statement->statement.CountFinds(L'\n', index));
+                return;
+            }
+            curParenth--;
+            if (curSquare < square)
+                continueFor = false;
+            break;
+        case L'[':
+            curSquare++;
+            break;
+        case L'(':
+            curParenth++;
+            break;
+        case L',':
+            continueFor = false;
+        }
+    }
+    
+
+    auto params = paramList.split(L',');
+
+    TDataArray<TString> parameters;
+    for (UINT Rust = 0; Rust < params->Size(); Rust++)
+    {
+        CheckVarName(params->at(Rust).GetTrim(), ret);
+        if (ret.returnCode)
+            return 0;
+        parameters.push_back(params->at(Rust).GetTrim());
+    }
+
+
+    TrecSubPointer<TVariable, TcJavaScriptInterpretor> jsInt = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(TrecPointerKey::GetSubPointerFromSoft<>(self), this->environment);
+    TDataArray<TrecPointer<CodeStatement>> statementsToAdd;
+
+    UINT returnNum = 0;
+
+    if (statement->statement.GetTrim().EndsWith(L"=>"))
+    {
+        statementsToAdd = statement->block;
+        returnNum = 1;
+    }
+    else
+    {
+        TrecPointer<CodeStatement> newStatement = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+        newStatement->statement.Set(statement->statement.SubString(notation + 2, index -1));
+        newStatement->lineStart = statement->lineStart + statement->statement.CountFinds(L'\n', notation);
+        newStatement->lineEnd = statement->lineStart + statement->statement.CountFinds(L'\n', index);
+        if (index >= statement->statement.GetSize())
+        {
+            // Here, this statement has a block that is clearly intended for the lambda
+            newStatement->block = statement->block;
+            returnNum++;
+
+            // To-Do: Figure out how many nexts to go through
+        }
+
+        statementsToAdd.push_back(newStatement);
+    }
+
+    ret = jsInt->PreProcess();
+
+    if (ret.returnCode)
+        return returnNum;
+
+    jsInt->SetParamNames(parameters);
+    ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(jsInt);
+
+
+    return returnNum;
 }
 
 UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object, TrecPointer<TVariable> proc,

@@ -5,9 +5,6 @@
 #include <TThread.h>
 #include <TStringVariable.h>
 
-#define PM_WAIT_ALL
-#define PM_WAIT_FIRST
-#define PM_WAIT_STOP_ON_REJECT
 
 
 
