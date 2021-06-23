@@ -25,6 +25,9 @@
  *			because these types are created by a Factory method/function and deleting them requires calling the Release() method rather than
  *			manually deleting them.
  *
+ *		TrecBox<T> - a Unique type pointer that ensures only it holds ownership of a given object until it goes out of scope or it gives up ownership through
+ *			the TrecPointerKey (or you simply call 'Nullify'
+ *
  *		TrecObjectPointer - A new Pointer type that holds a counter to any type that can call itself a TObject. Written with Anagame 
  *			Interpretors in mind
  *
@@ -1184,6 +1187,119 @@ public:
 	}
 };
 
+/**
+ * Class: TrecBox
+ * Purpose: Provides an Option to have a singluar Smart pointer (i.e.) only one reference to the object
+ *
+ * Note: the "Box" name was inspired by the Box type n Rust. It can also be compared to the unique_ptr in the C++ Standard Library
+ */
+template<class T> class TrecBox
+{
+	friend class TrecPointerKey;
+protected:
+
+	/**
+	 * The raw Pointer
+	 */
+	T* rawPointer;
+
+	/**
+	 * Method: TrecBox::TrecBox
+	 * Purpose: Private Contstructor for initializing a New Object
+	 * Parameter: T* rawPointer - Pointer given by the TrecPointerKey to this Unique object
+	 * Returns: New TrecBox Object with ownership of a deeper object
+	 */
+	TrecBox(T* rawPointer)
+	{
+		this->rawPointer = rawPointer;
+	}
+
+
+	/**
+	 * Method: TrecBox::Extract
+	 * Purpose: Allows the Box to give up ownership of the object without deleting it, intended to be sent to a regular TrecPointer
+	 * Parameter: void
+	 * Returns: T* the raw Pointer being given up
+	 */
+	T* Extract()
+	{
+		T* ret = rawPointer;
+		rawPointer = nullptr;
+		return ret;
+	}
+
+public:
+
+	/**
+	 * Method: TrecBox::~TrecBox
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	~TrecBox()
+	{
+		Nullify();
+	}
+
+	/**
+	 * Method: TrecBox::TrecBox
+	 * Purpose: Default Constructor
+	 * Parameter: void
+	 * Returns: New NULL Box
+	 */
+	TrecBox()
+	{
+		rawPointer = nullptr;
+	}
+
+	/**
+	 * Method: TrecBox::operator=
+	 * Purpose: Allows an assignment to take place. Note: this will remove ownership from the Box beign assign to this box
+	 * Parameter: TrecBox<T>& other - the Other Box to extract the object from
+	 * Returns: void
+	 */
+	void operator=(TrecBox<T>& other)
+	{
+		rawPointer = other.Extract();
+	}
+
+	/**
+	 * Method: TrecBox::Get
+	 * Purpose: Retrieves the Raw Pointer, useful for NULL checks
+	 * Parameter: void
+	 * Returns: T* the raw Pointer held by the Box
+	 */
+	T* Get()
+	{
+		return rawPointer;
+	}
+
+	/**
+	 * Method: TrecBox::operator->
+	 * Purpose: Allows users to access public members of the underlying object if available
+	 * Parameter: void
+	 * Returns: T* the raw Pointer held by the Box
+	 */
+	T* operator->()
+	{
+		return rawPointer;
+	}
+
+	/**
+	 * Method: TrecBox::Nullify
+	 * Purpose: Allows users to go ahead and delete the object ahead of Box's destruction
+	 * Parameter: void
+	 * Returns: void
+	 */
+	void Nullify()
+	{
+		if (rawPointer)
+			delete rawPointer;
+		rawPointer = nullptr;
+	}
+
+	
+};
 
 
 
@@ -1445,5 +1561,31 @@ public:
 			return TrecObjectPointer(obj.pointer);
 		}
 		return TrecObjectPointer();
+	}
+
+	/**
+	 * Method: static TrecPointerKey::GetNewTrecBox<T>
+	 * Purpose: Retrieves a New TrecBox from the provided parameters
+	 * Parameters: types&& ... args - the arguments that get passed to the constructor of the object
+	 * Returns: TrecBox<T> - Smart Unique pointer that holds the object
+	 */
+	template <class T, class...types> static TrecBox<T> GetNewTrecBox(types&& ... args)
+	{
+		return TrecBox<T>(new T(args));
+	}
+
+	/**
+	 * Method: static TrecPointerKey::GetTrecPointerFromTrecBox<T>
+	 * Purpose: Retrieves a TrecObjectPointer that just sees a TObject
+	 * Parameters: TrecPointer<T> - the TrecPointer to convert
+	 * Returns: TrecPointer<T> - TrecPointer that holds the object previously held by the Box Pointer
+	 *
+	 * Note: In order to prevent delete from being called twice, this operation will remove ownership of the object from the TrecBox. If the Box is null, then the TrecPointer will also be Null
+	 */
+	template <class T> static TrecPointer<T> GetTrecPointerFromTrecBox(TrecBox<T>& box)
+	{
+		if(box.Get())
+			return TrecPointer<T>(box.Extract());
+		return TrecPointer<T>();
 	}
 };
