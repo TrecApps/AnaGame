@@ -14,6 +14,7 @@
 #include <TIteratorVariable.h>
 #include "JsArray.h"
 #include <TFunctionGen.h>
+#include "JsTimer.h"
 
 
 static TDataArray<TString> standardOperators;
@@ -180,6 +181,9 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
         variables.addEntry(L"Iterator", TcVariableHolder(false, L"", GetJsIteratorMethods(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
         //Promise
         this->classes.addEntry(L"Promise", JsPromise::GetPromiseClass(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment));
+
+        // Timer Functionality
+        JsTimer::GetFunctions(variables, TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment);
     }
     ThreadRelease();
 }
