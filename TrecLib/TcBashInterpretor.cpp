@@ -55,12 +55,12 @@ void TcBashInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& 
     switch (collector.RunCollector(codeFile, ret.errorMessage, line))
     {
     case 1:
-        ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", codeFile->GetPath().GetConstantBuffer());
+        ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", codeFile->GetPath().GetConstantBuffer().getBuffer());
         ret.returnCode = ReturnObject::ERR_INVALID_FILE_PARAM;
         return;
     case 2:
         ret.returnCode = ReturnObject::ERR_GENERIC_ERROR;
-        stack.Format(L"In File '%ws'", codeFile->GetPath().GetConstantBuffer());
+        stack.Format(L"In File '%ws'", codeFile->GetPath().GetConstantBuffer().getBuffer());
         ret.stackTrace.push_back(stack);
         stack.Format(L"At Line: %d", line);
         ret.stackTrace.push_back(stack);

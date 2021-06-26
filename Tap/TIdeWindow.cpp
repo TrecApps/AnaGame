@@ -612,6 +612,9 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 	mainPage = Page::GetWindowPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), eh);
 
 	D2D1_RECT_F curArea = mainPage->GetArea();
+
+	drawingBoard->Resize(currentWindow, convertD2DRectToRECT( curArea), d3dEngine);
+
 	curArea.bottom = curArea.top + this->mainViewSpace;
 
 	mainPage->SetArea(curArea);
@@ -803,7 +806,7 @@ UINT TIdeWindow::OpenFile(TrecPointer<TFileShell> shell)
 	}
 	TString format(L"File to open: %ls \n");
 	TString printOut;
-	printOut.Format(format, shell->GetPath().GetConstantBuffer());
+	printOut.Format(format, shell->GetPath().GetConstantBuffer().getBuffer());
 
 	ATLTRACE(printOut.GetConstantBuffer().getBuffer());
 	ThreadRelease();

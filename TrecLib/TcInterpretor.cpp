@@ -225,7 +225,7 @@ void TcInterpretor::CheckVarName(const TString& varname, ReturnObject& ro)
 	if (badChar != -1)
 	{
 		ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
-		ro.errorMessage.Format(L"Name '%ws' is not a proper name for a variable!", varname.GetConstantBuffer());
+		ro.errorMessage.Format(L"Name '%ws' is not a proper name for a variable!", varname.GetConstantBuffer().getBuffer());
 		return;
 	}
 
@@ -234,7 +234,7 @@ void TcInterpretor::CheckVarName(const TString& varname, ReturnObject& ro)
 	if (!((firstChar >= L'a' && firstChar <= 'z') || (firstChar >= L'A' && firstChar <= 'Z') || firstChar == L'_'))
 	{
 		ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
-		ro.errorMessage.Format(L"Name '%ws' is not a proper name for a variable!", varname.GetConstantBuffer());
+		ro.errorMessage.Format(L"Name '%ws' is not a proper name for a variable!", varname.GetConstantBuffer().getBuffer());
 		return;
 	}
 
@@ -289,7 +289,7 @@ void TcInterpretor::PrepReturn(ReturnObject& ret, const TString& mess, const TSt
 	if (line > -1)
 	{
 		TString stack;
-		stack.Format(L"%ws line %d", stackMess.GetConstantBuffer(), line);
+		stack.Format(L"%ws line %d", stackMess.GetConstantBuffer().getBuffer(), line);
 		ret.stackTrace.push_back(stack);
 	}
 }

@@ -86,7 +86,7 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
                     ro.errorMessage.Set(L"Code File ends in the middle of a multi-line statement!");
 
                     TString stack;
-                    stack.Format(L"\tAt %ws, line %d", file->GetFileName().GetConstantBuffer(), line + appendable.CountFinds(L'\n'));
+                    stack.Format(L"\tAt %ws, line %d", file->GetFileName().GetConstantBuffer().getBuffer(), line + appendable.CountFinds(L'\n'));
 
                     ro.stackTrace.push_back(stack);
                     return;
@@ -116,7 +116,7 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
                 if (hasConstructor)
                 {
                     ro.returnCode = ro.invalid_name;
-                    ro.errorMessage.Format(L"Error! Second constructor token found within the %ws class", className.GetConstantBuffer());
+                    ro.errorMessage.Format(L"Error! Second constructor token found within the %ws class", className.GetConstantBuffer().getBuffer());
                     return;
                 }
                 hasConstructor = true;
@@ -182,14 +182,14 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
                 if (!name.GetSize())
                 {
                     ro.returnCode = ro.invalid_name;
-                    ro.errorMessage.Format(L"Error! No name provided to likely method in %ws class!", className.GetConstantBuffer());
+                    ro.errorMessage.Format(L"Error! No name provided to likely method in %ws class!", className.GetConstantBuffer().getBuffer());
                     return;
                 }
                 if (!InspectVariable(name))
                 {
                     ro.returnCode = ro.invalid_name;
                     ro.errorMessage.Format(L"Error! Invalid characters detected in likely method name '%ws' in %ws class!", 
-                        name.GetConstantBuffer(), className.GetConstantBuffer());
+                        name.GetConstantBuffer().getBuffer(), className.GetConstantBuffer().getBuffer());
                     return;
                 }
 
@@ -205,7 +205,7 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
                 if (attributes && !name.GetSize())
                 {
                     ro.returnCode = ro.invalid_name;
-                    ro.errorMessage.Format(L"Error! Unexpected tokens where variable name was expected in %ws class!", className.GetConstantBuffer());
+                    ro.errorMessage.Format(L"Error! Unexpected tokens where variable name was expected in %ws class!", className.GetConstantBuffer().getBuffer());
                     return;
                 }
 
@@ -223,7 +223,7 @@ void TJavaScriptClassInterpretor::ProcessStatements(ReportObject& ro)
                         if (!statement.lineEnd)
                         {
                             ro.returnCode = ro.incomplete_block;
-                            ro.errorMessage.Format(L"Error! Incomplete Block for the %ws class!", className.GetConstantBuffer());
+                            ro.errorMessage.Format(L"Error! Incomplete Block for the %ws class!", className.GetConstantBuffer().getBuffer());
                             return;
                         }
                     }
@@ -275,7 +275,7 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
     if (!statement.fileEnd)
     {
         ro.returnCode = ro.incomplete_block;
-        ro.errorMessage.Format(L"Error! Incomplete Block for the %ws class!", className.GetConstantBuffer());
+        ro.errorMessage.Format(L"Error! Incomplete Block for the %ws class!", className.GetConstantBuffer().getBuffer());
         return;
     }
 
@@ -304,7 +304,7 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
         if (!InspectVariable(param))
         {
             ro.returnCode = ro.invalid_name;
-            ro.errorMessage.Format(L"Improper Parameter name %ws found in constructor or %ws class!", param.GetConstantBuffer(), className.GetConstantBuffer());
+            ro.errorMessage.Format(L"Improper Parameter name %ws found in constructor or %ws class!", param.GetConstantBuffer().getBuffer(), className.GetConstantBuffer().getBuffer());
             return;
         }
 
@@ -350,7 +350,7 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
             if (!accessAtt.def.Get() || accessAtt.def->GetVarType() != var_type::accessor)
             {
                 ro.returnCode = ReportObject::existing_var;
-                ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+                ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer().getBuffer(), methodName.GetConstantBuffer().getBuffer());
                 return;
             }
         }
@@ -365,7 +365,7 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
         if (g.Get())
         {
             ro.returnCode = ReportObject::existing_var;
-            ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already has a getter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+            ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already has a getter!", className.GetConstantBuffer().getBuffer(), methodName.GetConstantBuffer().getBuffer());
             return;
         }
 
@@ -387,7 +387,7 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
             if (!accessAtt.def.Get() || accessAtt.def->GetVarType() != var_type::accessor)
             {
                 ro.returnCode = ReportObject::existing_var;
-                ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+                ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer().getBuffer(), methodName.GetConstantBuffer().getBuffer());
                 return;
             }
         }
@@ -402,7 +402,7 @@ void TJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, TStri
         if (s.Get())
         {
             ro.returnCode = ReportObject::existing_var;
-            ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already has a setter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+            ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already has a setter!", className.GetConstantBuffer().getBuffer(), methodName.GetConstantBuffer().getBuffer());
             return;
         }
 

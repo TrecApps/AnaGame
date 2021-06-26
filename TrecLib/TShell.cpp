@@ -100,7 +100,7 @@ void TShell::SubmitCommand(TString& command)
 
 		while (possiblePath.GetSize())
 		{
-			output.AppendFormat(TString(L"%i. %ls\n"), index, possiblePath.GetConstantBuffer());
+			output.AppendFormat(TString(L"%i. %ls\n"), index, possiblePath.GetConstantBuffer().getBuffer());
 			possiblePath.Set(GetPossiblePath(comArgs, index++));
 		}
 	}
@@ -134,11 +134,11 @@ void TShell::SubmitCommand(TString& command)
 					output.Format(TString(L"Successfully set 'comArgs2' to path at index %i\n"), pathIndex);
 					break;
 				case 1:
-					output.Format(TString(L"For the command %ls, provided index %i was out of bounds!\n"), comArgs2.GetConstantBuffer(), pathIndex);
+					output.Format(TString(L"For the command %ls, provided index %i was out of bounds!\n"), comArgs2.GetConstantBuffer().getBuffer(), pathIndex);
 					break;
 				case 2:
 					output.Format(L"Command not currently registered! To register the '%ls' command, run \n\t\"setpath %ls [C:\\path\\to\\%ls\\installation]\"\n",
-						comArgs2.GetConstantBuffer(), comArgs2.GetConstantBuffer(), comArgs2.GetConstantBuffer(), comArgs2.GetConstantBuffer());
+						comArgs2.GetConstantBuffer().getBuffer(), comArgs2.GetConstantBuffer().getBuffer(), comArgs2.GetConstantBuffer().getBuffer(), comArgs2.GetConstantBuffer().getBuffer());
 					break;
 				}
 			}
@@ -146,11 +146,11 @@ void TShell::SubmitCommand(TString& command)
 			{
 				if (SubmitPossiblePath(comArgs2, comArgs3))
 				{
-					output.Format(TString(L"Successfully Submitted '%ls' as a possible path for the '%ls' command!\n"), comArgs3.GetConstantBuffer(), comArgs2.GetConstantBuffer());
+					output.Format(TString(L"Successfully Submitted '%ls' as a possible path for the '%ls' command!\n"), comArgs3.GetConstantBuffer().getBuffer(), comArgs2.GetConstantBuffer().getBuffer());
 				}
 				else
 				{
-					output.Format(TString(L"\"%ls\" is not a valid path!\n"), comArgs3.GetConstantBuffer());
+					output.Format(TString(L"\"%ls\" is not a valid path!\n"), comArgs3.GetConstantBuffer().getBuffer());
 				}
 			}
 		}
@@ -163,7 +163,7 @@ void TShell::SubmitCommand(TString& command)
 			output.AppendChar(L'\n');
 		else
 			output.Format(TString(L"\"%ls\" does not appear to be registered! To register the '%ls' command, run \n\t\"setpath %ls [C:\\path\\to\\%ls\\installation]\"\n"), 
-				comArgs.GetConstantBuffer(), comArgs.GetConstantBuffer(), comArgs.GetConstantBuffer(), comArgs.GetConstantBuffer());
+				comArgs.GetConstantBuffer().getBuffer(), comArgs.GetConstantBuffer().getBuffer(), comArgs.GetConstantBuffer().getBuffer(), comArgs.GetConstantBuffer().getBuffer());
 	}
 
 	// Now that path management is not the command, process the command using the usual means

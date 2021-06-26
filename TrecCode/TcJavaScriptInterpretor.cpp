@@ -146,12 +146,12 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
     switch (collector.RunCollector(codeFile, ret.errorMessage, line))
     {
     case 1:
-        ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", codeFile->GetPath().GetConstantBuffer());
+        ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", codeFile->GetPath().GetConstantBuffer().getBuffer());
         ret.returnCode = ReturnObject::ERR_INVALID_FILE_PARAM;
         return;
     case 2:
         ret.returnCode = ReturnObject::ERR_GENERIC_ERROR;
-        stack.Format(L"In File '%ws'", codeFile->GetPath().GetConstantBuffer());
+        stack.Format(L"In File '%ws'", codeFile->GetPath().GetConstantBuffer().getBuffer());
         ret.stackTrace.push_back(stack);
         stack.Format(L"At Line: %d", line);
         ret.stackTrace.push_back(stack);
@@ -1469,7 +1469,7 @@ void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStateme
         if (worked)
         {
             ret.returnCode = ReturnObject::ERR_EXISTING_VAR;
-            ret.errorMessage.Format(L"Variable '%ws' already exists in the current Scope!", toks->at(0).GetConstantBuffer());
+            ret.errorMessage.Format(L"Variable '%ws' already exists in the current Scope!", toks->at(0).GetConstantBuffer().getBuffer());
 
             return;
         }
@@ -2003,7 +2003,7 @@ void TcJavaScriptInterpretor::ProcessClass(TDataArray<TrecPointer<CodeStatement>
         if (!this->GetClass(pieces->at(2), s))
         {
             TString message;
-            message.Format(L"Expected Superclass %ws does not exist in the required scope!", pieces->at(2).GetConstantBuffer());
+            message.Format(L"Expected Superclass %ws does not exist in the required scope!", pieces->at(2).GetConstantBuffer().getBuffer());
             PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
             return;
         }
@@ -2021,7 +2021,7 @@ void TcJavaScriptInterpretor::ProcessClass(TDataArray<TrecPointer<CodeStatement>
     if (!statement->statementVar.Get())
     {
         TString message;
-        message.Format(L"INTERNAL ERROR! Failed to set up Js-Class Interpretor for class %ws", pieces->at(0).GetConstantBuffer());
+        message.Format(L"INTERNAL ERROR! Failed to set up Js-Class Interpretor for class %ws", pieces->at(0).GetConstantBuffer().getBuffer());
         PrepReturn(ret, message, L"", ReturnObject::ERR_INTERNAL, statement->lineStart);
         return;
     }
@@ -2043,7 +2043,7 @@ void TcJavaScriptInterpretor::ProcessClass(TDataArray<TrecPointer<CodeStatement>
     if (!this->SubmitClassType(pieces->at(0), newClass, false))
     {
         TString message;
-        message.Format(L"Failed to set up Js-Class Interpretor for class %ws, class likely already exists", pieces->at(0).GetConstantBuffer());
+        message.Format(L"Failed to set up Js-Class Interpretor for class %ws, class likely already exists", pieces->at(0).GetConstantBuffer().getBuffer());
         PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_NAME, statement->lineStart);
         return;
     }
@@ -2059,7 +2059,7 @@ void TcJavaScriptInterpretor::ProcessPrototypeAssign(TrecPointer<CodeStatement> 
     if (!this->methodObject.Get() || methodObject->GetVarType() != var_type::collection)
     {
         TString message;
-        message.Format(L"Error Setting Prototype Attribute %ws", state->statement.GetConstantBuffer());
+        message.Format(L"Error Setting Prototype Attribute %ws", state->statement.GetConstantBuffer().getBuffer());
         PrepReturn(ret, message, L"", ReturnObject::ERR_BROKEN_REF, 0);
         return;
     }
@@ -2318,7 +2318,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
             if (GetVarStatus(jExp.varName) == 2)
             {
                 TString message;
-                message.Format(L"Error! Cannot %ws on const variable %ws!", inc ? L"increment" : L"decrement", jExp.varName.GetConstantBuffer());
+                message.Format(L"Error! Cannot %ws on const variable %ws!", inc ? L"increment" : L"decrement", jExp.varName.GetConstantBuffer().getBuffer());
                 PrepReturn(ret, message, L"", ReturnObject::ERR_UNSUPPORTED_OP, statement->lineStart);
                 return fullNodes;
             }
@@ -2391,7 +2391,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
             {
                 TString message;
                 message.Format(L"Invalid type found for variable '%ws' in pre-%ws operation!",
-                    jExp.varName.GetConstantBuffer(), inc ? L"increment" : L"decrement");
+                    jExp.varName.GetConstantBuffer().getBuffer(), inc ? L"increment" : L"decrement");
                 PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
                 return fullNodes;
             }
@@ -2792,7 +2792,7 @@ throughString:
                 else
                 {
                     TString message;
-                    message.Format(L"Unexpected Expression after '%ws' token detected!", phrase.GetConstantBuffer());
+                    message.Format(L"Unexpected Expression after '%ws' token detected!", phrase.GetConstantBuffer().getBuffer());
                     PrepReturn(ret, message, L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
                     return uret;
                 }
@@ -2873,7 +2873,7 @@ throughString:
                     else
                     {
                         TString message;
-                        message.Format(L"Failed to id Method/Attribute %ws for primitive variable %ws!", phrase.GetConstantBuffer(), wholePhrase.GetConstantBuffer());
+                        message.Format(L"Failed to id Method/Attribute %ws for primitive variable %ws!", phrase.GetConstantBuffer().getBuffer(), wholePhrase.GetConstantBuffer().getBuffer());
                         PrepReturn(ret, message, L"", ReturnObject::ERR_BROKEN_REF, statement->lineStart);
                         return uret;
                     }
@@ -3045,7 +3045,7 @@ throughString:
                                 else if (access->GetVarType() != var_type::accessor)
                                 {
                                     TString message;
-                                    message.Format(L"Cannot assign getter/setter to attribute %ws since it is already assigned and not an accessor!", wholePhrase.GetConstantBuffer());
+                                    message.Format(L"Cannot assign getter/setter to attribute %ws since it is already assigned and not an accessor!", wholePhrase.GetConstantBuffer().getBuffer());
                                     PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
                                 }
                                 auto tAccess = dynamic_cast<TAccessorVariable*>(access.Get());
@@ -3244,7 +3244,7 @@ UINT TcJavaScriptInterpretor::ProcessNumberExpression(UINT& parenth, UINT& squar
     else
     {
         TString message;
-        message.Format(L"Failed to convert token '%ws' to a number!", numStr.GetConstantBuffer());
+        message.Format(L"Failed to convert token '%ws' to a number!", numStr.GetConstantBuffer().getBuffer());
         PrepReturn(ret, message, L"", ReturnObject::ERR_NOT_NUMBER, statement->lineStart);
     }
     return 0;
@@ -3586,14 +3586,14 @@ void TcJavaScriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatemen
     if (!obj.errorObject.Get())
     {
         TString message;
-        message.Format(L"Statement '%ws' Failed to generate a function variable!", statement->statement.GetConstantBuffer());
+        message.Format(L"Statement '%ws' Failed to generate a function variable!", statement->statement.GetConstantBuffer().getBuffer());
         PrepReturn(obj, message, L"", ReturnObject::ERR_INCOMPLETE_STATEMENT ,statement->lineStart);
         return;
     }
     if (!obj.errorMessage.GetSize())
     {
         TString message;
-        message.Format(L"Statement '%ws' Failed to provide a function name!", statement->statement.GetConstantBuffer());
+        message.Format(L"Statement '%ws' Failed to provide a function name!", statement->statement.GetConstantBuffer().getBuffer());
         PrepReturn(obj, message, L"", ReturnObject::ERR_INCOMPLETE_STATEMENT, statement->lineStart);
         return;
     }
@@ -4389,7 +4389,7 @@ void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>
             if (!expressions[Rust].varName.GetSize())
             {
                 PrepReturn(ro, L"", L"", ReturnObject::ERR_BROKEN_REF, -1);
-                ro.errorMessage.Format(L"Error! %ws operator must have a named variable as the left hand expression!", ops[Rust].GetConstantBuffer());
+                ro.errorMessage.Format(L"Error! %ws operator must have a named variable as the left hand expression!", ops[Rust].GetConstantBuffer().getBuffer());
                 return;
             }
             if (doBit)
@@ -4451,11 +4451,11 @@ void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>
                 {
                 case 1:
                     PrepReturn(ro, L"", L"", ReturnObject::ERR_BROKEN_REF, -1);
-                    ro.errorMessage.Format(L"Assignment to non-existant variable '%ws' occured!", expressions[Rust].varName.GetConstantBuffer());
+                    ro.errorMessage.Format(L"Assignment to non-existant variable '%ws' occured!", expressions[Rust].varName.GetConstantBuffer().getBuffer());
                     return;
                 case 2:
                     PrepReturn(ro, L"", L"", ReturnObject::ERR_BROKEN_REF, -1);
-                    ro.errorMessage.Format(L"Assignment to const variable '%ws' was attempted!", expressions[Rust].varName.GetConstantBuffer());
+                    ro.errorMessage.Format(L"Assignment to const variable '%ws' was attempted!", expressions[Rust].varName.GetConstantBuffer().getBuffer());
                     return;
                 }
             }
@@ -4535,7 +4535,7 @@ void TcJavaScriptInterpretor::AddAssignStatement(const TString& type, const TStr
         if (!jsInt)
         {
             TString message;
-            message.Format(L"Failed to Find Class or Function with the name %ws", type.GetConstantBuffer());
+            message.Format(L"Failed to Find Class or Function with the name %ws", type.GetConstantBuffer().getBuffer());
             PrepReturn(ret, message, L"", ReturnObject::ERR_BROKEN_REF, 0);
             return;
         }

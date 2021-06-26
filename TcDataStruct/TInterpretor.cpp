@@ -176,10 +176,10 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 	{
 		ro.returnCode = ReportObject::invalid_name;
 		TString chara(varname.SubString(badChar, badChar + 1));
-		ro.errorMessage.Format(L"Error! Found invalid character '%ws' in variable name!", chara.GetConstantBuffer());
+		ro.errorMessage.Format(L"Error! Found invalid character '%ws' in variable name!", chara.GetConstantBuffer().getBuffer());
 
 		TString stack;
-		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
 		ro.stackTrace.push_back(stack);
 
 		ThreadRelease();
@@ -192,10 +192,10 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 	{
 		ro.returnCode = ReportObject::invalid_name;
 		TString chara(firstChar);
-		ro.errorMessage.Format(L"Error! Found invalid character '%ws' as First character in Variable name. Need to be 'a-z', 'A-Z', or '_'!", chara.GetConstantBuffer());
+		ro.errorMessage.Format(L"Error! Found invalid character '%ws' as First character in Variable name. Need to be 'a-z', 'A-Z', or '_'!", chara.GetConstantBuffer().getBuffer());
 
 		TString stack;
-		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
 		ro.stackTrace.push_back(stack);
 
 	}
