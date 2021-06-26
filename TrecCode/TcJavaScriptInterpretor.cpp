@@ -2285,7 +2285,6 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
         {
             processed = true;
             fullNodes += nodes;
-            break;
         }
         WCHAR ch = statement->statement[index];
         switch (ch)
@@ -3030,6 +3029,18 @@ throughString:
                 }
                 var = ret.errorObject;
             }
+            else if (var->GetVarType() == var_type::async)
+            {
+                if (attribute == 1 && !dynamic_cast<TAsyncVariable*>(var.Get())->GetThreadCaller())
+                {
+                    TClassStruct promy;
+                    assert(this->GetClass(L"Promise", promy));
+                    TClassAttribute promConst = promy.GetAttributeByName(L"constructor");
+
+                    uret += ProcessProcedureCall(parenth, square, index, TrecPointer<TVariable>(), promConst.def, statement, ret);
+
+                }
+            }
             else
                 var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
             spaceDetected = false;
@@ -3381,7 +3392,7 @@ UINT TcJavaScriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& squar
     return 0;
 }
 
-UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement> statement, ReturnObject& ret)
+UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& square, UINT& index, TrecPointer<CodeStatement>& statement, ReturnObject& ret)
 {
     int notation = statement->statement.FindOutOfQuotes(L"=>", index);
     if (notation == -1)
@@ -3399,7 +3410,7 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
     // Handle Comma's, since they 
     int comma = statement->statement.FindOutOfQuotes(L",", index);
 
-    TString paramList(statement->statement.SubString(0, notation).GetTrim());
+    TString paramList(statement->statement.SubString(index, notation).GetTrim());
 
     if (paramList.StartsWith(L'(') && paramList.EndsWith(L')'))
     {
@@ -3489,6 +3500,8 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
     {
         statementsToAdd = statement->block;
         returnNum = 1;
+        statement = statement->next;
+        index = 0;
     }
     else
     {
@@ -3515,7 +3528,6 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
 
     jsInt->SetParamNames(parameters);
     ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(jsInt);
-
 
     return returnNum;
 }
