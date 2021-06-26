@@ -233,16 +233,20 @@ void JsPromise::JsPromiseRace(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 
 void JsPromise::JsPromiseReject(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	TrecPointer<TVariable> retFunc = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TReturnInterpretor>(params.Size() ? params[0] : TrecPointer<TVariable>(), env, false);
+
 	TrecSubPointer<TVariable, TAsyncVariable> prom = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAsyncVariable>
-		(GetCurrentThreadId(), TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TReturnInterpretor>(params.Size() ? params[0] : TrecPointer<TVariable>(), env, false));
+		(GetCurrentThreadId(), TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(retFunc));
 
 	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(prom);
 }
 
 void JsPromise::JsPromiseResolve(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	TrecPointer<TVariable> retFunc = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TReturnInterpretor>(params.Size() ? params[0] : TrecPointer<TVariable>(), env, true);
+
 	TrecSubPointer<TVariable, TAsyncVariable> prom = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAsyncVariable>
-		(GetCurrentThreadId(), TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TReturnInterpretor>(params.Size() ? params[0] : TrecPointer<TVariable>(), env, true));
+		(GetCurrentThreadId(), TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(retFunc));
 
 	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(prom);
 }

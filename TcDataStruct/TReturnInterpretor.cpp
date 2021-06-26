@@ -32,3 +32,13 @@ TReturnInterpretor::TReturnInterpretor(TrecPointer<TVariable> object, TrecPointe
 	var = object;
 	this->success = success;
 }
+
+void TReturnInterpretor::PreProcess(ReturnObject& ret)
+{
+}
+
+void TReturnInterpretor::ProcessIndividualStatement(const TString& statement, ReturnObject& ret)
+{
+	ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+	ret.errorMessage.Set(L"This Interpretor simply returns a value!");
+}
