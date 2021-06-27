@@ -1446,6 +1446,11 @@ void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStateme
     {
         UINT p = 0, s = 0, i = statement->statement.Find(L'=') + 1;
 
+        TString theName(statement->statement.SubString(0, i - 1).GetTrim());
+        CheckVarName(theName, ret);
+        if (ret.returnCode)
+            return;
+
         UINT jump = ProcessExpression(p, s, i, statement, ret);
 
         if (ret.returnCode)
@@ -1511,6 +1516,10 @@ void TcJavaScriptInterpretor::ProcessAssignmentStatement(TrecPointer<CodeStateme
                 return;
             }
         }
+        TcVariableHolder varHold;
+        varHold.mut = statement->statementType != code_statement_type::cst_const;
+        varHold.value = ret.errorObject;
+        variables.addEntry(theName, varHold);
     }
     else
     {
@@ -2284,7 +2293,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
         if (ret.errorObject.Get())
         {
             processed = true;
-            fullNodes += nodes;
+            //fullNodes += nodes;
         }
         WCHAR ch = statement->statement[index];
         switch (ch)
@@ -2975,7 +2984,7 @@ throughString:
                     ret.errorMessage.Set(L"INTERNAL ERROR! Promise Resources are not available!");
                     return uret;
                 }
-                TClassAttribute classAtt = promise.GetAttributeByName(L"phrase");
+                TClassAttribute classAtt = promise.GetAttributeByName(phrase);
 
                 if (dynamic_cast<TAsyncVariable*>(var.Get())->GetThreadCaller())
                     vThis = var;
@@ -3031,15 +3040,35 @@ throughString:
             }
             else if (var->GetVarType() == var_type::async)
             {
+                UINT curRet = uret;
+                TClassStruct promy;
+                assert(this->GetClass(L"Promise", promy));
+
                 if (attribute == 1 && !dynamic_cast<TAsyncVariable*>(var.Get())->GetThreadCaller())
                 {
-                    TClassStruct promy;
-                    assert(this->GetClass(L"Promise", promy));
                     TClassAttribute promConst = promy.GetAttributeByName(L"constructor");
-
                     uret += ProcessProcedureCall(parenth, square, index, TrecPointer<TVariable>(), promConst.def, statement, ret);
-
                 }
+                else
+                {
+                    TClassAttribute promConst = promy.GetAttributeByName(phrase);
+                    uret += ProcessProcedureCall(parenth, square, index, dynamic_cast<TAsyncVariable*>(var.Get())->GetThreadCaller() 
+                        ? var: TrecPointer<TVariable>(), promConst.def, statement, ret);
+                }
+                if (ret.returnCode)
+                    return uret;
+
+                if (uret > curRet)
+                {
+                    wholePhrase.Append(statement->statement.SubString(curIndex) + L"{...}");
+                    while (statement->next.Get() && uret > curRet)
+                    {
+                        statement = statement->next;
+                        curRet++;
+                    }
+                    wholePhrase.Append(statement->statement.SubString(0, index + 1));
+                }
+                var = ret.errorObject;
             }
             else
                 var = TSpecialVariable::GetSpecialVariable(SpecialVar::sp_undefined);
@@ -3412,12 +3441,20 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
 
     TString paramList(statement->statement.SubString(index, notation).GetTrim());
 
+    if (paramList.CountFinds(L'(') != paramList.CountFinds(L')'))
+        return 0;
+
+
     if (paramList.StartsWith(L'(') && paramList.EndsWith(L')'))
     {
         paramList.Set(paramList.SubString(1, paramList.GetSize() - 1));
     }
     else if (comma < notation && comma != -1)
         return 0;
+
+    
+
+
 
     /*comma = notation;
     endQ = comma;
