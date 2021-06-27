@@ -1,6 +1,37 @@
 #pragma once
-
 #include <dwrite.h>
+#include <d2d1.h>
+
+
+
+MIDL_INTERFACE("616F37A8-C34B-450D-9707-B2AA73223636") IDoubleBrushHolder : public IUnknown
+{
+    virtual HRESULT STDMETHODCALLTYPE GetBackgroundBrush(ID2D1Brush** brush) =0;
+};
+
+class TDoubleBrushHolder : public IDoubleBrushHolder
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE GetBackgroundBrush(ID2D1Brush** brush) override;
+
+    virtual HRESULT STDMETHODCALLTYPE QueryInterface(
+        /* [in] */ REFIID riid,
+        /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override;
+
+    virtual ULONG STDMETHODCALLTYPE AddRef(void) override;
+
+    virtual ULONG STDMETHODCALLTYPE Release(void) override;
+
+    TDoubleBrushHolder(ID2D1Brush* f, ID2D1Brush* b);
+
+    ~TDoubleBrushHolder();
+
+private:
+    ID2D1Brush* frontBrush, *backBrush;
+    UINT counter;
+};
+
+
 class TTextRenderer :
     public IDWriteTextRenderer
 {
@@ -67,5 +98,8 @@ class TTextRenderer :
         _In_opt_ void* clientDrawingContext,
         _Out_ FLOAT* pixelsPerDip
         ) override;
+
+private:
+    UINT counter;
 };
 
