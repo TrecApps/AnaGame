@@ -197,6 +197,7 @@
     <ClInclude Include="TWindow.h" />
     <ClInclude Include="EventHandler.h" />
     <ClInclude Include="MiniHandler.h" />
+    <ClInclude Include="WebHandler.h" />
     <ClInclude Include="WebPage.h" />
   </ItemGroup>
   <ItemGroup>
@@ -239,6 +240,7 @@
     <ClCompile Include="TWindow.cpp" />
     <ClCompile Include="EventHandler.cpp" />
     <ClCompile Include="MiniHandler.cpp" />
+    <ClCompile Include="WebHandler.cpp" />
     <ClCompile Include="WebPage.cpp" />
   </ItemGroup>
   <ItemGroup>

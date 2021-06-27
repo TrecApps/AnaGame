@@ -117,7 +117,7 @@ TrecObjectPointer::TrecObjectPointer(const TrecObjectPointer& copy)
 {
 	// Since this is a constructor, the base Pointer has not been initialized, even if the memory is not null.
 	// Set it to Null before performing Copy
-	basePointer == nullptr;
+	basePointer = nullptr;
 
 	Copy(copy);
 }

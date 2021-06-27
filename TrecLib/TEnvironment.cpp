@@ -1,7 +1,7 @@
-#include "pch.h"
 #include "TEnvironment.h"
 #include "TMap.h"
 #include "DirectoryInterface.h"
+#include "TcInterpretor.h"
 
 static bool languagesMapped = false;
 
@@ -29,7 +29,7 @@ TrecPointer<TFileShell> TEnvironment::GetRootDirectory()
  *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
  * Returns: TrecPointer<TVariable> - the variable requested
  */
-TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present)
+TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present, env_var_type evtType)
 {
 	AG_THREAD_LOCK
 	for (UINT Rust = 0; Rust < envVariables.count(); Rust++)
@@ -44,7 +44,9 @@ TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present)
 		if (!entry->key.Compare(var))
 		{
 			present = true;
-			RETURN_THREAD_UNLOCK entry->object;
+			ThreadRelease();
+			if(evtType == env_var_type::evt_any || dynamic_cast<TcInterpretor*>(entry->object.Get()))
+				return entry->object;
 		}
 	}
 	present = false;
@@ -77,6 +79,7 @@ void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
 	envVariables.addEntry(name, var);
 	RETURN_THREAD_UNLOCK;
 }
+
 
 /**
  * Method: TEnvironment::SetUpLanguageExtensionMapping

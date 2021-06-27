@@ -393,6 +393,7 @@ public:
 
     UCHAR GetVarStatus(TString& varName);
 
+
 protected:
 
     /**

@@ -221,24 +221,24 @@ void TcInterpretor::SetSelf(TrecPointer<TVariable> self)
  */
 void TcInterpretor::CheckVarName(const TString& varname, ReturnObject& ro)
 {
-	int badChar = varname.FindOneOf(L"!@#$%^&*(){}[]-=+/,;:'\"\\`~");
-	if (badChar != -1)
-	{
-		ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
-		ro.errorMessage.Format(L"Name '%ws' is not a proper name for a variable!", varname.GetConstantBuffer().getBuffer());
-		return;
-	}
+int badChar = varname.FindOneOf(L"!@#$%^&*(){}[]-=+/,;:'\"\\`~");
+if (badChar != -1)
+{
+	ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
+	ro.errorMessage.Format(L"Name '%ws' is not a proper name for a variable!", varname.GetConstantBuffer().getBuffer());
+	return;
+}
 
-	WCHAR firstChar = varname[0];
+WCHAR firstChar = varname[0];
 
-	if (!((firstChar >= L'a' && firstChar <= 'z') || (firstChar >= L'A' && firstChar <= 'Z') || firstChar == L'_'))
-	{
-		ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
-		ro.errorMessage.Format(L"Name '%ws' is not a proper name for a variable!", varname.GetConstantBuffer().getBuffer());
-		return;
-	}
+if (!((firstChar >= L'a' && firstChar <= 'z') || (firstChar >= L'A' && firstChar <= 'Z') || firstChar == L'_'))
+{
+	ro.returnCode = ReturnObject::ERR_IMPROPER_NAME;
+	ro.errorMessage.Format(L"Name '%ws' is not a proper name for a variable!", varname.GetConstantBuffer().getBuffer());
+	return;
+}
 
-	ro.returnCode = 0;
+ro.returnCode = 0;
 }
 
 TrecPointer<TVariable> TcInterpretor::GetVariable(TString& varName, bool& present, bool currentScope)
@@ -263,7 +263,7 @@ TrecPointer<TVariable> TcInterpretor::GetVariable(TString& varName, bool& presen
 	if (!currentScope)
 	{
 		if (parent.Get())
-			return dynamic_cast<TcInterpretor*>(parent.Get())->GetVariable(varName, present,false);
+			return dynamic_cast<TcInterpretor*>(parent.Get())->GetVariable(varName, present, false);
 		if (environment.Get())
 			return environment->GetVariable(varName, present);
 	}
@@ -315,6 +315,8 @@ UCHAR TcInterpretor::GetVarStatus(TString& varName)
 		return tParent->GetVarStatus(varName);
 	return 0;
 }
+
+
 
 /**
  * Method: TCInterpretor::SetParamNames

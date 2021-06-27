@@ -10,6 +10,12 @@
 class TControl;
 class TPromptControl;
 
+typedef enum class env_var_type
+{
+	evt_any,
+	evt_interpretor
+};
+
 
 
 void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataArray<TString>& environmentType);
@@ -230,7 +236,7 @@ public:
 	 *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
 	 * Returns: TrecPointer<TVariable> - the variable requested
 	 */
-	TrecPointer<TVariable> GetVariable(TString& var, bool& present);
+	virtual TrecPointer<TVariable> GetVariable(TString& var, bool& present, env_var_type evtType = env_var_type::evt_any);
 
 	/**
 	 * Method: TEnvironment::SetSelf
@@ -281,6 +287,7 @@ public:
 	 * 
 	 */
 	void AddVariable(const TString& name, TrecPointer<TVariable> var);
+
 
 protected:
 
