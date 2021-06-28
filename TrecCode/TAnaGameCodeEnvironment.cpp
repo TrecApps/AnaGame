@@ -85,7 +85,7 @@ UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 
 						for (UINT Rust = 0; Rust < result.stackTrace.Size(); Rust++)
 						{
-							resultStr.AppendFormat(L"\n\t%ws", result.stackTrace[Rust].GetConstantBuffer());
+							resultStr.AppendFormat(L"\n\t%ws", result.stackTrace[Rust].GetConstantBuffer().getBuffer());
 						}
 						resultStr.AppendChar(L'\n');
 					}
@@ -180,7 +180,7 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 		if (ret.returnCode)
 		{
 			TString message;
-			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", path.GetConstantBuffer(), ret.returnCode);
+			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", path.GetConstantBuffer().getBuffer(), ret.returnCode);
 			this->PrintLine(message);
 			this->PrintLine(ret.errorMessage);
 
@@ -196,7 +196,7 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 		if (ret.returnCode)
 		{
 			TString message;
-			message.Format(L"Java Script '%ws' file Run exited with Error code: %d", path.GetConstantBuffer(), ret.returnCode);
+			message.Format(L"Java Script '%ws' file Run exited with Error code: %d", path.GetConstantBuffer().getBuffer(), ret.returnCode);
 			this->PrintLine(message);
 			this->PrintLine(ret.errorMessage);
 
@@ -210,7 +210,7 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 		else
 		{
 			TString message;
-			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code 0", path.GetConstantBuffer());
+			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code 0", path.GetConstantBuffer().getBuffer());
 			this->PrintLine(message);
 		}
 		int e = 3;

@@ -147,7 +147,7 @@ void SocketHandler::OnSubmitEndpoint(TrecPointer<TControl> tc, EventArgs ea)
 	TString key, value;
 	while (httpResponse.GetHeader(Rust++, key, value))
 	{
-		httpResult.AppendFormat(L"%ws: %ws\n", key.GetConstantBuffer(), value.GetConstantBuffer());
+		httpResult.AppendFormat(L"%ws: %ws\n", key.GetConstantBuffer().getBuffer(), value.GetConstantBuffer().getBuffer());
 	}
 
 	resHeaders->SetText(httpResult);

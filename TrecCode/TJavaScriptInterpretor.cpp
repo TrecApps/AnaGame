@@ -396,7 +396,7 @@ void TJavaScriptInterpretor::ProcessStatements(ReportObject& ro)
                     ro.errorMessage.Set(L"Code File ends in the middle of a multi-line statement!");
 
                     TString stack;
-                    stack.Format(L"\tAt %ws, line %d", file->GetFileName().GetConstantBuffer(), line + appendable.CountFinds(L'\n'));
+                    stack.Format(L"\tAt %ws, line %d", file->GetFileName().GetConstantBuffer().getBuffer(), line + appendable.CountFinds(L'\n'));
 
                     ro.stackTrace.push_back(stack);
                     return ;
@@ -972,7 +972,7 @@ ReportObject TJavaScriptInterpretor::ProcessPrototypeOperation(const TString& cl
     {
         ReportObject ro;
         ro.returnCode = ReportObject::invalid_name;
-        ro.errorMessage.Format(L"Class %ws does not exist!", className.GetConstantBuffer());
+        ro.errorMessage.Format(L"Class %ws does not exist!", className.GetConstantBuffer().getBuffer());
         return ro;
     }
 
@@ -1496,7 +1496,7 @@ void TJavaScriptInterpretor::ProcessFor(TDataArray<JavaScriptStatement>& stateme
         {
             ro.returnCode = ro.broken_reference;
 
-            ro.errorMessage.Format(L"For loop found %ws to be %ws, expected a collection!", collName.GetConstantBuffer(), (wasPresent) ? L"null" : L"undefined");
+            ro.errorMessage.Format(L"For loop found %ws to be %ws, expected a collection!", collName.GetConstantBuffer().getBuffer(), (wasPresent) ? L"null" : L"undefined");
 
             return;
         }
@@ -1765,7 +1765,7 @@ void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& state
         {
             ro.returnCode = ro.incomplete_statement;
             ro.errorMessage.Format(L"Class %ws attempted to inherit from non-existant class %ws",
-                pieces->at(0).GetConstantBuffer(), pieces->at(2).GetConstantBuffer());
+                pieces->at(0).GetConstantBuffer().getBuffer(), pieces->at(2).GetConstantBuffer().getBuffer());
 
             return;
         }
@@ -1780,7 +1780,7 @@ void TJavaScriptInterpretor::ProcessClass(TDataArray<JavaScriptStatement>& state
     if (!SubmitClassType(pieces->at(0), classInfo, false))
     {
         ro.returnCode = ro.invalid_name;
-        ro.errorMessage.Format(L"Class %ws already defined in this scope!", statement.contents.GetConstantBuffer());
+        ro.errorMessage.Format(L"Class %ws already defined in this scope!", statement.contents.GetConstantBuffer().getBuffer());
         return;
     }
 }
@@ -2003,7 +2003,7 @@ void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>
             if (squareStack && (Rust + 1) < toks->Size())
             {
                 // We are in the middle of an array declaration and should join the strings together again with a comma
-                toks->at(Rust).AppendFormat(L",%ws", toks->at(Rust + 1).GetConstantBuffer());
+                toks->at(Rust).AppendFormat(L",%ws", toks->at(Rust + 1).GetConstantBuffer().getBuffer());
                 toks->RemoveAt(Rust + 1);
                 Rust--;
             }
@@ -2020,11 +2020,11 @@ void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>
             if (!eqToks->Size())
             {
                 ro.returnCode = ro.incomplete_statement;
-                ro.errorMessage.Format(L"Empty Sub-statement detected in '%ws' statament!", statementType.GetConstantBuffer());
+                ro.errorMessage.Format(L"Empty Sub-statement detected in '%ws' statament!", statementType.GetConstantBuffer().getBuffer());
 
 
                 TString stack;
-                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), statement.lineStart + newLines);
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), statement.lineStart + newLines);
                 ro.stackTrace.push_back(stack);
             }
 
@@ -2049,7 +2049,7 @@ void TJavaScriptInterpretor::AssignmentStatement(TDataArray<JavaScriptStatement>
                     ro.errorMessage.Set(L"Variables declared in a 'const' statement must be assigned in the statement they are declared!");
 
                     TString stack;
-                    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), statement.lineStart + newLines);
+                    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), statement.lineStart + newLines);
                     ro.stackTrace.push_back(stack);
                     return;
                 }
@@ -2077,7 +2077,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
         ro.returnCode = ro.broken_reference;
         ro.errorMessage.Set(L"Expression amounted to a blank!");
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ro.stackTrace.push_back(stack);
 
         return;
@@ -2111,7 +2111,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 ro.returnCode = ro.mismatched_parehtnesis;
                 ro.errorMessage.Format(L"Mismatched Parenthesis, needed %i more to close it!", stack);
                 TString stack;
-                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
                 ro.stackTrace.push_back(stack);
 
                 return;
@@ -2151,7 +2151,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 ro.returnCode = ro.mismatched_parehtnesis;
                 ro.errorMessage.Format(L"Mismatched Square Brackets, needed %i more to close it!", stack);
                 TString stack;
-                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
                 ro.stackTrace.push_back(stack);
 
                 return;
@@ -2258,7 +2258,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 if (!func.Get())
                 {
                     ro.returnCode = ro.broken_reference;
-                    ro.errorMessage.Format(L"Error! No Such Class or Function name %ws in new declaration!", name.GetConstantBuffer());
+                    ro.errorMessage.Format(L"Error! No Such Class or Function name %ws in new declaration!", name.GetConstantBuffer().getBuffer());
                     return;
                 }
 
@@ -2300,7 +2300,7 @@ void TJavaScriptInterpretor::ProcessExpression(TDataArray<JavaScriptStatement>& 
                 ro.errorMessage.Set(L"Unfinished String Expression!");
 
                 TString stack;
-                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
                 ro.stackTrace.push_back(stack);
 
                 return;
@@ -2794,7 +2794,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
                 ro.errorMessage.Set(varPieces->at(0));
                 for (UINT Rust = 1; Rust < varPieces->Size() - 1; Rust++)
                 {
-                    ro.errorMessage.AppendFormat(L".%ws", varPieces->at(Rust).GetConstantBuffer());
+                    ro.errorMessage.AppendFormat(L".%ws", varPieces->at(Rust).GetConstantBuffer().getBuffer());
                 }
             }
         }
@@ -2808,7 +2808,7 @@ bool TJavaScriptInterpretor::InspectVariable(TDataArray<JavaScriptStatement>& st
             else if (fullVarName.Find(L"prototype") == -1)
             {
                 ro.returnCode = ro.improper_type;
-                ro.errorMessage.Format(L"Variable not a collection variable. Could not get Member name %ws", varName.GetConstantBuffer());
+                ro.errorMessage.Format(L"Variable not a collection variable. Could not get Member name %ws", varName.GetConstantBuffer().getBuffer());
                 return false;
             }
         }
@@ -3165,7 +3165,7 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
         else if (!InspectVariable(pieces->at(0)))
         {
             ro.returnCode = ro.invalid_name;
-            ro.errorMessage.Format(L"Invalid Variable '%ws' detected in JSON Formatting!", pieces->at(0).GetConstantBuffer());
+            ro.errorMessage.Format(L"Invalid Variable '%ws' detected in JSON Formatting!", pieces->at(0).GetConstantBuffer().getBuffer());
             return;
         }
 
@@ -3205,7 +3205,7 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
                 if (accessVar->GetGetter().Get())
                 {
                     ro.returnCode = ReportObject::existing_var;
-                    ro.errorMessage.Format(L"Error! %ws variable already has a getter!", pieces->at(0).GetConstantBuffer());
+                    ro.errorMessage.Format(L"Error! %ws variable already has a getter!", pieces->at(0).GetConstantBuffer().getBuffer());
                     return;
                 }
                 accessVar->SetGetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(ro.errorObject));
@@ -3223,7 +3223,7 @@ void TJavaScriptInterpretor::ProcessJsonExpression(TDataArray<JavaScriptStatemen
                 if (accessVar->GetSetter().Get())
                 {
                     ro.returnCode = ReportObject::existing_var;
-                    ro.errorMessage.Format(L"Error! %ws variable already has a setter!", pieces->at(0).GetConstantBuffer());
+                    ro.errorMessage.Format(L"Error! %ws variable already has a setter!", pieces->at(0).GetConstantBuffer().getBuffer());
                     return;
                 }
                 accessVar->SetSetter(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TInterpretor>(ro.errorObject));
@@ -4047,7 +4047,7 @@ void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& s
             if (!expressions[Rust].varName.GetSize())
             {
                 ro.returnCode = ro.broken_reference;
-                ro.errorMessage.Format(L"Error! %ws operator must have a named variable as the left hand expression!", ops[Rust].GetConstantBuffer());
+                ro.errorMessage.Format(L"Error! %ws operator must have a named variable as the left hand expression!", ops[Rust].GetConstantBuffer().getBuffer());
                 return;
             }
             if (doBit)
@@ -4095,11 +4095,11 @@ void TJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptStatement>& s
                 {
                 case 1:
                     ro.returnCode = ro.broken_reference;
-                    ro.errorMessage.Format(L"Assignment to non-existant variable '%ws' occured!", expressions[Rust].varName.GetConstantBuffer());
+                    ro.errorMessage.Format(L"Assignment to non-existant variable '%ws' occured!", expressions[Rust].varName.GetConstantBuffer().getBuffer());
                     return;
                 case 2:
                     ro.returnCode = ro.broken_reference;
-                    ro.errorMessage.Format(L"Assignment to const variable '%ws' was attempted!", expressions[Rust].varName.GetConstantBuffer());
+                    ro.errorMessage.Format(L"Assignment to const variable '%ws' was attempted!", expressions[Rust].varName.GetConstantBuffer().getBuffer());
                     return;
                 }
             }

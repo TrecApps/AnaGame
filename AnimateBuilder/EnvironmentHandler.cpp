@@ -281,12 +281,14 @@ void EnvironmentHandler::RefreshView()
         TString param;
         if (builderReport.Get())
         {
-            param.Format(L"Environment Builder: %ws", selectedEnvType->GetBuilder().GetConstantBuffer());
+            auto builderBuffer = selectedEnvType->GetBuilder();
+            param.Format(L"Environment Builder: %ws", builderBuffer.GetConstantBuffer().getBuffer());
             builderReport->SetText(param);
         }
         if (environmentReport.Get())
         {
-            param.Format(L"Environment: %ws", selectedEnvType->GetEnvironment().GetConstantBuffer());
+            auto builderBuffer = selectedEnvType->GetEnvironment();
+            param.Format(L"Environment: %ws", builderBuffer.GetConstantBuffer().getBuffer());
             environmentReport->SetText(param);
         }
     }

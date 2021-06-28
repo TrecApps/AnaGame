@@ -68,6 +68,14 @@ TRadioButton::~TRadioButton()
 	//{
 	//	otherButtons[c]->otherButtonLocation--;
 	//}
+	for (UINT Rust = 0; Rust < otherButtons.Size(); Rust++)
+	{
+		if (this == otherButtons[Rust])
+		{
+			otherButtons.RemoveAt(Rust);
+			break;
+		}
+	}
 }
 
 /*

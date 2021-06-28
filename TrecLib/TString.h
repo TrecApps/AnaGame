@@ -728,21 +728,23 @@ public:
 	 * Method: TString::CountFinds
 	 * Purpose: Counts the number of times the provided string appears in this string
 	 * Parameters: const TString& query - the string to search for
+	 *				int stop - the index to stop at (default of -1 to scan the whole string)
 	 * Returns: UINT - the number of times the query string appears in this string
 	 * 
 	 * Attributes: const
 	 */
-	UINT CountFinds(const TString& query) const;
+	UINT CountFinds(const TString& query, int stop = -1) const;
 
 	/**
 	 * Method: TString::CountFinds
 	 * Purpose: Counts the number of times the provided character appears in this string
 	 * Parameters: WCHAR ch - the string to search for
+	 *				int stop - the index to stop at (default of -1 to scan the whole string)
 	 * Returns: UINT - the number of times the query string appears in this string
 	 * 
 	 * Attributes: const
 	 */
-	UINT CountFinds(WCHAR ch) const;
+	UINT CountFinds(WCHAR ch, int stop = -1) const;
 
 	/**
 	 * Method: TString::CountOneOfFinds

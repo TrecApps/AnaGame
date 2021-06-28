@@ -1262,8 +1262,8 @@ void TControl::onDraw(TObject* obj)
 			content3->onDraw(location);
 		else if (content1.Get())
 			content1->onDraw(location);
-		else if (!children.Count() && drawBackground)
-			drawingBoard->FillControlBackground(location);
+		/*else if (!children.Count() && drawBackground)
+			drawingBoard->FillControlBackground(location);*/
 		if (border3.Get())
 			border3->onDraw(location);
 		else if (border1.Get())
@@ -1279,8 +1279,8 @@ void TControl::onDraw(TObject* obj)
 			content2->onDraw(location);
 		else if (content1.Get())
 			content1->onDraw(location);
-		else if (!children.Count() && drawBackground)
-			drawingBoard->FillControlBackground(location);
+		/*else if (!children.Count() && drawBackground)
+			drawingBoard->FillControlBackground(location);*/
 		if (border2.Get())
 			border2->onDraw(location);
 		else if (border1.Get())
@@ -1294,8 +1294,8 @@ void TControl::onDraw(TObject* obj)
 	{
 		if (content1.Get())
 			content1->onDraw(location);
-		else if (!children.Count() && drawBackground)
-			drawingBoard->FillControlBackground(location);
+		/*else if (!children.Count() && drawBackground)
+			drawingBoard->FillControlBackground(location);*/
 		if (border1.Get())
 			border1->onDraw(location);
 		if (text1.Get())

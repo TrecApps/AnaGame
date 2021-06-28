@@ -3,6 +3,7 @@
 #include "TWindow.h"
 #include <SSGenerator.h>
 #include <DirectoryInterface.h>
+#include "WebHandler.h"
 
 
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): Page(board)
@@ -156,6 +157,12 @@ void WebPage::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, Trec
 		TDataArray<TrecObjectPointer> objects;
 
 		rootNode->OnLButtonDown(script, objects, clickNodes, point);
+
+		if (dynamic_cast<WebHandler*>(handler.Get()))
+		{
+			for (UINT Rust = 0; Rust < script.Size() && Rust < objects.Size(); Rust++)
+				dynamic_cast<WebHandler*>(handler.Get())->HandleWebEvents(script[Rust], TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(objects[Rust]));
+		}
 	}
 	ThreadRelease();
 }
@@ -176,6 +183,11 @@ void WebPage::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
 			if (!node.Get())
 				continue;
 			node->OnMouseMove(script, objects, moveNodes, point);
+		}
+		if (dynamic_cast<WebHandler*>(handler.Get()))
+		{
+			for (UINT Rust = 0; Rust < script.Size() && Rust < objects.Size(); Rust++)
+				dynamic_cast<WebHandler*>(handler.Get())->HandleWebEvents(script[Rust], TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(objects[Rust]));
 		}
 	}
 	ThreadRelease();
@@ -213,6 +225,11 @@ void WebPage::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPo
 				TString script(focusNode->OnLoseFocus());
 			}
 			focusNode = newFocus;
+		}
+		if (dynamic_cast<WebHandler*>(handler.Get()))
+		{
+			for(UINT Rust = 0; Rust < script.Size() && Rust < objects.Size(); Rust++)
+				dynamic_cast<WebHandler*>(handler.Get())->HandleWebEvents(script[Rust], TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(objects[Rust]));
 		}
 	}
 	ThreadRelease();

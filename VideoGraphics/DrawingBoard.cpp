@@ -65,7 +65,7 @@ DrawingBoard::DrawingBoard(TrecComPointer<ID2D1Factory1> fact, HWND window)
 	this->window = window;
 
 	SetDefaultColor(D2D1::ColorF::ColorF(0.15f, 0.0f, 0.0f));
-	SetDefaultTextColor(D2D1::ColorF::ColorF(1.0f, 0.9f, 0.9f));
+	SetDefaultTextColor(D2D1::ColorF::ColorF(.3f, 0.3f, 0.3f));
 }
 
 DrawingBoard::~DrawingBoard()

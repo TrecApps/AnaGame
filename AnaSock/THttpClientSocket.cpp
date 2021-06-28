@@ -186,13 +186,13 @@ void THttpRequest::CompileRequest(std::string& request)
 		{
 			tHeaders.AppendFormat(L"%ws%ws:%ws",
 				tHeaders.GetSize() ? L"\r\n" : L"", // Add CRLF but only if this isn't the first iteration (that one will be added later
-				entry.key.GetConstantBuffer(),		// Add the Key
-				entry.object.GetConstantBuffer());	// Add the Value
+				entry.key.GetConstantBuffer().getBuffer(),		// Add the Key
+				entry.object.GetConstantBuffer().getBuffer());	// Add the Value
 		}
 	}
 
 	// Append the headers to the top line
-	top.AppendFormat(L"%ws%ws", tHeaders.GetSize() ? L"\r\n" : L"", tHeaders.GetConstantBuffer());
+	top.AppendFormat(L"%ws%ws", tHeaders.GetSize() ? L"\r\n" : L"", tHeaders.GetConstantBuffer().getBuffer());
 
 
 	// Add headers to main request data

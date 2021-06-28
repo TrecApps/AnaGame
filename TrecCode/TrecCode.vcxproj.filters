@@ -66,6 +66,9 @@
     <ClInclude Include="JsPromise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="JsTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -114,6 +117,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="JsPromise.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JsTimer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

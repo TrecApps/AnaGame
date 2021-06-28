@@ -1,12 +1,12 @@
 #pragma once
 #include <TcInterpretor.h>
-
+#include "TcDataStruct.h"
 
 /**
  * Class: TReturnInterpretor
  * Purpose: Very Basic Interpretor whose only goal is to return some Object, and an error
  */
-class TReturnInterpretor :
+class TC_DATA_STRUCT TReturnInterpretor :
     public TcInterpretor
 {
 public:
@@ -70,6 +70,25 @@ public:
      * Returns: New TInterpretor Object
      */
     TReturnInterpretor(TrecPointer<TVariable> object, TrecPointer<TEnvironment> env, bool success);
+
+    /**
+     * Method: TcInterpretor::PreProcess
+     * Purpose: Allows Interpretors to do a brief scan of the code and id basic syntax errors
+     * Parameters: ReturnObject& ret - info about issues detected
+     * Returns: void
+     */
+    virtual void PreProcess(ReturnObject& ret) override;
+
+    /**
+     * Method: TcInterpretor::ProcessIndividualStatement
+     * Purpose: Allows an Interpretor to process a statement
+     * Parameters: const TString& statement - the statemnt to process
+     *              ReturnObject& ret - offers return information
+     * Returns: void
+     *
+     * Attributes: abstract
+     */
+    virtual void ProcessIndividualStatement(const TString& statement, ReturnObject& ret) override;
 
 protected:
 

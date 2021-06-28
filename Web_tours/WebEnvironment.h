@@ -4,6 +4,7 @@
 #include <TJavaScriptInterpretor.h>
 #include <TAnascriptInterpretor.h>
 #include <TWebWindow.h>
+#include <TcJavaScriptInterpretor.h>
 
 class WebEnvGenerator: public EnvironmentGenerator
 {
@@ -177,13 +178,21 @@ public:
 	 * Returns: TrecPointer<TInstance> - the instance requested
 	 */
 	TrecPointer<TInstance> GetInstance();
+	/**
+	 * Method: WebEnvironment::GetVariable
+	 * Purpose: Retrieves the variable requested by the interpretor
+	 * Parameters: TString& var - the name of the variable requested
+	 *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
+	 * Returns: TrecPointer<TVariable> - the variable requested
+	 */
+	virtual TrecPointer<TVariable> GetVariable(TString& var, bool& present, env_var_type evtType = env_var_type::evt_any) override;
 
 private:
 
 	/*
 	 * The Root JavaScript interpretor
 	 */
-	TrecSubPointer<TVariable, TJavaScriptInterpretor> mainJavaScript;
+	TrecSubPointer<TVariable, TcJavaScriptInterpretor> mainJavaScript;
 
 	/**
 	 * The Root Anascript interpretor

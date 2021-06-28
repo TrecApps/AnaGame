@@ -2528,14 +2528,16 @@ bool TString::SetAsEnvironmentVariable(TString& var)
  * 
  * Attributes: const
  */
-UINT TString::CountFinds(const TString& query) const
+UINT TString::CountFinds(const TString& query, int stop) const
 {
 	AG_THREAD_LOCK
 	UINT ret = 0;
 
 	int start = 0;
+	if (stop < 0)
+		stop = size;
 
-	while ((start = Find(query, start)) != -1)
+	while ((start = Find(query, start)) != -1 && start < stop)
 	{
 		ret++;
 		start++;
@@ -2552,14 +2554,16 @@ UINT TString::CountFinds(const TString& query) const
  * 
  * Attributes: const
  */
-UINT TString::CountFinds(WCHAR ch) const
+UINT TString::CountFinds(WCHAR ch, int stop) const
 {
 	AG_THREAD_LOCK
 	UINT ret = 0;
 
 	int start = 0;
+	if (stop < 0)
+		stop = size;
 
-	while ((start = Find(ch, start)) != -1)
+	while ((start = Find(ch, start)) != -1 && start < stop)
 	{
 		ret++;
 		start++;

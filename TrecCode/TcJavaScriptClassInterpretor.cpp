@@ -53,7 +53,7 @@ void TcJavaScriptClassInterpretor::ProcessStatements(ReturnObject& ret)
 				if (hasConstructor)
 				{
 					ret.returnCode = ret.ERR_IMPROPER_NAME;
-					ret.errorMessage.Format(L"Error! Second constructor token found within the %ws class", className.GetConstantBuffer());
+					ret.errorMessage.Format(L"Error! Second constructor token found within the %ws class", className.GetConstantBuffer().getBuffer());
 					return;
 				}
 				hasConstructor = true;
@@ -129,7 +129,7 @@ void TcJavaScriptClassInterpretor::ProcessStatements(ReturnObject& ret)
 				if (!name.GetSize())
 				{
 					ret.returnCode = ret.ERR_IMPROPER_NAME;
-					ret.errorMessage.Format(L"Error! No name provided to likely method in %ws class!", className.GetConstantBuffer());
+					ret.errorMessage.Format(L"Error! No name provided to likely method in %ws class!", className.GetConstantBuffer().getBuffer());
 					return;
 				}
 
@@ -148,7 +148,7 @@ void TcJavaScriptClassInterpretor::ProcessStatements(ReturnObject& ret)
 				if (attributes && !name.GetSize())
 				{
 					ret.returnCode = ret.ERR_IMPROPER_NAME;
-					ret.errorMessage.Format(L"Error! Unexpected tokens where variable name was expected in %ws class!", className.GetConstantBuffer());
+					ret.errorMessage.Format(L"Error! Unexpected tokens where variable name was expected in %ws class!", className.GetConstantBuffer().getBuffer());
 					return;
 				}
 
@@ -231,7 +231,7 @@ void TcJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, Trec
 			if (!accessAtt.def.Get() || accessAtt.def->GetVarType() != var_type::accessor)
 			{
 				ro.returnCode = ReturnObject::ERR_EXISTING_VAR;
-				ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+				ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer().getBuffer(), methodName.GetConstantBuffer().getBuffer());
 				return;
 			}
 		}
@@ -246,7 +246,7 @@ void TcJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, Trec
 		if (g.Get())
 		{
 			ro.returnCode = ReturnObject::ERR_EXISTING_VAR;
-			ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already has a getter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+			ro.errorMessage.Format(L"Error Setting Getter to %ws class, Attribute %ws already has a getter!", className.GetConstantBuffer().getBuffer(), methodName.GetConstantBuffer().getBuffer());
 			return;
 		}
 
@@ -268,7 +268,7 @@ void TcJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, Trec
 			if (!accessAtt.def.Get() || accessAtt.def->GetVarType() != var_type::accessor)
 			{
 				ro.returnCode = ReturnObject::ERR_EXISTING_VAR;
-				ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+				ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already set as something other than a getter or a setter!", className.GetConstantBuffer().getBuffer(), methodName.GetConstantBuffer().getBuffer());
 				return;
 			}
 		}
@@ -283,7 +283,7 @@ void TcJavaScriptClassInterpretor::ProcessMethod(const TString& methodName, Trec
 		if (g.Get())
 		{
 			ro.returnCode = ReturnObject::ERR_EXISTING_VAR;
-			ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already has a setter!", className.GetConstantBuffer(), methodName.GetConstantBuffer());
+			ro.errorMessage.Format(L"Error Setting Setter to %ws class, Attribute %ws already has a setter!", className.GetConstantBuffer().getBuffer(), methodName.GetConstantBuffer().getBuffer());
 			return;
 		}
 

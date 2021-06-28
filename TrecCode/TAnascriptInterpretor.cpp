@@ -363,7 +363,7 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expe
             ret.returnCode = ReportObject::incomplete_statement;
             ret.errorMessage.Set(L"'let' statement needs more than the let keyword!");
             TString stack;
-            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
             ret.stackTrace.push_back(stack);
 
 
@@ -429,18 +429,18 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expe
                 if (expectLet)
                 {
                     ret.returnCode = ReportObject::existing_var;
-                    ret.errorMessage.Format(L"Variable with name '%ws' already exists in the current scope!", varname.GetConstantBuffer());
+                    ret.errorMessage.Format(L"Variable with name '%ws' already exists in the current scope!", varname.GetConstantBuffer().getBuffer());
                     TString stack;
-                    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
                     ret.stackTrace.push_back(stack);
                     return ret;
                 }
                 if (!marker.IsMutable())
                 {
                     ret.returnCode = ReportObject::existing_var;
-                    ret.errorMessage.Format(L"Variable with name '%ws' is const current scope! Cannot assign to it!", varname.GetConstantBuffer());
+                    ret.errorMessage.Format(L"Variable with name '%ws' is const current scope! Cannot assign to it!", varname.GetConstantBuffer().getBuffer());
                     TString stack;
-                    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
                     ret.stackTrace.push_back(stack);
                     return ret;
                 }
@@ -477,7 +477,7 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expe
             ret.returnCode = ReportObject::invalid_name;
             ret.errorMessage.Set(L"Cannot have two tokens between 'let' and '='!");
             TString stack;
-            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
             ret.stackTrace.push_back(stack);
 
             return ret;
@@ -496,7 +496,7 @@ ReportObject TAnascriptInterpretor::ProcessLet(TString& let,UINT line, bool expe
             ret.returnCode = ReportObject::invalid_name;
             ret.errorMessage.Set(L"Cannot have two tokens after 'let' and unless the second is '=' or 'be'!");
             TString stack;
-            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
             ret.stackTrace.push_back(stack);
 
             return ret;
@@ -571,7 +571,7 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
         ret.errorMessage.Set(L"Incomplete Loop Block Detected!");
 
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ret.stackTrace.push_back(stack);
 
         return ret;
@@ -603,7 +603,7 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
         ret.errorMessage.Set(L"Expected keyword 'through' in loop declaration!");
 
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ret.stackTrace.push_back(stack);
 
         return ret;
@@ -641,7 +641,7 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
             ret.errorMessage.Set(L"Failed to retrieve Variable for processing through a loop!");
 
             TString stack;
-            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
             ret.stackTrace.push_back(stack);
 
             return ret;
@@ -653,7 +653,7 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
             ret.errorMessage.Set(L"Variable for the loop needs to be a collection!");
 
             TString stack;
-            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
             ret.stackTrace.push_back(stack);
 
             return ret;
@@ -667,7 +667,7 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
             ret.errorMessage.Set(L"Needed Variable name for Loop!");
 
             TString stack;
-            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+            stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
             ret.stackTrace.push_back(stack);
 
             return ret;
@@ -718,7 +718,7 @@ ReportObject TAnascriptInterpretor::ProcessLoop(TString& loop, UINT line)
     ret.returnCode = ReportObject::incomplete_block;
     ret.errorMessage.Set(L"Loop needs to be of format 'loop through [collection-exp] with element name [name]' or 'loop through [collection-exp] with element name [name]'!");
     TString stack;
-    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+    stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
     ret.stackTrace.push_back(stack);
 
     return ret;
@@ -858,7 +858,7 @@ ReportObject TAnascriptInterpretor::ProcessIf(TString& _if, UINT line)
         ret.errorMessage.Set(L"Incomplete Loop Block Detected!");
 
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ret.stackTrace.push_back(stack);
 
         return ret;
@@ -981,7 +981,7 @@ ReportObject TAnascriptInterpretor::ProcessWhile(TString& _while, UINT line)
         ret.errorMessage.Set(L"Incomplete Loop Block Detected!");
 
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ret.stackTrace.push_back(stack);
 
         return ret;
@@ -1088,7 +1088,7 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
         ret.errorMessage.Set(L"Incomplete Loop Block Detected!");
 
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ret.stackTrace.push_back(stack);
 
         return ret;
@@ -1102,7 +1102,7 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
         ret.errorMessage.Set(L"Incomplete function declaration!");
 
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ret.stackTrace.push_back(stack);
 
         return ret;
@@ -1120,7 +1120,7 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
         ret.errorMessage.Set(L"Expected keyword 'takes' at Function Declaration!");
 
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ret.stackTrace.push_back(stack);
 
         return ret;
@@ -1132,7 +1132,7 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
         ret.errorMessage.Set(L"Expected token '[' in front of the parameter list!");
 
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ret.stackTrace.push_back(stack);
 
         return ret;
@@ -1146,7 +1146,7 @@ ReportObject TAnascriptInterpretor::ProcessFunction(TString& fun, UINT line)
         ret.errorMessage.Set(L"Expected token ']' at the end of the parameter list!");
 
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ret.stackTrace.push_back(stack);
 
         return ret;
@@ -1205,7 +1205,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
         ro.returnCode = ro.broken_reference;
         ro.errorMessage.Set(L"Expression amounted to a blank!");
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ro.stackTrace.push_back(stack);
 
         return;
@@ -1238,7 +1238,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
                 ro.returnCode = ro.mismatched_parehtnesis;
                 ro.errorMessage.Format(L"Mismatched Parenthesis, needed %i more to close it!", stack);
                 TString stack;
-                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
                 ro.stackTrace.push_back(stack);
 
                 return;
@@ -1276,7 +1276,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
                 ro.returnCode = ro.mismatched_parehtnesis;
                 ro.errorMessage.Format(L"Mismatched Square Brackets, needed %i more to close it!", stack);
                 TString stack;
-                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
                 ro.stackTrace.push_back(stack);
 
                 return;
@@ -1320,7 +1320,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
                 ro.errorMessage.Set(L"Unfinished String Expression!");
 
                 TString stack;
-                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+                stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
                 ro.stackTrace.push_back(stack);
 
                 return;
@@ -1373,7 +1373,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
         if (curSize == exp.GetSize())
         {
             ro.returnCode = ro.broken_reference;
-            ro.errorMessage.Format(L"Potential Infinite loop caused by expression ((( %ws )))!", exp.GetConstantBuffer());
+            ro.errorMessage.Format(L"Potential Infinite loop caused by expression ((( %ws )))!", exp.GetConstantBuffer().getBuffer());
 
 
             return;
@@ -1385,7 +1385,7 @@ void TAnascriptInterpretor::ProcessExpression(TString& let, UINT line, ReportObj
         ro.returnCode = ro.incomplete_statement;
         ro.errorMessage.Set(L"Expression should have one more subexpressions");
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ro.stackTrace.push_back(stack);
 
         return;
@@ -1512,9 +1512,9 @@ void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Report
                 {
                     ro.returnCode = ro.broken_reference;
                     if (pres)
-                        ro.errorMessage.Format(L"Encountered Null object %ws during attempted method call!", var.GetConstantBuffer());
+                        ro.errorMessage.Format(L"Encountered Null object %ws during attempted method call!", var.GetConstantBuffer().getBuffer());
                     else 
-                        ro.errorMessage.Format(L"Encountered undefined object %ws during attempted method call!", var.GetConstantBuffer());
+                        ro.errorMessage.Format(L"Encountered undefined object %ws during attempted method call!", var.GetConstantBuffer().getBuffer());
                     return;
                 }
             }
@@ -1522,7 +1522,7 @@ void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Report
             {
                 ro.returnCode = ro.broken_reference;
                 
-                ro.errorMessage.Format(L"Encountered non-extendable variable %ws in an attempt to get to final Object!", var.GetConstantBuffer());
+                ro.errorMessage.Format(L"Encountered non-extendable variable %ws in an attempt to get to final Object!", var.GetConstantBuffer().getBuffer());
                 return;
             }
         }
@@ -1532,7 +1532,7 @@ void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Report
             if (!variables.retrieveEntry(var, marker))
             {
                 ro.returnCode = ro.broken_reference;
-                ro.errorMessage.Format(L"Encountered Undefined variable %ws while preparing method call!", var.GetConstantBuffer());
+                ro.errorMessage.Format(L"Encountered Undefined variable %ws while preparing method call!", var.GetConstantBuffer().getBuffer());
                 return;
             }
             
@@ -1541,7 +1541,7 @@ void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Report
             if (!object.Get())
             {
                 ro.returnCode = ro.broken_reference;
-                ro.errorMessage.Format(L"Encountered Null variable %ws while preparing method call!", var.GetConstantBuffer());
+                ro.errorMessage.Format(L"Encountered Null variable %ws while preparing method call!", var.GetConstantBuffer().getBuffer());
                 return;
             }
         }
@@ -1561,7 +1561,7 @@ void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Report
         ro.returnCode = ro.broken_reference;
         ro.errorMessage.Format(L"%ws call %ws was found to be %ws!",
             (object.Get()) ? L"Method" : L"Function",
-            procedureName.GetConstantBuffer(),
+            procedureName.GetConstantBuffer().getBuffer(),
             (pres) ? L"null": L"undefined");
         return;
     }
@@ -1571,7 +1571,7 @@ void TAnascriptInterpretor::ProcessProcedureCall(TString& exp, UINT line, Report
     if (call->GetVarType() != var_type::interpretor)
     {
         ro.returnCode = ro.improper_type;
-        ro.errorMessage.Format(L"Varible type %ws needs to be of type Interpretor so that Anascript can call it!", procedureName.GetConstantBuffer());
+        ro.errorMessage.Format(L"Varible type %ws needs to be of type Interpretor so that Anascript can call it!", procedureName.GetConstantBuffer().getBuffer());
         return;
     }
     UINT end = 0;
@@ -1610,7 +1610,7 @@ void TAnascriptInterpretor::ProcessProcedureCall(TrecPointer<TVariable> object, 
         ro.returnCode = ro.broken_reference;
         ro.errorMessage.Set(L"Ended up with broken reference to Procedure call!");
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ro.stackTrace.push_back(stack);
         return;
     }
@@ -1619,7 +1619,7 @@ void TAnascriptInterpretor::ProcessProcedureCall(TrecPointer<TVariable> object, 
         ro.returnCode = ro.improper_type;
         ro.errorMessage.Set(L"Expected Procedure call to be of type 'interpretor'!");
         TString stack;
-        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+        stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
         ro.stackTrace.push_back(stack);
         return;
     }

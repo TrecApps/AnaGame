@@ -64,7 +64,7 @@ void TCodeHandler::Initialize(TrecPointer<Page> page)
 			{
 				if (codeData.GetSize())
 				{
-					codeData.AppendFormat(L"\n%ws", line.GetConstantBuffer());
+					codeData.AppendFormat(L"\n%ws", line.GetConstantBuffer().getBuffer());
 				}
 				else
 					codeData.Set(line);

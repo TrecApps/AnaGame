@@ -377,7 +377,7 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
 		directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Documents));
 	assert(directory.Get());
 
-	caption.AppendFormat(L"%ws :", directory->GetPath().GetConstantBuffer());
+	caption.AppendFormat(L"%ws :", directory->GetPath().GetConstantBuffer().getBuffer());
 
 	TString fileName(ActivateNameDialog(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app), page->GetWindowHandle()->GetWindowHandle(), caption));
 
