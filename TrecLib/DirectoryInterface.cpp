@@ -150,7 +150,7 @@ void InitializeDirectories()
 
 	for (UINT C = 0; C < 9; C++)
 	{
-		CreateDirectoryW(shadowDirectories[c].GetConstantBuffer().getBuffer(), 0);
+		CreateDirectoryW(shadowDirectories[C].GetConstantBuffer().getBuffer(), 0);
 	}
 
 	initialized = true;
