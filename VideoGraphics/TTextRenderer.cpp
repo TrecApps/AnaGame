@@ -1,5 +1,10 @@
 #include "TTextRenderer.h"
 
+TTextRenderer::TTextRenderer()
+{
+    counter = 1;
+}
+
 HRESULT __stdcall TTextRenderer::QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppv)
 {
     if (!ppv)

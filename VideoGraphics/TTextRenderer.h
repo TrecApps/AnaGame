@@ -1,7 +1,7 @@
 #pragma once
 #include <dwrite.h>
 #include <d2d1.h>
-
+#include "VideoGraphics.h"
 
 
 MIDL_INTERFACE("616F37A8-C34B-450D-9707-B2AA73223636") IDoubleBrushHolder : public IUnknown
@@ -9,7 +9,7 @@ MIDL_INTERFACE("616F37A8-C34B-450D-9707-B2AA73223636") IDoubleBrushHolder : publ
     virtual HRESULT STDMETHODCALLTYPE GetBackgroundBrush(ID2D1Brush** brush) =0;
 };
 
-class TDoubleBrushHolder : public IDoubleBrushHolder
+class _VIDEO_GRAPHICS TDoubleBrushHolder : public IDoubleBrushHolder
 {
 public:
     virtual HRESULT STDMETHODCALLTYPE GetBackgroundBrush(ID2D1Brush** brush) override;
@@ -32,9 +32,12 @@ private:
 };
 
 
-class TTextRenderer :
+class _VIDEO_GRAPHICS TTextRenderer :
     public IDWriteTextRenderer
 {
+public:
+    TTextRenderer();
+
     // IUnknown
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(
         /* [in] */ REFIID riid,

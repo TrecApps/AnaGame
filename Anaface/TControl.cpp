@@ -3,9 +3,9 @@
 #include <Logger.h>
 #include <wincodec.h>
 #include "TScrollerControl.h"
+#include <TTextRenderer.h>
 
-
-
+	TTextRenderer* textRenderer;
 /*
 * Method:
 * Purpose:
@@ -5173,8 +5173,11 @@ bool TText::onDraw(D2D1_RECT_F& loc, TObject* obj)
 			fontLayout->SetMaxHeight(loc.bottom - loc.top);
 			fontLayout->SetMaxWidth(loc.right - loc.left);
 			ID2D1Brush* b = penBrush->GetUnderlyingBrush().Get();
-			if(b)
-				drawingBoard->GetRenderer()->DrawTextLayout(D2D1::Point2F(loc.left, loc.top), fontLayout.Get(), b);
+			if (b)
+			{
+				fontLayout->Draw(drawingBoard->GetRenderer().Get(), textRenderer, loc.left, loc.top);
+				//drawingBoard->GetRenderer()->DrawTextLayout(D2D1::Point2F(), fontLayout.Get(), b);
+			}
 		}
 		
 		ThreadRelease();
