@@ -45,40 +45,48 @@ STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::DrawGlyphRun(_In_opt_ void* clie
     _In_ DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
     _In_opt_ IUnknown* clientDrawingEffect)
 {
-    ID2D1RenderTarget* renderer = static_cast<ID2D1RenderTarget*>(clientDrawingContext);
-    if (!renderer || !clientDrawingEffect)
+    if (!clientDrawingContext)
+        return E_POINTER;
+    ID2D1RenderTarget* renderer = static_cast<TDrawingContext*>(clientDrawingContext)->renderer;
+    if (!renderer)
         return E_POINTER;
 
     IDoubleBrushHolder* bHolder = nullptr;
-    ID2D1Brush* fBrush = nullptr;
-    HRESULT ret =clientDrawingEffect->QueryInterface<ID2D1Brush>(&fBrush);
-    if (FAILED(ret))
-        return ret;
-    ret = clientDrawingEffect->QueryInterface<IDoubleBrushHolder>(&bHolder);
-    ID2D1Brush* bBrush = nullptr;
-    if (SUCCEEDED(ret) && SUCCEEDED(bHolder->GetBackgroundBrush(&bBrush)))
+    ID2D1Brush* fBrush = static_cast<TDrawingContext*>(clientDrawingContext)->brush;
+    if (!fBrush)
+        return E_POINTER;
+    HRESULT ret = S_OK;
+    if (clientDrawingEffect)
     {
-        // Get width of text
-        float totalWidth = 0;
-
-        for (UINT32 index = 0; index < glyphRun->glyphCount; index++)
+        clientDrawingEffect->QueryInterface<ID2D1Brush>(&fBrush);
+        if (FAILED(ret))
+            return ret;
+        ret = clientDrawingEffect->QueryInterface<IDoubleBrushHolder>(&bHolder);
+        ID2D1Brush* bBrush = nullptr;
+        if (SUCCEEDED(ret) && SUCCEEDED(bHolder->GetBackgroundBrush(&bBrush)))
         {
-            totalWidth += glyphRun->glyphAdvances[index];
+            // Get width of text
+            float totalWidth = 0;
+
+            for (UINT32 index = 0; index < glyphRun->glyphCount; index++)
+            {
+                totalWidth += glyphRun->glyphAdvances[index];
+            }
+
+            // Get height of text
+            DWRITE_FONT_METRICS fontMetrics;
+            glyphRun->fontFace->GetMetrics(&fontMetrics);
+            float adjust = glyphRun->fontEmSize / fontMetrics.designUnitsPerEm;
+            float ascent = adjust * fontMetrics.ascent;
+            float descent = adjust * fontMetrics.descent;
+            D2D1_RECT_F rect = D2D1::RectF(baselineOriginX,
+                baselineOriginY - ascent,
+                baselineOriginX + totalWidth,
+                baselineOriginY + descent);
+
+            // Fill Rectangle
+            renderer->FillRectangle(rect, bBrush);
         }
-
-        // Get height of text
-        DWRITE_FONT_METRICS fontMetrics;
-        glyphRun->fontFace->GetMetrics(&fontMetrics);
-        float adjust = glyphRun->fontEmSize / fontMetrics.designUnitsPerEm;
-        float ascent = adjust * fontMetrics.ascent;
-        float descent = adjust * fontMetrics.descent;
-        D2D1_RECT_F rect = D2D1::RectF(baselineOriginX,
-            baselineOriginY - ascent,
-            baselineOriginX + totalWidth,
-            baselineOriginY + descent);
-
-        // Fill Rectangle
-        renderer->FillRectangle(rect, bBrush);
     }
     renderer->DrawGlyphRun(D2D1::Point2F(baselineOriginX, baselineOriginY),
         glyphRun, fBrush, measuringMode);
@@ -92,13 +100,11 @@ STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::DrawUnderline(_In_opt_ void* cli
     _In_ DWRITE_UNDERLINE const* underline,
     _In_opt_ IUnknown* clientDrawingEffect)
 {
-    ID2D1RenderTarget* renderer = static_cast<ID2D1RenderTarget*>(clientDrawingContext);
+    ID2D1RenderTarget* renderer = static_cast<TDrawingContext*>(clientDrawingContext)->renderer;
     if (!renderer || !clientDrawingEffect)
         return E_POINTER;
-    ID2D1Brush* fBrush = nullptr;
-    HRESULT ret = clientDrawingEffect->QueryInterface<ID2D1Brush>(&fBrush);
-    if (FAILED(ret))
-        return ret;
+    ID2D1Brush* fBrush = static_cast<TDrawingContext*>(clientDrawingContext)->brush;
+   
 
     D2D1_RECT_F loc = D2D1::RectF(baselineOriginX, baselineOriginY + underline->offset,
         baselineOriginX + underline->width, baselineOriginY + underline->offset + underline->thickness);
@@ -114,10 +120,10 @@ STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::DrawStrikethrough(_In_opt_ void*
     _In_ DWRITE_STRIKETHROUGH const* strikethrough,
     _In_opt_ IUnknown* clientDrawingEffect)
 {
-    ID2D1RenderTarget* renderer = static_cast<ID2D1RenderTarget*>(clientDrawingContext);
+    ID2D1RenderTarget* renderer = static_cast<TDrawingContext*>(clientDrawingContext)->renderer;
     if (!renderer || !clientDrawingEffect)
         return E_POINTER;
-    ID2D1Brush* fBrush = nullptr;
+    ID2D1Brush* fBrush = static_cast<TDrawingContext*>(clientDrawingContext)->brush;
     HRESULT ret = clientDrawingEffect->QueryInterface<ID2D1Brush>(&fBrush);
     if (FAILED(ret))
         return ret;
@@ -151,7 +157,7 @@ STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::IsPixelSnappingDisabled(_In_opt_
 
 STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::GetCurrentTransform(_In_opt_ void* clientDrawingContext, _Out_ DWRITE_MATRIX* transform)
 {
-    ID2D1RenderTarget* renderer = static_cast<ID2D1RenderTarget*>(clientDrawingContext);
+    ID2D1RenderTarget* renderer = static_cast<TDrawingContext*>(clientDrawingContext)->renderer;
     if (!renderer || !transform)
         return E_POINTER;
 
@@ -161,7 +167,7 @@ STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::GetCurrentTransform(_In_opt_ voi
 
 STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::GetPixelsPerDip(_In_opt_ void* clientDrawingContext, _Out_ FLOAT* pixelsPerDip)
 {
-    ID2D1RenderTarget* renderer = static_cast<ID2D1RenderTarget*>(clientDrawingContext);
+    ID2D1RenderTarget* renderer = static_cast<TDrawingContext*>(clientDrawingContext)->renderer;
     if (!renderer || !pixelsPerDip)
         return E_POINTER;
     float dpiX = 0.0f, dpiY = 0.0f;

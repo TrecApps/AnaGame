@@ -31,6 +31,10 @@ private:
     UINT counter;
 };
 
+typedef struct TDrawingContext {
+    ID2D1RenderTarget* renderer;
+    ID2D1Brush* brush;
+}TDrawingContext;
 
 class _VIDEO_GRAPHICS TTextRenderer :
     public IDWriteTextRenderer

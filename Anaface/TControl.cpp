@@ -5175,7 +5175,8 @@ bool TText::onDraw(D2D1_RECT_F& loc, TObject* obj)
 			ID2D1Brush* b = penBrush->GetUnderlyingBrush().Get();
 			if (b)
 			{
-				fontLayout->Draw(drawingBoard->GetRenderer().Get(), textRenderer, loc.left, loc.top);
+				TDrawingContext tContext{ drawingBoard->GetRenderer().Get(), b };
+				fontLayout->Draw(&tContext, textRenderer, loc.left, loc.top);
 				//drawingBoard->GetRenderer()->DrawTextLayout(D2D1::Point2F(), fontLayout.Get(), b);
 			}
 		}
