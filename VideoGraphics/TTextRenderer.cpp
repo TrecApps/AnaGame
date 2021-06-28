@@ -100,6 +100,8 @@ STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::DrawUnderline(_In_opt_ void* cli
     _In_ DWRITE_UNDERLINE const* underline,
     _In_opt_ IUnknown* clientDrawingEffect)
 {
+    if (!clientDrawingContext)
+        return E_POINTER;
     ID2D1RenderTarget* renderer = static_cast<TDrawingContext*>(clientDrawingContext)->renderer;
     if (!renderer || !clientDrawingEffect)
         return E_POINTER;
@@ -120,6 +122,8 @@ STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::DrawStrikethrough(_In_opt_ void*
     _In_ DWRITE_STRIKETHROUGH const* strikethrough,
     _In_opt_ IUnknown* clientDrawingEffect)
 {
+    if (!clientDrawingContext)
+        return E_POINTER;
     ID2D1RenderTarget* renderer = static_cast<TDrawingContext*>(clientDrawingContext)->renderer;
     if (!renderer || !clientDrawingEffect)
         return E_POINTER;
@@ -157,8 +161,10 @@ STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::IsPixelSnappingDisabled(_In_opt_
 
 STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::GetCurrentTransform(_In_opt_ void* clientDrawingContext, _Out_ DWRITE_MATRIX* transform)
 {
+    if (!clientDrawingContext || !transform)
+        return E_POINTER;
     ID2D1RenderTarget* renderer = static_cast<TDrawingContext*>(clientDrawingContext)->renderer;
-    if (!renderer || !transform)
+    if (!renderer)
         return E_POINTER;
 
     renderer->GetTransform((D2D1_MATRIX_3X2_F*)transform);
@@ -167,8 +173,10 @@ STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::GetCurrentTransform(_In_opt_ voi
 
 STDMETHODIMP_(HRESULT __stdcall) TTextRenderer::GetPixelsPerDip(_In_opt_ void* clientDrawingContext, _Out_ FLOAT* pixelsPerDip)
 {
+    if (!clientDrawingContext || !pixelsPerDip)
+        return E_POINTER;
     ID2D1RenderTarget* renderer = static_cast<TDrawingContext*>(clientDrawingContext)->renderer;
-    if (!renderer || !pixelsPerDip)
+    if (!renderer)
         return E_POINTER;
     float dpiX = 0.0f, dpiY = 0.0f;
     renderer->GetDpi(&dpiX, &dpiY);

@@ -200,6 +200,16 @@ public:
 	 * Attributes: static
 	 */
 	static TColor GetColorFromString(const TString& color, bool& worked);
+
+	/**
+	 * Method: TObject::toString
+	 * Purpose: Returns a string representation of this object
+	 * Parameters: void
+	 * Returns: TString - repreetnation of this object
+	 *
+	 * Attributes: virtual
+	 */
+	virtual TString toString() override;
 private:
 	color_struct color;
 };
