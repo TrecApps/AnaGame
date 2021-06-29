@@ -3491,7 +3491,7 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
                 return 0;
             }
             curParenth--;
-            if (curParenth < parenth)
+            if (curParenth <= parenth)
                 continueFor = false;
             break;
         case L']':
@@ -3500,8 +3500,8 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
                 PrepReturn(ret, L"Unexpected ']' detected in Expression!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart + statement->statement.CountFinds(L'\n', index));
                 return 0;
             }
-            curParenth--;
-            if (curSquare < square)
+            curSquare--;
+            if (curSquare <= square)
                 continueFor = false;
             break;
         case L'[':
@@ -3511,6 +3511,7 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
             curParenth++;
             break;
         case L',':
+            if (curParenth < parenth)
             continueFor = false;
         }
     }

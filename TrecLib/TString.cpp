@@ -689,7 +689,15 @@ TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCH
 
 		(ret).Get()->push_back(tok);
 		begPos = pos;
-		tok.Set(this->Tokenize(str, pos, flags & 0b00000010));
+		if (hasLimit && elements == 1)
+		{
+			while (pos == ((flags & 2) ? FindOneOf(str, pos) : FindOneOfOutOfQuotes(str, pos)))
+				pos++;
+			ret->push_back(SubString(pos));
+			break;
+		}
+		else
+			tok.Set(this->Tokenize(str, pos, flags & 0b00000010));
 	}
 
 	RETURN_THREAD_UNLOCK ret;
