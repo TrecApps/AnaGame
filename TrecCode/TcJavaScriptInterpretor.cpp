@@ -3444,6 +3444,10 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
     if (paramList.CountFinds(L'(') != paramList.CountFinds(L')'))
         return 0;
 
+    int fOpenP = paramList.FindOutOfQuotes(L'('), fCloseP = paramList.FindOutOfQuotes(L')');
+    if (fCloseP != -1 && (fCloseP < fOpenP || fOpenP == -1))
+        return 0;
+
 
     if (paramList.StartsWith(L'(') && paramList.EndsWith(L')'))
     {
@@ -3511,7 +3515,7 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
             curParenth++;
             break;
         case L',':
-            if (curParenth < parenth)
+            if (curParenth <= parenth)
             continueFor = false;
         }
     }
@@ -3544,7 +3548,7 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
     else
     {
         TrecPointer<CodeStatement> newStatement = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
-        newStatement->statement.Set(statement->statement.SubString(notation + 2, index -1));
+        newStatement->statement.Set(statement->statement.SubString(notation + 2, index));
         newStatement->lineStart = statement->lineStart + statement->statement.CountFinds(L'\n', notation);
         newStatement->lineEnd = statement->lineStart + statement->statement.CountFinds(L'\n', index);
         if (index >= statement->statement.GetSize())
