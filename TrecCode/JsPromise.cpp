@@ -163,6 +163,10 @@ void JsPromise::JsPromiseAll(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 	}
 
 	TrecSubPointer<TVariable, TcNativeInterpretor> nativeRunner = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcNativeInterpretor>(JsPromiseAllSub, TrecSubPointer<TVariable, TcInterpretor>(), env);
+	TDataArray<TrecPointer<TVariable>> clonedParams;
+	for (UINT Rust = 0; Rust < params.Size(); Rust++)
+		clonedParams.push_back(params[Rust].Get() ? params[Rust]->Clone() : TrecPointer<TVariable>());
+	nativeRunner->SetIntialVariables(clonedParams);
 	TrecPointer<TVariable> varRunner = TrecPointerKey::GetTrecPointerFromSub<>(nativeRunner);
 	TrecSubPointer<TVariable, TcInterpretor> regRunner = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(varRunner);
 	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAsyncVariable>(GetCurrentThreadId(), regRunner);
@@ -184,6 +188,10 @@ void JsPromise::JsPromiseAllSettled(TDataArray<TrecPointer<TVariable>>& params, 
 	}
 
 	TrecSubPointer<TVariable, TcNativeInterpretor> nativeRunner = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcNativeInterpretor>(JsPromiseAllSettledSub, TrecSubPointer<TVariable, TcInterpretor>(), env);
+	TDataArray<TrecPointer<TVariable>> clonedParams;
+	for (UINT Rust = 0; Rust < params.Size(); Rust++)
+		clonedParams.push_back(params[Rust].Get() ? params[Rust]->Clone() : TrecPointer<TVariable>());
+	nativeRunner->SetIntialVariables(clonedParams);
 	TrecPointer<TVariable> varRunner = TrecPointerKey::GetTrecPointerFromSub<>(nativeRunner);
 	TrecSubPointer<TVariable, TcInterpretor> regRunner = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(varRunner);
 	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAsyncVariable>(GetCurrentThreadId(), regRunner);
@@ -205,6 +213,10 @@ void JsPromise::JsPromiseAny(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 	}
 
 	TrecSubPointer<TVariable, TcNativeInterpretor> nativeRunner = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcNativeInterpretor>(JsPromiseAnySub, TrecSubPointer<TVariable, TcInterpretor>(), env);
+	TDataArray<TrecPointer<TVariable>> clonedParams;
+	for (UINT Rust = 0; Rust < params.Size(); Rust++)
+		clonedParams.push_back(params[Rust].Get() ? params[Rust]->Clone() : TrecPointer<TVariable>());
+	nativeRunner->SetIntialVariables(clonedParams);
 	TrecPointer<TVariable> varRunner = TrecPointerKey::GetTrecPointerFromSub<>(nativeRunner);
 	TrecSubPointer<TVariable, TcInterpretor> regRunner = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(varRunner);
 	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAsyncVariable>(GetCurrentThreadId(), regRunner);
@@ -226,6 +238,10 @@ void JsPromise::JsPromiseRace(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 	}
 
 	TrecSubPointer<TVariable, TcNativeInterpretor> nativeRunner = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcNativeInterpretor>(JsPromiseRaceSub, TrecSubPointer<TVariable, TcInterpretor>(), env);
+	TDataArray<TrecPointer<TVariable>> clonedParams;
+	for (UINT Rust = 0; Rust < params.Size(); Rust++)
+		clonedParams.push_back(params[Rust].Get() ? params[Rust]->Clone() : TrecPointer<TVariable>());
+	nativeRunner->SetIntialVariables(clonedParams);
 	TrecPointer<TVariable> varRunner = TrecPointerKey::GetTrecPointerFromSub<>(nativeRunner);
 	TrecSubPointer<TVariable, TcInterpretor> regRunner = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(varRunner);
 	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAsyncVariable>(GetCurrentThreadId(), regRunner);

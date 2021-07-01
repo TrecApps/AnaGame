@@ -305,6 +305,7 @@ void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable
     {
         TrecSubPointer<TVariable, TAsyncVariable>* lpParam = new TrecSubPointer<TVariable, TAsyncVariable>(asyncVar);
 
-        TThread::CreateTThread(RunAsyncObject, lpParam);
+        TThread::Resume(TThread::CreateTThread(RunAsyncObject, lpParam));
+
     }
 }
