@@ -69,6 +69,7 @@ typedef enum class return_mode
     rm_break,       // Break was detected
     rm_continue,    // Continue was detected
     rm_return,       // Return was detected
+    rm_super_return, // Return was detected, and the caller should also return
     rm_yield        // Similar to Return, but function is expected to resume from the yield point
 }return_mode;
 

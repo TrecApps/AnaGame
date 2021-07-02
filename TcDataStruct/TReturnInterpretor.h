@@ -66,10 +66,16 @@ public:
     /**
      * Method: TcInterpretor::TcInterpretor
      * Purpose: Constructor
-     * Parameters: TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
+     * Parameters: TrecPointer<TVariable> object - the Object to return upon being run
+     *              TrecPointer<TEnvironment> env - the environment to run in
+     *              bool success - whether the Function should report a success or not
+     *              bool returnByCall - If true, then it returns the first parameter provided by the "SetInitialVariables" call, if false, then it returns the "object" parameter
+     *              bool initiateSuperReturn - if true, then the caller should also return
      * Returns: New TInterpretor Object
+     * 
+     * Note: By default, the resulting function returns the value provided by "object". However, if you set "returnByCall" to true, "object" is ignored and what is returned is the first param provided when it is called
      */
-    TReturnInterpretor(TrecPointer<TVariable> object, TrecPointer<TEnvironment> env, bool success);
+    TReturnInterpretor(TrecPointer<TVariable> object, TrecPointer<TEnvironment> env, bool success, bool returnByCall = false, bool initiateSuperReturn = false);
 
     /**
      * Method: TcInterpretor::PreProcess
@@ -100,6 +106,6 @@ protected:
     /**
      * Whether it is being "returned" (true) or "thrown" (false)
      */
-    bool success;
+    bool success, returnByCall, superReturn;
 };
 

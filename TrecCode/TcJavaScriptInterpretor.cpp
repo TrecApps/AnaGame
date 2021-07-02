@@ -3697,7 +3697,7 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
     }
     else
     {
-        ret.mode = return_mode::rm_regular;
+        ret.mode = (ret.mode == return_mode::rm_super_return) ? return_mode::rm_return : return_mode::rm_regular;
     }
 
 

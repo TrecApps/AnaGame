@@ -19,18 +19,24 @@ ReturnObject TReturnInterpretor::Run()
 	ReturnObject ret;
 	ret.errorObject = var;
 	ret.returnCode = success ? ReturnObject::ERR_NO_ERROR : ReturnObject::ERR_GENERIC_ERROR;
+	if (superReturn)
+		ret.mode = return_mode::rm_super_return;
 	return ret;
 }
 
 void TReturnInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
 {
+	if(returnByCall)
+	var = params.Size() ? params[0] : TrecPointer<TVariable>();
 }
 
-TReturnInterpretor::TReturnInterpretor(TrecPointer<TVariable> object, TrecPointer<TEnvironment> env, bool success)
+TReturnInterpretor::TReturnInterpretor(TrecPointer<TVariable> object, TrecPointer<TEnvironment> env, bool success, bool returnByCall, bool initiateSuperReturn)
 	: TcInterpretor(TrecSubPointer<TVariable, TcInterpretor>(), env)
 {
 	var = object;
 	this->success = success;
+	this->returnByCall = returnByCall;
+	this->superReturn = initiateSuperReturn;
 }
 
 void TReturnInterpretor::PreProcess(ReturnObject& ret)

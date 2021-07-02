@@ -67,8 +67,15 @@ void JsPromise::JsPromiseConstructor(TDataArray<TrecPointer<TVariable>>& params,
 		return;
 	}
 
+	TrecSubPointer<TVariable, TcInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(params[0]);
+
+	TDataArray<TrecPointer<TVariable>> newParams;
+	newParams.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TReturnInterpretor>(TrecPointer<TVariable>(), env, true, true));
+
+	newParams.push_back(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TReturnInterpretor>(TrecPointer<TVariable>(), env, false, true));
+	func->SetIntialVariables(newParams);
 	TrecSubPointer<TVariable, TAsyncVariable> prom = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAsyncVariable>
-		(GetCurrentThreadId(), TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(params[0]));
+		(GetCurrentThreadId(), func);
 
 	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(prom);
 }
