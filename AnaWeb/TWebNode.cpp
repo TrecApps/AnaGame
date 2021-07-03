@@ -1724,6 +1724,13 @@ void TWebNode::CompileProperties(TDataMap<TString>& atts)
 		thisTextData.textColorUpdated = true;
 	}
 
+	// Handle background color
+	if (atts.retrieveEntry(L"", val))
+	{
+		thisTextData.backgroundColor.SetColor(val);
+		thisTextData.hasBackgroundColor = true;
+	}
+
 	if (atts.retrieveEntry(L"font-style", val))
 	{
 		if (!val.Compare(L"italic"))
@@ -2006,6 +2013,8 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 	textField->addAttribute(L"|CanEdit", falseString);
 	textField->addAttribute(L"|VerticalAlignment", vertiString);
 	textField->addAttribute(L"|AutoGenContent", falseString);
+	if (thisTextData.hasBackgroundColor)
+		textField->addAttribute(L"|ContentColor", TrecPointerKey::GetNewTrecPointer<TString>(thisTextData.backgroundColor.toString()));
 	textField->onCreate(loc, TrecPointer<TWindowEngine>());
 	FormattingDetails det;
 	TString theText;
@@ -2024,6 +2033,8 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 		textField->SetText(theText);
 	}
 
+
+
 	for (UINT Rust = 0; Rust < textNode->textDataList.Size(); Rust++)
 	{
 		det.range.startPosition = beginningIndex;
@@ -2034,6 +2045,11 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 		det.weight = textNode->textDataList[Rust].fontWeight;
 		det.color = board->GetBrush(textNode->textDataList[Rust].textColor);
 		det.fontSize = textNode->textDataList[Rust].fontSize;
+
+		if (textNode->textDataList[Rust].hasBackgroundColor)
+		{
+			det.bColor = board->GetBrush(textNode->textDataList[Rust].backgroundColor);
+		}
 
 		// Do-To: Add more fields to the FormattingDetails object and transfer dditional fields over to it
 

@@ -12,6 +12,7 @@
 #include <TrecReference.h>
 #include <TDataArray.h>
 #include <TFile.h>
+#include <TTextRenderer.h>
 #include <TPoint.h>
 
 #include <DrawingBoard.h>
@@ -31,6 +32,9 @@
 #define RADIAN_DEGREE_RATIO 57.2957795f
 
 #define afx_msg
+
+	extern TTextRenderer* textRenderer;
+
 
 class TControl;
 class TFlyout;

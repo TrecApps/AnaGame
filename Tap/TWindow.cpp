@@ -73,7 +73,7 @@ TWindow::~TWindow()
 		pages[Rust].Delete();
 
 	d3dEngine.Delete();
-
+	drawingBoard.Delete();
 }
 
 /**

@@ -2,6 +2,7 @@
 #include "TTextField.h"
 #include "TScrollerControl.h"
 #include <atltrace.h>
+#include <TTextRenderer.h>
 
 // Allows Anaface to keep track of where the caret is
 static TDataArray<TTextField*> TextList;
@@ -1439,7 +1440,25 @@ void TTextField::updateTextString()
 		res = layout->SetFontWeight(details[c].weight, details[c].range);
 		res = layout->SetFontSize(details[c].fontSize, details[c].range);
 
-		if (details[c].color.Get())
+		if (details[c].bColor.Get() && details[c].color.Get())
+		{
+			TDoubleBrushHolder* dBrushHolder = new TDoubleBrushHolder(details[c].color->GetUnderlyingBrush().Get(),
+				details[c].bColor->GetUnderlyingBrush().Get());
+			layout->SetDrawingEffect(dBrushHolder, details[c].range);
+			dBrushHolder->Release();
+			dBrushHolder = nullptr;
+		}
+		else if (details[c].bColor.Get())
+		{
+			if (!text1->penBrush.Get())
+				text1->ResetBrush();
+			TDoubleBrushHolder* dBrushHolder = new TDoubleBrushHolder(text1->penBrush.Get() ? text1->penBrush->GetUnderlyingBrush().Get() : nullptr,
+				details[c].bColor->GetUnderlyingBrush().Get());
+			layout->SetDrawingEffect(dBrushHolder, details[c].range);
+			dBrushHolder->Release();
+			dBrushHolder = nullptr;
+		}
+		else if (details[c].color.Get())
 			res = layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
 	highlighter.SetLayout(text1->fontLayout);
@@ -2099,6 +2118,7 @@ FormattingDetails::FormattingDetails(const FormattingDetails& copy)
 	this->weight = copy.weight;
 	this->range = copy.range;
 	this->color = copy.color;
+	this->bColor = copy.bColor;
 	this->fontSize = copy.fontSize;
 }
 

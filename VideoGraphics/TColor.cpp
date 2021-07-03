@@ -536,3 +536,10 @@ TColor TColor::GetColorFromString(const TString& color, bool& worked)
 
 	return TColor();
 }
+
+TString TColor::toString()
+{
+	TString ret;
+	ret.Format(L"%f,%f,%f,%f", color.r, color.g, color.b, color.a);
+	return ret;
+}
