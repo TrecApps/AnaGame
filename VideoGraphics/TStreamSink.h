@@ -7,19 +7,48 @@
 #include "TPresenter.h"
 #include "TComCommon.h"
 
+/**
+ * Struct: sFraction
+ * Purpose: Represents a fraction
+ */
 typedef struct sFraction
 {
     DWORD Numerator;
     DWORD Denominator;
 }sFraction;
 
+/**
+ * Class: TStreamSink
+ * Purpose: Sub sink within the TMedia Sink that actually manages frames
+ */
 class TStreamSink : public IMFStreamSink, public IMFMediaTypeHandler, public TObject
 {
     friend class TMediaSink;
 public:
     // IUnknown
+    /**
+     * Method: TStreamSink::AddRef
+     * Purpose: Increments the COM Reference
+     * Parameters: void
+     * Returns: ULONG - the new counter
+     */
     STDMETHODIMP_(ULONG) AddRef(void) override;
+    /**
+     * Method: TStreamSink::QueryInterface
+     * Purpose: Retrieves a pointer to an object based off of the specified interface
+     * Parameters: REFIID riid - the id of the interface to get
+     *              void** ppv - where to place the pointer, if riid is supported
+     * Returns: HRESULT - E_POINTER if ppv is null, E_NOINTERFACE if riid is not supported, or S_OK
+     *
+     * Note: Supported Interfaces are IUnknown, IMFStreamSink, and IMFMediaTypeHandler
+     */
     STDMETHODIMP QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv) override;
+    /**
+     * Method: TStreamSink::Release
+     * Purpose: Decrements the counter (possibly leading to deletion), to be called when code is done with this object
+     * Parameters: void
+     * Returns: ULONG - the counter set now (if zero, then this object should be deleted)
+     */
     STDMETHODIMP_(ULONG) Release(void) override;
 
     // IMFStreamSink

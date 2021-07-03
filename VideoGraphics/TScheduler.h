@@ -7,6 +7,10 @@
 #include "TComCommon.h"
 #include "TSampleTexture.h"
 
+/**
+ * Class: TScheduler
+ * Purpose: Helps Anagame Sinks manage the Timing of Frame Presentation
+ */
 class TScheduler :
     public TObject
 {

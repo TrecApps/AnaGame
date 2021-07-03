@@ -36,11 +36,26 @@ TrecComPointer<TMediaSink> TMediaSink::CreateInstance(TrecPointer<DrawingBoard> 
     return ret;
 }
 
+/**
+ * Method: TMediaSink::AddRef
+ * Purpose: Increments the COM Reference
+ * Parameters: void
+ * Returns: ULONG - the new counter
+ */
 ULONG TMediaSink::AddRef(void)
 {
     return InterlockedIncrement(&m_nRefCount);
 }
 
+/**
+ * Method: TMediaSink::QueryInterface
+ * Purpose: Retrieves a pointer to an object based off of the specified interface
+ * Parameters: REFIID riid - the id of the interface to get
+ *              void** ppv - where to place the pointer, if riid is supported
+ * Returns: HRESULT - E_POINTER if ppv is null, E_NOINTERFACE if riid is not supported, or S_OK
+ *
+ * Note: Supported Interfaces are IUnknown, IMFMediaSink, IMFClockStateSink, and IMFSinkPreroll
+ */
 HRESULT TMediaSink::QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
 {
     if (!ppv)
@@ -72,6 +87,12 @@ HRESULT TMediaSink::QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonf
     return S_OK;
 }
 
+/**
+ * Method: TMediaSink::Release
+ * Purpose: Decrements the counter (possibly leading to deletion), to be called when code is done with this object
+ * Parameters: void
+ * Returns: ULONG - the counter set now (if zero, then this object should be deleted)
+ */
 ULONG TMediaSink::Release(void)
 {
     ULONG c = InterlockedDecrement(&m_nRefCount);

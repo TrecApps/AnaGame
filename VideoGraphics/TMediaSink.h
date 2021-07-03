@@ -12,18 +12,41 @@
  * Purpose: Anagame's custom implementation of the IMFMediaSink Interface, allowing Anagame to Create one without using an out of date HWND 
  */
 class TMediaSink :
-    public TObject,
-    public IMFMediaSink,
-    public IMFClockStateSink,
-    public IMFMediaSinkPreroll
+    public TObject,             // Thread Protection
+    public IMFMediaSink,        // Interface that the Media Session interacts with
+    public IMFClockStateSink,   // Required for Media Sinks
+    public IMFMediaSinkPreroll  // 
 {
 public:
     // Static method to create the object.
     static TrecComPointer<TMediaSink> CreateInstance(TrecPointer<DrawingBoard> board);
 
     // IUnknown
+
+    /**
+     * Method: TMediaSink::AddRef
+     * Purpose: Increments the COM Reference
+     * Parameters: void
+     * Returns: ULONG - the new counter
+     */
     STDMETHODIMP_(ULONG) AddRef(void) override;
+    /**
+     * Method: TMediaSink::QueryInterface
+     * Purpose: Retrieves a pointer to an object based off of the specified interface
+     * Parameters: REFIID riid - the id of the interface to get
+     *              void** ppv - where to place the pointer, if riid is supported
+     * Returns: HRESULT - E_POINTER if ppv is null, E_NOINTERFACE if riid is not supported, or S_OK
+     * 
+     * Note: Supported Interfaces are IUnknown, IMFMediaSink, IMFClockStateSink, and IMFSinkPreroll
+     */
     STDMETHODIMP QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv) override;
+
+    /**
+     * Method: TMediaSink::Release
+     * Purpose: Decrements the counter (possibly leading to deletion), to be called when code is done with this object
+     * Parameters: void
+     * Returns: ULONG - the counter set now (if zero, then this object should be deleted)
+     */
     STDMETHODIMP_(ULONG) Release(void) override;
 
     // IMFMediaSink methods

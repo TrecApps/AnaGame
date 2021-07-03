@@ -38,8 +38,29 @@ public:
 	static TrecComPointer<TPlayer> CreateInstance(HRESULT& res, TrecPointer<DrawingBoard> board);
 
     // IUnknown methods
+    /**
+     * Method: TPlayer::QueryInterface
+     * Purpose: Retrieves a pointer to an object based off of the specified interface
+     * Parameters: REFIID riid - the id of the interface to get
+     *              void** ppv - where to place the pointer, if riid is supported
+     * Returns: HRESULT - E_POINTER if ppv is null, E_NOINTERFACE if riid is not supported, or S_OK
+     *
+     * Note: Supported Interfaces are IUnknown, and IMFAsyncCallback
+     */
     STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
+    /**
+     * Method: TPlayer::AddRef
+     * Purpose: Increments the COM Reference
+     * Parameters: void
+     * Returns: ULONG - the new counter
+     */
     STDMETHODIMP_(ULONG) AddRef();
+    /**
+     * Method: TPlayer::Release
+     * Purpose: Decrements the counter (possibly leading to deletion), to be called when code is done with this object
+     * Parameters: void
+     * Returns: ULONG - the counter set now (if zero, then this object should be deleted)
+     */
     STDMETHODIMP_(ULONG) Release();
 
     // IMFAsyncCallback methods

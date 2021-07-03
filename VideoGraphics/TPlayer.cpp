@@ -33,6 +33,15 @@ HRESULT CreatePlaybackTopology(IMFMediaSource* pSource,
 
 
 
+/**
+ * Method: TPlayer::QueryInterface
+ * Purpose: Retrieves a pointer to an object based off of the specified interface
+ * Parameters: REFIID riid - the id of the interface to get
+ *              void** ppv - where to place the pointer, if riid is supported
+ * Returns: HRESULT - E_POINTER if ppv is null, E_NOINTERFACE if riid is not supported, or S_OK
+ *
+ * Note: Supported Interfaces are IUnknown, and IMFAsyncCallback
+ */
 HRESULT TPlayer::QueryInterface(REFIID riid, void** ppv)
 {
 	static const QITAB qit[] = {
@@ -41,11 +50,23 @@ HRESULT TPlayer::QueryInterface(REFIID riid, void** ppv)
 	return QISearch(this, qit, riid, ppv);
 }
 
+/**
+ * Method: TPlayer::AddRef
+ * Purpose: Increments the COM Reference
+ * Parameters: void
+ * Returns: ULONG - the new counter
+ */
 ULONG TPlayer::AddRef()
 {
 	return InterlockedIncrement(&m_nRefCount);
 }
 
+/**
+ * Method: TPlayer::Release
+ * Purpose: Decrements the counter (possibly leading to deletion), to be called when code is done with this object
+ * Parameters: void
+ * Returns: ULONG - the counter set now (if zero, then this object should be deleted)
+ */
 ULONG TPlayer::Release()
 {
 	ULONG c = InterlockedDecrement(&m_nRefCount);

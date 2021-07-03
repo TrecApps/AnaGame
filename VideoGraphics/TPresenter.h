@@ -4,6 +4,11 @@
 #include "TWindowEngine.h"
 #include "DrawingBoard.h"
 #include "TSampleTexture.h"
+
+/**
+ * Class: TPresenter
+ * Purpose: Manages the display of the Frames, Integrating with the DrawingBoard
+ */
 class TPresenter :
     public IMFVideoDisplayControl,
     public IMFGetService,
@@ -13,8 +18,29 @@ public:
     static TrecComPointer<TPresenter> GetTPresenter(TrecPointer<TWindowEngine> engine, TrecPointer<DrawingBoard> board);
 
     // IUnknown
+    /**
+     * Method: TPresenter::AddRef
+     * Purpose: Increments the COM Reference
+     * Parameters: void
+     * Returns: ULONG - the new counter
+     */
     STDMETHODIMP_(ULONG) AddRef(void) override;
+    /**
+     * Method: TPresenter::QueryInterface
+     * Purpose: Retrieves a pointer to an object based off of the specified interface
+     * Parameters: REFIID riid - the id of the interface to get
+     *              void** ppv - where to place the pointer, if riid is supported
+     * Returns: HRESULT - E_POINTER if ppv is null, E_NOINTERFACE if riid is not supported, or S_OK
+     *
+     * Note: Supported Interfaces are IUnknown, IMFVideoDisplayControl, and IMFGetService
+     */
     STDMETHODIMP QueryInterface(REFIID riid, __RPC__deref_out _Result_nullonfailure_ void** ppv) override;
+    /**
+     * Method: TPresenter::Release
+     * Purpose: Decrements the counter (possibly leading to deletion), to be called when code is done with this object
+     * Parameters: void
+     * Returns: ULONG - the counter set now (if zero, then this object should be deleted)
+     */
     STDMETHODIMP_(ULONG) Release(void) override;
 
     // IMFVideoDisplayControl
