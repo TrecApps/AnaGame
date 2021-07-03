@@ -19,7 +19,7 @@ TrecObjectPointer::TrecObjectPointer(TrecBoxPointerBase* base)
  * Parameters: TrecObjectPointer& copy - the Pointer to copy
  * Returns: void
  */
-void TrecObjectPointer::Copy(TrecObjectPointer& copy)
+void TrecObjectPointer::Copy(const TrecObjectPointer& copy)
 {
 	if (basePointer == copy.basePointer)
 		return;
@@ -113,11 +113,11 @@ void TrecObjectPointer::operator=(TrecObjectPointer& obj)
  * Parameters: TrecObjectPointer& obj - the Pointer to copy
  * Returns: New TObject Pointer
  */
-TrecObjectPointer::TrecObjectPointer(TrecObjectPointer& copy)
+TrecObjectPointer::TrecObjectPointer(const TrecObjectPointer& copy)
 {
 	// Since this is a constructor, the base Pointer has not been initialized, even if the memory is not null.
 	// Set it to Null before performing Copy
-	basePointer == nullptr;
+	basePointer = nullptr;
 
 	Copy(copy);
 }

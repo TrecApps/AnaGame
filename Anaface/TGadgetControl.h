@@ -3,13 +3,24 @@
 
 
 /*
-* Class TGadgetControl
+* Class: TGadgetControl
 * Purpose: To support controls with a button within them
+* 
+* SuperClass: TControl
 */
 class _ANAFACE_DLL TGadgetControl :
 	public TControl
 {
 public:
+
+	/**
+	 * Method: TGadgetControl::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TGadgetControl::TGadgetControl
 	* Purpose: Constructor
@@ -35,6 +46,8 @@ public:
 	* Purpose: To set up the Gadget Control
 	* Parameters: D2D1_RECT_F r - the location control will be
 	* Return: bool - false, ignore for now
+	* 
+	* Attributes: override
 	*/
 	bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d)override;
 	virtual UCHAR* GetAnaGameType()override;
@@ -45,6 +58,8 @@ public:
 	 * Purpose: Resizes the control upon the window being resized, applies to the box inside the control
 	 * Parameters: D2D1_RECT_F& r - the new location for the control
 	 * Returns: void
+	* 
+	* Attributes: override
 	 */
 	void Resize(D2D1_RECT_F& r) override;
 protected:

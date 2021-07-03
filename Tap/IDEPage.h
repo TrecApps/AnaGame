@@ -16,6 +16,218 @@ typedef enum class page_move_mode
 	page_move_mode_right   // Page is expected to move it's right border
 }page_move_mode;
 
+/**
+ * Class: TabPageContent
+ * Purpose: Version of the TabContent class that holds a regular TControl as it's content
+ * Note: Messages sent through here will be forwarded to the underlying TCOntrol, and Events that the TControls report will be sent back up the pipeline
+ *
+ * SuperClass: TabContent - interface with the tab
+ */
+class _ANAFACE_DLL TabPageContent : public TabContent
+{
+public:
+	/**
+	 * Method: TabPageContent::TabPageContent
+	 * Purpose: Default Constructor
+	 * Parameters: void
+	 * Returns: new TabContent object
+	 */
+	TabPageContent();
+
+	/**
+	 * Method: TabPageContent::~TabPageContent
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	virtual ~TabPageContent();
+
+	/**
+	 * Method: TabPageContent::Resize
+	 * Purpose: Calls Resize on the underlying content object
+	 * Parameters: const D2D1_RECT_F& loc - the new location the content is expected to occupy
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void Resize(const D2D1_RECT_F& loc) override;
+
+	/**
+	 * Method: TabPageContent::GetContentType
+	 * Purpose: Returns the Content Type, allowing users of this object to cast it into the right sub-type and take it from there
+	 * Parameters: void
+	 * Returns: TabContentType - the type of content this is expected to yield
+	 *
+	 * Attributes: override
+	 */
+	virtual TabContentType GetContentType() override;
+
+
+	/**
+	 * Method: TabPageContent::TookTab
+	 * Purpose: Allows Tab Content with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab) override;
+
+	/*
+	 * Method: TabPageContent::OnRButtonUp
+	 * Purpose: Allows Control to catch the RightmessageState::mouse button release event and act accordingly
+	 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	 *				TPoint point - the point on screen where the event occured
+	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	 * Returns: void
+	 *
+	 * Attributes: override; message
+	 */
+	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr) override;
+
+	/*
+	* Method: TabPageContent::OnLButtonDown
+	* Purpose: Allows Control to catch the LeftmessageState::mouse Button Down event and act accordingly
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+	* Returns: void
+	*
+	* Attributes: override; message
+	*/
+	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons) override;
+
+	/*
+	* Method: TabPageContent::OnRButtonDown
+	* Purpose: Allows Control to catch the RightmessageState::mouse button down event and act accordingly
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+	* Returns: void
+	*
+	* Attributes: override; message
+	*/
+	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls) override;
+
+	/*
+	* Method: TabPageContent::OnMouseMove
+	* Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+	* Returns: void
+	*
+	* Attributes: override; message
+	*/
+	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls) override;
+
+
+
+	/**
+	 * Method: TabPageContent::OnMouseLeave
+	 * Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
+	 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	 *				TPoint point - the point on screen where the event occured
+	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
+	 * Returns: bool - whether the leave occured
+	 *
+	 * Attributes: override; message
+	 */
+	afx_msg virtual bool OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr) override;
+
+	/**
+	 * Method: TabPageContent::OnLButtonDblClk
+	 * Purpose: Allows control to catch the DOuble Click event and act accordingly
+	 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	 *				TPoint point - the point on screen where the event occured
+	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	 * Returns: void
+	 *
+	 * Attributes: override; message
+	 */
+	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr) override;
+
+	/*
+	* Method: TabPageContent::OnLButtonUp
+	* Purpose: Allows control to catch the Left Button Up event and act accordingly
+	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
+	*				TPoint point - the point on screen where the event occured
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	* Returns: void
+	*
+	* Attributes: override; message
+	*/
+	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr) override;
+
+	/*
+	* Method: TabPageContent::OnChar
+	* Purpose: Allows Controls to repond to character input
+	* Parameters: bool fromChar - can be called either from on Key Down or OnChar
+	*				UINT nChar - The ID of the character that was pressed
+	*				UINT nRepCnt - how many times the character was processed for this event
+	*				UINT nFlags - flags provided by MFC's Message system, not used
+	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
+	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	* Returns: void
+	*
+	* Attributes: override; message
+	*/
+	afx_msg virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr) override;
+
+	/**
+	 * Method: TabPageContent::SetPage
+	 * Purpose: Sets up the Page to hold
+	 * Parameters: TrecPointer<Page> control - the page to hold
+	 * Returns: void
+	 */
+	void SetPage(TrecPointer<Page> control);
+
+	/**
+	 * Method: TabPageContent:GetPage
+	 * Purpose: Retrieves the underlying Page
+	 * Parameters: void
+	 * Returns: TrecPointer<Page> - the page this object holds
+	 */
+	TrecPointer<Page> GetPage();
+
+	/**
+	 * Method: TabPageContent::HasContent
+	 * Purpose: Reports whether this object has the desired content
+	 * Parameters: void
+	 * Returns: bool - whether the Tab Content is populated or not
+	 *
+	 * Attributes: override
+	 */
+	virtual bool HasContent() override;
+
+	/**
+	 * Method: TabPageContent::Draw
+	 * Purpose: Applies the Draw Operation to the content
+	 * Parameters: TObject* obj - any data associated with the draw
+	 * Returns: void
+	 * Attributes: Abstract
+	 */
+	virtual void Draw(TObject* obj) override;
+
+
+
+protected:
+	/**
+	 * The TControl to Hold
+	 */
+	TrecPointer<Page> page;
+};
+
+
 
 /**
  * Class: IDEPageHolder
@@ -50,6 +262,9 @@ public:
 	 * Returns: void
 	 */
 	virtual ~IDEPageHolder();
+
+
+
 
 
 	/**
@@ -147,6 +362,8 @@ protected:
 /**
  * Class: IDEPage
  * Purpose: Extends the page class to allow it to brush up against other pages
+ * 
+ * SuperClass: Page
  */
 class _TAP_DLL IDEPage :
 	public Page
@@ -165,6 +382,15 @@ protected:
 	 */
 	IDEPage(ide_page_type type, UINT barSpace, TrecPointer<DrawingBoard> board);
 
+
+
+	/**
+	 * Method: IDEPage::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType() override;
 
 	/**
 	 * Method: IDEPage::~IDEPage
@@ -202,12 +428,31 @@ protected:
 
 
 	/**
+	 * Method: IDEPage::SetArea
+	 * Purpose: Sets the Region of the Page
+	 * Parameters: const D2D1_RECT_F& loc -  the location to provide this Page
+	 * Returns: void
+	 */
+	virtual void SetArea(const D2D1_RECT_F& loc) override;
+
+
+	/**
+	 * Method: IDEPage::TookTab
+	 * Purpose: Allows Page with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab)override;
+
+	/**
 	 * Method: IDEPage::OnRButtonUp
 	 * Purpose: Responds to the Right Button Up Message
 	 * Parameters: UINT nFlags - flags associated with the message
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)override;
 	/**
@@ -217,6 +462,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)override;
 	/**
@@ -226,6 +473,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut) override;
 	/**
@@ -235,6 +484,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)override;
 	/**
@@ -244,6 +495,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut) override;
 	/**
@@ -253,6 +506,8 @@ protected:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly) override;
 	/**
@@ -264,6 +519,8 @@ protected:
 	 *				UINT nFlags - flags associated with the message
 	 *				messageOutput* mOut - the result of the event
 	 * Returns: bool 
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut) override;
 	/**
@@ -273,8 +530,10 @@ protected:
 	 *				UINT nFlags - flags associated with the move
 	 *				TrecPointer<TWindowEngine> - the 3D Engine to work with
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
-	afx_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>) override;
+	afx_msg virtual void OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>) override;
 
 public:
 
@@ -286,6 +545,8 @@ public:
 	 *				messageOutput* mOut - result of the click
 	 *				TDataArray<EventID_Cred>& eventAr - list of events to feed the Handler if applicable
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)override;
 	/**
@@ -296,6 +557,8 @@ public:
 	 *				messageOutput* mOut - result of the movement
 	 *				TDataArray<EventID_Cred>& eventAr - list of events to feed the Handler if applicable
 	 * Returns: void
+	 * 
+	 * Attributes: message; override
 	 */
 	afx_msg void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)override;
 	/**
@@ -303,6 +566,8 @@ public:
 	 * Purpose: Used to confirm whether a proper click was done
 	 * Parameters: TPoint& point - location where the mouse is when the user releases
 	 * Returns: bool - whether the mouse was in the Page's region
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg bool OnLButtonUp(TPoint& point);
 
@@ -349,10 +614,11 @@ public:
 	/**
 	 * Method: IDEPage::AddNewPage
 	 * Purpose: Add an Existing Page holder to THIS page
-	 * Parameters: TrecPointer<IDEPageHolder> pageHolder - The Tab and Page to add to
+	 * Parameters: TrecPointer<Page> pageHolder - The Tab and Page to add to
+	 *				 const TString& name - name of the tab
 	 * Returns: void
 	 */
-	void AddNewPage(TrecPointer<IDEPageHolder> pageHolder);
+	void AddNewPage(TrecPointer<Page> pageHolder, const TString& name);
 	/**
 	 * Method: IDEPage::AddNewPage
 	 * Purpose: Submits a new Page to the IDE Page to be tabbed
@@ -366,10 +632,10 @@ public:
 	/**
 	 * Method: IDEPage::RemovePage
 	 * Purpose: Removes the Page Holder and page from this IDE Page
-	 * Parameters: TrecPointer<IDEPageHolder> pageHolder - The Page Holder to Remove
+	 * Parameters: TrecPointer<Page> pageHolder - The Page Holder to Remove
 	 * Returns: void
 	 */
-	void RemovePage(TrecPointer<IDEPageHolder> pageHolder);
+	void RemovePage(TrecPointer<Tab> pageHolder);
 
 	/**
 	 * Method: IDEPage::IsDrawing
@@ -419,7 +685,8 @@ protected:
 	/**
 	 * List of pages held by this page
 	 */
-	TDataArray<TrecPointer<IDEPageHolder>> pages;
+	// TDataArray<TrecPointer<IDEPageHolder>> pages;
+	TTabBar pages;
 	
 	/**
 	 * Current Page to draw
@@ -427,16 +694,17 @@ protected:
 	TrecPointer<Page> currentPage;
 
 	/**
-	 * the Page referenced by the click of the tab 
+	 * Tabs
 	 */
-	TrecPointer<IDEPageHolder> focusPage;
+	TrecPointer<Tab> focusTab;
+
 	/**
 	 * Method: IDEPage::GetFocusPage
 	 * Purpose: Retrieves the Page to set the focus to if the User Clicks on the Tab Bar
 	 * Parameters:TPoint& point
 	 * Returns: TrecPointer<IDEPageHolder> - the Holder referenced by the Tab
 	 */
-	TrecPointer<IDEPageHolder> GetFocusPage(TPoint& point);
+	TrecPointer<Tab> GetFocusPage(TPoint& point);
 
 	/**
 	 * Window hoding this page

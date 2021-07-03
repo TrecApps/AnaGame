@@ -9,12 +9,22 @@
 #define color_struct D2D1_COLOR_F
 
 /**
- * class TColor
+ * Class: TColor
  * Purpose: Anagames base class for color support
+ * 
+ * SuperClass: TObject
  */
 class _VIDEO_GRAPHICS TColor : public TObject
 {
 public:
+
+	/**
+	 * Method: TColor::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TColor::TColor
@@ -71,6 +81,14 @@ public:
 	 */
 	TColor(const color_struct& color);
 
+	/**
+	 * Method: TColor::TColor
+	 * Purpose: String Constructor
+	 * Parameters: const TString& colorStr - the Color in String form
+	 * Returns: new TColor Object
+	 */
+	TColor(const TString& colorStr);
+
 
 	/**
 	 * Method: TColor::SetColor
@@ -79,6 +97,15 @@ public:
 	 * Returns: void
 	 */
 	void SetColor(t_color::Enum);
+
+
+	/**
+	 * Method: TColor::SetColor
+	 * Purpose: Sets the color based off of the Enumeration for the color
+	 * Parameters: const TString& colorStr - the Color in String form
+	 * Returns: void
+	 */
+	void SetColor(const TString& colorStr);
 
 	/**
 	 * Method: TColor::SetColor
@@ -115,6 +142,8 @@ public:
 	 * Purpose: Retrieves the red value of the color
 	 * Parameters: void
 	 * Returns: float - the red value of the color
+	 * 
+	 * Attributes: const
 	 */
 	float GetRed()const;
 
@@ -123,6 +152,8 @@ public:
 	 * Purpose: Retrieves the blue value of the color
 	 * Parameters: void
 	 * Returns: float - the blue value of the color
+	 * 
+	 * Attributes: const
 	 */
 	float GetBlue()const;
 
@@ -131,6 +162,8 @@ public:
 	 * Purpose: Retrieves the green value of the color
 	 * Parameters: void
 	 * Returns: float - the green value of the color
+	 * 
+	 * Attributes: const
 	 */
 	float GetGreen()const;
 
@@ -139,6 +172,8 @@ public:
 	 * Purpose: Retrieves the Opacity value of the color
 	 * Parameters: void
 	 * Returns: float - the opacity of the color
+	 * 
+	 * Attributes: const
 	 */
 	float GetOpacity()const;
 
@@ -148,8 +183,33 @@ public:
 	 * Purpose: Returns the color held by the object
 	 * Parameters: void
 	 * Returns: color_struct - the underlying color structure
+	 * 
+	 * Attributes: const
 	 */
 	color_struct GetColor()const;
+
+	/**
+	 * Method: TColor::GetColorFromString
+	 * Purpose: Returns a Color based off of the provided String
+	 * Parameters: const TString& color - string to derive a color out of
+	 *				bool& worked - reports whether a color can be derived from the string
+	 * Returns: TColor - the color returned
+	 * 
+	 * Note: If the string cannot be converted to a color, Black is returned and the 'worked' parameter is set to false
+	 *
+	 * Attributes: static
+	 */
+	static TColor GetColorFromString(const TString& color, bool& worked);
+
+	/**
+	 * Method: TObject::toString
+	 * Purpose: Returns a string representation of this object
+	 * Parameters: void
+	 * Returns: TString - repreetnation of this object
+	 *
+	 * Attributes: virtual
+	 */
+	virtual TString toString() override;
 private:
 	color_struct color;
 };

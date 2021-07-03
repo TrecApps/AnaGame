@@ -3,8 +3,10 @@
 #include "TArrayBase.h"
 
 /*
-* Class TArray
-* Holds references to objects (Not meant to store straight foward data in a row)
+* Class: TArray
+* Purpose: Holds references to objects (Not meant to store straight foward data in a row)
+* 
+* SuperClass: TArrayBase - common class for all TArray's
 */
 template <typename t>class _TREC_LIB_DLL TArray : public TArrayBase
 {
@@ -130,7 +132,7 @@ public:
 		count--;
 		if (loc > 99)
 		{
-			if (!extension)
+			if (!extension.Get())
 				return false;
 			return extension->DeleteAt(loc - 100);
 		}

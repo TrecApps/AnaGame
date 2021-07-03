@@ -9,6 +9,8 @@ class TWindow;
 /**
  * Class: TAnimationManager
  * Purpose: Holds a collection of Story Boards and controls their process
+ * 
+ * SuperClass: TObject
  */
 class _TAP_DLL TAnimationManager :public TObject
 {
@@ -30,6 +32,14 @@ public:
 	 */
 	~TAnimationManager();
 
+
+	/**
+	 * Method: TAnimationManager::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TAnimationManager::SetWindow

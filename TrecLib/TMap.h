@@ -31,7 +31,9 @@ public:
 
 /*
 * Class: TMap
-* Holds data with a key
+* Purpose: Holds data with a key
+* 
+* SuperClass: TMapBase - common base class for all maps
 */
 template<class t2>class _TREC_LIB_DLL TMap : public TMapBase
 {
@@ -92,7 +94,7 @@ public:
 	*/
 	TrecPointer<t2> retrieveEntry(const TString& str)
 	{
-		for (int c = 0; c < map.Count(); c++)
+		for (UINT c = 0; c < map.Count(); c++)
 		{
 			TrecPointer<tEntry<t2>> point = map.ElementAt(c);
 
@@ -111,8 +113,8 @@ public:
 	*/
 	TrecPointer<t2> retrieveEntry(const TString& str, int occurance)
 	{
-		int occ = 0;
-		for (int c = 0; c < map.Count(); c++)
+		UINT occ = 0;
+		for (UINT c = 0; c < map.Count(); c++)
 		{
 			TrecPointer<tEntry<t2>> point = map.ElementAt(c);
 			
@@ -135,15 +137,16 @@ public:
 	*/
 	TrecPointer<t2> removeEntry(TString& str)
 	{
-		for (int c = 0; c < map.Count(); c++)
+		for (UINT c = 0; c < map.Count(); c++)
 		{
 			TrecPointer<tEntry<t2>> point = map.ElementAt(c);
 			if (point->key == str)
 			{
-				return map.RemoveAt(c);
+				map.RemoveAt(c);
+				return point->object;
 			}
 		}
-		return nullptr;
+		return TrecPointer<t2>();
 	}
 	
 	/*
@@ -158,9 +161,9 @@ public:
 	* Method: TMap::
 	* Purpose: Retrieves the number of entries added to the TMap
 	* Parameters: void
-	* Returns: int - the count of entries in the TMap
+	* Returns: UINT - the count of entries in the TMap
 	*/
-	int count() { return map.Count(); }
+	UINT count() { return map.Count(); }
 
 	/*
 	* Method: TMap::operator=
@@ -170,7 +173,7 @@ public:
 	*/
 	void operator=(TMap<t2>& cop)
 	{
-		for (int c = 0; c < cop.map.Count(); c++)
+		for (UINT c = 0; c < cop.map.Count(); c++)
 		{
 			map.Add(cop.map.ElementAt(c));
 		}

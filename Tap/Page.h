@@ -25,10 +25,20 @@ typedef enum class RenderTargetType
 /**
  * Class: TPageParentHolder
  * Allows Root TControls to reference the Page as a Parent, event though Pages are not known to the TControl
+ * 
+ * SuperClass: TParentHolder
  */
 class TPageParentHolder: public TParentHolder
 {
 public:
+
+	/**
+	 * Method: TPageParentHolder::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TPageParentHolder::TPageParentHolder
@@ -44,6 +54,8 @@ public:
 	 * Parameters: TrecPointerSoft<TControl> cur - the current root control
 	 *				TrecPointer<TControl> newTControl - the new control to set as root
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void SwitchChildControl(TrecPointerSoft<TControl> cur, TrecPointer<TControl> newTControl)override;
 private:
@@ -54,14 +66,18 @@ private:
 };
 
 
-/* Class: Page
-* Purpose: Provide the foundation through which Drawing resources can be set up on a certain Window or device context,
-*	Allows for refactoring of code that is essentially repeated
-*/
+/**
+ * Class: Page
+ * Purpose: Provide the foundation through which Drawing resources can be set up on a certain Window or device context,
+ *	Allows for refactoring of code that is essentially repeated
+ *
+ * SuperClass: TObject
+ */
 class _TAP_DLL Page : public TObject
 {
 	friend class TrecPointerKey;
 	friend class TPageParentHolder;
+	friend class TWindow;
 public:
 
 	/**
@@ -74,12 +90,23 @@ public:
 
 
 	/**
+	 * Method: Page::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType() override;
+
+
+	/**
 	 * Method: static Page::GetWindowPage
 	 * Purpose: Proides a new page set for just 2D drawing
 	 * Parameters: TrecPointer<TInstance> - instance under which this page is created
 	 *				TrecPointer<TWindow> - the WIndow to hold this page
 	 *				TrecPointer<EventHandler> - the Event Handler to work with this page
 	 * Returns: TrecPointer<Page> - the page object requested
+	 * 
+	 * Attributes: static
 	 */
 	static TrecPointer<Page> GetWindowPage(TrecPointer<TInstance>, TrecPointer<TWindow>,  TrecPointer<EventHandler>);
 
@@ -90,7 +117,9 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - in favor of the IDE Page in the TIdeWindow
+	 * Note: deprecated - in favor of the IDE Page in the TIdeWindow
+	 * 
+	 * Attributes: static; deprecated
 	 */
 	static TrecPointer<Page> GetSmallPage(TrecPointer<TInstance> in, TrecPointer<TWindow> window, D2D1_RECT_F area);
 
@@ -175,7 +204,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED 
+	 * Note: deprecated 
 	 */
 	virtual UCHAR* GetAnaGameType()override;
 
@@ -185,7 +214,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED - Use Resize or SetArea instead
+	 * Note: deprecated - Use Resize or SetArea instead
 	 */
 	afx_msg void OnSize(UINT nType, int cx,	int cy);
 
@@ -227,8 +256,16 @@ public:
 	 * Parameters: const D2D1_RECT_F& loc -  the location to provide this Page
 	 * Returns: void
 	 */
-	void SetArea(const D2D1_RECT_F& loc);
+	virtual void SetArea(const D2D1_RECT_F& loc);
 
+
+	/**
+	 * Method: Page::TookTab
+	 * Purpose: Allows Page with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab);
 
 	/**
 	 * Method: Page::OnRButtonUp
@@ -237,6 +274,8 @@ public:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut);
 
@@ -248,6 +287,8 @@ public:
 	 *				messageOutput* mOut -  the result of the message
 	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
 
@@ -258,6 +299,8 @@ public:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut);
 
@@ -269,6 +312,8 @@ public:
 	 *				messageOutput* mOut -  the result of the message
 	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
 
@@ -279,6 +324,8 @@ public:
 	 *				TPoint point - the point included in the message
 	 *				messageOutput* mOut -  the result of the message
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut);
 
@@ -290,6 +337,8 @@ public:
 	 *				messageOutput* mOut -  the result of the message
 	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
 
@@ -302,6 +351,8 @@ public:
 	 *				UINT nFlags - flags associated with the message
 	 *				messageOutput* mOut - the result of the event
 	 * Returns: bool 
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput *mOut);
 
@@ -312,8 +363,10 @@ public:
 	 *				UINT nFlags - flags associated with the move
 	 *				TrecPointer<TWindowEngine> - the 3D Engine to work with
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
-	afx_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>);
+	afx_msg virtual void OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>);
 
 
 
@@ -327,6 +380,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -341,6 +396,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly);
 
@@ -354,6 +411,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -368,6 +427,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly);
 
@@ -381,6 +442,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -395,6 +458,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly);
 
@@ -410,6 +475,8 @@ public:
 	 * Returns: bool
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 
@@ -423,6 +490,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr);
 
@@ -431,6 +500,8 @@ public:
 	 * Purpose: Reports whether the Page is ready to be destroyed
 	 * Parameters: void
 	 * Returns: bool - true if the Page doesn't have a handler or that handler is ready to be destroyed
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg bool OnDestroy();
 
@@ -466,7 +537,7 @@ public:
 	 * Parameters: TrecSubPointer<EventHandler, MiniHandler> mh - the miniHandler to set
 	 * Returns: void
 	 *
-	 * Note: DEPRICATED - MiniHandler class is depricated so this method is as well
+	 * Note: deprecated - MiniHandler class is deprecated so this method is as well
 	 */
 	void SetMiniHandler(TrecSubPointer<EventHandler, MiniHandler> mh);
 
@@ -497,7 +568,43 @@ public:
 	 */
 	void OnFocus();
 
+	virtual void QueryMediaControls(TDataArray<TrecPointer<TControl>>& mediaControls);
+	/**
+	 * Mehtod: Page::GetClickedControls
+	 * Purpose: Retireves List of controls that were clicked under this page
+	 * Parameters: void
+	 * Returns: TDataArray<TControl*> - controls that were clicked
+	 * 
+	 * Note: Calling this method will return a copy of the list and clear the original list
+	 */
+	TDataArray<TControl*> GetClickedControls();
+
+	/**
+	 * Mehtod: Page::GetRightClickedControls
+	 * Purpose: Retireves List of controls that were right-clicked under this page
+	 * Parameters: void
+	 * Returns: TDataArray<TControl*> - controls that were right-clicked
+	 *
+	 * Note: Calling this method will return a copy of the list and clear the original list
+	 */
+	TDataArray<TControl*> GetRightClickedControls();
+
 protected:
+
+	TDataArray<TrecPointer<TControl>> mediaControls;
+
+	/**
+	 * Reports whether the Drawing has commenced
+	 */
+	bool hasDrawn;
+
+	/**
+	 * Method: Page::OnFirstDraw
+	 * Purpose: intercepts the first draw so that the handler can handle it
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void OnFirstDraw();
 
 	/**
 	 * Method: Page::Page

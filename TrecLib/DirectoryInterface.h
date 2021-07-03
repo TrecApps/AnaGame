@@ -4,7 +4,7 @@
 #include "TFile.h"
 
 /*
-* enum CentralDirectories
+* Enum Class: CentralDirectories
 * Represents possible directory types AnaGame and its taps might be interested in
 */
 typedef enum class CentralDirectories
@@ -33,7 +33,7 @@ typedef enum class CentralDirectories
  * Parameters: TString& dir - the directory to forge
  * Returns: void
  */
-void _TREC_LIB_DLL ForgeDirectory(TString& dir);
+void _TREC_LIB_DLL ForgeDirectory(const TString& dir);
 
 
 /*
@@ -75,4 +75,4 @@ TString _TREC_LIB_DLL GetShadowDirectoryWithSlash(CentralDirectories cd);
 * Returns: TString - the Path of the intended Shadow file
 * Note: The provided File has to be open AND it has to be found in an AnaGame approved directory
 */
-TString GetShadowFilePath(TFile& f);
+TString _TREC_LIB_DLL GetShadowFilePath(const TFile& f);

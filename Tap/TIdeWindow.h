@@ -27,6 +27,7 @@ typedef enum class anagame_page
 	anagame_page_custom,          // a Custom page, the TML file is expected to be provided
 	anagame_page_file_node,       // Presents a Page that holds a File node control
 	anagame_page_command_prompt,  // Presents a page that holds a Command Prompt
+	anagame_page_console,         // Presents a Page that holds a Console that Programs can write to
 	anagame_page_code_explorer,   // Presents a page that holds a node control that focuses on code elements
 	anagame_page_object_explorer, // Presents a Page intended to present the properties of a given object
 	anagame_page_code_file,       // Presents a Page that holds a Text Edit control intended to hold a code file
@@ -41,6 +42,8 @@ class MiniApp;
 /**
  * Class: TIdeWindow
  * Purpose: Extends the WIndow class and partitions it's drawing space
+ * 
+ * SuperClass: TWindow
  */
 class _TAP_DLL TIdeWindow :
 	public TWindow
@@ -62,8 +65,22 @@ public:
 	 */
 	TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, UINT mainViewSpace, UINT pageBarSpace);
 
-
+	/**
+	 * Method: TIdeWindow::~TIdeWindow
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
 	~TIdeWindow();
+
+
+	/**
+	 * Method: TIdeWindow::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 
 	/**
@@ -71,8 +88,22 @@ public:
 	 * Purpose: Prepares the Window while also managing the links between the IDE-Pages
 	 * Parameters: void
 	 * Returns: int - error code (0 = success)
+	 * 
+	 * Attributes: override
 	 */
 	virtual int PrepareWindow()override;
+
+
+	/**
+	 * Method: TIdeWindow::OnWindowResize
+	 * Purpose: Resizes the Window
+	 * Parameters: UINT width - the new width of the window
+	 *				UINT height - the new height of the Window
+	 * Returns: void
+	 *
+	 * Attributes: message, override
+	 */
+	afx_msg virtual void OnWindowResize(UINT width, UINT height)override;
 
 	/**
 	 * Method: TIdeWindow::OnLButtonUp
@@ -80,6 +111,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	void OnLButtonUp(UINT nFlags, TPoint point);
 
@@ -89,6 +122,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that the mouse is now
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	void OnMouseMove(UINT nFlags, TPoint point)override;
 
@@ -98,6 +133,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	void OnLButtonDown(UINT nFlags, TPoint point)override;
 
@@ -122,7 +159,7 @@ public:
 	 *				bool pageTypeStrict - whether the caller is strict when it comes to the location of the Page
 	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
 	 */
-	TrecSubPointer<Page, IDEPage> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict = false);
+	TrecPointer<Page> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict = false);
 
 	/**
 	 * Method: TIdeWindow::AddPage
@@ -132,7 +169,7 @@ public:
 	 *				TString name - name of the page to write on the Tab
 	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
 	 */
-	TrecSubPointer<Page, IDEPage> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
+	TrecPointer<Page> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
 
 
 	/**
@@ -141,6 +178,8 @@ public:
 	 * Parameters: TString& file - path of the TML file holding the Anaface
 	 *				TrecPointer<EventHandler> eh - the Handler to the Main page
 	 * Returns: int - error (0 == success)
+	 * 
+	 * Attributes: override
 	 */
 	int CompileView(TString& file, TrecPointer<EventHandler> eh)override;
 
@@ -148,10 +187,10 @@ public:
 	/**
 	 * Method: TIdeWindow::SetCurrentHolder
 	 * Purpose: Marks a Page Holder as being dragged by the User
-	 * Parameters: TrecPointer<IDEPageHolder> holder - the Page holder believed to be dragged
+	 * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
 	 * Returns: void
 	 */
-	void SetCurrentHolder(TrecPointer<IDEPageHolder> holder);
+	void SetCurrentHolder(TrecPointer<Tab> holder, TrecPointer<Page> page);
 
 	/**
 	 * Method: TIdeWindow::SetEnvironment
@@ -162,12 +201,22 @@ public:
 	void SetEnvironment(TrecPointer<TEnvironment> env);
 
 	/**
+	 * Method: TIdeWindow::GetEnvironment
+	 * Purpose: Gets the Environment held by the Window
+	 * Parameters: void
+	 * Returns: TrecPointer<TEnvironment> - the Environment to manage
+	 */
+	TrecPointer<TEnvironment> GetEnvironment();
+
+	/**
 	 * Method: TIdeWindow::GetEnvironmentDirectory
 	 * Purpose: Retrievs the Workign Directory of the TEnvironment
 	 * Parameters: void 
 	 * Returns: TrecPointer<TFileShell> - the Environment's working directory (could be NULL)
 	 */
 	TrecPointer<TFileShell> GetEnvironmentDirectory();
+
+	
 
 
 	/**
@@ -217,7 +266,7 @@ protected:
 	/**
 	 * Holder being dragged
 	 */
-	TrecPointer<IDEPageHolder> currentHolder;
+	TrecPointer<Tab> currentHolder;
 
 	/**
 	 * the Environment to manage a Project
@@ -230,6 +279,8 @@ protected:
 	 * Purpose: Draws the other page it has set up
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void DrawOtherPages()override;
 
@@ -272,7 +323,7 @@ protected:
 	/**
 	 * Page to focus on (used when shifting the boundaries between two or three pages)
 	 */
-	TrecSubPointer<Page, IDEPage> focusPage;
+	TrecSubPointer<Page, IDEPage> focusPage, tabPage;
 
 
 	/**

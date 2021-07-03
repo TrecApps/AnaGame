@@ -13,17 +13,30 @@ typedef enum class geo_type
 	geo_type_rect,
 	geo_type_rounded_rect,
 	geo_type_ellipse,
-	geo_type_path
+	geo_type_path,
+	geo_type_unset
 }geo_type;
 
 /**
- * class TGeometry
+ * Class: TGeometry
  * Purpose: Helps simplifiy the management of geometries in 2D drawing
+ * 
+ * SuperClass: TObject
  */
 class _VIDEO_GRAPHICS TGeometry :
 	public TObject
 {
 public:
+
+	/**
+	 * Method: TGeometry::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	TGeometry();
 
 	/**
 	 * Method: TGeometry::TGeometry
@@ -76,6 +89,8 @@ public:
 	 * Purpose: Reports whether Geomatry construction was successful
 	 * Parameters: void
 	 * Returns:bool - whether the object is ready for use
+	 * 
+	 * Attributes: const
 	 */
 	bool IsValid()const;
 

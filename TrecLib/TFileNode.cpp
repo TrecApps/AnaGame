@@ -7,10 +7,23 @@
 * Parameters: UINT l - level of the node (used by the TObjectNode class)
 * Returns: void
 */
+
 TFileNode::TFileNode(UINT l) : TObjectNode(l)
 {
+	showAllFiles = false;
+	filter_mode = file_node_filter_mode::fnfm_blank;
 }
 
+/**
+ * Method: TFileNode::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TFileNode::GetType()
+{
+	return TString(L"TFileNode;") + TObjectNode::GetType();
+}
 /*
  * Method: TDirectory::GetContent
  * Purpose: Retrieves the Content to present about this object
@@ -19,10 +32,13 @@ TFileNode::TFileNode(UINT l) : TObjectNode(l)
  */
 TString TFileNode::GetContent()
 {
-	if (!data.Get())
-		return TString();
-
-	return data->GetName();
+	AG_THREAD_LOCK
+		if (!data.Get())
+		{
+			RETURN_THREAD_UNLOCK TString();
+		}
+	TString ret(data->GetName());
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -33,9 +49,12 @@ TString TFileNode::GetContent()
 */
 bool TFileNode::IsExtendable()
 {
-	if (!data.Get())
-		return false;
-	return data->IsDirectory();
+	AG_THREAD_LOCK
+		if (!data.Get())
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
+	RETURN_THREAD_UNLOCK data->IsDirectory();
 }
 
 /*
@@ -67,16 +86,17 @@ TrecPointer<TObjectNode> TFileNode::GetNodeAt(UINT target, UINT current)
 	TrecPointer<TObjectNode> ret;
 
 	current++;
-
+	AG_THREAD_LOCK
 	for (UINT rust = 0; rust < files.Size(); rust++)
 	{
 		ret = files[rust]->GetNodeAt(target, current);
 		if (ret.Get())
-			return ret;
-
+		{
+			RETURN_THREAD_UNLOCK ret;
+		}
 		current += files[rust]->TotalChildren() + 1;
 	}
-	return TrecPointer<TObjectNode>();
+	RETURN_THREAD_UNLOCK TrecPointer<TObjectNode>();
 }
 
 /*
@@ -88,11 +108,12 @@ TrecPointer<TObjectNode> TFileNode::GetNodeAt(UINT target, UINT current)
 UINT TFileNode::TotalChildren()
 {
 	UINT ret = 0;
+	AG_THREAD_LOCK
 	for (UINT rust = 0; rust < files.Size(); rust++)
 	{
 		ret += files[rust]->TotalChildren() + 1;
 	}
-	return ret;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -114,8 +135,9 @@ bool TFileNode::Initialize()
 */
 bool TFileNode::Initialize(TString& value)
 {
+	AG_THREAD_LOCK
 	data = TFileShell::GetFileInfo(value);
-	return data.Get();
+	RETURN_THREAD_UNLOCK data.Get() != nullptr;
 }
 
 /*
@@ -128,6 +150,7 @@ bool TFileNode::Initialize(TString& value)
 */
 void TFileNode::Extend()
 {
+	AG_THREAD_LOCK
 	files.RemoveAll();
 	if (data.Get() && data->IsDirectory())
 	{
@@ -137,14 +160,23 @@ void TFileNode::Extend()
 		for (UINT Rust = 0; Rust < shellFiles.Size(); Rust++)
 		{
 			TrecPointer<TFileShell> f = shellFiles[Rust];
-			if (f.Get())
+			if (ShouldShow(f))
 			{
 				TrecPointer<TObjectNode> n = TrecPointerKey::GetNewSelfTrecPointerAlt<TObjectNode, TFileNode>(level + 1);
 				files.push_back(n);
-				dynamic_cast<TFileNode*>(n.Get())->SetFile(f);
+				auto fileNode = dynamic_cast<TFileNode*>(n.Get());
+				fileNode->SetFile(f);
+				fileNode->SetFilterMode(filter_mode);
+				fileNode->SetShowAllFiles(showAllFiles);
+
+				for (UINT Rust = 0; Rust < extensions.Size(); Rust++)
+				{
+					fileNode->AddExtension(extensions[Rust]);
+				}
 			}
 		}
 	}
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -157,9 +189,13 @@ void TFileNode::Extend()
 */
 TrecPointer<TObjectNode> TFileNode::GetChildNodes(UINT index)
 {
+	AG_THREAD_LOCK
 	if (index < files.Size())
-		return files[index];
-	return TrecPointer<TObjectNode>();
+	{
+		auto ret = files[index];
+		RETURN_THREAD_UNLOCK ret;
+	}
+	RETURN_THREAD_UNLOCK TrecPointer<TObjectNode>();
 }
 
 /*
@@ -170,7 +206,9 @@ TrecPointer<TObjectNode> TFileNode::GetChildNodes(UINT index)
 */
 void TFileNode::DropChildNodes()
 {
+	AG_THREAD_LOCK
 	files.RemoveAll();
+	RETURN_THREAD_UNLOCK;
 }
 
 
@@ -193,8 +231,10 @@ TString TFileNode::getVariableValueStr(const TString& varName)
 */
 void TFileNode::SetFile(TrecPointer<TFileShell>& d)
 {
+	AG_THREAD_LOCK
 	data = d;
 	DropChildNodes();
+	RETURN_THREAD_UNLOCK;
 }
 
 
@@ -206,5 +246,193 @@ void TFileNode::SetFile(TrecPointer<TFileShell>& d)
  */
 TrecPointer<TFileShell> TFileNode::GetData()
 {
-	return data;
+	AG_THREAD_LOCK
+		auto ret = data;
+	RETURN_THREAD_UNLOCK ret;
+}
+
+void TFileNode::SetShowAllFiles(bool show)
+{
+	AG_THREAD_LOCK
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		auto fileNode = dynamic_cast<TFileNode*>(files[Rust].Get());
+
+		if (fileNode)
+		{
+			fileNode->SetShowAllFiles(show);
+		}
+	}
+
+	showAllFiles = show;
+	RETURN_THREAD_UNLOCK;
+}
+
+bool TFileNode::GetShowAllFiles()
+{
+	AG_THREAD_LOCK
+		bool ret = showAllFiles || !extensions.Size();
+	RETURN_THREAD_UNLOCK ret;
+}
+
+bool TFileNode::AddExtension(const TString& extension)
+{
+	AG_THREAD_LOCK
+		for (UINT Rust = 0; Rust < extensions.Size(); Rust++)
+		{
+			if (!extensions[Rust].CompareNoCase(extension))
+			{
+				RETURN_THREAD_UNLOCK true;
+			}
+		}
+
+	if (extension.GetSize() < 2)
+	{
+		RETURN_THREAD_UNLOCK false;
+	}
+	if (extension[0] == L'.')
+	{
+		for (UINT Rust = 1; Rust < extension.GetSize(); Rust++)
+		{
+			WCHAR letter = extension[Rust];
+
+			if ((letter >= L'A' && letter <= L'Z') ||
+				(letter >= L'a' && letter <= L'z'))
+				continue;
+			RETURN_THREAD_UNLOCK false;
+		}
+
+		extensions.push_back(extension);
+
+		for (UINT Rust = 0; Rust < files.Size(); Rust++)
+		{
+			auto fileNode = dynamic_cast<TFileNode*>(files[Rust].Get());
+
+			if (fileNode)
+			{
+				fileNode->AddExtension(extension);
+			}
+
+		}
+
+		RETURN_THREAD_UNLOCK true;
+	}
+	RETURN_THREAD_UNLOCK false;
+}
+
+void TFileNode::SetFilterMode(file_node_filter_mode mode)
+{
+	AG_THREAD_LOCK
+	filter_mode = mode;
+
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		auto fileNode = dynamic_cast<TFileNode*>(files[Rust].Get());
+		if (fileNode)
+			fileNode->SetFilterMode(mode);
+	}
+	RETURN_THREAD_UNLOCK;
+}
+
+file_node_filter_mode TFileNode::GetFilterMode()
+{
+	return filter_mode;
+}
+
+/**
+ * Method: TFileNode::RemoveNode
+ * Purpose: Removes the specified node
+ * Parameteres: TrecPointer<TObjectNode> - the node to remove
+ * Returns: bool - whether the node was found
+ *
+ * Attributes: override
+ */
+bool TFileNode::RemoveNode(TrecPointer<TObjectNode> obj)
+{
+	AG_THREAD_LOCK
+		if (!obj.Get())
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		auto f = files[Rust].Get();
+		if (!f)
+			continue;
+
+		if (f == obj.Get())
+		{
+			files.RemoveAt(Rust);
+			RETURN_THREAD_UNLOCK true;
+		}
+
+		if (f->RemoveNode(obj))
+		{
+			RETURN_THREAD_UNLOCK true;
+		}
+	}
+	RETURN_THREAD_UNLOCK false;
+}
+
+/**
+ * Method: TFileNode::ShouldShow
+ * Purpose: Takes the filter configuration to determine if to should be shown
+ * Parameters: TrecPointer<TFileShell> node -  the file entry to subject to filtering
+ * Returns: bool - whether the node passes the criteria to be shown
+ */
+bool TFileNode::ShouldShow(TrecPointer<TFileShell> node)
+{
+	if(!node.Get())
+		return false;
+
+	TString nodeName(node->GetName());
+	AG_THREAD_LOCK
+	if (node->IsDirectory())
+	{
+		switch (filter_mode)
+		{
+		case file_node_filter_mode::fnfm_blank:
+		case file_node_filter_mode::fnfm_block_files:
+			RETURN_THREAD_UNLOCK true;
+		case file_node_filter_mode::fnfm_block_current:
+		case file_node_filter_mode::fnfm_block_current_and_files:
+			RETURN_THREAD_UNLOCK nodeName.Compare(L".");
+		case file_node_filter_mode::fnfm_block_upper:
+		case file_node_filter_mode::fnfm_block_upper_and_files:
+			RETURN_THREAD_UNLOCK nodeName.Compare(L"..");
+		case file_node_filter_mode::fnfm_block_both:
+		case file_node_filter_mode::fnfm_block_both_and_files:
+			RETURN_THREAD_UNLOCK nodeName.Compare(L".") && nodeName.Compare(L"..");
+		case file_node_filter_mode::fnfm_block_directories:
+			RETURN_THREAD_UNLOCK false;
+		}
+	}
+	else
+	{
+		// We have a regular file
+		switch (filter_mode)
+		{
+		case file_node_filter_mode::fnfm_block_current_and_files:
+		case file_node_filter_mode::fnfm_block_upper_and_files:
+		case file_node_filter_mode::fnfm_block_both_and_files:
+		case file_node_filter_mode::fnfm_block_files:
+			RETURN_THREAD_UNLOCK false;
+		default:
+			if (showAllFiles && extensions.Size())
+			{
+				for (UINT Rust = 0; Rust < extensions.Size(); Rust++)
+				{
+					if (nodeName.FindLast(extensions[Rust]) == nodeName.GetSize() - extensions[Rust].GetSize())
+					{
+						RETURN_THREAD_UNLOCK true;
+					}
+				}
+				RETURN_THREAD_UNLOCK false;
+			}
+			else
+			{
+				RETURN_THREAD_UNLOCK true;
+			}
+		}
+	}
 }

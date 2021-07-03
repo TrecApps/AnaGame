@@ -3,10 +3,11 @@
 #include <TrecReference.h>
 #include "Structure2D.h"
 #include "TGradientStopCollection.h"
+#include "TGeometry.h"
 
 class DrawingBoard;
 class TColor;
-class TGeometry;
+
 
 /**
  * Helps the TBrush keep track of the brush type it has
@@ -20,16 +21,27 @@ typedef enum class brush_type
 }brush_type;
 
 /**
- * class TBrush
+ * Class: TBrush
  * Purpose: Applies rendering operations to the Drawing Board depending on the color settings applied to it
  *
  * Note: The base class only supports solid colors, linear gradients, and radial gradients. For bitmap support, use the TBitmapClass
+ * 
+ * SuperClass: TObject
  */
 class _VIDEO_GRAPHICS TBrush : public TObject
 {
 	friend class TrecPointerKey;
 	friend class DrawingBoard;
 public:
+
+
+	/**
+	 * Method: TBrush::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TBrush::DrawRectangle
@@ -45,6 +57,8 @@ public:
 	 * Purpose: fills the given Rectangle on the DrawingBoard
 	 * Parameters: const RECT_2D& r - The Rectangle to apply
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void FillRectangle(const RECT_2D& r);
 
@@ -62,6 +76,8 @@ public:
 	 * Purpose: fills the given Rounded Rectangle on the DrawingBoard
 	 * Parameters: const ROUNDED_RECT_2D& r - The Rounded Rectangle to apply
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void FillRoundedRectangle(const ROUNDED_RECT_2D& r);
 
@@ -79,6 +95,8 @@ public:
 	 * Purpose: fills the given Ellipse on the DrawingBoard
 	 * Parameters:const ELLIPSE_2D& r - The Ellipse to apply
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void FillEllipse(const ELLIPSE_2D& r);
 
@@ -96,6 +114,8 @@ public:
 	 * Purpose: fills the given Geometry on the DrawingBoard
 	 * Parameters: TrecPointer<TGeometry> geo - The Geometry to apply
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void FillGeometry(TrecPointer<TGeometry> geo);
 
@@ -109,6 +129,17 @@ public:
 	 * Returns: void
 	 */
 	void DrawLine(const POINT_2D& p1, const POINT_2D& p2, float thickness = 1.0f);
+
+	/**
+	 * Method: TBrush::DrawLine
+	 * Purpose: Draws a specific line to the Drawing Board, adding Stroke Style to the mix
+	 * Parameters: const POINT_2D& p1 - the beginning of the line
+	 *				const POINT_2D& p2 - the end of the line
+	 *				float thickness -  the thickness of the line (default is 1.0f)
+	 *				TrecComPointer<ID2D1StrokeStyle> style - the style to apply
+	 * Returns: void
+	 */
+	void DrawLine(const POINT_2D& p1, const POINT_2D& p2, TrecComPointer<ID2D1StrokeStyle> style, float thickness = 1.0f);
 	
 
 	/**
@@ -221,7 +252,7 @@ protected:
 	 * Parameters: void
 	 * Returns: bool
 	 */
-	bool Refresh();
+	bool Refresh(bool forceBrushRefresh = false);
 
 	/**
 	 * Method: TBrush::RefreshBrush
@@ -240,7 +271,7 @@ protected:
 	/**
 	 * The RenderTarget to draw against
 	 */
-	TrecComPointer<ID2D1RenderTarget> currentRenderer;
+	TrecComPointer<ID2D1BitmapRenderTarget> currentRenderer;
 
 	/**
 	 * The Drawing Board that holds the Render Target, allows Brushes to insect their ender Target and make necessary changes before drawing

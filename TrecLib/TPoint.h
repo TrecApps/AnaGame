@@ -3,8 +3,10 @@
 #include "TrecLib.h"
 
 /**
- * class TPoint
- * Basic class holding information about a 2D point
+ * Class: TPoint
+ * Purpose: Basic class holding information about a 2D point
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL TPoint :
 	public TObject
@@ -15,6 +17,15 @@ public:
 	 * y: the y-coordinate
 	 */
 	float x, y;
+
+
+	/**
+	 * Method: TPoint::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TPoint::TPoint

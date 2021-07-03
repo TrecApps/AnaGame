@@ -20,7 +20,7 @@ typedef enum class animation_phase
 }animation_phase;
 
 /**
- * enum animation_value_type
+ * Enum Class: animation_value_type
  * Purpose: Provide Animations setting themselves up with insight on what values they should strive for
  *
  * Note: Each of these values are relevant to certain type of animations and irrelevant to others. For instance,
@@ -62,14 +62,16 @@ class TBrush;
 class TControl;
 
 /**
- * class Animation (abstract)
+ * Class: Animation
  * Purpose: Provide the bare-bones essential information on what any Animation object would need to 
  *	function properly.
  *
- * The main essentials an animation object needs are time-based variables, such as the desired refresh rate, time to complete
+ *  Note: The main essentials an animation object needs are time-based variables, such as the desired refresh rate, time to complete
  *	an animation sequence, as well as methods to supply the object with the resources the object is to act upon
  *
  *	It was made abstract in order to better allow for a wide variety of Animations to be implemented
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL Animation :
 	public TObject
@@ -218,6 +220,15 @@ public:
 	 * Note: Abstract so that each subclass can report it's own string
 	 */
 	virtual TString GetAnimationType() = 0;
+
+
+	/**
+	 * Method: Animation::GetType()
+	 * Purpose: Returns a String Representation of the object
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 protected:
 	/**

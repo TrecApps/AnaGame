@@ -21,6 +21,8 @@ typedef enum class TDialogMode
 /**
  * Class: TDialog
  * Purpose: Extends the TWIndow class to support Dialogs
+ * 
+ * SuperClass: TWindow
  */
 class _TAP_DLL TDialog : public TWindow
 {
@@ -48,11 +50,22 @@ public:
 	 */
 	virtual ~TDialog();
 
+
+	/**
+	 * Method: TDialog::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TDialog::PrepareWindow
 	 * Purpose: Sets up the Dialog Window, restricting the Parent Window as called for
 	 * Parameters: void
 	 * Returns: int - error code (o for success)
+	 * 
+	 * Attributes: override
 	 */
 	int PrepareWindow() override;
 
@@ -61,6 +74,8 @@ public:
 	 * Purpose: Prepares the Dialog for destruction, releasing the Parent Window if necessary
 	 * Parameters: void
 	 * Returns: bool - whether the dialog can be destroyed yet
+	 * 
+	 * Attributes: override
 	 */
 	bool OnDestroy() override;
 
@@ -70,6 +85,8 @@ public:
 	 * Purpose: Sets up the Content of the Dialog
 	 * Parameters: TrecComPointer<ID2D1Factory1> fact =  the Factory to Provide the Dialog
 	 * Returns: int - error code (0 for no error)
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual int CompileView(TrecComPointer<ID2D1Factory1> fact) = 0;
 
@@ -81,6 +98,7 @@ public:
 	 * Returns: void
 	 */
 	void Run();
+
 
 protected:
 	TDialogMode dialogMode;

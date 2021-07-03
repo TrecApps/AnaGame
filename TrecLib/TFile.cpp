@@ -4,12 +4,25 @@
 
 UCHAR TFileType[] = { 2, 0b10000000, 2 };
 
+
+/**
+ * Method: TFile::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TFile::GetType() 
+{
+	return TString(L"TFile;") + TObject::GetType();
+}
+
 /*
 * Method: TFile::TFile 
 * Purpose: Default Constrictor
 * Parameters: void
 * Returns: void
 */
+
 TFile::TFile()
 {
 	fileEncode = FileEncodingType::fet_unknown;
@@ -50,6 +63,7 @@ TFile::~TFile()
 */
 bool TFile::Open(const TString& lpszFileName, UINT nOpenFlags)
 {
+	AG_THREAD_LOCK
 	fileEncode = FileEncodingType::fet_unknown;
 
 	UINT readWrite = 0, sharing = 0, atts = 0;
@@ -58,20 +72,21 @@ bool TFile::Open(const TString& lpszFileName, UINT nOpenFlags)
 	// If no attribute for opening is specified, use the value most likely to succeed
 	if (!atts)
 		atts = OPEN_ALWAYS;
-	fileHandle = CreateFileW(lpszFileName.GetConstantBuffer(), readWrite, sharing, nullptr, atts, FILE_ATTRIBUTE_NORMAL, nullptr);
+	TString newFileName(lpszFileName);
+	fileHandle = CreateFileW(newFileName.GetConstantBuffer().getBuffer(), readWrite, sharing, nullptr, atts, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 	
 	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
 		fileHandle = 0;
 		int err = GetLastError();
-		return false;
+		RETURN_THREAD_UNLOCK false;
 	}
 
 	// Here, the file is open, try to deduce the file type
 	fileEncode = DeduceEncodingType();
 	filePath.Set(lpszFileName);
-	return true;
+	RETURN_THREAD_UNLOCK true;
 }
 
 
@@ -86,6 +101,7 @@ bool TFile::Open(const TString& lpszFileName, UINT nOpenFlags)
  */
 BOOL TFile::ReadString(TString & rString)
 {
+	AG_THREAD_LOCK
 	bool success = false;
 	rString.Empty();
 	char letter[1];
@@ -93,16 +109,24 @@ BOOL TFile::ReadString(TString & rString)
 	WCHAR cLetter;
 	UCHAR temp;
 	WCHAR wLetter;
+
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+	std::string charHolder;
+
 	switch (fileEncode)
 	{
 	case FileEncodingType::fet_acsii:
 		
 		while (Read(&letter[0], 1))
 		{
+			success = true;
 			if (letter[0] == '\n')
 				break;
 			rString.AppendChar(ReturnWCharType(letter[0]));
-			success = true;
 		}
 		
 		break;
@@ -110,6 +134,7 @@ BOOL TFile::ReadString(TString & rString)
 		
 		while (Read(letter2, 2))
 		{
+			success = true;
 			temp = letter2[0];
 			letter2[0] = letter2[1];
 			letter2[1] = temp;
@@ -117,7 +142,6 @@ BOOL TFile::ReadString(TString & rString)
 			if (cLetter == L'\n')
 				break;
 			rString.AppendChar(cLetter);
-			success = true;
 		}
 
 		break;
@@ -125,14 +149,36 @@ BOOL TFile::ReadString(TString & rString)
 		
 		while (Read(&wLetter, 2))
 		{
+			success = true;
 			if (wLetter == L'\n')
 				break;
 			rString.AppendChar(wLetter);
+		}
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8))
+		{
 			success = true;
+			if (uni8[0] == '\n')
+				break;
+
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
 		}
 
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR) * charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
 	}
-	return success;
+	RETURN_THREAD_UNLOCK success;
 }
 
 
@@ -141,22 +187,30 @@ BOOL TFile::ReadString(TString & rString)
  * Purpose: Reads a line in a file into a String, taking into account the file encoding, stopping at the next line 
  *			Or when the specificed number of characters are read
  * Parameters: TString& rString - the String to read into
- *				UINT nMax - max number of characters to read
- * Returns: bool - success of reading
+ *				ULONGLONG nMax - max number of characters to read
+ * Returns: ULONGLONG - How many characgers were read
  */
-UINT TFile::ReadString(TString & rString, UINT nMax)
+ULONGLONG TFile::ReadString(TString & rString, ULONGLONG nMax)
 {
+	AG_THREAD_LOCK
 	rString.Empty();
-	UINT rust = 0;
+	ULONGLONG rust = 0;
 
 	if (fileEncode == FileEncodingType::fet_unknown)
 		DeduceEncodingType();
+
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+	std::string charHolder;
 
 	switch (fileEncode)
 	{
 	case FileEncodingType::fet_acsii:
 		char letter[1];
-		for ( ; rust <= nMax && Read(&letter, 1); rust++)
+		for ( ; rust <= nMax && Read(&letter, 1); rust+=1)
 		{
 			rString.AppendChar(ReturnWCharType(letter[0]));
 		}
@@ -165,7 +219,7 @@ UINT TFile::ReadString(TString & rString, UINT nMax)
 	case FileEncodingType::fet_unicode:
 		UCHAR letter2[2];
 		
-		for (; rust <= nMax && Read(&letter2, 2); rust++)
+		for (; rust <= nMax && Read(&letter2, 2); rust+=2)
 		{
 			WCHAR cLetter;
 			UCHAR temp = letter2[0];
@@ -180,15 +234,120 @@ UINT TFile::ReadString(TString & rString, UINT nMax)
 	case FileEncodingType::fet_unicode_little:
 		WCHAR wLetter;
 		
-		for( ; rust <= nMax && Read(&wLetter, 2); rust++ )
+		for( ; rust <= nMax && Read(&wLetter, 2); rust+=2 )
 		{
 			rString.AppendChar(wLetter);
 		}
-		
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8) && rust <= nMax)
+		{
+			rust += bytes;
+
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
+		}
+
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR) * charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
 	}
-	return rust;
+	RETURN_THREAD_UNLOCK rust;
 }
 
+
+ULONGLONG TFile::ReadStringLine(TString& rString, ULONGLONG nMax)
+{
+	AG_THREAD_LOCK
+	rString.Empty();
+	ULONGLONG rust = 0;
+
+	if (fileEncode == FileEncodingType::fet_unknown)
+		DeduceEncodingType();
+
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+	std::string charHolder;
+
+	switch (fileEncode)
+	{
+	case FileEncodingType::fet_acsii:
+		char letter[1];
+		for (; rust <= nMax && Read(&letter, 1) && letter[0] != '\n'; rust++)
+		{
+			rString.AppendChar(ReturnWCharType(letter[0]));
+		}
+
+		break;
+	case FileEncodingType::fet_unicode:
+		UCHAR letter2[2];
+
+		for (; rust <= nMax && Read(&letter2, 2); rust+=2)
+		{
+			WCHAR cLetter;
+			UCHAR temp = letter2[0];
+			letter2[0] = letter2[1];
+			letter2[1] = temp;
+			memcpy(&cLetter, letter2, 2);
+
+			if (cLetter == L'\n')
+			{
+				rust += 2;
+				break;
+			}
+			rString.AppendChar(cLetter);
+		}
+
+		break;
+	case FileEncodingType::fet_unicode_little:
+		WCHAR wLetter;
+
+		for (; rust < nMax && Read(&wLetter, 2); rust+=2)
+		{
+			if (wLetter == L'\n')
+			{
+				rust += 2;
+				break;
+			}
+			rString.AppendChar(wLetter);
+		}
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8) && rust <= nMax)
+		{
+			rust += bytes;
+			if (uni8[0] == '\n')
+				break;
+
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
+		}
+
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR) * charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
+	}
+	RETURN_THREAD_UNLOCK rust;
+}
 
 /**
  * Method: TFile::ReadString
@@ -199,8 +358,19 @@ UINT TFile::ReadString(TString & rString, UINT nMax)
  */
 UINT TFile::ReadString(TString & rString, WCHAR chara)
 {
+	AG_THREAD_LOCK
 	bool success = false;
 	rString.Empty();
+
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+	WCHAR charaComp;
+
+	std::string charHolder;
+
 	switch (fileEncode)
 	{
 	case FileEncodingType::fet_acsii:
@@ -239,9 +409,366 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
 			rString.AppendChar(wLetter);
 			success = true;
 		}
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8))
+		{
+			
+			if (MultiByteToWideChar(CP_UTF8, 0, uni8, bytes, &charaComp, 1) && chara == charaComp)
+				break;
+
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
+		}
+
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR) * charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
+	}
+	RETURN_THREAD_UNLOCK rString.GetSize();
+}
+
+/**
+ * Method: TFile::ReadString
+ * Purpose: Reads the file up to one of the provided characters
+ * Parameters: TString& rString - the string to retun
+ *				TString& chars - the characters to stop at
+ *				UCHAR flags - flags influence the behavior of this method
+ *				UINT max - max number of bytes to read (0 for no maximum)
+ * Returns: UINT - the size of the resulting string
+ *
+ * Note: Written with Source code interpretation in mind
+ * Flags variable values:
+ *		0b00000001 - TFile::include_end - include the terminating character in the return String
+ *      0b00000010 - TFile::out_of_quotes - makesure that when we do find the characters, they are outside of quotes
+ *      0booooo100 - TFile::watch_backslash - factor backslashes in handling the other flags
+ */
+UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags, UINT max)
+{
+	AG_THREAD_LOCK
+	bool success = false;
+	rString.Empty();
+	char letter[1] = { '\0' };
+
+	WCHAR quote = L'\0';
+
+	UINT backslashes = 0;
+
+	bool maxSet = max > 0;
+	WCHAR charaComp;
+
+	char uni8[4];
+	UCHAR bytes;
+
+	WCHAR* wideString = nullptr;
+
+
+	std::string charHolder;
+
+	switch (fileEncode)
+	{
+	case FileEncodingType::fet_acsii:
+		
+		while (Read(&letter, 1))
+		{
+			// If we care about backslashes and we encounter one on this character, increase the count
+			if (flags & 0b00000100)
+			{
+				if (letter[0] == '\\')
+					backslashes++;
+				// else backslashes = 0;
+			}
+
+			// If we don't care about backslashes or we have an od number of them, they they don't bother us for these operations
+			if ((flags & 0b00000100) == 0 || backslashes % 2 == 0)
+			{
+				// If we care about making sure the final character is out of quotes, check to make sure we are, in fact, out of them
+				if (flags & 0b00000010)
+				{
+					if (letter[0] == '\'')
+					{
+						if (quote == L'\'')
+							quote = 0;
+						else if (!quote)
+							quote = L'\'';
+					}
+					else if (letter[0] == '\"')
+					{
+						if (quote == L'\"')
+							quote = 0;
+						else if (!quote)
+							quote = L'\"';
+					}
+				}
+
+				// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
+				if ((!(flags & 0b00000010) || !quote) && chars.Find(letter[0]) != -1)
+				{
+					// If we want to add the terminating character, then do so here
+					if (flags & 0b00000001)
+						rString.AppendChar(ReturnWCharType(letter[0]));
+					break;
+				}
+			}
+
+			// Odd # of backslashes will affect the first non-backslash character, so process it first before resetting the backslash count
+			if (flags & 0b00000100)
+			{
+				if (letter[0] != '\\')
+					backslashes = 0;
+			}
+
+			rString.AppendChar(ReturnWCharType(letter[0]));
+			success = true;
+
+			if (maxSet && !(--max))
+			{
+				break;
+			}
+
+		}
+
+		break;
+	case FileEncodingType::fet_unicode:
+		UCHAR letter2[2];
+		while (Read(&letter2, 2))
+		{
+			WCHAR cLetter;
+			UCHAR temp = letter2[0];
+			letter2[0] = letter2[1];
+			letter2[1] = temp;
+			memcpy(&cLetter, letter2, 2);
+
+
+
+			// If we care about backslashes and we encounter one on this character, increase the count
+			if (flags & 0b00000100)
+			{
+				if (cLetter == '\\')
+					backslashes++;
+				// else backslashes = 0;
+			}
+
+			// If we don't care about backslashes or we have an od number of them, they they don't bother us for these operations
+			if ((flags & 0b00000100) == 0 || backslashes % 2 == 0)
+			{
+				// If we care about making sure the final character is out of quotes, check to make sure we are, in fact, out of them
+				if (flags & 0b00000010)
+				{
+					if (cLetter == '\'')
+					{
+						if (quote == L'\'')
+							quote = 0;
+						else if (!quote)
+							quote = L'\'';
+					}
+					else if (cLetter == '\"')
+					{
+						if (quote == L'\"')
+							quote = 0;
+						else if (!quote)
+							quote = L'\"';
+					}
+				}
+
+				// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
+				if ((!(flags & 0b00000010) || !quote) && chars.Find(cLetter) != -1)
+				{
+
+
+
+					if (chars.Find(cLetter) != -1)
+					{
+						if (flags & 0b00000001)
+							rString.AppendChar(cLetter);
+						break;
+					}
+				}
+			}
+
+			// Odd # of backslashes will affect the first non-backslash character, so process it first before resetting the backslash count
+			if (flags & 0b00000100)
+			{
+				if (cLetter != '\\')
+					backslashes = 0;
+			}
+
+			rString.AppendChar(cLetter);
+			success = true;
+
+			if (maxSet)
+			{
+				max -= 2;
+				if (!max) break;
+			}
+
+		}
+
+		break;
+	case FileEncodingType::fet_unicode_little:
+		WCHAR wLetter;
+		while (Read(&wLetter, 2))
+		{
+			// If we care about backslashes and we encounter one on this character, increase the count
+			if (flags & 0b00000100)
+			{
+				if (wLetter == '\\')
+					backslashes++;
+				// else backslashes = 0;
+			}
+
+			// If we don't care about backslashes or we have an od number of them, they they don't bother us for these operations
+			if ((flags & 0b00000100) == 0 || backslashes % 2 == 0)
+			{
+				// If we care about making sure the final character is out of quotes, check to make sure we are, in fact, out of them
+				if (flags & 0b00000010)
+				{
+					if (wLetter == '\'')
+					{
+						if (quote == L'\'')
+							quote = 0;
+						else if (!quote)
+							quote = L'\'';
+					}
+					else if (wLetter == '\"')
+					{
+						if (quote == L'\"')
+							quote = 0;
+						else if (!quote)
+							quote = L'\"';
+					}
+				}
+
+				// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
+				if ((!(flags & 0b00000010) || quote==0) && chars.Find(wLetter) != -1)
+				{
+
+
+					if (chars.Find(wLetter) != -1)
+					{
+						if (flags & 0b00000001)
+							rString.AppendChar(wLetter);
+						break;
+					}
+				}
+			}
+
+			// Odd # of backslashes will affect the first non-backslash character, so process it first before resetting the backslash count
+			if (flags & 0b00000100)
+			{
+				if (wLetter != '\\')
+					backslashes = 0;
+			}
+				
+			rString.AppendChar(wLetter);
+			success = true;
+			if (maxSet)
+			{
+				max -= 2;
+				if (!max || max == UINT32_MAX) break;
+			}
+		}
+		break;
+	case FileEncodingType::fet_unicode8:
+		ZeroMemory(uni8, sizeof(char) * 4);
+		while (bytes = ReadUnicode8Char(uni8))
+		{
+
+			UINT worked = MultiByteToWideChar(CP_UTF8, 0, uni8, bytes, &charaComp, 1);
+			
+			// If we care about backslashes and we encounter one on this character, increase the count
+			if (worked )
+			{
+				if(flags & 0b00000100)
+				{
+					if (charaComp == '\\')
+					backslashes++;
+				// else backslashes = 0;
+				}
+
+				// If we don't care about backslashes or we have an od number of them, they they don't bother us for these operations
+				if ((flags & 0b00000100) == 0 || backslashes % 2 == 0)
+				{
+					// If we care about making sure the final character is out of quotes, check to make sure we are, in fact, out of them
+					if (flags & 0b00000010)
+					{
+						if (charaComp == '\'')
+						{
+							if (quote == L'\'')
+								quote = 0;
+							else if (!quote)
+								quote = L'\'';
+						}
+						else if (charaComp == '\"')
+						{
+							if (quote == L'\"')
+								quote = 0;
+							else if (!quote)
+								quote = L'\"';
+						}
+					}
+
+					// if we don't care about quotes or we are out of them, then check to see if we reached a terminating character
+					if ((!(flags & 0b00000010) || quote == 0) && chars.Find(charaComp) != -1)
+					{
+
+
+						if (chars.Find(charaComp) != -1)
+						{
+							if (flags & 0b00000001)
+								for (UINT Rust = 0; bytes; bytes--, Rust++)
+									charHolder.push_back(uni8[Rust]);
+							break;
+						}
+					}
+				}
+
+				// Odd # of backslashes will affect the first non-backslash character, so process it first before resetting the backslash count
+				if (flags & 0b00000100)
+				{
+					if (charaComp != '\\')
+						backslashes = 0;
+				}
+
+			} // if worked
+			success = true;
+
+			bool reachedMax = false;
+
+			if (maxSet)
+			{
+				max -= bytes;
+				if (!max || max == UINT32_MAX)reachedMax = true;
+			}
+
+			for (UINT Rust = 0; bytes; bytes--, Rust++)
+			{
+				charHolder.push_back(uni8[Rust]);
+				uni8[Rust] = '\0';
+			}
+
+			if (reachedMax)
+				break;
+		}
+
+		wideString = new WCHAR[charHolder.size() * 2];
+		ZeroMemory(wideString, sizeof(WCHAR)* charHolder.size() * 2);
+
+		MultiByteToWideChar(CP_UTF8, 0, charHolder.c_str(), charHolder.size(), wideString, charHolder.size() * 2);
+		rString.Set(wideString);
+		delete[] wideString;
+		wideString = nullptr;
 
 	}
-	return rString.GetSize();
+	RETURN_THREAD_UNLOCK rString.GetSize();
 }
 
 /*
@@ -252,12 +779,16 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
 */
 void TFile::WriteString(const TString& lpsz)
 {
+	AG_THREAD_LOCK
 	UINT size = 0;
 	CHAR* acsiiText = nullptr;
 	UINT wBytes = 0;
 	WCHAR cLetter = L'\0';
 	UCHAR bytes[2];
 	UCHAR temp = 0;
+
+	TString newParam(lpsz);
+
 	if (fileEncode == FileEncodingType::fet_unknown)
 		fileEncode = FileEncodingType::fet_unicode_little;
 	switch (fileEncode)
@@ -267,7 +798,7 @@ void TFile::WriteString(const TString& lpsz)
 		size = lpsz.GetSize();
 		acsiiText = new CHAR[size * 2 + 1];
 		wBytes = WideCharToMultiByte(CP_ACP,
-			0, lpsz.GetConstantBuffer(), -1,
+			0, newParam.GetConstantBuffer().getBuffer(), -1,
 			acsiiText, size * 2, NULL,
 			NULL);
 		Write(acsiiText, wBytes);
@@ -286,10 +817,10 @@ void TFile::WriteString(const TString& lpsz)
 		break;
 	case FileEncodingType::fet_unicode_little:
 		
-		Write(lpsz.GetConstantBuffer(), lpsz.GetSize() * sizeof(WCHAR));
+		Write(newParam.GetConstantBuffer().getBuffer(), lpsz.GetSize() * sizeof(WCHAR));
 		
 	}
-
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -298,9 +829,11 @@ void TFile::WriteString(const TString& lpsz)
 * Parameters: void
 * Returns: bool - is the file open
 */
-bool TFile::IsOpen()
+bool TFile::IsOpen() const
 {
-	return fileHandle != 0;
+	AG_THREAD_LOCK
+	bool ret = fileHandle != 0;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -311,12 +844,13 @@ bool TFile::IsOpen()
 */
 bool TFile::SetEncoding(FileEncodingType fet)
 {
+	AG_THREAD_LOCK
 	if (fileEncode == FileEncodingType::fet_unknown && fet != FileEncodingType::fet_unknown)
 	{
 		fileEncode = fet;
-		return true;
+		RETURN_THREAD_UNLOCK true;
 	}
-	return false;
+	RETURN_THREAD_UNLOCK false;
 }
 
 /*
@@ -327,13 +861,15 @@ bool TFile::SetEncoding(FileEncodingType fet)
 */
 TString TFile::GetFileDirectory()
 {
+	AG_THREAD_LOCK
 	TString sep(L"/\\");
 	int seperate = filePath.FindLastOneOf(sep);
 
 	if (seperate == -1)
-		return TString();
-
-	return filePath.SubString(0, seperate + 1);
+	{
+		RETURN_THREAD_UNLOCK TString();
+	}
+	RETURN_THREAD_UNLOCK filePath.SubString(0, seperate + 1);
 }
 
 /*
@@ -342,7 +878,7 @@ TString TFile::GetFileDirectory()
 * Parameters: void
 * Returns: UCHAR* - the AnaGame type 
 * 
-* Note: DEPRICATED
+* Note: deprecated
 */
 UCHAR * TFile::GetAnaGameType()
 {
@@ -358,17 +894,20 @@ UCHAR * TFile::GetAnaGameType()
  */
 TString TFile::GetFileExtension()
 {
+	AG_THREAD_LOCK
 	TString ext = GetFileName();
-	if(ext.Find(L'.') == -1)
-		return ext;
+	if (ext.Find(L'.') == -1)
+	{
+		RETURN_THREAD_UNLOCK ext;
+	}
 	for (int c = ext.GetSize() - 1; c >= 0; c--)
 	{
 		if (ext[c] == L'.')
 		{
-			return ext.SubString(c + 1);
+			RETURN_THREAD_UNLOCK ext.SubString(c + 1);
 		}
 	}
-	return ext;
+	RETURN_THREAD_UNLOCK ext;
 }
 /**
  * Method: TFile::Close
@@ -378,9 +917,11 @@ TString TFile::GetFileExtension()
  */
 void TFile::Close()
 {
+	AG_THREAD_LOCK
 	if (fileHandle)
 		CloseHandle((HANDLE)fileHandle);
 	fileHandle = 0;
+	RETURN_THREAD_UNLOCK;
 }
 /**
  * Method: TFile::Flush
@@ -390,9 +931,13 @@ void TFile::Close()
  */
 void TFile::Flush()
 {
+	AG_THREAD_LOCK
 	if (!fileHandle)
-		return;
+	{
+		RETURN_THREAD_UNLOCK;
+	}
 	FlushFileBuffers((HANDLE)fileHandle);
+	RETURN_THREAD_UNLOCK;
 }
 /**
  * Method: TFile::Write
@@ -403,8 +948,11 @@ void TFile::Flush()
  */
 void TFile::Write(const void* buffer, UINT count)
 {
+	AG_THREAD_LOCK
 	if (!fileHandle)
-		return;
+	{
+		RETURN_THREAD_UNLOCK;
+	}
 	LPDWORD resCount = new DWORD;
 	LPDWORD resCount2 = resCount;
 	LPOVERLAPPED lap = new OVERLAPPED;
@@ -414,12 +962,15 @@ void TFile::Write(const void* buffer, UINT count)
 	if (!res)
 	{
 		int err = GetLastError();
-		return;
+		delete resCount2;
+		delete lap2;
+		RETURN_THREAD_UNLOCK;
 	}
 	position += *resCount;
 
 	delete resCount2;
 	delete lap2;
+	RETURN_THREAD_UNLOCK;
 }
 /**
  * Method: TFile::GetEncodingType
@@ -444,6 +995,7 @@ FileEncodingType TFile::DeduceEncodingType()
 		return FileEncodingType::fet_unknown;
 	if (GetLength() < 2)
 		return FileEncodingType::fet_unknown;
+	AG_THREAD_LOCK
 	UCHAR twoBytes[30];
 	UINT bytes = Read(&twoBytes, 30);
 
@@ -467,57 +1019,69 @@ FileEncodingType TFile::DeduceEncodingType()
 				twoBytes[2] == 0x76 &&
 				twoBytes[3] == 0x38 &&
 				twoBytes[4] == 0x2d)
-				return FileEncodingType::fet_unicode7;
-
+			{
+				RETURN_THREAD_UNLOCK FileEncodingType::fet_unicode7;
+			}
 			// Now check for UTF-8
 			if (twoBytes[0] == 0xef &&
 				twoBytes[1] == 0xbb &&
 				twoBytes[2] == 0xbf)
-				return FileEncodingType::fet_unicode8;
-
+			{
+				RETURN_THREAD_UNLOCK FileEncodingType::fet_unicode8;
+			}
 			// Check for big endian unicode
 			if (twoBytes[0] == 0xfe &&
 				twoBytes[1] == 0xff)
-				return FileEncodingType::fet_unicode;
-
+			{
+				RETURN_THREAD_UNLOCK FileEncodingType::fet_unicode;
+			}
 			// Check for little-endian unicode
 			if (twoBytes[0] == 0xff &&
 				twoBytes[1] == 0xfe)
-				return FileEncodingType::fet_unicode_little;
-			
+			{
+				RETURN_THREAD_UNLOCK FileEncodingType::fet_unicode_little;
+			}
 
 			// There is no BOM to tell us the encoding, need to guess
 			// Check to see if it is big-endian the old fashioned way
 			if (twoBytes[0] == 0x00 &&
 				twoBytes[2] == 0x00 &&
 				twoBytes[4] == 0x00)
-				return FileEncodingType::fet_unicode;
-
+			{
+				RETURN_THREAD_UNLOCK FileEncodingType::fet_unicode;
+			}
 			if (twoBytes[1] == 0x00 &&
 				twoBytes[3] == 0x00)
-				return FileEncodingType::fet_unicode_little;
-
-			return FileEncodingType::fet_acsii;
+			{
+				RETURN_THREAD_UNLOCK FileEncodingType::fet_unicode_little;
+			}
+			RETURN_THREAD_UNLOCK FileEncodingType::fet_acsii;
 		}
 		else
-			return FileEncodingType::fet_unknown;
+		{
+			RETURN_THREAD_UNLOCK FileEncodingType::fet_unknown;
+		}
 	}
 	else
 	{
 		if (value & IS_TEXT_UNICODE_STATISTICS ||
 			value & IS_TEXT_UNICODE_CONTROLS ||
 			value & IS_TEXT_UNICODE_ASCII16)
-			return FileEncodingType::fet_unicode_little;
-
+		{
+			RETURN_THREAD_UNLOCK FileEncodingType::fet_unicode_little;
+		}
 		if (value & IS_TEXT_UNICODE_REVERSE_STATISTICS ||
 			value & IS_TEXT_UNICODE_REVERSE_CONTROLS ||
 			value & IS_TEXT_UNICODE_REVERSE_ASCII16)
-			return FileEncodingType::fet_unicode;
-
+		{
+			RETURN_THREAD_UNLOCK FileEncodingType::fet_unicode;
+		}
 		if (value & IS_TEXT_UNICODE_NOT_UNICODE_MASK)
-			return FileEncodingType::fet_acsii;
+		{
+			RETURN_THREAD_UNLOCK FileEncodingType::fet_acsii;
+		}
 	}
-	return FileEncodingType::fet_unknown;
+	RETURN_THREAD_UNLOCK FileEncodingType::fet_unknown;
 }
 /**
  * Method: TFile::ConvertFlags
@@ -535,29 +1099,62 @@ void TFile::ConvertFlags(UINT& input, UINT& open, UINT& security, UINT& creation
 	security = (input >> 8) & 0x000000ff;
 	creation = (input >> 16) & 0x000000ff;
 }
+
+UCHAR TFile::ReadUnicode8Char(char* seq4)
+{
+	if(!Read(seq4,1))
+	return 0;
+	AG_THREAD_LOCK
+	if ((seq4[0] & 0b11110000) == 0b11110000)
+	{
+		// we are dealing with a 4 byte sequence in UTF-8
+		// Already have the first byte, now get the other three
+		RETURN_THREAD_UNLOCK 1 + Read(&seq4[1], 3);
+	}
+
+	if ((seq4[0] & 0b11100000) == 0b11100000)
+	{
+		// At this point, we are dealing with a 3 byte sequence,
+		// Get the other two
+		RETURN_THREAD_UNLOCK 1 + Read(&seq4[1], 2);
+	}
+
+	if ((seq4[0] & 0b11000000) == 0b11000000)
+	{
+		// Just a two byte sequence
+		// Get the second byte
+		RETURN_THREAD_UNLOCK 1 + Read(&seq4[1], 1);
+	}
+	// just one byte
+	RETURN_THREAD_UNLOCK 1;
+}
+
 /**
  * Method: TFile::GetFileName
  * Purpose: Gets the name of the file
  * Parameters: void
  * Returns: TString - the name of the file (minus the path)
  */
-TString TFile::GetFileName()
+TString TFile::GetFileName() const
 {
+	AG_THREAD_LOCK
 	TString sep(L"/\\");
 	int seperate = filePath.FindLastOneOf(sep);
 
-	if(seperate == -1)
-		return TString();
-
-	return filePath.SubString(seperate + 1);
+	if (seperate == -1)
+	{
+		RETURN_THREAD_UNLOCK TString();
+	}
+	RETURN_THREAD_UNLOCK filePath.SubString(seperate + 1);
 }
+
 /**
  * Method: TFile::GetFilePath
  * Purpose: Retrievs the fill path of the file
  * Parameters: void
  * Returns: TString - the path of the file
  */
-TString TFile::GetFilePath()
+TString TFile::GetFilePath() const
 {
 	return filePath;
 }
@@ -567,40 +1164,45 @@ TString TFile::GetFilePath()
  * Parameters: void
  * Returns: TString - the title of the file
  */
-TString TFile::GetFileTitle()
+TString TFile::GetFileTitle() const
 {
+	AG_THREAD_LOCK
 	WCHAR* cTitle = new WCHAR[filePath.GetSize() + 1];
 	ZeroMemory(cTitle, sizeof(WCHAR) * (filePath.GetSize() + 1));
 
 	TString ret;
-	if (!::GetFileTitleW(filePath.GetConstantBuffer(), cTitle, filePath.GetSize()))
+	TString newPath(filePath);
+	if (!::GetFileTitleW(newPath.GetConstantBuffer().getBuffer(), cTitle, filePath.GetSize()))
 	{
 		ret.Set(cTitle);
 	}
 
 	delete[] cTitle;
-	return ret;
+	RETURN_THREAD_UNLOCK ret;
 }
+
 /**
  * Method: TFile::GetLength
  * Purpose: Retirevs the current size of the file
  * Parameters: void
  * Returns: ULONGLONG - length of the file
  */
-ULONGLONG TFile::GetLength()
+ULONGLONG TFile::GetLength() const
 {
+	AG_THREAD_LOCK
 	LARGE_INTEGER  len_li;
 	GetFileSizeEx((HANDLE)fileHandle, &len_li);
 	LONGLONG  len_ll = len_li.QuadPart;
-	return len_ll;
+	RETURN_THREAD_UNLOCK len_ll;
 }
+
 /**
  * Method: TFile::GetPosition
  * Purpose: Retrievs the current position of the file pointer
  * Parameters: void 
  * Returns: ULONGLONG -  the current position of the file pointer
  */
-ULONGLONG TFile::GetPosition()
+ULONGLONG TFile::GetPosition() const
 {
 	return position;
 }
@@ -614,8 +1216,11 @@ ULONGLONG TFile::GetPosition()
  */
 UINT TFile::Read(void* buffer, UINT count)
 {
-	if(!fileHandle)
-		return 0;
+	AG_THREAD_LOCK
+	if (!fileHandle)
+	{
+		RETURN_THREAD_UNLOCK 0;
+	}
 	LPDWORD resCount = new DWORD;
 	LPDWORD resCount2 = resCount;
 	LPOVERLAPPED lap = new _OVERLAPPED;
@@ -623,14 +1228,19 @@ UINT TFile::Read(void* buffer, UINT count)
 	BOOL res = ReadFile((HANDLE)fileHandle, buffer, count, resCount, nullptr);
 
 	if (!res)
-		return 0;
+	{
+		int e = GetLastError();
+		delete resCount;
+		delete lap2;
+		RETURN_THREAD_UNLOCK 0;
+	}
 	position += *resCount;
 
 	DWORD stackResCount = *resCount;
 
 	delete resCount;
 	delete lap2;
-	return stackResCount;
+	RETURN_THREAD_UNLOCK stackResCount;
 }
 /**
  * Method: TFile::Seek
@@ -641,7 +1251,10 @@ UINT TFile::Read(void* buffer, UINT count)
  */
 ULONGLONG TFile::Seek(LONGLONG offset, UINT from)
 {
-	if (!fileHandle) return 0;
+	AG_THREAD_LOCK
+	if (!fileHandle) {
+		RETURN_THREAD_UNLOCK 0;
+	}
 	PLONG hZero = new LONG;
 	*hZero = 0;
 	PLONG store = hZero;
@@ -658,7 +1271,7 @@ ULONGLONG TFile::Seek(LONGLONG offset, UINT from)
 		// To-Do:
 	}
 	delete store;
-	return position;
+	RETURN_THREAD_UNLOCK position;
 }
 /**
  * Method: TFile::SeekToBegin
@@ -668,7 +1281,11 @@ ULONGLONG TFile::Seek(LONGLONG offset, UINT from)
  */
 void TFile::SeekToBegin()
 {
-	if (!fileHandle) return;
+	AG_THREAD_LOCK
+	if (!fileHandle)
+	{
+		RETURN_THREAD_UNLOCK;
+	}
 	PLONG hZero = new LONG;
 	*hZero = 0;
 	PLONG store = hZero;
@@ -684,7 +1301,7 @@ void TFile::SeekToBegin()
 	}
 
 	delete store;
-
+	RETURN_THREAD_UNLOCK;
 	//return position;
 }
 
@@ -696,7 +1313,11 @@ void TFile::SeekToBegin()
  */
 ULONGLONG TFile::SeekToEnd()
 {
-	if (!fileHandle) return 0;
+	AG_THREAD_LOCK
+	if (!fileHandle)
+	{
+		RETURN_THREAD_UNLOCK 0;
+	}
 	PLONG hZero = new LONG;
 	*hZero = 0;
 	PLONG store = hZero;
@@ -715,5 +1336,5 @@ ULONGLONG TFile::SeekToEnd()
 
 	delete store;
 
-	return position;
+	RETURN_THREAD_UNLOCK position;
 }

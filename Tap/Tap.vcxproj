@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\Anaface;..\VideoGraphics;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\AnaWeb;..\Anaface;..\VideoGraphics;..\TcDataStruct;..\TrecLib;$(IncludePath)</IncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -100,7 +100,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;d2d1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;d2d1.lib;AnaWeb.lib;TcDataStruct.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -166,6 +166,8 @@
     <ClInclude Include="ArenaHandler.h" />
     <ClInclude Include="CameraHandler.h" />
     <ClInclude Include="DocumentHandler.h" />
+    <ClInclude Include="FileDialog.h" />
+    <ClInclude Include="FileDialogHandler.h" />
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HandlerMessage.h" />
@@ -184,16 +186,19 @@
     <ClInclude Include="TerminalHandler.h" />
     <ClInclude Include="TIdeWindow.h" />
     <ClInclude Include="TInstance.h" />
+    <ClInclude Include="TInterpretorEventHandler.h" />
     <ClInclude Include="TRegisterByteVirtualMachine.h" />
     <ClInclude Include="TRegisterObjectVirtualMachine.h" />
     <ClInclude Include="TStackByteVirtualMachine.h" />
     <ClInclude Include="TStackObjectVirtualMachine.h" />
     <ClInclude Include="TVirtualMachine.h" />
     <ClInclude Include="TStoryBoard.h" />
+    <ClInclude Include="TWebWindow.h" />
     <ClInclude Include="TWindow.h" />
     <ClInclude Include="EventHandler.h" />
     <ClInclude Include="MiniHandler.h" />
-    <ClInclude Include="TEnvironment.h" />
+    <ClInclude Include="WebHandler.h" />
+    <ClInclude Include="WebPage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlertDialog.cpp" />
@@ -202,6 +207,8 @@
     <ClCompile Include="CameraHandler.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="DocumentHandler.cpp" />
+    <ClCompile Include="FileDialog.cpp" />
+    <ClCompile Include="FileDialogHandler.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="HandlerMessage.cpp" />
     <ClCompile Include="IDEPage.cpp" />
@@ -222,16 +229,19 @@
     <ClCompile Include="TerminalHandler.cpp" />
     <ClCompile Include="TIdeWindow.cpp" />
     <ClCompile Include="TInstance.cpp" />
+    <ClCompile Include="TInterpretorEventHandler.cpp" />
     <ClCompile Include="TRegisterByteVirtualMachine.cpp" />
     <ClCompile Include="TRegisterObjectVirtualMachine.cpp" />
     <ClCompile Include="TStackByteVirtualMachine.cpp" />
     <ClCompile Include="TStackObjectVirtualMachine.cpp" />
     <ClCompile Include="TVirtualMachine.cpp" />
     <ClCompile Include="TStoryBoard.cpp" />
+    <ClCompile Include="TWebWindow.cpp" />
     <ClCompile Include="TWindow.cpp" />
     <ClCompile Include="EventHandler.cpp" />
     <ClCompile Include="MiniHandler.cpp" />
-    <ClCompile Include="TEnvironment.cpp" />
+    <ClCompile Include="WebHandler.cpp" />
+    <ClCompile Include="WebPage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Machine.asm" />

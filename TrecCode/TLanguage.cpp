@@ -386,7 +386,7 @@ bool TLanguage::RunCommentFilter(TrecPointer<TFile> file, TString& newFileName)
 	int endString = -1;
 	DoubIndex sinCom, newL, multiCom, multiComE, sinStr, mulStr;
 
-	while (readData = file->ReadString(inBuffer, (UINT)100))
+	while (readData = file->ReadString(inBuffer, (ULONGLONG)100))
 	{
 		UpdateDoubIndex(inBuffer, 0, sinCom, newL, multiCom, multiComE, sinStr, mulStr);
 		outbuffer.Set(L"");
@@ -536,8 +536,8 @@ bool TLanguage::RunBlockFilter(TrecPointer<TFile> file, TString& newFileName)
 			{
 				if (line[0] == L'\t')
 					indent = L'\t';
-				else if (line[0] == L'\s')
-					indent = L'\s';
+				else if (line[0] == L' ')
+					indent = L' ';
 			}
 			UINT Rust;
 			for (Rust = 0; Rust < line.GetSize(); Rust++)

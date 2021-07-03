@@ -1,15 +1,37 @@
 #pragma once
 #include "TTextField.h"
 #include <TShell.h>
+/**
+ * Class Enum: prompt_mode
+ * Purpose: How to handle interactions
+ */
+typedef enum class prompt_mode
+{
+	regular,       // Behave like a regular prompt
+	print_only,    // only print material through print methods
+	program_input  // Accept input but only print out what a user types or a program provides
+}prompt_mode;
+
 
 /**
  * Class: TPromptControl
  * Purpose: Allows Anagame to support terminals in it's interface
+ * 
+ * SuperClass: TTextField
  */
-class TPromptControl :
+class _ANAFACE_DLL TPromptControl :
 	public TTextField
 {
 public:
+
+	/**
+	 * Method: TPromptControl::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	 * Method: TPromptControl::TPromptControl
 	 * Purpose: Constructor
@@ -32,6 +54,8 @@ public:
 	* Purpose: Sets up the TPromptControl with Prompt Specific attributes
 	* Parameters: RECT r - the location that the control would work in
 	* Returns: bool - success (currently arbitrarily)
+	* 
+	* Attributes: override
 	*/
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d) override;
 
@@ -40,6 +64,8 @@ public:
 	* Purpose: Draws the text that it was given
 	* Parameters: TObject* obj - object used for databinding (unlikely to be used here)
 	* Returns: void
+	* 
+	* Attributes: override
 	*/
 	virtual void onDraw(TObject* obj = nullptr) override;
 
@@ -51,8 +77,10 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	* 
+	* Attributes: override; message
 	*/
-	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl);
+	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 	/*
 	* Method: TPromptControl::OnChar
 	* Purpose: Adds a character to the String
@@ -63,8 +91,10 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	* 
+	* Attributes: override; message
 	*/
-	afx_msg bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 
 	/*
 	 * Method: TPromptControl::
@@ -81,6 +111,38 @@ public:
 	 * Returns: void
 	 */
 	void SubmitCommand(TString& command);
+
+	/**
+	 * For use with scripts and other programs
+	 */
+
+	/**
+	 * Method: TPromptControl::Print
+	 * Purpose: Allows external code to manually add something to print out
+	 * Parameters: TString& input - the command to enter
+	 * Returns: void
+	 */
+	void Print(const TString& input);
+
+	/**
+	 * Method: TPromptControl::PrintLine
+	 * Purpose: Allows external code to manually add something to print out, adding an extra new line at the end
+	 * Parameters: TString& input - the command to enter
+	 * Returns: void
+	 */
+	void PrintLine(const TString& input);
+
+
+	/**
+	 * Method: TPromptControl::Clear
+	 * Purpose: Allows external code to manually clear the buffer
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void Clear();
+
+	
+
 protected:
 	/**
 	 * the Input provided by the user, seperate from the output from the control of the TShell underneath
@@ -94,6 +156,11 @@ protected:
 	 * Whether a process is currently running under this control
 	 */
 	bool processRunning;
+
+	/**
+	 * the mode to operate under
+	 */
+	prompt_mode promptMode;
 
 	/*
 	 * Method: TPromptControl::isInInput
@@ -116,6 +183,8 @@ protected:
 	 * Parameters: WCHAR ch - the character to add
 	 *				int - the number of times to add that character
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void InputChar(wchar_t, int)override;
 };

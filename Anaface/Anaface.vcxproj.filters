@@ -69,9 +69,6 @@
     <ClInclude Include="TDataBind.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TDropMenu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TEllipseGeometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -147,6 +144,12 @@
     <ClInclude Include="TParentHolder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TSpriteControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TVideo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -198,9 +201,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TDataBind.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TDropMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TEllipseGeometry.cpp">
@@ -276,6 +276,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TParentHolder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TSpriteControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TVideo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

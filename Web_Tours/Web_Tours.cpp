@@ -1,194 +1,139 @@
-
-// Web_Tours.cpp : Defines the class behaviors for the application.
+// Web_tours.cpp : Defines the entry point for the application.
 //
 
-#include "stdafx.h"
-#include "afxwinappex.h"
-#include "afxdialogex.h"
-#include "Web_Tours.h"
-#include "MainFrm.h"
+#include "framework.h"
+#include "Web_tours.h"
+#include <TInstance.h>
+#include <DirectoryInterface.h>
+#include "WebToursHandler.h"
+#include <TWebWindow.h>
+#include "WebEnvironment.h"
+#include <TThread.h>
 
-#include "Web_ToursDoc.h"
-#include "Web_ToursView.h"
+#define MAX_LOADSTRING 100
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+// Global Variables:
+HINSTANCE hInst;                                // current instance
+WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
+WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
+// Forward declarations of functions included in this code module:
+ATOM                MyRegisterClass(HINSTANCE hInstance);
+BOOL                InitInstance(HINSTANCE, int);
+LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
-// CWeb_ToursApp
+// AnaGame Globals
+TrecPointer<TInstance> mainInstance;
 
-BEGIN_MESSAGE_MAP(CWeb_ToursApp, CWinApp)
-	ON_COMMAND(ID_APP_ABOUT, &CWeb_ToursApp::OnAppAbout)
-	// Standard file based document commands
-	ON_COMMAND(ID_FILE_NEW, &CWinApp::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, &CWinApp::OnFileOpen)
-	// Standard print setup command
-	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinApp::OnFilePrintSetup)
-END_MESSAGE_MAP()
-
-
-// CWeb_ToursApp construction
-
-CWeb_ToursApp::CWeb_ToursApp()
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+                     _In_opt_ HINSTANCE hPrevInstance,
+                     _In_ LPWSTR    lpCmdLine,
+                     _In_ int       nCmdShow)
 {
-	// support Restart Manager
-	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_ALL_ASPECTS;
-#ifdef _MANAGED
-	// If the application is built using Common Language Runtime support (/clr):
-	//     1) This additional setting is needed for Restart Manager support to work properly.
-	//     2) In your project, you must add a reference to System.Windows.Forms in order to build.
-	System::Windows::Forms::Application::SetUnhandledExceptionMode(System::Windows::Forms::UnhandledExceptionMode::ThrowException);
-#endif
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
 
-	// TODO: replace application ID string below with unique ID string; recommended
-	// format for string is CompanyName.ProductName.SubProduct.VersionInformation
-	SetAppID(_T("Web_Tours.AppID.NoVersion"));
+    // TODO: Place code here.
+    TString tmlFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable));
+    tmlFile.Append(L"Resources\\Web-Tours\\BrowserInterface.tml.txt");
 
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
+    TString title(L"Web-Tours");
+    TString winClass(L"WebToursWindow");
+
+    TThread::SetMainThread();
+
+    mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
+
+    WNDCLASSEXW wcex;
+
+    wcex.cbSize = sizeof(WNDCLASSEX);
+
+    wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WEBTOURS));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_WEBTOURS);
+    wcex.lpszClassName = winClass.GetConstantBuffer().getBuffer();
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < EventHandler, WebToursHandler>(mainInstance), t_window_type::t_window_type_web);
+
+    TrecSubPointer<TWindow, TWebWindow> webWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TWebWindow>( mainInstance->GetMainWindow());
+
+    if (webWindow.Get())
+    {
+        // Web Based Initialization here
+        webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>(mainInstance, mainInstance->GetMainWindow()));
+        webWindow->AddNewTab();
+    }
+
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WEBTOURS));
+
+    MSG msg;
+
+    // Main message loop:
+    while (GetMessage(&msg, nullptr, 0, 0))
+    {
+        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+
+    mainInstance.Nullify();
+    return (int)msg.wParam;
 }
 
-// The one and only CWeb_ToursApp object
 
-CWeb_ToursApp theApp;
-
-
-// CWeb_ToursApp initialization
-
-BOOL CWeb_ToursApp::InitInstance()
+//
+//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
+//
+//  PURPOSE: Processes messages for the main window.
+//
+//  WM_COMMAND  - process the application menu
+//  WM_PAINT    - Paint the main window
+//  WM_DESTROY  - post a quit message and return
+//
+//
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	// InitCommonControlsEx() is required on Windows XP if an application
-	// manifest specifies use of ComCtl32.dll version 6 or later to enable
-	// visual styles.  Otherwise, any window creation will fail.
-	INITCOMMONCONTROLSEX InitCtrls;
-	InitCtrls.dwSize = sizeof(InitCtrls);
-	// Set this to include all the common control classes you want to use
-	// in your application.
-	InitCtrls.dwICC = ICC_WIN95_CLASSES;
-	InitCommonControlsEx(&InitCtrls);
+    if (message == WM_GETMINMAXINFO)
+    {
+        PMINMAXINFO info = reinterpret_cast<LPMINMAXINFO>(lParam);
 
-	CWinApp::InitInstance();
+        info->ptMinTrackSize.x = 600;
+        info->ptMinTrackSize.y = 450;
+        return 0;
+    }
 
-	if (!AfxSocketInit())
-	{
-		AfxMessageBox(IDP_SOCKETS_INIT_FAILED);
-		return FALSE;
-	}
+    if (mainInstance.Get())
+        return mainInstance->Proc(hWnd, message, wParam, lParam);
 
-	// Initialize OLE libraries
-	if (!AfxOleInit())
-	{
-		AfxMessageBox(IDP_OLE_INIT_FAILED);
-		return FALSE;
-	}
-
-	AfxEnableControlContainer();
-
-	EnableTaskbarInteraction(FALSE);
-
-	// AfxInitRichEdit2() is required to use RichEdit control	
-	// AfxInitRichEdit2();
-
-	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	// of your final executable, you should remove from the following
-	// the specific initialization routines you do not need
-	// Change the registry key under which our settings are stored
-	// TODO: You should modify this string to be something appropriate
-	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
-	LoadStdProfileSettings(4);  // Load standard INI file options (including MRU)
-
-
-	// Register the application's document templates.  Document templates
-	//  serve as the connection between documents, frame windows and views
-	CSingleDocTemplate* pDocTemplate;
-	pDocTemplate = new CSingleDocTemplate(
-		IDR_MAINFRAME,
-		RUNTIME_CLASS(CWeb_ToursDoc),
-		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
-		RUNTIME_CLASS(CWeb_ToursView));
-	if (!pDocTemplate)
-		return FALSE;
-	AddDocTemplate(pDocTemplate);
-
-
-	// Parse command line for standard shell commands, DDE, file open
-	CCommandLineInfo cmdInfo;
-	ParseCommandLine(cmdInfo);
-
-	// Enable DDE Execute open
-	EnableShellOpen();
-	RegisterShellFileTypes(TRUE);
-
-
-	// Dispatch commands specified on the command line.  Will return FALSE if
-	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
-	if (!ProcessShellCommand(cmdInfo))
-		return FALSE;
-
-	// The one and only window has been initialized, so show and update it
-	m_pMainWnd->ShowWindow(SW_SHOW);
-	m_pMainWnd->UpdateWindow();
-	// call DragAcceptFiles only if there's a suffix
-	//  In an SDI app, this should occur after ProcessShellCommand
-	// Enable drag/drop open
-	m_pMainWnd->DragAcceptFiles();
-	return TRUE;
+    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-int CWeb_ToursApp::ExitInstance()
+// Message handler for about box.
+INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	//TODO: handle additional resources you may have added
-	AfxOleTerm(FALSE);
+    UNREFERENCED_PARAMETER(lParam);
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        return (INT_PTR)TRUE;
 
-	return CWinApp::ExitInstance();
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        }
+        break;
+    }
+    return (INT_PTR)FALSE;
 }
-
-// CWeb_ToursApp message handlers
-
-
-// CAboutDlg dialog used for App About
-
-class CAboutDlg : public CDialogEx
-{
-public:
-	CAboutDlg();
-
-// Dialog Data
-#ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_ABOUTBOX };
-#endif
-
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-// Implementation
-protected:
-	DECLARE_MESSAGE_MAP()
-};
-
-CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
-{
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialogEx::DoDataExchange(pDX);
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
-END_MESSAGE_MAP()
-
-// App command to run the dialog
-void CWeb_ToursApp::OnAppAbout()
-{
-	CAboutDlg aboutDlg;
-	aboutDlg.DoModal();
-}
-
-// CWeb_ToursApp message handlers
-
-
-

@@ -2,8 +2,10 @@
 #include "TObject.h"
 
 /**
- * class TArrayBase
+ * Class: TArrayBase
  * Purpose: holds the bare essentials for all TArray's
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL TArrayBase :
 	public TObject
@@ -32,7 +34,7 @@ public:
      * Parameters: void
      * Returns: UCHAR* array expressing the type of this object
      *
-     * Note: DEPRICATED - should not be used in Anagame development
+     * Note: deprecated - should not be used in Anagame development
      */
 	virtual UCHAR* GetAnaGameType()override;
 

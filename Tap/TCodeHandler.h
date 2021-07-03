@@ -4,6 +4,8 @@
 /**
  * Class: TCodeHandler
  * Purpose: Extends the Handler to hold a specific code file
+ * 
+ * SuperClass: DocumentHandler
  */
 class _TAP_DLL TCodeHandler : public DocumentHandler
 {
@@ -28,10 +30,21 @@ public:
 
 
 	/**
+	 * Method: TCodeHandler::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+
+	/**
 	 * Method: TCodeHandler::Initialize
 	 * Purpose: Initializes the Handler so that it has direct Access to certain Controls held by the page
 	 * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void Initialize(TrecPointer<Page> page) override;
 
@@ -40,6 +53,8 @@ public:
 	 * Purpose: Handles Events produced from the set of TControls
 	 * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr) override;
 
@@ -49,6 +64,8 @@ public:
 	 * Purpose: Processes the message sent to the handler
 	 * Parameters: TrecPointer<HandlerMessage> message - the message to recieve and Process
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message) override;
 
@@ -58,8 +75,12 @@ public:
 	 * Purpose: Provides a Save method in case there is a way to save
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void OnSave()override;
+
+
 
 protected:
 
@@ -68,6 +89,8 @@ protected:
 	 * Purpose: Reports whether this Object is of the correct type to recieve the message
 	 * Parameters: TrecPointer<HandlerMessage> message - the message to scan
 	 * Returns: bool - true if the type matches, false oherwise
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 
@@ -75,18 +98,22 @@ protected:
 
 
 	/**
-	 * Method: TCodeHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
+	 * Method: TCodeHandler::OnSave
+	 * Purpose: Writes the contents of the code file to the file
+	 * Parameters: TFile& file - the file to write to
+	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	void OnSave(TFile& file)override;
 
 	/**
-	 * Method: TCodeHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
+	 * Method: TCodeHandler::OnLoad
+	 * Purpose: Intended to read from a provided file
+	 * Parameters: TFile& the file to read from
+	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void OnLoad(TFile&)override;
 };

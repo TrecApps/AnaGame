@@ -10,8 +10,8 @@
 #define NOT_NUMB 2
 
 /*
-* ColorFormat
-* Used to keep track of how the color originally was presented
+* Enum Class: ColorFormat
+* Purpose: Used to keep track of how the color originally was presented
 */
 typedef enum class _TREC_LIB_DLL ColorFormat
 {
@@ -30,15 +30,81 @@ typedef struct IndexRange {
 	int end;
 }IndexRange;
 
+/**
+ * Enum Class: number_base
+ * Purpose: Signal to which number base to use
+ */
+typedef enum class number_base
+{
+	nb_generic, // Let the method decide which base to use
+	nb_binary,	// assume string is 1's and 0's
+	nb_octal,	// assume string is 0-7
+	nb_decimal, // Use scale 0-9
+	nb_hexadecimal // Use scale 0-f
+}number_base;
 
-/*
-* Class: TString
-* Represents the UNICODE version of the String class, with features such as split,
-*	number extraction, substring, and trim
-*/
+/**
+ * Class: TString
+ * Purpose: Represents the UNICODE version of the String class, with features such as split,
+ *	number extraction, substring, and trim
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
+ */
 class _TREC_LIB_DLL TString : public TObject
 {
+	friend class TConstBuffer;
 public:
+
+
+	/**
+	 * Class: TConstBuffer
+	 * Purpose: Provides Thread Protection to calls to GetConstBuffer
+	 */
+	class _TREC_LIB_DLL TConstBuffer
+	{
+	public:
+		TConstBuffer(const TString* string);
+		TConstBuffer(const TConstBuffer& buff);
+		~TConstBuffer();
+
+		const WCHAR* getBuffer();
+	private:
+		const TString* string;
+	};
+
+private:
+	mutable bool shouldUnlock;
+
+	mutable UCHAR BufferCounter;
+
+	void IncrementBuffer()const;
+
+	void DecrementBuffer()const;
+
+public:
+
+
+	/**
+	 * Method: TString::ConvertStringToUint
+	 * Purpose: Allows TString class to convert itself into a numeral representation
+	 * Parameters: const TString& string - the string to convert
+	 *				UINT& num - the number to hold the data in
+	 *				number_base base - the base to assume
+	 * Returns: bool - whether the string could be converted into an int
+	 * 
+	 * Note: if the String starts with a number specifier (0x or 0b), then the base param must 
+	 *		match the specifier or be 'generic'. Otherwise it will fail and false is returned.
+	 *		Also, if 'generic' is set, then binary will only be considered if the string specifies binary
+	 */
+	static bool ConvertStringToUint(const TString& string, UINT& num, number_base base = number_base::nb_generic);
+
+	/**
+	 * Method: TString::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/*
 	* Method: TString::Constructor
@@ -144,15 +210,46 @@ public:
 	*/
 	short ConvertToFloat(float&);
 
-
 	/*
 	* Method: TString::split
 	* Purpose: Splits a String by the provided deliniators
 	* Parameters: TString str - the TString holding deliniators
-				bool checkBackSlash - if true, then the method will ignore characters if a single backslash preceeds it
+	*			UCHAR flags - flags to use to control the behavior of this method
+				WCHAR exitQuote - quote to look for if String is believed to begin in quotes
 	* Returns: TrecPointer<TArray<TString>> - Array of TStrings holding tokens
+	*
+	* flags: 0b00000001 - t_file_check_back_slash - ignore a hit if odd number of backslashes are present
+	*		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
+	*		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
+	* 
+	* Attributes: const
 	*/
-	TrecPointer<TDataArray<TString>> split(TString, bool checkBackSlash = false);
+	TrecPointer<TDataArray<TString>> split(TString, UCHAR flags = 0, WCHAR exitQuote = L'\"') const;
+
+	/*
+	* Method: TString::splitn
+	* Purpose: Splits a String by the provided deliniators, providing a limit as to how many times the string can be split
+	* Parameters: TString str - the TString holding deliniators
+	*			UINT elements - the max number of elements to split by (0 for no limit)
+	*			UCHAR flags - flags to use to control the behavior of this method
+				WCHAR exitQuote - quote to look for if String is believed to begin in quotes
+	* Returns: TrecPointer<TArray<TString>> - Array of TStrings holding tokens
+	*
+	* flags: 0b00000001 - t_file_check_back_slash - ignore a hit if odd number of backslashes are present
+	*		 0b00000010 - t_file_out_of_quotes	  - ignore hits found within a quotation string
+	*		 0b00000100 - t_file_starts_in_quote  - assume that String starts within a quote
+	*
+	* Attributes: const
+	*/
+	TrecPointer<TDataArray<TString>> splitn(TString, UINT elements = 0, UCHAR flags = 0, WCHAR exitQuote = L'\"') const;
+
+	/**
+	 * Method: TString::IsBackslahedChar
+	 * Purpose: Reports whether the character indexed has an odd number of backslashes in front of it
+	 * Parameters: UINT index - the index to start
+	 * returns: bool - whether there are an odd number of backslashes infron of the characetr in the index
+	 */
+	bool IsBackSlashChar(UINT index);
 
 	/*
 	* Method: TString::GetBufferCopy
@@ -162,6 +259,8 @@ public:
 	*
 	* Note: the data returned was initialized via new[] and thereforem you need to call delete[] on it. It is recommended you
 	*		use "GetConstantBuffer()" wherever possible
+	* 
+	* Attributes: const
 	*/
 	WCHAR* GetBufferCopy()const ;
 
@@ -169,9 +268,11 @@ public:
 	 * Mehtod: TString::GetConstantBuffer
 	 * Purpose: Returns the underlying String
 	 * Parameters: void
-	 * Returns: const WCHAR* - a constant pointer of the underlying string buffer
+	 * Returns: TConstBuffer - a constant pointer of the underlying string buffer
+	* 
+	* Attributes: const
 	 */
-	const WCHAR* GetConstantBuffer() const;
+	TConstBuffer GetConstantBuffer()const ;
 
 	/*
 	* Method: TString::SubString
@@ -179,8 +280,10 @@ public:
 	* Parameters: UINT beginningIndex - the index to start at
 	*			int endIndex - exclusive index to end (use negative value to go to end)
 	* Returns: TString::the Substring generated
+	* 
+	* Attributes: const
 	*/
-	TString SubString(UINT beginningIndex, int endIndex = -1);
+	TString SubString(UINT beginningIndex, int endIndex = -1) const;
 
 
 	/*
@@ -197,9 +300,12 @@ public:
 	 * Purpose: Performs the find operation while ignoring hits found within quotation marks
 	 * Parameters: const TString& subString - the substring to search for
 	 *				 int start - location to start the search
+	 *				 bool ignoreEscape - whether to ignore escape characters
 	 * Returns: int - the index of the substring found (-1 if not found)
 	 */
-	int FindOutOfQuotes(const TString& subString, int start = 0);
+	int FindOutOfQuotes(const TString& subString, int start = 0, bool ignoreEscape = true) const;
+
+	int FindOneOfOutOfQuotes(const TString& chars, int start) const;
 
 	// Set Methods, to be used in place of Assignment operators to avoid C26444 Warnings
 
@@ -270,6 +376,8 @@ public:
 	* Purpose: Adds the contents of an existing TString to this one
 	* Parameters: TString& t - the TString to append
 	* Returns: void
+	* 
+	* Attributes: const
 	*/
 	TString operator+(const TString&) const;
 	/*
@@ -277,6 +385,8 @@ public:
 	* Purpose: Adds the contents of an existing TString to this one
 	* Parameters: TString& t - the TString to append
 	* Returns: void
+	* 
+	* Attributes: const
 	*/
 	TString operator+(const TString*) const;
 	/*
@@ -284,6 +394,8 @@ public:
 	* Purpose: Adds the contents of an existing wide string to this one
 	* Parameters: WCHAR* w - the wide string to append
 	* Returns: void
+	* 
+	* Attributes: const
 	*/
 	TString operator+(const WCHAR*)const;
 	/**
@@ -291,6 +403,8 @@ public:
 	 * Purpose: Returns a version of this string with the character appended
 	 * Parameters: WCHAR w -the character to append
 	 * Returns: TString version of the string with the appended character
+	 * 
+	 * Attributes: const
 	 */
 	TString operator+(const WCHAR w)const;
 	/*
@@ -380,7 +494,7 @@ public:
 	*/
 	virtual UCHAR* GetAnaGameType() override;
 
-	WCHAR operator[](UINT loc)const;
+	WCHAR& operator[](UINT loc)const;
 
 
 	/**
@@ -388,6 +502,8 @@ public:
 	 * Purpose: Retrieves the size of the string
 	 * Parameters: void
 	 * Returns: UINT - the current size of the string
+	 * 
+	 * Attributes: const
 	 */
 	UINT GetSize() const;
 	/**
@@ -395,6 +511,8 @@ public:
 	 * Purpose: Retrieves the character at the provided index
 	 * Parameters: UINT c - the index of the character
 	 * Returns: WCHAR - the character at the index, '\0' if index is out of bounds
+	 * 
+	 * Attributes: const
 	 */
 	WCHAR GetAt(UINT c)const;
 
@@ -456,6 +574,8 @@ public:
 	 * Purpose: Compares this string with a provided string
 	 * Parameters: const TString& other - the string to compare this string to
 	 * Returns: int - 0 if they are the same
+	 * 
+	 * Attributes: const
 	 */
 	int Compare(const TString& other)const ;
 	/**
@@ -463,6 +583,8 @@ public:
 	 * Purpose: Compares this string with a provided raw string
 	 * Parameters: const WCHAR* other - the string to compare this string to
 	 * Returns: int - 0 if they are the same
+	 * 
+	 * Attributes: const
 	 */
 	int Compare(const WCHAR* other)const;
 	/**
@@ -471,7 +593,7 @@ public:
 	 * Parameters: const TString& other - the string to compare this string to
 	 * Returns: int - 0 if they are the same
 	 */
-	int CompareNoCase(const TString& other) ;
+	int CompareNoCase(const TString& other) const;
 	/**
 	 * static Method: TString::Compare
 	 * Purpose: Compares two strings for equality
@@ -501,16 +623,44 @@ public:
 	 */
 	TString GetDelete(int& ret, int index, int count = 1);
 
+	/**
+	 * Method: TString::StartsWith
+	 * Purpose: deduces whether the String starts with a given sequence
+	 * Parameters: const TString& seq - the sequence to check
+	 *				bool ignoreCase - whether to ignore case when doing the analysis (false by default)
+	 *				bool whitespace - if true, only return true if there is whitespace at the character after 'seq'
+	 * Returns: bool
+	 * 
+	 * Attributes: const
+	 * 
+	 * Note: Will return false if seq is longer than 'this' string
+	 */
+	bool StartsWith(const TString&  seq, bool ignoreCase = false, bool whitespace = false) const;
 
+
+	/**
+	 * Method: TString::EndsWith
+	 * Purpose: deduces whether the String ends with a given sequence
+	 * Parameters: const TString& seq - the sequence to check
+	 *				bool ignoreCase - whether to ignore case when doing the analysis (false by default)
+	 * Returns: bool
+	 *
+	 * Note: Will return false if seq is longer than 'this' string
+	 */
+	bool EndsWith(const TString& seq, bool ignoreCase = false) const ;
 
 	/**
 	 * Method: TString::Find
 	 * Purpose: Finds the last instance of the specified string
 	 * Parameters: const TString& sub - the string to search for
 	 *				int start - the index to begin the search from
+	 *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
+	 *				bool notAlphaNum - false if you don't care if entry is surrounded by alpha-numberic characters, true if you want it isolated from alphanumeric characters
 	 * Returns: int - the index of the string found
+	 * 
+	 * Attributes: const
 	 */
-	int Find(const TString& sub, int start = 0);
+	int Find(const TString& sub, int start = 0, bool ignoreEscape = true, bool notAlphaNum = false) const;
 	/**
 	 * Method: TString::Find
 	 * Purpose: Finds the first instance of the specified character
@@ -518,16 +668,20 @@ public:
 	 *				int start - the index to begin the search from
 	 *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
 	 * Returns: int - the index of the character found
+	 * 
+	 * Attributes: const
 	 */
-	int Find(WCHAR sub, int start = 0, bool ignoreEscape = true);
+	int Find(WCHAR sub, int start = 0, bool ignoreEscape = true)const;
 	/**
 	 * Method: TString::FindOneOf
 	 * Purpose: Searches for one of the specified characters
 	 * Parameters: const TString& chars -  the list of characters to search for
 	 *				int start - the index to begin the search from
 	 * Returns: int - the index of the character found
+	 * 
+	 * Attributes: const
 	 */
-	int FindOneOf(const TString& chars, int start = 0);
+	int FindOneOf(const TString& chars, int start = 0)const;
 
 
 	/**
@@ -536,24 +690,30 @@ public:
 	 * Parameters: const TString& sub - the string to search for
 	 *				int start - the index to begin the search from (searches backwards)
 	 * Returns: int - the index of the string found
+	 * 
+	 * Attributes: const
 	 */
-	int FindLast(const TString& sub, int start = -1);
+	int FindLast(const TString& sub, int start = -1) const;
 	/**
 	 * Method: TString::FindLast
 	 * Purpose: Finds the last instance of the specified character
 	 * Parameters: WCHAR sub - the character to search for
 	 *				int start - the index to begin the search from (searches backwards)
 	 * Returns: int - the index of the character found
+	 * 
+	 * Attributes: const
 	 */
-	int FindLast(WCHAR sub, int start = -1);
+	int FindLast(WCHAR sub, int start = -1)const ;
 	/**
 	 * Method: TString::FindLastOneOf
 	 * Purpose: Searches backwards for one of the specified characters
 	 * Parameters: const TString& chars -  the list of characters to search for
 	 *				int start - the index to begin the search from (searches backwards)
 	 * Returns: int - the index of the character found
+	 * 
+	 * Attributes: const
 	 */
-	int FindLastOneOf(const TString& chars, int start = -1);
+	int FindLastOneOf(const TString& chars, int start = -1) const;
 
 
 	/**
@@ -564,6 +724,37 @@ public:
 	 */
 	bool SetAsEnvironmentVariable(TString& var);
 
+	/**
+	 * Method: TString::CountFinds
+	 * Purpose: Counts the number of times the provided string appears in this string
+	 * Parameters: const TString& query - the string to search for
+	 *				int stop - the index to stop at (default of -1 to scan the whole string)
+	 * Returns: UINT - the number of times the query string appears in this string
+	 * 
+	 * Attributes: const
+	 */
+	UINT CountFinds(const TString& query, int stop = -1) const;
+
+	/**
+	 * Method: TString::CountFinds
+	 * Purpose: Counts the number of times the provided character appears in this string
+	 * Parameters: WCHAR ch - the string to search for
+	 *				int stop - the index to stop at (default of -1 to scan the whole string)
+	 * Returns: UINT - the number of times the query string appears in this string
+	 * 
+	 * Attributes: const
+	 */
+	UINT CountFinds(WCHAR ch, int stop = -1) const;
+
+	/**
+	 * Method: TString::CountOneOfFinds
+	 * Purpose: Counts the number of times one of the characters in the provided string appears in this string
+	 * Parameters: const TString& query - the collection of characters to search for
+	 * Returns: UINT - the number of times the query string appears in this string
+	 * 
+	 * Attributes: const
+	 */
+	UINT CountOneOfFinds(const TString& query) const;
 
 	/**
 	 * Method: TString::Insert
@@ -614,8 +805,10 @@ public:
 	 * Purpose: Retrieves a version of the String with all lowercase
 	 * Parameters: void
 	 * Returns: TString::the lowercase version of the String
+	 * 
+	 * Attributes: const
 	 */
-	TString GetLower();
+	TString GetLower()const;
 	/**
 	 * Method: TString::SetUpper
 	 * Purpose: Sets this string to have all caps in-place
@@ -628,8 +821,10 @@ public:
 	 * Purpose: Retrieves a version of the String with all caps
 	 * Parameters: void
 	 * Returns: TString::the Uppercase version of the String
+	 * 
+	 * Attributes: const
 	 */
-	TString GetUpper();
+	TString GetUpper()const;
 
 
 
@@ -655,7 +850,7 @@ public:
 	 * Parameters: WCHAR c - the character to remove
 	 * Returns: int - The number of times the WCHAR was found in the string
 	 */
-	int Remove(WCHAR c);
+	int Remove(WCHAR c, bool outOfQuotes = false);
 	/**
 	 * Method: TString::GetRemove
 	 * Purpose: Returns a TString with a given character removed
@@ -663,7 +858,7 @@ public:
 	 *				WCHAR c - the character to remove
 	 * Returns: TString::copy with the specified character removed
 	 */
-	TString GetRemove(int& ret, WCHAR c);
+	TString GetRemove(int& ret, WCHAR c, bool outOfQuotes = false);
 
 
 
@@ -683,7 +878,7 @@ public:
 	 *				const TString& newStr - the String to replace the old string with
 	 * Returns: TString::The Copy with the Replace operation applied
 	 */
-	TString GetReplace(int& ret, const TString& oldStr, const TString& newStr);
+	TString GetReplace(int& ret, const TString& oldStr, const TString& newStr) const;
 	/**
 	 * Method: TString::Replace
 	 * Purpose: In-place character replacement operation
@@ -709,8 +904,10 @@ public:
 	 * Parameters: TString& tokens - characters to split by
 	 *				 int& start - the location to begin at
 	 * Returns:
+	 * 
+	 * Attributes: const
 	 */
-	TString Tokenize(TString& tokens, int& start);
+	TString Tokenize(TString& tokens, int& start, bool outOfQuotes) const;
 
 
 	/*
@@ -726,6 +923,8 @@ public:
 	 * Purpose: Retrieves acopy of the TString with whitespace trimmed. It does not alter the original String
 	 * Parameters: void
 	 * Returns: TString::Trimmed copy of the String
+	 * 
+	 * Attributes: const
 	 */
 	TString GetTrim() const;
 
@@ -793,6 +992,8 @@ private:
 	WCHAR* string;
 };
 
+bool _TREC_LIB_DLL IsWhitespace(WCHAR ch);
+
 /*
 * Function: convertToNumber
 * Purpose: Converts a character into a number
@@ -828,3 +1029,12 @@ float ConvertHueToRGB(float p, float q, int hue);
 * Returns: WCHAR - the wide version of the character
 */
 WCHAR ReturnWCharType(char c);
+
+/**
+ * Function: IndexComesFirst
+ * Purpose: Reports whether a given Index "comes first" in a string
+ * Parameters: int focusIndex - the index to see if it "comes first"
+ *				int checkIndex - the index to check the focus index against
+ * Returns: bool - whether the focus index comes first - meaning it is not -1 and the check Index is -1 or comes after the focus index
+ */
+bool _TREC_LIB_DLL IndexComesFirst(int focusIndex, int checkIndex);

@@ -31,9 +31,24 @@ typedef enum class messageOutput
 	positiveScroll
 }messageOutput;
 
+/**
+ * Class: TScrollBar
+ * Purpose: Implements and renders the scroll-bar
+ * 
+ * SuperClass: TObject
+ */
 class _ANAFACE_DLL TScrollBar : public TObject
 {
 public:
+
+	/**
+	 * Method: TScrollBar::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TScrollBar::TScrollBar
 	 * Purpose: Constructor
@@ -65,6 +80,8 @@ public:
 	 *				TPoint point - The point where the user clicked
 	 *				messageOutput* mOut - redundant
 	 * Returns: whether the focus is on this control or not
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual bool OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut);
 	/**
@@ -74,6 +91,8 @@ public:
 	 *				TPoint point - redundant
 	 *				messageOutput* mOut - redundant
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut);
 	/**
@@ -83,6 +102,8 @@ public:
 	 *				TPoint point - current point the mouse is at
 	 *				messageOutput* mOut - redundant
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut);
 

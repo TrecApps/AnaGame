@@ -36,7 +36,37 @@
     <ClInclude Include="TMavenEnvironment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TEnvironment.h">
+    <ClInclude Include="TJavaScriptInterpretor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TAnascriptInterpretor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TEnvironmentBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TAnagameEnvironmentBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JsConsole.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TJavaScriptClassInterpretor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcJavaScriptInterpretor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcJavaScriptClassInterpretor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JsArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JsPromise.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JsTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -59,7 +89,37 @@
     <ClCompile Include="TMavenEnvironment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TEnvironment.cpp">
+    <ClCompile Include="TJavaScriptInterpretor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TAnascriptInterpretor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TEnvironmentBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TAnagameEnvironmentBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JsConsole.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TJavaScriptClassInterpretor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcJavaScriptInterpretor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcJavaScriptClassInterpretor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JsArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JsPromise.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JsTimer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

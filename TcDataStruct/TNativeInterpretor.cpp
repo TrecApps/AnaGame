@@ -6,9 +6,10 @@
  * Purpose: Constructor
  * Parameters: NativeFunction function - the function to call
  *              TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
+ *				TrecPointer<TEnvironment> env - the environment underwhich this function is operating
  * Returns: New TInterpretor Object
  */
-TNativeInterpretor::TNativeInterpretor(NativeFunction function, TrecPointer<TInterpretor> parent): TInterpretor(parent)
+TNativeInterpretor::TNativeInterpretor(NativeFunction function, TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env): TInterpretor(parent, env)
 {
 	nativeFunction = function;
 }
@@ -36,7 +37,7 @@ UINT TNativeInterpretor::SetCode(TFile&)
  */
 ReportObject TNativeInterpretor::Run()
 {
-	TDataArray<TVariable> blankParams;
+	TDataArray<TrecPointer<TVariable>> blankParams;
 	return Run(blankParams);
 }
 
@@ -48,8 +49,9 @@ ReportObject TNativeInterpretor::Run()
  *
  * Note: this method is intended to be called in interpretors that represent specific methods or functions
  */
-ReportObject TNativeInterpretor::Run(TDataArray<TVariable>& params)
+ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVars)
 {
+	ThreadLock();
 	ReportObject result;
 	if (!nativeFunction)
 	{
@@ -57,6 +59,10 @@ ReportObject TNativeInterpretor::Run(TDataArray<TVariable>& params)
 		result.errorMessage.Set(L"Null Reference to Native Function!\n");
 	}
 	else
-		nativeFunction(params, result);
+	{
+		result.caller = caller;
+		nativeFunction(params, environment, result);
+		ThreadRelease();
+	}
 	return result;
 }

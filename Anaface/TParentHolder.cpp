@@ -1,4 +1,16 @@
 #include "TParentHolder.h"
+#include <TString.h>
+
+/**
+ * Method: TParentHolder::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TParentHolder::GetType()
+{
+	return TString(L"TParentHolder;") + TObject::GetType();
+}
 
 /**
  * Method: TParentHolder::TParentHolder

@@ -1,6 +1,18 @@
 
 #include "TGadgetControl.h"
 
+
+/**
+ * Method: TGadgetControl::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TGadgetControl::GetType()
+{
+	return TString(L"TGadgetControl;") + TControl::GetType();
+}
+
 /*
 * Method: TGadgetControl::TGadgetControl 
 * Purpose: Constructor
@@ -9,11 +21,9 @@
 *				bool isGadgetBase - the gadget base
 * Return: new Gadget Control object
 */
-TGadgetControl::TGadgetControl(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta, bool isGadgetBase):TControl(rt, ta, false)
+TGadgetControl::TGadgetControl(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta, bool isGadgetBase):TControl(rt, ta)
 {
 	isGadBase = isGadgetBase;
-	if (isGadBase)
-		isTextControl = false;
 	bSize = 30;
 	checker = RECT{ 0,0,0,0 };
 	thickness = 1.0;
@@ -34,6 +44,7 @@ TGadgetControl::~TGadgetControl()
 
 void TGadgetControl::storeInTML(TFile* ar, int childLevel, bool ov)
 {
+	ThreadLock();
 	TString appendable;
 	resetAttributeString(&appendable, childLevel + 1);
 
@@ -42,6 +53,7 @@ void TGadgetControl::storeInTML(TFile* ar, int childLevel, bool ov)
 	_WRITE_THE_STRING;
 
 	TControl::storeInTML(ar, childLevel, ov);
+	ThreadRelease();
 }
 
 
@@ -54,6 +66,7 @@ void TGadgetControl::storeInTML(TFile* ar, int childLevel, bool ov)
 */
 bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	marginPriority = false;
 
 	TControl::onCreate(r,d3d);
@@ -67,7 +80,11 @@ bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	if (bSize > 30)
 		bSize = 30;
 
-	if (!content1.Get())
+	TrecPointer<TString> valpoint = attributes.retrieveEntry(L"|AutoGenContent");
+
+	bool setContent = (valpoint.Get() && !valpoint->CompareNoCase(L"false")) ? false : true;
+
+	if (!content1.Get() && setContent)
 	{
 		content1 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, this);
 		content1->stopCollection.AddGradient(TGradientStop(TColor(D2D1::ColorF(D2D1::ColorF::White)), 0.0f));
@@ -76,7 +93,7 @@ bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	}
 
 
-	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|BoxSize"));
+	valpoint = attributes.retrieveEntry(TString(L"|BoxSize"));
 	if(valpoint.Get())
 	{
 		int tSize = bSize;
@@ -104,6 +121,8 @@ bool TGadgetControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 		
 		brush = drawingBoard->GetBrush(TColor(color));
 	}
+	ThreadRelease();
+
 
 	return false;
 }
@@ -128,6 +147,7 @@ UCHAR * TGadgetControl::GetAnaGameType()
  */
 void TGadgetControl::Resize(D2D1_RECT_F& r)
 {
+	ThreadLock();
 	TControl::Resize(r);
 	int height = location.bottom - location.top;
 	int offset = (height - bSize) / 2;
@@ -140,4 +160,5 @@ void TGadgetControl::Resize(D2D1_RECT_F& r)
 	DxLocation.left = checker.left;
 	DxLocation.right = checker.right;
 	DxLocation.top = checker.top;
+	ThreadRelease();
 }

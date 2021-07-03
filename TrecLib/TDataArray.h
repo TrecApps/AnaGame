@@ -8,10 +8,12 @@
 
 
 /*
-* Class TDataArray (Regular Type version)
-* AnaGame array designed to hold raw data
+* Class: TDataArray (Regular Type version)
+* Purpose: AnaGame array designed to hold raw data
+* 
+* SuperClass: TDataArrayBase - common base class for all TDataArrays
 */
-template<typename T> class  TDataArray : public TDataArrayBase
+template<typename T> class _TREC_LIB_DLL TDataArray : public TDataArrayBase
 {
 	friend class TDataArray<T>;
 private:
@@ -45,6 +47,8 @@ public:
 	* Purpose: Retrieves the location of the underlying array
 	* Parameters: void
 	* Returns: T* - data address in memory
+	* 
+	* Attributes: const
 	*/
 	T* data() const
 	{
@@ -57,7 +61,7 @@ public:
 	* Parameters: size_t c - index to target
 	* Returns: T& - element at index
 	*/
-	T& operator[](size_t c)
+	T& operator[](size_t c)const
 	{
 		if (c >= size)
 			throw L"IndexOutOfBounds";
@@ -146,6 +150,8 @@ public:
 	* Purpose: Reports the size of the underlying array
 	* Parameters: void
 	* Returns: UINT - the size of the unerlying array being used
+	* 
+	* Attributes: const
 	*/
 	UINT Capacity() const
 	{
@@ -174,6 +180,28 @@ public:
 		return size - 1;
 	}
 
+	/**
+	 * Method: TDataArray::InsertAt
+	 * Purpose: Adds element at the specified location
+	 * Parameters: T element - the data to insert
+	 *				UINT index - the index of th array to insert at
+	 * Returns: UINT - the new size of the array
+	 */
+	UINT InsertAt(T element, UINT index)
+	{
+		if (index >= size)
+			return push_back(element);
+		UINT ret = push_back(element);
+
+		for (UINT Rust = size - 1; Rust > index; Rust--)
+		{
+			array[Rust] = array[Rust - 1];
+		}
+		array[index] = element;
+
+		return ret;
+	}
+
 	/*
 	* Method: TDataArray::RemoveAt
 	* Purpose: Removes an element at a certain location
@@ -189,6 +217,8 @@ public:
 		for (; c < size - 1; c++)
 			array[c] = array[c + 1];
 		size--;
+		// Set to the Default
+		array[size] = T();
 		return returnable;
 	}
 
@@ -213,11 +243,13 @@ public:
 };
 
 /*
-* Class TDataArray (Pointer Type Version)
-* AnaGame Array designed to hold raw pointers to data 
+* Class: TDataArray (Pointer Type Version)
+* Purpose: AnaGame Array designed to hold raw pointers to data 
+* 
+* SuperClass: TDataArrayBase - common base class for all TDataArrays
 */
 template<typename T> 
-class  TDataArray<T*> : public TDataArrayBase
+class  _TREC_LIB_DLL TDataArray<T*> : public TDataArrayBase
 {
 	friend class TDataArray<T*>;
 private:
@@ -234,6 +266,8 @@ public:
 	* Purpose: Retrieves the location of the underlying array
 	* Parameters: void
 	* Returns: T* data address in memory
+	* 
+	* Attributes: const
 	*/
 	T** data() const
 	{
@@ -400,6 +434,7 @@ public:
 		for (; c < size - 1; c++)
 			array[c] = array[c + 1];
 		size--;
+		array[size] = nullptr;
 		return returnable;
 	}
 

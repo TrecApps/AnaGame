@@ -24,7 +24,7 @@ static TString shadowDirectories[16];
  * Parameters: TString& dir - the directory to forge
  * Returns: void
  */
-void ForgeDirectory(TString& dir)
+void ForgeDirectory(const TString& dir)
 {
 	auto pieces = dir.split(TString(L"/\\"));
 	TString bDir;
@@ -33,7 +33,7 @@ void ForgeDirectory(TString& dir)
 		TString adder = pieces->at(rust) + L'\\';
 		bDir.Append(adder);
 
-		CreateDirectoryW(bDir.GetConstantBuffer(), 0);
+		CreateDirectoryW(bDir.GetConstantBuffer().getBuffer(), 0);
 	}
 }
 
@@ -148,9 +148,9 @@ void InitializeDirectories()
 	// User
 	shadowDirectories[15].Set(baseShadow);
 
-	for (UINT c = 0; c < 9; c++)
+	for (UINT C = 0; C < 9; C++)
 	{
-		CreateDirectoryW(shadowDirectories[c].GetConstantBuffer(), 0);
+		CreateDirectoryW(shadowDirectories[C].GetConstantBuffer().getBuffer(), 0);
 	}
 
 	initialized = true;
@@ -215,7 +215,7 @@ TString GetShadowDirectoryWithSlash(CentralDirectories cd)
 * Returns: TString - the Path of the intended Shadow file
 * Note: The provided File has to be open AND it has to be found in an AnaGame approved directory. Otherwise, an empty string is returned
 */
-TString GetShadowFilePath(TFile& f)
+TString GetShadowFilePath(const TFile& f)
 {
 	if (!f.IsOpen())
 		return TString();

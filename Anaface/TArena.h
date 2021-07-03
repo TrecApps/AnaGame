@@ -11,12 +11,23 @@
 #define IF_IS_LOOK_AT(camType)   if(!camType)
 
 /*
-* class TArena
+* Class: TArena
 * Purpose: Holds the Camera for view into a 3D Arena
+* 
+* SuperClass: TControl, TCamera
 */
 class _ANAFACE_DLL TArena : public TControl, public TCamera
 {
 public:
+
+	/**
+	 * Method: TArena::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TArena::TArena
 	* Purpose: Constructor
@@ -40,6 +51,8 @@ public:
 	* Purpose: Sets up Arena specific attributes
 	* Parameters: RECT r - the location on screen where arena is to show
 	* Returns: bool - ignore
+	 * 
+	 * Attributes: override
 	*/
 	bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d) override;
 	/*
@@ -56,6 +69,8 @@ public:
 	* Purpose: Draws the Control as well as activates the 3D engine to draw
 	* Parameters: void
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	void onDraw(TObject* obj) override;
 
@@ -64,6 +79,8 @@ public:
 	* Purpose: Retrieves the AnaGame type for the TArena class
 	* Parameters: void
 	* Returns: UCHAR* - AnaGame representation of the type
+	 * 
+	 * Attributes: override; deprecated
 	*/
 	virtual UCHAR* GetAnaGameType()override;
 
@@ -72,9 +89,11 @@ public:
 	 * Purpose: Resizes the control upon the window being resized
 	 * Parameters: D2D1_RECT_F& r - the new location for the control
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	void Resize(D2D1_RECT_F& r) override;
 
-
+	virtual void QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)override;
 };
 

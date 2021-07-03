@@ -3,6 +3,18 @@
 #include "TGeometry.h"
 #include <atltrace.h>
 
+
+/**
+ * Method: TBrush::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TBrush::GetType()
+{
+	return TString(L"TBrush;") + TObject::GetType();
+}
+
 /**
  * Method: TBrush::DrawRectangle
  * Purpose: draws the given Rectangle on the DrawingBoard
@@ -12,10 +24,12 @@
  */
 void TBrush::DrawRectangle(const RECT_2D& r, float thickness)
 {
+	ThreadLock();
 	if (Refresh())
 	{
 		currentRenderer->DrawRectangle(r, brush.Get(), thickness);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -26,10 +40,12 @@ void TBrush::DrawRectangle(const RECT_2D& r, float thickness)
  */
 void TBrush::FillRectangle(const RECT_2D& r)
 {
+	ThreadLock();
 	if (Refresh())
 	{
 		currentRenderer->FillRectangle(r, brush.Get());
 	}
+	ThreadRelease();
 }
 
 /**
@@ -41,10 +57,12 @@ void TBrush::FillRectangle(const RECT_2D& r)
  */
 void TBrush::DrawRoundedRectangle(const ROUNDED_RECT_2D& r, float thickness)
 {
+	ThreadLock();
 	if (Refresh())
 	{
 		currentRenderer->DrawRoundedRectangle(r, brush.Get(), thickness);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -55,10 +73,12 @@ void TBrush::DrawRoundedRectangle(const ROUNDED_RECT_2D& r, float thickness)
  */
 void TBrush::FillRoundedRectangle(const ROUNDED_RECT_2D& r)
 {
+	ThreadLock();
 	if (Refresh())
 	{
 		currentRenderer->FillRoundedRectangle(r, brush.Get());
 	}
+	ThreadRelease();
 }
 
 /**
@@ -70,10 +90,12 @@ void TBrush::FillRoundedRectangle(const ROUNDED_RECT_2D& r)
  */
 void TBrush::DrawEllipse(const ELLIPSE_2D& r, float thickness)
 {
+	ThreadLock();
 	if (Refresh())
 	{
 		currentRenderer->DrawEllipse(r, brush.Get(), thickness);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -84,10 +106,12 @@ void TBrush::DrawEllipse(const ELLIPSE_2D& r, float thickness)
  */
 void TBrush::FillEllipse(const ELLIPSE_2D& r)
 {
+	ThreadLock();
 	if (Refresh())
 	{
 		currentRenderer->FillEllipse(r, brush.Get());
 	}
+	ThreadRelease();
 }
 
 /**
@@ -99,10 +123,12 @@ void TBrush::FillEllipse(const ELLIPSE_2D& r)
  */
 void TBrush::DrawGeometry(TrecPointer<TGeometry> geo, float thickness)
 {
+	ThreadLock();
 	if (Refresh() && geo.Get() && geo->IsValid())
 	{
 		currentRenderer->DrawGeometry(geo->GetUnderlyingGeometry().Get(), brush.Get(), thickness);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -113,10 +139,12 @@ void TBrush::DrawGeometry(TrecPointer<TGeometry> geo, float thickness)
  */
 void TBrush::FillGeometry(TrecPointer<TGeometry> geo)
 {
+	ThreadLock();
 	if (Refresh() && geo.Get() && geo->IsValid())
 	{
 		currentRenderer->FillGeometry(geo->GetUnderlyingGeometry().Get(), brush.Get());
 	}
+	ThreadRelease();
 }
 
 /**
@@ -129,9 +157,19 @@ void TBrush::FillGeometry(TrecPointer<TGeometry> geo)
  */
 void TBrush::DrawLine(const POINT_2D& p1, const POINT_2D& p2, float thickness)
 {
+	ThreadLock();
 	if (Refresh())
 	{
 		currentRenderer->DrawLine(p1, p2, brush.Get(), thickness);
+	}
+	ThreadRelease();
+}
+
+void TBrush::DrawLine(const POINT_2D& p1, const POINT_2D& p2, TrecComPointer<ID2D1StrokeStyle> style, float thickness)
+{
+	if (Refresh())
+	{
+		currentRenderer->DrawLine(p1, p2, brush.Get(), thickness), style.Get();
 	}
 }
 
@@ -143,9 +181,11 @@ void TBrush::DrawLine(const POINT_2D& p1, const POINT_2D& p2, float thickness)
  */
 UINT TBrush::GetMaxColors()
 {
-	if (brushType == brush_type::brush_type_solid)
-		return 1;
-	return gradients.GetGradientCount();
+	ThreadLock();
+	UINT ret = (brushType == brush_type::brush_type_solid) ? 1 : gradients.GetGradientCount();
+	ThreadRelease();
+
+	return ret;
 }
 
 /**
@@ -159,6 +199,7 @@ UINT TBrush::GetMaxColors()
  */
 void TBrush::SetColor(const TColor& color, UINT index)
 {
+	ThreadLock();
 	switch (brushType)
 	{
 	case brush_type::brush_type_solid:
@@ -193,6 +234,7 @@ void TBrush::SetColor(const TColor& color, UINT index)
 	{
 		gradients.SetColorAt(color, index);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -205,14 +247,18 @@ void TBrush::SetColor(const TColor& color, UINT index)
  */
 TColor TBrush::GetColor(UINT index)
 {
+	ThreadLock();
 	if (brushType == brush_type::brush_type_solid)
 	{
 		TColor col;
 		if (brush.Get())
 			col.SetColor(reinterpret_cast<ID2D1SolidColorBrush*>(brush.Get())->GetColor());
+		ThreadRelease();
 		return col;
 	}
-	return gradients.GetColorAt(index);
+	TColor col = gradients.GetColorAt(index);
+	ThreadRelease();
+	return col;
 }
 
 /**
@@ -223,7 +269,10 @@ TColor TBrush::GetColor(UINT index)
  */
 brush_type TBrush::GetBrushType()
 {
-	return brushType;
+	ThreadLock();
+	auto ret =  brushType;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -234,8 +283,14 @@ brush_type TBrush::GetBrushType()
  */
 TrecComPointer<ID2D1Brush> TBrush::GetUnderlyingBrush()
 {
-	if(Refresh())
-		return brush;
+	ThreadLock();
+	if (Refresh())
+	{
+		auto ret = brush;
+		ThreadRelease();
+		return ret;
+	}
+	ThreadRelease();
 	return TrecComPointer<ID2D1Brush>();
 }
 
@@ -373,15 +428,25 @@ TBrush::TBrush(TrecPointer<DrawingBoard> rt)
  * Parameters: void
  * Returns: bool
  */
-bool TBrush::Refresh()
+bool TBrush::Refresh(bool forceBrushRefresh)
 {
+	ThreadLock();
 	if (!board.Get() || !brush.Get())
+	{
+		ThreadRelease();
 		return false;
+	}
 
 	if (currentRenderer.Get() && currentRenderer.Get() == board->GetRenderer().Get())
-		return true;
+	{
+		if (!forceBrushRefresh) {
+			ThreadRelease();
+			return true;
+		}
+	}
 	currentRenderer = board->GetRenderer();
 	RefreshBrush();
+	ThreadRelease();
 	return currentRenderer.Get() != nullptr;
 }
 
@@ -393,8 +458,12 @@ bool TBrush::Refresh()
  */
 void TBrush::RefreshBrush()
 {
+	ThreadLock();
 	if (!currentRenderer.Get() || !brush.Get())
+	{
+		ThreadRelease();
 		return;
+	}
 	TrecComPointer<ID2D1SolidColorBrush>::TrecComHolder brushHolder;
 	TrecComPointer<ID2D1LinearGradientBrush>::TrecComHolder linBrush;
 	TrecComPointer<ID2D1RadialGradientBrush>::TrecComHolder radBrush;

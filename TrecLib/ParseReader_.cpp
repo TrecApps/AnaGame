@@ -49,9 +49,20 @@ bool ParseReader_::read(int *)
 * Parameters: void
 * Returns: UCHAR* - the AnaGame type ID format
 *
-* Note: DEPRICATED
+* Note: deprecated
 */
 UCHAR * ParseReader_::GetAnaGameType()
 {
 	return ParseReaderType;
+}
+
+/**
+ * Method: ParseReader_::GetType()
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString ParseReader_::GetType()
+{
+	return TString(L"ParseReader_;") + TObject::GetType();
 }

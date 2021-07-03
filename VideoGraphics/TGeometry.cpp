@@ -1,4 +1,22 @@
 #include "TGeometry.h"
+#include <TString.h>
+
+/**
+ * Method: TGeometry::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TGeometry::GetType()
+{
+	return TString(L"TGeometry;") + TObject::GetType();
+}
+
+TGeometry::TGeometry()
+{
+	valid = false;
+	geoType = geo_type::geo_type_unset;
+}
 
 /**
  * Method: TGeometry::TGeometry
@@ -9,7 +27,9 @@
  */
 TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const TDataArray<POINT_2D>& points)
 {
+	AG_THREAD_LOCK
 	valid = false;
+	geoType = geo_type::geo_type_path;
 	if (!fact.Get())
 		return;
 	   
@@ -34,7 +54,7 @@ TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const TDataArray<POINT_
 
 	sink->Release();
 	valid = true;
-	//geoType = geo_type_path;
+	
 }
 
 /**
@@ -46,6 +66,7 @@ TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const TDataArray<POINT_
  */
 TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const RECT_2D& r)
 {
+	geoType = geo_type::geo_type_rect;
 	valid = false;
 	if (!fact.Get())
 		return;
@@ -55,7 +76,7 @@ TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const RECT_2D& r)
 
 	geo = TrecPointerKey::GetComPointer<ID2D1Geometry, ID2D1RectangleGeometry>(rectHolder);
 	valid = true;
-	//geoType = geo_type_rect;
+	
 }
 
 /**
@@ -67,6 +88,7 @@ TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const RECT_2D& r)
  */
 TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const ROUNDED_RECT_2D& r)
 {
+	geoType = geo_type::geo_type_rounded_rect;
 	valid = false;
 	if (!fact.Get())
 		return;
@@ -88,6 +110,7 @@ TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const ROUNDED_RECT_2D& 
  */
 TGeometry::TGeometry(TrecComPointer<ID2D1Factory1> fact, const ELLIPSE_2D& r)
 {
+	geoType = geo_type::geo_type_ellipse;
 	valid = false;
 	if (!fact.Get())
 		return;
@@ -129,9 +152,12 @@ bool TGeometry::IsValid() const
  */
 bool TGeometry::GetArea(float& res)
 {
-	if(!geo.Get())
-		return false;
-	return SUCCEEDED(geo->ComputeArea(nullptr, &res));
+	AG_THREAD_LOCK
+		if (!geo.Get())
+		{
+			RETURN_THREAD_UNLOCK false;
+		}bool ret = SUCCEEDED(geo->ComputeArea(nullptr, &res));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -142,9 +168,13 @@ bool TGeometry::GetArea(float& res)
  */
 bool TGeometry::GetParameter(float& res)
 {
-	if (!geo.Get())
-		return false;
-	return SUCCEEDED(geo->ComputeLength(nullptr, &res));
+	AG_THREAD_LOCK
+		if (!geo.Get())
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
+	bool ret = SUCCEEDED(geo->ComputeLength(nullptr, &res));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -156,9 +186,13 @@ bool TGeometry::GetParameter(float& res)
  */
 bool TGeometry::IsInside(BOOL& res, POINT_2D& p)
 {
-	if (!geo.Get())
-		return false;
-	return SUCCEEDED(geo->FillContainsPoint(p,nullptr, &res));
+	AG_THREAD_LOCK
+		if (!geo.Get())
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
+	bool ret = SUCCEEDED(geo->FillContainsPoint(p, nullptr, &res));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -169,9 +203,13 @@ bool TGeometry::IsInside(BOOL& res, POINT_2D& p)
  */
 bool TGeometry::GetBounds(RECT_2D& bounds)
 {
-	if (!geo.Get())
-		return false;
-	return SUCCEEDED(geo->GetBounds(nullptr, &bounds));
+	AG_THREAD_LOCK
+		if (!geo.Get())
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
+	bool ret =  SUCCEEDED(geo->GetBounds(nullptr, &bounds));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**

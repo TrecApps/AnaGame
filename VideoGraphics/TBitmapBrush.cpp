@@ -3,6 +3,19 @@
 #include "DrawingBoard.h"
 #include "TGeometry.h"
 
+
+/**
+ * Method: TBitmapBrush::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TBitmapBrush::GetType()
+{
+	return TString(L"TBitmapBrush;") + TBrush::GetType();
+}
+
+
 /**
  * Method: TBitmapBrush::NextFrame
  * Purpose: In a multiframe image, sets the brush to draw the next frame in a sequence
@@ -13,11 +26,13 @@ void TBitmapBrush::NextFrame()
 {
 	if (!valid)
 		return;
+	ThreadLock();
 	currentFrame++;
 	if (currentFrame >= brushes.Size())
 		currentFrame = 0;
 
 	brush = brushes[currentFrame];
+	ThreadRelease();
 }
 
 /**
@@ -29,11 +44,13 @@ void TBitmapBrush::NextFrame()
 void TBitmapBrush::PrevFrame()
 {
 	if (!valid)return;
+	ThreadLock();
 	if (!currentFrame)
 		currentFrame = brushes.Size() - 1;
 	else
 		currentFrame--;
 	brush = brushes[currentFrame];
+	ThreadRelease();
 }
 
 /**
@@ -55,6 +72,7 @@ bool TBitmapBrush::IsValid()
  */
 void TBitmapBrush::SetLocation(RECT_2D& loc)
 {
+	ThreadLock();
 	location = loc;
 	RefreshBrush();
 }
@@ -67,7 +85,11 @@ void TBitmapBrush::SetLocation(RECT_2D& loc)
  */
 UINT TBitmapBrush::GetCurrentFrame()
 {
-	return currentFrame;
+
+	ThreadLock();
+	UINT ret = currentFrame;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -78,7 +100,10 @@ UINT TBitmapBrush::GetCurrentFrame()
  */
 UINT TBitmapBrush::GetFrameCount()
 {
-	return bitmaps.Size();
+	ThreadLock();
+	UINT ret = bitmaps.Size();
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -106,12 +131,14 @@ TBitmapBrush::~TBitmapBrush()
  */
 void TBitmapBrush::FillRectangle(const RECT_2D& r)
 {
+	ThreadLock();
 	if (Refresh() && currentFrame < bitmaps.Size() && bitmaps[currentFrame].Get() 
 		&& currentFrame < brushes.Size() && brushes[currentFrame].Get())
 	{
 		currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), r);
 		//currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), r);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -122,14 +149,19 @@ void TBitmapBrush::FillRectangle(const RECT_2D& r)
  */
 void TBitmapBrush::FillRoundedRectangle(const ROUNDED_RECT_2D& r)
 {
+	ThreadLock();
 	if (Refresh() && currentFrame < bitmaps.Size() && bitmaps[currentFrame].Get()
 		&& currentFrame < brushes.Size() && brushes[currentFrame].Get())
 	{
 		if (!board->AddLayer(r))
+		{
+			ThreadRelease();
 			return;
+		}
 		currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), r.rect);
 		board->PopLayer();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -140,11 +172,15 @@ void TBitmapBrush::FillRoundedRectangle(const ROUNDED_RECT_2D& r)
  */
 void TBitmapBrush::FillEllipse(const ELLIPSE_2D& r)
 {
+	ThreadLock();
 	if (Refresh() && currentFrame < bitmaps.Size() && bitmaps[currentFrame].Get()
 		&& currentFrame < brushes.Size() && brushes[currentFrame].Get())
 	{
 		if(!board->AddLayer(r))
+		{
+			ThreadRelease();
 			return;
+		}
 		RECT_2D rect = {
 			r.point.x - r.radiusX,
 			r.point.y - r.radiusY,
@@ -154,6 +190,7 @@ void TBitmapBrush::FillEllipse(const ELLIPSE_2D& r)
 		currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), rect);
 		board->PopLayer();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -164,17 +201,33 @@ void TBitmapBrush::FillEllipse(const ELLIPSE_2D& r)
  */
 void TBitmapBrush::FillGeometry(TrecPointer<TGeometry> geo)
 {
+	ThreadLock();
 	if (geo.Get() && Refresh() && currentFrame < bitmaps.Size() && bitmaps[currentFrame].Get()
 		&& currentFrame < brushes.Size() && brushes[currentFrame].Get())
 	{
 		RECT_2D rect;
 		if (!geo->GetBounds(rect))
+		{
+			ThreadRelease();
 			return;
+		}
 		if (!board->AddLayer(geo))
+		{
+			ThreadRelease();
 			return;
-	
+		}
 		currentRenderer->DrawBitmap(bitmaps[currentFrame].Get(), rect);
 		board->PopLayer();
+	}
+	ThreadRelease();
+}
+
+void TBitmapBrush::UpdateFrame(TrecComPointer<ID2D1Bitmap> map)
+{
+	if (!usesFile)
+	{
+		bitmaps[0] = map;
+		Refresh(true);
 	}
 }
 
@@ -190,16 +243,18 @@ void TBitmapBrush::FillGeometry(TrecPointer<TGeometry> geo)
 TBitmapBrush::TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingBoard> rt, RECT_2D& loc): TBrush(rt)
 {
 	valid = false;
-
+	usesFile = true;
 	brushType = brush_type::brush_type_bitmap;
-
-	if (!picture.Get())
-		return;
-
 	imageFactory = NULL;
 	decoder = NULL;
 	frameDec = NULL;
 	converter = NULL;
+	location = { 0,0,0,0 };
+	currentFrame = 0;
+	if (!picture.Get())
+		return;
+
+
 	IWICBitmapScaler* scale = nullptr;
 	UINT frameCount = 0;
 	HRESULT result = CoCreateInstance(CLSID_WICImagingFactory1,
@@ -210,7 +265,7 @@ TBitmapBrush::TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingB
 	if (!SUCCEEDED(result))
 		return;
 
-	result = imageFactory->CreateDecoderFromFilename(picture->GetPath().GetConstantBuffer(),
+	result = imageFactory->CreateDecoderFromFilename(picture->GetPath().GetConstantBuffer().getBuffer(),
 		NULL,
 		GENERIC_READ,
 		WICDecodeMetadataCacheOnLoad,
@@ -287,6 +342,26 @@ TBitmapBrush::TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingB
 	location = loc;
 }
 
+TBitmapBrush::TBitmapBrush(TrecPointer<DrawingBoard> rt, TrecComPointer<ID2D1Bitmap> map): TBrush(rt)
+{
+	brushType = brush_type::brush_type_bitmap;
+	usesFile = false;
+	valid = false;	
+	imageFactory = nullptr;
+	decoder = nullptr;
+	frameDec = nullptr;
+	converter = nullptr;
+	location = { 0,0,0,0 };
+	currentFrame = 0;
+	if (!rt.Get())
+	{
+		
+		return;
+	}
+	bitmaps.push_back(map);
+
+}
+
 /**
  * Method: TBitmapBrush::RefreshBrush
  * Purpose: Makes sure that the Brush is compatible with the Render Target, as Direct2D demands that a new Brush be created when
@@ -296,11 +371,25 @@ TBitmapBrush::TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingB
  */
 void TBitmapBrush::RefreshBrush()
 {
+	if (!valid)
+		return;
+	ThreadLock();
+
+	if (!usesFile)
+	{
+		for (UINT Rust = 0; Rust < brushes.Size() && Rust < bitmaps.Size(); Rust++)
+		{
+			TrecComPointer<ID2D1BitmapBrush>::TrecComHolder bitHolder;
+			currentRenderer->CreateBitmapBrush(bitmaps[Rust].Get(), bitHolder.GetPointerAddress());
+			brushes[Rust] = TrecPointerKey::GetComPointer<ID2D1Brush, ID2D1BitmapBrush>(bitHolder);
+		}
+		return;
+	}
+
 	brushes.RemoveAll();
 	bitmaps.RemoveAll();
 
-	if (!valid)
-		return;
+	
 	HRESULT result;
 	IWICBitmapScaler* scale = nullptr;
 	result = imageFactory->CreateBitmapScaler(&scale);
@@ -347,4 +436,5 @@ void TBitmapBrush::RefreshBrush()
 		brush = brushes[currentFrame];
 		valid = true;
 	}
+	ThreadRelease();
 }

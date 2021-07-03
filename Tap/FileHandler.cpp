@@ -37,6 +37,16 @@ FileHandler::~FileHandler()
 }
 
 /**
+ * Method: FileHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString FileHandler::GetType()
+{
+	return TString(L"FileHandler;") + EventHandler::GetType();
+}
+/**
  * Method: FileHandler::Initialize
  * Purpose: Initializes the Handler so that it has direct Access to certain Controls held by the page
  * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
@@ -44,9 +54,12 @@ FileHandler::~FileHandler()
  */
 void FileHandler::Initialize(TrecPointer<Page> page)
 {
+	ThreadLock();
 	if (!page.Get() || !page->GetWindowHandle().Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	this->page = page;
 
 	TIdeWindow* ideWin = dynamic_cast<TIdeWindow*>(page->GetWindowHandle().Get());
@@ -68,6 +81,7 @@ void FileHandler::Initialize(TrecPointer<Page> page)
 
 		browser->SetNode(node);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -78,6 +92,7 @@ void FileHandler::Initialize(TrecPointer<Page> page)
  */
 void FileHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	int e_id = -1;
 	EventArgs ea;
 	for (UINT c = 0; c < eventAr.Size(); c++)
@@ -98,6 +113,7 @@ void FileHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 
 	//onDraw();
 	eventAr.RemoveAll();
+	ThreadRelease();
 }
 
 /**
@@ -118,9 +134,10 @@ void FileHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
  */
 bool FileHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
 {
-	if (!message.Get())
-		return false;
-	return message->GetHandlerType() == handler_type::handler_type_file_manager;
+	ThreadLock();
+	bool ret = (!message.Get()) ? false : message->GetHandlerType() == handler_type::handler_type_file_manager;
+	ThreadRelease();
+	return ret;
 }
 
 
@@ -137,9 +154,13 @@ void FileHandler::OnOpenFile(TrecPointer<TControl> tc, EventArgs ea)
 	if(!ea.object.Get())
 		return;
 
-	if(!page.Get() || !page->GetWindowHandle().Get())
+	ThreadLock();
+	if (!page.Get() || !page->GetWindowHandle().Get())
+	{
+		ThreadRelease();
 		return;
-	if(dynamic_cast<TIdeWindow*>(page->GetWindowHandle().Get()))
+	}
+	if (dynamic_cast<TIdeWindow*>(page->GetWindowHandle().Get()))
 	{
 		auto fileObject = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(ea.object);
 
@@ -148,4 +169,5 @@ void FileHandler::OnOpenFile(TrecPointer<TControl> tc, EventArgs ea)
 			dynamic_cast<TIdeWindow*>(page->GetWindowHandle().Get())->OpenFile(fileObject->GetData());
 	    }
 	}
+	ThreadRelease();
 }

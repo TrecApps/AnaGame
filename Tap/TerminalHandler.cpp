@@ -1,5 +1,5 @@
 #include "TerminalHandler.h"
-
+#include "Page.h"
 /**
  * Method: TerminalHandler::TerminalHandler
  * Purpose: Constructor
@@ -21,6 +21,17 @@ TerminalHandler::~TerminalHandler()
 }
 
 /**
+ * Method: TerminalHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TerminalHandler::GetType()
+{
+	return TString(L"TerminalHandler;") + EventHandler::GetType();
+}
+
+/**
  * Method: TerminalHandler::Initialize
  * Purpose: Initializes the Handler so that it has direct Access to certain Controls held by the page
  * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
@@ -28,6 +39,17 @@ TerminalHandler::~TerminalHandler()
  */
 void TerminalHandler::Initialize(TrecPointer<Page> page)
 {
+	ThreadLock();
+	if (!page.Get())
+	{
+		ThreadRelease();
+		return;
+	}
+	auto root = page->GetRootControl();
+
+	if (root.Get())
+		currentTerminal = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TPromptControl>(root);
+	ThreadRelease();
 }
 
 /**
@@ -51,6 +73,20 @@ void TerminalHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 }
 
 /**
+ * Method: TerminalHandler::GetTerminal
+ * Purpose: Returns the Current Prompt held by the handler
+ * Parameters: void
+ * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
+ */
+TrecSubPointer<TControl, TPromptControl> TerminalHandler::GetTerminal()
+{
+	ThreadLock();
+	auto ret = currentTerminal;
+	ThreadRelease();
+	return ret;
+}
+
+/**
  * Method: TerminalHandler::ShouldProcessMessageByType
  * Purpose: Reports whether this Object is of the correct type to recieve the message
  * Parameters: TrecPointer<HandlerMessage> message - the message to scan
@@ -58,7 +94,8 @@ void TerminalHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
  */
 bool TerminalHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
 {
-	if(!message.Get())
-		return false;
-	return message->GetHandlerType() == handler_type::handler_type_console;
+	ThreadLock();
+	bool ret =(!message.Get()) ? false : message->GetHandlerType() == handler_type::handler_type_console;
+	ThreadRelease();
+	return ret;
 }

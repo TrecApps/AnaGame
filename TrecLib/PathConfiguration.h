@@ -4,7 +4,7 @@
 #include "TFile.h"
 
 /**
- * class PathConfiguration
+ * Class: PathConfiguration
  * Purpose: Hold information about the path to a given command or executable. Meant to be a more structured
  *      means of finding the path of a given executable
  */

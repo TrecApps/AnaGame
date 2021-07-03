@@ -4,13 +4,24 @@
 #include "TFile.h"
 
 /*
- * class TShell
+ * Class: TShell
  * Purpose: provides support for command-line functionality in Anagame
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL TShell :
 	public TObject
 {
 public:
+
+
+	/**
+	 * Method: TShell::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TShell::TShell

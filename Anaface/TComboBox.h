@@ -7,11 +7,23 @@ class TComboBox;
 /**
  * Class: TComboBoxExtension
  * Purpose: Special control meant to be attached to a TComboBox via a TFlyout and providing the drop-down menu
+ * 
+ * SuperClass: TControl
  */
 class TComboBoxExtension: public TControl
 {
 	friend class TComboBox;
 public: 
+
+	/**
+	 * Method: TComboBoxExtension::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+
 	/**
 	 * Method: TComboBoxExtension::TComboBoxExtension
 	 * Purpose: Constructor
@@ -42,6 +54,8 @@ public:
 	 * Purpose: Resets the location of the selection
 	 * Parameters: D2D1_RECT_F& r -  the bounds of the selection
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	void Resize(D2D1_RECT_F& r) override;
 
@@ -50,6 +64,8 @@ public:
 	 * Purpose: Draws the list of selections available to the Combobox
 	 * Parameters: TObject* obj - the object whose data to present (should be NULL)
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void onDraw(TObject* obj)override;
 
@@ -61,6 +77,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 
@@ -72,6 +90,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr) override;
 
@@ -83,7 +103,9 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
-	 * Returns: void 
+	 * Returns: void
+	 * 
+	 * Attributes: override; message 
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls) override;
 protected:
@@ -154,6 +176,8 @@ public:
 	 * Parameters: D2D1_RECT_F - the region the combo box is to draw in
 	 * 				TrecPointer<TWindowEngine> d3d - not used by the Combobox
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d)override;
 
@@ -165,6 +189,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 
@@ -176,6 +202,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr) override;
 
@@ -184,6 +212,8 @@ public:
 	 * Purpose: Resets the location of the combo-box
 	 * Parameters: D2D1_RECT_F& r -  the bounds of the bos
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	void Resize(D2D1_RECT_F& r) override;
 

@@ -2,8 +2,10 @@
 #include "TDataArrayBase.h"
 #include "TrecReference.h"
 /*
-* Class TArray
-* Holds references to objects (Not meant to store straight foward data in a row)
+* Class: TArray
+* Purpose: Holds references to objects (Not meant to store straight foward data in a row)
+* 
+* SuperClass: TDataArrayBase - common class for all instances of this template type
 */
 template <typename T>class TTrecPointerSoftArray : public TDataArrayBase
 {

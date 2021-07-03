@@ -4,13 +4,23 @@
 #include <wincodec.h>
 
 /**
- * class TBitmapBrush
+ * Class: TBitmapBrush
  * Purpose: Hold a Bitmap Brush so that images can be drawn
+ * 
+ * SuperClass: TBrush - allows it to be drawn to the drawing board like a regular brush
  */
 class _VIDEO_GRAPHICS TBitmapBrush : public TBrush
 {
 	friend class TrecPointerKey;
 public:
+
+	/**
+	 * Method: TBitmapBrush::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TBitmapBrush::NextFrame
@@ -77,6 +87,8 @@ public:
 	 * Purpose: Fills the Rectangle with the currently selected image
 	 * Parameters: const RECT_2D& r - the rectangle to apply the brush to
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void FillRectangle(const RECT_2D& r)override;
 
@@ -85,6 +97,8 @@ public:
 	 * Purpose:  Fills the Rounded Rectangle with the currently selected image
 	 * Parameters: const ROUNDED_RECT_2D& r - the rounded rectangle to apply the brush to
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void FillRoundedRectangle(const ROUNDED_RECT_2D& r)override;
 
@@ -93,6 +107,8 @@ public:
 	 * Purpose: Fills the Ellipse with the currently selected image
 	 * Parameters: const ELLIPSE_2D& r - the Ellipse to apply the brush to
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void FillEllipse(const ELLIPSE_2D& r)override;
 
@@ -101,10 +117,14 @@ public:
 	 * Purpose: Fills the Geometry with the currently selected image
 	 * Parameters: TrecPointer<TGeometry> geo - the Geometry to apply the brush to
 	 * Returns:void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void FillGeometry(TrecPointer<TGeometry> geo)override;
-
+	void UpdateFrame(TrecComPointer<ID2D1Bitmap> map);
 protected:
+
+
 
 	/**
 	 * Method: TBitmapBrush::TBitmapBrush
@@ -117,9 +137,23 @@ protected:
 	TBitmapBrush(TrecPointer<TFileShell> picture, TrecPointer<DrawingBoard> rt, RECT_2D& loc);
 
 	/**
+	 * Method: TBitmapBrush::TBitmapBrush
+	 * Purpose: Creates a bitmap brush using an existing bitmap
+	 * Parameters: TrecPointer<DrawingBoard> rt - the Drawing Board crating the Brush
+	 *				TrecComPointer<ID2D1Bitmap> map - the bitmap to draw
+	 * Returns: New Bitmap BrushObject
+	 */
+	TBitmapBrush(TrecPointer<DrawingBoard> rt, TrecComPointer<ID2D1Bitmap> map);
+
+	/**
 	 * reports whether constriction worked properly or not. 
 	 */
 	bool valid;
+
+	/**
+	 * flags related to how the Brush was generated
+	 */
+	bool usesFile;
 
 	/**
 	 * Set of bitmaps from the image
@@ -148,6 +182,8 @@ protected:
 	 *		a new Render Target is used
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void RefreshBrush()override;
 	RECT_2D location;

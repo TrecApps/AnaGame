@@ -3,8 +3,8 @@
 #include "TString.h"
 
 /*
-* enum FileEncodingType
-* used to track what type of encoding the file is using
+* Enum Class: FileEncodingType
+* Purpose: used to track what type of encoding the file is using
 */
 typedef enum class FileEncodingType
 {
@@ -19,10 +19,12 @@ typedef enum class FileEncodingType
 	fet_unicode7          // The Encoding is UTF-7
 }FileEncodingType;
 
-/*
+/**
  * Class: TFile
- * Provides AnaGame's implementation of the File Class
-*/
+ * Purpose: Provides AnaGame's implementation of the File Class
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
+ */
 class _TREC_LIB_DLL TFile : public TObject
 {
 public:
@@ -68,6 +70,19 @@ public:
 	 */
 	static const UINT t_file_truncate_existing = TRUNCATE_EXISTING << 16;
 
+
+	static const UCHAR t_file_include_terminator = 0b00000001;
+
+
+
+	/**
+	 * Method: TFile::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TFile::TFile
 	* Purpose: Default Constrictor
@@ -75,6 +90,7 @@ public:
 	* Returns: void
 	*/
 	TFile();
+
 	/*
 	* Method: TFile::TFile
 	* Purpose: Constructor
@@ -115,13 +131,24 @@ public:
 	BOOL ReadString(TString& rString);
 	/**
 	 * Method: TFile::ReadString
+	 * Purpose: Reads a line in a file into a String, taking into account the file encoding,
+	 *			Or when the specificed number of characters are read
+	 * Parameters: TString& rString - the String to read into
+	 *				ULONGLONG nMax - max number of characters to read
+	 * Returns: bool - success of reading
+	 */
+	ULONGLONG ReadString(TString& rString, ULONGLONG nMax);
+
+
+	/**
+	 * Method: TFile::ReadStringLine
 	 * Purpose: Reads a line in a file into a String, taking into account the file encoding, stopping at the next line
 	 *			Or when the specificed number of characters are read
 	 * Parameters: TString& rString - the String to read into
-	 *				UINT nMax - max number of characters to read
+	 *				ULONGLONG nMax - max number of characters to read
 	 * Returns: bool - success of reading
 	 */
-	UINT ReadString(TString& rString, UINT nMax);
+	ULONGLONG ReadStringLine(TString& rString, ULONGLONG nMax);
 
 	/**
 	 * Method: TFile::ReadString
@@ -131,6 +158,9 @@ public:
 	 * Returns: bool - success of reading
 	 */
 	UINT ReadString(TString& rString, WCHAR chara);
+
+	UINT ReadString(TString& rString, const TString& chars, UCHAR flags, UINT max = 0);
+	
 
 	/*
 	* Method: TFile::WriteString
@@ -144,8 +174,10 @@ public:
 	* Purpose: Reports whether the File is open or not
 	* Parameters: void
 	* Returns: bool - is the file open
+	* 
+	* Attributes: const
 	*/
-	bool IsOpen();
+	bool IsOpen()const;
 	/*
 	* Method: TFile::SetEncoding
 	* Purpose: Sets the encoding of the File (if not already set)
@@ -167,7 +199,7 @@ public:
 	* Parameters: void
 	* Returns: UCHAR* - the AnaGame type
 	*
-	* Note: DEPRICATED
+	* Note: deprecated
 	*/
 	virtual UCHAR* GetAnaGameType() override;
 
@@ -193,41 +225,52 @@ public:
 	 * Returns: void
 	 */
 	void Flush();
+
 	/**
 	 * Method: TFile::GetFileName
 	 * Purpose: Gets the name of the file
 	 * Parameters: void
 	 * Returns: TString - the name of the file (minus the path)
+	 * 
+	 * Attributes: const
 	 */
-	TString GetFileName();
+	TString GetFileName()const;
 	/**
 	 * Method: TFile::GetFilePath
 	 * Purpose: Retrievs the fill path of the file
 	 * Parameters: void
 	 * Returns: TString - the path of the file
+	 * 
+	 * Attributes: const
 	 */
-	TString GetFilePath();
+	TString GetFilePath()const;
 	/**
 	 * Method: TFile::GetFileTitle
 	 * Purpose: Retirevs the "title" of the file
 	 * Parameters: void
 	 * Returns: TString - the title of the file
+	 * 
+	 * Attributes: const
 	 */
-	TString GetFileTitle();
+	TString GetFileTitle()const;
 	/**
 	 * Method: TFile::GetLength
 	 * Purpose: Retirevs the current size of the file
 	 * Parameters: void
 	 * Returns: ULONGLONG - length of the file
+	 * 
+	 * Attributes: const
 	 */
-	ULONGLONG GetLength();
+	ULONGLONG GetLength()const;
 	/**
 	 * Method: TFile::GetPosition
 	 * Purpose: Retrievs the current position of the file pointer
 	 * Parameters: void
 	 * Returns: ULONGLONG -  the current position of the file pointer
+	 * 
+	 * Attributes: const
 	 */
-	ULONGLONG GetPosition();
+	ULONGLONG GetPosition()const;
 
 	/**
 	 * Method: TFile::Read
@@ -237,6 +280,10 @@ public:
 	 * Returns: UINT - number of bytes read
 	 */
 	UINT Read(void* buffer, UINT count);
+
+	
+
+
 	/**
 	 * Method: TFile::Seek
 	 * Purpose: Sets the file's seek point according to the users specification
@@ -301,5 +348,8 @@ private:
 	FileEncodingType fileEncode;
 	HANDLE fileHandle;
 	ULONGLONG position;
+
+
+	UCHAR ReadUnicode8Char(char* seq4);
 };
 

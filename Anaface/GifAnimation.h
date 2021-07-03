@@ -3,14 +3,25 @@
 #include <TBitmapBrush.h>
 
 /**
- * Class: Gifnimation
+ * Class: GifAnimation
  * Purpose: Allows Gifs to be played in Anagame
+ * 
+ * SuperClass: Animation
  */
 class GifAnimation : public Animation
 {
 public:
+
 	/**
-	 * Method: GifAnimation::Animation (Constructor)
+	 * Method: GifAnimation::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/**
+	 * Method: GifAnimation::Animation
 	 * Purpose: Creates the Gif Animation with the specified animation-phase setting
 	 * Parameters: animation_phase ap - the animation_phase this Animation is set to
 	 * Returns: GifAnimation
@@ -22,8 +33,10 @@ public:
 	 * Purpose: Sets an animation to its starting position before an animation commences
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
-	virtual void Prepare();
+	virtual void Prepare()override;
 	/**
 	 * Method: GifAnimation::Update
 	 * Purpose: Informs the animation regarding what progress a given animation should be along
@@ -31,8 +44,10 @@ public:
 	 * Returns: bool - true if the resources are in order, false if a resource is missing
 	 *
 	 * Note: In this case, all the animation does is call upon the bitmap brush to use the next frame in it's sequence
+	 * 
+	 * Attributes: override
 	 */
-	virtual bool Update(float progress);
+	virtual bool Update(float progress)override;
 	/**
 	 * Method: GifAnimation::SetAnimationValue
 	 * Purpose: Sets a value needed to define an animation beginning and end
@@ -41,8 +56,10 @@ public:
 	 * Returns: void
 	 *
 	 * Note: Currently has no effect
+	 * 
+	 * Attributes: override
 	 */
-	virtual void SetAnimationValue(float value, animation_value_type type);
+	virtual void SetAnimationValue(float value, animation_value_type type)override;
 
 	/**
 	 * Method: GifAnimation::SetComponent
@@ -51,15 +68,19 @@ public:
 	 * Returns: void
 	 *
 	 * Note: Attemts to convert the brush into a bitmap brush since it is working with images
+	 * 
+	 * Attributes: override
 	 */
-	virtual void SetComponent(TrecPointer<TBrush> comp);
+	virtual void SetComponent(TrecPointer<TBrush> comp)override;
 	/**
 	 * Method: GifAnimation::SetControl
 	 * Purpose: Allows animations to get the control they need to act upon
 	 * Parameters: TrecPointer<TControl> con -  the control to operate upon
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
-	virtual void SetControl(TrecPointer<TControl> con);
+	virtual void SetControl(TrecPointer<TControl> con)override;
 
 	/**
 	 * Method: GifAnimation::GetAnimationType
@@ -68,8 +89,10 @@ public:
 	 * Returns: TString - representing the type this animation object is
 	 *
 	 * Note: In this case, the String is L"Gif"
+	 * 
+	 * Attributes: override
 	 */
-	virtual TString GetAnimationType();
+	virtual TString GetAnimationType()override;
 
 protected:
 	/**

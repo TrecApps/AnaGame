@@ -4,6 +4,18 @@
 
 TString rotationAnimationString(L"Simple-Rotation");
 
+
+/**
+ * Method: RotateAnimation::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString RotateAnimation::GetType()
+{
+	return TString(L"RotateAnimation;") + Animation::GetType();
+}
+
 /**
  * Method: RotateAnimation::Animation (Constructor)
  * Purpose: Creates the Rotation Animation with the specified animation-phase setting

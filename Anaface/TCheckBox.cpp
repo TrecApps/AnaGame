@@ -1,6 +1,18 @@
 
 #include "TCheckBox.h"
 
+
+/**
+ * Method: TCheckBox::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TCheckBox::GetType()
+{
+	return TString(L"TCheckBox;") + TGadgetControl::GetType();
+}
+
 /*
 * Method: TCheckBox::TCheckBox 
 * Purpose: Constructor
@@ -32,6 +44,7 @@ TCheckBox::~TCheckBox()
 */
 bool TCheckBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	TGadgetControl::onCreate(r,d3d);
 	if (text1.Get())
 	{
@@ -41,9 +54,8 @@ bool TCheckBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 		text1->text = L"Check-Box";
-
-
 	}
+	ThreadRelease();
 
 	return true;
 }
@@ -56,11 +68,13 @@ bool TCheckBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 */
 void TCheckBox::onDraw(TObject* obj)
 {
+	ThreadLock();
 	if (!isActive)
+	{
+		ThreadRelease();
 		return;
+	}
 	TControl::onDraw(obj);
-
-
 
 	brush->DrawRectangle(DxLocation);
 	if (isClicked)
@@ -72,6 +86,7 @@ void TCheckBox::onDraw(TObject* obj)
 		brush->DrawLine(upLeft, downRight);
 		brush->DrawLine(upRight, downLeft);
 	}
+	ThreadRelease();
 }
 
 /*
@@ -82,7 +97,10 @@ void TCheckBox::onDraw(TObject* obj)
 */
 bool TCheckBox::IsClicked()
 {
-	return isClicked;
+	ThreadLock();
+	bool ret = isClicked;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -95,7 +113,8 @@ bool TCheckBox::IsClicked()
 * Returns: void
 */
 void TCheckBox::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
-{	
+{
+	ThreadLock();
 	resetArgs();
 	if (isContained(&point, &location))
 	{
@@ -116,6 +135,7 @@ void TCheckBox::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, T
 
 	}
 	TControl::OnLButtonDown(nFlags, point, mOut,eventAr, clickedControl);
+	ThreadRelease();
 }
 
 /*
@@ -129,8 +149,10 @@ void TCheckBox::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, T
 */
 void TCheckBox::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	resetArgs();
 	TControl::OnLButtonUp(nFlags, point, mOut,eventAr);
+	ThreadRelease();
 }
 
 /*

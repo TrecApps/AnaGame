@@ -41,13 +41,16 @@ public:
  */
 typedef enum class t_window_type
 {
-	t_window_type_plain, // Gets a Plain Window
-	t_window_type_ide    // Gets a Basic IDE style Window
+	t_window_type_plain,  // Gets a Plain Window
+	t_window_type_ide,    // Gets a Basic IDE style Window
+	t_window_type_web     // Window Optimized for Web-Browsing
 }t_window_type;
 
 /**
  * Class: TInstance
  * Purpose: Respresents an instance of a Machine-Level Anagame Application
+ * 
+ * SuperClass: TObject
  */
 class _TAP_DLL TInstance : public TObject
 {
@@ -60,7 +63,7 @@ public:
 
 	/**
 	 * Method: TInstance::TInstance
-	 * Purpose:
+	 * Purpose: Constructor
 	 * Parameters: TString& name - the name of the main window
 	 *				TString& winClass - the class name of the Window (used by Windows)
 	 *				UINT style - the desired style of the Window
@@ -72,6 +75,21 @@ public:
 	 */
 	TInstance(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, HINSTANCE ins, WNDPROC wp);
 
+
+	/**
+	 * Method: TInstance::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/**
+	 * Method: TInstance::~TInstance
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
 	~TInstance();
 
 	/**
@@ -79,6 +97,8 @@ public:
 	 * Purpose: Takes in messages from WinProc and sends them to the appropriate window
 	 * Parameters: HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	 * Returns: LRESULT - the Result of the message
+	 * 
+	 * Attributes: message
 	 */
 	LRESULT Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

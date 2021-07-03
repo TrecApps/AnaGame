@@ -41,6 +41,8 @@ public:
 /**
  * Class: TStoryBoard
  * Purpose: Holds a collection of Animations and manages a Thread running through them
+ * 
+ * SuperClass: TObject
  */
 class _TAP_DLL TStoryBoard :
 	public TObject
@@ -63,6 +65,15 @@ public:
 	 * Returns: void
 	 */
 	~TStoryBoard();
+
+
+	/**
+	 * Method: TStoryBoard::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TStoryBoard::AddAnimation

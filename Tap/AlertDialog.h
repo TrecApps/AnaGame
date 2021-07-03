@@ -4,6 +4,8 @@
 /**
  * Class: AlertDialog
  * Purpose: Extends the TDialog class so that the Dialog gives the User a message
+ * 
+ * SuperClass: TDialog
  */
 class AlertDialog :	public TDialog
 {
@@ -29,13 +31,24 @@ public:
 	 * Returns: void
 	 */
 	~AlertDialog();
+
+	/**
+	 * Method: AlertDialog::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: AlertDialog::CompileView
 	 * Purpose: Performs initialization of the dialog's contents
 	 * Parameters: TrecComPointer<ID2D1Factory1> fact -  the resource needed to create drawing boards
 	 * Returns: int - error code (0 for success)
+	 * 
+	 * Attributes: override
 	 */
-	int CompileView(TrecComPointer<ID2D1Factory1> fact);
+	int CompileView(TrecComPointer<ID2D1Factory1> fact)override;
 private:
 	/**
 	 * The Text field holding the message for the user

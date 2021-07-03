@@ -3,10 +3,23 @@
 #include <d2d1.h>
 class TControl;
 
+/**
+ * Class: TransitionAnimation
+ * Purpose: Basic straight-line movement from one location to the next
+ */
 class TransitionAnimation :
 	public Animation
 {
 public:
+
+	/**
+	 * Method: TransitionAnimation::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TransitionAnimation::Animation (Constructor)
 	 * Purpose: Creates the TransitionAnimation with the specified animation-phase setting
@@ -19,8 +32,10 @@ public:
 	 * Purpose: Informs the animation regarding what progress a given animation should be along
 	 * Parameters: float progress - the progression the control has made between departure and destination
 	 * Returns: bool - true if the resources are in order, false if a resource is missing
+	 * 
+	 * Attributes: override
 	 */
-	virtual bool Update(float progress);
+	virtual bool Update(float progress)override;
 	/**
 	 * Method: TransitionAnimation::SetAnimationValue
 	 * Purpose: Sets a value needed to define an animation beginning and end
@@ -29,8 +44,10 @@ public:
 	 * Returns: void
 	 *
 	 * Note: This one looks t the location of borders and ignores the other types
+	 * 
+	 * Attributes: override
 	 */
-	virtual void SetAnimationValue(float value, animation_value_type type);
+	virtual void SetAnimationValue(float value, animation_value_type type)override;
 
 	/**
 	 * Method: TransitionAnimation::SetComponent
@@ -39,6 +56,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: Has no effect as the transtion doesn't directly affect brushes
+	 * 
+	 * Attributes: override
 	 */
 	virtual void SetComponent(TrecPointer<TBrush> comp)override;
 	/**
@@ -46,8 +65,10 @@ public:
 	 * Purpose: Sets an animation to its starting position before an animation commences
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
-	virtual void Prepare();
+	virtual void Prepare()override;
 	/**
 	 * Method: TransitionAnimation::GetAnimationType
 	 * Purpose: Reports the String version of the animation type
@@ -55,14 +76,18 @@ public:
 	 * Returns: TString - representing the type this animation object is
 	 *
 	 * Note: In this case, the String is L"Simple-Transition"
+	 * 
+	 * Attributes: override
 	 */
-	virtual TString GetAnimationType();
+	virtual TString GetAnimationType()override;
 
 	/**
 	 * Method: TransitionAnimation::SetControl
 	 * Purpose: Allows animations to get the control they need to act upon
 	 * Parameters: TrecPointer<TControl> con -  the control to operate upon
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void SetControl(TrecPointer<TControl> con)override;
 protected:

@@ -5,6 +5,17 @@
 #include "GifAnimation.h"
 #include "TControl.h"
 
+/**
+ * Method: AnimationBuilder::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString AnimationBuilder::GetType()
+{
+	return TString(L"AnimationBuilder;") + TObject::GetType();
+}
+
 /*
 * Method: AnimationBuilder::AnimationBuilder
 * Purpose: Constructor
@@ -76,12 +87,12 @@ TString AnimationBuilder::GetName()
 }
 
 /*
-* Method: AnimationBuilder::GetType
+* Method: AnimationBuilder::GetAnimationType
 * Purpose: Reports the type of animation to create
 * Parameters: void
 * Returns: TString - the type of animation given
 */
-TString AnimationBuilder::GetType()
+TString AnimationBuilder::GetAnimationType()
 {
 	return type;
 }

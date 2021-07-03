@@ -2,14 +2,16 @@
 #include "TInterpretor.h"
 
 
-typedef void (*NativeFunction)(TDataArray<TrecPointer<TVariable>>& params, ReportObject& ret);
+typedef void (*NativeFunction)(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env,ReportObject& ret);
 
 
 /**
  * Class: TNativeInterpretor
- * Purpose: Allows Code interpretors and high-level source code to call native functions and methods provided by Anagame 
+ * Purpose: Allows Code interpretors and high-level source code to call native functions and methods provided by Anagame
+ * 
+ * SuperClass: TInterpretor
  */
-class TNativeInterpretor :
+class TC_DATA_STRUCT TNativeInterpretor :
 	public TInterpretor
 {
 public:
@@ -18,9 +20,10 @@ public:
      * Purpose: Constructor
      * Parameters: NativeFunction function - the function to call
      *              TrecPointer<TInterpretor> parentInterpretor - the Interpretor that created this interpretor (use null if this is a root)
+     *				TrecPointer<TEnvironment> env - the environment underwhich this function is operating
      * Returns: New TInterpretor Object
      */
-    TNativeInterpretor(NativeFunction function, TrecPointer<TInterpretor> parent);
+    TNativeInterpretor(NativeFunction function, TrecSubPointer<TVariable, TInterpretor> parent, TrecPointer<TEnvironment> env);
 
 
     /**
@@ -30,6 +33,8 @@ public:
      * Returns: UINT - error code
      *
      * Note: This is unused as this interpretor gets it'c code from a native function (meaning it's already compiled), not a source file
+     * 
+     * Attributes: override
      */
     virtual UINT SetCode(TFile&) override;
 
@@ -40,6 +45,8 @@ public:
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that are either top level or basic control blocks
+     * 
+     * Attributes: override
      */
     virtual ReportObject Run()override;
 
@@ -51,8 +58,10 @@ public:
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that represent specific methods or functions
+     * 
+     * Attributes: override
      */
-    virtual ReportObject Run(TDataArray<TVariable>& params) override;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVars = true) override;
 
 private:
     /**

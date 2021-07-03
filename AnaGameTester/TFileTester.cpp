@@ -33,7 +33,7 @@ void TFileTester::Test1(std::string& output)
 
 	std::string encode = "File Encoding", seek = "File Seek", read = "Read";
 
-	ExpectEquals(output, encode, static_cast<UINT>(fet_acsii), static_cast<UINT>(file.GetEncodingType()));
+	ExpectEquals(output, encode, static_cast<UINT>(FileEncodingType::fet_acsii), static_cast<UINT>(file.GetEncodingType()));
 	ExpectEquals(output, seek, 0u, file.GetPosition());
 
 	TString tData;
@@ -73,7 +73,7 @@ void TFileTester::Test2(std::string& output)
 
 	std::string encode = "File Encoding 2", seek = "File Seek 2", read = "Read 2";
 
-	ExpectEquals(output, encode, static_cast<UINT>(fet_unicode_little), static_cast<UINT>(file.GetEncodingType()));
+	ExpectEquals(output, encode, static_cast<UINT>(FileEncodingType::fet_unicode_little), static_cast<UINT>(file.GetEncodingType()));
 	ExpectEquals(output, seek, 0u, file.GetPosition());
 
 	TString tData;

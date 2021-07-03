@@ -2,7 +2,7 @@
 #include "TGadgetControl.h"
 
 /*
-* Class TRadioButton
+* Class: TRadioButton
 * Purpose: Implements Anaface's version of the radio buttom
 */
 class _ANAFACE_DLL TRadioButton :
@@ -10,6 +10,15 @@ class _ANAFACE_DLL TRadioButton :
 {
 	friend class TRadioButton;
 public:
+
+	/**
+	 * Method: TRadioButton::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TRadioButton::TRadioButton
 	* Purpose: Cunstructor
@@ -31,6 +40,8 @@ public:
 	* Purpose: Sets up the control, including radio button specific aspects
 	* Parameters: RECT r - the loaction of the button
 	* Returns: bool - false (ignore)
+	* 
+	* Attributes: override
 	*/
 	bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d)override;
 	/*
@@ -38,6 +49,8 @@ public:
 	* Purpose: Draws Radio Button specific visuals
 	* Parameters: void
 	* Returns: void
+	* 
+	* Attributes: override
 	*/
 	void onDraw(TObject* obj = nullptr) override;
 	/*
@@ -59,8 +72,10 @@ public:
 	*				messageOutput * mOut - results of message checking
 	*				TDataArray<EventID_Cred>& eventAr - list of events to respond to
 	* Returns: void
+	* 
+	* Attributes: override
 	*/
-	afx_msg void OnLButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl);
+	afx_msg void OnLButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 
 	/*
 	* Method: TRadioButton::OnLButtonUp
@@ -70,15 +85,19 @@ public:
 	*				messageOutput * mOut - results of message checking
 	*				TDataArray<EventID_Cred>& eventAr - list of events to respond to
 	* Returns: void
+	* 
+	* Attributes: override
 	*/
-	afx_msg void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
 
-	/*
-	* Method: TRadioButton::GetAnaGameType
-	* Purpose: Returns the AnaGame type marker for Radio Buttons
-	* Parameters: void
-	* Returns: UCHAR* - pointer to AnaGame marker for radio button class
-	*/
+	/**
+	 * Method: TRadioButton::GetAnaGameType
+	 * Purpose: Returns the AnaGame type marker for Radio Buttons
+	 * Parameters: void
+	 * Returns: UCHAR* - pointer to AnaGame marker for radio button class
+	 * 
+	 * Attributes: override; deprecated
+	 */
 	virtual UCHAR* GetAnaGameType()override;
 
 	/*
@@ -86,6 +105,8 @@ public:
 	 * Purpose: Resizes the control upon the window being resized, applies to the box inside the control
 	 * Parameters: D2D1_RECT_F& r - the new location for the control
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	void Resize(D2D1_RECT_F& r)override;
 

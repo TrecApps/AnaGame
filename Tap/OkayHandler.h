@@ -3,6 +3,8 @@
 /**
  * Class: OkayHandler
  * Purpose: Extends the EventHandler to handle Okay Dialog events
+ * 
+ * SuperClass: EventHandler
  */
 class OkayHandler :
 	public EventHandler
@@ -25,12 +27,21 @@ public:
 	 */
 	~OkayHandler();
 
+	/**
+	 * Method: OkayHandler::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: OkayHandler::Initialize
 	 * Purpose: Basic Handler initialization
 	 * Parameters: TrecPointer<Page> page - the page the Handler is to associate with
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	void Initialize(TrecPointer<Page> page) override;
 
@@ -39,14 +50,18 @@ public:
 	 * Purpose: Handles Events produced from the set of TControls
 	 * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
-	void HandleEvents(TDataArray<EventID_Cred>& eventAr);
+	void HandleEvents(TDataArray<EventID_Cred>& eventAr)override;
 
 	/**
 	 * Method: OkayHandler::ProcessMessage
 	 * Purpose: Processes the message sent to the handler
 	 * Parameters: TrecPointer<HandlerMessage> message - the message to recieve and Process
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message)override;
 
@@ -66,6 +81,8 @@ protected:
 	 * Purpose: Reports whether the message is of the Okay Handler type
 	 * Parameters: TrecPointer<HandlerMessage> message -  the message to examine
 	 * Returns: bool - whether the message porports to belong the Okay Handler
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 };

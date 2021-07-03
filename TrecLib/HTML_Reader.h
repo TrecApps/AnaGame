@@ -4,7 +4,9 @@
 
 /*
 * Class: HTML_Reader
-* Parser Reader optimized for HTML files
+* Purpose: Parser Reader optimized for HTML files
+* 
+* SuperClass: ParseReader_ - Implements the Reader Class for HTML files
 */
 class _TREC_LIB_DLL HTML_Reader :	public ParseReader_
 {
@@ -34,6 +36,8 @@ public:
 	* Purpose: Reads the file anticipating the HTML format
 	* Parameters: int* - the line number an error occurs
 	* Returns: bool - success
+	* 
+	* Attributes: override - reads the file, assuming the file is HTML
 	*/
 	bool read(int*)override;
 
@@ -43,9 +47,18 @@ public:
 	 * Parameters: void
 	 * Returns: UCHAR* - the AnaGame type ID format
 	 *
-	 * Note: DEPRICATED
+	 * Note: deprecated
 	 */
 	virtual UCHAR* GetAnaGameType();
+
+
+	/**
+	 * Method: HTML_Reader::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 private:
 	/**
@@ -64,14 +77,7 @@ private:
 	* Returns: void
 	*/
 	void DeduceCharType(unsigned char*);
-	/*
-	* Method: HTML_Reader::ReturnWCharType
-	* Purpose: Converts a char to a WCHAR
-	* Parameters: char c - the char to convert
-	* Returns: WCHAR - the wide char version of c
-	* Note: Functionality is generic enough that method should be moved to a function
-	*/
-	WCHAR ReturnWCharType(char);
+
 	/*
 	* Method: HTML_Reader::isWhiteSpace
 	* Purpose: Determines whether a character is white space or not

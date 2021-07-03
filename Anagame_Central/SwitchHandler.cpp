@@ -2,6 +2,7 @@
 #include <Page.h>
 #include <TWindow.h>
 #include <DirectoryInterface.h>
+#include <FileDialog.h>
 
 SwitchHandler::SwitchHandler(TrecPointer<TInstance> ins): EventHandler(ins)
 { 
@@ -70,6 +71,22 @@ SwitchHandler::SwitchHandler(TrecPointer<TInstance> ins): EventHandler(ins)
 	enid.name.Set(L"OnSelectGif");
 	events.push_back(enid);
 	handlers[enid.eventID] = &SwitchHandler::OnSelectGif;
+
+	enid.eventID = 12;
+	enid.name.Set(L"OnSelectVid");
+	events.push_back(enid);
+	handlers[enid.eventID] = &SwitchHandler::OnSelectVid;
+
+	enid.eventID = 13;
+	enid.name.Set(L"OnSelectSocket");
+	events.push_back(enid);
+	handlers[enid.eventID] = &SwitchHandler::OnSelectSocket;
+
+	enid.eventID = 14;
+	enid.name.Set(L"OnSubmitSocketCall");
+	events.push_back(enid);
+	handlers[enid.eventID] = &SwitchHandler::OnSubmitSocketCall;
+
 
 }
 
@@ -950,6 +967,46 @@ void SwitchHandler::OnSelectGif(TrecPointer<TControl> tc, EventArgs ea)
 	page->CreateLayout();
 
 	window->PrepAnimations(page);
+}
+
+void SwitchHandler::OnSelectVid(TrecPointer<TControl> tc, EventArgs ea)
+{
+	auto window = page->GetWindowHandle();
+
+	auto currentShow = rootLayout->GetLayoutChild(1, 0);
+	TrecPointer<DrawingBoard> rtb = window->GetDrawingBoard();
+	rootLayout->addChild(TrecPointerKey::GetNewSelfTrecPointer<TControl>(rtb, TrecPointer<TArray<styleTable>>()), 1, 0);
+	currentShow.Delete();
+	page->CreateLayout();
+	window->SetUp3D();
+
+
+	TrecPointer<TFileShell> directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Videos));
+	auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app),
+		window->GetWindowHandle(),
+		directory,
+		TString(L".avi;.mpg;.mov;.wmv;.mkv"));
+
+	if (!targetFile.Get()) return;
+
+
+	changeControl = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TVideo>(rtb, TrecPointer<TArray<styleTable>>(), window->GetWindowHandle());
+
+	changeControl->addAttribute(TString(L"|MediaSource"), TrecPointerKey::GetNewTrecPointer<TString>(targetFile->GetPath()));
+	window->submitPlayer(changeControl);
+	rootLayout->addChild(changeControl, 1, 0);
+	page->CreateLayout();
+
+}
+
+void SwitchHandler::OnSelectSocket(TrecPointer<TControl> tc, EventArgs ea)
+{
+	
+}
+
+void SwitchHandler::OnSubmitSocketCall(TrecPointer<TControl> tc, EventArgs ea)
+{
+
 }
 
 bool SwitchHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)

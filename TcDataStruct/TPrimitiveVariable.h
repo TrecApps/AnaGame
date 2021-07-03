@@ -1,21 +1,20 @@
 #pragma once
-#include "TVariable.h"
+#include <TVariable.h>
+#include "TcDataStruct.h"
 
 /**
- * Class TPrimitiveVariable
+ * Class: TPrimitiveVariable
  * Purpose: Represents a primitive variable, such as a number or a character
+ * 
+ * SuperClass: TVariable
  */
-class TPrimitiveVariable :
+class TC_DATA_STRUCT TPrimitiveVariable :
     public TVariable
 {
-    /**
-     * Method: TPrimitiveVarible::IsObject
-     * Purpose: Reports whether the variable holds an object or not
-     * Parameters: void
-     * Returns: bool - whether the variable is an object or not
-     */
-    virtual bool IsObject()override;
+    friend class TPrimitiveVariable;
+public:
 
+    virtual TrecPointer<TVariable> Clone()override;
 
     /**
      * Method: TPrimitiveVarible::GetObject
@@ -24,17 +23,20 @@ class TPrimitiveVariable :
      * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
      *
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
+     * 
+     * Attributes: override
      */
-    virtual TrecPointer<TObject> GetObject()override;
+    virtual TrecObjectPointer GetObject()override;
 
     /**
-     * Method: TPrimitiveVarible::IsString
-     * Purpose: Reports whether the variable holds a string or not
+     * Method: TPrimitiveVariable::GetVarType
+     * Purpose: Reports the type of varible that this object represents
      * Parameters: void
-     * Returns: bool - whether the variable is a string or not
+     * Returns: var_type - the type of variable this represents
+     * 
+     * Attributes: override
      */
-    virtual bool IsString()override;
-
+    virtual var_type GetVarType() override;
 
     /**
      * Method: TPrimitiveVarible::GetObject
@@ -43,6 +45,8 @@ class TPrimitiveVariable :
      * Returns: TString - The TString referered by the variable (empty if not a string)
      *
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
+     * 
+     * Attributes: override
      */
     virtual TString GetString()override;
 
@@ -51,6 +55,8 @@ class TPrimitiveVariable :
      * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)
      * Parameters: void
      * Returns: UINT - The value held as a UINT (0 if not a primitive type
+     * 
+     * Attributes: override
      */
     virtual UINT Get4Value()override;
 
@@ -61,6 +67,8 @@ class TPrimitiveVariable :
      * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
      * Parameters: void
      * Returns: ULONG64 - The value held as an 8 bit integer (0 if not a primitive type)
+     * 
+     * Attributes: override
      */
     virtual ULONG64 Get8Value()override;
 
@@ -70,6 +78,8 @@ class TPrimitiveVariable :
      * Purpose: Returns the estimated size of the value held
      * Parameters: void
      * Returns: UINT - The estimated size in bytes of the data
+     * 
+     * Attributes: override
      */
     virtual UINT GetSize()override;
 
@@ -79,8 +89,10 @@ class TPrimitiveVariable :
      * Purpose: Returns the basic type of the object
      * Parameters: void
      * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
+     * 
+     * Attributes: override
      */
-    virtual UINT GetType()override;
+    virtual UINT GetVType()override;
 
     /**
      * Method: TPrimitiveVariable::TPrimitiveVariable
@@ -313,6 +325,27 @@ class TPrimitiveVariable :
      */
      void Set(bool value);
 
+    /**
+     * Method: TPrimitiveVariable::BitShift
+     * Purpose: Performs a bitshift operatoin on the variable
+     * Parameters: bool rightshift - true for right shift, false for left shift
+     *              UINT shiftCount - the number of bits to shoft by
+     *              USHORT flags - flags that go into this shift
+     * Returns: bool - whether the operation can be applied
+     * 
+     * Note: Flags are as follows
+     * 
+     *  0b0000000000000001 - Applies to boolean
+     *  0b0000000000000010 - Applies to float
+     *  0b0000000000000100 - Fill in-side with out-bit
+     *  0b0000000000001000 - Cut down to 32 bits
+     *  0b0000000000010000 - cut down to 16 bits
+     *  0b0000000000011000 - cut down to 8 bits
+     *  0b0000000000100000 - make unsigned
+     *  0b0000000001100000 - make unsigned if float
+     */
+     bool BitShift(bool rightShift, UINT shiftCount, USHORT flags = 0);
+
 private:
     /**
      * The actual value being held
@@ -323,6 +356,14 @@ private:
      */
     UCHAR type;
 
+    TPrimitiveVariable();
+
+protected:
+
+    TString GetString(TString format, bool useExponent = false);
+    
+
+public:
     /**
      * indicates this is a boolean variable
      */
@@ -356,5 +397,24 @@ private:
      * indicates this is 8 bytes
      */
     const static UCHAR type_eight = 0b01000000;
+
+    /*
+     *  0b0000000000000001 - Applies to boolean
+ *  0b0000000000000010 - Applies to float
+ *  0b0000000000000100 - Fill in-side with out-bit
+ *  0b0000000000001000 - Cut down to 32 bits
+ *  0b0000000000010000 - cut down to 16 bits
+ *  0b0000000000011000 - cut down to 8 bits
+ *  0b0000000000100000 - make unsigned
+ *  0b0000000001100000 - make unsigned if float
+    */
+    const static USHORT bit_bool = 0b0000000000000001;
+    const static USHORT bit_float = 0b0000000000000010;
+    const static USHORT bit_replenish = 0b0000000000000100;
+    const static USHORT bit_to_32 = 0b0000000000001000;
+    const static USHORT bit_to_16 = 0b0000000000010000;
+    const static USHORT bit_to_8 = 0b0000000000011000;
+    const static USHORT bit_to_un = 0b0000000000100000;
+    const static USHORT bit_to_un_f = 0b0000000001100000;
 };
 

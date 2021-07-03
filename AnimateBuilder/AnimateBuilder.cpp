@@ -6,6 +6,7 @@
 #include <DirectoryInterface.h>
 #include <TInstance.h>
 #include "MainLayoutHandler.h"
+#include <TThread.h>
 
 #define MAX_LOADSTRING 100
 
@@ -38,6 +39,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     TString title(L"Anagame Builder");
     TString winClass(L"BuilderWindow");
 
+    TThread::SetMainThread();
+
     mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
 
     WNDCLASSEXW wcex;
@@ -53,7 +56,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_ANIMATEBUILDER);
-    wcex.lpszClassName = winClass.GetConstantBuffer();
+    wcex.lpszClassName = winClass.GetConstantBuffer().getBuffer();
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < EventHandler, MainLayoutHandler>(mainInstance), t_window_type::t_window_type_ide);

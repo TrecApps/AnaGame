@@ -1,5 +1,6 @@
 #pragma once
-#include "TVariable.h"
+#include <TVariable.h>
+#include "TcDataStruct.h"
 #include <TMap.h>
 
 /**
@@ -19,11 +20,24 @@ typedef enum class ContainerType
 /**
  * Class: TContainerVariable
  * Purpose: Variable that represents a collection of variables
+ * 
+ * SuperClass: TVariable
  */
-class TContainerVariable :
+class TC_DATA_STRUCT TContainerVariable :
     public TVariable
 {
+    friend class TContainerVariable;
 public:
+
+    virtual TrecPointer<TVariable> Clone();
+
+    /**
+     * Method: TContainerVariable::Clear
+     * Purpose: Empties the container
+     * Parameters: void
+     * Returns: void
+     */
+    void Clear();
 
     /**
      * Method: TContainerVariable
@@ -32,6 +46,16 @@ public:
      * Returns: New Container Variable
      */
     TContainerVariable(ContainerType ct);
+
+    /**
+     * Method: TContainerVariable::GetVarType
+     * Purpose: Reports the type of varible that this object represents
+     * Parameters: void
+     * Returns: var_type - the type of variable this represents
+     * 
+     * Attributes: override
+     */
+    virtual var_type GetVarType() override;
 
     /**
      * Method: TContainerVariable::Initialize
@@ -54,11 +78,22 @@ public:
     /**
      * Method: TContainerVariable::GetValue
      * Purpose: Retrieves the value by Key
-     * Parameters: TString& key - the key of the value to look for
+     * Parameters: const TString& key - the key of the value to look for
      *              bool& present - whether the index was found. This can be used by JavaScript to distinguish between NULL and UNDEFINED
      * Returns: TrecPointer<TVariable> - the value at the provided index, or null if the index was not found
      */
-    TrecPointer<TVariable> GetValue(TString& key, bool& present);
+    TrecPointer<TVariable> GetValue(const TString& key, bool& present);
+
+    /**
+     * Method: TContainerVariable::GetValue
+     * Purpose: Retrieves the value by Key, taking into account prototypeing 
+     * Parameters: const TString& key - the key of the value to look for
+     *              bool& present - whether the index was found. This can be used by JavaScript to distinguish between NULL and UNDEFINED
+     *              const TString& super - keys to use as part of the chain
+     * Returns: TrecPointer<TVariable> - the value at the provided index, or null if the index was not found
+     */
+    TrecPointer<TVariable> GetValue(const TString& key, bool& present, const TString& super);
+
 
     /**
      * Method: TContainerVariable::SetValue
@@ -78,7 +113,7 @@ public:
      * Returns: bool - whether the operation was PERMITTED or not int index - index to set
      *              TrecPointer<TVariable> value - the value to set
      */
-    bool SetValue(TString& key, TrecPointer<TVariable> value);
+    bool SetValue(const TString& key, TrecPointer<TVariable> value);
 
     /**
      * Method: TContainerVariable::AppendValue
@@ -106,31 +141,16 @@ public:
 
 
     /**
-     * Method: TContainerVariable::IsObject
-     * Purpose: Reports whether the variable holds an object or not
-     * Parameters: void
-     * Returns: bool - whether the variable is an object or not
-     */
-    virtual bool IsObject()override;
-
-
-    /**
      * Method: TContainerVariable::GetObject
      * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
      * Parameters: void
-     * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+     * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
      *
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
+     * 
+     * Attributes: override
      */
-    virtual TrecPointer<TObject> GetObject()override;
-
-    /**
-     * Method: TContainerVariable::IsString
-     * Purpose: Reports whether the variable holds a string or not
-     * Parameters: void
-     * Returns: bool - whether the variable is a string or not
-     */
-    virtual bool IsString()override;
+    virtual TrecObjectPointer GetObject()override;
 
 
     /**
@@ -140,6 +160,8 @@ public:
      * Returns: TString - The TString referered by the variable (empty if not a string)
      *
      * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
+     * 
+     * Attributes: override
      */
     virtual TString GetString()override;
 
@@ -148,6 +170,8 @@ public:
      * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)
      * Parameters: void
      * Returns: UINT - The value held as a UINT (0 if not a primitive type
+     * 
+     * Attributes: override
      */
     virtual UINT Get4Value()override;
 
@@ -158,6 +182,8 @@ public:
      * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
      * Parameters: void
      * Returns: ULONG64 - The value held as an 8 bit integer (0 if not a primitive type)
+     * 
+     * Attributes: override
      */
     virtual ULONG64 Get8Value()override;
 
@@ -167,6 +193,8 @@ public:
      * Purpose: Returns the estimated size of the value held
      * Parameters: void
      * Returns: UINT - The estimated size in bytes of the data
+     * 
+     * Attributes: override
      */
     virtual UINT GetSize()override;
 
@@ -176,8 +204,56 @@ public:
      * Purpose: Returns the basic type of the object
      * Parameters: void
      * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
+     * 
+     * Attributes: override
      */
-    virtual UINT GetType()override;
+    virtual UINT GetVType()override;
+
+
+    /**
+     * Method: TContainerVariable::GetValueAt
+     * Purpose: Retrieves Variables by index
+     * Parameters: UINT index - the index to check
+     * Returns: TrecPointer<TVariable> - the variable stored at the index (null if not available)
+     */
+    TrecPointer<TVariable> GetValueAt(UINT index);
+
+    /**
+     * Method: TContainerVariable::GetValueAt
+     * Purpose: Retirevs the variable and key by index
+     * Parameters: UINT index - the index to check
+     *              TString& key - the key to use
+     *              TrecPointer<TVariable>& value - reference to the variable to store value at
+     * Returns: bool - whether content was found
+     */
+    bool GetValueAt(UINT index, TString& key, TrecPointer<TVariable>& value);
+
+    /**
+     * Method: TContainerVariable::GetClassName
+     * Purpose: Retrieves the Class Name of this object (if applicable)
+     * Parameters: void
+     * Returns: TString - the class name
+     */
+    TString GetTClassName();
+
+    /**
+     * Method: TContainerVariable::SetClassName
+     * Purpose: Sets the name of the class that this object is based off of
+     * Parameters: TString name - the class name to base this object off of
+     * Returns: bool - whether the name was set or not
+     * 
+     * Note: This Method call will only work once
+     */
+    bool SetClassName(const TString& name);
+
+    /**
+     * Method: TContainerVariable::GetConteinerType
+     * Purpose: Reports to interpretors the container type
+     * Parameters: void
+     * Return: Container_type - the type of container we're dealing with
+     */
+    ContainerType GetContainerType();
+
 
  private:
     /**
@@ -189,5 +265,10 @@ public:
       * Restructions on the container
       */
      ContainerType type;
+
+     /**
+      * The class name used to generate this object (if applicable)
+      */
+     TString className;
 };
 

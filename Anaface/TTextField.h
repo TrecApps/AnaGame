@@ -30,13 +30,36 @@ typedef struct _ANAFACE_DLL incrimentControl
 
 // Allows Anaface to format the text at different sections, used by Web-Tuors
 // To support the <b> and <i> tags in HTML
-typedef struct formattingDetails
+class _ANAFACE_DLL FormattingDetails
 {
+public:
+	FormattingDetails();
+	FormattingDetails(const FormattingDetails& copy);
+
 	DWRITE_FONT_WEIGHT weight; // For handling boldness
 	DWRITE_FONT_STYLE style;   // For handling italics
 	DWRITE_TEXT_RANGE range;   // the Range through which it should be done
-}formattingDetails;
+	TrecPointer<TBrush> color; // The color of the Text
+	TrecPointer<TBrush> bColor;// The Color of the Highlight
+	float fontSize;
+};
 
+/**
+ * Class: LineMetrics
+ * Purpose: Structure holding line Metrics of a text
+ */
+class _ANAFACE_DLL LineMetrics
+{
+public:
+	LineMetrics();
+	LineMetrics(const LineMetrics& orig);
+	LineMetrics(USHORT i);
+
+	void SetSize(UINT i, bool fromConstructor = false);
+
+	TDataArray<DWRITE_LINE_METRICS> metrics;
+	UINT sizeNeeded;
+};
 
 /*
 * Function: operator>
@@ -358,12 +381,21 @@ private:
 * Class: TTextField
 * Purpose: Supports Anaface's ability to have more complex text layouts, including
 *	Password boxes, number fields, or complex formatted strings.
-* SuperClass: TGadgetControl - allows the combobox to have a feture within it
+* SuperClass: TGadgetControl - allows the TTextField to have a feture within it
 */
 class _ANAFACE_DLL TTextField :	public TGadgetControl
 {
 	friend class AnafaceParser;
 public:
+
+	/**
+	 * Method: TTextField::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TTextField::TTextField
 	* Purpose: Constructor
@@ -413,6 +445,8 @@ public:
 	* Parameters: CArchive * ar - File to read from
 	* Returns: int
 	* Note: DEPRECIATED - Functionality should be handled by a compatible Anaface-HTML parser
+	 * 
+	 * Attributes: override; deprecated
 	*/
 	virtual int loadFromHTML(TFile* ar) override;
 	/*
@@ -422,6 +456,8 @@ public:
 	*				int childLevel - the generation if the TControl
 	*				bool overrideChildren - whether to ignore the children to save
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	virtual void storeInTML(TFile* ar, int childLevel, bool ov = false) override;
 	/*
@@ -429,6 +465,8 @@ public:
 	* Purpose: Stores the control in an HTML format
 	* Parameters: CArchive * ar - the file to write to
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	virtual void storeInHTML(TFile* ar) override;
 
@@ -437,6 +475,8 @@ public:
 	* Purpose: Sets up the TTextFeild with Text Specific attributes
 	* Parameters: RECT r - the location that the control would work in
 	* Returns: bool - success (currently arbitrarily)
+	 * 
+	 * Attributes: override
 	*/
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d) override;
 
@@ -445,6 +485,8 @@ public:
 	* Purpose: Draws the text that it was given
 	* Parameters: void
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	virtual void onDraw(TObject* obj = nullptr) override;
 	/*
@@ -452,6 +494,8 @@ public:
 	* Purpose: Determines how high the control HAS to be that it was still functional
 	* Parameters: void
 	* Returns: UINT - The minimum height control needed
+	 * 
+	 * Attributes: override
 	*/
 	UINT determineMinHeightNeeded()override;
 	/*
@@ -459,8 +503,19 @@ public:
 	* Purpose: Sets a new location for the Control
 	* Parameters: RECT& r - the new location
 	* Returns: void
+	 * 
+	 * Attributes: override; deprecated
 	*/
 	void SetNewLocation(const D2D1_RECT_F& r)override;
+
+
+	/**
+	 * Method: TTextField::getLocation
+	 * Purpose: Reports how much space this object will actually need to draw
+	 * Parameters: void
+	 * Returns: D2D1_RECT_F -  the Rectangle of the content that would be drawn (even if it was officially allocated less space)
+	 */
+	D2D1_RECT_F getLocation()override;
 
 	/*
 	* Method: TTextField::OnLButtonDown
@@ -470,6 +525,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
 	/*
@@ -535,6 +592,14 @@ public:
 	*/
 	void AppendNormalText(const TString& t);
 
+	/**
+	 * Method: TTextField::ApplyFormatting
+	 * Purpose: Applies formatting to a portion of the String
+	 * Parameters: formattingDetails details
+	 * Returns: bool - true if no issue was found, false otherwise
+	 */
+	bool ApplyFormatting(FormattingDetails details);
+
 	/*
 	* Method: TTextField::isOnFocus
 	* Purpose: Reports whether focus is on the current control
@@ -592,7 +657,7 @@ public:
 	 * Returns: void
 	 */
 	void AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length);
-protected:
+
 	TextHighlighter highlighter;
 
 	/*
@@ -602,6 +667,24 @@ protected:
 	 * Returns: void
 	 */
 	static void RemoveFocus();
+
+	TrecPointer<LineMetrics> GetLineMetrics();
+
+	/**
+	 * Method: TTextField::ShrinkHeight
+	 * Purpose: Reduces the height of the control down to what is needed --> just shrinks its children
+	 *		some of whom might find ways to shrink themselves
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void ShrinkHeight() override;
+
+	float GetMinWidth();
+
+protected:
+
 
 
 	/**
@@ -655,6 +738,11 @@ protected:
 	 * the radius of the pek button
 	 */
 	int radius;
+
+	/**
+	 * Whether inut from the return key should be included
+	 */
+	bool includeReturn;
 
 	/**
 	 * location of the bottom button (decrement button)
@@ -738,7 +826,7 @@ protected:
 	/**
 	 * List for details such as weight
 	 */
-	TDataArray<formattingDetails> details;
+	TDataArray<FormattingDetails> details;
 	/**
 	 * List of colors affecting the text
 	 */

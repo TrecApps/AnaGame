@@ -3,10 +3,12 @@
 #include "TString.h"
 
 /*
- * class TFileShell
+ * Class: TFileShell
  * Purpose: Represents a File that exists on the file System.
  *
  * Note: this class does not open a file for reading or writing, merely provides information about the file in question
+ * 
+ * SuperClass: TObject - allows it to be used by Environment Scripts
  */
 class _TREC_LIB_DLL TFileShell :
 	public TObject
@@ -14,11 +16,22 @@ class _TREC_LIB_DLL TFileShell :
 	friend class TrecPointerKey;
 public:
 
+
+	/**
+	 * Method: TFileShell::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TFileShell::IsDirectory
 	* Purpose: Reports whether this file represents a directory
 	* Parameters: void
 	* Returns: bool - false if object is the base class, true, if object is a TDirectory
+	* 
+	* Attributes: virtual - overriden by the TDirectory
 	*/
 	virtual bool IsDirectory();
 

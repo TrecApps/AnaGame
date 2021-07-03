@@ -1,17 +1,32 @@
 #pragma once
-#include <Drawer.h>
 #include "Page.h"
 #include <TWindowEngine.h>
 #include <TControl.h>
 
 bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference);
 #include "TAnimationManager.h"
+#include <TVideo.h>
+
+
+
+class _TAP_DLL MediaControlLoc
+{
+public:
+	MediaControlLoc();
+	MediaControlLoc(const MediaControlLoc& copy);
+
+	TrecPointer<TControl> control;
+	RECT loc;
+};
+
 
 /**
  * Class: TWindow
  * Purpose: Base class for managing a Window in ANagame
+ * 
+ * SuperClass: Drawer
  */
-class _TAP_DLL TWindow : public Drawer
+class _TAP_DLL TWindow : public TObject
 {
 	friend class Page;
 public:
@@ -39,10 +54,21 @@ public:
 
 
 	/**
+	 * Method: TWindow::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+
+	/**
 	 * Method: TWindow::PrepareWindow
 	 * Purpose: Sets the Window up for viewing
 	 * Parameters: void
 	 * Returns: int - error code (0 = success)
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual int PrepareWindow();
 
@@ -53,6 +79,8 @@ public:
 	 * Parameters: TString& file - path of the TML file holding the Anaface
 	 *				TrecPointer<EventHandler> eh - the Handler to the Main page
 	 * Returns: int - error (0 == success)
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual int CompileView(TString& file, TrecPointer<EventHandler> eh);
 
@@ -63,13 +91,13 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * DEPRECATED - 
+	 * Attributes: deprecated
 	 */
 	bool MovePageToTop(TrecPointer<Page> p);
 
 	/**
 	 * Method: TWindow::GetWinClass
-	 * Purpose: Retrievs the Window-level class of this window
+	 * Purpose: Retrieves the Window-level class of this window
 	 * Parameters: void
 	 * Returns: TString - the class name registered with Windows
 	 */
@@ -91,8 +119,10 @@ public:
 	 * Purpose: Draws the window
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
-	virtual void Draw() override;
+	virtual void Draw();
 
 	/**
 	 * Method: TWindow::Draw
@@ -100,9 +130,12 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * DEPRICATED
+	 * Attributes: deprecated
 	 */
 	void Draw(Page& draw);
+
+	virtual void RefreshMediaControls();
+
 
 	/**
 	 * Method: TWindow::InduceDraw
@@ -110,10 +143,11 @@ public:
 	 * Parameters: void
 	 * Returns: void
 	 * 
-	 * Note: this method is provided to be called by nimation threads as Draw should only be called by the Message thread, not by Animation threads
+	 * Note: this method is provided to be called by Animation threads as Draw should only be called by the Message thread, not by Animation threads
 	 */
 	void InduceDraw();
 	
+	afx_msg void OnVideoEvent(WPARAM param);
 
 	/**
 	 * Method: TWindow::OnRButtonUp
@@ -121,6 +155,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnRButtonUp(UINT nFlags, TPoint point);
 
@@ -130,8 +166,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
-	 * Parameters:
-	 * Returns:
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point);
 
@@ -141,6 +177,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnRButtonDown(UINT nFlags, TPoint);
 
@@ -150,6 +188,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point);
 
@@ -159,6 +199,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg void OnLButtonDblClk(UINT nFlags, TPoint point);
 
@@ -168,6 +210,8 @@ public:
 	 * Parameters: UINT nFlags - the flags associated with the message
 	 *				TPoint point - the point that was clicked
 	 * Returns: void
+	 * 
+	 * Attributes: message; virtual
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point);
 
@@ -179,6 +223,8 @@ public:
 	 *				UINT nRepCnt - the number of times to add it 
 	 *				UINT nFlags - flags associated with the message
 	 * Returns: bool 
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags);
 
@@ -188,14 +234,18 @@ public:
 	 * Parameters: UINT width - the new width of the window
 	 *				UINT height - the new height of the Window
 	 * Returns: void
+	 * 
+	 * Attributes: message
 	 */
-	afx_msg void OnWindowResize(UINT width, UINT height);
+	afx_msg virtual void OnWindowResize(UINT width, UINT height);
 
 	/**
 	 * Method: TWindow::OnDestroy
 	 * Purpose: Reports whether it is ready for destruction of not
 	 * Parameters: void
 	 * Returns: bool - whether it is ready for destruction
+	 * 
+	 * Attributes: message
 	 */
 	afx_msg virtual bool OnDestroy();
 
@@ -206,7 +256,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
 	 */
 	TrecPointer<Page> GetHandlePage(bool singleton);
 
@@ -216,7 +266,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
 	 */
 	TrecPointer<Page> GetHandlePage(const TString& name);
 
@@ -226,7 +276,8 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
+	 * Attributes: deprecated
 	 */
 	TrecPointer<Page> Get3DPage(bool singleton, TString& engineId);
 
@@ -236,7 +287,8 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
+	 * Attributes: deprecated
 	 */
 	TrecPointer<Page> Get3DPage(bool singleton, TrecPointer<TArenaEngine> engine);
 
@@ -273,7 +325,7 @@ public:
 	 * Parameters:
 	 * Returns:
 	 *
-	 * Note: DEPRICATED in favor of the Ide Window/IDE Page
+	 * Note: deprecated in favor of the Ide Window/IDE Page
 	 */
 	TrecPointer<Page> GetPageByArea(D2D1_RECT_F r);
 
@@ -355,16 +407,54 @@ public:
 	 */
 	void SetFlyout(TrecPointer<TFlyout> fly);
 
+
+	/**
+	 * Method: TWindow::GetWindowHandle
+	 * Purpose: Returns the Window handle
+	 * Parameters: void
+	 * Returns: HWND - the handle to the Window object in the OS
+	 */
+	HWND GetWindowHandle();
+
+	/**
+	 * Method: TWindow::GetFactory
+	 * Purpose: Returns the Direct2D Factory used by the window
+	 * Parameters: void
+	 * Returns: TrecComPointer<ID2D1Factory1> - the Pointer to the factory
+	 */
+	TrecComPointer<ID2D1Factory1> GetFactory();
+
+	void submitPlayer(TrecPointer<TControl> play);
+
+	HDC GetTWindowDc();
+
+	void FlushDc();
+
+
 protected:
+	TDataArray<MediaControlLoc> mediaControls;
+
+	TrecSubPointer<TControl, TVideo> videoPlayer;
 
 	// Draw Other pages that are special to the Window
+	/**
+	 * the Direct2D factory used by this drawer
+	 */
+	TrecComPointer<ID2D1Factory1> directFactory;
 
+	/**
+	 * parent: the Handle to the window owning this window
+	 * currentWindow: the Handle to the window
+	 */
+	HWND parent, currentWindow;
 
 	/**
 	 * Method: TWindow::DrawOtherPages
 	 * Purpose: Draws other pages registered in this window
 	 * Parameters: void
 	 * Returns: void
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual void DrawOtherPages();
 
@@ -377,6 +467,13 @@ protected:
 	 * command used by Windows
 	 */
 	int command;
+
+	/**
+	 * Used to track whether the Window has drawn or not
+	 */
+	bool hasDrawn;
+
+	RECT size;
 
 	/**
 	 * Main content of the window
@@ -398,7 +495,7 @@ protected:
 	TMap<Page> keyPages;
 	// Singleton Pages
 	/**
-	 * DEPRICATED
+	 * deprecated
 	 */
 	TrecPointer<Page> _3DPage, handlePage;
 

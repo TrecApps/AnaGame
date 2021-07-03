@@ -3,6 +3,17 @@
 TString gifAnimationString(L"Gif");
 
 /**
+ * Method: GifAnimation::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString GifAnimation::GetType()
+{
+	return TString(L"GifAnimation;") + GifAnimation::GetType();
+}
+
+/**
  * Method: GifAnimation::Animation (Constructor)
  * Purpose: Creates the Gif Animation with the specified animation-phase setting
  * Parameters: animation_phase ap - the animation_phase this Animation is set to

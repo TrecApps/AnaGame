@@ -6,6 +6,17 @@
 TString colorAnimationString(L"Simple-Color");
 
 /**
+ * Method: ColorAnimation::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString ColorAnimation::GetType()
+{
+	return TString(L"ColorAnimation;") + Animation::GetType();
+}
+
+/**
  * Method: ColorAnimation::Animation (Constructor)
  * Purpose: Creates the ColorAnimation with the specified animation-phase setting
  * Parameters: animation_phase ap - the animation_phase this Animation is set to
@@ -37,9 +48,6 @@ bool ColorAnimation::Update(float progress)
 		GetFloatBetween(color1.b, color2.b, progress),
 		GetFloatBetween(color1.a, color2.a, progress)
 	};
-	TString print;
-	print.Format(L"COLOR ANIMATION R: %f G: %f, B: %f, A: %f\n", curColor.r, curColor.g, curColor.b, curColor.a);
-	ATLTRACE(print.GetConstantBuffer());
 
 	try
 	{

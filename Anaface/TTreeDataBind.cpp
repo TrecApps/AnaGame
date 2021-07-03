@@ -3,6 +3,17 @@
 #include <d2d1.h>
 
 /**
+ * Method: TTreeDataBind::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TTreeDataBind::GetType()
+{
+	return TString(L"TTreeDataBind;") + TControl::GetType();
+}
+
+/**
  * Method: TTreeDataBind::TTreeDataBind
  * Purpose: Constructor
  * Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on
@@ -13,6 +24,9 @@ TTreeDataBind::TTreeDataBind(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<st
 {
 	isNodeSelected = isTickSelected = false;
 	nodeSelected = 0;
+	highlightNodeSelected = UINT32_MAX;
+
+	blockExpansion = false;
 }
 
 /**
@@ -23,7 +37,6 @@ TTreeDataBind::TTreeDataBind(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<st
  */
 TTreeDataBind::~TTreeDataBind()
 {
-	int e = 3;
 }
 
 /**
@@ -34,18 +47,22 @@ TTreeDataBind::~TTreeDataBind()
  */
 void TTreeDataBind::onDraw(TObject* obj)
 {
+	ThreadLock();
 	if (!mainNode.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	TrecPointer<TControl> cont = children.ElementAt(0);
 	if (!cont.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	TrecPointer<TObjectNode> curNode = mainNode;
 
 	D2D1_RECT_F cLoc = location;
 	cLoc.bottom = cLoc.top + 30;
-	TrecPointer<TGeometry> path;
 	
 	for (UINT c = 0; curNode.Get(); c++)
 	{
@@ -58,13 +75,9 @@ void TTreeDataBind::onDraw(TObject* obj)
 		triLoc.top += 5;
 		triLoc.left += 5 + level * 5;
 		triLoc.right = triLoc.left + 20;
-
-		
 		if (extDraw)
 		{
-
 			TDataArray<POINT_2D> points;
-
 			if (ext)
 			{
 				points.push_back(D2D1::Point2F(triLoc.left, triLoc.bottom));
@@ -77,37 +90,34 @@ void TTreeDataBind::onDraw(TObject* obj)
 				points.push_back(D2D1::Point2F(triLoc.left, triLoc.top));
 				points.push_back(D2D1::Point2F(triLoc.right, (triLoc.top + triLoc.bottom) / 2.0f));
 			}
-			
-			path = drawingBoard->GetGeometry(points);
 
+			auto path = drawingBoard->GetGeometry(points);
 			if (path.Get())
 			{
 				if (outerBrush.Get())
 					outerBrush->DrawGeometry(path, 0.5f);
 				if (innerBrush.Get())
 					innerBrush->FillGeometry(path);
-
 			}
 			path.Delete();
 		}
 
-
 		UINT r = triLoc.right;
-
 		triLoc = cLoc;
-
 		triLoc.left = r;
-
 		cont->setLocation(triLoc);
 		cont->onDraw(curNode.Get());
 
+		if (nodeBrush.Get() && c == highlightNodeSelected)
+			nodeBrush->FillRectangle(cLoc);
+		
 		// Prepare for the next draw
 		cLoc.bottom += 30;
 		cLoc.top += 30;
 
 		curNode = mainNode->GetNodeAt(c + 1, 0);
 	}
-
+	ThreadRelease();
 }
 /**
  * DEPRECATED
@@ -126,16 +136,40 @@ UCHAR* TTreeDataBind::GetAnaGameType()
  */
 bool TTreeDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
+	drawBackground = false;
 	TControl::onCreate(r, d3d);
 	if (drawingBoard.Get())
 	{
 		outerBrush = drawingBoard->GetBrush(TColor(D2D1::ColorF::Black));
 		innerBrush = drawingBoard->GetBrush(TColor(D2D1::ColorF::Wheat));
+
+		TrecPointer<TString> valpoint = attributes.retrieveEntry(L"|NodeHighlightColor");
+
+		D2D1_COLOR_F nodeColor{ 1.0f,1.0f,1.0f, 0.0f };
+
+		if (valpoint.Get())
+		{
+			nodeColor = convertStringToD2DColor(valpoint.Get());
+		}
+
+		nodeBrush = drawingBoard->GetBrush(TColor(nodeColor));
+
+
+		valpoint = attributes.retrieveEntry(L"|BlockExtension");
+
+		if (valpoint.Get() && !valpoint->CompareNoCase(L"true"))
+		{
+			blockExpansion = true;
+		}
+
 	}
 	if (children.Count() && children.ElementAt(0).Get())
 	{
 		children.ElementAt(0)->onCreate(r, d3d);
 	}
+	ThreadRelease();
+
 	return false;
 }
 /**
@@ -149,14 +183,13 @@ bool TTreeDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
  */
 void TTreeDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
-	if (isContained(&point, &location))
+	ThreadLock();
+	if (isContained(point, getLocation()))
 	{
 		if (mainNode.Get())
 		{
 			float dist = point.y - location.top;
-
 			UINT targetNode = static_cast<UINT>(dist) / 30;
-
 			TrecPointer<TObjectNode> tNode = mainNode->GetNodeAt(targetNode, 0);
 
 			if (tNode.Get())
@@ -181,9 +214,9 @@ void TTreeDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut
 				nodeSelected = targetNode;
 			}
 		}
-
 		TControl::OnLButtonDown(nFlags, point, mOut, eventAr, clickedButtons);
 	}
+	ThreadRelease();
 }
 /**
  * Method: TTreeDataBind::OnLButtonUp
@@ -196,7 +229,8 @@ void TTreeDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut
  */
 void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	if (isContained(&point, &location))
+	ThreadLock();
+	if (isContained(point, getLocation()))
 	{
 		if (mainNode.Get())
 		{
@@ -218,15 +252,36 @@ void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, 
 				triLoc.left += 5 + level * 5;
 				triLoc.right = triLoc.left + 20;
 
-				if (isContained(&point, &triLoc) && isTickSelected && targetNode == nodeSelected)
+				if (targetNode == nodeSelected)
 				{
-					if (tNode->IsExtended())
-						tNode->DropChildNodes();
-					else if(tNode->IsExtendable())
+					if (isContained(&point, &triLoc) && isTickSelected && !blockExpansion)
 					{
-						tNode->Extend();
-						Resize(location);
+						if (tNode->IsExtended())
+							tNode->DropChildNodes();
+						else if (tNode->IsExtendable())
+						{
+							tNode->Extend();
+							Resize(location);
+						}
+
+						
 					}
+					else
+					{
+						resetArgs();
+
+						args.eventType = R_Message_Type::On_sel_change;
+						args.point = point;
+						args.methodID = getEventID(R_Message_Type::On_sel_change);
+						args.isClick = true;
+						args.isLeftClick = false;
+						args.control = this;
+						args.object = tNode;
+
+						eventAr.push_back(EventID_Cred(R_Message_Type::On_sel_change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+					}
+					
+					highlightNodeSelected = nodeSelected;
 				}
 			}
 		}
@@ -234,6 +289,7 @@ void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, 
 	}
 	isTickSelected = isNodeSelected = false;
 	nodeSelected = 0;
+	ThreadRelease();
 }
 /**
  * Method: TTreeDataBind::OnMouseMove Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it
@@ -246,7 +302,9 @@ void TTreeDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, 
  */
 void TTreeDataBind::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
+	ThreadLock();
 	TControl::OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
+	ThreadRelease();
 }
 /**
  * Method: TTreeDataBind::OnLButtonDblClk
@@ -259,20 +317,18 @@ void TTreeDataBind::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, 
  */
 void TTreeDataBind::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	TControl::OnLButtonDblClk(nFlags, point, mOut, eventAr);
-
-	
-	if (isContained(&point, &location) && mainNode.Get())
+	ThreadLock();
+	if (isContained(point, getLocation()) && mainNode.Get())
 	{
+		TControl::OnLButtonDblClk(nFlags, point, mOut, eventAr);
 		float dist = point.y - location.top;
-
 		UINT targetNode = static_cast<UINT>(dist) / 30;
-
 		TrecPointer<TObjectNode> tNode = mainNode->GetNodeAt(targetNode, 0);
 		
 		if (tNode.Get())
 			args.object = tNode;
 	}
+	ThreadRelease();
 }
 
 /**
@@ -283,7 +339,9 @@ void TTreeDataBind::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mO
  */
 void TTreeDataBind::SetNode(TrecPointer<TObjectNode> newNode)
 {
+	ThreadLock();
 	mainNode = newNode;
+	ThreadRelease();
 }
 
 /**
@@ -294,9 +352,11 @@ void TTreeDataBind::SetNode(TrecPointer<TObjectNode> newNode)
  */
 D2D1_RECT_F TTreeDataBind::getLocation()
 {
+	ThreadLock();
 	D2D1_RECT_F ret = location;
 	if (mainNode.Get())
 		ret.bottom = ret.top + 30 * (mainNode->TotalChildren() + 1);
+	ThreadRelease();
 	return ret;
 }
 
@@ -308,7 +368,7 @@ D2D1_RECT_F TTreeDataBind::getLocation()
  */
 void TTreeDataBind::Resize(D2D1_RECT_F& r)
 {
-	// First Check to see if we need a new scroll control
+	ThreadLock();
 	D2D1_RECT_F tempLoc = this->getLocation();
 	if ((tempLoc.bottom - tempLoc.top > r.bottom - r.top) ||
 		(tempLoc.right - tempLoc.left > r.right - r.left))
@@ -325,6 +385,7 @@ void TTreeDataBind::Resize(D2D1_RECT_F& r)
 			location.left = r.left;
 			location.top = r.top;
 		}
+		ThreadRelease();
 		return;
 	}
 
@@ -332,39 +393,27 @@ void TTreeDataBind::Resize(D2D1_RECT_F& r)
 	// We do not, so proceed
 	location = r;
 	updateComponentLocation();
+	ThreadRelease();
+	// First Check to see if we need a new scroll control
 
-/*
-	TControl* ele = nullptr;
-
-	
-	if (children.Count() && (ele = children.ElementAt(0).Get()))
-	{
-		D2D1_RECT_F loc;
-		if (this->isStack)
-		{
-			loc.left = location.left;
-			loc.right = location.right;
-			loc.top = location.top;
-			loc.bottom = loc.top + this->widthHeight;
-		}
-		else
-		{
-			loc.top = location.top;
-			loc.bottom = location.bottom;
-			loc.left = location.left;
-			loc.right = loc.left + this->widthHeight;
-		}
-		ele->Resize(loc);
-	}*/
 }
 
-bool TTreeDataBind::onScroll(int x, int y)
+bool TTreeDataBind::onScroll(float x, float y)
 {
+	ThreadLock();
 	location.left += x;
 	location.right += x;
 	location.top += y;
 	location.bottom += y;
-
+	ThreadRelease();
 
 	return true;
+}
+
+TrecPointer<TObjectNode> TTreeDataBind::GetNode()
+{
+	ThreadLock();
+	auto ret = mainNode;
+	ThreadRelease();
+	return ret;
 }

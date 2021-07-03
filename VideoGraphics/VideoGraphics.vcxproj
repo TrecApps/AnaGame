@@ -72,8 +72,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\DirectXTex\DirectXTex;..\TrecLib;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\DirectXTex\DirectXTex\Bin\Desktop_2019\Win32\Debug;../Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\Windows-classic-samples\Samples\DX11VideoRenderer\cpp;..\..\DirectXTex\DirectXTex;..\TrecLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\Windows-classic-samples\Samples\DX11VideoRenderer\cpp\Debug\DX11VideoRenderer.dll\debug;..\..\DirectXTex\DirectXTex\Bin\Desktop_2019\Win32\Debug;../Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -100,7 +100,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;d2d1.lib;dwrite.lib;d3d11.lib;evr.lib;mf.lib;mfplay.lib;mfreadwrite.lib;mfuuid.lib;mfplat.lib;dxva2.lib;Strmiids.lib;D3DCompiler.lib;DirectXTex.lib;Ole32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;d2d1.lib;dwrite.lib;d3d11.lib;evr.lib;mf.lib;mfplay.lib;mfreadwrite.lib;mfuuid.lib;Winmm.lib;mfplat.lib;dxva2.lib;Strmiids.lib;D3DCompiler.lib;DirectXTex.lib;Ole32.lib;windowscodecs.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -166,16 +166,29 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Structure2D.h" />
+    <ClInclude Include="T2DSpriteEngine.h" />
+    <ClInclude Include="TActivate.h" />
     <ClInclude Include="TArenaEngine.h" />
     <ClInclude Include="TBitmapBrush.h" />
     <ClInclude Include="TBrush.h" />
     <ClInclude Include="TCamera.h" />
     <ClInclude Include="TColor.h" />
+    <ClInclude Include="TComCommon.h" />
+    <ClInclude Include="TFrameToSurfaceMFT.h" />
     <ClInclude Include="TGeometry.h" />
     <ClInclude Include="TGradientStop.h" />
     <ClInclude Include="TGradientStopCollection.h" />
+    <ClInclude Include="TMediaSink.h" />
+    <ClInclude Include="TPlayer.h" />
+    <ClInclude Include="TPresenter.h" />
+    <ClInclude Include="TSampleTexture.h" />
+    <ClInclude Include="TScheduler.h" />
     <ClInclude Include="TShaderHost.h" />
     <ClInclude Include="TShaderParser.h" />
+    <ClInclude Include="TStreamSink.h" />
+    <ClInclude Include="TTextRenderer.h" />
+    <ClInclude Include="TVideoMarker.h" />
+    <ClInclude Include="TVideoScheduler.h" />
     <ClInclude Include="TWindowEngine.h" />
   </ItemGroup>
   <ItemGroup>
@@ -188,16 +201,28 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="T2DSpriteEngine.cpp" />
+    <ClCompile Include="TActivate.cpp" />
     <ClCompile Include="TArenaEngine.cpp" />
     <ClCompile Include="TBitmapBrush.cpp" />
     <ClCompile Include="TBrush.cpp" />
     <ClCompile Include="TCamera.cpp" />
     <ClCompile Include="TColor.cpp" />
+    <ClCompile Include="TFrameToSurfaceMFT.cpp" />
     <ClCompile Include="TGeometry.cpp" />
     <ClCompile Include="TGradientStop.cpp" />
     <ClCompile Include="TGradientStopCollection.cpp" />
+    <ClCompile Include="TMediaSink.cpp" />
+    <ClCompile Include="TPlayer.cpp" />
+    <ClCompile Include="TPresenter.cpp" />
+    <ClCompile Include="TSampleTexture.cpp" />
+    <ClCompile Include="TScheduler.cpp" />
     <ClCompile Include="TShaderHost.cpp" />
     <ClCompile Include="TShaderParser.cpp" />
+    <ClCompile Include="TStreamSink.cpp" />
+    <ClCompile Include="TTextRenderer.cpp" />
+    <ClCompile Include="TVideoMarker.cpp" />
+    <ClCompile Include="TVideoScheduler.cpp" />
     <ClCompile Include="TWindowEngine.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

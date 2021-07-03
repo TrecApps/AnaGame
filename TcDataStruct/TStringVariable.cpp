@@ -2,52 +2,48 @@
 #include "TStringVariable.h"
 
 
+TrecPointer<TVariable> TStringVariable::Clone()
+{
+    return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(string);
+}
+
 /**
  * Method: TStringVariable::TStringVariable
  * Purpose: Constructor
  * Parameters: TString& string - the String tp hold
  * Returns New String Variable
  */
-TStringVariable::TStringVariable(TString& string)
+
+TStringVariable::TStringVariable(const TString& string)
 {
     this->string.Set(string);
 }
 
-
 /**
- * Method: TStringVariable::IsObject
- * Purpose: Reports whether the variable holds an object or not
+ * Method: TStringVariable::GetVarType
+ * Purpose: Reports the type of varible that this object represents (in this case, the string)
  * Parameters: void
- * Returns: bool - whether the variable is an object or not
+ * Returns: var_type - the type of variable this represents
  */
-bool TStringVariable::IsObject()
+var_type TStringVariable::GetVarType()
 {
-    return false;
+    return var_type::string;
 }
+
 
 /**
  * Method: TStringVariable::GetObject
  * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
  * Parameters: void
- * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+ * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
  *
  * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
  */
-TrecPointer<TObject> TStringVariable::GetObject()
+TrecObjectPointer TStringVariable::GetObject()
 {
-    return TrecPointer<TObject>();
+    return TrecObjectPointer();
 }
 
-/**
- * Method: TStringVariable::IsString
- * Purpose: Reports whether the variable holds a string or not
- * Parameters: void
- * Returns: bool - whether the variable is a string or not
- */
-bool TStringVariable::IsString()
-{
-    return true;
-}
 
 /**
  * Method: TStringVariable::GetObject
@@ -59,7 +55,10 @@ bool TStringVariable::IsString()
  */
 TString TStringVariable::GetString()
 {
-    return string;
+    ThreadLock();
+    TString ret(string);
+    ThreadRelease();
+    return ret;
 }
 
 /**
@@ -92,7 +91,10 @@ ULONG64 TStringVariable::Get8Value()
  */
 UINT TStringVariable::GetSize()
 {
-    return string.GetSize();
+    ThreadLock();
+    UINT ret = string.GetSize();
+    ThreadRelease();
+    return ret;
 }
 
 /**
@@ -101,7 +103,7 @@ UINT TStringVariable::GetSize()
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
  */
-UINT TStringVariable::GetType()
+UINT TStringVariable::GetVType()
 {
     return 0;
 }

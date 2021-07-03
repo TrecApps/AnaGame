@@ -1,8 +1,24 @@
 #pragma once
 #include "TLayoutEx.h"
+
+/**
+ * Class: TDataBind
+ * Purpose: Control that holds onto a collection of objects to pass into 'child' controls.
+ * 
+ * SuperClass: TControl
+ */
 class _ANAFACE_DLL TDataBind : public TControl
 {
 public:
+
+
+	/**
+	 * Method: TDataBind::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TDataBind::TDataBind
@@ -25,6 +41,8 @@ public:
 	 * Purpose: Draws the control
 	 * Parameters: TObject* obj - Raw reference to a TObject that might have specific text to say
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void onDraw(TObject* obj = nullptr) override;
 	/**
@@ -53,6 +71,8 @@ public:
 	 *		screen space it is given
 	 * Parameters: RECT contain - the area it can use
 	 * Returns: bool - success
+	 * 
+	 * Attributes: override
 	 */
 	bool onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d) override;
 
@@ -64,6 +84,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons) override;
 	/**
@@ -74,6 +96,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr) override;
 	/**
@@ -85,6 +109,8 @@ public:
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	 * Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls) override;
 
@@ -93,6 +119,8 @@ public:
 	 * Purpose: Resizes the control upon the window being resized
 	 * Parameters: RECT r - the new location for the control
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	void Resize(D2D1_RECT_F& r)override;
 
@@ -101,6 +129,8 @@ public:
 	 * Purpose: Reports how much space this object will actually need to draw
 	 * Parameters: void
 	 * Returns: D2D1_RECT_F -  the Rectangle of the content that would be drawn (even if it was officially allocated less space)
+	 * 
+	 * Attributes: override
 	 */
 	D2D1_RECT_F getLocation()override;
 protected:

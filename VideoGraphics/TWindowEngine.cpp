@@ -3,6 +3,24 @@
 #include "TShaderParser.h"
 #include <TML_Reader_.h>
 
+/**
+ * Method: TWindowEngine::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TWindowEngine::GetType()
+{
+	return TString(L"TWindowEngine;") + TShaderHost::GetType();
+}
+
+/**
+ * Method: TWindowEngine::TWindowEngine
+ * Purpose: Constructor
+ * Parameters: HWND win - Handle to the Window to use
+ *				HINSTANCE ins - OS level Instance Engine is operating in
+ * Returns: New 3D Window Engine object
+ */
 TWindowEngine::TWindowEngine(HWND win, HINSTANCE ins)
 {
 	isInit = false;
@@ -19,6 +37,12 @@ TWindowEngine::TWindowEngine(HWND win, HINSTANCE ins)
 	ZeroMemory(&rasterizer, sizeof(rasterizer));
 }
 
+/**
+ * Method: TWindowEngine::~TWindowEngine
+ * Purpose: Destructor
+ * Parameters: void
+ * Returns: void
+ */
 TWindowEngine::~TWindowEngine()
 {
 	int e = 0;
@@ -46,11 +70,19 @@ TWindowEngine::~TWindowEngine()
 
 }
 
+/**
+ * Method: TWindowEngine::Initialize
+ * Purpose: Sets up all of the Direct3D resources this Engine will need to draw properly
+ * Parameters: void
+ * Returns: int - errorcode
+ */
 int TWindowEngine::Initialize()
 {
-	if (isInit)
-		return 0;
-	 
+	AG_THREAD_LOCK
+		if (isInit)
+		{
+			RETURN_THREAD_UNLOCK 0;
+		}
 	GetClientRect(window, &Location);
 
 	unsigned int width = Location.right - Location.left,
@@ -87,10 +119,10 @@ int TWindowEngine::Initialize()
 	swapChainDescription.SampleDesc.Quality = 0;
 	swapChainDescription.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	swapChainDescription.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapChainDescription.Flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
+	swapChainDescription.Flags = 0;
 	swapChainDescription.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;// DXGI_SWAP_EFFECT_DISCARD;
 
-	unsigned int flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	unsigned int flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
 
 #if _DEBUG
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -109,7 +141,7 @@ int TWindowEngine::Initialize()
 
 	if (FAILED(results))
 	{
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 	}
 
 	dxDev.Nullify();
@@ -122,7 +154,7 @@ int TWindowEngine::Initialize()
 
 		graphicsDevice.Nullify();
 		contextDevice.Nullify();
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 	}
 	dxDev = raw_dxDev.Extract();
 	results = dxDev->GetParent(__uuidof(IDXGIAdapter), (void**)& dxAdpt);
@@ -132,7 +164,7 @@ int TWindowEngine::Initialize()
 		graphicsDevice.Nullify();
 		contextDevice.Nullify();
 		dxDev.Nullify();
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 	}
 	results = dxAdpt->GetParent(__uuidof(IDXGIFactory), (void**)& dxFact);
 
@@ -145,7 +177,7 @@ int TWindowEngine::Initialize()
 		graphicsDevice.Nullify();
 		contextDevice.Nullify();
 		dxDev.Nullify();
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 	}
 
 
@@ -160,7 +192,7 @@ int TWindowEngine::Initialize()
 		dxDev.Nullify();
 		graphicsDevice.Nullify();
 		contextDevice.Nullify();
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 
 
 	}
@@ -171,7 +203,7 @@ int TWindowEngine::Initialize()
 	results = swapper->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)& texture);
 	if (FAILED(results))
 	{
-		return NO_SWAP_CHAIN;
+		RETURN_THREAD_UNLOCK NO_SWAP_CHAIN;
 	}
 
 	D3D11_RENDER_TARGET_VIEW_DESC rendDesc;
@@ -192,7 +224,7 @@ int TWindowEngine::Initialize()
 
 	if (FAILED(results))
 	{
-		return NO_RENDER_TARGET;
+		RETURN_THREAD_UNLOCK NO_RENDER_TARGET;
 	}
 
 	// Create a DXGISurface so that Interoperability with Direct2D is simpler
@@ -230,23 +262,29 @@ int TWindowEngine::Initialize()
 
 	SetDefaultRasterization();
 	InitializeDefaultShaders();
-	return NO_ERROR;
+	RETURN_THREAD_UNLOCK NO_ERROR;
 }
 
-void TWindowEngine::Resize()
+/**
+ * Method: TWindowEngine::Resize
+ * Purpose: Allows the Engine to know that the Window has been resized and update resources accordingly
+ * Parameters: UINT x - the new width of the window
+ *				UINT y - the ne height of the window
+ * Returns: void
+ */
+void TWindowEngine::Resize(UINT x, UINT y)
 {
-	if (!swapper.Get() || !surface.Get() || !contextDevice.Get())
-		return;
-	RECT oldRect = Location;
-	if (!GetClientRect(window, &Location))
-		return;
-
+	AG_THREAD_LOCK
+		if (!swapper.Get() || !surface.Get() || !contextDevice.Get())
+		{
+			RETURN_THREAD_UNLOCK;
+		}
 	UINT buffCount = 2;
-	UINT width = Location.right - Location.left;
-	UINT height = Location.bottom - Location.top;
+	UINT width = x;
+	UINT height = y;
 
 	DXGI_FORMAT NewFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
-	UINT flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
+	// UINT flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
 
 	renderTarget.Delete();
 	surface.Delete();
@@ -255,7 +293,7 @@ void TWindowEngine::Resize()
 
 	//ReportLiveObjects();
 
-	HRESULT res = swapper->ResizeBuffers(buffCount, width, height, NewFormat, flags);
+	HRESULT res = swapper->ResizeBuffers(buffCount, width, height, NewFormat, 0);
 	if (FAILED(res))
 		int e = 0;
 
@@ -264,7 +302,7 @@ void TWindowEngine::Resize()
 	res = swapper->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&texture);
 	if (FAILED(res))
 	{
-		return ;
+		RETURN_THREAD_UNLOCK;
 	}
 
 
@@ -286,120 +324,175 @@ void TWindowEngine::Resize()
 
 	if (FAILED(res))
 	{
-		return;
+		RETURN_THREAD_UNLOCK;
 	}
 
 	// Create a DXGISurface so that Interoperability with Direct2D is simpler
 	TrecComPointer<IDXGISurface1>::TrecComHolder surfaceHolder;
 	res = swapper->GetBuffer(0, __uuidof(IDXGISurface1), (void**)surfaceHolder.GetPointerAddress());
 	surface = surfaceHolder.Extract();
+	RETURN_THREAD_UNLOCK;
 }
 
-/*
-* Method: TWindowEngine - getDevice
-* Purpose: Retrieves the Context Device used for drawing
-* Parameters: void
-* Return: TrecComPointer<ID3D11DeviceContext> - Pointer to the Device Context
-*/
+/**
+ * Method: TWindowEngine::getDevice
+ * Purpose: Retrieves the Context Device used for drawing
+ * Parameters: void
+ * Return: TrecComPointer<ID3D11DeviceContext> - Pointer to the Device Context
+ */
 TrecComPointer<ID3D11DeviceContext> TWindowEngine::getDevice()
 {
 	return contextDevice;
 }
 
-/*
-* Method: TWindowEngine - getSwapChain
-* Purpose: Retrieves the Swap Chain used by the Engine
-* Parameters: void
-* Return: TrecComPointer<IDXGISwapChain> - Pointer to the Swap Chain
-*/
+/**
+ * Method: TWindowEngine::getSwapChain
+ * Purpose: Retrieves the Swap Chain used by the Engine
+ * Parameters: void
+ * Return: TrecComPointer<IDXGISwapChain> - Pointer to the Swap Chain
+ */
 TrecComPointer<IDXGISwapChain> TWindowEngine::getSwapChain()
 {
 	return swapper;
 }
 
-/*
-* Method: TWindowEngine - getRederTarget
-* Purpose: Retrieves the 3D Render Target for the engine
-* Parameters: void
-* Return: TrecComPointer<ID3D11RenderTargetView> - Pointer to the 3D Render Target
-*/
+/**
+ * Method: TWindowEngine::getRederTarget
+ * Purpose: Retrieves the 3D Render Target for the engine
+ * Parameters: void
+ * Return: TrecComPointer<ID3D11RenderTargetView> - Pointer to the 3D Render Target
+ */
 TrecComPointer<ID3D11RenderTargetView> TWindowEngine::getRederTarget()
 {
 	return renderTarget;
 }
 
-/*
-* Method: TWindowEngine - getDeviceD
-* Purpose: Retrieves the Direct 3D device used by the engine
-* Parameters: void
-* Return: TrecComPointer<ID3D11Device> - Pointer to the engine's Direct3D Device
-*/
+/**
+ * Method: TWindowEngine::getDeviceD
+ * Purpose: Retrieves the Direct 3D device used by the engine
+ * Parameters: void
+ * Return: TrecComPointer<ID3D11Device> - Pointer to the engine's Direct3D Device
+ */
 TrecComPointer<ID3D11Device> TWindowEngine::getDeviceD()
 {
 	return graphicsDevice;
 }
 
-/*
-* Method: TWindowEngine - getDeviceD_U
-* Purpose: Retrieves the DirectX (mixer) device the engine uses
-* Parameters: void
-* Return: TrecComPointer<IDXGIDevice> - Pointer to the engine's DirectX Device
-*/
+/**
+ * Method: TWindowEngine::getDeviceD_U
+ * Purpose: Retrieves the DirectX (mixer) device the engine uses
+ * Parameters: void
+ * Return: TrecComPointer<IDXGIDevice> - Pointer to the engine's DirectX Device
+ */
 TrecComPointer<IDXGIDevice> TWindowEngine::getDeviceD_U()
 {
 	return dxDev;
 }
 
+/**
+ * Method: TWindowEngine::GetSurface
+ * Purpose: Retrieves the Surface created to allow the Window to integrate with Direct2D
+ * Parameters: void
+ * Returns: TrecComPointer<IDXGISurface1> - reference to the requested surface
+ */
 TrecComPointer<IDXGISurface1> TWindowEngine::GetSurface()
 {
 	return surface;
 }
 
-/*
-* Method: TWindowEngine - PrepareScene
-* Purpose: Sets up a Round of Drawing
-* Parameters: D2D1::ColorF color - The color to clear the render target to
-* Return: void
-*/
+/**
+ * Method: TWindowEngine::PrepareScene
+ * Purpose: Sets up a Round of Drawing
+ * Parameters: D2D1::ColorF color - The color to clear the render target to
+ * Return: void
+ */
 void TWindowEngine::PrepareScene(D2D1::ColorF color)
 {
-	if (!contextDevice.Get() || !renderTarget.Get())
-		return;
+	AG_THREAD_LOCK
+		if (!contextDevice.Get() || !renderTarget.Get())
+		{
+			RETURN_THREAD_UNLOCK;
+		}
 	float clearColor[4] = { color.r, color.g ,color.b,color.a };
 
-	contextDevice->ClearRenderTargetView(renderTarget.Get(), clearColor);
+	//contextDevice->ClearRenderTargetView(renderTarget.Get(), clearColor);
 	ID3D11RenderTargetView* const renderer = renderTarget.Get();
-	contextDevice->OMSetRenderTargets(1, &renderer, nullptr);
+	contextDevice->OMSetRenderTargets(1, &renderer, nullptr); 
+	RETURN_THREAD_UNLOCK;
 }
 
-/*
-* Method: TWindowEngine - FinalizeScene
-* Purpose: Completes a round of Rendering by presenting it to the Swap Chain
-* Parameters: void
-* Return: void
-*/
+/**
+ * Method: TWindowEngine::FinalizeScene
+ * Purpose: Completes a round of Rendering by presenting it to the Swap Chain
+ * Parameters: void
+ * Return: void
+ */
 void TWindowEngine::FinalizeScene()
 {
+	AG_THREAD_LOCK
 	if (swapper.Get())
 		swapper->Present(0, 0);
+	RETURN_THREAD_UNLOCK;
 }
 
+/**
+ * Method: TWindowEngine::ReportLiveObjects
+ * Purpose: Debugging method for live objects created under Direct3D
+ * Parameters: void
+ * Returns: void
+ */
 void TWindowEngine::ReportLiveObjects()
 {
-	if (!graphicsDevice.Get())return;
+	AG_THREAD_LOCK
+		if (!graphicsDevice.Get()) { RETURN_THREAD_UNLOCK; }
 	ID3D11Debug* debugger = nullptr;
 	graphicsDevice->QueryInterface(__uuidof(ID3D11Debug), (void**)&debugger);
 	if (debugger)
 		debugger->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+	RETURN_THREAD_UNLOCK;
+}
+
+/**
+ * Method: TWindowEngine::GetWindowHandle
+ * Purpose: Retrieves the Window Handle used by the engine
+ * Parameters: void
+ * Returns: HWND
+ */
+HWND TWindowEngine::GetWindowHandle()
+{
+	return window;
+}
+
+HDC TWindowEngine::GetDC()
+{
+	if (!surface.Get())
+		return 0;
+	HDC dc;
+	assert(SUCCEEDED(surface->GetDC(FALSE, &dc)));
+	return dc;
+}
+
+void TWindowEngine::ClearDC()
+{
+	if (surface.Get())
+		surface->ReleaseDC(nullptr);
 }
 
 
 
+/**
+ * Method: TWindowEngine::InitializeDefaultShaders
+ * Purpose: Prepares the native Anagame shaders to use
+ * Parameters: void
+ * Return: int - errorcode
+ */
 int TWindowEngine::InitializeDefaultShaders()
 {
-	if (defaultShadersSet)
-		return 0;
-
+	AG_THREAD_LOCK
+		if (defaultShadersSet)
+		{
+			RETURN_THREAD_UNLOCK 0;
+		}
 
 	TString tDirectory = GetDirectoryWithSlash(CentralDirectories::cd_Executable);
 
@@ -430,13 +523,13 @@ int TWindowEngine::InitializeDefaultShaders()
 
 			file->Close();
 			delete read;
-			return -2;
+			RETURN_THREAD_UNLOCK -2;
 		}
 	}
 	catch (...)
 	{
 
-		return 2;
+		RETURN_THREAD_UNLOCK 2;
 	}
 
 
@@ -465,13 +558,13 @@ int TWindowEngine::InitializeDefaultShaders()
 		{
 			file->Close();
 			delete read;
-			return -3;
+			RETURN_THREAD_UNLOCK -3;
 		}
 	}
 	catch (...)
 	{
 
-		return 3;
+		RETURN_THREAD_UNLOCK 3;
 	}
 	file->Close();
 	delete read;
@@ -496,13 +589,13 @@ int TWindowEngine::InitializeDefaultShaders()
 		{
 			file->Close();
 			delete read;
-			return -4;
+			RETURN_THREAD_UNLOCK -4;
 		}
 	}
 	catch (...)
 	{
 
-		return 4;
+		RETURN_THREAD_UNLOCK 4;
 	}
 	file->Close();
 	delete read;
@@ -526,13 +619,13 @@ int TWindowEngine::InitializeDefaultShaders()
 		{
 			file->Close();
 			delete read;
-			return -5;
+			RETURN_THREAD_UNLOCK -5;
 		}
 	}
 	catch (...)
 	{
 
-		return 5;
+		RETURN_THREAD_UNLOCK 5;
 	}
 	file->Close();
 	delete read;
@@ -555,13 +648,13 @@ int TWindowEngine::InitializeDefaultShaders()
 		{
 			file->Close();
 			delete read;
-			return -6;
+			RETURN_THREAD_UNLOCK -6;
 		}
 	}
 	catch (...)
 	{
 
-		return 6;
+		RETURN_THREAD_UNLOCK 6;
 	}
 	file->Close();
 	delete read;
@@ -571,26 +664,27 @@ int TWindowEngine::InitializeDefaultShaders()
 
 
 	defaultShadersSet = true;
-	return 0;
+	RETURN_THREAD_UNLOCK 0;
 }
 
-/*
-* Method: TWindowEngine - SetDefaultRasterization
-* Purpose: Sets the Rasterization mode to the default settings
-* Parameters: void
-* Return: void
-*/
+/**
+ * Method: TWindowEngine::SetDefaultRasterization
+ * Purpose: Sets the Rasterization mode to the default settings
+ * Parameters: void
+ * Return: void
+ */
 void TWindowEngine::SetDefaultRasterization()
 {
-	if (contextDevice.Get())
-	{
-		rasterizer.CullMode = D3D11_CULL_BACK;
-		rasterizer.FillMode = D3D11_FILL_SOLID;
-		TrecComPointer<ID3D11RasterizerState>::TrecComHolder state;
-		graphicsDevice->CreateRasterizerState(&rasterizer, state.GetPointerAddress());
-		rasterizerState = state.Extract();
-		contextDevice->RSSetState(rasterizerState.Get());
-		isFill = true;
-		cullMode = CULL_BACK + 1;
-	}
+	AG_THREAD_LOCK
+		if (contextDevice.Get())
+		{
+			rasterizer.CullMode = D3D11_CULL_BACK;
+			rasterizer.FillMode = D3D11_FILL_SOLID;
+			TrecComPointer<ID3D11RasterizerState>::TrecComHolder state;
+			graphicsDevice->CreateRasterizerState(&rasterizer, state.GetPointerAddress());
+			rasterizerState = state.Extract();
+			contextDevice->RSSetState(rasterizerState.Get());
+			isFill = true;
+			cullMode = CULL_BACK + 1;
+		}RETURN_THREAD_UNLOCK;
 }

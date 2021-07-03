@@ -15,6 +15,16 @@
 bool isLayout(TrecPointer<TControl> cont);
 
 
+/**
+ * Method: AnafaceParser::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString AnafaceParser::GetType()
+{
+	return TString(L"AnafaceParser;") + Parser_::GetType();
+}
 
 /*
 * Method: AnafaceParser::AnafaceParser
@@ -282,9 +292,14 @@ bool AnafaceParser::Obj(TString& va)
 	}
 	else if (!v.Compare(L"Class"))
 	{
-	currentStyle = TrecPointerKey::GetNewTrecPointer<styleTable>(); //  new styleTable();
+		currentStyle = TrecPointerKey::GetNewTrecPointer<styleTable>(); //  new styleTable();
 		addToTree(currentObj);
 		currentObj.Nullify();//  null<TControl>();
+	}
+	else if (!v.Compare(L"SpriteEngine") || !v.Compare(L"TSpriteEngine"))
+	{
+		currentObj = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TSpriteControl>(renderer, classList);
+		addToTree(currentObj);
 	}
 	else if (!v.Compare(L"Animation"))
 	{
@@ -407,6 +422,11 @@ bool AnafaceParser::Attribute(TrecPointer<TString> v, TString& e)
 	else if(!handleEventAttribute(v, e))
 		currentObj->addAttribute(TString(e), v);
 	return true;
+}
+
+bool AnafaceParser::Attribute(TString& v, TString e)
+{
+	return Attribute(TrecPointerKey::GetNewTrecPointer<TString>(v), e);
 }
 
 /*
@@ -567,6 +587,7 @@ void AnafaceParser::setLayoutParam()
 				result = layoutObject->addRow(rowHeight[c], rowFlex[c]);
 				res = res + 0;
 			}
+			layoutObject->CompileLayout();
 		}
 		else if (columnwidth.Size())
 		{
@@ -575,6 +596,7 @@ void AnafaceParser::setLayoutParam()
 				result = layoutObject->addColunm(columnwidth[c],columnFlex[c]);
 				res = res + 0;
 			}
+			layoutObject->CompileLayout();
 		}
 		else if (rowHeight.Size())
 		{
@@ -583,7 +605,9 @@ void AnafaceParser::setLayoutParam()
 				result = layoutObject->addRow(rowHeight[c],rowFlex[c]);
 				res = res + 0;
 			}
+			layoutObject->CompileLayout();
 		}
+		
 	}
 
 	// now that the TArrays of rows and Colunms have been used, clear them

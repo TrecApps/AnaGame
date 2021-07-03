@@ -8,10 +8,20 @@
 /**
  * Class: AnimationBuilder
  * Purpose: Holds basic information and attributes about an animation template until it can be used to create an animation object
+ * 
+ * SuperClass: TObject
  */
 class _ANAFACE_DLL AnimationBuilder : public TObject
 {
 public:
+
+	/**
+	 * Method: AnimationBuilder::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/*
 	* Method: AnimationBuilder::AnimationBuilder
@@ -51,12 +61,12 @@ public:
 	*/
 	TString GetName();
 	/*
-	* Method: AnimationBuilder::GetType
+	* Method: AnimationBuilder::GetAnimationType
 	* Purpose: Reports the type of animation to create
 	* Parameters: void
 	* Returns: TString - the type of animation given
 	*/
-	TString GetType();
+	TString GetAnimationType();
 
 	/*
 	* Method: AnimationBuilder::Build

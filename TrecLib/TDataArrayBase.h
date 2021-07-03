@@ -2,8 +2,10 @@
 #include "TObject.h"
 
 /**
- * class TDataArrayBase
+ * Class: TDataArrayBase
  * Purpose: Provides a base type for all TDataArrays
+ * 
+ * SuperClass: TObject 
  */
 class _TREC_LIB_DLL TDataArrayBase :
 	public TObject
@@ -40,7 +42,7 @@ public:
      * Parameters: void
      * Returns: UCHAR* array expressing the type of this object
      *
-     * Note: DEPRICATED - should not be used in Anagame development
+     * Note: deprecated - should not be used in Anagame development
      */
 	virtual UCHAR* GetAnaGameType() override;
 
@@ -49,6 +51,8 @@ public:
      * Purpose: Reports the number of elements currently held
      * Parameters: void
      * Return: UINT - the elements being held
+	 * 
+	 * Attributes: const
      */
 	UINT Size()const;
 
@@ -57,6 +61,8 @@ public:
      * Purpose: Reports the size of the array being used
      * Parameters: void
      * Return: UINT - the cappacity/length of the current unerlying array
+	 * 
+	 * Attributes: const
      */
 	UINT Capacity()const;
 

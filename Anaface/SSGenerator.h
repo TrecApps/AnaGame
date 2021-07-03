@@ -3,10 +3,12 @@
 #include "AnafaceUI.h"
 
 /*
-* class CSSGenerator
+* Class: CSSGenerator
 * Purpose: Parse CSS documents and returns a list of styles
+* 
+* SuperClass: TObject
 */
-class CSSGenerator : public TObject
+class _ANAFACE_DLL CSSGenerator : public TObject
 {
 public:
 	CSSGenerator(TFile&);
@@ -14,7 +16,6 @@ public:
 	~CSSGenerator();
 
 	bool Parse();
-	void DeduceCharType(unsigned char * bytes);
 	WCHAR ReturnWCharType(char c);
 	bool isWhiteSpace(WCHAR c);
 
@@ -27,9 +28,6 @@ private:
 	TString parsable;
 	TString piece;
 	TrecPointer<TArray<styleTable>> styleList;
-
-	bool charDeduced;
-	bool usingWide;
 
 	bool ParseArchive();
 	bool ParseString();

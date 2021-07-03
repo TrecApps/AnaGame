@@ -49,7 +49,7 @@ void MiniHandler::OnSave()
 		fileInfo.hwndOwner = this->window->GetWindowHandle();
 		fileInfo.hInstance = this->window->GetInstance()->GetInstanceHandle();
 		fileInfo.lpstrFilter = nullptr;
-		fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer();
+		fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer().getBuffer();
 		fileInfo.lpstrFile = new WCHAR[255];
 		fileInfo.nMaxFile = 230;
 		
@@ -82,7 +82,7 @@ void MiniHandler::OnLoad()
 	fileInfo.hwndOwner = this->window->GetWindowHandle();
 	fileInfo.hInstance = this->window->GetInstance()->GetInstanceHandle();
 	fileInfo.lpstrFilter = nullptr;
-	fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer();
+	fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer().getBuffer();
 	fileInfo.lpstrFile = new WCHAR[255];
 	fileInfo.nMaxFile = 230;
 

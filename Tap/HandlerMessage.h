@@ -17,7 +17,8 @@ typedef enum class handler_type
 	handler_type_compiler,    // references a compile related handler that has not been written yet
 	handler_type_interpreter, // references an interpretor related handler that has not been written yet
 	handler_type_okay,        // references the "OkayHandler"
-	handler_type_arena,       // references the "ArenaHandler"
+	handler_type_arena,       // references the "ArenaHandler",
+	handler_type_main,        // References the main Handler in an IDE Window
 
 	handler_type_other
 }handler_type;
@@ -41,6 +42,8 @@ typedef enum class message_transmission
 /**
  * Class: HandlerMessage
  * Purpose: Allows Event Handlers to communicate between each other
+ * 
+ * SuperClass: TObject
  */
 class _TAP_DLL HandlerMessage : public TObject
 {
@@ -66,6 +69,15 @@ public:
 	 * Returns: TString - the Name of the Handler to look for
 	 */
 	TString GetHandlerName();
+
+
+	/**
+	 * Method: HandlerMessage::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: HandlerMessage::GetMessage_

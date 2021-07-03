@@ -32,7 +32,7 @@ typedef enum class LanguageInheritence
 	li_multiple_interface,
 	li_single,
 	li_not_supported
-};
+}LanguageInheritence;
 
 typedef enum class EnumImplementation
 {
@@ -40,7 +40,7 @@ typedef enum class EnumImplementation
 	ei_class,
 	ei_labelledUnion,
 	ei_not_supported
-};
+}EnumImplementation;
 
 // Message that running code can send back to the interpretor to know when it is time to stop, restart from the beginning, or some other action
 typedef enum class InterpretorMessage

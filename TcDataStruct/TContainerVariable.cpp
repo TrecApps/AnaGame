@@ -1,6 +1,46 @@
 #include "pch.h"
 #include "TContainerVariable.h"
 
+TrecPointer<TVariable> TContainerVariable::Clone()
+{
+    ThreadLock();
+    TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(type);
+
+    for (UINT Rust = 0; Rust < values.count(); Rust++)
+    {
+        auto entry = values.GetEntryAt(Rust);
+
+        if (!entry.Get())
+            continue;
+        if (entry->key.GetSize())
+        {
+            TrecPointer<TVariable> var;
+            if (entry->object.Get())
+            {
+                // Don't clone if we have a circular reference, else we'll get "infinite" recursion
+                if (entry->object.Get() == this)
+                    var = TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
+                else
+                    var = entry->object->Clone();
+            }
+            ret->values.addEntry(entry->key, var);
+        }
+    }
+    ThreadRelease();
+    return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
+}
+
+/**
+ * Method: TContainerVariable::Clear
+ * Purpose: Empties the container
+ * Parameters: void
+ * Returns: void
+ */
+void TContainerVariable::Clear()
+{
+    values.clear();
+}
+
 /**
  * Method: TContainerVariable
  * Purpose: Constructor
@@ -13,6 +53,17 @@ TContainerVariable::TContainerVariable(ContainerType ct)
 }
 
 /**
+ * Method: TContainerVariable::GetVarType
+ * Purpose: Reports the type of varible that this object represents
+ * Parameters: void
+ * Returns: var_type - the type of variable this represents
+ */
+var_type TContainerVariable::GetVarType()
+{
+    return var_type::collection;
+}
+
+/**
  * Method: TContainerVariable::Initialize
  * Purpose: Allows initialization of the container, if the restriction is "immutable", then this is an opportunity to set the values before the immutability restriction kicks in
  * Parameters: TMap<TVariable> - the values to initialize with
@@ -20,10 +71,13 @@ TContainerVariable::TContainerVariable(ContainerType ct)
  */
 void TContainerVariable::Initialize(TMap<TVariable>& vars)
 {
+    ThreadLock();
     // If container is immutable and already initialized, return so we don't do anything
     if (type == ContainerType::ct_tuple && values.count())
+    {
+        ThreadRelease();
         return;
-
+    }
     values.clear();
 
     for (UINT Rust = 0; Rust < vars.count(); Rust++)
@@ -32,6 +86,7 @@ void TContainerVariable::Initialize(TMap<TVariable>& vars)
         if(value.Get())
         values.addEntry(value->key, value->object);
     }
+    ThreadRelease();
 }
 
 /**
@@ -45,9 +100,12 @@ void TContainerVariable::Initialize(TMap<TVariable>& vars)
 TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, bool attemptKey)
 {
     present = false;
-    if(type == ContainerType::ct_set)
+    ThreadLock();
+    if (type == ContainerType::ct_set)
+    {
+        ThreadRelease();
         return TrecPointer<TVariable>();
-    
+    }
     if (index < values.count())
     {
         auto entry = values.GetEntryAt(index);
@@ -55,11 +113,12 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
         {
             // First check to see if there is a number key at the given index. If there is and it does not align with the index requested, then assume that index is not actually set
             int testIndex = 0;
-            if (!entry->key.ConvertToInt(&testIndex) && testIndex != index)
+            if (!entry->key.ConvertToInt(testIndex) && testIndex != index)
                 return TrecPointer<TVariable>();
 
             // here we got our value so return that
             present = true;
+            ThreadRelease();
             return entry->object;
         }
     }
@@ -68,8 +127,10 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
     {
         TString k;
         k.Format(L"%i", index);
+        ThreadRelease();
         return GetValue(k, present);
     }
+    ThreadRelease();
     return TrecPointer<TVariable>();
 }
 
@@ -80,12 +141,43 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
  *              bool& present - whether the index was found. This can be used by JavaScript to distinguish between NULL and UNDEFINED
  * Returns: TrecPointer<TVariable> - the value at the provided index, or null if the index was not found
  */
-TrecPointer<TVariable> TContainerVariable::GetValue(TString& key, bool& present)
+TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present)
 {
+    ThreadLock();
     auto ret = values.retrieveEntry(key);
     present = ret.Get() != nullptr;
+    ThreadRelease();
     return ret;
     
+}
+
+TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present, const TString& super)
+{
+    ThreadLock();
+    auto supers = super.split(L";");
+    auto ret = GetValue(key, present);
+    if (present)
+    {
+        ThreadRelease();
+        return ret;
+    }
+    for (UINT Rust = 0; Rust < supers->Size(); Rust++)
+    {
+        ret = GetValue(supers->at(Rust), present);
+        if (ret.Get() && ret->GetVarType() == var_type::collection)
+        {
+            ret = dynamic_cast<TContainerVariable*>(ret.Get())->GetValue(key, present);
+            if (present)
+            {
+                ThreadRelease();
+                return ret;
+            }
+        }
+    }
+
+    present = false;
+    ThreadRelease();
+    return ret;
 }
 
 /**
@@ -98,10 +190,12 @@ TrecPointer<TVariable> TContainerVariable::GetValue(TString& key, bool& present)
  */
 bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool allowKey)
 {
+    ThreadLock();
     switch (type)
     {
     case ContainerType::ct_set:
     case ContainerType::ct_tuple:
+        ThreadRelease();
         return false;
     }
 
@@ -111,7 +205,7 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
         if (entry.Get())
         {
             int testIndex = 0;
-            if (!entry->key.ConvertToInt(&testIndex) && testIndex != index)
+            if (!entry->key.ConvertToInt(testIndex) && testIndex != index)
             {
                 // Add the entry at the end
                 values.addEntry(entry->key, entry->object);
@@ -119,6 +213,12 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
                 entry->key.Set(L"");
                 entry->object = value;
 
+                ThreadRelease();
+                return true;
+            }
+            else
+            {
+                entry->object = value;
                 return true;
             }
         }
@@ -130,9 +230,11 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
         k.Format(L"%i", index);
         values.removeEntry(k);
         values.addEntry(k, value);
+        ThreadRelease();
         return true;
     }
 
+    ThreadRelease();
     return false;
 }
 
@@ -144,13 +246,19 @@ bool TContainerVariable::SetValue(int index, TrecPointer<TVariable> value, bool 
  * Returns: bool - whether the operation was PERMITTED or not int index - index to set
  *              TrecPointer<TVariable> value - the value to set
  */
-bool TContainerVariable::SetValue(TString& key, TrecPointer<TVariable> value)
+bool TContainerVariable::SetValue(const TString& key, TrecPointer<TVariable> value)
 {
-    if(type == ContainerType::ct_tuple)
+    ThreadLock();
+    if (type == ContainerType::ct_tuple)
+    {
+        ThreadRelease();
         return false;
+    }
+    TString sKey(key);
 
-    values.removeEntry(key);
+    values.removeEntry(sKey);
     values.addEntry(key, value);
+    ThreadRelease();
     return true;
 }
 
@@ -162,11 +270,18 @@ bool TContainerVariable::SetValue(TString& key, TrecPointer<TVariable> value)
  */
 bool TContainerVariable::AppendValue(TrecPointer<TVariable> value)
 {
+    ThreadLock();
     if (type == ContainerType::ct_tuple)
+    {
+        ThreadRelease();
         return false;
-
-    values.addEntry(L"", value);
-
+    }
+    
+    // Otherwise, set value to the index it would be
+    TString strIndex;
+    strIndex.Format(L"%d", values.count());
+    values.addEntry(strIndex, value);
+    ThreadRelease();
     return true;
 }
 
@@ -178,11 +293,14 @@ bool TContainerVariable::AppendValue(TrecPointer<TVariable> value)
  */
 bool TContainerVariable::RemoveByKey(TString& key)
 {
+    ThreadLock();
     if (type == ContainerType::ct_tuple)
+    {
+        ThreadRelease();
         return false;
-
+    }
     values.removeEntry(key);
-
+    ThreadRelease();
     return false;
 }
 
@@ -197,40 +315,20 @@ bool TContainerVariable::RemoveByValue(TrecPointer<TVariable> value)
     return false;
 }
 
-/**
- * Method: TContainerVariable::IsObject
- * Purpose: Reports whether the variable holds an object or not
- * Parameters: void
- * Returns: bool - whether the variable is an object or not
- */
-bool TContainerVariable::IsObject()
-{
-    return false;
-}
 
 /**
  * Method: TContainerVariable::GetObject
  * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
  * Parameters: void
- * Returns: TrecPointer<TObject> - The Object referered by the variable (or null if not an object)
+ * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
  *
  * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
  */
-TrecPointer<TObject> TContainerVariable::GetObject()
+TrecObjectPointer TContainerVariable::GetObject()
 {
-    return TrecPointer<TObject>();
+    return TrecObjectPointer();
 }
 
-/**
- * Method: TContainerVariable::IsString
- * Purpose: Reports whether the variable holds a string or not
- * Parameters: void
- * Returns: bool - whether the variable is a string or not
- */
-bool TContainerVariable::IsString()
-{
-    return false;
-}
 
 /**
  * Method: TContainerVariable::GetObject
@@ -275,16 +373,88 @@ ULONG64 TContainerVariable::Get8Value()
  */
 UINT TContainerVariable::GetSize()
 {
-    return values.count();
+    ThreadLock();
+    UINT ret = values.count();
+    ThreadRelease();
+    return ret;
 }
 
 /**
- * Method: TContainerVariable::GetType
+ * Method: TContainerVariable::GetVType
  * Purpose: Returns the basic type of the object
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
  */
-UINT TContainerVariable::GetType()
+UINT TContainerVariable::GetVType()
 {
     return 0;
+}
+
+/**
+ * Method: TContainerVariable::GetValueAt
+ * Purpose: Retrieves Variables by index
+ * Parameters: UINT index - the index to check
+ * Returns: TrecPointer<TVariable> - the variable stored at the index (null if not available)
+ */
+TrecPointer<TVariable> TContainerVariable::GetValueAt(UINT index)
+{
+    ThreadLock();
+    auto entry = values.GetEntryAt(index);
+
+    auto ret = (!entry.Get()) ? TrecPointer<TVariable>() : entry->object;
+    ThreadRelease();
+    return ret;
+}
+
+bool TContainerVariable::GetValueAt(UINT index, TString& key, TrecPointer<TVariable>& value)
+{
+    ThreadLock();
+    if (index >= values.count())
+    {
+        ThreadRelease();
+        return false;
+    }
+    TrecPointer<tEntry<TVariable>> entry = values.GetEntryAt(index);
+    if (entry.Get())
+    {
+        key.Set(entry->key);
+        value = entry->object->Clone();
+        ThreadRelease();
+        return true;
+    }
+    ThreadRelease();
+    return false;
+}
+
+TString TContainerVariable::GetTClassName()
+{
+    ThreadLock();
+    TString ret(className);
+    ThreadRelease();
+    return ret;
+}
+
+bool TContainerVariable::SetClassName(const TString& name)
+{
+    ThreadLock();
+    if (className.GetSize() || !name.GetSize())
+    {
+        ThreadRelease();
+        return false;
+    }
+    className.Set(name);
+    ThreadRelease();
+    return true;
+}
+
+
+/**
+ * Method: TContainerVariable::GetConteinerType
+ * Purpose: Reports to interpretors the container type
+ * Parameters: void
+ * Return: Container_type - the type of container we're dealing with
+ */
+ContainerType TContainerVariable::GetContainerType()
+{
+    return this->type;
 }

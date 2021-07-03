@@ -1,4 +1,16 @@
 #include "TPoint.h"
+#include "TString.h"
+
+/**
+ * Method: TPoint::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TPoint::GetType()
+{
+	return TString(L"TPoint;") + TObject::GetType();
+}
 
 /**
  * Method: TPoint::TPoint
@@ -6,6 +18,7 @@
  * Parameters: void
  * Returns: New TPoint Object
  */
+
 TPoint::TPoint()
 {
 	x = y = 0.0f;

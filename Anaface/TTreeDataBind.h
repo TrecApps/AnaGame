@@ -3,13 +3,22 @@
 #include <TObjectNode.h>
 
 /*
- * class TTreeDataBind
+ * Class: TTreeDataBind
  * Purpose: Support for depicting a tree-based system on Anaface
  */
 class _ANAFACE_DLL TTreeDataBind :
 	public TControl
 {
 public:
+
+	/**
+	 * Method: TTreeDataBind::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: TTreeDataBind::TTreeDataBind
 	 * Purpose: Constructor
@@ -122,7 +131,9 @@ public:
 	 *		However, the contents might include child locations so their snips might have to be
 	 *		updated
 	 */
-	virtual bool onScroll(int x, int y)override;
+	virtual bool onScroll(float x, float y)override;
+
+	TrecPointer<TObjectNode> GetNode();
 protected:
 	/**
 	 * The root node that starts the tree this control goes down
@@ -135,9 +146,24 @@ protected:
 	bool isNodeSelected, isTickSelected;
 
 	/**
+	 * Whether expansion needs to be blocked
+	 */
+	bool blockExpansion;
+
+	/**
 	 * Used to trck the initial click down so when the user clicks up, the node can be determined
 	 */
 	UINT nodeSelected;
+
+	/**
+	 * Used to know when to highlight a given node
+	 */
+	UINT highlightNodeSelected;
+
+	/**
+	 * The color to use for Highlighing
+	 */
+	TrecPointer<TBrush> nodeBrush;
 
 	/**
 	 * Brush that paints the outside of the arrow

@@ -140,6 +140,17 @@ CameraHandler::~CameraHandler()
 }
 
 /**
+ * Method: CameraHandler::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString CameraHandler::GetType()
+{
+	return TString(L"CameraHandler;") + EventHandler::GetType();
+}
+
+/**
  * Method: CameraHandler::Initialize
  * Purpose: Initializes the Handler so that it has direct Access to certain Controls held by the page
  * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
@@ -149,7 +160,7 @@ void CameraHandler::Initialize(TrecPointer<Page> page)
 {
 	if (!page.Get())
 		return;
-
+	ThreadLock();
 	auto control = page->GetRootControl();
 
 	TrecSubPointer<TControl, TLayout> mainLay = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(control);
@@ -169,6 +180,7 @@ void CameraHandler::Initialize(TrecPointer<Page> page)
 
 	assert(d_x.Get() && d_y.Get() && d_z.Get()&&
 		l_x.Get() && l_y.Get() && l_z.Get());
+	ThreadRelease();
 }
 
 /**
@@ -181,6 +193,7 @@ void CameraHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 {
 	int e_id = -1;
 	EventArgs ea;
+	ThreadLock();
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
 		auto tc = eventAr.at(c).control;
@@ -199,6 +212,7 @@ void CameraHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 
 	//onDraw();
 	eventAr.RemoveAll();
+	ThreadRelease();
 }
 
 /**
@@ -214,16 +228,21 @@ void CameraHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
  */
 void CameraHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
+	ThreadLock();
 	if (!message.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	TString messageStr = message->GetMessage_();
 
 	auto pieces = messageStr.split(L" ");
 
 	if (!pieces.Get() || pieces->Size() < 5 || pieces->at(0).Compare(L"Camera"))
+	{
+		ThreadRelease();
 		return;
-
+	}
 	UINT mode = 0;
 
 	for (UINT Rust = 1; Rust < pieces->Size(); Rust++)
@@ -267,8 +286,8 @@ void CameraHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 			mode = 0;
 		}
 	}
-
 	UpdatePanelText();
+	ThreadRelease();
 }
 
 /**
@@ -279,9 +298,10 @@ void CameraHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
  */
 bool CameraHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
 {
-	if (!message.Get())
-		return false;
-	return message->GetHandlerType() == handler_type::handler_type_camera;
+	ThreadLock();
+	bool ret = (!message.Get()) ? false : message->GetHandlerType() == handler_type::handler_type_camera;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -294,11 +314,13 @@ bool CameraHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> messa
  */
 void CameraHandler::SendMessageToArena(const TString& target, const TString& attribute, const TString& value)
 {
-	
+	ThreadLock();
 	TString messageStr(target + L" " + attribute + L" " + value);
-	TrecPointer<HandlerMessage> newMessage = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name, handler_type::handler_type_arena, 0, message_transmission::message_transmission_name_type, 0, messageStr);
+	TrecPointer<HandlerMessage> newMessage = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name,
+		handler_type::handler_type_arena, 0, message_transmission::message_transmission_name_type, 0, messageStr);
 	if(app.Get())
 		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->DispatchAnagameMessage(newMessage);
+	ThreadRelease();
 }
 
 
@@ -310,6 +332,7 @@ void CameraHandler::SendMessageToArena(const TString& target, const TString& att
  */
 void CameraHandler::UpdatePanelText()
 {
+	ThreadLock();
 	if (d_x.Get())
 		d_x->setNumericText(t_dx);
 	if (d_y.Get())
@@ -323,7 +346,7 @@ void CameraHandler::UpdatePanelText()
 		l_y->setNumericText(t_ly);
 	if (l_z.Get())
 		l_z->setNumericText(t_lz);
-
+	ThreadRelease();
 }
 
 /**
@@ -336,6 +359,7 @@ void CameraHandler::UpdatePanelText()
 void CameraHandler::TextDirectionX(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
+	ThreadLock();
 	if (!ea.text.ConvertToFloat(f))
 	{
 		t_dx = f;
@@ -343,6 +367,7 @@ void CameraHandler::TextDirectionX(TrecPointer<TControl> tc, EventArgs ea)
 		formatedText.Format(L"%f;%f;%f", t_dx, t_dy, t_dz);
 		SendMessageToArena(TString(L"Camera"), TString(L"Direction"), formatedText);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -355,6 +380,7 @@ void CameraHandler::TextDirectionX(TrecPointer<TControl> tc, EventArgs ea)
 void CameraHandler::TextLocationX(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
+	ThreadLock();
 	if (!ea.text.ConvertToFloat(f))
 	{
 		t_lx = f;
@@ -362,6 +388,7 @@ void CameraHandler::TextLocationX(TrecPointer<TControl> tc, EventArgs ea)
 		formatedText.Format(L"%f;%f;%f", t_lx, t_ly, t_lz);
 		SendMessageToArena(TString(L"Camera"), TString(L"Location"), formatedText);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -374,6 +401,7 @@ void CameraHandler::TextLocationX(TrecPointer<TControl> tc, EventArgs ea)
 void CameraHandler::TextDirectionY(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
+	ThreadLock();
 	if (!ea.text.ConvertToFloat(f))
 	{
 		t_dy = f;
@@ -381,6 +409,7 @@ void CameraHandler::TextDirectionY(TrecPointer<TControl> tc, EventArgs ea)
 		formatedText.Format(L"%f;%f;%f", t_dx, t_dy, t_dz);
 		SendMessageToArena(TString(L"Camera"), TString(L"Direction"), formatedText);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -393,6 +422,7 @@ void CameraHandler::TextDirectionY(TrecPointer<TControl> tc, EventArgs ea)
 void CameraHandler::TextLocationY(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
+	ThreadLock();
 	if (!ea.text.ConvertToFloat(f))
 	{
 		t_ly = f;
@@ -400,6 +430,7 @@ void CameraHandler::TextLocationY(TrecPointer<TControl> tc, EventArgs ea)
 		formatedText.Format(L"%f;%f;%f", t_lx, t_ly, t_lz);
 		SendMessageToArena(TString(L"Camera"), TString(L"Location"), formatedText);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -412,6 +443,7 @@ void CameraHandler::TextLocationY(TrecPointer<TControl> tc, EventArgs ea)
 void CameraHandler::TextDirectionZ(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
+	ThreadLock();
 	if (!ea.text.ConvertToFloat(f))
 	{
 		t_dz = f;
@@ -419,6 +451,7 @@ void CameraHandler::TextDirectionZ(TrecPointer<TControl> tc, EventArgs ea)
 		formatedText.Format(L"%f;%f;%f", t_dx, t_dy, t_dz);
 		SendMessageToArena(TString(L"Camera"), TString(L"Direction"), formatedText);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -431,6 +464,7 @@ void CameraHandler::TextDirectionZ(TrecPointer<TControl> tc, EventArgs ea)
 void CameraHandler::TextLocationZ(TrecPointer<TControl> tc, EventArgs ea)
 {
 	float f = 0.0f;
+	ThreadLock();
 	if (!ea.text.ConvertToFloat(f))
 	{
 		t_lz = f;
@@ -438,6 +472,7 @@ void CameraHandler::TextLocationZ(TrecPointer<TControl> tc, EventArgs ea)
 		formatedText.Format(L"%f;%f;%f", t_lx, t_ly, t_lz);
 		SendMessageToArena(TString(L"Camera"), TString(L"Location"), formatedText);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -450,6 +485,7 @@ void CameraHandler::TextLocationZ(TrecPointer<TControl> tc, EventArgs ea)
 void CameraHandler::OnUp(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TString formatedText;
+	ThreadLock();
 	if (rotateMode)
 	{
 		formatedText.Format(L"%f;%f", 0.0f, change);
@@ -461,6 +497,7 @@ void CameraHandler::OnUp(TrecPointer<TControl> tc, EventArgs ea)
 		SendMessageToArena(TString(L"Camera"), TString(L"Translate"), formatedText);
 	}
 	UpdatePanelText();
+	ThreadRelease();
 }
 
 /**
@@ -473,6 +510,7 @@ void CameraHandler::OnUp(TrecPointer<TControl> tc, EventArgs ea)
 void CameraHandler::OnDown(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TString formatedText;
+	ThreadLock();
 	if (rotateMode)
 	{
 		formatedText.Format(L"%f;%f", 0.0f, -change);
@@ -485,6 +523,7 @@ void CameraHandler::OnDown(TrecPointer<TControl> tc, EventArgs ea)
 	}
 
 	UpdatePanelText();
+	ThreadRelease();
 }
 
 /**
@@ -497,6 +536,7 @@ void CameraHandler::OnDown(TrecPointer<TControl> tc, EventArgs ea)
 void CameraHandler::OnLeft(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TString formatedText;
+	ThreadLock();
 	if (rotateMode)
 	{
 		formatedText.Format(L"%f;%f", change, 0.0f);
@@ -508,6 +548,7 @@ void CameraHandler::OnLeft(TrecPointer<TControl> tc, EventArgs ea)
 		SendMessageToArena(TString(L"Camera"), TString(L"Translate"), formatedText);
 	}
 	UpdatePanelText();
+	ThreadRelease();
 }
 
 /**
@@ -520,6 +561,7 @@ void CameraHandler::OnLeft(TrecPointer<TControl> tc, EventArgs ea)
 void CameraHandler::OnRight(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TString formatedText;
+	ThreadLock();
 	if (rotateMode)
 	{
 		formatedText.Format(L"%f;%f", -change, 0.0f);
@@ -532,6 +574,7 @@ void CameraHandler::OnRight(TrecPointer<TControl> tc, EventArgs ea)
 	}
 
 	UpdatePanelText();
+	ThreadRelease();
 }
 
 /**
@@ -543,6 +586,7 @@ void CameraHandler::OnRight(TrecPointer<TControl> tc, EventArgs ea)
  */
 void CameraHandler::OnNear(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	if (!rotateMode)
 	{
 		TString formatedText;
@@ -550,6 +594,7 @@ void CameraHandler::OnNear(TrecPointer<TControl> tc, EventArgs ea)
 		SendMessageToArena(TString(L"Camera"), TString(L"Translate"), formatedText);
 	}
 	UpdatePanelText();
+	ThreadRelease();
 }
 
 /**
@@ -561,6 +606,7 @@ void CameraHandler::OnNear(TrecPointer<TControl> tc, EventArgs ea)
  */
 void CameraHandler::OnFar(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	if (!rotateMode)
 	{
 		TString formatedText;
@@ -568,6 +614,7 @@ void CameraHandler::OnFar(TrecPointer<TControl> tc, EventArgs ea)
 		SendMessageToArena(TString(L"Camera"), TString(L"Translate"), formatedText);
 	}
 	UpdatePanelText();
+	ThreadRelease();
 }
 
 /**
@@ -579,7 +626,9 @@ void CameraHandler::OnFar(TrecPointer<TControl> tc, EventArgs ea)
  */
 void CameraHandler::OnSetCameraRotate(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	rotateMode = true;
+	ThreadRelease();
 }
 
 /**
@@ -591,7 +640,9 @@ void CameraHandler::OnSetCameraRotate(TrecPointer<TControl> tc, EventArgs ea)
  */
 void CameraHandler::OnSetCameraTranslate(TrecPointer<TControl> tc, EventArgs ea)
 {
+	ThreadLock();
 	rotateMode = false;
+	ThreadRelease();
 }
 
 /**

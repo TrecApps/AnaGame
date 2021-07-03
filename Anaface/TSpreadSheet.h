@@ -14,12 +14,21 @@ typedef struct _ANAFACE_DLL BorderList
 /**
  * Class: TSpreadSheet
  * Purpose: Supplies the Spreadsheet control
+ * 
+ * SuperClass: TLayoutEx
  */
 class _ANAFACE_DLL TSpreadSheet :
 	public TLayoutEx
 {
 public:
 
+	/**
+	 * Method: TSpreadSheet::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TSpreadSheet::TSpreadSheet
@@ -43,6 +52,8 @@ public:
 	 *		screen space it is given
 	 * Parameters: RECT contain - the area it can use
 	 * Returns: bool - success
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d)override;
 	/**
@@ -50,6 +61,8 @@ public:
 	 * Purpose: Draws the control
 	 * Parameters: TObject* obj - Raw reference to a TObject that might have specific text to say
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void onDraw(TObject* obj = nullptr) override;
 	/**
@@ -80,6 +93,8 @@ public:
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
+	 * 
+	 * Attributes: override; message
 	 */
 	afx_msg void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl) override;
 

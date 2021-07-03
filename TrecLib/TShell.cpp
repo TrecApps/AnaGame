@@ -2,12 +2,25 @@
 #include "DirectoryInterface.h"
 #include "PathConfiguration.h"
 
+
+/**
+ * Method: TShell::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TShell::GetType()
+{
+	return TString(L"TShell;") + TObject::GetType();
+}
+
 /*
 * Method: TShell::TShell
 * Purpose: Creates the Shell, with the Home directory as the initial working directory
 * Parameters: void
 * Returns: void
 */
+
 TShell::TShell()
 {
 	workingDirectory.Set(GetDirectoryWithSlash(CentralDirectories::cd_Documents));
@@ -48,20 +61,21 @@ void TShell::SubmitCommand(TString& command)
 {
 	// First check to see if a Process is already running from a previous command.
 	// If it is, simply send the input to that process as it might be scanning for input
+	AG_THREAD_LOCK
 	if (CheckProcess())
 	{
 		std::string aString = command.GetRegString();
 		DWORD written = 0;
 		WriteFile(stdInWt, aString.c_str(), aString.size(), &written, nullptr);
-		return;
+		RETURN_THREAD_UNLOCK;
 	}
 
 
 	command.Trim();
 	if (!command.GetSize())
-		return;
+		RETURN_THREAD_UNLOCK;
 
-	int firstSpace = command.Find(L'\s');
+	int firstSpace = command.Find(L' ');
 
 	TString com(command.SubString(0, firstSpace));
 	com.Trim();
@@ -86,13 +100,13 @@ void TShell::SubmitCommand(TString& command)
 
 		while (possiblePath.GetSize())
 		{
-			output.AppendFormat(TString(L"%i. %ls\n"), index, possiblePath.GetConstantBuffer());
+			output.AppendFormat(TString(L"%i. %ls\n"), index, possiblePath.GetConstantBuffer().getBuffer());
 			possiblePath.Set(GetPossiblePath(comArgs, index++));
 		}
 	}
 	else if (!com.CompareNoCase(L"setpath"))
 	{
-		if (comArgs.Find(L'\s') == -1)
+		if (comArgs.Find(L' ') == -1)
 		{
 			output.Set("Error! 'setpath' requires a command and a path to set it to!\n");
 			output.Append(TString(L"\tIt's in the form:  setpath [command] [path-for-command]\n"));
@@ -105,8 +119,8 @@ void TShell::SubmitCommand(TString& command)
 		}
 		else
 		{
-			TString comArgs2(comArgs.SubString(0, comArgs.Find(L'\s')));
-			TString comArgs3(comArgs.SubString(comArgs.Find(L'\s')));
+			TString comArgs2(comArgs.SubString(0, comArgs.Find(L' ')));
+			TString comArgs3(comArgs.SubString(comArgs.Find(L' ')));
 
 			comArgs2.Trim();
 			comArgs3.Trim();
@@ -120,11 +134,11 @@ void TShell::SubmitCommand(TString& command)
 					output.Format(TString(L"Successfully set 'comArgs2' to path at index %i\n"), pathIndex);
 					break;
 				case 1:
-					output.Format(TString(L"For the command %ls, provided index %i was out of bounds!\n"), comArgs2.GetConstantBuffer(), pathIndex);
+					output.Format(TString(L"For the command %ls, provided index %i was out of bounds!\n"), comArgs2.GetConstantBuffer().getBuffer(), pathIndex);
 					break;
 				case 2:
 					output.Format(L"Command not currently registered! To register the '%ls' command, run \n\t\"setpath %ls [C:\\path\\to\\%ls\\installation]\"\n",
-						comArgs2.GetConstantBuffer(), comArgs2.GetConstantBuffer(), comArgs2.GetConstantBuffer(), comArgs2.GetConstantBuffer());
+						comArgs2.GetConstantBuffer().getBuffer(), comArgs2.GetConstantBuffer().getBuffer(), comArgs2.GetConstantBuffer().getBuffer(), comArgs2.GetConstantBuffer().getBuffer());
 					break;
 				}
 			}
@@ -132,11 +146,11 @@ void TShell::SubmitCommand(TString& command)
 			{
 				if (SubmitPossiblePath(comArgs2, comArgs3))
 				{
-					output.Format(TString(L"Successfully Submitted '%ls' as a possible path for the '%ls' command!\n"), comArgs3.GetConstantBuffer(), comArgs2.GetConstantBuffer());
+					output.Format(TString(L"Successfully Submitted '%ls' as a possible path for the '%ls' command!\n"), comArgs3.GetConstantBuffer().getBuffer(), comArgs2.GetConstantBuffer().getBuffer());
 				}
 				else
 				{
-					output.Format(TString(L"\"%ls\" is not a valid path!\n"), comArgs3.GetConstantBuffer());
+					output.Format(TString(L"\"%ls\" is not a valid path!\n"), comArgs3.GetConstantBuffer().getBuffer());
 				}
 			}
 		}
@@ -149,7 +163,7 @@ void TShell::SubmitCommand(TString& command)
 			output.AppendChar(L'\n');
 		else
 			output.Format(TString(L"\"%ls\" does not appear to be registered! To register the '%ls' command, run \n\t\"setpath %ls [C:\\path\\to\\%ls\\installation]\"\n"), 
-				comArgs.GetConstantBuffer(), comArgs.GetConstantBuffer(), comArgs.GetConstantBuffer(), comArgs.GetConstantBuffer());
+				comArgs.GetConstantBuffer().getBuffer(), comArgs.GetConstantBuffer().getBuffer(), comArgs.GetConstantBuffer().getBuffer(), comArgs.GetConstantBuffer().getBuffer());
 	}
 
 	// Now that path management is not the command, process the command using the usual means
@@ -166,7 +180,7 @@ void TShell::SubmitCommand(TString& command)
 			else if (pathCommand[pathCommand.GetSize() - 1] != L'\"')
 				pathCommand.AppendChar(L'\"');
 
-			command.Set(pathCommand + TString(L'\s') + comArgs);
+			command.Set(pathCommand + TString(L' ') + comArgs);
 		}
 
 
@@ -183,6 +197,7 @@ void TShell::SubmitCommand(TString& command)
 			ProcessFrontCommand(command);
 		}
 	}
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -196,6 +211,7 @@ void TShell::SubmitCommand(TString& command)
 TString TShell::GetOutput()
 {
 	// If a process is running capture the output
+	AG_THREAD_LOCK
 	if (processInfo.hProcess)
 	{
 		char* str = new char[101];
@@ -215,7 +231,7 @@ TString TShell::GetOutput()
 	// capture the output into a return string and empty the output string
 	TString ret(output);
 	output.Empty();
-	return ret;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -226,6 +242,7 @@ TString TShell::GetOutput()
 */
 TString TShell::GetError()
 {
+	AG_THREAD_LOCK
 	// If Process is running capture the error reported by the process
 	if (processInfo.hProcess)
 	{
@@ -249,7 +266,7 @@ TString TShell::GetError()
 	// Capture the error string into a return string and empty the error string for further data
 	TString ret(standardError);
 	standardError.Empty();
-	return ret;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -260,12 +277,14 @@ TString TShell::GetError()
 */
 void TShell::TerminateProcess()
 {
+	AG_THREAD_LOCK
 	// To-Do: Find a less crude way of terminating the process
 	if (processInfo.hProcess)
 	{
 		::TerminateProcess(processInfo.hProcess, 0);
 		ZeroMemory(&processInfo, sizeof(processInfo));
 	}
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -277,6 +296,7 @@ void TShell::TerminateProcess()
 */
 bool TShell::CheckProcess()
 {
+	AG_THREAD_LOCK
 	// If a process is active, check on it
 	if (processInfo.hProcess)
 	{
@@ -285,7 +305,9 @@ bool TShell::CheckProcess()
 		BOOL runStatus = GetExitCodeProcess(processInfo.hProcess, &statusCode);
 
 		if (runStatus == STILL_ACTIVE) // If the process is still active, return true
-			return true;
+		{
+			RETURN_THREAD_UNLOCK true;
+		}
 		else if (runStatus) // Report the termination of the process
 			output.Format(TString(L"Process %i terminated with Exit Code: %i"), processInfo.dwProcessId, statusCode);
 		
@@ -297,7 +319,7 @@ bool TShell::CheckProcess()
 		ZeroMemory(&processInfo, sizeof(processInfo));
 	}
 	// If we make it here, we can assume that the TShell no longer has an active process running, so report false
-	return false;
+	RETURN_THREAD_UNLOCK false;
 }
 
 /*
@@ -374,7 +396,7 @@ void TShell::ProcessBackgroundProcess(TString& command)
 		FALSE,			// no need to inherite handles since this process is background and we don't ned to track it
 		0,				// No special flags
 		nullptr,		// No special environment settings
-		workingDirectory.GetConstantBuffer(), // the Working Directory to use
+		workingDirectory.GetConstantBuffer().getBuffer(), // the Working Directory to use
 		&start,			// the start info object we created
 		&processInfo	// Get information about our process
 	);
@@ -478,7 +500,7 @@ void TShell::ProcessFrontCommand(TString& command)
 		TRUE,									// Make sure process get our handles so we can communicate with it
 		CREATE_NO_WINDOW,						// We're presenting the output in our window so don't create a new one
 		nullptr,								// no special environment
-		workingDirectory.GetConstantBuffer(),	// Provide the working directory to use
+		workingDirectory.GetConstantBuffer().getBuffer(),	// Provide the working directory to use
 		&start,									// Default  start info
 		&processInfo							// Information about the process being created (out param)
 	);

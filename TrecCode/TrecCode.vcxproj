@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\Tap;..\Anaface;..\VideoGraphics;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\TcDataStruct;..\Tap;..\Anaface;..\VideoGraphics;..\TrecLib;$(IncludePath)</IncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -98,7 +98,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;Tap.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;Tap.lib;TcDataStruct.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -159,15 +159,30 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="JsArray.h" />
+    <ClInclude Include="JsConsole.h" />
+    <ClInclude Include="JsPromise.h" />
+    <ClInclude Include="JsTimer.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TAnaGameCodeEnvironment.h" />
+    <ClInclude Include="TAnagameEnvironmentBuilder.h" />
+    <ClInclude Include="TAnascriptInterpretor.h" />
+    <ClInclude Include="TcJavaScriptClassInterpretor.h" />
+    <ClInclude Include="TcJavaScriptInterpretor.h" />
+    <ClInclude Include="TEnvironmentBuilder.h" />
     <ClInclude Include="TGradleEnvironment.h" />
+    <ClInclude Include="TJavaScriptClassInterpretor.h" />
+    <ClInclude Include="TJavaScriptInterpretor.h" />
     <ClInclude Include="TLanguage.h" />
     <ClInclude Include="TMavenEnvironment.h" />
     <ClInclude Include="TrecCode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="JsArray.cpp" />
+    <ClCompile Include="JsConsole.cpp" />
+    <ClCompile Include="JsPromise.cpp" />
+    <ClCompile Include="JsTimer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -175,7 +190,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TAnaGameCodeEnvironment.cpp" />
+    <ClCompile Include="TAnagameEnvironmentBuilder.cpp" />
+    <ClCompile Include="TAnascriptInterpretor.cpp" />
+    <ClCompile Include="TcJavaScriptClassInterpretor.cpp" />
+    <ClCompile Include="TcJavaScriptInterpretor.cpp" />
+    <ClCompile Include="TEnvironmentBuilder.cpp" />
     <ClCompile Include="TGradleEnvironment.cpp" />
+    <ClCompile Include="TJavaScriptClassInterpretor.cpp" />
+    <ClCompile Include="TJavaScriptInterpretor.cpp" />
     <ClCompile Include="TLanguage.cpp" />
     <ClCompile Include="TMavenEnvironment.cpp" />
   </ItemGroup>

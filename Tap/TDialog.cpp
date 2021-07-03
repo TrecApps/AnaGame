@@ -39,6 +39,18 @@ TDialog::TDialog(TString& name, TString& winClass, UINT style, HWND parent, int 
  */
 TDialog::~TDialog()
 {
+	int e = 9;
+}
+
+/**
+ * Method: TDialog::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TDialog::GetType()
+{
+	return TString(L"TDialog;") + TWindow::GetType();
 }
 
 /**
@@ -49,8 +61,12 @@ TDialog::~TDialog()
  */
 int TDialog::PrepareWindow()
 {
+	ThreadLock();
 	if (!currentWindow)
+	{
+		ThreadRelease();
 		return 1;
+	}
 	if (parent)
 	{
 		if (windowInstance.Get() && dialogMode == TDialogMode::dialog_mode_soft_modal)
@@ -62,7 +78,9 @@ int TDialog::PrepareWindow()
 			EnableWindow(parent, FALSE);
 		}
 	}
-	return TWindow::PrepareWindow();
+	int ret = TWindow::PrepareWindow();
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -73,6 +91,7 @@ int TDialog::PrepareWindow()
  */
 bool TDialog::OnDestroy()
 {
+	ThreadLock();
 	bool returnable = TWindow::OnDestroy();
 	if (returnable && parent)
 	{
@@ -85,8 +104,9 @@ bool TDialog::OnDestroy()
 			EnableWindow(parent, TRUE);
 		}
 	}
-	
-	return breakLoop = returnable;
+	bool ret = breakLoop = returnable;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -97,12 +117,14 @@ bool TDialog::OnDestroy()
  */
 void TDialog::Run()
 {
+	ThreadLock();
 	MSG msg;
 	while (!breakLoop && GetMessage(&msg, nullptr, 0, 0))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -130,6 +152,8 @@ void ActivateAlertDialog(TrecPointer<TInstance> ins, HWND parent, TString& capti
 	dialog->PrepareWindow();
 
 	dynamic_cast<AlertDialog*>(dialog.Get())->Run();
+
+	// dialog.Delete();
 }
 
 /**
@@ -160,5 +184,9 @@ TString ActivateNameDialog(TrecPointer<TInstance> ins, HWND parent, TString& cap
 
 	dynamic_cast<NameDialog*>(dialog.Get())->Run();
 
-	return TString(sharedData.Get());
+	TString ret(sharedData.Get());
+
+	//dialog.Delete();
+
+	return ret;
 }

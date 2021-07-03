@@ -5,7 +5,7 @@
 #include "TInstance.h"
 
 /*
- * Class TVirtualMachine
+ * Class: TVirtualMachine
  * Purpose: Serves as the base class for Virtual Machines supported by Anagame
  * 
  * Anagame Virtual Machines will serve as a junction in the Anagame Environment. They will

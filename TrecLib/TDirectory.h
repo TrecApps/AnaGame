@@ -2,8 +2,10 @@
 #include "TFileShell.h"
 
 /*
- * class TDirectory
+ * Class: TDirectory
  * Purpose: Represents a Folder in the file system
+ * 
+ * SuperClass: TFileShell - serves as a TFileShell for folders
  */
 class _TREC_LIB_DLL TDirectory :
 	public TFileShell
@@ -19,11 +21,21 @@ protected:
 	TDirectory(const TString& path);
 public:
 
+	/**
+	 * Method: TDirectory::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/*
 	* Method: TDirectory::IsDirectory
 	* Purpose: Reports whether this object represents a directory as opposed to a regular file
 	* Parameters: void
 	* Returns: bool - true as this is a directory (overrides the TFileShell method that returns false)
+	* 
+	* Attributes: override
 	*/
 	bool IsDirectory()override;
 

@@ -4,6 +4,11 @@ TGradleEnvironment::TGradleEnvironment(TrecPointer<TFileShell> shell):TEnvironme
 {
 }
 
+TString TGradleEnvironment::GetType()
+{
+	return TString(L"TGradleEnvironment;") + TEnvironment::GetType();
+}
+
 TGradleEnvironment::~TGradleEnvironment()
 {
 }
@@ -29,7 +34,25 @@ void TGradleEnvironment::Run()
 {
 }
 
+void TGradleEnvironment::Run(TrecPointer<TFileShell> file)
+{
+}
+
 UINT TGradleEnvironment::RunTask(TString& task)
 {
 	return 0;
+}
+
+TrecPointer<TObjectNode> TGradleEnvironment::GetBrowsingNode()
+{
+	return TrecPointer<TObjectNode>();
+}
+
+bool TGradleEnvironment::SupportsFileExt(const TString& ext)
+{
+	return false;
+}
+
+void TGradleEnvironment::SupportsFileExt(TDataArray<TString>& ext)
+{
 }

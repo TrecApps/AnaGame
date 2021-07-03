@@ -2,9 +2,13 @@
 #include <Page.h>
 #include "ArenaApp.h"
 #include <TDialog.h>
+#include <DirectoryInterface.h>
 #include "SourceCodeApp.h"
 #include "SourceCodeApp2.h"
 #include "ArenaApp2.h"
+#include "TEnvironmentDialog.h"
+
+#include <FileDialog.h>
 
 
 // Found on the Home Tab
@@ -214,6 +218,9 @@ void MainLayoutHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 		}*/
 		cont->resetArgs();
 	}
+
+	if (page.Get() && page->GetWindowHandle().Get())
+		page->GetWindowHandle()->Draw();
 }
 
 void MainLayoutHandler::Draw()
@@ -236,6 +243,36 @@ void MainLayoutHandler::OnSwitchTab(TrecPointer<TControl> tc, EventArgs ea)
 
 void MainLayoutHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
+	if (!message.Get())
+		return;
+
+	auto m = message->GetMessage_();
+
+	auto messageTokens = m.split(L" ");
+
+	if (messageTokens->Size() > 1)
+	{
+		if (!messageTokens->at(0).CompareNoCase(L"focus"))
+		{
+			if (!messageTokens->at(1).CompareNoCase(L"CodeHandler") && docStack2.Get())
+				docStack2->setActive(true);
+			else if (docStack2.Get())
+				docStack2->setActive(false);
+		}
+	}
+}
+
+void MainLayoutHandler::OnFirstDraw()
+{
+	if (!page.Get())
+		return;
+
+	auto ideWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(page->GetWindowHandle());
+
+	if (!ideWindow.Get() || ideWindow->GetEnvironment().Get())
+		return;
+
+	ideWindow->SetEnvironment(ActivateEnvironmentDialog(ideWindow->GetInstance(), ideWindow->GetWindowHandle()));
 }
 
 void MainLayoutHandler::OnLoadNewSolution(TrecPointer<TControl> tc, EventArgs ea)
@@ -287,7 +324,7 @@ void MainLayoutHandler::OnNewArena(TrecPointer<TControl> tc, EventArgs ea)
 
 	currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, ArenaApp2>(window, arenaName);
 	ActiveDocuments.push_back(currentDocument);
-	currentDocument->Initialize();
+	currentDocument->Initialize(TrecPointer<TFileShell>());
 
 	if (arenaStack1.Get())
 		arenaStack1->setActive(true);
@@ -330,22 +367,112 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
 	currentDocument->InitializeControls();
 	currentDocument->OnShow();*/
 
+	assert(window.Get());
+
+	TString caption("Enter a name for the file going in ");
+
+	auto directory = window->GetEnvironmentDirectory();
+
+	if (!directory.Get())
+		directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Documents));
+	assert(directory.Get());
+
+	caption.AppendFormat(L"%ws :", directory->GetPath().GetConstantBuffer().getBuffer());
+
+	TString fileName(ActivateNameDialog(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app), page->GetWindowHandle()->GetWindowHandle(), caption));
+
+	if (!fileName.GetSize())
+		return;
+
+	TFile file(directory->GetPath() + TString(L'\\') +  fileName, TFile::t_file_create_always | TFile::t_file_write);
+
+	file.Close();
+
+
+	// To-Do: Figure out what to do with the fie entered by the user
+
 	currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, SourceCodeApp2>(window);
+
 	ActiveDocuments.push_back(currentDocument);
-	currentDocument->Initialize();
+	currentDocument->Initialize(TFileShell::GetFileInfo(fileName));
+
+
+	window->SetCurrentApp(currentDocument);
 }
 
 void MainLayoutHandler::OnImportCode(TrecPointer<TControl> tc, EventArgs ea)
 {
+	assert(window.Get());
+
+	auto directory = window->GetEnvironmentDirectory();
+	if (directory.Get())
+	{
+		auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app),
+			window->GetWindowHandle(),
+			directory,
+			TString());
+
+		if (targetFile.Get())
+		{
+			TFile readFile(targetFile->GetPath(), TFile::t_file_open_always | TFile::t_file_read);
+
+			TString writeFileStr(directory->GetPath() + TString(L"\\") + targetFile->GetName());
+			TFile writeFile(writeFileStr, TFile::t_file_create_always | TFile::t_file_write);
+
+			if (readFile.IsOpen() && writeFile.IsOpen())
+			{
+
+				
+
+				TString textData;
+				UINT bytesRead;
+				do
+				{
+					bytesRead = readFile.ReadString(textData, static_cast<ULONGLONG>(1000));
+					writeFile.WriteString(textData);
+				} while (bytesRead);
+
+				
+			}
+			readFile.Close();
+			writeFile.Close();
+			
+			currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, SourceCodeApp2>(window);
+
+			ActiveDocuments.push_back(currentDocument);
+			currentDocument->Initialize(TFileShell::GetFileInfo(writeFileStr));
+		}
+
+		
+	}
+
+
+	window->SetCurrentApp(currentDocument);
 }
 
 void MainLayoutHandler::OnProcessCode(TrecPointer<TControl> tc, EventArgs ea)
 {
+	assert(window.Get());
+	if (!currentDocument.Get())
+		return;
+	auto curHandler = currentDocument->GetMainHandler();
+
+	if (!dynamic_cast<TCodeHandler*>(curHandler.Get()))
+		return;
+
+	auto file = curHandler->GetFilePointer();
+	if (!file.Get())
+		return;
+	TString filePath(file->GetPath());
+	if (window->GetEnvironment().Get())
+	{
+		window->GetEnvironment()->RunTask(filePath);
+	}
 }
 
 bool MainLayoutHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
 {
 	if(!message.Get())
 		return false;
-	return message->GetHandlerType() == handler_type::handler_type_other;
+	return message->GetHandlerType() == handler_type::handler_type_other || message->GetHandlerType() == handler_type::handler_type_main;
 }

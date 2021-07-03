@@ -6,6 +6,7 @@
 #include <DirectoryInterface.h>
 #include <TInstance.h>
 #include "SwitchHandler.h"
+#include <TThread.h>
 
 #define MAX_LOADSTRING 100
 
@@ -41,6 +42,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TString title(L"Anagame Central");
 	TString winClass(L"CentralWindow");
 
+    TThread::SetMainThread();
+
 	mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW, nullptr, nCmdShow, hInstance, WndProc);
 
 
@@ -57,7 +60,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
     wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_ANAGAMECENTRAL);
-	wcex.lpszClassName = winClass.GetConstantBuffer();
+	wcex.lpszClassName = winClass.GetConstantBuffer().getBuffer();
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 	mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt<EventHandler, SwitchHandler>(mainInstance));
 
@@ -86,38 +89,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
         }
     }
-
+    mainInstance.Nullify();
     return (int) msg.wParam;
 }
 
 
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-/*
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-   hInst = hInstance; // Store instance handle in our global variable
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
-}*/
 
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
@@ -131,6 +108,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    if (message == WM_GETMINMAXINFO)
+    {
+        PMINMAXINFO info = reinterpret_cast<LPMINMAXINFO>(lParam);
+
+        info->ptMinTrackSize.x = 600;
+        info->ptMinTrackSize.y = 450;
+        return 0;
+    }
 	if (mainInstance.Get())
 		return mainInstance->Proc(hWnd, message, wParam, lParam);
     

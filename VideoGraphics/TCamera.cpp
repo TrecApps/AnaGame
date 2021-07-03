@@ -1,5 +1,16 @@
 #include "TCamera.h"
 
+/**
+ * Method: TCamera::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TCamera::GetType()
+{
+	return TString(L"TCamera;") + TObject::GetType();
+}
+
 TCamera::TCamera()
 {
 }
@@ -13,9 +24,9 @@ TCamera::TCamera()
 */
 bool TCamera::setEngine(TrecPointer<TArenaEngine> e)
 {
-
+	AG_THREAD_LOCK
 	arenaEngine = e;
-	return true;
+	RETURN_THREAD_UNLOCK true;
 }
 
 /*
@@ -26,7 +37,9 @@ bool TCamera::setEngine(TrecPointer<TArenaEngine> e)
 */
 void TCamera::removeEngine()
 {
+	AG_THREAD_LOCK
 	arenaEngine.Nullify();
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -38,6 +51,7 @@ void TCamera::removeEngine()
 */
 void TCamera::Rotate(float leftRight, float upDown)
 {
+	AG_THREAD_LOCK
 	// Create a Float4 structure to hold w value (1.0f) as well as the current direction
 	DirectX::XMFLOAT4 directLook{ direction_3.x, direction_3.y,direction_3.z,1.0f };
 
@@ -78,6 +92,7 @@ void TCamera::Rotate(float leftRight, float upDown)
 		up_3.x = 0.0f;
 	}
 	RefreshVectors();
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -89,6 +104,7 @@ void TCamera::Rotate(float leftRight, float upDown)
 */
 void TCamera::Translate(float degree, DirectX::XMFLOAT3 direction)
 {
+	AG_THREAD_LOCK
 	//direction.x = direction.x * degree;
 	///direction.y = direction.y * degree;
 	//direction.z = direction.z * degree;
@@ -101,6 +117,7 @@ void TCamera::Translate(float degree, DirectX::XMFLOAT3 direction)
 	//direction_3.y += direction.y;
 	//direction_3.z += direction.z;
 	RefreshVectors();
+	RETURN_THREAD_UNLOCK;
 }
 
 void TCamera::PanX(float x)
@@ -119,12 +136,14 @@ void TCamera::PanY(float y)
 */
 void TCamera::ChangeToLookAt()
 {
+	AG_THREAD_LOCK
 	IF_IS_LOOK_AT(lookTo)
-		return;
+		RETURN_THREAD_UNLOCK;
 	direction_3.x += location_3.x;
 	direction_3.y += location_3.y;
 	direction_3.z += location_3.z;
 	lookTo = LOOK_AT;
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -137,6 +156,7 @@ void TCamera::ChangeToLookAt()
 */
 void TCamera::ChangeToLookAt(ArenaModel& am, float distance, bool changeAngle)
 {
+	AG_THREAD_LOCK
 	DirectX::XMFLOAT3 newLoc = am.GetLocation();
 	DirectX::XMFLOAT3 rawDistanceCoords;
 	rawDistanceCoords.x = newLoc.x - location_3.x;
@@ -150,6 +170,7 @@ void TCamera::ChangeToLookAt(ArenaModel& am, float distance, bool changeAngle)
 	{
 		float difDistance = currentDist - distance;
 	}
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -160,8 +181,9 @@ void TCamera::ChangeToLookAt(ArenaModel& am, float distance, bool changeAngle)
 */
 void TCamera::ChangeToLookTo()
 {
+	AG_THREAD_LOCK
 	IF_IS_LOOK_TO(lookTo)
-		return;
+		RETURN_THREAD_UNLOCK;
 	float max = max(abs(direction_3.x), max(abs(direction_3.y), abs(direction_3.z)));
 	DirectX::XMFLOAT3 atTo = direction_3;
 	atTo.x -= location_3.x;
@@ -172,6 +194,7 @@ void TCamera::ChangeToLookTo()
 	direction_3.z = atTo.z / max;
 	lookTo = LOOK_TO;
 	RefreshVectors();
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -184,12 +207,14 @@ void TCamera::ChangeToLookTo()
 */
 void TCamera::ChangeToLookTo(float x, float y, float z)
 {
+	AG_THREAD_LOCK
 	lookTo = LOOK_TO;
 	float max = max(abs(x), max(abs(y), abs(z)));
 	direction_3.x = x / max;
 	direction_3.y = y / max;
 	direction_3.z = z / max;
 	RefreshVectors();
+	RETURN_THREAD_UNLOCK;
 }
 
 UCHAR* TCamera::GetAnaGameType()
@@ -199,6 +224,7 @@ UCHAR* TCamera::GetAnaGameType()
 
 void TCamera::UpdatePos(float f, UCHAR dir)
 {
+	AG_THREAD_LOCK
 	switch (dir)
 	{
 	case 0:
@@ -211,10 +237,12 @@ void TCamera::UpdatePos(float f, UCHAR dir)
 		location_3.z = f;
 	}
 	RefreshVectors();
+	RETURN_THREAD_UNLOCK;
 }
 
 void TCamera::UpdateDir(float f, UCHAR dir)
 {
+	AG_THREAD_LOCK
 	switch (dir)
 	{
 	case 0:
@@ -227,6 +255,7 @@ void TCamera::UpdateDir(float f, UCHAR dir)
 		direction_3.z = f;
 	}
 	RefreshVectors();
+	RETURN_THREAD_UNLOCK;
 }
 
 

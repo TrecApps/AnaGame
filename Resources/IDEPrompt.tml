@@ -3,15 +3,6 @@
 -|Version:0.0.1
 -/
 
-->Class
--|Class:Ribbon_Tab
--|FontSize:12
--|BorderColor:0.0,0.0,0.0,1.0
-
-->AnafaceUI
--|TabHeight:30
--|TabStyle:Ribbon_Tab
-
--->TPrompt
---|ContentColor:0.0,0.0,0.0,1.0
---|FontColor:1.0,1.0,1.0,1.0
+->TPrompt
+-|ContentColor:0.0,0.0,0.0,1.0
+-|FontColor:1.0,1.0,1.0,1.0

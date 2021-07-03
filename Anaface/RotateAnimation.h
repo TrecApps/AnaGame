@@ -6,11 +6,22 @@ class TControl;
 /**
  * Class: RotateAnimation
  * Purpose: allows Controls to spin around
+ * 
+ * SuperClass: Animation
  */
 class RotateAnimation :
 	public Animation
 {
 public:
+
+	/**
+	 * Method: RotateAnimation::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
 	/**
 	 * Method: RotateAnimation::Animation (Constructor)
 	 * Purpose: Creates the Rotation Animation with the specified animation-phase setting
@@ -24,16 +35,20 @@ public:
 	 * Purpose: Informs the animation regarding what progress a given animation should be along
 	 * Parameters: float progress - the progression of the rotation
 	 * Returns: bool - true if the resources are in order, false if a resource is missing
+	 * 
+	 * Attributes: override
 	 */
-	virtual bool Update(float progress);
+	virtual bool Update(float progress) override;
 	/**
 	 * Method: RotateAnimation::SetAnimationValue
 	 * Purpose: Sets a value needed to define an animation beginning and end
 	 * Parameters: float value - the value of an animation
 	 *				animation_value_type type - the meaning behind the value parameter
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
-	virtual void SetAnimationValue(float value, animation_value_type type);
+	virtual void SetAnimationValue(float value, animation_value_type type)override;
 
 	/**
 	 * Method: RotateAnimation::SetComponent
@@ -42,6 +57,8 @@ public:
 	 * Returns: void
 	 *
 	 * Note: Has no affect as Brushes are not directly involved in rotation operations
+	 * 
+	 * Attributes: override
 	 */
 	virtual void SetComponent(TrecPointer<TBrush> comp)override;
 	/**
@@ -51,8 +68,10 @@ public:
 	 * Returns: void
 	 *
 	 * Note: Abstract as each type can decide what its starting position is
+	 * 
+	 * Attributes: override
 	 */
-	virtual void Prepare();
+	virtual void Prepare()override;
 	/**
 	 * Method: RotateAnimation::GetAnimationType
 	 * Purpose: Reports the String version of the animation type
@@ -60,14 +79,18 @@ public:
 	 * Returns: TString - representing the type this animation object is
 	 *
 	 * Note: In this case, the String is L"Simple-Rotation"
+	 * 
+	 * Attributes: override
 	 */
-	virtual TString GetAnimationType();
+	virtual TString GetAnimationType()override;
 
 	/**
 	 * Method: RotateAnimation::SetControl
 	 * Purpose: Allows animations to get the control they need to act upon
 	 * Parameters: TrecPointer<TControl> con -  the control to operate upon
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void SetControl(TrecPointer<TControl> con)override;
 protected:

@@ -6,10 +6,20 @@ class TFlyout;
 /**
  * Class: TFlyoutParentHolder
  * Purpose: Allows a TControl to interact with a TFlyout as if it was the Control's parent
+ * 
+ * SuperClass: TParentHolder
  */
 class TFlyoutParentHolder : public TParentHolder
 {
-public: 
+public:
+
+	/**
+	 * Method: TFlyoutParentHolder::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/**
 	 * Method: TFlyoutParentHolder::TFlyoutParentHolder
@@ -25,6 +35,8 @@ public:
 	 * Parameters: TrecPointerSoft<TControl> c1 - the current child control (lets the parent control know which control to replace it with
 	 *              TrecPointer<TControl> c2 - the control to swap it with
 	 * Returns: void
+	 * 
+	 * Attributes: override
 	 */
 	virtual void SwitchChildControl(TrecPointerSoft<TControl> c1, TrecPointer<TControl> c2)override;
 private:
@@ -36,7 +48,7 @@ private:
 
 
 /**
- * Class TFlyout
+ * Class: TFlyout
  * Purpose: Base class for Controls intended to be drawn after the general Anaface is drawn, allowing
  *	Windows to draw them last and over other content as necessary
  */
@@ -96,6 +108,8 @@ public:
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	 * Returns: void
+	 * 
+	 * Attributes: virtual; message
 	 */
 	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls);
 
@@ -107,6 +121,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: virtual; message
 	 */
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons);
 
@@ -118,6 +134,8 @@ public:
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
 	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
+	 * 
+	 * Attributes: virtual; message
 	 */
 	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
 

@@ -14,22 +14,36 @@ typedef struct _ANAFACE_DLL eventNameID
 	int eventID;
 }eventNameID;
 
+/**
+ * Enum Class: anaface_parser_mode
+ * Purpose: keeps track of the mode of the parser
+ */
 typedef enum class anaface_parser_mode
 {
-	anaface_parser_mode_normal,
-	anaface_parser_mode_normal_story,
-	anaface_parser_mode_persistant_story
+	anaface_parser_mode_normal,    // Normal Parsing mode
+	anaface_parser_mode_normal_story, // Parser is focused on normal story-boards
+	anaface_parser_mode_persistant_story // Parser is focused on persistant story-boards
 };
 
 
 /**
  * Class: AnafaceParser
  * Purpose: Generates a series of TControls in a tree from a compliant Mark-up file
+ * 
+ * SuperClass: Parser_
  */
 class _ANAFACE_DLL AnafaceParser :
 	public Parser_
 {
 public:
+
+	/**
+	 * Method: AnafaceParser::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
 
 	/*
 	* Method: AnafaceParser::AnafaceParser
@@ -63,6 +77,8 @@ public:
 	 * Purpose: Creates a new Control to parse
 	 * Parameters: TString* va -  the object type
 	 * Returns: bool - whether a valid string was provided
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool Obj(TString& v) override;
 
@@ -72,8 +88,21 @@ public:
 	* Parameters: TrecPointer<TString> v - the value of the attribute
 	*				TString& e - the name of the attribute
 	* Returns: bool - whether the condition of the parser was adequate
+	 * 
+	 * Attributes: override
 	*/
 	virtual bool Attribute(TrecPointer<TString> v, TString & e)override;
+
+	/*
+	 * Method: Parser_::Attribute
+	 * Purpose: Sets up attributes for the current object being analyzed
+	 * Parameters: TString* v - the value to parse in an attribute
+	 *			TString e - the attribute name
+	 * Returns: bool - success result
+	 *
+	 * Attributes: virtual
+	 */
+	virtual bool Attribute(TString& v, TString e) override;
 	// for the attribute name
 
 	// for the attribute value (here it may be good that TStrings are used)
@@ -83,6 +112,8 @@ public:
 	 * Purpose: Whether the TML file is written for this parser
 	 * Parameters: TString v - the Parser type being checked
 	 * Returns: bool - whether the TML type is compatible
+	 * 
+	 * Attributes: override
 	 */
 	virtual bool submitType(TString v)override;
 
@@ -91,6 +122,8 @@ public:
 	* Purpose: Returns version compatibility
 	* Parameters: TString - the version string
 	* Returns: bool - whether the version is compatible
+	 * 
+	 * Attributes: override
 	*/
 	virtual bool submitEdition(TString v)override;
 
@@ -99,6 +132,8 @@ public:
 	* Purpose: Puts focus of the parser onto a child control
 	* Parameters: void
 	* Returns: bool - true
+	 * 
+	 * Attributes: override
 	*/
 	virtual bool goChild()override;
 	/*
@@ -106,6 +141,8 @@ public:
 	* Purpose: Returns parsing focus to the parent control
 	* Parameters: void
 	* Returns: void
+	 * 
+	 * Attributes: override
 	*/
 	virtual void goParent()override;
 

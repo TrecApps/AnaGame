@@ -1,13 +1,30 @@
 #pragma once
 #include "TLayout.h"
+
+/**
+ * Class: TLayoutEx
+ * Purpose: Extends TLayout to allow Rows and Columns to be added and removed after creation
+ * 
+ * SuperClass: TLayout
+ */
 class _ANAFACE_DLL TLayoutEx :	public TLayout
 {
 public:
+
+	/**
+	 * Method: TLayoutEx::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+
 	/*
 	 * Method: TLayoutEx::TLayoutEx
 	 * Purpose: Constructor
 	 * Parameters: TrecPointer<DrawingBoard> rt -  the Render target to draw to (TControl handles it)
-	*				TrecPointer<TArray<styleTable>> ta - the Class Style list (TControl handles this)
+	 *				TrecPointer<TArray<styleTable>> ta - the Class Style list (TControl handles this)
 	 * Returns: New TLayoutEx Object
 	 */
 	TLayoutEx(TrecPointer<DrawingBoard>, TrecPointer<TArray<styleTable>> ta);
@@ -71,6 +88,8 @@ public:
 	 * Purpose: Sets up the attributes of the TLayout by processing the attributes and playing it out
 	 * Parameters: RECT margin - the location the layout has to work with
 	 * Returns: bool - success
+	* 
+	* Attributes: override
 	 */
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d)override;
 
@@ -79,6 +98,8 @@ public:
 	 * Purpose: Draws out the Layout Generated
 	 * Parameters: void
 	 * Returns: void
+	* 
+	* Attributes: override
 	 */
 	virtual void onDraw(TObject* obj = nullptr) override;
 	virtual UCHAR* GetAnaGameType()override;

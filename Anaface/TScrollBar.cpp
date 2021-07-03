@@ -6,6 +6,18 @@ D2D1_COLOR_F end_box, body_box, middle_box_click, middle_box;
 int* pointer = nullptr;
 int value = 255;
 
+
+/**
+ * Method: TScrollBar::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TScrollBar::GetType()
+{
+	return TString(L"TScrollBar;") + TObject::GetType();
+}
+
 /**
  * Method: TScrollBar::TScrollBar
  * Purpose: Constructor

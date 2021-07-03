@@ -49,6 +49,7 @@ TStoryBoard::TStoryBoard()
 	threadData.longestAni = 0;
 	threadData.persist = false;
 	threadData.shortestInterval = 60000;
+	threadID = 0;
 }
 
 /**
@@ -63,6 +64,17 @@ TStoryBoard::~TStoryBoard()
 }
 
 /**
+ * Method: TStoryBoard::GetType
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ */
+TString TStoryBoard::GetType()
+{
+	return TString(L"TStoryBoard;") + TObject::GetType();
+}
+
+/**
  * Method: TStoryBoard::AddAnimation
  * Purpose: Adds an Animation to the Story Board
  * Parameters: TrecPointer<Animation> a -  the Animation to add
@@ -73,10 +85,13 @@ bool TStoryBoard::AddAnimation(TrecPointer<Animation> a)
 	if (!a.Get())
 		return false;
 
+	ThreadLock();
 	// Don't add an animation if an animation thread is underway
 	if (threadData.animationThread)
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	if (threadData.longestAni < a->GetMillisecondLength())
 		threadData.longestAni = a->GetMillisecondLength();
 
@@ -89,6 +104,7 @@ bool TStoryBoard::AddAnimation(TrecPointer<Animation> a)
 	}
 
 	threadData.animations.push_back(a);
+	ThreadRelease();
 	return true;
 }
 
@@ -100,8 +116,10 @@ bool TStoryBoard::AddAnimation(TrecPointer<Animation> a)
  */
 void TStoryBoard::SetWindow(TrecPointer<TWindow> w)
 {
+	ThreadLock();
 	if (w.Get())
 		threadData.win = TrecPointerKey::GetSoftPointerFromTrec<TWindow>(w);
+	ThreadRelease();
 }
 
 /**
@@ -112,7 +130,9 @@ void TStoryBoard::SetWindow(TrecPointer<TWindow> w)
  */
 void TStoryBoard::SetPersistant()
 {
+	ThreadLock();
 	threadData.persist = true;
+	ThreadRelease();
 }
 
 /**
@@ -123,7 +143,10 @@ void TStoryBoard::SetPersistant()
  */
 bool TStoryBoard::IsPersistant()
 {
-	return threadData.persist;
+	ThreadLock();
+	bool ret = threadData.persist;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -134,17 +157,21 @@ bool TStoryBoard::IsPersistant()
  */
 bool TStoryBoard::Run()
 {
+	ThreadLock();
 	if (threadData.animationThread)
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	threadData.animationThread = CreateThread(nullptr,
 		0,
 		ProcessAnimations,
 		&threadData,
 		0,
 		&threadID);
-
-	return threadData.animationThread != 0;
+	bool ret = threadData.animationThread != 0;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -155,11 +182,14 @@ bool TStoryBoard::Run()
  */
 bool TStoryBoard::Pause()
 {
+	ThreadLock();
 	if (threadData.animationThread)
 	{
 		SuspendThread(threadData.animationThread);
+		ThreadRelease();
 		return true;
 	}
+	ThreadRelease();
 	return false;
 }
 
@@ -171,8 +201,10 @@ bool TStoryBoard::Pause()
  */
 void TStoryBoard::Resume()
 {
+	ThreadLock();
 	if (threadData.animationThread)
 		ResumeThread(threadData.animationThread);
+	ThreadRelease();
 }
 
 
@@ -186,9 +218,11 @@ void TStoryBoard::Terminate()
 {
 	// TO-DO: Research safer way to terminate thread
 
+	ThreadLock();
 	if (threadData.animationThread)
 		TerminateThread(threadData.animationThread, 0);
 	threadData.animationThread = 0;
+	ThreadRelease();
 }
 
 /**
@@ -199,5 +233,7 @@ void TStoryBoard::Terminate()
  */
 void TStoryBoard::Empty()
 {
+	ThreadLock();
 	threadData.animations.RemoveAll();
+	ThreadRelease();
 }
