@@ -5,13 +5,19 @@
 #include <mfapi.h>
 #include "TSampleTexture.h"
 
+/**
+ * struct: guid_to_dxgi_vid_formats
+ * Purpose: Serves as a link between MF Video Formats and their DXGI Format counterparts 
+ */
 typedef struct guid_to_dxgi_vid_formats
 {
-    GUID guidFormat;
-    DXGI_FORMAT dxgiFormat;
+    GUID guidFormat;        // Reference to a Video Format
+    DXGI_FORMAT dxgiFormat; // THe DXGI Format
 }guid_to_dxgi_vid_formats;
 
-
+/**
+ * Array of format links
+ */
 guid_to_dxgi_vid_formats const formatTable[] = {
     {MFVideoFormat_NV12, DXGI_FORMAT_NV12},
     {MFVideoFormat_YUY2, DXGI_FORMAT_YUY2},
@@ -24,7 +30,13 @@ guid_to_dxgi_vid_formats const formatTable[] = {
     {MFVideoFormat_NV11, DXGI_FORMAT_NV11}
 };
 
-
+/**
+ * Function: GetBytesPerPixel
+ * Purpose: Sets the ideal Bytes per pixel based off of the provided Video Format
+ * Parameters: GUID guidSubtype - the Video Format
+ *               sFraction& m_imageBytesPP - the bytes/pixel ratio requested
+ * Returns: void
+ */
 void GetBytesPerPixel(GUID guidSubtype, sFraction& m_imageBytesPP)
 {
     if ((guidSubtype == MFVideoFormat_NV12) ||
@@ -72,7 +84,9 @@ void GetBytesPerPixel(GUID guidSubtype, sFraction& m_imageBytesPP)
 }
 
 
-
+/**
+ * List of supported video types
+ */
 GUID const* const s_pVideoFormats[] =
 {
     &MFVideoFormat_NV12,
@@ -95,8 +109,17 @@ GUID const* const s_pVideoFormats[] =
     //&MFVideoFormat_420O
 };
 
+/**
+ * number of video formats supported
+ */
 const DWORD s_dwNumVideoFormats = sizeof(s_pVideoFormats) / sizeof(s_pVideoFormats[0]);
 
+/**
+ * Function: GetFormatFromVideoFormat
+ * Purpose: Retrieves the DXGI_FORMAT that corresponds with the supported video format
+ * Parameters: GUID vidForm - the Video Format
+ * Returns: DXGI_FORMAT - the DXGI format for the Supported Video Format (or DXGI_FORMAT_UNKNOWN if not supported)
+ */
 DXGI_FORMAT GetFormatFromVideoFormat(GUID vidForm)
 {
     for (UINT Rust = 0; Rust < s_dwNumVideoFormats; Rust++)
@@ -107,13 +130,31 @@ DXGI_FORMAT GetFormatFromVideoFormat(GUID vidForm)
     return DXGI_FORMAT_UNKNOWN;
 }
 
+/**
+ * set a default framerate
+ */
 const MFRatio s_DefaultFrameRate = { 30, 1 };
 
+/**
+ * Method: TStreamSink::AddRef
+ * Purpose: Increments the COM Reference
+ * Parameters: void
+ * Returns: ULONG - the new counter
+ */
 STDMETHODIMP_(ULONG __stdcall) TStreamSink::AddRef(void)
 {
     return InterlockedIncrement(&m_nRefCount);
 }
 
+/**
+ * Method: TStreamSink::QueryInterface
+ * Purpose: Retrieves a pointer to an object based off of the specified interface
+ * Parameters: REFIID riid - the id of the interface to get
+ *              void** ppv - where to place the pointer, if riid is supported
+ * Returns: HRESULT - E_POINTER if ppv is null, E_NOINTERFACE if riid is not supported, or S_OK
+ *
+ * Note: Supported Interfaces are IUnknown, IMFStreamSink, and IMFMediaTypeHandler
+ */
 HRESULT TStreamSink::QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonfailure_ void** ppv)
 {
     if (!ppv)
@@ -145,6 +186,12 @@ HRESULT TStreamSink::QueryInterface(REFIID iid, __RPC__deref_out _Result_nullonf
     return S_OK;
 }
 
+/**
+ * Method: TStreamSink::Release
+ * Purpose: Decrements the counter (possibly leading to deletion), to be called when code is done with this object
+ * Parameters: void
+ * Returns: ULONG - the counter set now (if zero, then this object should be deleted)
+ */
 STDMETHODIMP_(ULONG __stdcall) TStreamSink::Release(void)
 {
     ULONG c = InterlockedDecrement(&m_nRefCount);
@@ -156,34 +203,54 @@ STDMETHODIMP_(ULONG __stdcall) TStreamSink::Release(void)
     return c;
 }
 
+/**
+ * Method: TStreamSink::Flush
+ * Purpose: Removes all frames held by the sink
+ * Parameters: void
+ * Returns: HRESULT - S_OK
+ */
 HRESULT TStreamSink::Flush(void)
 {
     ThreadLock();
     samples.Flush();
-    ThreadRelease();
     processFrames = false;
+    ThreadRelease();
     return S_OK;
 }
 
+/**
+ * Method: TStreamSink::GetIdentifier
+ * Purpose: Retrieves the ID according to the Media Sink
+ * Parameters: DWORD* pdwIdentifier - holds the identifier of this sink (1)
+ * Returns: HRESULT - S_OK unless parameter is null (E_POINTER) or sink is shutting down (MF_E_SHUTDOWN)
+ */
 HRESULT TStreamSink::GetIdentifier(__RPC__out DWORD* pdwIdentifier)
 {
+    // Handle Null pointer parameter
     if (!pdwIdentifier)
         return E_POINTER;
     ThreadLock();
     HRESULT ret = S_OK;
     if (CheckShutdown())
-        ret = MF_E_SHUTDOWN;
+        ret = MF_E_SHUTDOWN; // Check shutdown status
     else
-        *pdwIdentifier = 1;
+        *pdwIdentifier = 1; // Admit id is 1
     ThreadRelease();
     return ret;
 }
 
+/**
+ * Method: TStreamSink::GetMediaSink
+ * Purpose: Returns the Media Sink associaed with this stream sink
+ * Parameters: IMFMediaSink** ppMediaSink - holder for media sink pointer
+ * Returns: HRESULT - S_OK unless parameter is null (E_POINTER) or sink is null (E_NOT_SET)
+ */
 HRESULT TStreamSink::GetMediaSink(__RPC__deref_out_opt IMFMediaSink** ppMediaSink)
 {
     HRESULT ret = S_OK;
     ThreadLock();
     IMFMediaSink* sink = mediaSink.Get();
+    // Handle null holder and sink scenarios
     if (!ppMediaSink)
         ret = E_POINTER;
     else if (!sink)
@@ -191,6 +258,7 @@ HRESULT TStreamSink::GetMediaSink(__RPC__deref_out_opt IMFMediaSink** ppMediaSin
     
     if (ret == S_OK)
     {
+        // Since we are returning a media sink, update the reference on the sink
         sink->AddRef();
         *ppMediaSink = sink;
     }
@@ -198,35 +266,53 @@ HRESULT TStreamSink::GetMediaSink(__RPC__deref_out_opt IMFMediaSink** ppMediaSin
     return ret;
 }
 
+/**
+ * Method: TStreamSink::GetMediaTypeHandler
+ * Purpose: Returns the Media Type handler Interface (this object)
+ * Parameters: IMFMediaTypeHandler** ppHandler - the handler object holder
+ * Returns: HRESULT - S_OK unless parameter is null (E_POINTER) or sink is shutting down (MF_E_SHUTDOWN)
+ */
 HRESULT TStreamSink::GetMediaTypeHandler(__RPC__deref_out_opt IMFMediaTypeHandler** ppHandler)
 {
+    //Handle Null pointer parameter
     if (!ppHandler)
         return E_POINTER;
 
     ThreadLock();
     HRESULT ret = S_OK;
-    if (CheckShutdown())
+    if (CheckShutdown())  // Handle shutdown case
         ret = MF_E_SHUTDOWN;
     else
+        // Use Query Interface o get the pointer as this object fullfills that interface
         ret = this->QueryInterface(IID_IMFMediaTypeHandler, (void**)ppHandler);
     ThreadRelease();
     return ret;
 }
 
+/**
+ * Method: TStreamSink::PlaceMarker
+ * Purpose: Allows markers to be placed in the stream
+ * Parameters: MFSTREAMSINK_MARKER_TYPE eMarkerType - type of marker to deal with
+ *              const PROPVARIANT* pvarMarkerValue - the value of the marker
+ *              const PROPVARIANT* pvarContextValue - information about the context
+ * Returns: HRESULT - S_OK unless parameter is null (E_POINTER), or shutdown is in effect (MF_E_SHUTDOWN)
+ */
 HRESULT TStreamSink::PlaceMarker(MFSTREAMSINK_MARKER_TYPE eMarkerType, __RPC__in const PROPVARIANT* pvarMarkerValue, __RPC__in const PROPVARIANT* pvarContextValue)
 {
+    // Handle null parameters
     if (!pvarContextValue || !pvarMarkerValue)
         return E_POINTER;
     ThreadLock();
     HRESULT ret = S_OK;
 
-    if (CheckShutdown())
+    if (CheckShutdown()) // Handle shutdown scenario
     {
         ret = MF_E_SHUTDOWN;
     }
     else
     {
         TVideoMarker* mark = nullptr;
+        // Use TVideoMarker to hold the marker and place it in the queue
         ret = TVideoMarker::Create(eMarkerType, pvarMarkerValue, pvarContextValue, &mark);
         if (SUCCEEDED(ret))
         {
@@ -237,12 +323,20 @@ HRESULT TStreamSink::PlaceMarker(MFSTREAMSINK_MARKER_TYPE eMarkerType, __RPC__in
     return ret;
 }
 
+/**
+ * Method: TStreamSink::ProcessSample
+ * Purpose: Takes in a sample and attempts to convert it to a texture (not currently working properly, needs inspection)
+ * Parameters: IMFSample* pSample - the sample to process and store
+ * Returns: HRESULT - S_OK unless parameter is null (E_POINTER), or shutdown is in effect (MF_E_SHUTDOWN), or a DirectX texture generation fails
+ */
 HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
 {
+    // Handle null parameter
     if (!pSample)
         return E_POINTER;
     ThreadLock();
 
+    // Double check that the height and width have been set
     if (!textureDesc.Width || !textureDesc.Height)
     {
         ThreadRelease();
@@ -250,13 +344,15 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
     }
 
     DWORD sampleSize = 0;
+
+    // Determine how many buffers are in the sample
     HRESULT ret = pSample->GetBufferCount(&sampleSize);
     if (FAILED(ret))
     {
         ThreadRelease();
         return ret;
     }
-
+    // Get the biffer from the sample
     IMFMediaBuffer* pBuffer = nullptr;
     if (1 == sampleSize)
     {
@@ -269,6 +365,8 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
         return ret;
 
     IMF2DBuffer* p2Buff = nullptr;
+
+    // Attempt to connvert to a 2D buffer (ideal)
     ret = pBuffer->QueryInterface<IMF2DBuffer>(&p2Buff);
     BYTE* picByte = nullptr;
     LONG picLen = 0;
@@ -287,8 +385,6 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
             return ret;
         }
         picLen = maxLen / textureDesc.Height;
-
-
     }
     else
     {
@@ -317,6 +413,11 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
 
     ID3D11Texture2D* textures = nullptr;
     ret = device->CreateTexture2D(&textureDesc, &resourceData, &textures);
+
+    if (p2Buff)
+        p2Buff->Unlock2D();
+    else
+        pBuffer->Unlock();
 
     if(FAILED(ret))
     {
@@ -895,6 +996,12 @@ HRESULT TStreamSink::RequestSample()
     return ret;
 }
 
+/**
+ * Method: TStreamSink::TStreamSink
+ * Purpose: Constructor
+ * Parameters: TrecComPointer<TPresenter> present - the presenter to use
+ * Returns: new stream sink object
+ */
 TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
     callBack(this, &TStreamSink::DispatchEvent)
 
@@ -918,6 +1025,12 @@ TStreamSink::TStreamSink(TrecComPointer<TPresenter> present):
     m_imageBytesPP.Denominator = m_imageBytesPP.Numerator = 1;
 }
 
+/**
+ * Method: TStreamSink::CheckShutdown
+ * Purpose: Reports whether the sink is shutting down
+ * Parameters: void
+ * Returns: bool - whether we are shutting down
+ */
 bool TStreamSink::CheckShutdown()
 {
     return isShutdown;
