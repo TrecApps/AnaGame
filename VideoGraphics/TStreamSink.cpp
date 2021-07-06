@@ -448,6 +448,13 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
     return S_OK;
 }
 
+/**
+ * Method: TStreamSink::BeginGetEvent
+ * Purpose: Begins an event
+ * Parameters: IMFAsyncCallback* pCallback - call back mthod to call
+ *              IUnknown* punkState - the state involved in the event
+ * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or whatever is returned by the event queue
+ */
 HRESULT TStreamSink::BeginGetEvent(IMFAsyncCallback* pCallback, IUnknown* punkState)
 {
     if (!pCallback || !punkState)
@@ -460,6 +467,13 @@ HRESULT TStreamSink::BeginGetEvent(IMFAsyncCallback* pCallback, IUnknown* punkSt
     return ret;
 }
 
+/**
+ * Method: TStreamSink::EndGetEvent
+ * Purpose: Completes an event
+ * Parameters: IMFAsyncResult* pResult - Result to return
+ *              IMFMediaEvent** ppEvent - the event in question
+ * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or whatever is returned by the event queue
+ */
 HRESULT TStreamSink::EndGetEvent(IMFAsyncResult* pResult, _Out_ IMFMediaEvent** ppEvent)
 {
     HRESULT ret = S_OK;
@@ -470,6 +484,13 @@ HRESULT TStreamSink::EndGetEvent(IMFAsyncResult* pResult, _Out_ IMFMediaEvent** 
     return ret;
 }
 
+/**
+ * Method: TStreamSink::GetEvent
+ * Purpose: Retrieves the event requested
+ * Parameters: DWORD dwFlags - code for the target event
+ *              IMFMediaEvent** ppEvent - the event being held
+ * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or whatever is returned by the event queue
+ */
 HRESULT TStreamSink::GetEvent(DWORD dwFlags, __RPC__deref_out_opt IMFMediaEvent** ppEvent)
 {
     IMFMediaEventQueue* pQueue = NULL;
@@ -483,12 +504,21 @@ HRESULT TStreamSink::GetEvent(DWORD dwFlags, __RPC__deref_out_opt IMFMediaEvent*
     TObject::ThreadRelease();
     if (SUCCEEDED(ret))
     {
-        pQueue->GetEvent(dwFlags, ppEvent);
+        ret = pQueue->GetEvent(dwFlags, ppEvent);
         pQueue->Release();
     }
     return ret;
 }
 
+/**
+ * Method: TStreamSink::QueueEvent
+ * Purpose: Requests an event to be initiated
+ * Parameters: MediaEventType met - event type
+ *              REFGUID guidExtendedType - the GUID type of the event (usuallu GUID_NULL)
+ *              HRESULT hrStatus - status to hold in the event itself
+ *              const PROPVARIANT* pvValue
+ * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or whatever is returned by the event queue
+ */
 HRESULT TStreamSink::QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtendedType, HRESULT hrStatus, __RPC__in_opt const PROPVARIANT* pvValue)
 {
     TObject::ThreadLock();
@@ -497,6 +527,12 @@ HRESULT TStreamSink::QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtend
     return ret;
 }
 
+/**
+ * Method: TStreamSink::GetCurrentMediaType
+ * Purpose: Retrieves the current media type that has been set
+ * Parameters: IMFMediaType** ppMediaType - holder to the current type
+ * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN), or type is not currently set (MF_E_NOT_INITIALIZED)
+ */
 STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetCurrentMediaType(_Outptr_ IMFMediaType** ppMediaType)
 {
     if (!ppMediaType)
@@ -519,6 +555,12 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetCurrentMediaType(_Outptr_ IMFMe
     return ret;
 }
 
+/**
+ * Method: TStreamSink::GetMajorType
+ * Purpose: Retreives the major type of the media format currently set in the sink
+ * Parameters: GUID* pguidMajorType - the current major type being supported
+ * Returns:  HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN), or type is not currently set (MF_E_NOT_INITIALIZED)
+ */
 STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetMajorType(__RPC__out GUID* pguidMajorType)
 {
     if (!pguidMajorType)
@@ -540,6 +582,13 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetMajorType(__RPC__out GUID* pgui
     return ret;
 }
 
+/**
+ * Method: TStreamSink::GetMediaTypeByIndex
+ * Purpose: Returns a Media Type by the index provided
+ * Parameters: DWORD dwIndex - the index of the supported type
+ *              IMFMediaType** ppType - the type being held (compiled by the method)
+ * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN), or index is out of bounds (MF_E_NO_MORE_TYPES)
+ */
 STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetMediaTypeByIndex(DWORD dwIndex, _Outptr_ IMFMediaType** ppType)
 {
     if (!ppType)
@@ -576,6 +625,12 @@ done:
     return ret;
 }
 
+/**
+ * Method: TStreamSink::GetMediaTypeCount
+ * Purpose: Reports the number of formas supported by this sink
+ * Parameters: DWORD* pdwTypeCount - holds the count
+ * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN)
+ */
 STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetMediaTypeCount(__RPC__out DWORD* pdwTypeCount)
 {
     if (!pdwTypeCount)
@@ -588,6 +643,13 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetMediaTypeCount(__RPC__out DWORD
     return S_OK;
 }
 
+/**
+ * Method: TStreamSink::IsMediaTypeSupported
+ * Purpose: Allows MF to test a type and deduce if this stream supports it
+ * Parameters: IMFMediaType* pMediaType - the type to check
+ *              IMFMediaType** ppMediaType - hint to the caller of the closest supported type that is supported
+ * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN), or if type is not supported (MF_E_INVALIDMEDIATYPE)
+ */
 STDMETHODIMP_(HRESULT __stdcall) TStreamSink::IsMediaTypeSupported(IMFMediaType* pMediaType, _Outptr_opt_result_maybenull_ IMFMediaType** ppMediaType)
 {
     if (!pMediaType)
@@ -602,8 +664,10 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::IsMediaTypeSupported(IMFMediaType*
     HRESULT ret = pMediaType->GetGUID(MF_MT_SUBTYPE, &subType);
     if (FAILED(ret))
         return ret;
+    // Start by assuming type is not valid
     ret = MF_E_INVALIDMEDIATYPE;
 
+    // Scout supported types to see if the type being checked matches one of them
     for (DWORD i = 0; i < s_dwNumVideoFormats; i++)
     {
         if (subType == (*s_pVideoFormats[i]))
@@ -612,12 +676,19 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::IsMediaTypeSupported(IMFMediaType*
             break;
         }
     }
+    // Don't offer an alternative
     if(ppMediaType)
         *ppMediaType = nullptr;
 
     return ret;
 }
 
+/**
+ * Method: TStreamSink::SetCurrentMediaType
+ * Purpose: Updates the Stream about the type of data that the stream will be getting
+ * Parameters: IMFMediaType* pMediaType - information about the data we are expected to get
+ * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN)
+ */
 STDMETHODIMP_(HRESULT __stdcall) TStreamSink::SetCurrentMediaType(IMFMediaType* pMediaType)
 {
     if (!pMediaType)
@@ -690,6 +761,15 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::SetCurrentMediaType(IMFMediaType* 
     return ret;
 }
 
+/**
+ * Method: TStreamSink::GetStreamSink
+ * Purpose: Sets up a stream sink for use with the media sink
+ * Parameters: TrecComPointer<TMediaSink> sink - he media sink to attch to
+ *              TrecPointer<DrawingBoard> board - the drawing board to work with
+ * Returns: TrecComPointer<IMFStreamSink> -  the Stream sink to use
+ *
+ * Attributes: static
+ */
 TrecComPointer<IMFStreamSink> TStreamSink::GetStreamSink(TrecComPointer<TMediaSink> sink, TrecPointer<DrawingBoard> board)
 {
     if(!sink.Get() || !board.Get() || !board->GetWindowEngine().Get())
@@ -709,6 +789,12 @@ TrecComPointer<IMFStreamSink> TStreamSink::GetStreamSink(TrecComPointer<TMediaSi
     return holder.Extract();
 }
 
+/**
+ * Method: TStreamSink::Initialize
+ * Purpose: Sets up the Queue needed to manage events and run asynchronously
+ * Parameters: void
+ * Returns: HRESULT - should be S_OK
+ */
 HRESULT TStreamSink::Initialize()
 {
     HRESULT ret = S_OK;
@@ -720,6 +806,12 @@ HRESULT TStreamSink::Initialize()
     return ret;
 }
 
+/**
+ * Method: TStreamSink::Pause
+ * Purpose: Sets event to get the stream to pause
+ * Parameters: void
+ * Returns: HRESULT - MF_E_INVALIDREQUEST if state ready or paused, otherise should be S_OK
+ */
 HRESULT TStreamSink::Pause(void)
 {
     TObject::ThreadLock();
@@ -734,6 +826,12 @@ HRESULT TStreamSink::Pause(void)
     return ret;
 }
 
+/**
+ * Method: TStreamSink::Preroll
+ * Purpose: Causes initial requests for samples to be made
+ * Parameters: void
+ * Returns: HRESULT - S_OK unless shutting down (MF_E_SHUTDOWN)
+ */
 HRESULT TStreamSink::Preroll(void)
 {
     TObject::ThreadLock();
@@ -749,6 +847,12 @@ HRESULT TStreamSink::Preroll(void)
     return ret;
 }
 
+/**
+ * Method: TStreamSink::Restart
+ * Purpose: Sets event to get the stream to restart
+ * Parameters: void
+ * Returns: HRESULT - MF_E_INVALIDREQUEST if state ready or paused, otherise should be S_OK
+ */
 HRESULT TStreamSink::Restart(void)
 {
     TObject::ThreadLock();
@@ -763,6 +867,12 @@ HRESULT TStreamSink::Restart(void)
     return ret;
 }
 
+/**
+ * Method: TStreamSink::Shutdown
+ * Purpose: Shutsdown the Stream sink, rendering most operations invalid
+ * Parameters: void
+ * Returns: HRESULT - S_OK unless the event queue is not set up (E_POINTER)
+ */
 HRESULT TStreamSink::Shutdown(void)
 {
     if (!m_pEventQueue)
@@ -776,6 +886,12 @@ HRESULT TStreamSink::Shutdown(void)
     return S_OK;
 }
 
+/**
+ * Method: TStreamSink::Start
+ * Purpose: Sets event to get the stream to stop
+ * Parameters: MFTIME start - Starting point
+ * Returns: HRESULT - MF_E_INVALIDREQUEST if state not set, otherise should be S_OK
+ */
 HRESULT TStreamSink::Start(MFTIME start)
 {
     TObject::ThreadLock();
@@ -793,6 +909,12 @@ HRESULT TStreamSink::Start(MFTIME start)
     return ret;
 }
 
+/**
+ * Method: TStreamSink::Stop
+ * Purpose: Sets event to get the stream to stop
+ * Parameters: void
+ * Returns: HRESULT - MF_E_INVALIDREQUEST if state not set, otherise should be S_OK
+ */
 HRESULT TStreamSink::Stop(void)
 {
     TObject::ThreadLock();
@@ -807,50 +929,69 @@ HRESULT TStreamSink::Stop(void)
     return ret;
 }
 
+/**
+ * Method: TStreamSink::DispatchEvent
+ * Purpose: Call Back function to run in a seperate MF thread
+ * Parameters: IMFAsyncResult* result - the interface holding callback data
+ * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or the results of Processing the result
+ */
 HRESULT TStreamSink::DispatchEvent(IMFAsyncResult* result)
 {
     ThreadLock();
 
+    // Handle shutdown situation
     if (isShutdown)
     {
         ThreadRelease();
         return MF_E_SHUTDOWN;
     }
     IUnknown* pState = nullptr;
+    // Get the State
     HRESULT ret = result->GetState(&pState);
     if (SUCCEEDED(ret))
     {
+        // Convert to TAsyncOp class
         TAsyncOp* asyncOp = (TAsyncOp*)pState;
+        // Get the Operation o perform
         StreamOperation op = asyncOp->m_op;
 
         switch (op)
         {
+            // Start or restart
         case StreamOperation::OpStart:
         case StreamOperation::OpRestart:
+            // Let MF know stream sink has started
             ret = QueueEvent(MEStreamSinkStarted, GUID_NULL, ret, nullptr);
             
             if (SUCCEEDED(ret))
             {
+                // Begin to request samples
                 sampleRequests++;
                 ret = QueueEvent(MEStreamSinkRequestSample, GUID_NULL, ret, NULL);
             }
 
+            // Begin processing samples
             if (SUCCEEDED(ret))
             {
                 ret = ProcessQueueSamples(processFrames);
             }
             break;
         case StreamOperation::OpStop:
+            // Make sure full screen is false if stopping
             presenter->SetFullscreen(FALSE);
             Flush();
+            // No requests
             sampleRequests = 0;
+            // Queue event sink stopped
             ret = QueueEvent(MEStreamSinkStopped, GUID_NULL, ret, nullptr);
             break;
         case StreamOperation::OpPause:
+            // Queue event sink paused
             ret = QueueEvent(MEStreamSinkPaused, GUID_NULL, ret, nullptr);
             break;
         case StreamOperation::OpProcessSample:
         case StreamOperation::OpPlaceMarker:
+            // Dispatch the sample
             if (!waitForClock)
             {
                 ret = this->DispatchSample(asyncOp);
@@ -866,6 +1007,12 @@ HRESULT TStreamSink::DispatchEvent(IMFAsyncResult* result)
     return ret;
 }
 
+/**
+ * Method: TStreamSink::PresentFrame
+ * Purpose: Causes the current frame to be present
+ * Parameters: void
+ * Returns: HRESULT - MF_E_SHUTDOWN if shutting down, or the result of presneting the frame, and asyncronously process samples
+ */
 HRESULT TStreamSink::PresentFrame()
 {
     ThreadLock();
@@ -873,10 +1020,12 @@ HRESULT TStreamSink::PresentFrame()
 
     if (processFrames)
     {
+        // Handle Shutdown scenario, or tell presenter to present the current frame
         ret = isShutdown ? MF_E_SHUTDOWN : presenter->PresentFrame();
     }
     if (SUCCEEDED(ret))
     {
+        // set up sample processing if currently stopped or paused
         if (state == PlayState::State_Stopped || state == PlayState::State_Paused)
         {
             TAsyncOp* newOp = new TAsyncOp(StreamOperation::OpProcessSample);
@@ -886,6 +1035,7 @@ HRESULT TStreamSink::PresentFrame()
     }
     else
     {
+        // Queue event for error
         ret = QueueEvent(MEError, GUID_NULL, ret, nullptr);
     }
 
@@ -893,23 +1043,38 @@ HRESULT TStreamSink::PresentFrame()
     return ret;
 }
 
+/**
+ * Method: TStreamSink::IsActive
+ * Purpose: Reports whether it is active (playing or paused)
+ * Parameters: void
+ * Returns: bool - true if sink is playing or paused, false otherwise
+ */
 bool TStreamSink::IsActive()
 {
     return ((state == PlayState::State_Started) || (state == PlayState::State_Paused));
 }
 
+/**
+ * Method: TStreamSink::ProcessQueueSamples
+ * Purpose: Processes Samples by queuing them if markers or Processing them if texture samples
+ * Parameters: bool doProcess - whether we are supposed to process the frame (mostly true)
+ * Returns: HRESULT - The Result of Queing events or Processing frames
+ */
 HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
 {
     HRESULT ret = S_OK;
     IUnknown* samp = nullptr;
 
+    // Assume that samples still need to be dispatched
     bool repeat = true;
 
+    // Process Samples as long as there are samples and we have no reason not to
     while (samples.Dequeue(samp) && repeat)
     {
         IVideoMarker* mSample = nullptr;
         ISampleTexture* fSample = nullptr;
 
+        // Retrieve either sample or a marker
         if ((ret = samp->QueryInterface<IVideoMarker>(&mSample)) == E_NOINTERFACE)
             ret = samp->QueryInterface<ISampleTexture>(&fSample);
 
@@ -917,12 +1082,16 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
         {
             if (mSample)
             {
+                // We have a marker sample, in Anagame, guaranteed to be a TVideoMarker object
                 TVideoMarker* tMSample = (TVideoMarker*)mSample;
+
+                // Set up data
                 PROPVARIANT var;
                 PropVariantInit(&var);
 
                 ret = tMSample->GetContext(&var);
                 if (SUCCEEDED(ret))
+                    // Send Data to the Marker 
                     ret = QueueEvent(MEStreamSinkMarker, GUID_NULL, doProcess ? S_OK : E_ABORT, &var);
 
                 PropVariantClear(&var);
@@ -930,24 +1099,30 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
             }
             else if(doProcess)
             {
+                // Only send to presenter if told to
                 UINT laceMode = 0;
                 BOOL deviceChanged = false;
                 BOOL processAgain = false;
                 IMFSample* outSamp = nullptr;
+
+                // Have the presenter process the frame
                 ret = presenter->ProcessFrame(this->currType, (TSampleTexture*)fSample, &laceMode, &deviceChanged, &outSamp);
 
                 if (SUCCEEDED(ret))
                 {
+                    // Handle scenario where device has changed
                     if (deviceChanged)
                         QueueEvent(MEStreamSinkDeviceChanged, GUID_NULL, S_OK, nullptr);
+                    // if we need this sample, put it back
                     if (processAgain)
                         samples.PushHead(samp);
                 }
-                if (SUCCEEDED(ret))
+                if (SUCCEEDED(ret) && outSamp)
                 {
-
-                        ret = schedule->ScheduleSample((TSampleTexture*)fSample, state != PlayState::State_Started);
-                        repeat = false;
+                    // Inform the scheduler
+                    ret = schedule->ScheduleSample((TSampleTexture*)fSample, state != PlayState::State_Started);
+                    // Dont repeat if we have an output sample
+                    repeat = false;
                 }
                 fSample->Release();
                 if (outSamp)
@@ -960,6 +1135,12 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
     return ret;
 }
 
+/**
+ * Method: TStreamSink::DispatchSample
+ * Purpose: Causes our samples to be dispatched to the presentation
+ * Parameters: TAsyncOp* op - operation to use
+ * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or the results of processing samples and requesting samples
+ */
 HRESULT TStreamSink::DispatchSample(TAsyncOp* op)
 {
     if(isShutdown)
@@ -974,21 +1155,31 @@ HRESULT TStreamSink::DispatchSample(TAsyncOp* op)
     return ret;
 }
 
+/**
+ * Method: TStreamSink::RequestSample
+ * Purpose: Tells the Media Framework that this stream needs more framessamples
+ * Parameters: void
+ * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or the result of sending the Request Samples event
+ */
 HRESULT TStreamSink::RequestSample()
 {
     HRESULT ret = S_OK;
 
+    // While we have fewer samples and sample requests than 5, make a request
     while ((sampleRequests + samples.GetSize()) < 5)
     {
+        // handle shutdown scenario
         if (isShutdown)
         {
             ret = MF_E_SHUTDOWN;
             break;
         }
 
+        // increment sample request count
         sampleRequests++;
         ret = QueueEvent(MEStreamSinkRequestSample, GUID_NULL, S_OK, nullptr);
 
+        // Queue Error event
         if (FAILED(ret))
             ret = QueueEvent(MEError, GUID_NULL, ret, nullptr);
     }

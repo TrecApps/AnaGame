@@ -101,163 +101,174 @@ public:
     // IMFMediaEventGenerator (from IMFStreamSink)
 
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::BeginGetEvent
+     * Purpose: Begins an event
+     * Parameters: IMFAsyncCallback* pCallback - call back mthod to call
+     *              IUnknown* punkState - the state involved in the event
+     * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or whatever is returned by the event queue
      */
     STDMETHODIMP BeginGetEvent(IMFAsyncCallback* pCallback, IUnknown* punkState) override;
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::EndGetEvent
+     * Purpose: Completes an event
+     * Parameters: IMFAsyncResult* pResult - Result to return
+     *              IMFMediaEvent** ppEvent - the event in question
+     * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or whatever is returned by the event queue
      */
     STDMETHODIMP EndGetEvent(IMFAsyncResult* pResult, _Out_ IMFMediaEvent** ppEvent) override;
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::GetEvent
+     * Purpose: Retrieves the event requested
+     * Parameters: DWORD dwFlags - code for the target event
+     *              IMFMediaEvent** ppEvent - the event being held
+     * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or whatever is returned by the event queue
      */
     STDMETHODIMP GetEvent(DWORD dwFlags, __RPC__deref_out_opt IMFMediaEvent** ppEvent) override;
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::QueueEvent
+     * Purpose: Requests an event to be initiated. Many methods of this class run in a seperate thread, out of Anagame's reach
+     * Parameters: MediaEventType met - event type
+     *              REFGUID guidExtendedType - the GUID type of the event (usually GUID_NULL)
+     *              HRESULT hrStatus - status to hold in the event itself
+     *              const PROPVARIANT* pvValue
+     * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or whatever is returned by the event queue
      */
     STDMETHODIMP QueueEvent(MediaEventType met, __RPC__in REFGUID guidExtendedType, HRESULT hrStatus, __RPC__in_opt const PROPVARIANT* pvValue) override;
 
     // IMFMediaTypeHandler
 
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::GetCurrentMediaType
+     * Purpose: Retrieves the current media type that has been set
+     * Parameters: IMFMediaType** ppMediaType - holder to the current type
+     * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN), or type is not currently set (MF_E_NOT_INITIALIZED)
      */
     STDMETHODIMP GetCurrentMediaType(_Outptr_ IMFMediaType** ppMediaType) override;
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::GetMajorType
+     * Purpose: Retreives the major type of the media format currently set in the sink
+     * Parameters: GUID* pguidMajorType - the current major type being supported
+     * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN), or type is not currently set (MF_E_NOT_INITIALIZED)
      */
     STDMETHODIMP GetMajorType(__RPC__out GUID* pguidMajorType) override;
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::GetMediaTypeByIndex
+     * Purpose: Returns a Media Type by the index provided
+     * Parameters: DWORD dwIndex - the index of the supported type
+     *              IMFMediaType** ppType - the type being held (compiled by the method)
+     * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN), or index is out of bounds (MF_E_NO_MORE_TYPES)
      */
     STDMETHODIMP GetMediaTypeByIndex(DWORD dwIndex, _Outptr_ IMFMediaType** ppType) override;
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::GetMediaTypeCount
+     * Purpose: Reports the number of formas supported by this sink
+     * Parameters: DWORD* pdwTypeCount - holds the count
+     * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN)
      */
     STDMETHODIMP GetMediaTypeCount(__RPC__out DWORD* pdwTypeCount) override;
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::IsMediaTypeSupported
+     * Purpose: Allows MF to test a type and deduce if this sink supports it
+     * Parameters: IMFMediaType* pMediaType - the type to check
+     *              IMFMediaType** ppMediaType - hint to the caller of the closest supported type that is supported
+     * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN), or if type is not supported (MF_E_INVALIDMEDIATYPE)
      */
     STDMETHODIMP IsMediaTypeSupported(IMFMediaType* pMediaType, _Outptr_opt_result_maybenull_ IMFMediaType** ppMediaType) override;
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::SetCurrentMediaType
+     * Purpose: Updates the Stream about the type of data that the stream will be getting
+     * Parameters: IMFMediaType* pMediaType - information about the data we are expected to get
+     * Returns: HRESULT - Should be S_OK unless param is null (E_POINER) or stream is shutting down (MF_E_SHUTDOWN)
      */
     STDMETHODIMP SetCurrentMediaType(IMFMediaType* pMediaType) override;
 
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::GetStreamSink
+     * Purpose: Sets up a stream sink for use with the media sink
+     * Parameters: TrecComPointer<TMediaSink> sink - he media sink to attch to
+     *              TrecPointer<DrawingBoard> board - the drawing board to work with
+     * Returns: TrecComPointer<IMFStreamSink> -  the Stream sink to use
+     * 
+     * Attributes: static
      */
     static TrecComPointer<IMFStreamSink> GetStreamSink(TrecComPointer<TMediaSink> sink, TrecPointer<DrawingBoard> board);
 
 
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::Initialize
+     * Purpose: Sets up the Queue needed to manage events and run asynchronously
+     * Parameters: void 
+     * Returns: HRESULT - should be S_OK
      */
     HRESULT Initialize();
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::Pause
+     * Purpose: Sets event to get the stream to pause
+     * Parameters: void
+     * Returns: HRESULT - MF_E_INVALIDREQUEST if state ready or paused, otherise should be S_OK
      */
     HRESULT Pause(void);
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::Preroll
+     * Purpose: Causes initial requests for samples to be made
+     * Parameters: void
+     * Returns: HRESULT - S_OK unless shutting down (MF_E_SHUTDOWN)
      */
     HRESULT Preroll(void);
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::Restart
+     * Purpose: Sets event to get the stream to restart
+     * Parameters: void
+     * Returns: HRESULT - MF_E_INVALIDREQUEST if state ready or paused, otherise should be S_OK
      */
     HRESULT Restart(void);
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::Shutdown
+     * Purpose: Shutsdown the Stream sink, rendering most operations invalid
+     * Parameters: void
+     * Returns: HRESULT - S_OK unless the event queue is not set up (E_POINTER)
      */
     HRESULT Shutdown(void);
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::Start
+     * Purpose: Sets event to get the stream to start
+     * Parameters: MFTIME start - Starting point
+     * Returns: HRESULT - MF_E_INVALIDREQUEST if state not set, otherise should be S_OK
      */
     HRESULT Start(MFTIME start);
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::Stop
+     * Purpose: Sets event to get the stream to stop
+     * Parameters: void
+     * Returns: HRESULT - MF_E_INVALIDREQUEST if state not set, otherise should be S_OK
      */
     HRESULT Stop(void);
 
     // Callback
 
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::DispatchEvent
+     * Purpose: Call Back function to run in a seperate MF thread
+     * Parameters: IMFAsyncResult* result - the interface holding callback data
+     * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or the results of Processing the result
      */
     HRESULT DispatchEvent(IMFAsyncResult* result);
 
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::PresentFrame
+     * Purpose: Causes the current frame to be present
+     * Parameters: void
+     * Returns: HRESULT - MF_E_SHUTDOWN if shutting down, or the result of presneting the frame, and asyncronously process samples
      */
     HRESULT PresentFrame();
 
     //Anagame Methods
 
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::IsActive
+     * Purpose: Reports whether it is active (playing or paused)
+     * Parameters: void
+     * Returns: bool - true if sink is playing or paused, false otherwise
      */
     bool IsActive();
 
@@ -311,24 +322,24 @@ private:
     };
 
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::ProcessQueueSamples
+     * Purpose: Processes Samples by queuing them if markers or Processing them if texture samples
+     * Parameters: bool doProcess - whether we are supposed to process the frame (mostly true)
+     * Returns: HRESULT - The Result of Queing events or Processing frames
      */
     HRESULT ProcessQueueSamples(bool doProcess);
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::DispatchSample
+     * Purpose: Causes our samples to be dispatched to the presentation
+     * Parameters: TAsyncOp* op - operation to use
+     * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or the results of processing samples and requesting samples
      */
     HRESULT DispatchSample(TAsyncOp* op);
     /**
-     * Method: TStreamSink::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TStreamSink::RequestSample
+     * Purpose: Tells the Media Framework that this stream needs more framessamples
+     * Parameters: void
+     * Returns: HRESULT - MF_E_SHUTDOWN if shutting down or the result of sending the Request Samples event
      */
     HRESULT RequestSample();
     /**
