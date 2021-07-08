@@ -15,6 +15,8 @@ TScheduler::TScheduler(TrecComPointer<IMFStreamSink> s):
 	streamer = s;
 	waiter = 0;
 	this->timerKey = 0;
+	frameRate = 1.0f;
+	lastSampleTime = 0;
 }
 
 /**
