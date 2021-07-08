@@ -31,19 +31,56 @@ class TInterpretor;
 #define ATTRIBUTE_OVERRIDE 0b00100000  // For Methods, needs to Override a base method
 #define ATTRIBUTE_ABSTRACT 0b01000000  // For Methods, must be abstract
 
+/**
+ * Class: TClassAttribute
+ * Purpose: Provides details on a specific attributes of a class
+ */
 class TC_DATA_STRUCT TClassAttribute
 {
 public:
+    /**
+     * Method: TClassAttribute::
+     * Purpose: 
+     * Parameters: 
+     * Returns: 
+     */
     TClassAttribute(const TString& n, const TString& t);
+    /**
+     * Method: TClassAttribute::
+     * Purpose:
+     * Parameters:
+     * Returns:
+     */
     TClassAttribute();
+    /**
+     * Method: TClassAttribute::
+     * Purpose:
+     * Parameters:
+     * Returns:
+     */
     TClassAttribute(const TClassAttribute& copy);
+    /**
+     * Holds the name and type of the attribute
+     */
     TString name, type;
+    /**
+     * Indicates the access allowed for this attribute
+     */
     byte access;
-
+    /**
+     * Indicates other attributes applicable to this attribute, such as static, array, virtual, etc.
+     */
     byte other;
+    /**
+     * Holds a default value for this attribute (if applicable and available
+     */
     TrecPointer<TVariable> def;
 };
 
+/**
+ * Enum Class: tc_class_type
+ * Purpose: provides a hint to interpetors (during compilation) on how to treat this class
+ */
 typedef enum class tc_class_type
 {
     tct_class,
@@ -53,7 +90,10 @@ typedef enum class tc_class_type
     tct_any
 }tc_class_type;
 
-
+/**
+ * Class: TClassStruct
+ * Purpose: 
+ */
 class TC_DATA_STRUCT TClassStruct :
     public TVariableType
 {
