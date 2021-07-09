@@ -40,23 +40,24 @@ class TC_DATA_STRUCT TClassAttribute
 public:
     /**
      * Method: TClassAttribute::
-     * Purpose: 
-     * Parameters: 
-     * Returns: 
+     * Purpose: Constructor
+     * Parameters: const TString& n - name of attribute
+     *              const TString& t - type of attribute
+     * Returns: new Attribute object
      */
     TClassAttribute(const TString& n, const TString& t);
     /**
-     * Method: TClassAttribute::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TClassAttribute::TClassAttribute
+     * Purpose: Default Constructor
+     * Parameters: void
+     * Returns: new Blank Atribute object
      */
     TClassAttribute();
     /**
-     * Method: TClassAttribute::
-     * Purpose:
-     * Parameters:
-     * Returns:
+     * Method: TClassAttribute::TClassAttribute
+     * Purpose: Copy Constructor
+     * Parameters: const TClassAttribute& copy - original object to copy from
+     * Returns: new Atribute object based off of existing one
      */
     TClassAttribute(const TClassAttribute& copy);
     /**
@@ -92,34 +93,115 @@ typedef enum class tc_class_type
 
 /**
  * Class: TClassStruct
- * Purpose: 
+ * Purpose: Represents an entire Class
+ * 
+ * SuperClass: TVariableType - represents a variable type
  */
 class TC_DATA_STRUCT TClassStruct :
     public TVariableType
 {
 public:
+    /**
+     * Method: TClassStruct::TClassStruct
+     * Purpose: Default Constructor
+     * Parameters: void
+     * Returns: New Class blueprint
+     */
     TClassStruct();
+    /**
+     * Method: TClassStruct::AddAttribute
+     * Purpose: Adds an attribute to the class
+     * Parameters: const TClassAttribute& att - adds a new attribute to the 
+     *              bool doOverride = false - whether to replace an attribute if the name is already provided
+     * Returns: bool - whether it was added or not
+     */
     bool AddAttribute(const TClassAttribute& att, bool doOverride = false);
+    /**
+     * Method: TClassStruct::GetAttributeByName
+     * Purpose: Returns the attribute by the name
+     * Parameters: const TString& name
+     * Returns: TClassAttribute - the attribute collected (check the name of this object to assess validity)
+     */
     TClassAttribute GetAttributeByName(const TString& name);
 
+    /**
+     * Method: TClassStruct::GetAttributeByIndex
+     * Purpose: Gets an attribute by index of stored attributes
+     * Parameters: UINT index - the location in the attributes repo 
+     *              TClassAttribute& att - the attribute to collect
+     * Returns: bool - whether there was an attribute (if true, att should be valid)
+     */
     bool GetAttributeByIndex(UINT index, TClassAttribute& att);
 
+    /**
+     * Method: TClassStruct::SetCaseInsensitive
+     * Purpose: Makes this class refer to attributes without regard to case
+     * Parameters: void
+     * Returns: void
+     */
     void SetCaseInsensitive();
 
+    /**
+     * Method: TClassStruct::GetVarGategory
+     * Purpose: Reports to code with a TVariableType reference what class this actually is
+     * Parameters: void
+     * Returns: var_category - the type category (class version)
+     */
     virtual var_category GetVarGategory() override;
 
+    /**
+     * Method: TClassStruct::SetClassType
+     * Purpose: Sets the class type
+     * Parameters: tc_class_type classType - the way to treat this class
+     * Returns: void
+     */
     void SetClassType(tc_class_type classType);
+    /**
+     * Method: TClassStruct::GetClassType
+     * Purpose: Reports the way to treat this class
+     * Parameters: void
+     * Returns: tc_class_type - the way to treat this class
+     */
     tc_class_type GetClassType();
 
+    /**
+     * Method: TClassStruct::AddParentClass
+     * Purpose: Adds the Parent Class
+     * Parameters: const TString& className - the name of the parent class
+     *              tc_class_type cType = tc_class_type::tct_class - not used
+     * Returns: UINT - 0 if added, 1 if already present
+     */
     UINT AddParentClass(const TString& className, tc_class_type cType = tc_class_type::tct_class);
+
+    /**
+     * Method: TClassStruct::GetParentClass
+     * Purpose: Reports the Parent class stored at the present 
+     * Parameters: UINT index - the index of the parent class
+     *              TString& className - holder of the class
+     * Returns: bool - true if className holds the name of the parent class, false if index is out of bounds
+     */
     bool GetParentClass(UINT index, TString& className);
 
 protected:
+    /**
+     * Holds list of parent classes
+     */
     TDataArray<TString> parentClasses;
-
+    /**
+     * The nature of the class (regular class, struct, union, interface, etc.)
+     */
     tc_class_type classType;
+    /**
+     * List of attributes
+     */
     TDataArray<TClassAttribute> attributes;
+    /**
+     * Constructors for this interpretor
+     */
     TDataArray<TrecSubPointer<TVariable, TInterpretor>> constructors;
+    /**
+     * Whether names are case senstive
+     */
     bool caseSensitive;
 };
 
