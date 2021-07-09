@@ -4,6 +4,13 @@
 #include <mfapi.h>
 #include <atlbase.h>
 
+/**
+ * Method: TPresenter::TPresenter
+ * Purpose: Constructor
+ * Parameters: TrecPointer<TWindowEngine> engine - Helps with frame manipulation
+ *              TrecPointer<DrawingBoard> board - Presents the frames
+ * Returns: new TPresenter object
+ */
 TPresenter::TPresenter(TrecPointer<TWindowEngine> engine, TrecPointer<DrawingBoard> board)
 {
     this->engine = engine;
@@ -73,6 +80,12 @@ STDMETHODIMP_(ULONG __stdcall) TPresenter::Release(void)
     return c;
 }
 
+/**
+ * Method: TPresenter::GetVideoPosition
+ * Purpose: Reports the video Position
+ * Parameters: MFVideoNormalizedRect* pnrcSource, __RPC__out LPRECT prcDest
+ * Returns:
+ */
 STDMETHODIMP_(HRESULT __stdcall) TPresenter::GetVideoPosition(__RPC__out MFVideoNormalizedRect* pnrcSource, __RPC__out LPRECT prcDest)
 {
     if (!prcDest)
@@ -81,6 +94,7 @@ STDMETHODIMP_(HRESULT __stdcall) TPresenter::GetVideoPosition(__RPC__out MFVideo
     ThreadLock();
     if (board.Get())
     {
+        // Gets the video Location
         D2D1_RECT_F loc;
         if(board->GetVideoPosition(boardSlot, loc))
         {
@@ -96,9 +110,15 @@ STDMETHODIMP_(HRESULT __stdcall) TPresenter::GetVideoPosition(__RPC__out MFVideo
     return ret;
 }
 
+/**
+ * Method: TPresenter::RepaintVideo
+ * Purpose: Calls on the DrawingBoard to presnt the frame
+ * Parameters: void
+ * Returns: HRESULT - S_OK if the Board was set in initialization (E_NOT_SET otherwise)
+ */
 STDMETHODIMP_(HRESULT __stdcall) TPresenter::RepaintVideo(void)
 {
-    HRESULT ret = E_FAIL;
+    HRESULT ret = E_NOT_SET;
     ThreadLock();
     if (board.Get())
     {
@@ -109,6 +129,13 @@ STDMETHODIMP_(HRESULT __stdcall) TPresenter::RepaintVideo(void)
     return ret;
 }
 
+/**
+ * Method: TPresenter::SetVideoPosition
+ * Purpose: Sets the Video Position with the Drawing Board
+ * Parameters: const MFVideoNormalizedRect* pnrcSource - not used
+ *              const LPRECT prcDest -  the rectangle to set
+ * Returns: HRESULT - S_OK if the Board was set in initialization (E_NOT_SET otherwise), unless prcDest was null (E_POINTER)
+ */
 STDMETHODIMP_(HRESULT __stdcall) TPresenter::SetVideoPosition(__RPC__in_opt const MFVideoNormalizedRect* pnrcSource, __RPC__in_opt const LPRECT prcDest)
 {
     if (!prcDest)
@@ -130,6 +157,12 @@ STDMETHODIMP_(HRESULT __stdcall) TPresenter::SetVideoPosition(__RPC__in_opt cons
     return ret;
 }
 
+/**
+ * Method: TPresenter::Shutdown
+ * Purpose: Relinquishes hold on the Drawing Board
+ * Parameters: void
+ * Returns: void
+ */
 void TPresenter::Shutdown()
 {
     TObject::ThreadLock();
@@ -248,7 +281,12 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, TSampleTexture* pSa
     if (d3dText) d3dText->Release();
     return res;
 }
-
+/**
+ * Method: TPresenter::SetCurrentMediaType
+ * Purpose: Sets the current media type, getting the frame width and frame height
+ * Parameters: IMFMediaType* pMediaType - the type to set
+ * Returns: HRESULT - E_POINTER -f null param, MF_E_SHUTDOWN if shutting down, or the result of getting attributes (Should be S_OK)
+ */
 HRESULT TPresenter::SetCurrentMediaType(IMFMediaType* pMediaType)
 {
     if (!pMediaType)
@@ -279,6 +317,12 @@ HRESULT TPresenter::SetCurrentMediaType(IMFMediaType* pMediaType)
     return res;
 }
 
+/**
+ * Method: TPresenter::PresentFrame
+ * Purpose: Presents the current Frame
+ * Parameters: void
+ * Returns: HRESULT - Should be S_OK (E_POINTER if board not set)
+ */
 HRESULT TPresenter::PresentFrame()
 {
     ThreadLock();
@@ -288,9 +332,17 @@ HRESULT TPresenter::PresentFrame()
     else
         ret = E_POINTER;
     ThreadRelease();
-    return S_OK;
+    return ret;
 }
 
+/**
+ * Method: TPresenter::GetService
+ * Purpose: Retrieves service for the IMFGetService interface (uses QueryInterface)
+ * Parameters: REFGUID guidService - the service referenced (must be MR_VIDEO_RENDER_SERVICE)
+ *              REFIID riid - the service requested (interface)
+ *              LPVOID* ppvObject - the output
+ * Returns: HRESULT - S_OK unless interfce is not supported or MF_E_UNSUPPORTED_SERVICE if guidService is not MR_VIDEO_RENDER_SERVICE
+ */
 STDMETHODIMP_(HRESULT __stdcall) TPresenter::GetService(REFGUID guidService, REFIID riid, LPVOID* ppvObject)
 {
     HRESULT hr = S_OK;
