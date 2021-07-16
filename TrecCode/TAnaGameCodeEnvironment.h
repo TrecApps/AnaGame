@@ -70,6 +70,25 @@ public:
 	 */
 	virtual bool PrintLine(const TString& input)override;
 
+	/**
+	 * Method: TEnvironment::SaveEnv
+	 * Purpose: Saves the Current Status of the Environment itself
+	 * Parameters: void
+	 * Returns: UINT - error code (0 for no error)
+	 */
+	virtual UINT SaveEnv() override;
+
+
+	/**
+	 * Method: TEnvironment::GetProjectLayout
+	 * Purpose: Reports the Layout of the Project
+	 * Parameters: void
+	 * Returns: TrecPointer<TObjectNode> nodes - the nodes that represent the layout of the Project
+	 *
+	 * Attributes: abstract
+	 */
+	virtual TrecPointer<TObjectNode> GetProjectLyout() override;
+
 protected:
 	TString targetExtensions;	// Extensions to target for compilation
 
@@ -78,6 +97,9 @@ protected:
 	TString endEnvironment;
 
 	TMap<TLanguage> languages;
+
+	TDataArray<TrecPointer<TFileShell>> files;
+	TrecPointer<TFileShell> mainFile;
 
 };
 

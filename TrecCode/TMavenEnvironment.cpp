@@ -56,3 +56,13 @@ bool TMavenEnvironment::SupportsFileExt(const TString& ext)
 void TMavenEnvironment::SupportsFileExt(TDataArray<TString>& ext)
 {
 }
+
+UINT TMavenEnvironment::SaveEnv()
+{
+	return 0;
+}
+
+TrecPointer<TObjectNode> TMavenEnvironment::GetProjectLyout()
+{
+	return TrecPointer<TObjectNode>();
+}

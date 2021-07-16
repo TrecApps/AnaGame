@@ -4,7 +4,7 @@
 
 /*
  * Class: TObjectNode
- * Purpose: Provides an Interface for which Trees of ny type of Object can be formed
+ * Purpose: Provides an Interface for which Trees of any type of Object can be formed
  * 
  * SuperClass: TObject - allows it to be used by Environment Scripts
  */

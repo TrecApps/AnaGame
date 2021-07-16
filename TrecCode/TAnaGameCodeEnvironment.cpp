@@ -256,3 +256,38 @@ bool TAnaGameCodeEnvironment::PrintLine(const TString& input)
 	}
 	return false;
 }
+
+UINT TAnaGameCodeEnvironment::SaveEnv()
+{
+	if (!rootDirectory.Get())
+		return 1;
+
+	TFile file(rootDirectory->GetPath() + L"\\treccode.tml", TFile::t_file_open_always | TFile::t_file_write);
+
+	if (!file.IsOpen())
+		return 2;
+
+	file.WriteString(L"->TML");
+	file.WriteString(L"-|Type: Anacode");
+	file.WriteString(L"-|Version: 0.0.1");
+	file.WriteString(L"-/\n");
+
+	file.WriteString(L"->Project");
+	if(mainFile.Get())
+		file.WriteString(TString(L"-|MainFile: ") + mainFile->GetName());
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		if(files[Rust].Get())
+		file.WriteString(TString(L"-|File: ") + files[Rust]->GetName());
+	}
+
+
+	TEnvironment::UpdateProjectRepo(TFileShell::GetFileInfo(file.GetFilePath()), L"Anagame", L"TrecCode");
+	file.Close();
+	return 0;
+}
+
+TrecPointer<TObjectNode> TAnaGameCodeEnvironment::GetProjectLyout()
+{
+	return TrecPointer<TObjectNode>();
+}

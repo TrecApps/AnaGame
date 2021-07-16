@@ -2,6 +2,7 @@
 #include "TMap.h"
 #include "DirectoryInterface.h"
 #include "TcInterpretor.h"
+#include "TML_Reader_.h"
 
 static bool languagesMapped = false;
 
@@ -80,6 +81,77 @@ void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
 	RETURN_THREAD_UNLOCK;
 }
 
+/**
+ * Method: TEnvironment::UpdateProjectRepo
+ * Purpose: Allows Environment Objects to update the Repository for Environment Projects, called by Objects
+ * Parameters: TrecPointer<TFileShell> file - the file to save
+ *				const TString& envSource - where the Environment can be found (in Anagame itself or a third party Library)
+ *				const TString& envType - the actual type of environment used
+ * Returns: void
+ */
+void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType)
+{
+	if (!file.Get() || file->IsDirectory())
+		return;
+
+	TString repoName = GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"AnaGame";
+
+	ForgeDirectory(repoName);
+	repoName.Append(L"Envronments.tml");
+
+	TrecPointer<TFile> repoFile = TrecPointerKey::GetNewTrecPointer<TFile>(repoName, TFile::t_file_open_existing | TFile::t_file_read);
+
+	TDataArray<EnvironmentEntry> envEntries;
+
+	if (repoFile->IsOpen())
+	{
+		TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, EnvironmentEntryParser>();
+		TML_Reader_ reader(repoFile, parser);
+		int num = 0;
+		if (reader.read(&num))
+		{
+			dynamic_cast<EnvironmentEntryParser*>(parser.Get())->GetEntries(envEntries);
+		}
+
+		repoFile->Close();
+	}
+
+	EnvironmentEntry curEntry;
+	curEntry.filePath.Set(file->GetPath());
+	curEntry.source.Set(envSource);
+	curEntry.type.Set(envType);
+
+	bool doPush = true;
+	for (UINT Rust = 0; Rust < envEntries.Size(); Rust++)
+	{
+		if (envEntries[Rust].IsEqual(curEntry))
+		{
+			doPush = false;
+			break;
+		}
+	}
+
+	if (doPush)
+		envEntries.push_back(curEntry);
+
+	repoFile->Open(repoName, TFile::t_file_create_always | TFile::t_file_write);
+
+	repoFile->WriteString(L"->TML");
+	repoFile->WriteString(L"-|Type: Environment_Repo");
+	repoFile->WriteString(L"-|Version: 0.0.1");
+	repoFile->WriteString(L"-/\n");
+
+	for (UINT Rust = 0; Rust < envEntries.Size(); Rust++)
+	{
+		repoFile->WriteString(L"->Environment");
+		repoFile->WriteString(TString(L"-|Source: ") + envEntries[Rust].source);
+		repoFile->WriteString(TString(L"-|Type: ") + envEntries[Rust].type);
+		repoFile->WriteString(TString(L"-|Path: ") + envEntries[Rust].filePath);
+	}
+
+	repoFile->Close();
+
+}
 
 /**
  * Method: TEnvironment::SetUpLanguageExtensionMapping
@@ -322,5 +394,101 @@ void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataA
 			environmentType.push_back(TString(L"VisualStudio"));
 			continue;
 		}
+	}
+}
+
+EnvironmentEntry::EnvironmentEntry()
+{
+}
+
+EnvironmentEntry::EnvironmentEntry(const EnvironmentEntry& copy)
+{
+	filePath.Set(copy.filePath);
+	source.Set(copy.source);
+	type.Set(copy.type);
+}
+
+bool EnvironmentEntry::IsEqual(const EnvironmentEntry& ent)
+{
+	return !ent.filePath.CompareNoCase(filePath);
+}
+
+TString EnvironmentEntryParser::GetType()
+{
+	return TString(L"EnvironmentntryParser;") + Parser_::GetType();
+}
+
+EnvironmentEntryParser::EnvironmentEntryParser()
+{
+}
+
+EnvironmentEntryParser::~EnvironmentEntryParser()
+{
+}
+
+bool EnvironmentEntryParser::Obj(TString& v)
+{
+	if (entry.filePath.GetSize() && entry.source.GetSize() && entry.type.GetSize())
+		entries.push_back(entry);
+
+	entry.filePath.Empty();
+	entry.source.Empty();
+	entry.type.Empty();
+
+	return true;
+}
+
+bool EnvironmentEntryParser::Attribute(TString& v, TString e)
+{
+	bool ret = false;
+	if (e.Compare(L"Source"))
+	{
+		entry.source.Set(v);
+		ret = true;
+	}
+	else if (e.Compare(L"Type"))
+	{
+		entry.type.Set(v);
+		ret = true;
+	}
+	else if (e.Compare(L"Path"))
+	{
+		entry.filePath.Set(v);
+		ret = true;
+	}
+	return ret;
+}
+
+bool EnvironmentEntryParser::Attribute(TrecPointer<TString> v, TString& e)
+{
+	if(!v.Get())
+		return false;
+	return Attribute(*v.Get(), e);
+}
+
+bool EnvironmentEntryParser::submitType(TString v)
+{
+	return !v.CompareNoCase(L"Environment_Repo");
+}
+
+bool EnvironmentEntryParser::submitEdition(TString v)
+{
+	return true;
+}
+
+bool EnvironmentEntryParser::goChild()
+{
+	return true;
+}
+
+void EnvironmentEntryParser::goParent()
+{
+}
+
+void EnvironmentEntryParser::GetEntries(TDataArray<EnvironmentEntry>& entries)
+{
+	for (UINT Rust = 0; Rust < this->entries.Size(); Rust++)
+	{
+		entries.push_back(this->entries[Rust]);
 	}
 }
