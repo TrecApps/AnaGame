@@ -267,19 +267,19 @@ UINT TAnaGameCodeEnvironment::SaveEnv()
 	if (!file.IsOpen())
 		return 2;
 
-	file.WriteString(L"->TML");
-	file.WriteString(L"-|Type: Anacode");
-	file.WriteString(L"-|Version: 0.0.1");
+	file.WriteString(L"->TML\n");
+	file.WriteString(L"-|Type: Anacode\n");
+	file.WriteString(L"-|Version: 0.0.1\n");
 	file.WriteString(L"-/\n");
 
-	file.WriteString(L"->Project");
+	file.WriteString(L"->Project\n");
 	TString relatives;
 	if(mainFile.Get() && mainFile->GetRelativePath(relatives, rootDirectory, false))
-		file.WriteString(TString(L"-|MainFile: ") + relatives);
+		file.WriteString(TString(L"-|MainFile: ") + relatives + L'\n');
 	for (UINT Rust = 0; Rust < files.Size(); Rust++)
 	{
 		if(files[Rust].Get() && files[Rust]->GetRelativePath(relatives, rootDirectory, false))
-		file.WriteString(TString(L"-|File: ") + relatives);
+		file.WriteString(TString(L"-|File: ") + relatives + L'\n');
 	}
 
 

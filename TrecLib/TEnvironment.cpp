@@ -94,7 +94,7 @@ void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString
 	if (!file.Get() || file->IsDirectory())
 		return;
 
-	TString repoName = GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"AnaGame";
+	TString repoName = GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"AnaGame\\";
 
 	ForgeDirectory(repoName);
 	repoName.Append(L"Envronments.tml");
@@ -136,17 +136,17 @@ void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString
 
 	repoFile->Open(repoName, TFile::t_file_create_always | TFile::t_file_write);
 
-	repoFile->WriteString(L"->TML");
-	repoFile->WriteString(L"-|Type: Environment_Repo");
-	repoFile->WriteString(L"-|Version: 0.0.1");
+	repoFile->WriteString(L"->TML\n");
+	repoFile->WriteString(L"-|Type: Environment_Repo\n");
+	repoFile->WriteString(L"-|Version: 0.0.1\n");
 	repoFile->WriteString(L"-/\n");
 
 	for (UINT Rust = 0; Rust < envEntries.Size(); Rust++)
 	{
-		repoFile->WriteString(L"->Environment");
-		repoFile->WriteString(TString(L"-|Source: ") + envEntries[Rust].source);
-		repoFile->WriteString(TString(L"-|Type: ") + envEntries[Rust].type);
-		repoFile->WriteString(TString(L"-|Path: ") + envEntries[Rust].filePath);
+		repoFile->WriteString(L"->Environment\n");
+		repoFile->WriteString(TString(L"-|Source: ") + envEntries[Rust].source + L'\n');
+		repoFile->WriteString(TString(L"-|Type: ") + envEntries[Rust].type + L'\n');
+		repoFile->WriteString(TString(L"-|Path: ") + envEntries[Rust].filePath + L'\n');
 	}
 
 	repoFile->Close();

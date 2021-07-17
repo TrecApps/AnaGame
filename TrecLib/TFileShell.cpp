@@ -102,9 +102,9 @@ TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 
 
 	if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
-		return TrecPointerKey::GetNewTrecPointerAlt<TFileShell, TDirectory>(path);
+		return TrecPointerKey::GetNewTrecPointerAlt<TFileShell, TDirectory>(newPath);
 	else
-		return TrecPointerKey::GetNewTrecPointer<TFileShell>(path);
+		return TrecPointerKey::GetNewTrecPointer<TFileShell>(newPath);
 }
 
 /*

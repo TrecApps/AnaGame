@@ -281,17 +281,33 @@ void MainLayoutHandler::OnLoadNewSolution(TrecPointer<TControl> tc, EventArgs ea
 
 void MainLayoutHandler::OnSaveFile(TrecPointer<TControl> tc, EventArgs ea)
 {
-	//if (currentDocument.Get())
-	//	currentDocument->OnSave();
+	if (currentDocument.Get())
+		currentDocument->OnSave();
+
+	if (window.Get())
+	{
+		TrecPointer<TEnvironment> env = window->GetEnvironment();
+
+		if (env.Get())
+			env->SaveEnv();
+	}
 }
 
 void MainLayoutHandler::OnSaveAllFiles(TrecPointer<TControl> tc, EventArgs ea)
 {
-	//for (UINT Rust = 0; Rust < ActiveDocuments.Size(); Rust++)
-	//{
-	//	if (ActiveDocuments[Rust].Get())
-	//		ActiveDocuments[Rust]->OnSave();
-	//}
+	for (UINT Rust = 0; Rust < ActiveDocuments.Size(); Rust++)
+	{
+		if (ActiveDocuments[Rust].Get())
+			ActiveDocuments[Rust]->OnSave();
+	}
+
+	if (window.Get())
+	{
+		TrecPointer<TEnvironment> env = window->GetEnvironment();
+
+		if (env.Get())
+			env->SaveEnv();
+	}
 }
 
 void MainLayoutHandler::OnNewFile(TrecPointer<TControl> tc, EventArgs ea)
@@ -396,6 +412,13 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
 	ActiveDocuments.push_back(currentDocument);
 	currentDocument->Initialize(TFileShell::GetFileInfo(fileName));
 
+	// Add File to the environment
+	auto targetFile = TFileShell::GetFileInfo(fileName);
+
+	TrecPointer<TEnvironment> env = window->GetEnvironment();
+	if (env.Get())
+		env->AddResource(targetFile);
+
 
 	window->SetCurrentApp(currentDocument);
 }
@@ -435,7 +458,15 @@ void MainLayoutHandler::OnImportCode(TrecPointer<TControl> tc, EventArgs ea)
 				
 			}
 			readFile.Close();
+			
+
+			// Add File to the environment
+			targetFile = TFileShell::GetFileInfo(writeFileStr);
 			writeFile.Close();
+
+			TrecPointer<TEnvironment> env = window->GetEnvironment();
+			if(env.Get())
+				env->AddResource(targetFile);
 			
 			currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, SourceCodeApp2>(window);
 
