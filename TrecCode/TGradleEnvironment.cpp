@@ -66,3 +66,7 @@ TrecPointer<TObjectNode> TGradleEnvironment::GetProjectLyout()
 {
 	return TrecPointer<TObjectNode>();
 }
+
+void TGradleEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
+{
+}

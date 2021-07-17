@@ -66,3 +66,7 @@ TrecPointer<TObjectNode> TMavenEnvironment::GetProjectLyout()
 {
 	return TrecPointer<TObjectNode>();
 }
+
+void TMavenEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
+{
+}

@@ -46,5 +46,16 @@ public:
 	 * Attributes: abstract
 	 */
 	virtual TrecPointer<TObjectNode> GetProjectLyout() override;
+
+
+	/**
+	 * Method: TEnvironment::AddResource
+	 * Purpose: Adds a file Resource to the Environment
+	 * Parameters: TrecPointer<TFileShell> fileResorce - the file to add
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void AddResource(TrecPointer<TFileShell> fileResource) override;
 };
 
