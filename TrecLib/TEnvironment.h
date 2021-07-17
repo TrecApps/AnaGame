@@ -432,12 +432,21 @@ public:
 	 * Purpose: Saves the Current Status of the Environment itself
 	 * Parameters: void
 	 * Returns: UINT - error code (0 for no error)
+	 * 
+	 * Attributes: abstract
 	 */
 	virtual UINT SaveEnv() = 0;
 
 	/**
+	 * Method: TEnvironment::AddResource
+	 * Purpose: Adds a file Resource to the Environment
+	 * Parameters: TrecPointer<TFileShell> fileResorce - the file to add
+	 * Returns: void
 	 * 
+	 * Attributes: abstract
 	 */
+	virtual void AddResource(TrecPointer<TFileShell> fileResource) = 0;
+
 
 
 protected:

@@ -1,5 +1,8 @@
 #include "TFileShell.h"
 #include "TDirectory.h"
+#include <PathCch.h>
+#include <strsafe.h>
+#include <intsafe.h>
 
 /**
  * Method: TBlankNode::TFileShell
@@ -77,6 +80,21 @@ TString TFileShell::GetName()
 TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 {
 	TString newPath(path);
+
+	newPath.Replace(L'/', L'\\');
+
+	// Make sure path is canonical
+	WCHAR newPathBuff[300];
+	for (UINT Rust = 0; Rust < 300; Rust++)
+	{
+		newPathBuff[Rust] = L'\0';
+	}
+
+	if (FAILED(PathCchCanonicalizeEx(newPathBuff, 300, newPath.GetConstantBuffer().getBuffer(), 1)))
+		return TrecPointer<TFileShell>();
+
+	newPath.Set(newPathBuff);
+
 	DWORD ftyp = GetFileAttributesW(newPath.GetConstantBuffer().getBuffer());
 
 	if (ftyp == INVALID_FILE_ATTRIBUTES)
@@ -143,6 +161,65 @@ ULONG64 TFileShell::GetSize()
 	Refresh();
 	ULONG64 ret = (static_cast<ULONG64>(fileInfo.nFileSizeHigh) << 32) + static_cast<ULONG64>(fileInfo.nFileSizeLow);
 	RETURN_THREAD_UNLOCK ret;
+}
+
+/**
+ * Method: TFileShell::GetRelativePath
+ * Purpose: Retrieves the Relative file path for the Provided directory
+ * Parameters: TString& relativePath - the relative path provided if successful
+ *				TrecPointer<TFileShell> directory - the directory to check (must be valid and a TDirectory)
+ *				bool allowOutside - if true, than this file can be outside of the provided directory
+ * Returns: bool - true if the method worked, false otherwise
+ */
+bool TFileShell::GetRelativePath(TString& relativePath, TrecPointer<TFileShell> directory, bool allowOutside)
+{
+	if (!directory.Get() || !directory->IsDirectory())
+		return false;
+
+	TString d(directory->GetPath());
+	if (!d.EndsWith(L'\\'))
+		d.AppendChar(L'\\');
+	TString f(path);
+
+	bool done = false;
+
+	if (f.Find(d) == 0)
+	{
+		relativePath.Set(f.SubString(d.GetSize()));
+		done = true;
+	}
+
+	if (!done && allowOutside)
+	{
+		int index = 0; 
+
+		while (index != -1)
+		{
+			int dIndex = d.Find(L'\\', index);
+
+			int fIndex = f.Find(L'\\', index);
+
+			if(dIndex == fIndex && dIndex != -1 && d.SubString(0, dIndex).CompareNoCase(f.SubString(0, fIndex)))
+				index = dIndex;
+			else break;
+		}
+
+		TString remainingDirectory(d.SubString(index + 1));
+
+		relativePath.Empty();
+
+		UINT slashCount = remainingDirectory.CountFinds(L'\\');
+
+		while (slashCount--)
+		{
+			relativePath.Append(L"..\\");
+		}
+
+		relativePath.Append(f.SubString(index + 1));
+		done = true;
+	}
+
+	return done;
 }
 
 /*

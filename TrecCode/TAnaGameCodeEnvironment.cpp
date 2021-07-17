@@ -273,12 +273,13 @@ UINT TAnaGameCodeEnvironment::SaveEnv()
 	file.WriteString(L"-/\n");
 
 	file.WriteString(L"->Project");
-	if(mainFile.Get())
-		file.WriteString(TString(L"-|MainFile: ") + mainFile->GetName());
+	TString relatives;
+	if(mainFile.Get() && mainFile->GetRelativePath(relatives, rootDirectory, false))
+		file.WriteString(TString(L"-|MainFile: ") + relatives);
 	for (UINT Rust = 0; Rust < files.Size(); Rust++)
 	{
-		if(files[Rust].Get())
-		file.WriteString(TString(L"-|File: ") + files[Rust]->GetName());
+		if(files[Rust].Get() && files[Rust]->GetRelativePath(relatives, rootDirectory, false))
+		file.WriteString(TString(L"-|File: ") + relatives);
 	}
 
 
@@ -290,4 +291,24 @@ UINT TAnaGameCodeEnvironment::SaveEnv()
 TrecPointer<TObjectNode> TAnaGameCodeEnvironment::GetProjectLyout()
 {
 	return TrecPointer<TObjectNode>();
+}
+
+void TAnaGameCodeEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
+{
+	if (!fileResource.Get())
+		return;
+
+	// Need to make sure that we aren't adding effectively the same file
+	bool canAdd = true;
+	for (UINT Rust = 0; Rust < files.Size() && canAdd; Rust++)
+	{
+		TrecPointer<TFileShell> f = files[Rust];
+		if (fileResource->GetPath().CompareNoCase(f->GetPath()))
+		{
+			canAdd = false;
+		}
+	}
+
+	if (canAdd)
+		files.push_back(fileResource);
 }

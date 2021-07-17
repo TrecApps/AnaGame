@@ -108,6 +108,16 @@ public:
 	*/
 	ULONG64 GetSize();
 
+	/**
+	 * Method: TFileShell::GetRelativePath
+	 * Purpose: Retrieves the Relative file path for the Provided directory
+	 * Parameters: TString& relativePath - the relative path provided if successful
+	 *				TrecPointer<TFileShell> directory - the directory to check (must be valid and a TDirectory)
+	 *				bool allowOutside - if true, than this file can be outside of the provided directory
+	 * Returns: bool - true if the method worked, false otherwise
+	 */
+	bool GetRelativePath(TString& relativePath, TrecPointer<TFileShell> directory, bool allowOutside);
+
 
 	/*
 	* Method: TFileShell::IsArchive
