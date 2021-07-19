@@ -70,3 +70,8 @@ TrecPointer<TObjectNode> TMavenEnvironment::GetProjectLyout()
 void TMavenEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
 {
 }
+
+TString TMavenEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
+{
+	return L"Not Implemented";
+}

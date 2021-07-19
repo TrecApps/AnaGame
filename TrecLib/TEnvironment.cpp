@@ -82,6 +82,17 @@ void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
 }
 
 /**
+ * Method: TEnvironment::GetName
+ * Purpose: Retrieves the name of the environment
+ * Parameters: void
+ * Returns: TString - the name derived
+ */
+TString TEnvironment::GetName()
+{
+	return name;
+}
+
+/**
  * Method: TEnvironment::UpdateProjectRepo
  * Purpose: Allows Environment Objects to update the Repository for Environment Projects, called by Objects
  * Parameters: TrecPointer<TFileShell> file - the file to save
@@ -89,7 +100,7 @@ void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
  *				const TString& envType - the actual type of environment used
  * Returns: void
  */
-void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType)
+void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType, const TString& name)
 {
 	if (!file.Get() || file->IsDirectory())
 		return;
@@ -120,6 +131,7 @@ void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString
 	curEntry.filePath.Set(file->GetPath());
 	curEntry.source.Set(envSource);
 	curEntry.type.Set(envType);
+	curEntry.name.Set(name);
 
 	bool doPush = true;
 	for (UINT Rust = 0; Rust < envEntries.Size(); Rust++)
@@ -147,6 +159,7 @@ void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString
 		repoFile->WriteString(TString(L"-|Source: ") + envEntries[Rust].source + L'\n');
 		repoFile->WriteString(TString(L"-|Type: ") + envEntries[Rust].type + L'\n');
 		repoFile->WriteString(TString(L"-|Path: ") + envEntries[Rust].filePath + L'\n');
+		repoFile->WriteString(TString(L"-|Name: ") + envEntries[Rust].name + L'\n');
 	}
 
 	repoFile->Close();
@@ -406,6 +419,7 @@ EnvironmentEntry::EnvironmentEntry(const EnvironmentEntry& copy)
 	filePath.Set(copy.filePath);
 	source.Set(copy.source);
 	type.Set(copy.type);
+	name.Set(copy.name);
 }
 
 bool EnvironmentEntry::IsEqual(const EnvironmentEntry& ent)
@@ -441,21 +455,27 @@ bool EnvironmentEntryParser::Obj(TString& v)
 bool EnvironmentEntryParser::Attribute(TString& v, TString e)
 {
 	bool ret = false;
-	if (e.Compare(L"Source"))
+	if (!e.Compare(L"|Source"))
 	{
 		entry.source.Set(v);
 		ret = true;
 	}
-	else if (e.Compare(L"Type"))
+	else if (!e.Compare(L"|Type"))
 	{
 		entry.type.Set(v);
 		ret = true;
 	}
-	else if (e.Compare(L"Path"))
+	else if (!e.Compare(L"|Path"))
 	{
 		entry.filePath.Set(v);
 		ret = true;
 	}
+	else if (!e.Compare(L"|Name"))
+	{
+		entry.name.Set(v);
+		ret = true;
+	}
+
 	return ret;
 }
 
@@ -487,6 +507,9 @@ void EnvironmentEntryParser::goParent()
 
 void EnvironmentEntryParser::GetEntries(TDataArray<EnvironmentEntry>& entries)
 {
+	TString v;
+	Obj(v);
+
 	for (UINT Rust = 0; Rust < this->entries.Size(); Rust++)
 	{
 		entries.push_back(this->entries[Rust]);

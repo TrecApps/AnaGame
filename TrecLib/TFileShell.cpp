@@ -82,6 +82,7 @@ TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 	TString newPath(path);
 
 	newPath.Replace(L'/', L'\\');
+	while(newPath.Replace(L"\\\\", L"\\"));
 
 	// Make sure path is canonical
 	WCHAR newPathBuff[300];
@@ -105,6 +106,30 @@ TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 		return TrecPointerKey::GetNewTrecPointerAlt<TFileShell, TDirectory>(newPath);
 	else
 		return TrecPointerKey::GetNewTrecPointer<TFileShell>(newPath);
+}
+
+
+/**
+ * Method: TFileShell::GetParent
+ * Purpose: Enables the File Object to return a representation of it's parent folder
+ * Parameters: void
+ * Returns: TrecPointer<TFileShell> - the directory of the current file (if null, then likely this file is as high as it can be)
+ */
+TrecPointer<TFileShell> TFileShell::GetParent()
+{
+	auto pieces = path.split(L'\\');
+
+	TString newPath;
+
+	for (UINT Rust = 0; Rust < pieces->Size() - 1; Rust++)
+	{
+		if (newPath.GetSize())
+			newPath.AppendChar(L'\\');
+		newPath.Append(pieces->at(Rust));
+	}
+
+	newPath.AppendChar(L'\\');
+	return TFileShell::GetFileInfo(newPath);
 }
 
 /*
@@ -220,6 +245,22 @@ bool TFileShell::GetRelativePath(TString& relativePath, TrecPointer<TFileShell> 
 	}
 
 	return done;
+}
+
+
+/**
+ * Method: TFileShell::GetDirectoryName
+ * Purpose: Retrieves the Name fo the directory containing this file path ("C:\\Users\\John\\Desktop\\file.txt" returns "Desktop")
+ * Parameters: void
+ * Returns: TString - the name of the containing Directory
+ */
+TString TFileShell::GetDirectoryName()
+{
+	auto pieces = path.split(L'\\');
+
+	UINT pSize = pieces->Size();
+
+	return pSize > 1 ? pieces->at(pSize - 2) : L"";
 }
 
 /*

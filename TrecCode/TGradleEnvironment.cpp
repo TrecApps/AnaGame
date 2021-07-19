@@ -70,3 +70,8 @@ TrecPointer<TObjectNode> TGradleEnvironment::GetProjectLyout()
 void TGradleEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
 {
 }
+
+TString TGradleEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
+{
+	return L"Not Implemented";
+}

@@ -283,7 +283,7 @@ UINT TAnaGameCodeEnvironment::SaveEnv()
 	}
 
 
-	TEnvironment::UpdateProjectRepo(TFileShell::GetFileInfo(file.GetFilePath()), L"Anagame", L"TrecCode");
+	TEnvironment::UpdateProjectRepo(TFileShell::GetFileInfo(file.GetFilePath()), L"Anagame", L"AnaCode", name);
 	file.Close();
 	return 0;
 }
@@ -303,7 +303,7 @@ void TAnaGameCodeEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
 	for (UINT Rust = 0; Rust < files.Size() && canAdd; Rust++)
 	{
 		TrecPointer<TFileShell> f = files[Rust];
-		if (fileResource->GetPath().CompareNoCase(f->GetPath()))
+		if (!fileResource->GetPath().CompareNoCase(f->GetPath()))
 		{
 			canAdd = false;
 		}
@@ -311,4 +311,38 @@ void TAnaGameCodeEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
 
 	if (canAdd)
 		files.push_back(fileResource);
+}
+
+TString TAnaGameCodeEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
+{
+	if (!file.Get())
+		return L"Null Parameter";
+	if (!rootDirectory.Get())
+		return L"RootDirectory Not Set";
+
+	TFile actFile(file->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
+
+	if (!actFile.IsOpen())
+		return L"File Failed to Open!";
+	TString line;
+	while (actFile.ReadString(line))
+	{
+		if (line.StartsWith(L"-|File:"))
+		{
+			line.Delete(0, 7);
+			line.Trim();
+			TString dLine(rootDirectory->GetPath());
+			if (!dLine.EndsWith(L"\\"))
+				dLine.AppendChar(L'\\');
+			line.Set(dLine + line);
+
+			TrecPointer<TFileShell> f = TFileShell::GetFileInfo(line);
+			if (f.Get())
+				this->files.push_back(f);
+			continue;
+		}
+	}
+	name.Set(file->GetDirectoryName());
+	actFile.Close();
+	return TString();
 }

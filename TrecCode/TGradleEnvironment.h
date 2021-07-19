@@ -57,5 +57,16 @@ public:
 	 * Attributes: abstract
 	 */
 	virtual void AddResource(TrecPointer<TFileShell> fileResource) override;
+
+
+	/**
+	 * Method: TEnvironment::SetLoadFile
+	 * Purpose: Allows Environment to load itself
+	 * Parameters: TrecPointer<TFileShell> file - the file to load from
+	 * Returns: TString - error information (blank means success)
+	 *
+	 * Attributes: abstract
+	 */
+	virtual TString SetLoadFile(TrecPointer<TFileShell> file) override;
 };
 

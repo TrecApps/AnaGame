@@ -15,8 +15,25 @@ public:
 	TString GetEnvironment()const;
 	TString GetBuilder() const;
 
-private:
+protected:
 	TString environment, environmentBuilder;
+};
+
+class SavedEnvironment : public EnvironmentList
+{
+public: 
+	SavedEnvironment(const TString& environment, const TString& builder, const TString& name, TrecPointer<TFileShell> fileLoc);
+	SavedEnvironment(const SavedEnvironment& list);
+	SavedEnvironment();
+
+	virtual TString getVariableValueStr(const TString& varName)override;
+
+	TrecPointer<TFileShell> GetFileLocation();
+	TString GetName();
+
+private:
+	TrecPointer<TFileShell> fileLoc;
+	TString name;
 };
 
 class EnvironmentHandler;
@@ -115,6 +132,7 @@ protected:
 	TrecSubPointer<TControl, TDataBind> recentBinder, newBinder;
 
 	TTrecPointerArray<EnvironmentList> availableEnvironments;
+	TTrecPointerArray<SavedEnvironment> savedEnvironments;
 
 	TDataArray< EnvironmentHandlerEvents> envEvents;
 
@@ -132,5 +150,9 @@ protected:
 	TrecPointer<TWindow> window;
 
 	TrecPointer<TEnvironment> environment;
+
+
+	// For Saved Environments
+	TrecPointer<TFileShell> envFile;
 };
 

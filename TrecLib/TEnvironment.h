@@ -18,7 +18,7 @@ typedef enum class env_var_type
 	evt_interpretor
 };
 
-class EnvironmentEntry
+class _TREC_LIB_DLL EnvironmentEntry
 {
 public:
 	EnvironmentEntry();
@@ -26,10 +26,10 @@ public:
 
 	bool IsEqual(const EnvironmentEntry& ent);
 
-	TString filePath, source, type;
+	TString filePath, source, type, name;
 };
 
-class EnvironmentEntryParser : public Parser_
+class _TREC_LIB_DLL EnvironmentEntryParser : public Parser_
 {
 public:
 
@@ -447,6 +447,24 @@ public:
 	 */
 	virtual void AddResource(TrecPointer<TFileShell> fileResource) = 0;
 
+	/**
+	 * Method: TEnvironment::SetLoadFile
+	 * Purpose: Allows Environment to load itself
+	 * Parameters: TrecPointer<TFileShell> file - the file to load from
+	 * Returns: TString - error information (blank means success)
+	 * 
+	 * Attributes: abstract
+	 */
+	virtual TString SetLoadFile(TrecPointer<TFileShell> file) = 0;
+
+	/**
+	 * Method: TEnvironment::GetName
+	 * Purpose: Retrieves the name of the environment
+	 * Parameters: void
+	 * Returns: TString - the name derived
+	 */
+	TString GetName();
+
 
 
 protected:
@@ -457,9 +475,10 @@ protected:
 	 * Parameters: TrecPointer<TFileShell> file - the file to save
 	 *				const TString& envSource - where the Environment can be found (in Anagame itself or a third party Library)
 	 *				const TString& envType - the actual type of environment used
+	 *				const TString& name - the name of the environment
 	 * Returns: void
 	 */
-	void UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType);
+	void UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType, const TString& name);
 
 
 	/**
@@ -504,5 +523,10 @@ protected:
 	 * For Web, it would be what the user typed into the search box and the base Website url that results
 	 */
 	TString url;
+
+	/**
+	 * The Name of the Environment
+	 */
+	TString name;
 };
 
