@@ -297,7 +297,7 @@ TEnvironment::~TEnvironment()
  * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
  * Returns: new Environment object
  */
-TEnvironment::TEnvironment(TrecSubPointer<TControl, TPromptControl> prompt)
+TEnvironment::TEnvironment(TrecPointer<TConsoleHolder> prompt)
 {
 	shellRunner = prompt;
 }
@@ -305,10 +305,10 @@ TEnvironment::TEnvironment(TrecSubPointer<TControl, TPromptControl> prompt)
 /**
  * Method: TEnvironment::SetPrompt
  * Purpose: Allows a prompt to be set after the construction
- * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
+ * Parameters: TrecPointer<TConsoleHolder> prompt - the Command Prompt to work with
  * Returns: void
  */
-void TEnvironment::SetPrompt(TrecSubPointer<TControl, TPromptControl> prompt)
+void TEnvironment::SetPrompt(TrecPointer<TConsoleHolder> prompt)
 {
 	shellRunner = prompt;
 }
@@ -318,9 +318,9 @@ void TEnvironment::SetPrompt(TrecSubPointer<TControl, TPromptControl> prompt)
  * Method: TEnvironment::GetPrompt
  * Purpose: Returns the Current Prompt being used by the Environment
  * Parameters: void
- * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
+ * Returns:TrecPointer<TConsoleHolder> - the Command Prompt to work with
  */
-TrecSubPointer<TControl, TPromptControl> TEnvironment::GetPrompt()
+TrecPointer<TConsoleHolder> TEnvironment::GetPrompt()
 {
 	return shellRunner;
 }

@@ -47,7 +47,7 @@ UINT SourceCodeApp2::Initialize(TrecPointer<TFileShell> file)
 
 			auto promptHandler = TrecPointerKey::GetTrecSubPointerFromTrec<EventHandler, TerminalHandler>(promptPage->GetHandler());
 
-			env->SetPrompt(promptHandler->GetTerminal());
+			env->SetPrompt(promptHandler->GetTerminal()->GetConsoleHolder());
 		}
 	}
 

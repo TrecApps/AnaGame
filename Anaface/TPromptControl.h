@@ -23,6 +23,7 @@ typedef enum class prompt_mode
 class TPromptHolder : public TConsoleHolder
 {
 	friend class TPromptControl;
+	friend class TrecPointerKey;
 public:
 	/**
 	 * Method: TPromptHolder::Warn

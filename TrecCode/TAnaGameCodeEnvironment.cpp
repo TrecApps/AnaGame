@@ -4,6 +4,7 @@
 #include <TFileNode.h>
 #include <TPromptControl.h>
 #include "TcJavaScriptInterpretor.h"
+#include <TStringVariable.h>
 
 TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shell)
 {
@@ -91,7 +92,7 @@ UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 					}
 
 
-					shellRunner->Print(resultStr);
+					shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(resultStr));
 				}
 			}
 		}
@@ -241,7 +242,7 @@ bool TAnaGameCodeEnvironment::Print(const TString& input)
 {
 	if (shellRunner.Get())
 	{
-		shellRunner->Print(input);
+		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input));
 		return true;
 	}
 	return false;
@@ -251,7 +252,7 @@ bool TAnaGameCodeEnvironment::PrintLine(const TString& input)
 {
 	if (shellRunner.Get())
 	{
-		shellRunner->PrintLine(input);
+		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input));
 		return true;
 	}
 	return false;

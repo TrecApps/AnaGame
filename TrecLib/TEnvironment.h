@@ -9,8 +9,6 @@
 #include "Parser_.h"
 #include "TObjectNode.h"
 
-class TControl;
-class TPromptControl;
 
 typedef enum class env_var_type
 {
@@ -325,27 +323,27 @@ public:
 	/**
 	 * Method: TEnvironment::TEnvironment
 	 * Purpose: Constructor
-	 * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
+	 * Parameters: TrecPointer<TConsoleHolder> prompt - the Command Prompt to work with
 	 * Returns: new Environment object
 	 */
-	TEnvironment(TrecSubPointer<TControl, TPromptControl> prompt);
+	TEnvironment(TrecPointer<TConsoleHolder> prompt);
 
 	/**
 	 * Method: TEnvironment::SetPrompt
 	 * Purpose: Allows a prompt to be set after the construction
-	 * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
+	 * Parameters: TrecPointer<TConsoleHolder> prompt - the Command Prompt to work with
 	 * Returns: void
 	 */
-	void SetPrompt(TrecSubPointer<TControl, TPromptControl> prompt);
+	void SetPrompt(TrecPointer<TConsoleHolder> prompt);
 
 
 	/**
 	 * Method: TEnvironment::GetPrompt
 	 * Purpose: Returns the Current Prompt being used by the Environment
 	 * Parameters: void
-	 * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
+	 * Returns: TrecPointer<TConsoleHolder> - the Command Prompt to work with
 	 */
-	TrecSubPointer<TControl, TPromptControl> GetPrompt();
+	TrecPointer<TConsoleHolder> GetPrompt();
 
 
 	/**
@@ -601,7 +599,7 @@ protected:
 	/**
 	 * The Command Prompt to work with (send shell commands to)
 	 */
-	TrecSubPointer<TControl, TPromptControl> shellRunner;
+	TrecPointer<TConsoleHolder> shellRunner;
 
 	/**
 	 * Holds a collection of variables so that interpretors underneath them could have access to them
