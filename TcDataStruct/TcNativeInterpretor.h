@@ -4,7 +4,10 @@
 
 
 typedef void (*NativeTFunction)(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret);
-
+/**
+ * Class: TcNativeInterpretor
+ * Purpose: TcInterpretors that act as a wrapper around native functions
+ */
 class TC_DATA_STRUCT TcNativeInterpretor :
     public TcInterpretor
 {
