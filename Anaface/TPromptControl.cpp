@@ -3,6 +3,13 @@
 extern TDataArray<TTextField*> TextList;
 
 
+TrecPointer<TConsoleHolder> TPromptControl::GetConsoleHolder()
+{
+
+	return TrecPointerKey::GetNewTrecPointerAlt<TConsoleHolder, TPromptHolder>(
+		TrecPointerKey::GetTrecPointerFromSoft<>(this->tThis));
+}
+
 /**
  * Method: TPromptControl::GetType
  * Purpose: Returns a String Representation of the object type
@@ -546,4 +553,52 @@ void TPromptControl::InputChar(wchar_t cha, int times)
 		}
 	}
 	ThreadRelease();
+}
+
+void TPromptHolder::Warn(TrecPointer<TVariable> var)
+{
+	if (control.Get())
+	{
+		TString prepend(tabs + L"WARNING: ");
+		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+	}
+}
+
+void TPromptHolder::Error(TrecPointer<TVariable> var)
+{
+	if (control.Get())
+	{
+		TString prepend(tabs + L"ERROR: ");
+		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+	}
+}
+
+void TPromptHolder::Info(TrecPointer<TVariable> var)
+{
+	if (control.Get())
+	{
+		TString prepend(tabs + L"INFO: ");
+		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+	}
+}
+
+void TPromptHolder::Log(TrecPointer<TVariable> var)
+{
+	if (control.Get())
+	{
+		TString prepend(tabs);
+		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+	}
+}
+
+/**
+ * Method: TPromptHolder::TPromptHolder
+ * Purpose: Allows the TPromptControl to create an instance of this holder pointing to it
+ * Parameters: TrecPointer<TControl> control - the control to point to
+ * Returns: new TPromptHolder object
+ */
+TPromptHolder::TPromptHolder(TrecPointer<TControl> control)
+{
+	if (dynamic_cast<TPromptControl*>(control.Get()))
+		this->control = control;
 }

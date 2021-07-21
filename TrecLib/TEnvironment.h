@@ -146,6 +146,101 @@ public:
 };
 
 
+/**
+ * Class: TConsoleHolder
+ * Purpose: Provides an abstract way to print to the console, regardless of the object type that is acting like a console
+ */
+class _TREC_LIB_DLL TConsoleHolder
+{
+public:
+	/**
+	 * Method: TConsoleHolder::TConsoleHolder
+	 * Purpose: default Constructor
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: virtual
+	 */
+	TConsoleHolder();
+	/**
+	 * Method: TConsoleHolder::~TConsoleHolder
+	 * Purpose: virtualized destructor
+	 * Parameters: void
+	 * Returns: void
+	 * 
+	 * Attributes: virtual
+	 */
+	virtual ~TConsoleHolder();
+
+	/**
+	 * Method: TConsoleHolder::Warn
+	 * Purpose: A warning message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 * 
+	 * Attributes: abstract
+	 */
+	virtual void Warn(TrecPointer<TVariable> var) = 0;
+	
+	/**
+	 * Method: TConsoleHolder::Error
+	 * Purpose: An error message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void Error(TrecPointer<TVariable> var) = 0;
+
+	/**
+	 * Method: TConsoleHolder::Info
+	 * Purpose: An information message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void Info(TrecPointer<TVariable> var) = 0;
+
+	/**
+	 * Method: TConsoleHolder::Log
+	 * Purpose: A regular message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void Log(TrecPointer<TVariable> var) = 0;
+
+	/**
+	 * Method: TConsoleHolder::Group
+	 * Purpose: Sets Up indentation
+	 * Parameters: bool collapsed = false - whether any logging should be hidden in a drop-down
+	 * Returns: UINT - the new group Indent
+	 *
+	 * Attributes: virtual
+	 * 
+	 * Note: collapse was provided with JavaScript's "console.groupCollapsed" method in mind. Not all consoles would support such a feature 
+	 *		and thus ignore the parameter, but it is provided for implementations that do support this feature
+	 */
+	virtual UINT Group(bool collapsed = false);
+
+	/**
+	 * Method: TConsoleHolder::EndGroup
+	 * Purpose: Ends the Group
+	 * Parameters: void
+	 * Returns: UINT - the new group Indent
+	 * 
+	 * Attributes: virtual
+	 */
+	virtual UINT EndGroup();
+
+
+protected:
+	UINT groupLevel;
+	TString tabs;
+};
+
 
 void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataArray<TString>& environmentType);
 

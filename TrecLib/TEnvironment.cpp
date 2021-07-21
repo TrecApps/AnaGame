@@ -515,3 +515,28 @@ void EnvironmentEntryParser::GetEntries(TDataArray<EnvironmentEntry>& entries)
 		entries.push_back(this->entries[Rust]);
 	}
 }
+
+TConsoleHolder::TConsoleHolder()
+{
+	groupLevel = 0;
+}
+
+TConsoleHolder::~TConsoleHolder()
+{
+}
+
+UINT TConsoleHolder::Group(bool collapsed)
+{
+	tabs.AppendChar(L'\t');
+	return ++groupLevel;
+}
+
+UINT TConsoleHolder::EndGroup()
+{
+	if (groupLevel)
+	{
+		groupLevel--;
+		tabs.Delete(0);
+	}
+	return groupLevel;
+}

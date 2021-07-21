@@ -1,5 +1,6 @@
 #pragma once
 #include "TTextField.h"
+#include <TEnvironment.h>
 #include <TShell.h>
 /**
  * Class Enum: prompt_mode
@@ -14,6 +15,74 @@ typedef enum class prompt_mode
 
 
 /**
+ * Class: TPromptHolder
+ * Purpose: Implements the TConsoleHolder for the TPromptControl
+ * 
+ * SuperClass: TConsoleHolder
+ */
+class TPromptHolder : public TConsoleHolder
+{
+	friend class TPromptControl;
+public:
+	/**
+	 * Method: TPromptHolder::Warn
+	 * Purpose: A warning message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void Warn(TrecPointer<TVariable> var) override;
+
+	/**
+	 * Method: TPromptHolder::Error
+	 * Purpose: An error message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void Error(TrecPointer<TVariable> var) override;
+
+	/**
+	 * Method: TPromptHolder::Info
+	 * Purpose: An information message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void Info(TrecPointer<TVariable> var) override;
+
+	/**
+	 * Method: TPromptHolder::Log
+	 * Purpose: A regular message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void Log(TrecPointer<TVariable> var) override;
+
+private:
+
+	/**
+	 * Method: TPromptHolder::TPromptHolder
+	 * Purpose: Allows the TPromptControl to create an instance of this holder pointing to it
+	 * Parameters: TrecPointer<TControl> control - the control to point to
+	 * Returns: new TPromptHolder object
+	 */
+	TPromptHolder(TrecPointer<TControl> control);
+
+	/**
+	 * The control to hold on to
+	 */
+	TrecPointer<TControl> control;
+};
+
+
+
+/**
  * Class: TPromptControl
  * Purpose: Allows Anagame to support terminals in it's interface
  * 
@@ -23,6 +92,14 @@ class _ANAFACE_DLL TPromptControl :
 	public TTextField
 {
 public:
+
+	/**
+	 * Method: TPromptControl::GetConsoleHolder
+	 * Purpose: Retrieves a console holder that points to this control
+	 * Parameters: void
+	 * Returns: TrecPointer<TConsoleHolder> - console holder compatible with this console object
+	 */
+	TrecPointer<TConsoleHolder> GetConsoleHolder();
 
 	/**
 	 * Method: TPromptControl::GetType
