@@ -5,6 +5,7 @@
 #include <TPromptControl.h>
 #include "TcJavaScriptInterpretor.h"
 #include <TStringVariable.h>
+#include <TBlankNode.h>
 
 TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shell)
 {
@@ -223,10 +224,24 @@ TrecPointer<TObjectNode> TAnaGameCodeEnvironment::GetBrowsingNode()
 	if(!rootDirectory.Get())
 		return TrecPointer<TObjectNode>();
 
-	auto node = TrecPointerKey::GetNewSelfTrecPointerAlt<TObjectNode, TFileNode>(0);
-	auto path(rootDirectory->GetPath());
-	node->Initialize(path);
-	return node;
+	auto node = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TBlankNode>(0);
+
+	UINT rootSize = rootDirectory->GetPath().GetSize();
+
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		TString name(files[Rust]->GetPath());
+		name.Delete(0, rootSize);
+		int firstSlash = name.Find(L'\\');
+
+		name.Set(rootDirectory->GetPath() + name.SubString(0, firstSlash));
+		auto fNode = TrecPointerKey::GetNewSelfTrecPointerAlt<TObjectNode, TFileNode>(1);
+
+		fNode->Initialize(name);
+		node->AddNode(fNode);
+	}
+
+	return TrecPointerKey::GetTrecPointerFromSub<>(node);
 }
 
 bool TAnaGameCodeEnvironment::SupportsFileExt(const TString& ext)
