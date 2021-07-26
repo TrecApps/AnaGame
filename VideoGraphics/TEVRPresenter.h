@@ -2,6 +2,17 @@
 #include <TObject.h>
 #include <mfidl.h>
 #include <evr.h>
+#include "TPresentEngine.h"
+#include <TrecReference.h>
+
+typedef enum class render_state {
+    rs_started = 1,
+    rs_stopped,
+    rs_paused,
+    rs_shutdown
+} render_state;
+
+
 class TEVRPresenter :
     public TObject,
     public IUnknown,
@@ -65,6 +76,44 @@ public:
         _Outptr_  IMFVideoMediaType** ppMediaType) override;
 
 protected:
+
+    // Helper Methods
+    HRESULT Flush();
+    HRESULT NegitiateType();
+    HRESULT ProcessInputNotify();
+    HRESULT BeginStream();
+    HRESULT EndStream();
+    HRESULT CheckStreamEnd();
+
+    // Format methods
+    HRESULT SetMediaType(IMFMediaType* type);
+
+    // Fame-Stepping
+    HRESULT PrepFrameStep(DWORD steps);
+    HRESULT StopFrameStep();
+
+    // The Render State of this Presenter
+    render_state renderState;
+
+    // frame-step
+    enum class framestep_state {
+        fs_none,
+        fs_waiting_start,
+        fs_pending,
+        fs_scheduled,
+        fs_complete
+    } frameStep;
+
+
+
     UINT counter;
+    bool streamingStopped;
+
+    TrecPointer<TPresentEngine> presenter;
+
+    TrecComPointer<IMFClock> clock;
+    TrecComPointer<IMFTransform> transform;
+    TrecComPointer<IMediaEventSink> sink;
+    TrecComPointer<IMFMediaType> mediaType;
 };
 

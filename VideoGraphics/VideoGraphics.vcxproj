@@ -181,6 +181,7 @@
     <ClInclude Include="TGradientStopCollection.h" />
     <ClInclude Include="TMediaSink.h" />
     <ClInclude Include="TPlayer.h" />
+    <ClInclude Include="TPresentEngine.h" />
     <ClInclude Include="TPresenter.h" />
     <ClInclude Include="TSampleTexture.h" />
     <ClInclude Include="TScheduler.h" />
@@ -216,6 +217,7 @@
     <ClCompile Include="TGradientStopCollection.cpp" />
     <ClCompile Include="TMediaSink.cpp" />
     <ClCompile Include="TPlayer.cpp" />
+    <ClCompile Include="TPresentEngine.cpp" />
     <ClCompile Include="TPresenter.cpp" />
     <ClCompile Include="TSampleTexture.cpp" />
     <ClCompile Include="TScheduler.cpp" />
