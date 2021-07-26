@@ -12,11 +12,12 @@ TString on_OpenFile(L"OnOpenFile");
  * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
  * Returns: New FileHandler Object
  */
-FileHandler::FileHandler(TrecPointer<TInstance> instance) : EventHandler(instance)
+FileHandler::FileHandler(TrecPointer<TInstance> instance, handler_data_source dataSource) : EventHandler(instance)
 {
 	// First set up the Array list with our event handlers
 	fileHandlers.push_back(&FileHandler::OnOpenFile);
 
+	this->dataSource = dataSource;
 
 	// Now create the link between the name of the handler in TML with 
 	eventNameID enid;
@@ -73,13 +74,25 @@ void FileHandler::Initialize(TrecPointer<Page> page)
 		TrecPointer<TObjectNode> node = TrecPointerKey::GetNewSelfTrecPointerAlt<TObjectNode, TFileNode>(0);
 		
 		if (ideWin)
-			rootFile = ideWin->GetEnvironmentDirectory();
-		
-		if(!rootFile.Get())
-			rootFile = TFileShell::GetFileInfo(GetDirectory(CentralDirectories::cd_Documents));
-		dynamic_cast<TFileNode*>(node.Get())->SetFile(rootFile);
+		{
+			if (dataSource == handler_data_source::hds_files)
+			{
+				rootFile = ideWin->GetEnvironmentDirectory();
+				
+				if (!rootFile.Get())
+					rootFile = TFileShell::GetFileInfo(GetDirectory(CentralDirectories::cd_Documents));
+				dynamic_cast<TFileNode*>(node.Get())->SetFile(rootFile);
 
-		browser->SetNode(node);
+				browser->SetNode(node);
+			}
+			else if (dataSource == handler_data_source::hds_project)
+			{
+				TrecPointer<TEnvironment> env = ideWin->GetEnvironment();
+				browser->SetNode(env->GetBrowsingNode());
+			}
+
+			
+		}
 	}
 	ThreadRelease();
 }

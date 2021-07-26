@@ -31,6 +31,7 @@ typedef enum class anagame_page
 	anagame_page_code_explorer,   // Presents a page that holds a node control that focuses on code elements
 	anagame_page_object_explorer, // Presents a Page intended to present the properties of a given object
 	anagame_page_code_file,       // Presents a Page that holds a Text Edit control intended to hold a code file
+	anagame_page_project_explorer,// Presents a Page that holds a node control that Explores the Project
 	anagame_page_arena,           // Presents a Page that holds a 3D arena control
 	anagame_page_camera           // Presents a Page that provides a Camera Panel
 };

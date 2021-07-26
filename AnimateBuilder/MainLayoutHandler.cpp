@@ -272,7 +272,13 @@ void MainLayoutHandler::OnFirstDraw()
 	if (!ideWindow.Get() || ideWindow->GetEnvironment().Get())
 		return;
 
-	ideWindow->SetEnvironment(ActivateEnvironmentDialog(ideWindow->GetInstance(), ideWindow->GetWindowHandle()));
+	TrecPointer<TEnvironment> env = ActivateEnvironmentDialog(ideWindow->GetInstance(), ideWindow->GetWindowHandle());
+
+	if (env.Get())
+	{
+		ideWindow->SetEnvironment(env);
+		ideWindow->AddPage(anagame_page::anagame_page_project_explorer, ide_page_type::ide_page_type_upper_right, TString(L"Project"));
+	}
 }
 
 void MainLayoutHandler::OnLoadNewSolution(TrecPointer<TControl> tc, EventArgs ea)

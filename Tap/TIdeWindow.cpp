@@ -439,6 +439,7 @@ TrecPointer<Page> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type pa
 	TrecPointer<TFile> uiFile = TrecPointerKey::GetNewTrecPointer<TFile>();
 	TrecPointer<TFileShell> fileShell;
 
+	handler_data_source dataSource = handler_data_source::hds_files;
 
 	switch (pageType)
 	{
@@ -469,13 +470,18 @@ TrecPointer<Page> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type pa
 		else
 			pageHandler = handler;
 		break;
+	case anagame_page::anagame_page_project_explorer:
+		dataSource = handler_data_source::hds_project;
 	case anagame_page::anagame_page_file_node:
 		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
+			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), dataSource);
 		else
 			pageHandler = handler;
+		break;
+	
+
 		break;
 	case anagame_page::anagame_page_object_explorer:
 
@@ -567,14 +573,20 @@ TrecPointer<Page> TIdeWindow::AddPage(anagame_page pageType, ide_page_type pageL
 		ThreadRelease();
 		return ret;
 	}
+
+	handler_data_source dataSource = handler_data_source::hds_files;
+
 	switch (pageType)
 	{
 	case anagame_page::anagame_page_command_prompt:
 	case anagame_page::anagame_page_console:
 		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)));
 		break;
+	case anagame_page::anagame_page_project_explorer:
+		dataSource = handler_data_source::hds_project;
 	case anagame_page::anagame_page_file_node:
-		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)));
+		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), dataSource));
+		break;
 	}
 	ThreadRelease();
 	return ret;

@@ -3,6 +3,14 @@
 
 class FileHandler;
 
+/**
+ * Enum Class: handler_data_source
+ * Purpose: Instructs Handler on where to get its data
+ */
+typedef enum class handler_data_source {
+	hds_files,
+	hds_project
+}handler_data_source;
 
 typedef void (FileHandler::* FileHandlerEvents)(TrecPointer<TControl> tc, EventArgs ea);
 
@@ -22,7 +30,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New FileHandler Object
 	 */
-	FileHandler(TrecPointer<TInstance> instance);
+	FileHandler(TrecPointer<TInstance> instance, handler_data_source dataSource = handler_data_source::hds_files);
 	/**
 	 * Method: FileHandler::~FileHandler
 	 * Purpose: Destructor
@@ -91,7 +99,11 @@ protected:
 	 */
 	TDataArray<FileHandlerEvents> fileHandlers;
 
-	
+	/**
+	 * How the Handler should get its data for it's source
+	 */
+	handler_data_source dataSource;
+
 	/**
 	 * Method: FileHandler::OnOpenFile
 	 * Purpose: Responds to a Double Click from the Control
