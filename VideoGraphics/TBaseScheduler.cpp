@@ -1,5 +1,10 @@
 #include "TBaseScheduler.h"
 
+TBaseScheduler::TBaseScheduler()
+{
+	frameRate = 1.0f;
+}
+
 /**
  * Method: TBaseScheduler::SetClockRate
  * Purpose: Sets the clock rate

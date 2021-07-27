@@ -4,6 +4,13 @@ class TBaseScheduler :
     public TObject
 {
 public:
+    /**
+     * Method: TBaseScheduuler::TBaseScheduler
+     * Purpose: Default Constructor
+     * Parameters: void
+     * Returns: new Base Scheduler
+     */
+    TBaseScheduler();
 
     /**
      * Method: TBaseScheduler::SetClockRate
