@@ -251,6 +251,18 @@ public:
 
 
 	/**
+	 * Method: TWindow::OnScroll
+	 * Purpose: Sends Scroll Command to controls
+	 * Parameters: const TPoint& point - point of the mouse
+	 *				const TPoint& direction - how far to send the scroll
+	 * Returns: bool - whether message was recieved
+	 *
+	 * Attributes: virtual
+	 */
+	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
+
+
+	/**
 	 * Method: TWindow::GetHandlePage
 	 * Purpose:
 	 * Parameters:

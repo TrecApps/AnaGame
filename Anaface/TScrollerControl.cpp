@@ -238,6 +238,37 @@ bool TScrollerControl::onScroll(float x,float y)
 	ThreadRelease();
 	return true;
 }
+
+
+bool TScrollerControl::OnScroll(const TPoint& point, const TPoint& direction)
+{
+	if (!isContained(point, location))
+		return false;
+
+	bool done = false, movedChild = false;
+
+	if (direction.x)
+	{
+		if (hScroll.Get())
+		{
+			hScroll->MovedContent(direction.x);
+			done = true;
+		}
+		else if(childControl.Get())
+			done = movedChild = childControl->OnScroll(point, direction);
+	}
+	if (direction.y)
+	{
+		if (vScroll.Get())
+		{
+			vScroll->MovedContent(direction.y);
+			done = true;
+		}
+		else if (childControl.Get() && !movedChild)
+			done = childControl->OnScroll(point, direction) || done;
+	}
+	return done;
+}
 /**
  * Method: TScrollerControl::RefreshScroll
  * Purpose: Refreshes the Scroll bars

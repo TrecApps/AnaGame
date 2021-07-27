@@ -708,6 +708,23 @@ void Page::OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowE
 }
 
 /**
+ * Method: Page::OnScroll
+ * Purpose: Sends Scroll Command to controls
+ * Parameters: const TPoint& point - point of the mouse
+ *				const TPoint& direction - how far to send the scroll
+ * Returns: bool - whether message was recieved
+ *
+ * Attributes: virtual
+ */
+bool Page::OnScroll(const TPoint& point, const TPoint& direction)
+{
+	if(!rootControl.Get())
+		return false;
+
+	return rootControl->OnScroll(point, direction);
+}
+
+/**
  * Method: Page::OnRButtonUp
  * Purpose: Responds to the Right Button Up Message
  * Parameters: UINT nFlags - flags associated with the message

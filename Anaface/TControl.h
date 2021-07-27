@@ -1318,6 +1318,19 @@ public:
 	*/
 	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput *mOut, TDataArray<EventID_Cred>& eventAr);
 
+	/**
+	 * Method: TControl::OnScroll
+	 * Purpose: Allows Controls to handle Scrolling messages from Windows
+	 * Parameters: const TPoint& point - where the mouse is
+	 *				const TPoint& direction - indication of which direction it is going in
+	 * Returns: bool - true of a control actually used the message (signal to stop propagating)
+	 * 
+	 * Attributes: virtual
+	 */
+	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
+
+
+
 	// Builder Messages
 
 	/*

@@ -131,6 +131,18 @@ public:
 	 */
 	virtual bool onScroll(float x, float y)override;
 
+
+	/**
+	 * Method: TScrollerControl::OnScroll
+	 * Purpose: Allows Controls to handle Scrolling messages from Windows
+	 * Parameters: const TPoint& point - where the mouse is
+	 *				const TPoint& direction - indication of which direction it is going in
+	 * Returns: bool - true of a control actually used the message (signal to stop propagating)
+	 *
+	 * Attributes: virtual
+	 */
+	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction) override;
+
 protected:
 	/**
 	 * The control to move around

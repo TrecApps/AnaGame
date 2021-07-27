@@ -101,6 +101,9 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		ThreadRelease();
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
+
+	int e;
+
 	switch (message)
 	{
 	case WM_APP_PLAYER_EVENT:
@@ -161,6 +164,15 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 		win->OnWindowResize(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		break;
+	
+		// Messages telling us to scroll
+	case WM_MOUSEHWHEEL:
+		win->OnScroll(TPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)), TPoint(HIWORD(wParam), 0.0f));
+		break;
+	case WM_MOUSEWHEEL:
+		win->OnScroll(TPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)), TPoint( 0.0f,HIWORD(wParam)));
+		break;
+
 	}
 
 	if (windowIndex != -1 && windowIndex < windowList.Size() && windowList[windowIndex].Get() && windowList[windowIndex]->messageStack > 0)

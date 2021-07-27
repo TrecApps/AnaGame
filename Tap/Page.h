@@ -368,7 +368,16 @@ public:
 	 */
 	afx_msg virtual void OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>);
 
-
+	/**
+	 * Method: Page::OnScroll
+	 * Purpose: Sends Scroll Command to controls
+	 * Parameters: const TPoint& point - point of the mouse
+	 *				const TPoint& direction - how far to send the scroll
+	 * Returns: bool - whether message was recieved
+	 * 
+	 * Attributes: virtual
+	 */
+	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
 
 	/**
 	 * Method: Page::OnRButtonUp

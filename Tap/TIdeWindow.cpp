@@ -400,6 +400,28 @@ finish:
 	ThreadRelease();
 }
 
+bool TIdeWindow::OnScroll(const TPoint& point, const TPoint& direction)
+{
+	if (TWindow::OnScroll(point, direction))
+		return true;
+	if (body->OnScroll(point, direction))
+		return true;
+	if (basicConsole->OnScroll(point, direction))
+		return true;
+	if (lowerLeft->OnScroll(point, direction))
+		return true;
+	if (lowerRight->OnScroll(point, direction))
+		return true;
+	if (upperLeft->OnScroll(point, direction))
+		return true;
+	if (upperRight->OnScroll(point, direction))
+		return true;
+	if (deepConsole->OnScroll(point, direction))
+		return true;
+
+	return false;
+}
+
 /**
  * Method: TIdeWindow::AddNewMiniApp
  * Purpose: Adds a MiniApp to the list of Apps being managed

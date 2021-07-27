@@ -4048,6 +4048,34 @@ afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlag
 	return false;
 }
 
+/**
+ * Method: TControl::OnScroll
+ * Purpose: Allows Controls to handle Scrolling messages from Windows
+ * Parameters: const TPoint& point - where the mouse is
+ *				const TPoint& direction - indication of which direction it is going in
+ * Returns: bool - true of a control actually used the message (signal to stop propagating)
+ *
+ * Attributes: virtual
+ */
+bool TControl::OnScroll(const TPoint& point, const TPoint& direction)
+{
+	if (!isContained(point, location))
+		return false;
+
+	bool found = false;
+	for (UINT Rust = 0; Rust < children.Count() && !found; Rust++)
+	{
+		auto ch = children.ElementAt(Rust);
+		if (!ch.Get())
+		{
+			children.RemoveAt(Rust--);
+			continue;
+		}
+		found = ch->OnScroll(point, direction);
+	}
+	return found;
+}
+
 // Messages TControls can get while under construction in the Builder
 
 /*

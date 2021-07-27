@@ -615,6 +615,13 @@ bool TWindow::OnDestroy()
 	return ret;
 }
 
+bool TWindow::OnScroll(const TPoint& point, const TPoint& direction)
+{
+	if(!mainPage.Get())
+	return false;
+	return mainPage->OnScroll(point, direction);
+}
+
 /**
  * Method: TWindow::GetHandlePage
  * Purpose:

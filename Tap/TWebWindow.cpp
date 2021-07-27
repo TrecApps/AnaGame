@@ -276,6 +276,25 @@ void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
     ThreadRelease();
 }
 
+bool TWebWindow::OnScroll(const TPoint& point, const TPoint& direction)
+{
+    if (TWindow::OnScroll(point, direction))
+        return true;
+
+    TrecPointer<Tab> tab = webPages->GetCurrentTab();
+    if (tab.Get())
+    {
+        TrecPointer<TabContent> tabContent = tab->GetContent();
+        if (tabContent.Get() && tabContent->GetContentType() == TabContentType::tct_web_page)
+        {
+            TrecSubPointer<Page, WebPage> webPage = dynamic_cast<TabWebPageContent*>(tabContent.Get())->GetWebPage();
+            if (webPage.Get())
+                return webPage->OnScroll(point, direction);
+        }
+    }
+    return false;
+}
+
 TString TWebWindow::FixUrl(const TString& url)
 {
     if (url.StartsWith(L"Anagame://") || url.StartsWith(L"File://") || url.StartsWith(L"http://") || url.StartsWith(L"https://") || url.StartsWith(L"ftp://"))
