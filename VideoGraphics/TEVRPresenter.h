@@ -4,6 +4,8 @@
 #include <evr.h>
 #include "TPresentEngine.h"
 #include <TrecReference.h>
+#include <TLinkedList.h>
+#include "TBaseScheduler.h"
 
 typedef enum class render_state {
     rs_started = 1,
@@ -11,6 +13,14 @@ typedef enum class render_state {
     rs_paused,
     rs_shutdown
 } render_state;
+
+typedef enum class framestep_state {
+    fs_none,
+    fs_waiting_start,
+    fs_pending,
+    fs_scheduled,
+    fs_complete
+} framestep_state;
 
 
 class TEVRPresenter :
@@ -23,6 +33,8 @@ class TEVRPresenter :
     public IMFVideoPresenter
 {
 public: 
+
+    TEVRPresenter();
 
     // IUnknown
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(
@@ -77,6 +89,17 @@ public:
 
 protected:
 
+    class FrameStep {
+    public:
+        FrameStep();
+        FrameStep(const FrameStep& copy);
+
+        framestep_state state;
+        TLinkedList<TrecComPointer<IMFSample>> samples;
+        DWORD steps;
+        DWORD_PTR sampleRef;
+    } frameStep;
+
     // Helper Methods
     HRESULT Flush();
     HRESULT NegitiateType();
@@ -88,26 +111,28 @@ protected:
     // Format methods
     HRESULT SetMediaType(IMFMediaType* type);
 
+    // Sample Management
+    void ProcessOutputLoop();
+
     // Fame-Stepping
     HRESULT PrepFrameStep(DWORD steps);
     HRESULT StopFrameStep();
+    HRESULT StartFrameStep();
+    HRESULT CancelFrameStep();
 
     // The Render State of this Presenter
     render_state renderState;
 
     // frame-step
-    enum class framestep_state {
-        fs_none,
-        fs_waiting_start,
-        fs_pending,
-        fs_scheduled,
-        fs_complete
-    } frameStep;
+
 
 
 
     UINT counter;
     bool streamingStopped;
+    float rate;
+
+    TBaseScheduler scheduler;
 
     TrecPointer<TPresentEngine> presenter;
 

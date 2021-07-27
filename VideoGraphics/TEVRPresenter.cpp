@@ -13,6 +13,14 @@ bool IsActive(render_state s)
 }
 
 
+TEVRPresenter::TEVRPresenter()
+{
+    renderState = render_state::rs_shutdown;
+    counter = 0;
+    streamingStopped = false;
+    rate = 1.0f;
+}
+
 HRESULT __stdcall TEVRPresenter::QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppv)
 {
     if (!ppv) return E_POINTER;
@@ -65,27 +73,112 @@ ULONG __stdcall TEVRPresenter::Release(void)
 
 HRESULT __stdcall TEVRPresenter::OnClockStart(MFTIME hnsSystemTime, LONGLONG llClockStartOffset)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    if (renderState == render_state::rs_shutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+
+    renderState = render_state::rs_started;
+
+    if (IsActive(renderState))
+    {
+        if (llClockStartOffset != PRESENTATION_CURRENT_POSITION)
+            Flush();
+    }
+    else
+    {
+        if (FAILED(StartFrameStep()))
+        {
+            ThreadRelease();
+            return;
+        }
+    }
+
+    ProcessOutputLoop();
+    ThreadRelease();
+    return S_OK;
 }
 
 HRESULT __stdcall TEVRPresenter::OnClockStop(MFTIME hnsSystemTime)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    if (renderState == render_state::rs_shutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+
+    if (renderState == render_state::rs_stopped)
+    {
+        renderState = render_state::rs_stopped;
+        Flush();
+
+        if (frameStep.state != framestep_state::fs_none)
+            CancelFrameStep();
+    }
+    ThreadRelease();
+    return S_OK;
 }
 
 HRESULT __stdcall TEVRPresenter::OnClockPause(MFTIME hnsSystemTime)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    if (renderState == render_state::rs_shutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+
+    renderState = render_state::rs_paused;
+
+    ThreadRelease();
+    return S_OK;
 }
 
 HRESULT __stdcall TEVRPresenter::OnClockRestart(MFTIME hnsSystemTime)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    if (renderState == render_state::rs_shutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+
+    renderState = render_state::rs_started;
+
+    HRESULT ret = StartFrameStep();
+
+    if (SUCCEEDED(ret))
+    {
+        ProcessOutputLoop();
+    }
+    ThreadRelease();
+    return ret;
 }
 
 HRESULT __stdcall TEVRPresenter::OnClockSetRate(MFTIME hnsSystemTime, float flRate)
 {
-    return E_NOTIMPL;
+    ThreadLock();
+    if (renderState == render_state::rs_shutdown)
+    {
+        ThreadRelease();
+        return MF_E_SHUTDOWN;
+    }
+
+    if ((rate == 0.0f) && (flRate != 0.0f))
+    {
+        CancelFrameStep();
+        frameStep.samples.Flush();
+    }
+
+    rate = flRate;
+
+    scheduler.SetClockRate(rate);
+
+    ThreadRelease();
+    return S_OK;
 }
 
 HRESULT __stdcall TEVRPresenter::GetService(__RPC__in REFGUID guidService,
@@ -300,6 +393,10 @@ HRESULT TEVRPresenter::SetMediaType(IMFMediaType* type)
     return E_NOTIMPL;
 }
 
+void TEVRPresenter::ProcessOutputLoop()
+{
+}
+
 HRESULT TEVRPresenter::PrepFrameStep(DWORD steps)
 {
     return E_NOTIMPL;
@@ -308,4 +405,29 @@ HRESULT TEVRPresenter::PrepFrameStep(DWORD steps)
 HRESULT TEVRPresenter::StopFrameStep()
 {
     return E_NOTIMPL;
+}
+
+HRESULT TEVRPresenter::StartFrameStep()
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TEVRPresenter::CancelFrameStep()
+{
+    return E_NOTIMPL;
+}
+
+TEVRPresenter::FrameStep::FrameStep()
+{
+    state = framestep_state::fs_none;
+    steps = 0;
+    sampleRef = NULL;
+}
+
+TEVRPresenter::FrameStep::FrameStep(const FrameStep& copy)
+{
+    this->sampleRef = copy.sampleRef;
+    this->samples = copy.samples;
+    this->state = copy.state;
+    this->steps = copy.steps;
 }
