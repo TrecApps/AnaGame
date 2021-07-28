@@ -6,6 +6,7 @@
 #include <TrecReference.h>
 #include <TLinkedList.h>
 #include "TBaseScheduler.h"
+#include "TEVRScheduler.h"
 
 typedef enum class render_state {
     rs_started = 1,
@@ -34,7 +35,7 @@ class TEVRPresenter :
 {
 public: 
 
-    TEVRPresenter();
+    TEVRPresenter(TrecPointer<TPresentEngine>);
 
     // IUnknown
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(
@@ -129,10 +130,10 @@ protected:
 
 
     UINT counter;
-    bool streamingStopped;
+    bool streamingStopped, prerolled;
     float rate;
 
-    TBaseScheduler scheduler;
+    TEVRScheduler scheduler;
 
     TrecPointer<TPresentEngine> presenter;
 

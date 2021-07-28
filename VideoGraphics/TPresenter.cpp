@@ -175,7 +175,7 @@ void TPresenter::Shutdown()
     TObject::ThreadRelease();
 }
 
-HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, TSampleTexture* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample)
+HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample)
 {
     TObject::ThreadLock();
 

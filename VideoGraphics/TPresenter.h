@@ -183,7 +183,7 @@ public:
      *              IMFSample** ppOutputSample = NULL - not used
      * Returns: HRESULT - should be S_OK
      */
-    HRESULT ProcessFrame(IMFMediaType* pCurrentType, TSampleTexture* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample = NULL);
+    HRESULT ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample = NULL);
     /**
      * Method: TPresenter::SetCurrentMediaType
      * Purpose: Sets the current media type, getting the frame width and frame height

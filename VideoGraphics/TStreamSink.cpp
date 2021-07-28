@@ -3,7 +3,6 @@
 #include <Mferror.h>
 #include "TVideoMarker.h"
 #include <mfapi.h>
-#include "TSampleTexture.h"
 
 /**
  * struct: guid_to_dxgi_vid_formats
@@ -336,102 +335,10 @@ HRESULT TStreamSink::ProcessSample(__RPC__in_opt IMFSample* pSample)
         return E_POINTER;
     ThreadLock();
 
-    // Double check that the height and width have been set
-    if (!textureDesc.Width || !textureDesc.Height)
-    {
-        ThreadRelease();
-        return E_NOT_SET;
-    }
-
-    DWORD sampleSize = 0;
-
-    // Determine how many buffers are in the sample
-    HRESULT ret = pSample->GetBufferCount(&sampleSize);
-    if (FAILED(ret))
-    {
-        ThreadRelease();
-        return ret;
-    }
-    // Get the biffer from the sample
-    IMFMediaBuffer* pBuffer = nullptr;
-    if (1 == sampleSize)
-    {
-        ret = pSample->GetBufferByIndex(0, &pBuffer);
-    }
-    else
-        ret = pSample->ConvertToContiguousBuffer(&pBuffer);
-
-    if (FAILED(ret))
-        return ret;
-
-    IMF2DBuffer* p2Buff = nullptr;
-
-    // Attempt to connvert to a 2D buffer (ideal)
-    ret = pBuffer->QueryInterface<IMF2DBuffer>(&p2Buff);
-    BYTE* picByte = nullptr;
-    LONG picLen = 0;
-    D3D11_SUBRESOURCE_DATA resourceData;
-    ZeroMemory(&resourceData, sizeof(resourceData));
-
-
-    if (FAILED(ret))
-    {
-        p2Buff = nullptr;
-        DWORD maxLen = 0, curLen = 0;
-        ret = pBuffer->Lock((BYTE**)(&resourceData.pSysMem), &maxLen, &curLen);
-        if (FAILED(ret))
-        {
-            pBuffer->Release();
-            return ret;
-        }
-        picLen = maxLen / textureDesc.Height;
-    }
-    else
-    {
-        ret = p2Buff->Lock2D((BYTE**)(&resourceData.pSysMem), &picLen);
-        if (FAILED(ret))
-        {
-            ThreadRelease();
-            pBuffer->Release();
-            p2Buff->Release();
-            return ret;
-        }
-        if (picLen < 0)
-        {
-            // To-Do: Handle Scenario
-            int e = 0;
-        }
-    }
-    
-    picLen = textureDesc.Width;
-
-
-
-    resourceData.SysMemPitch = picLen;
-
-
-
-    ID3D11Texture2D* textures = nullptr;
-    ret = device->CreateTexture2D(&textureDesc, &resourceData, &textures);
-
-    if (p2Buff)
-        p2Buff->Unlock2D();
-    else
-        pBuffer->Unlock();
-
-    if(FAILED(ret))
-    {
-        ThreadRelease();
-        pBuffer->Release();
-        if(p2Buff) p2Buff->Release();
-        return ret;
-    }
-
-    TSampleTexture* tst = nullptr;
-    TSampleTexture::GetTSampleTexture(pSample, textures, &tst);
-
-    auto uSample = (IUnknown*)tst;
+    HRESULT ret = S_OK;
+    IUnknown* uSample = (IUnknown*)pSample;
     samples.Push(uSample);
+    pSample->AddRef();
 
     if (isPrerolling)
     {
@@ -1072,11 +979,11 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
     while (samples.Dequeue(samp) && repeat)
     {
         IVideoMarker* mSample = nullptr;
-        ISampleTexture* fSample = nullptr;
+        IMFSample* fSample = nullptr;
 
         // Retrieve either sample or a marker
         if ((ret = samp->QueryInterface<IVideoMarker>(&mSample)) == E_NOINTERFACE)
-            ret = samp->QueryInterface<ISampleTexture>(&fSample);
+            ret = samp->QueryInterface<IMFSample>(&fSample);
 
         if (SUCCEEDED(ret))
         {
@@ -1106,7 +1013,7 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
                 IMFSample* outSamp = nullptr;
 
                 // Have the presenter process the frame
-                ret = presenter->ProcessFrame(this->currType, (TSampleTexture*)fSample, &laceMode, &deviceChanged, &outSamp);
+                ret = presenter->ProcessFrame(this->currType, fSample, &laceMode, &deviceChanged, &outSamp);
 
                 if (SUCCEEDED(ret))
                 {
@@ -1119,8 +1026,12 @@ HRESULT TStreamSink::ProcessQueueSamples(bool doProcess)
                 }
                 if (SUCCEEDED(ret) && outSamp)
                 {
+                    TrecComPointer<IMFSample> comSample;
+                    TrecComPointer<IMFSample>::TrecComHolder comSampleHolder;
+                    *comSampleHolder.GetPointerAddress() = fSample;
+                    comSample = comSampleHolder.Extract();
                     // Inform the scheduler
-                    ret = schedule->ScheduleSample((TSampleTexture*)fSample, state != PlayState::State_Started);
+                    ret = schedule->ScheduleSample(comSample, state != PlayState::State_Started);
                     // Dont repeat if we have an output sample
                     repeat = false;
                 }

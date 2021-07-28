@@ -29,62 +29,8 @@ TScheduler::~TScheduler()
 {
 }
 
-/**
- * Method: TScheduler::SetFrameRate
- * Purpose: Sets the new Frame-rate
- * Parameters: const MFRatio& fps -  the frame rarte to work with
- * Returns: void
- */
-void TScheduler::SetFrameRate(const MFRatio& fps)
-{
-	// Set basic value
-	UINT64 timeFrame = 0;
 
-	// Perform calculation
-	MFFrameRateToAverageTimePerFrame(fps.Numerator, fps.Denominator, &timeFrame);
-	// Convert the value result
-	perFrameInterval = (MFTIME)timeFrame;
-	// Gets used often, save at least one calculation
-	perFrameQuarter = perFrameInterval / 4;
-}
 
-/**
- * Method: TScheduler::SetClockRate
- * Purpose: Sets the clock rate
- * Parameters: float fRate -  the new rate to use
- * Returns: HRESULT - S_OK
- */
-HRESULT TScheduler::SetClockRate(float fRate)
-{
-	frameRate = fRate;
-	return S_OK;
-}
-
-/**
- * Method: TScheduler::LastSampleTime
- * Purpose: Reports the time of the last sample
- * Parameters: void
- * Returns: LONGLONG - the last sample processed and the time it was
- *
- * Note: Value not set
- */
-const LONGLONG& TScheduler::LastSampleTime(void) const
-{
-	return lastSampleTime;
-}
-
-/**
- * Method: TScheduler::FrameDuration
- * Purpose: Reports the frame duration
- * Parameters: void
- * Returns:LONGLONG - the frame duration
- *
- * Note: Value not set
- */
-const LONGLONG& TScheduler::FrameDuration(void) const
-{
-	return perFrameInterval;
-}
 
 /**
  * Method: TScheduler::StartScheduler
@@ -133,133 +79,20 @@ HRESULT TScheduler::StopScheduler(void)
 	return S_OK;
 }
 
-/**
- * Method: TScheduler::ScheduleSample
- * Purpose: Schedules a sample for presentation
- * Parameters: TSampleTexture* pSample - the sample to process
- *              bool bPesentNow - whether to present the frame upon this call
- * Returns: HRESULT - Should be S_OK
- */
-HRESULT TScheduler::ScheduleSample(TSampleTexture* pSample, bool now)
-{
-	if (!streamer.Get())
-		return MF_E_NOT_INITIALIZED;
-	HRESULT ret = S_OK;
-	ThreadLock();
 
-	// If told to present now (or we don't have a clock), present the current frame
-	if (now || !clock)
-	{
-		dynamic_cast<TStreamSink*>(streamer.Get())->PresentFrame();
-	}
-	else
-	{
-		pSample->AddRef();
-		samples.Push(pSample);
-		ret = MFPutWorkItem(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, &callBack, nullptr);
-	}
-
-	ThreadRelease();
-	return ret;
-}
 
 
 /**
- * Method: TScheduler::ProcessSamplesInQueue
- * Purpose: Processes the samples currently in the queue
- * Parameters: LONG* plNextSleep - how long the thread should sleep
- * Returns: HRESULT - should be S_OK
+ * Method: TScheduler::IsInit
+ * Purpose: Reports whether the Scheduler is initialized
+ * Parameters: void
+ * Returns: bool - true if initialized
+ *
+ * Attributes: override
  */
-HRESULT TScheduler::ProcessSamplesInQueue(LONG* plNextSleep)
+bool TScheduler::IsInit()
 {
-	if (!plNextSleep) return E_POINTER;
-	HRESULT ret = S_OK;
-	LONG wait = 0;
-	ThreadLock();
-	TSampleTexture* sample = nullptr;
-	while (samples.Dequeue(sample) && sample)
-	{
-		// Process the sample from the queue
-		ret = ProcessSample(sample, &wait);
-		sample->Release();
-		// If we need to sleep, go ahead and sleep
-		if (FAILED(ret) || wait > 0)
-			break;
-	}
-
-	*plNextSleep = wait == 0 ? INFINITE : wait;
-
-	ThreadRelease();
-
-	return ret;
-}
-
-/**
- * Method: TScheduler::ProcessSample
- * Purpose: Checks the timing of the sample relative to the current time and determines if to present of store
- * Parameters: TSampleTexture* pSample - the sample to process
- *              LONG* plNextSleep - how long the thread should sleep
- * Returns: HRESULT - should be S_OK
- */
-HRESULT TScheduler::ProcessSample(TSampleTexture* pSample, LONG* plNextSleep)
-{
-	ThreadLock();
-	
-	HRESULT ret = S_OK;
-	bool doPresent = true;
-
-	if (clock)
-	{
-		LONGLONG presentTime = 0;
-		LONGLONG currentTime = 0;
-		MFTIME   systemTime = 0;
-		LONGLONG delta = 0;
-
-		// Get the IMFSample
-		IMFSample* samp = nullptr;
-		pSample->QueryInterface(__uuidof(IMFSample), (void**)&samp);
-
-		// Get the sample time
-		ret = samp->GetSampleTime(&presentTime);
-		if (SUCCEEDED(ret))
-		{
-			// Get info on the current time
-			ret =clock->GetCorrelatedTime(0, &currentTime, &systemTime);
-		}
-		if (SUCCEEDED(ret))
-		{
-			// Figure out time between now and when sample should be displayed
-			delta = presentTime - currentTime;
-			// In case video is playing backwards
-			if (frameRate < 0)
-				delta = -delta;
-
-			// Check of negative
-			if (delta < -this->perFrameQuarter)
-				doPresent = true;
-			else if (delta > (3 * perFrameQuarter))
-			{
-				// Prepare to hold off on presentig the sample
-				nextSleep = (delta - (3 * perFrameQuarter)) / (10000.0 * frameRate);
-				doPresent = false;
-			}
-		}
-
-	}
-
-	// Check to see if sample needs to be presented now
-	if (doPresent)
-		ret = dynamic_cast<TStreamSink*>(streamer.Get())->PresentFrame();
-	else
-	{
-		// Push back to queue
-		pSample->AddRef();
-		samples.Push(pSample);
-	}
-
-	*plNextSleep = nextSleep;
-	ThreadRelease();
-	return ret;
+	return streamer.Get() != nullptr;
 }
 
 /**
@@ -283,16 +116,6 @@ HRESULT TScheduler::Flush(void)
 	return S_OK;
 }
 
-/**
- * Method: TScheduler::GetSampleCount
- * Purpose: Reports the number of samples currently held by the scheduler
- * Parameters: void
- * Returns: UINT - number of samples currently being held
- */
-UINT TScheduler::GetSampleCount()
-{
-	return samples.GetSize();
-}
 
 /**
  * Method: TScheduler::StartProcessSample
@@ -336,6 +159,35 @@ HRESULT TScheduler::StartProcessSample()
 	if (asyncRes)
 		asyncRes->Release();
 
+	return ret;
+}
+
+/**
+ * Method: TScheduler::ScheduleSample
+ * Purpose: Schedules a sample for presentation
+ * Parameters: TSampleTexture* pSample - the sample to process
+ *              bool bPesentNow - whether to present the frame upon this call
+ * Returns: HRESULT - Should be S_OK
+ */
+HRESULT TScheduler::ScheduleSample(TrecComPointer<IMFSample> pSample, bool now)
+{
+	if (!IsInit())
+		return MF_E_NOT_INITIALIZED;
+	HRESULT ret = S_OK;
+	ThreadLock();
+
+	// If told to present now (or we don't have a clock), present the current frame
+	if (now || !clock)
+	{
+		// dynamic_cast<TStreamSink*>(streamer.Get())->PresentFrame();
+	}
+	else
+	{
+		samples.Push(pSample);
+		//ret = MFPutWorkItem(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, &callBack, nullptr);
+	}
+
+	ThreadRelease();
 	return ret;
 }
 

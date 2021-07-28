@@ -2,7 +2,6 @@
 #include <d3d11.h>
 #include <d3d11_2.h>
 #include <Mferror.h>
-#include <dxva2api.h>
 #include <wincodec.h>
 #include <d3d9.h>
 
@@ -13,11 +12,11 @@ bool IsActive(render_state s)
 }
 
 
-TEVRPresenter::TEVRPresenter()
+TEVRPresenter::TEVRPresenter(TrecPointer<TPresentEngine> p): scheduler(p)
 {
     renderState = render_state::rs_shutdown;
     counter = 0;
-    streamingStopped = false;
+    streamingStopped = prerolled = false;
     rate = 1.0f;
 }
 
@@ -89,10 +88,11 @@ HRESULT __stdcall TEVRPresenter::OnClockStart(MFTIME hnsSystemTime, LONGLONG llC
     }
     else
     {
-        if (FAILED(StartFrameStep()))
+        HRESULT res = StartFrameStep();
+        if (FAILED(res))
         {
             ThreadRelease();
-            return;
+            return res;
         }
     }
 
@@ -228,7 +228,7 @@ HRESULT __stdcall TEVRPresenter::InitServicePointers(_In_ IMFTopologyServiceLook
     clock = clockHolder.Extract();
 
     TrecComPointer<IMFTransform>::TrecComHolder transformHolder;
-    HRESULT ret = pLookup->LookupService(
+    ret = pLookup->LookupService(
         MF_SERVICE_LOOKUP_GLOBAL, 0, MR_VIDEO_MIXER_SERVICE, __uuidof(IMFTransform), (void**)transformHolder.GetPointerAddress(), &objCount);
 
     if (FAILED(ret))
@@ -239,7 +239,7 @@ HRESULT __stdcall TEVRPresenter::InitServicePointers(_In_ IMFTopologyServiceLook
     transform = transformHolder.Extract();
 
     TrecComPointer<IMediaEventSink>::TrecComHolder sinkHolder;
-    HRESULT ret = pLookup->LookupService(
+    ret = pLookup->LookupService(
         MF_SERVICE_LOOKUP_GLOBAL, 0, MR_VIDEO_RENDER_SERVICE, __uuidof(IMediaEventSink), (void**)sinkHolder.GetPointerAddress(), &objCount);
 
     if (FAILED(ret))
@@ -360,6 +360,9 @@ HRESULT __stdcall TEVRPresenter::GetCurrentMediaType(_Outptr_ IMFVideoMediaType*
 
 HRESULT TEVRPresenter::Flush()
 {
+    prerolled = false;
+
+    scheduler.Flush();
     return E_NOTIMPL;
 }
 
