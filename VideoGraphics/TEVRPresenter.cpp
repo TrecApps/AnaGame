@@ -466,9 +466,90 @@ HRESULT TEVRPresenter::CalcOutputRect(IMFMediaType* type, RECT& rect)
     return E_NOTIMPL;
 }
 
+
+MFOffset MakeOffset(float value)
+{
+    MFOffset ret;
+    ret.value = short(value);
+    ret.fract = WORD(65536 * (value - ret.value));
+}
+
+
 HRESULT TEVRPresenter::CreateOptimalMediaType(IMFMediaType* prop, IMFMediaType** opt)
 {
-    return E_NOTIMPL;
+    if (!prop || !opt)
+        return E_POINTER;
+
+    RECT rcOut{ 0,0,0,0 };
+    MFVideoArea vidArea;
+    ZeroMemory(&vidArea, sizeof(vidArea));
+
+    UINT width = 0, height = 0;
+
+    IMFMediaType* newOpt = nullptr;
+    HRESULT ret = MFCreateMediaType(&newOpt);
+    if (FAILED(ret)) return ret;
+    
+    ret = prop->CopyAllItems(newOpt);
+    if (FAILED(ret)) goto done;
+
+    ret = MFSetAttributeRatio(newOpt, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
+    if (FAILED(ret)) goto done;
+
+    rcOut = presenter->GetDestinationRect();
+
+    if (IsRectEmpty(&rcOut))
+    {
+        ret = CalcOutputRect(prop, rcOut);
+        if (FAILED(ret))
+            goto done;
+    }
+
+    ret = newOpt->SetUINT32(MF_MT_YUV_MATRIX, MFVideoTransferMatrix_BT709);
+    if (FAILED(ret)) goto done;
+
+    ret = newOpt->SetUINT32(MF_MT_TRANSFER_FUNCTION, MFVideoTransFunc_709);
+    if (FAILED(ret)) goto done;
+
+    ret = newOpt->SetUINT32(MF_MT_VIDEO_PRIMARIES, MFVideoPrimaries_BT709);
+    if (FAILED(ret)) goto done;
+
+    ret = newOpt->SetUINT32(MF_MT_VIDEO_NOMINAL_RANGE, MFNominalRange_16_235);
+    if (FAILED(ret)) goto done;
+
+    ret = newOpt->SetUINT32(MF_MT_VIDEO_LIGHTING, MFVideoLighting_dim);
+    if (FAILED(ret)) goto done;
+
+    width = rcOut.right - rcOut.left, height = rcOut.bottom - rcOut.top;
+
+    ret = MFSetAttributeSize(newOpt, MF_MT_FRAME_SIZE, width, height);
+    if (FAILED(ret)) goto done;
+
+    vidArea.Area.cx = width;
+    vidArea.Area.cy = height;
+    vidArea.OffsetX = MakeOffset(width);
+    vidArea.OffsetY = MakeOffset(height);
+
+    ret = newOpt->SetUINT32(MF_MT_PAN_SCAN_ENABLED, 0);
+    if (FAILED(ret)) goto done;
+
+    ret = newOpt->SetBlob(MF_MT_GEOMETRIC_APERTURE, (UINT8*)&vidArea, sizeof(vidArea));
+    if (FAILED(ret)) goto done;
+
+    ret = newOpt->SetBlob(MF_MT_PAN_SCAN_APERTURE, (UINT8*)&vidArea, sizeof(vidArea));
+    if (FAILED(ret)) goto done;
+
+    ret = newOpt->SetBlob(MF_MT_MINIMUM_DISPLAY_APERTURE, (UINT8*)&vidArea, sizeof(vidArea));
+    if (FAILED(ret)) goto done;
+
+
+    *opt = newOpt;
+
+done:
+    if (FAILED(ret))
+        newOpt->Release();
+
+    return ret;
 }
 
 void TEVRPresenter::ProcessOutputLoop()

@@ -9,5 +9,15 @@ public:
         __RPC__in REFIID riid,
         __RPC__deref_out_opt LPVOID* ppvObject);
 
+    RECT GetDestinationRect();
+
+    HRESULT SetDestinationRect(RECT& rect);
+
+
+
+
+private:
+    RECT destRect;
+
 };
 
