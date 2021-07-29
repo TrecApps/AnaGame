@@ -111,15 +111,20 @@ protected:
 
     // Format methods
     HRESULT SetMediaType(IMFMediaType* type);
+    HRESULT IsMediaTypeSupported(IMFMediaType* type);
+    HRESULT CalcOutputRect(IMFMediaType* type, RECT& rect);
+    HRESULT CreateOptimalMediaType(IMFMediaType* prop, IMFMediaType** opt);
 
     // Sample Management
     void ProcessOutputLoop();
+    HRESULT DeliverSample(TrecComPointer<IMFSample> samp, bool repaint);
 
     // Fame-Stepping
     HRESULT PrepFrameStep(DWORD steps);
     HRESULT StopFrameStep();
     HRESULT StartFrameStep();
     HRESULT CancelFrameStep();
+    HRESULT DeliverFrameStep(TrecComPointer<IMFSample> samp);
 
     // The Render State of this Presenter
     render_state renderState;
@@ -130,12 +135,14 @@ protected:
 
 
     UINT counter;
-    bool streamingStopped, prerolled;
+    bool streamingStopped, prerolled, sampleNotify, endStream;
     float rate;
 
     TEVRScheduler scheduler;
 
     TrecPointer<TPresentEngine> presenter;
+
+    TLinkedList<TrecComPointer<IMFSample>> samples;
 
     TrecComPointer<IMFClock> clock;
     TrecComPointer<IMFTransform> transform;

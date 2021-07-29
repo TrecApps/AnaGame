@@ -16,8 +16,9 @@ TEVRPresenter::TEVRPresenter(TrecPointer<TPresentEngine> p): scheduler(p)
 {
     renderState = render_state::rs_shutdown;
     counter = 0;
-    streamingStopped = prerolled = false;
+    streamingStopped = prerolled = sampleNotify = endStream = false;
     rate = 1.0f;
+    presenter = p;
 }
 
 HRESULT __stdcall TEVRPresenter::QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppv)
@@ -368,30 +369,104 @@ HRESULT TEVRPresenter::Flush()
 
 HRESULT TEVRPresenter::NegitiateType()
 {
-    return E_NOTIMPL;
+    HRESULT ret = S_OK;
+    bool found = false;
+
+    IMFMediaType* mixType = nullptr;
+    IMFMediaType* optType = nullptr;
+
+    IMFVideoMediaType* vidType = nullptr;
+
+    if (!transform.Get())
+        return MF_E_INVALIDREQUEST;
+
+    DWORD typeInd = 0;
+
+    for(DWORD Rust = 0; !found && (ret != MF_E_NO_MORE_TYPES); Rust++)
+    {
+        if (mixType) mixType->Release(); mixType = nullptr;
+        if (optType) optType->Release(); optType = nullptr;
+
+        ret = transform->GetInputAvailableType(0, Rust, &mixType);
+        if (FAILED(ret)) break;
+
+        ret = IsMediaTypeSupported(mixType);
+        if (FAILED(ret)) continue;
+
+        ret = CreateOptimalMediaType(mixType, &optType);
+        if (FAILED(ret)) continue;
+
+        ret = transform->SetOutputType(0, optType, MFT_SET_TYPE_TEST_ONLY);
+        if (FAILED(ret)) continue;
+
+        ret = SetMediaType(optType);
+        if (FAILED(ret)) continue;
+
+        ret = transform->SetOutputType(0, optType, MFT_SET_TYPE_TEST_ONLY);
+        if (SUCCEEDED(ret))
+        {
+            found = true;
+        }
+        else
+            SetMediaType(nullptr);
+    }
+    if (mixType) mixType->Release(); mixType = nullptr;
+    if (optType) optType->Release(); optType = nullptr;
+
+    return ret;
 }
 
 HRESULT TEVRPresenter::ProcessInputNotify()
 {
-    return E_NOTIMPL;
+    HRESULT ret = S_OK;
+    sampleNotify = true;
+    if (mediaType.Get())
+        ProcessOutputLoop();
+    else ret = MF_E_TRANSFORM_TYPE_NOT_SET;
+   
+    return ret;
 }
 
 HRESULT TEVRPresenter::BeginStream()
 {
-    return E_NOTIMPL;
+    return scheduler.StartScheduler(clock.Get());
 }
 
 HRESULT TEVRPresenter::EndStream()
 {
-    return E_NOTIMPL;
+    return scheduler.StopScheduler();
 }
 
 HRESULT TEVRPresenter::CheckStreamEnd()
 {
-    return E_NOTIMPL;
+    if (!endStream && sampleNotify)
+        return S_OK;
+    if (!samples.GetSize())
+        return S_OK;
+
+    if (sink.Get())
+        sink->Notify(0x01, (LONG_PTR)S_OK, 0);
+    endStream = false;
+
+    return S_OK;
 }
 
 HRESULT TEVRPresenter::SetMediaType(IMFMediaType* type)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TEVRPresenter::IsMediaTypeSupported(IMFMediaType* type)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TEVRPresenter::CalcOutputRect(IMFMediaType* type, RECT& rect)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TEVRPresenter::CreateOptimalMediaType(IMFMediaType* prop, IMFMediaType** opt)
 {
     return E_NOTIMPL;
 }
@@ -400,9 +475,17 @@ void TEVRPresenter::ProcessOutputLoop()
 {
 }
 
-HRESULT TEVRPresenter::PrepFrameStep(DWORD steps)
+HRESULT TEVRPresenter::DeliverSample(TrecComPointer<IMFSample> samp, bool repaint)
 {
     return E_NOTIMPL;
+}
+
+HRESULT TEVRPresenter::PrepFrameStep(DWORD steps)
+{
+    frameStep.steps += steps;
+    frameStep.state = framestep_state::fs_waiting_start;
+
+    return (renderState == render_state::rs_started) ? StartFrameStep() : S_OK;
 }
 
 HRESULT TEVRPresenter::StopFrameStep()
@@ -412,10 +495,46 @@ HRESULT TEVRPresenter::StopFrameStep()
 
 HRESULT TEVRPresenter::StartFrameStep()
 {
-    return E_NOTIMPL;
+    HRESULT ret = S_OK;
+    TrecComPointer<IMFSample> sample;
+
+    if (frameStep.state == framestep_state::fs_pending)
+    {
+        frameStep.state = framestep_state::fs_pending;
+        while (frameStep.samples.GetSize() && frameStep.state == framestep_state::fs_pending && SUCCEEDED(ret))
+        {
+            if (!frameStep.samples.Dequeue(sample))
+            {
+                ret = E_FAIL;
+                goto done;
+            }
+            ret = DeliverFrameStep(sample);
+        }
+
+    }
+    else if (frameStep.state == framestep_state::fs_none)
+    {
+        while (frameStep.samples.GetSize() && SUCCEEDED(ret))
+        {
+            if (!frameStep.samples.Dequeue(sample))
+            {
+                ret = E_FAIL;
+                goto done;
+            }
+            ret = DeliverSample(sample, false);
+        }
+    }
+
+    done:
+    return ret;
 }
 
 HRESULT TEVRPresenter::CancelFrameStep()
+{
+    return E_NOTIMPL;
+}
+
+HRESULT TEVRPresenter::DeliverFrameStep(TrecComPointer<IMFSample> samp)
 {
     return E_NOTIMPL;
 }
