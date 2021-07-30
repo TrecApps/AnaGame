@@ -13,6 +13,7 @@ TString TCamera::GetType()
 
 TCamera::TCamera()
 {
+	lockLookAt = false;
 }
 
 
@@ -268,6 +269,16 @@ DirectX::XMFLOAT3 TCamera::GetCameraLocation()
 DirectX::XMFLOAT3 TCamera::GetCameraDirection()
 {
 	return direction_3;
+}
+
+void TCamera::SetLookAtLock(bool b)
+{
+	lockLookAt = b;
+}
+
+bool TCamera::GetLookAtLock()
+{
+	return lockLookAt;
 }
 
 /*

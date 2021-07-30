@@ -100,6 +100,13 @@ bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 			lookTo = false;
 	}
 
+	valpoint = attributes.retrieveEntry(TString(L"|LockLookAt"));
+	if (valpoint.Get())
+	{
+		if (!valpoint->CompareNoCase(L"true"))
+			lockLookAt = true;
+	}
+
 	valpoint = attributes.retrieveEntry(TString(L"|StartingDirection"));
 	if (valpoint.Get())
 	{
@@ -280,6 +287,30 @@ void TArena::Resize(D2D1_RECT_F& r)
 		viewport->Width = r.right - r.left;
 	}
 	TObject::ThreadRelease();
+}
+
+bool TArena::OnScroll(const TPoint& point, const TPoint& direction)
+{
+	if(!isContained(point, TControl::location))
+		return false;
+
+	// DirectX::XMFLOAT3 movment = TCamera::di
+
+	if (cameraType == LOOK_AT && !lockLookAt)
+	{
+		DirectX::XMFLOAT3 movment{ 
+			TCamera::direction_3.x - TCamera::location_3.x,
+			TCamera::direction_3.y - TCamera::location_3.y,
+			TCamera::direction_3.z - TCamera::location_3.z};
+		direction_3.x += (location_3.x * direction.y);
+		direction_3.y += (location_3.y * direction.y);
+		direction_3.z += (location_3.z * direction.y);
+	}
+
+	Translate(direction.y, direction_3);
+
+	TControl::OnScroll(point, direction);
+	return true;
 }
 
 void TArena::QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)
