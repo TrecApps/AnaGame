@@ -14,3 +14,7 @@ HRESULT TPresentEngine::SetDestinationRect(RECT& rect)
 {
     return E_NOTIMPL;
 }
+
+void TPresentEngine::ReleaseResources()
+{
+}

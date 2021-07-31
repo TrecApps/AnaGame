@@ -13,7 +13,7 @@ public:
 
     HRESULT SetDestinationRect(RECT& rect);
 
-
+    void ReleaseResources();
 
 
 private:

@@ -118,6 +118,7 @@ protected:
     // Sample Management
     void ProcessOutputLoop();
     HRESULT DeliverSample(TrecComPointer<IMFSample> samp, bool repaint);
+    void ReleaseResources();
 
     // Fame-Stepping
     HRESULT PrepFrameStep(DWORD steps);
@@ -134,7 +135,7 @@ protected:
 
 
 
-    UINT counter;
+    UINT counter, typeCounter;
     bool streamingStopped, prerolled, sampleNotify, endStream;
     float rate;
 

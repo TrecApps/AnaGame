@@ -15,7 +15,7 @@ bool IsActive(render_state s)
 TEVRPresenter::TEVRPresenter(TrecPointer<TPresentEngine> p): scheduler(p)
 {
     renderState = render_state::rs_shutdown;
-    counter = 0;
+    counter = typeCounter = 0;
     streamingStopped = prerolled = sampleNotify = endStream = false;
     rate = 1.0f;
     presenter = p;
@@ -453,6 +453,28 @@ HRESULT TEVRPresenter::CheckStreamEnd()
 
 HRESULT TEVRPresenter::SetMediaType(IMFMediaType* type)
 {
+    if (!type)
+    {
+        mediaType.Delete();
+        ReleaseResources();
+        return S_OK;
+    }
+
+    DWORD flags = 0;
+    if (mediaType.Get() && mediaType->IsEqual(type, &flags))
+        return S_OK;
+    HRESULT ret = S_OK;
+    MFRatio fps = { 0,0 };
+
+    mediaType.Delete();
+
+    ReleaseResources();
+
+
+
+
+
+
     return E_NOTIMPL;
 }
 
@@ -461,9 +483,110 @@ HRESULT TEVRPresenter::IsMediaTypeSupported(IMFMediaType* type)
     return E_NOTIMPL;
 }
 
+void MakeArea(MFVideoArea& rect, float left, float top, DWORD width, DWORD height)
+{
+    rect.Area.cx = width;
+    rect.Area.cy = height;
+    rect.OffsetX = MakeOffset(left);
+    rect.OffsetY = MakeOffset(top);
+}
+
+RECT CorrectAspectRatio(const RECT& src, const MFRatio& srcPAR, const MFRatio& destPAR)
+{
+    // Start with a rectangle the same size as src, but offset to the origin (0,0).
+    RECT rc = { 0, 0, src.right - src.left, src.bottom - src.top };
+
+    // If the source and destination have the same PAR, there is nothing to do.
+    // Otherwise, adjust the image size, in two steps:
+    //  1. Transform from source PAR to 1:1
+    //  2. Transform from 1:1 to destination PAR.
+
+    if ((srcPAR.Numerator != destPAR.Numerator) || (srcPAR.Denominator != destPAR.Denominator))
+    {
+        // Correct for the source's PAR.
+
+        if (srcPAR.Numerator > srcPAR.Denominator)
+        {
+            // The source has "wide" pixels, so stretch the width.
+            rc.right = MulDiv(rc.right, srcPAR.Numerator, srcPAR.Denominator);
+        }
+        else if (srcPAR.Numerator < srcPAR.Denominator)
+        {
+            // The source has "tall" pixels, so stretch the height.
+            rc.bottom = MulDiv(rc.bottom, srcPAR.Denominator, srcPAR.Numerator);
+        }
+        // else: PAR is 1:1, which is a no-op.
+
+
+        // Next, correct for the target's PAR. This is the inverse operation of the previous.
+
+        if (destPAR.Numerator > destPAR.Denominator)
+        {
+            // The destination has "wide" pixels, so stretch the height.
+            rc.bottom = MulDiv(rc.bottom, destPAR.Numerator, destPAR.Denominator);
+        }
+        else if (destPAR.Numerator < destPAR.Denominator)
+        {
+            // The destination has "tall" pixels, so stretch the width.
+            rc.right = MulDiv(rc.right, destPAR.Denominator, destPAR.Numerator);
+        }
+        // else: PAR is 1:1, which is a no-op.
+    }
+
+    return rc;
+}
+
 HRESULT TEVRPresenter::CalcOutputRect(IMFMediaType* type, RECT& rect)
 {
-    return E_NOTIMPL;
+    HRESULT ret = S_OK;
+    UINT width = 0, height = 0;
+
+
+    MFRatio inputPar = { 0,0 };
+    MFRatio outputPar = { 0,0 };
+    RECT oRect = { 0,0,0,0 };
+
+    MFVideoArea display;
+    ZeroMemory(&display, sizeof(display));
+
+    LONG offX = 0, offY = 0;
+
+    ret = MFGetAttributeSize(type, MF_MT_FRAME_SIZE, &width, &height);
+    if (FAILED(ret)) goto done;
+
+    if (FAILED(type->GetBlob(MF_MT_MINIMUM_DISPLAY_APERTURE, (UINT8*)&display, sizeof(display), nullptr)) &&
+        FAILED(type->GetBlob(MF_MT_GEOMETRIC_APERTURE, (UINT8*)&display, sizeof(display), nullptr)))
+        MakeArea(display, 0.0, 0.0, width, height);
+
+    offX = (LONG)(display.OffsetX.value + (static_cast<float>(display.OffsetX.fract) / 65536.0f));
+    offY = (LONG)(display.OffsetY.value + (static_cast<float>(display.OffsetY.fract) / 65536.0f));
+
+    if (display.Area.cx != 0 &&
+        display.Area.cy != 0 &&
+        offX + display.Area.cx <= (LONG)(width) &&
+        offY + display.Area.cy <= (LONG)(height))
+    {
+        oRect.left = offX;
+        oRect.right = offX + display.Area.cx;
+        oRect.top = offY;
+        oRect.bottom = offY + display.Area.cy;
+    }
+    else
+    {
+        oRect.left = 0;
+        oRect.top = 0;
+        oRect.right = width;
+        oRect.bottom = height;
+    }
+
+    if (FAILED(MFGetAttributeRatio(type, MF_MT_PIXEL_ASPECT_RATIO, (UINT*)&inputPar.Numerator, (UINT*)&inputPar.Denominator)))
+        inputPar = { 1,1 };
+
+    outputPar = { 1,1 };
+
+    rect = CorrectAspectRatio(oRect, inputPar, outputPar);
+done:
+    return ret;
 }
 
 
@@ -525,10 +648,7 @@ HRESULT TEVRPresenter::CreateOptimalMediaType(IMFMediaType* prop, IMFMediaType**
     ret = MFSetAttributeSize(newOpt, MF_MT_FRAME_SIZE, width, height);
     if (FAILED(ret)) goto done;
 
-    vidArea.Area.cx = width;
-    vidArea.Area.cy = height;
-    vidArea.OffsetX = MakeOffset(width);
-    vidArea.OffsetY = MakeOffset(height);
+    MakeArea(vidArea, rcOut.left, rcOut.top, width, height);
 
     ret = newOpt->SetUINT32(MF_MT_PAN_SCAN_ENABLED, 0);
     if (FAILED(ret)) goto done;
@@ -559,6 +679,14 @@ void TEVRPresenter::ProcessOutputLoop()
 HRESULT TEVRPresenter::DeliverSample(TrecComPointer<IMFSample> samp, bool repaint)
 {
     return E_NOTIMPL;
+}
+
+void TEVRPresenter::ReleaseResources()
+{
+    typeCounter++;
+    Flush();
+    samples.Flush();
+    presenter->ReleaseResources();
 }
 
 HRESULT TEVRPresenter::PrepFrameStep(DWORD steps)
