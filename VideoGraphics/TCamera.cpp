@@ -1,5 +1,12 @@
 #include "TCamera.h"
 
+
+/**
+ * Constant holding rotation through which we can apply the y Panning motion
+ */
+const DirectX::XMMATRIX Y_PAN_ROTATION = DirectX::XMMatrixRotationAxis(DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), DirectX::XM_PIDIV2);
+
+
 /**
  * Method: TCamera::GetType
  * Purpose: Returns a String Representation of the object type
@@ -123,10 +130,39 @@ void TCamera::Translate(float degree, DirectX::XMFLOAT3 direction)
 
 void TCamera::PanX(float x)
 {
+	if (x)
+	{
+		DirectX::XMVECTOR direction = (this->cameraType) ? this->direction :
+			DirectX::XMVectorSet(
+				this->direction_3.x - location_3.x,
+				this->direction_3.y - location_3.y,
+				this->direction_3.z - location_3.z,
+				1.0f);
+		DirectX::XMVECTOR cross = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(direction, up));
+
+		DirectX::XMFLOAT3 direction3{ cross.m128_f32[0], cross.m128_f32[1], cross.m128_f32[2] };
+
+		Translate(x, direction3);
+	}
 }
 
 void TCamera::PanY(float y)
 {
+	if (y)
+	{
+		// Figure out the bas direction our camera is looking at
+		DirectX::XMVECTOR direction = (this->cameraType) ? this->direction :
+			DirectX::XMVectorSet(
+				this->direction_3.x - location_3.x,
+				this->direction_3.y - location_3.y,
+				this->direction_3.z - location_3.z,
+				1.0f);
+		// Find the rotation to apply
+		DirectX::XMVECTOR panDirection = DirectX::XMVector3Normalize(DirectX::XMVector4Transform(direction, Y_PAN_ROTATION));
+		DirectX::XMFLOAT3 direction3{ panDirection.m128_f32[0], panDirection.m128_f32[1], panDirection.m128_f32[2] };
+
+		Translate(y, direction3);
+	}
 }
 
 /*
