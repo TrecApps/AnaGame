@@ -77,6 +77,8 @@ void JsPromise::JsPromiseConstructor(TDataArray<TrecPointer<TVariable>>& params,
 	TrecSubPointer<TVariable, TAsyncVariable> prom = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAsyncVariable>
 		(GetCurrentThreadId(), func);
 
+	for (UINT Rust = 0; Rust < newParams.Size(); Rust++)
+		dynamic_cast<TReturnInterpretor*>(newParams[Rust].Get())->SetAsyncHold(prom);
 	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(prom);
 }
 
@@ -261,6 +263,8 @@ void JsPromise::JsPromiseReject(TDataArray<TrecPointer<TVariable>>& params, Trec
 	TrecSubPointer<TVariable, TAsyncVariable> prom = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAsyncVariable>
 		(GetCurrentThreadId(), TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(retFunc));
 
+	dynamic_cast<TReturnInterpretor*>(retFunc.Get())->SetAsyncHold(prom);
+
 	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(prom);
 }
 
@@ -270,6 +274,8 @@ void JsPromise::JsPromiseResolve(TDataArray<TrecPointer<TVariable>>& params, Tre
 
 	TrecSubPointer<TVariable, TAsyncVariable> prom = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAsyncVariable>
 		(GetCurrentThreadId(), TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(retFunc));
+
+	dynamic_cast<TReturnInterpretor*>(retFunc.Get())->SetAsyncHold(prom);
 
 	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(prom);
 }
