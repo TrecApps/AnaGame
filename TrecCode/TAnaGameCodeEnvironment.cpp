@@ -163,6 +163,8 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 		ReturnObject ret;
 		javaScriptInterpretor->SetFile(file, ret);
 
+		currentRunner = TrecPointerKey::GetTrecPointerFromSub<>(javaScriptInterpretor);
+
 		if (ret.returnCode)
 		{
 			TString message;

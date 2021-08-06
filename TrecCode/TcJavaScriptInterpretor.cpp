@@ -3129,7 +3129,8 @@ throughString:
                 // Likely dealing with function defintion
                 ret.errorObject.Nullify();
                 UINT jumps = ProcessFunctionExpression(parenth, square, index, statement, ret);
-                index++;
+                if(ret.errorObject.Get())
+                    index++;
                 if (ret.returnCode)
                     return 0;
                 if (ret.errorObject.Get())
@@ -3301,6 +3302,8 @@ UINT TcJavaScriptInterpretor::ProcessFunctionExpression(UINT& parenth, UINT& squ
 
     if (ret.returnCode)
         return 0;
+
+    ret.errorObject.Nullify();
 
     ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(function);
     ret.errorMessage.Set(statement->statement.SubString(index, startP).GetTrim());

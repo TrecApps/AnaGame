@@ -123,5 +123,7 @@ protected:
 	TDataArray<TrecPointer<TFileShell>> files;
 	TrecPointer<TFileShell> mainFile;
 
+	TrecPointer<TVariable> currentRunner;
+
 };
 
