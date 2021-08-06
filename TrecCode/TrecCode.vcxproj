@@ -162,6 +162,7 @@
     <ClInclude Include="JsArray.h" />
     <ClInclude Include="JsConsole.h" />
     <ClInclude Include="JsPromise.h" />
+    <ClInclude Include="JsString.h" />
     <ClInclude Include="JsTimer.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TAnaGameCodeEnvironment.h" />
@@ -182,6 +183,7 @@
     <ClCompile Include="JsArray.cpp" />
     <ClCompile Include="JsConsole.cpp" />
     <ClCompile Include="JsPromise.cpp" />
+    <ClCompile Include="JsString.cpp" />
     <ClCompile Include="JsTimer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
