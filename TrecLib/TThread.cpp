@@ -142,7 +142,7 @@ DWORD TThread::CreateTThread(LPTHREAD_START_ROUTINE routine, LPVOID params)
 			threadList[Rust].details.function = routine;
 			threadList[Rust].details.functionParams = params;
 			threadList[Rust].details.handle = CreateThread(&att, 0, RunThread,
-				&threadList[Rust].details, CREATE_SUSPENDED, &threadList[Rust].details.threadId);
+				&(threadList[Rust].details), CREATE_SUSPENDED, &threadList[Rust].details.threadId);
 			threadList[Rust].details.type = ThreadType::tt_regular;
 			return threadList[Rust].details.threadId;
 		}

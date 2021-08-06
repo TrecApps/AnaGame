@@ -169,9 +169,9 @@ void JsTimer::GetFunctions(TDataMap<TcVariableHolder>& varHolds, TrecSubPointer<
     TrecSubPointer<TVariable, TcNativeInterpretor> si = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcNativeInterpretor>(SetInterval, par, env);
     TrecSubPointer<TVariable, TcNativeInterpretor> ci = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcNativeInterpretor>(ClearInterval, par, env);
 
-    varHolds.setEntry(L"setTimer", TcVariableHolder(false, L"", TrecPointerKey::GetTrecPointerFromSub<>(st)));
+    varHolds.setEntry(L"setTimeout", TcVariableHolder(false, L"", TrecPointerKey::GetTrecPointerFromSub<>(st)));
     varHolds.setEntry(L"setInterval", TcVariableHolder(false, L"", TrecPointerKey::GetTrecPointerFromSub<>(si)));
-    varHolds.setEntry(L"clearTimer", TcVariableHolder(false, L"", TrecPointerKey::GetTrecPointerFromSub<>(ci)));
+    varHolds.setEntry(L"clearTimeout", TcVariableHolder(false, L"", TrecPointerKey::GetTrecPointerFromSub<>(ci)));
     varHolds.setEntry(L"clearInterval", TcVariableHolder(false, L"", TrecPointerKey::GetTrecPointerFromSub<>(ci)));
 }
 
