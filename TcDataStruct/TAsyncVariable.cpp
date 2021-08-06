@@ -1,6 +1,6 @@
 #include "TAsyncVariable.h"
-#include "TContainerVariable.h"
 #include <TThread.h>
+#include "TStringVariable.h"
 
 DWORD __stdcall RunAsyncObject(LPVOID param)
 {
@@ -24,15 +24,8 @@ DWORD __stdcall RunAsyncObject(LPVOID param)
 
 
 TrecPointer<TVariable> TAsyncVariable::Clone()
-{
-    TrecSubPointer<TVariable, TAsyncVariable> var = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TAsyncVariable>(this->requesterId, this->mainFunction);
-    var->progress = this->progress;
-    var->mode = this->mode;
-    var->mainErrorResolve = this->mainErrorResolve;
-    var->subErrorResolve = this->subErrorResolve;
-    var->successResolve = this->successResolve;
-    
-    return TrecPointerKey::GetTrecPointerFromSub < >(var);
+{    
+    return TrecPointerKey::GetTrecPointerFromSoft < >(aSelf);
 }
 
 var_type TAsyncVariable::GetVarType()
@@ -79,6 +72,7 @@ TAsyncVariable::TAsyncVariable(DWORD thread, TrecSubPointer<TVariable, TcInterpr
     this->requesterId = thread;
     this->progress = 0;
     this->subErrorResolve = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+    this->containerResult = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
 }
 
 void TAsyncVariable::GetSetMode(async_mode& m, bool get)
@@ -118,10 +112,14 @@ void TAsyncVariable::AppendSuccessResponse(TrecSubPointer<TVariable, TcInterpret
 
 void TAsyncVariable::AppendSuccessResponse(TrecSubPointer<TVariable, TcInterpretor> func)
 {
+    TObjectLocker objThread(&thread);
     if (!func.Get())
         return;
 
     successResolve.push_back(TrecPointerKey::GetTrecPointerFromSub<>(func));
+
+    if (mode == async_mode::m_complete)
+        HandleSuccessResult();
 }
 
 void TAsyncVariable::SetFinally(TrecSubPointer<TVariable, TcInterpretor> func)
@@ -166,104 +164,11 @@ void TAsyncVariable::RunAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> as
 
     if(asyncVar->mainFunction.Get())
     ret = asyncVar->mainFunction->Run();
-
-    if (ret.returnCode)
-    {
-        if (asyncVar->mainErrorResolve.Get())
-        {
-            TrecSubPointer<TVariable, TcInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(asyncVar->mainErrorResolve);
-
-            TDataArray<TrecPointer<TVariable>> initVars;
-            initVars.push_back(ret.errorObject);
-
-            func->SetIntialVariables(initVars);
-
-            ret = func->Run();
-            asyncVar->ret = ret;
-        }
-        aMode = async_mode::m_error;
-        asyncVar->GetSetMode(aMode, false);
-    }
-    else
-    {
-        for (UINT Rust = 0; Rust < asyncVar->successResolve.Size(); Rust++)
-        {
-            TrecSubPointer<TVariable, TcInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(asyncVar->successResolve[Rust]);
-
-            TDataArray<TrecPointer<TVariable>> initVars;
-            initVars.push_back(ret.errorObject);
-
-            func->SetIntialVariables(initVars);
-
-            ret = func->Run();
-
-            asyncVar->ret = ret;
-            if (ret.returnCode)
-            {
-                // Try to get an error
-                TString val;
-                val.Format(L"%d", Rust);
-                TrecPointer<TVariable > var;
-                if (asyncVar->subErrorResolve.Get())
-                {
-                    bool pres;
-                    var = dynamic_cast<TContainerVariable*>(asyncVar->subErrorResolve.Get())->GetValue(val, pres);
-                }
-                func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(var);
-                if (func.Get())
-                {
-                    initVars.RemoveAll();
-                    initVars.push_back(ret.errorObject);
-                    func->SetIntialVariables(initVars);
-                    ret = func->Run();
-                    asyncVar->ret = ret;
-                    break;
-                }
-                else if (asyncVar->mainErrorResolve.Get())
-                {
-                    func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(asyncVar->mainErrorResolve);
-
-                    initVars.RemoveAll();
-                    initVars.push_back(ret.errorObject);
-
-                    func->SetIntialVariables(initVars);
-
-                    ret = func->Run();
-                    asyncVar->ret = ret;
-                }
-
-                // Catch Methods can reset the error status to 0, meaning we can go on. If this doesn't happen
-                // Then the error remains and we break the loop
-                if (ret.returnCode)
-                {
-                    aMode = async_mode::m_error;
-                    asyncVar->GetSetMode(aMode, false);
-                    break;
-                }
-                asyncVar->progress++;
-            }
-            else
-                asyncVar->progress++;
-        }
-        asyncVar->GetSetMode(aMode);
-        if (aMode != async_mode::m_error)
-        {
-            aMode = async_mode::m_complete;
-            asyncVar->GetSetMode(aMode, false);
-        }
+asyncVar->ThreadRelease();
+    return;
 
 
-    }
-
-    if (asyncVar->finallyFunction.Get())
-    {
-        ReturnObject newRet = asyncVar->finallyFunction->Run();
-
-        if (!asyncVar->ret.returnCode)
-            asyncVar->ret.returnCode = newRet.returnCode;
-
-    }
-    asyncVar->ThreadRelease();
+    
 }
 
 DWORD TAsyncVariable::GetCallingThread()
@@ -365,9 +270,129 @@ void TAsyncVariable::SetResult(TrecPointer<TVariable> var, bool success)
 {
     ThreadLock();
     ret.errorObject = var;
+    containerResult->SetValue(L"value", var);
     ret.returnCode = success ? 0 : ReturnObject::ERR_GENERIC_ERROR;
     mode = success ? async_mode::m_complete : async_mode::m_error;
+
+    if (success)
+    {
+        containerResult->SetValue(L"value", var);
+        containerResult->SetValue(L"status", TrecPointerKey::GetNewSelfTrecPointerAlt < TVariable, TStringVariable>(L"fulfilled"));
+        ret.returnCode = 0;
+        mode = async_mode::m_initComplete;
+
+        HandleSuccessResult();
+    }
+    else
+    {
+        containerResult->SetValue(L"reason", var);
+        TString v(L"value");
+        containerResult->RemoveByKey(v);
+        containerResult->SetValue(L"status", TrecPointerKey::GetNewSelfTrecPointerAlt < TVariable, TStringVariable>(L"rejected"));
+        ret.returnCode = ReturnObject::ERR_GENERIC_ERROR;
+
+        HandleErrorResult();
+    }
+    if (finallyFunction.Get())
+    {
+        ret = finallyFunction->Run();
+
+    }
+
+    
     ThreadRelease();
+}
+
+TrecSubPointer<TVariable, TContainerVariable> TAsyncVariable::GetContainerResult()
+{
+    return containerResult;
+}
+
+void TAsyncVariable::HandleErrorResult()
+{
+
+    if (mainErrorResolve.Get())
+    {
+        TrecSubPointer<TVariable, TcInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(mainErrorResolve);
+
+        TDataArray<TrecPointer<TVariable>> initVars;
+        initVars.push_back(ret.errorObject);
+
+        func->SetIntialVariables(initVars);
+
+        ret = func->Run();
+    }
+    mode = async_mode::m_error;
+}
+
+void TAsyncVariable::SetSelf(TrecPointer<TVariable> self)
+{
+    if (this != self.Get())
+        throw L"Pointers do not match!";
+    aSelf = TrecPointerKey::GetSoftPointerFromTrec<>(self);
+}
+
+void TAsyncVariable::HandleSuccessResult()
+{
+    for (UINT Rust = progress; Rust < successResolve.Size(); Rust++)
+    {
+        TrecSubPointer<TVariable, TcInterpretor> func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(successResolve[Rust]);
+
+        TDataArray<TrecPointer<TVariable>> initVars;
+        initVars.push_back(ret.errorObject);
+
+        func->SetIntialVariables(initVars);
+
+        ret = func->Run();
+
+        if (ret.returnCode)
+        {
+            // Try to get an error
+            TString val;
+            val.Format(L"%d", Rust);
+            TrecPointer<TVariable > var;
+            if (subErrorResolve.Get())
+            {
+                bool pres;
+                var = dynamic_cast<TContainerVariable*>(subErrorResolve.Get())->GetValue(val, pres);
+            }
+            func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(var);
+            if (func.Get())
+            {
+                initVars.RemoveAll();
+                initVars.push_back(ret.errorObject);
+                func->SetIntialVariables(initVars);
+                ret = func->Run();
+                break;
+            }
+            else if (mainErrorResolve.Get())
+            {
+                func = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(mainErrorResolve);
+
+                initVars.RemoveAll();
+                initVars.push_back(ret.errorObject);
+
+                func->SetIntialVariables(initVars);
+
+                ret = func->Run();
+            }
+
+            // Catch Methods can reset the error status to 0, meaning we can go on. If this doesn't happen
+            // Then the error remains and we break the loop
+            if (ret.returnCode)
+            {
+                mode = async_mode::m_error;
+                break;
+            }
+            progress++;
+        }
+        else
+            progress++;
+    }
+    if (mode != async_mode::m_error)
+    {
+        mode = async_mode::m_complete;
+    }
 }
 
 void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar)

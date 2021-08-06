@@ -2,6 +2,7 @@
 #include <TVariable.h>
 #include "TcDataStruct.h"
 #include <TcInterpretor.h>
+#include "TContainerVariable.h"
 
 /**
  * Enum Class: async_mode
@@ -11,6 +12,7 @@ typedef enum class async_mode
 {
     m_waiting,      // Waiting for the first response
     m_progress,     // Waiting for final response
+    m_initComplete, // Initial Operation is complete
     m_complete,     // Operation is complete
     m_error         // Operation completed with an error
 }async_mode;
@@ -256,9 +258,24 @@ public:
      * Returns: void
      */
     void SetResult(TrecPointer<TVariable> var, bool success);
+
+    TrecSubPointer<TVariable, TContainerVariable> GetContainerResult();
+    void HandleErrorResult();
+
+    virtual void SetSelf(TrecPointer<TVariable> self)override;
+
     // Variables
 protected:
 
+    void HandleSuccessResult();
+
+    TrecPointerSoft<TVariable> aSelf;
+    
+
+    /**
+     * Container Variable to hold onto
+     */
+    TrecSubPointer<TVariable, TContainerVariable> containerResult;
 
     /**
      * The underlying variable to manipulate, and run at the end

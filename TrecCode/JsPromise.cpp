@@ -131,6 +131,8 @@ void JsPromise::JsPromiseThen(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 	prom->AppendSuccessResponse(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(params[1]));
 
 	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(prom);
+
+	// Check to see if the promise has already resolved
 }
 
 void JsPromise::JsPromiseFinally(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -201,9 +203,11 @@ void JsPromise::JsPromiseAllSettled(TDataArray<TrecPointer<TVariable>>& params, 
 	for (UINT Rust = 0; Rust < params.Size(); Rust++)
 		clonedParams.push_back(params[Rust].Get() ? params[Rust]->Clone() : TrecPointer<TVariable>());
 	nativeRunner->SetIntialVariables(clonedParams);
+
 	TrecPointer<TVariable> varRunner = TrecPointerKey::GetTrecPointerFromSub<>(nativeRunner);
 	TrecSubPointer<TVariable, TcInterpretor> regRunner = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(varRunner);
 	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAsyncVariable>(GetCurrentThreadId(), regRunner);
+	nativeRunner->SetActiveObject(ret.errorObject);
 }
 
 void JsPromise::JsPromiseAny(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -345,7 +349,7 @@ void JsPromise::JsPromiseAllSub(TDataArray<TrecPointer<TVariable>>& params, Trec
 
 void JsPromise::JsPromiseAllSettledSub(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
-	TrecSubPointer<TVariable, TContainerVariable> promises = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> promises = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[1]);
 
 	TDataArray<TrecPointer<TVariable>> returnEntries;
 	TDataArray<TrecSubPointer<TVariable, TAsyncVariable>> asyncEntries;
@@ -387,7 +391,7 @@ void JsPromise::JsPromiseAllSettledSub(TDataArray<TrecPointer<TVariable>>& param
 		TrecPointer<TVariable> var = returnEntries[Rust];
 		TrecSubPointer<TVariable, TAsyncVariable> aVar = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TAsyncVariable>(var);
 
-		TrecSubPointer<TVariable, TContainerVariable> returnEntry = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+		TrecSubPointer<TVariable, TContainerVariable> returnEntry = aVar->GetContainerResult();
 
 		if (aVar.Get())
 		{
@@ -410,6 +414,8 @@ void JsPromise::JsPromiseAllSettledSub(TDataArray<TrecPointer<TVariable>>& param
 	}
 
 	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(arrayRet);
+
+	dynamic_cast<TAsyncVariable*>(params[0].Get())->SetResult(ret.errorObject, true);
 }
 
 void JsPromise::JsPromiseAnySub(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
