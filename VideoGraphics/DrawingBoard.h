@@ -5,6 +5,7 @@
 #include "TWindowEngine.h"
 #include "TBrush.h"
 #include "TBitmapBrush.h"
+#include <synchapi.h>
 
 class TWindow;
 
@@ -34,6 +35,12 @@ public:
 	stroke_style tag;
 	TrecComPointer<ID2D1StrokeStyle> value;
 };
+
+
+void _VIDEO_GRAPHICS LockDrawing();
+
+void _VIDEO_GRAPHICS UnlockDrawing();
+
 
 
 /**

@@ -559,8 +559,10 @@ void TPromptHolder::Warn(TrecPointer<TVariable> var)
 {
 	if (control.Get())
 	{
+		LockDrawing();
 		TString prepend(tabs + L"WARNING: ");
 		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+		UnlockDrawing();
 	}
 }
 
@@ -568,8 +570,10 @@ void TPromptHolder::Error(TrecPointer<TVariable> var)
 {
 	if (control.Get())
 	{
+		LockDrawing();
 		TString prepend(tabs + L"ERROR: ");
 		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+		UnlockDrawing();
 	}
 }
 
@@ -577,8 +581,10 @@ void TPromptHolder::Info(TrecPointer<TVariable> var)
 {
 	if (control.Get())
 	{
+		LockDrawing();
 		TString prepend(tabs + L"INFO: ");
 		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+		UnlockDrawing();
 	}
 }
 
@@ -586,8 +592,10 @@ void TPromptHolder::Log(TrecPointer<TVariable> var)
 {
 	if (control.Get())
 	{
+		LockDrawing();
 		TString prepend(tabs);
 		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+		UnlockDrawing();
 	}
 }
 

@@ -260,6 +260,7 @@ bool TAnaGameCodeEnvironment::Print(const TString& input)
 	if (shellRunner.Get())
 	{
 		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input));
+		RedrawWindow(nullptr, nullptr, nullptr, 0);
 		return true;
 	}
 	return false;
@@ -270,6 +271,7 @@ bool TAnaGameCodeEnvironment::PrintLine(const TString& input)
 	if (shellRunner.Get())
 	{
 		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input));
+		RedrawWindow(nullptr, nullptr, nullptr, 0);
 		return true;
 	}
 	return false;

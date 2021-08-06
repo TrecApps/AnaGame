@@ -145,3 +145,16 @@ WCHAR* boolToString(bool val)
 	else
 		return str_false;
 }
+
+TObjectLocker::TObjectLocker(CRITICAL_SECTION* section)
+{
+	assert(section);
+	this->section = section;
+	EnterCriticalSection(this->section);
+}
+
+TObjectLocker::~TObjectLocker()
+{
+	LeaveCriticalSection(section);
+	section = nullptr;
+}

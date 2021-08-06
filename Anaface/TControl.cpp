@@ -292,7 +292,7 @@ int TControl::loadFromHTML(TFile * ar)
 */
 void TControl::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TString appendable;
 	resetAttributeString(&appendable, childLevel + 1);
 
@@ -447,7 +447,7 @@ void TControl::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 	resetAttributeString(&appendable, childLevel + 1);
 	ar->WriteString(appendable);
 	ar->WriteString(L"/\n");
-	ThreadRelease();
+	
 }
 
 /*
@@ -466,17 +466,17 @@ bool TControl::TookTab(TrecPointer<Tab> tab)
 {
 	if(!tab.Get())
 		return false;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		auto ch = children.ElementAt(Rust);
 		if (ch.Get() && ch->TookTab(tab))
 		{
-			ThreadRelease();
+			
 			return true;
 		}
 	}
-	ThreadRelease();
+	
 	return false;
 }
 
@@ -490,7 +490,7 @@ bool TControl::TookTab(TrecPointer<Tab> tab)
 */
 bool TControl::onCreate(D2D1_RECT_F contain, TrecPointer<TWindowEngine> d3d)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|FixedHeight"));
 	if (valpoint.Get())
 	{
@@ -836,7 +836,7 @@ TrecPointer<styleTable> classy;
 
 		animateData.push_back(animate);
 	}
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -849,7 +849,7 @@ TrecPointer<styleTable> classy;
 void TControl::Resize(D2D1_RECT_F& rr)
 {
 	// Updated Code
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 
 	if (SetScrollControlOnMinSize(rr))
 	{
@@ -859,7 +859,7 @@ void TControl::Resize(D2D1_RECT_F& rr)
 		float difWidth = location.left - rr.left;
 		location.left -= difWidth;
 		location.right -= difWidth;
-		ThreadRelease();
+		
 		return;
 	}
 	if (isSnipZero(location) || ((location.bottom - location.top) != (rr.bottom - rr.top))
@@ -949,7 +949,7 @@ void TControl::Resize(D2D1_RECT_F& rr)
 
 		onScroll(x, y);
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -961,7 +961,7 @@ void TControl::Resize(D2D1_RECT_F& rr)
 */
 bool TControl::setEventHandler(EventTarget & eh)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (int c = 0; c < children.Count(); c++)
 	{
 		TControl* tc = children.ElementAt(c).Get();
@@ -969,7 +969,7 @@ bool TControl::setEventHandler(EventTarget & eh)
 			tc->setEventHandler(eh);
 	}
 	eventHandler = &eh;
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -981,9 +981,9 @@ bool TControl::setEventHandler(EventTarget & eh)
 */
 void TControl::updateArrayID(int aid)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	arrayID = aid;
-	ThreadRelease();
+	
 }
 
 /* Purpose: to allow the TControl to shift it's contents according to how it is scrolled.
@@ -998,7 +998,7 @@ void TControl::updateArrayID(int aid)
  */
 bool TControl::onScroll(float x, float y)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	location.left += x;
 	location.right += x;
 	location.bottom += y;
@@ -1011,7 +1011,7 @@ bool TControl::onScroll(float x, float y)
 		cont->onBeingScrolled(x, y);
 	}
 	updateComponentLocation();
-	ThreadRelease();
+	
 
 	// CheckScroll();
 	return false;
@@ -1027,7 +1027,7 @@ bool TControl::onScroll(float x, float y)
 */
 bool TControl::onBeingScrolled(float x, float y)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	// Update real location of TControl
 	location.left += x;
 	location.right += x;
@@ -1044,7 +1044,7 @@ bool TControl::onBeingScrolled(float x, float y)
 
 	updateComponentLocation();
 	CheckScroll();
-	ThreadRelease();
+	
 	return false;
 }
 
@@ -1056,7 +1056,7 @@ bool TControl::onBeingScrolled(float x, float y)
 */
 void TControl::AddClass(const TString & t)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TString trimmedT = t.GetTrim();
 	if (className.GetSize())
 	{
@@ -1066,7 +1066,7 @@ void TControl::AddClass(const TString & t)
 	}
 	else
 		className = trimmedT;
-	ThreadRelease();
+	
 }
 /*
 * Method: TControl::GetID
@@ -1076,9 +1076,9 @@ void TControl::AddClass(const TString & t)
 */
 TString TControl::GetID()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TString ret(ID);
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1090,15 +1090,15 @@ TString TControl::GetID()
 */
 void TControl::SetNormalMouseState()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	mState = messageState::normal;
-	ThreadRelease();
+	
 }
 
 TrecPointer<TControl> TControl::QueryVideoControl()
 {
 	TrecPointer<TControl> ret;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		auto ch = children.ElementAt(Rust);
@@ -1108,19 +1108,19 @@ TrecPointer<TControl> TControl::QueryVideoControl()
 		if (ret.Get())
 			break;
 	}
-	ThreadRelease();
+	
 	return ret;
 }
 
 void TControl::QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		if (children.ElementAt(Rust).Get())
 			children.ElementAt(Rust)->QueryMediaControl(mediaControls);
 	}
-	ThreadRelease();
+	
 }
 
 /**
@@ -1133,7 +1133,7 @@ TDataArray<TString> TControl::GetMultiData(const TString& key)
 {
 	TDataArray<TString> ret;
 
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TrecPointer<TString> value = attributes.retrieveEntry(key);
 	UINT occ = 1;
 	while (value.Get())
@@ -1141,7 +1141,7 @@ TDataArray<TString> TControl::GetMultiData(const TString& key)
 		ret.push_back(*value.Get());
 		value = attributes.retrieveEntry(key, occ++);
 	}
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1153,7 +1153,7 @@ TDataArray<TString> TControl::GetMultiData(const TString& key)
  */
 bool TControl::SetScrollControlOnMinSize(D2D1_RECT_F l)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	bool ret = false;
 	if (dimensions)
 	{
@@ -1172,7 +1172,7 @@ bool TControl::SetScrollControlOnMinSize(D2D1_RECT_F l)
 			}
 		}
 	}
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1185,7 +1185,7 @@ bool TControl::SetScrollControlOnMinSize(D2D1_RECT_F l)
  */
 void TControl::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPointer<TControl> newControl)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		if (children.ElementAt(Rust).Get() == curControl.Get())
@@ -1195,7 +1195,7 @@ void TControl::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoin
 			break;
 		}
 	}
-	ThreadRelease();
+	
 }
 
 /**
@@ -1206,13 +1206,13 @@ void TControl::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoin
  */
 TrecPointer<TParentHolder> TControl::GetParentReference()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!thisParent.Get())
 	{
 		thisParent = TrecPointerKey::GetNewTrecPointerAlt<TParentHolder, TControlParentHolder>(tThis);
 	}
 	auto ret = thisParent;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1224,15 +1224,15 @@ TrecPointer<TParentHolder> TControl::GetParentReference()
 */
 void TControl::onDraw(TObject* obj)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!isActive)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	if ((location.bottom - location.top) < 1 || (location.right - location.left) < 1)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	ID2D1Layer* layer = nullptr;
@@ -1322,7 +1322,7 @@ void TControl::onDraw(TObject* obj)
 		drawingBoard->PopLayer();
 	}
 	layer = nullptr;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1333,9 +1333,9 @@ void TControl::onDraw(TObject* obj)
 */
 D2D1_RECT_F TControl::getLocation()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = location;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1347,9 +1347,9 @@ D2D1_RECT_F TControl::getLocation()
 */
 D2D1_RECT_F TControl::getMargin()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = margin;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1361,9 +1361,9 @@ D2D1_RECT_F TControl::getMargin()
 */
 TrecPointer<DrawingBoard> TControl::getDrawingBoard()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = drawingBoard;
-	ThreadRelease();
+	
 	return ret;;
 }
 
@@ -1375,9 +1375,9 @@ TrecPointer<DrawingBoard> TControl::getDrawingBoard()
 */
 TrecPointer<TControl> TControl::getParent()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = parent.Get() ? parent->GetParent() : TrecPointer<TControl>();
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1389,7 +1389,7 @@ TrecPointer<TControl> TControl::getParent()
 */
 void TControl::offsetLocation(TPoint cp)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	int height = location.bottom - location.top;
 	int width = location.right - location.left;
 
@@ -1399,7 +1399,7 @@ void TControl::offsetLocation(TPoint cp)
 	location.right = location.left + width;
 
 	updateComponentLocation();
-	ThreadRelease();
+	
 }
 
 /*
@@ -1410,7 +1410,7 @@ void TControl::offsetLocation(TPoint cp)
 */
 void TControl::ShiftHorizontal(int degrees)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	location.left += degrees;
 	location.right += degrees;
 
@@ -1434,7 +1434,7 @@ void TControl::ShiftHorizontal(int degrees)
 		border2->ShiftHorizontal(degrees);
 	if (border3.Get())
 		border3->ShiftHorizontal(degrees);
-	ThreadRelease();
+	
 }
 
 /*
@@ -1445,7 +1445,7 @@ void TControl::ShiftHorizontal(int degrees)
 */
 void TControl::ShiftVertical(int degrees)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	location.top += degrees;
 	location.bottom += degrees;
 
@@ -1469,7 +1469,7 @@ void TControl::ShiftVertical(int degrees)
 		border2->ShiftVertical(degrees);
 	if (border3.Get())
 		border3->ShiftVertical(degrees);
-	ThreadRelease();
+	
 }
 
 /*
@@ -1480,11 +1480,11 @@ void TControl::ShiftVertical(int degrees)
 */
 void TControl::setMinHeight(int h)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->minHeight = h;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1495,11 +1495,11 @@ void TControl::setMinHeight(int h)
 */
 void TControl::setMaxHeight(int h)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->maxHeight = h;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1510,11 +1510,11 @@ void TControl::setMaxHeight(int h)
 */
 void TControl::setMinWidth(int w)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->minWidth = w;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1525,11 +1525,11 @@ void TControl::setMinWidth(int w)
 */
 void TControl::setMaxWidth(int w)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->maxWidth = w;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1540,11 +1540,11 @@ void TControl::setMaxWidth(int w)
 */
 void TControl::setWidth(int w)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->width = w;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1555,11 +1555,11 @@ void TControl::setWidth(int w)
 */
 void TControl::setHeight(int h)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!dimensions)
 		generateSizeControl();
 	dimensions->height = h;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1575,9 +1575,9 @@ bool TControl::addAttribute(const TString& attr, TrecPointer<TString> val)
 {
 	if(!attr.GetSize() || !val.Get())
 		return false;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	attributes.addEntry(attr, val);
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -1591,11 +1591,11 @@ bool TControl::addChild(TrecPointer<TControl> tcon)
 {
 	if(!tcon.Get())
 		return false;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	children.Add(tcon);
 	
 	tcon->setParent(GetParentReference());
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -1607,9 +1607,9 @@ bool TControl::addChild(TrecPointer<TControl> tcon)
 */
 void TControl::setLocation(D2D1_RECT_F r)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	location = r;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1620,10 +1620,10 @@ void TControl::setLocation(D2D1_RECT_F r)
 */
 void TControl::setMBottom(int b)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	margin.bottom = b;
 	marginSet = true;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1634,10 +1634,10 @@ void TControl::setMBottom(int b)
 */
 void TControl::setMTop(int t)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	margin.top = t;
 	marginSet = true;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1648,10 +1648,10 @@ void TControl::setMTop(int t)
 */
 void TControl::setMRight(int r)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	margin.right = r;
 	marginSet = true;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1662,10 +1662,10 @@ void TControl::setMRight(int r)
 */
 void TControl::setMLeft(int l)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	margin.left = l;
 	marginSet = true;
-	ThreadRelease();
+	
 }
 
 /**
@@ -1676,11 +1676,11 @@ void TControl::setMLeft(int l)
  */
 void TControl::RotateDegrees(float degrees)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (degrees < 0.0f)
 		degrees += 360.0f;
 	rotation = degrees;
-	ThreadRelease();
+	
 }
 
 /**
@@ -1691,9 +1691,9 @@ void TControl::RotateDegrees(float degrees)
  */
 void TControl::RotateRadians(float radians)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	RotateDegrees(radians * RADIAN_DEGREE_RATIO);
-	ThreadRelease();
+	
 }
 
 /*
@@ -1704,9 +1704,9 @@ void TControl::RotateRadians(float radians)
 */
 UINT TControl::determineMinHeightNeeded()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	UINT ret = location.bottom - location.top;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1718,7 +1718,7 @@ UINT TControl::determineMinHeightNeeded()
 */
 void TControl::SetNewLocation(const D2D1_RECT_F& r)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	location = r;
 
 	if (text1.Get())
@@ -1760,7 +1760,7 @@ void TControl::SetNewLocation(const D2D1_RECT_F& r)
 	{
 		content3->location = r;
 	}
-	ThreadRelease();
+	
 
 }
 
@@ -1773,7 +1773,7 @@ void TControl::SetNewLocation(const D2D1_RECT_F& r)
 */
 void TControl::ShrinkHeight()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	float bottom = location.top;
 	for (UINT c = 0; c < children.Count(); c++)
 	{
@@ -1786,7 +1786,7 @@ void TControl::ShrinkHeight()
 	
 	if (bottom > location.top)
 		location.bottom = bottom;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1798,9 +1798,9 @@ void TControl::ShrinkHeight()
 */
 void TControl::setParent(TrecPointer<TParentHolder> tcp)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	parent = tcp;
-	ThreadRelease();
+	
 }
 
 /*
@@ -1812,7 +1812,7 @@ void TControl::setParent(TrecPointer<TParentHolder> tcp)
 TrecPointer<TText> TControl::getText(int n)
 {
 	TrecPointer<TText> ret;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	switch (n)
 	{
 	case 1:
@@ -1822,7 +1822,7 @@ TrecPointer<TText> TControl::getText(int n)
 	case 3:
 		ret = text3; break;
 	}
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1835,7 +1835,7 @@ TrecPointer<TText> TControl::getText(int n)
 TrecPointer<TContent> TControl::getContent(int n)
 {
 	TrecPointer<TContent> ret;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	switch (n)
 	{
 	case 1:
@@ -1845,7 +1845,7 @@ TrecPointer<TContent> TControl::getContent(int n)
 	case 3:
 		ret = content3; break;
 	}
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1858,7 +1858,7 @@ TrecPointer<TContent> TControl::getContent(int n)
 TrecPointer<TBorder> TControl::getBorder(int n)
 {
 	TrecPointer<TBorder> ret;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	switch (n)
 	{
 	case 1:
@@ -1868,7 +1868,7 @@ TrecPointer<TBorder> TControl::getBorder(int n)
 	case 3:
 		ret = border3; break;
 	}
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1880,7 +1880,7 @@ TrecPointer<TBorder> TControl::getBorder(int n)
  */
 void TControl::RegisterAnimations(TDataArray<TrecPointer<AnimationData>>& aData)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (UINT Rust = 0; Rust < children.Count(); Rust++)
 	{
 		if (children.ElementAt(Rust).Get())
@@ -1892,7 +1892,7 @@ void TControl::RegisterAnimations(TDataArray<TrecPointer<AnimationData>>& aData)
 		aData.push_back(animateData[Rust]);
 	}
 	animateData.RemoveAll();
-	ThreadRelease();
+	
 }
 
 
@@ -2986,7 +2986,7 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 
 bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto valpoint = attributes.retrieveEntry(TString(L"|ArrayID"));
 	if (valpoint.Get())
 	{
@@ -3076,7 +3076,7 @@ bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
 			ID = *valpoint.Get();
 		}
 	}
-	ThreadRelease();
+	
 
 	return false;
 }
@@ -3089,7 +3089,7 @@ bool TControl::onCreateClassAndId(D2D1_RECT_F& contain)
 */
 void TControl::updateComponentLocation()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (border1.Get())
 	{
 		border1->loci = location;
@@ -3130,7 +3130,7 @@ void TControl::updateComponentLocation()
 	{
 		content3->location = location;
 	}
-	ThreadRelease();
+	
 
 }
 
@@ -3142,7 +3142,7 @@ void TControl::updateComponentLocation()
  */
 void TControl::CheckScroll()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	D2D1_RECT_F area = location;
 
 	bool needV = false, needH = false;
@@ -3197,7 +3197,7 @@ void TControl::CheckScroll()
 	{
 		hScroll.Delete();
 	}
-	ThreadRelease();
+	
 
 }
 
@@ -3219,9 +3219,9 @@ int TControl::generateImage(TrecPointer<TContent> tcon, TrecPointer<TString> p, 
 
 	if (file.Get())
 	{	
-		ThreadLock();
+		TObjectLocker threadLock(&thread);
 		tcon->image = drawingBoard->GetBrush(file, loc);
-		ThreadRelease();
+		
 		return tcon->image.Get() ? 0 : 2;
 	}
 
@@ -3236,7 +3236,7 @@ int TControl::generateImage(TrecPointer<TContent> tcon, TrecPointer<TString> p, 
 */
 void TControl::checkMargin(D2D1_RECT_F contain)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|Margin"));
 	//margin = RECT{ 0,0,0,0 };
 	if (valpoint.Get())
@@ -3259,7 +3259,7 @@ void TControl::checkMargin(D2D1_RECT_F contain)
 		location.right = location.right - margin.right;
 		location.top = location.top + margin.top;
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -3270,7 +3270,7 @@ void TControl::checkMargin(D2D1_RECT_F contain)
 */
 void TControl::checkHeightWidth(D2D1_RECT_F r)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|Height"));
 	if (valpoint.Get())
 	{
@@ -3325,7 +3325,7 @@ void TControl::checkHeightWidth(D2D1_RECT_F r)
 		if (dimensions->width > r.right - r.left && !hScroll.Get())
 			dimensions->width = r.right - r.left;
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -3337,7 +3337,7 @@ void TControl::checkHeightWidth(D2D1_RECT_F r)
 */
 void TControl::generateSizeControl()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!dimensions)
 	{
 		dimensions = new sizeControl;
@@ -3350,7 +3350,7 @@ void TControl::generateSizeControl()
 		dimensions->maxWidth = 0;
 		dimensions->minWidth = 0;
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -3361,16 +3361,16 @@ void TControl::generateSizeControl()
 */
 bool TControl::hasEvent(R_Message_Type type)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (int c = 0; c < eventList.Size(); c++)
 	{
 		if ((eventList)[c].eventType == type)
 		{
-			ThreadRelease();
+			
 			return true;
 		}
 	}
-	ThreadRelease();
+	
 	return false;
 }
 
@@ -3382,7 +3382,7 @@ bool TControl::hasEvent(R_Message_Type type)
 */
 void TControl::resetArgs()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	args.control = this;
 	args.isClick = false;
 	args.isLeftClick = false;
@@ -3393,7 +3393,7 @@ void TControl::resetArgs()
 	args.text.Empty();
 	args.type = L'\0';
 	args.object.Nullify();
-	ThreadRelease();
+	
 }
 
 /*
@@ -3404,17 +3404,17 @@ void TControl::resetArgs()
 */
 int TControl::getEventID(R_Message_Type type)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (int c = 0; c < eventList.Size(); c++)
 	{
 		if (eventList[c].eventType == type)
 		{
 			int ret = eventList.at(c).eventID;
-			ThreadRelease();
+			
 			return ret;
 		}
 	}
-	ThreadRelease();
+	
 	return -1;
 }
 
@@ -3426,7 +3426,7 @@ int TControl::getEventID(R_Message_Type type)
 */
 void TControl::SetToRenderTarget()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (border1.Get())
 		border1->drawingBoard = drawingBoard;
 	if (border2.Get())
@@ -3447,7 +3447,7 @@ void TControl::SetToRenderTarget()
 		text2->drawingBoard = drawingBoard;
 	if (text3.Get())
 		text3->drawingBoard = drawingBoard;
-	ThreadRelease();
+	
 }
 
 /*
@@ -3459,12 +3459,12 @@ void TControl::SetToRenderTarget()
 */
 void TControl::addEventID(R_Message_Type rmt, int e_id)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	EventTypeID et;
 	et.eventID = e_id;
 	et.eventType = rmt;
 	eventList.push_back(et);
-	ThreadRelease();
+	
 }
 
 
@@ -3481,10 +3481,10 @@ void TControl::addEventID(R_Message_Type rmt, int e_id)
 */
 afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!isActive)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	for (int c = 0; c < children.Count(); c++)
@@ -3495,7 +3495,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 	{
 		mState = messageState::normal;
 		isRClick = false;
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -3550,7 +3550,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		}
 	}
 	mState =messageState::mouseHover;
-	ThreadRelease();
+	
 }
 
 /*
@@ -3565,10 +3565,10 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 */
 afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!isActive)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	if (vScroll.Get() && vScroll->OnLButtonDown(nFlags, point, mOut))
@@ -3581,7 +3581,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.isClick = args.isLeftClick = true;
 		args.control = nullptr;;
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), vScroll));
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -3608,7 +3608,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		}
 		else
 			*mOut = messageOutput::negative;
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -3623,7 +3623,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 	if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
 	{
 		mState = messageState::normal;
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -3657,7 +3657,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_L_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -3672,7 +3672,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 */
 afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!isActive)
 		return;
 
@@ -3686,7 +3686,7 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		}
 		else
 			*mOut = messageOutput::negative;
-		ThreadRelease();
+		
 		return;
 	}
 	for (int c = 0; c < children.Count(); c++)
@@ -3696,7 +3696,7 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 			continue;
 		if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
 		{
-			ThreadRelease();
+			
 			return;
 		}
 	}
@@ -3721,7 +3721,7 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		eventAr.push_back(EventID_Cred( R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 	isRClick = true;
-	ThreadRelease();
+	
 }
 
 /*
@@ -3736,10 +3736,10 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 */
 afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!isActive)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	if (!isContained(point, getLocation()))
@@ -3778,7 +3778,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 			}
 		}
 
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -3793,7 +3793,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 	if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
 	{
 		clickedControls.push_back(this);
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -3832,7 +3832,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 		
 	}
 	clickedControls.push_back(this);
-	ThreadRelease();
+	
 }
 
 
@@ -3849,7 +3849,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
  */
 bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	bool ret = false;
 	if (!isContained(point, location))
 	{
@@ -3865,7 +3865,7 @@ bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Hover_Leave, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 		ret = true;
 	}
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -3880,10 +3880,10 @@ bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 */
 void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!isActive)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -3896,7 +3896,7 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 		}
 		else
 			*mOut = messageOutput::negative;
-		ThreadRelease();
+		
 		return;
 	}
 	for (int c = 0; c < children.Count(); c++)
@@ -3906,7 +3906,7 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 			continue;
 		if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
 		{
-			ThreadRelease();
+			
 			return;
 		}
 	}
@@ -3930,7 +3930,7 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 		args.control = this;
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_LDoubleClick, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -3944,10 +3944,10 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 */
 afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!isActive)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -3964,7 +3964,7 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		mState = messageState::normal;
 		*mOut = messageOutput::negative;
 		isLClick = false;
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -4000,7 +4000,7 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 	isLClick = false;
-	ThreadRelease();
+	
 }
 
 /*
@@ -4016,10 +4016,10 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 */
 afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!isActive)
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	TControl* tcCall = NULL;
@@ -4040,11 +4040,11 @@ afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlag
 				args.control = this;
 				eventAr.push_back(EventID_Cred( R_Message_Type::On_Char, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
-			ThreadRelease();
+			
 			return true;
 		}
 	}
-	ThreadRelease();
+	
 	return false;
 }
 
@@ -4088,7 +4088,7 @@ bool TControl::OnScroll(const TPoint& point, const TPoint& direction)
 */
 afx_msg void TControl::Builder_OnLButtonUp(UINT flags, TPoint point, TControl** mOut)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (int c = 0; c < children.Count();c++)
 	{
 		if (!children.ElementAt(c).Get())
@@ -4097,7 +4097,7 @@ afx_msg void TControl::Builder_OnLButtonUp(UINT flags, TPoint point, TControl** 
 		tc->Builder_OnLButtonUp(flags, point, mOut);
 	}
 	rightBorder = leftBorder = topBorder = bottomBorder = onClickFocus = false;
-	ThreadRelease();
+	
 
 }
 
@@ -4112,7 +4112,7 @@ afx_msg void TControl::Builder_OnLButtonUp(UINT flags, TPoint point, TControl** 
 */
 afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl** mOut, messageOutput* o)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	for (int c = 0; c < children.Count();c++)
 	{
 		if (!children.ElementAt(c).Get()|| !children.ElementAt(c).Get())
@@ -4122,7 +4122,7 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		if (*o != messageOutput::negative && *o != messageOutput::negativeUpdate)
 		{
 			onFocus = onClickFocus = leftBorder = rightBorder = topBorder = bottomBorder = false; // other focus flags rendered false by LButtonUp method
-			ThreadRelease();
+			
 			return;
 		}
 	}
@@ -4148,7 +4148,7 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		rightBorder = false;
 		topBorder = false;
 		bottomBorder = false;
-		ThreadRelease();
+		
 		return;
 	}
 	if (abs((double)point.x - (double)location.right) < 5)
@@ -4160,7 +4160,7 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		leftBorder = false;
 		topBorder = false;
 		bottomBorder = false;
-		ThreadRelease();
+		
 		return;
 	}
 	if (abs((double)point.y - (double)location.top) < 5)
@@ -4172,7 +4172,7 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		leftBorder = false;
 		topBorder = true;
 		bottomBorder = false;
-		ThreadRelease();
+		
 		return;
 	}
 	if (abs((double)point.y - (double)location.bottom) < 5)
@@ -4184,10 +4184,10 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 		leftBorder = false;
 		topBorder = false;
 		bottomBorder = true;
-		ThreadRelease();
+		
 		return;
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -4202,7 +4202,7 @@ afx_msg void TControl::Builder_OnLButtonDown(UINT flags, TPoint point, TControl*
 */
 afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOut, const RECT& bounds, messageOutput* o)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!onClickFocus)
 	{
 		TControl* point;
@@ -4216,7 +4216,7 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 			}
 			if (*o == messageOutput::negative || *o == messageOutput::negativeUpdate) // then it is positive
 			{
-				ThreadRelease();
+				
 				return;
 			}
 		}
@@ -4261,7 +4261,7 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 				border3->loci.left = location.left;
 			}
 			
-			ThreadRelease();
+			
 			return;
 		}
 		if (rightBorder)
@@ -4298,7 +4298,7 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 			{
 				border3->loci.right = location.right;
 			}
-			ThreadRelease();
+			
 
 			return;
 		}
@@ -4337,7 +4337,7 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 			{
 				border3->loci.top = location.top;
 			}
-			ThreadRelease();
+			
 			return;
 		}
 		if (bottomBorder)
@@ -4375,11 +4375,11 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 			{
 				border3->loci.bottom = location.bottom;
 			}
-			ThreadRelease();
+			
 			return;
 		}
 	} // end if "isContained" if
-	ThreadRelease();
+	
 }
 
 
@@ -4391,9 +4391,9 @@ afx_msg void TControl::Builder_OnMouseMove(UINT flags, TPoint cp, TControl** mOu
 */
 void TControl::setActive(bool act)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	isActive = act;
-	ThreadRelease();
+	
 }
 
 /**
@@ -4404,9 +4404,9 @@ void TControl::setActive(bool act)
  */
 bool TControl::GetActive()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	bool ret = isActive;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -4418,9 +4418,9 @@ bool TControl::GetActive()
 */
 EventArgs TControl::getEventArgs()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = args;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -4538,10 +4538,10 @@ TBorder::~TBorder()
 */
 bool TBorder::onCreate(D2D1_RECT_F location)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	brush.Nullify();
@@ -4556,7 +4556,7 @@ bool TBorder::onCreate(D2D1_RECT_F location)
 
 	ResetBrush();
 
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -4568,12 +4568,12 @@ bool TBorder::onCreate(D2D1_RECT_F location)
 */
 bool TBorder::onCreate(D2D1_ELLIPSE e)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 
 	shape =TShape::T_Ellipse;
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	loci.left = e.point.x - e.radiusX;
@@ -4583,7 +4583,7 @@ bool TBorder::onCreate(D2D1_ELLIPSE e)
 
 	ResetBrush();
 	circle = e;
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -4595,11 +4595,11 @@ bool TBorder::onCreate(D2D1_ELLIPSE e)
 */
 bool TBorder::onCreate(D2D1_ROUNDED_RECT rr)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	shape =TShape::T_Rounded_Rect;
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	roundedRect = rr;
@@ -4610,7 +4610,7 @@ bool TBorder::onCreate(D2D1_ROUNDED_RECT rr)
 	loci.bottom = rr.rect.bottom;
 
 	ResetBrush();
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -4623,7 +4623,7 @@ bool TBorder::onCreate(D2D1_ROUNDED_RECT rr)
 */
 void TBorder::onDraw(D2D1_RECT_F& f_loc)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (drawingBoard.Get() && brush.Get() && cap)
 	{
 		bool drawRect = true;
@@ -4648,7 +4648,7 @@ void TBorder::onDraw(D2D1_RECT_F& f_loc)
 		}
 		
 	}
-	ThreadRelease();
+	
 }
 
 
@@ -4660,9 +4660,9 @@ void TBorder::onDraw(D2D1_RECT_F& f_loc)
 */
 void TBorder::setThickness(float f)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	thickness = f;
-	ThreadRelease();
+	
 }
 
 /*
@@ -4675,12 +4675,12 @@ void TBorder::setOpaquency(float f)
 {
 	if (f > 1.0000000 || f < 0.0f)
 		return;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (brush.Get())
 	{
 		
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -4691,9 +4691,9 @@ void TBorder::setOpaquency(float f)
 */
 float TBorder::getThickness()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	float ret = thickness;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -4705,9 +4705,9 @@ float TBorder::getThickness()
 */
 RECT TBorder::getLocation()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = convertD2DRectToRECT(loci);
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -4719,10 +4719,10 @@ RECT TBorder::getLocation()
 */
 void TBorder::ShiftHorizontal(int degrees)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	loci.left += degrees;
 	loci.right += degrees;
-	ThreadRelease();
+	
 
 }
 
@@ -4734,10 +4734,10 @@ void TBorder::ShiftHorizontal(int degrees)
 */
 void TBorder::ShiftVertical(int degrees)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	loci.top += degrees;
 	loci.bottom += degrees;
-	ThreadRelease();
+	
 }
 
 /*
@@ -4748,38 +4748,38 @@ void TBorder::ShiftVertical(int degrees)
 */
 void TBorder::SetColor(const D2D1_COLOR_F& cf)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (brush.Get())
 	{
 		ID2D1SolidColorBrush* sb = dynamic_cast<ID2D1SolidColorBrush*>(brush.Get());
 		if (sb)
 			sb->SetColor(cf);
 	}
-	ThreadRelease();
+	
 
 }
 
 D2D1_COLOR_F TBorder::GetColor()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (brush.Get())
 	{
 		
 	}
-	ThreadRelease();
+	
 
 	return D2D1::ColorF(D2D1::ColorF::Black);
 }
 
 void TBorder::SetColor2(const D2D1_COLOR_F& cf)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (brush.Get())
 	{
 		ID2D1LinearGradientBrush* lb = nullptr;
 		ID2D1RadialGradientBrush* rb = nullptr;
 	}
-	ThreadRelease();
+	
 }
 
 D2D1_COLOR_F TBorder::GetColor2()
@@ -4789,27 +4789,27 @@ D2D1_COLOR_F TBorder::GetColor2()
 
 D2D1_RECT_F TBorder::GetLocation()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = loci;
-	ThreadRelease();
+	
 	return ret;
 }
 
 void TBorder::SetLocation(const D2D1_RECT_F& loc)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	loci = loc;
 	if (cap)
 		cap->setLocation(loc);
-	ThreadRelease();
+	
 
 }
 
 TrecPointer<TBrush> TBorder::GetBrush()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = brush;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -4822,10 +4822,10 @@ TrecPointer<TBrush> TBorder::GetBrush()
  */
 void TBorder::ResetBrush()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	if (stopCollection.GetGradientCount() > 1)
@@ -4852,7 +4852,7 @@ void TBorder::ResetBrush()
 	{
 		brush = drawingBoard->GetBrush(TColor());
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -4865,7 +4865,7 @@ void TBorder::ResetBrush()
 */
 int TBorder::storeInTML(TFile * ar, int childLevel,messageState ms)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TString writable;
 	resetAttributeString(&writable, childLevel +1);
 	TString val;
@@ -4906,7 +4906,7 @@ int TBorder::storeInTML(TFile * ar, int childLevel,messageState ms)
 
 	ar->WriteString(val);
 	ar->WriteString(L"\n");
-	ThreadRelease();
+	
 	return 0;
 }
 
@@ -5050,10 +5050,10 @@ TText::~TText()
 */
 int TText::onCreate(D2D1_RECT_F loc)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (drawingBoard.Get() == NULL)
 	{
-		ThreadRelease();
+		
 		return 1;
 	}
 
@@ -5066,7 +5066,7 @@ int TText::onCreate(D2D1_RECT_F loc)
 
 	if (!SUCCEEDED(results))
 	{
-		ThreadRelease();
+		
 		return 2;
 	}
 	writeFact = rawFact.Extract();
@@ -5089,7 +5089,7 @@ int TText::onCreate(D2D1_RECT_F loc)
 
 	if (!SUCCEEDED(results))
 	{
-		ThreadRelease();
+		
 		return 3;
 	}
 	results = format->SetTextAlignment(horizontalAlignment);
@@ -5098,7 +5098,7 @@ int TText::onCreate(D2D1_RECT_F loc)
 
 	if (!SUCCEEDED(results))
 	{
-		ThreadRelease();
+		
 		return 4;
 	}
 	bounds.bottom = loc.bottom;
@@ -5110,7 +5110,7 @@ int TText::onCreate(D2D1_RECT_F loc)
 
 	if (!SUCCEEDED(results))
 	{
-		ThreadRelease();
+		
 		return 5;
 	}
 
@@ -5121,13 +5121,13 @@ int TText::onCreate(D2D1_RECT_F loc)
 	if (SUCCEEDED(results))
 	{
 		fontLayout = wtl.Extract();
-		ThreadRelease();
+		
 		return 0;
 	}
 	else
 	{
 		int e = GetLastError();
-		ThreadRelease();
+		
 		return 6;
 	}
 }
@@ -5142,9 +5142,9 @@ int TText::onCreate(D2D1_RECT_F loc)
 */
 void TText::reCreateLayout()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	reCreateLayout(text);
-	ThreadRelease();
+	
 }
 
 /*
@@ -5157,7 +5157,7 @@ void TText::reCreateLayout()
  */
 void TText::reCreateLayout(TString & str)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	fontLayout.Nullify();
 	if (format.Get())
 	{
@@ -5165,7 +5165,7 @@ void TText::reCreateLayout(TString & str)
 		writeFact->CreateTextLayout(str.GetConstantBuffer().getBuffer(), str.GetSize(), format.Get(), bounds.right - bounds.left, bounds.bottom - bounds.top, wfl.GetPointerAddress());
 		fontLayout = wfl.Extract();
 	}
-	ThreadRelease();
+	
 
 }
 
@@ -5177,12 +5177,12 @@ void TText::reCreateLayout(TString & str)
 */
 bool TText::onDraw(D2D1_RECT_F& loc, TObject* obj)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 
 	
 	if (!penBrush.Get() || !drawingBoard.Get())
 	{	
-		ThreadRelease();
+		
 		return false;
 	}
 	if (bounds != loc)
@@ -5209,7 +5209,7 @@ bool TText::onDraw(D2D1_RECT_F& loc, TObject* obj)
 			}
 		}
 		
-		ThreadRelease();
+		
 	return true;
 }
 
@@ -5222,11 +5222,11 @@ bool TText::onDraw(D2D1_RECT_F& loc, TObject* obj)
 */
 bool TText::setNewFont(TString& pFont)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	font.Set( pFont);
 	onCreate(bounds);
 	reCreateLayout();
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -5238,11 +5238,11 @@ bool TText::setNewFont(TString& pFont)
 */
 void TText::setNewFontSize(float fs)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	fontSize = abs(fs);
 	onCreate(bounds);
 	reCreateLayout();
-	ThreadRelease();
+	
 
 }
 
@@ -5254,14 +5254,14 @@ void TText::setNewFontSize(float fs)
 */
 void TText::setNewHorizontalAlignment(DWRITE_TEXT_ALIGNMENT ha)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	horizontalAlignment = ha;
 	if (format.Get())
 	{
 		format->SetTextAlignment(ha);
 		reCreateLayout();
 	}
-	ThreadRelease();
+	
 
 }
 
@@ -5273,14 +5273,14 @@ void TText::setNewHorizontalAlignment(DWRITE_TEXT_ALIGNMENT ha)
 */
 void TText::setNewVerticalAlignment(DWRITE_PARAGRAPH_ALIGNMENT va)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	verticalAlignment = va;
 	if (format.Get())
 	{
 		format->SetParagraphAlignment(va);
 		reCreateLayout();
 	}
-	ThreadRelease();
+	
 
 }
 
@@ -5306,9 +5306,9 @@ bool TText::setOpaquency(float o)
 */
 float TText::getFontSize()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = fontSize;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -5320,9 +5320,9 @@ float TText::getFontSize()
 */
 TString TText::getFont()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TString ret(font);
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -5334,9 +5334,9 @@ TString TText::getFont()
 */
 TString TText::getCaption()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TString ret(text);
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -5348,11 +5348,11 @@ TString TText::getCaption()
  */
 float TText::GetMinWidth(bool& worked)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	float ret = 0.0f;
 	if(!(worked = (fontLayout.Get() && SUCCEEDED(fontLayout->DetermineMinWidth(&ret)))))
 		ret = bounds.right - bounds.left;
-	ThreadRelease();
+	
 	
 	return ret;
 }
@@ -5379,10 +5379,10 @@ float TText::GetMinHeight(bool& worked)
 */
 void TText::setCaption(const TString& string)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	text.Set(string);
 	reCreateLayout();
-	ThreadRelease();
+	
 }
 
 /*
@@ -5393,10 +5393,10 @@ void TText::setCaption(const TString& string)
 */
 void TText::setLocale(TString& loc)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	locale = loc;
 	reCreateLayout();
-	ThreadRelease();
+	
 	
 }
 
@@ -5409,10 +5409,10 @@ void TText::setLocale(TString& loc)
 */
 void TText::setFont(TString& fo)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	font = fo;
 	reCreateLayout();
-	ThreadRelease();
+	
 	
 }
 
@@ -5425,10 +5425,10 @@ void TText::setFont(TString& fo)
 void TText::removeCaption()
 {
 
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	text.Empty();
 	textLength = 0;
-	ThreadRelease();
+	
 	
 }
 
@@ -5440,9 +5440,9 @@ void TText::removeCaption()
 */
 DWRITE_TEXT_ALIGNMENT TText::getHorizontalAlignment()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = horizontalAlignment;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -5454,9 +5454,9 @@ DWRITE_TEXT_ALIGNMENT TText::getHorizontalAlignment()
 */
 DWRITE_PARAGRAPH_ALIGNMENT TText::getVerticalAlignment()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = verticalAlignment;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -5468,9 +5468,9 @@ DWRITE_PARAGRAPH_ALIGNMENT TText::getVerticalAlignment()
 */
 int TText::getLength()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	int ret = textLength;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -5482,9 +5482,9 @@ int TText::getLength()
 */
 RECT TText::getLocation()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = convertD2DRectToRECT(bounds);
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -5496,10 +5496,10 @@ RECT TText::getLocation()
 */
 void TText::ShiftHorizontal(int degrees)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	bounds.left += degrees;
 	bounds.right += degrees;
-	ThreadRelease();
+	
 	//if (!isSnipZero(snip))
 	//{
 	//	snip->left += degrees;
@@ -5515,28 +5515,28 @@ void TText::ShiftHorizontal(int degrees)
 */
 void TText::ShiftVertical(int degrees)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	bounds.top += degrees;
 	bounds.bottom += degrees;
-	ThreadRelease();
+	
 }
 
 void TText::SetColor(const D2D1_COLOR_F& cf)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	//color = cf;
 	if (penBrush.Get())
 	{
 		penBrush->SetColor(TColor(cf));
 	}
-	ThreadRelease();
+	
 }
 
 D2D1_COLOR_F TText::GetColor()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = penBrush.Get() ? penBrush->GetColor().GetColor() : D2D1::ColorF(D2D1::ColorF::Black);
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -5547,33 +5547,33 @@ void TText::SetColor2(const D2D1_COLOR_F& color)
 
 D2D1_COLOR_F TText::GetColor2()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = D2D1::ColorF(D2D1::ColorF::Black);
-	ThreadRelease();
+	
 	return ret;
 }
 
 D2D1_RECT_F TText::GetLocation()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = bounds;
-	ThreadRelease();
+	
 	return ret;
 }
 
 void TText::SetLocation(const D2D1_RECT_F& loc)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	bounds = loc;
 	this->reCreateLayout();
-	ThreadRelease();
+	
 }
 
 TrecPointer<TBrush> TText::GetBrush()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = penBrush;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -5585,10 +5585,10 @@ TrecPointer<TBrush> TText::GetBrush()
  */
 void TText::ResetBrush()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	if (stopCollection.GetGradientCount() > 1)
@@ -5615,7 +5615,7 @@ void TText::ResetBrush()
 	{
 		penBrush = drawingBoard->GetBrush(TColor());
 	}
-	ThreadRelease();
+	
 }
 
 
@@ -5630,7 +5630,7 @@ void TText::ResetBrush()
 */
 int TText::storeInTML(TFile * ar, int childLevel,messageState ms)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TString writable;
 	resetAttributeString(&writable, childLevel + 1);
 	ar->WriteString(writable);
@@ -5764,7 +5764,7 @@ int TText::storeInTML(TFile * ar, int childLevel,messageState ms)
 		ar->WriteString(L"Center\n");
 	}
 
-	ThreadRelease();
+	
 	return 0;
 }
 
@@ -5877,7 +5877,7 @@ TContent::~TContent()
 */
 bool TContent::onCreate(D2D1_RECT_F l)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	location.top = l.top;
 	location.left = l.left;
 	location.right = l.right;
@@ -5885,13 +5885,13 @@ bool TContent::onCreate(D2D1_RECT_F l)
 
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	brush.Nullify();
 
 	ResetBrush();
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -5903,10 +5903,10 @@ bool TContent::onCreate(D2D1_RECT_F l)
 */
 bool TContent::onCreate(D2D1_ELLIPSE e)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	circle = e;
@@ -5917,7 +5917,7 @@ bool TContent::onCreate(D2D1_ELLIPSE e)
 	location.top = e.point.y - e.radiusY;
 	location.bottom = e.point.y + e.radiusY;
 	ResetBrush();
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -5929,10 +5929,10 @@ bool TContent::onCreate(D2D1_ELLIPSE e)
 */
 bool TContent::onCreate(D2D1_ROUNDED_RECT rr)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	roundedRect = rr;
@@ -5944,7 +5944,7 @@ bool TContent::onCreate(D2D1_ROUNDED_RECT rr)
 	location.bottom = rr.rect.bottom;
 
 	ResetBrush();
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -5956,10 +5956,10 @@ bool TContent::onCreate(D2D1_ROUNDED_RECT rr)
 */
 void TContent::ShiftHorizontal(int degrees)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	location.left += degrees;
 	location.right += degrees;
-	ThreadRelease();
+	
 }
 
 /*
@@ -5970,10 +5970,10 @@ void TContent::ShiftHorizontal(int degrees)
 */
 void TContent::ShiftVertical(int degrees)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	location.top += degrees;
 	location.bottom += degrees;
-	ThreadRelease();
+	
 }
 
 /*
@@ -5984,10 +5984,10 @@ void TContent::ShiftVertical(int degrees)
 */
 void TContent::onDraw(D2D1_RECT_F& f_snip)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	if (brush.Get())
@@ -6022,7 +6022,7 @@ void TContent::onDraw(D2D1_RECT_F& f_snip)
 		//rt->DrawBitmap(image, thickness, D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR, location);
 		
 	}
-	ThreadRelease();
+	
 }
 
 
@@ -6050,15 +6050,15 @@ bool TContent::setOpaquency(float f)
 */
 RECT TContent::getLocation()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = convertD2DRectToRECT(location);
-	ThreadRelease();
+	
 	return ret;
 }
 
 void TContent::SetRadialImage(TDataArray<D2D1_COLOR_F>& colors)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto stopper = getStopCollection(colors);
 	if (stopper.Get())
 	{
@@ -6068,12 +6068,12 @@ void TContent::SetRadialImage(TDataArray<D2D1_COLOR_F>& colors)
 			D2D1::Point2F(location.right, location.bottom),
 			location.right - location.left, location.bottom - location.top);
 	}
-	ThreadRelease();
+	
 }
 
 void TContent::SetLinearImage(TDataArray<D2D1_COLOR_F>& colors)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto stopper = getStopCollection(colors);
 	if (stopper.Get())
 	{
@@ -6082,18 +6082,18 @@ void TContent::SetLinearImage(TDataArray<D2D1_COLOR_F>& colors)
 		brush = drawingBoard->GetBrush(stopCollection, D2D1::Point2F(location.left, location.top),
 			D2D1::Point2F(location.right, location.bottom));
 	}
-	ThreadRelease();
+	
 }
 
 
 void TContent::SetColor(const D2D1_COLOR_F& cf)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (brush.Get())
 	{
 		brush->SetColor(TColor(cf));
 	}
-	ThreadRelease();
+	
 }
 
 D2D1_COLOR_F TContent::GetColor()
@@ -6113,44 +6113,44 @@ D2D1_COLOR_F TContent::GetColor2()
 
 D2D1_RECT_F TContent::GetLocation()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = location;
-	ThreadRelease();
+	
 	return ret;
 }
 
 void TContent::SetLocation(const D2D1_RECT_F& loc)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	location = loc;
 	if (cap)
 		cap->setLocation(loc);
-	ThreadRelease();
+	
 }
 
 TrecPointer<TBrush> TContent::GetBrush()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	auto ret = brush;
-	ThreadRelease();
+	
 	return ret;
 }
 
 UINT TContent::GetImageCount()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 
 	UINT ret = image.Get() ? image->GetFrameCount() : 0;
-	ThreadRelease();
+	
 
 	return ret;
 }
 
 TrecPointer<TGradientStopCollection> TContent::getStopCollection(TDataArray<D2D1_COLOR_F>& colors)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!drawingBoard.Get() || !colors.Size()) {
-		ThreadRelease();
+		
 		return TrecPointer<TGradientStopCollection>();
 	}
 	TrecPointer<TGradientStopCollection> grads = TrecPointerKey::GetNewTrecPointer<TGradientStopCollection>();
@@ -6164,7 +6164,7 @@ TrecPointer<TGradientStopCollection> TContent::getStopCollection(TDataArray<D2D1
 
 		grads->AddGradient(TGradientStop(TColor(colors[Rust]), static_cast<float>(Rust) * stopValue));
 	}
-	ThreadRelease();
+	
 	return grads;
 }
 
@@ -6176,10 +6176,10 @@ TrecPointer<TGradientStopCollection> TContent::getStopCollection(TDataArray<D2D1
  */
 void TContent::ResetBrush()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	if (stopCollection.GetGradientCount() > 1)
@@ -6206,7 +6206,7 @@ void TContent::ResetBrush()
 	{
 		brush = drawingBoard->GetBrush(TColor());
 	}
-	ThreadRelease();
+	
 }
 
 /*

@@ -249,6 +249,7 @@ TString TWindow::GetWinName()
  */
 void TWindow::Draw()
 {
+	LockDrawing();
 	ThreadLock();
 	if (mainPage.Get() && safeToDraw)
 	{	UCHAR tempSafe = safeToDraw;
@@ -285,6 +286,7 @@ void TWindow::Draw()
 		}
 	}
 	ThreadRelease();
+	UnlockDrawing();
 }
 
 /**

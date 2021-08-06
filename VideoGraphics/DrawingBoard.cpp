@@ -943,3 +943,32 @@ bool hasStyle(stroke_style style)
 {
 	return !(style == stroke_style::bs_none || style == stroke_style::bs_not_set || style == stroke_style::bs_hidden);
 }
+
+/**
+ * Helps manage drawing operations between the thread (Use to prevent Updates while content is being rendered)
+ */
+class DrawingBoardThreadLocker {
+public:
+	CRITICAL_SECTION drawingThread;
+
+	DrawingBoardThreadLocker() {
+		InitializeCriticalSection(&drawingThread);
+	}
+
+	~DrawingBoardThreadLocker() {
+		DeleteCriticalSection(&drawingThread);
+	}
+} drawingThread;
+
+
+
+
+void _VIDEO_GRAPHICS LockDrawing()
+{
+	EnterCriticalSection(&drawingThread.drawingThread);
+}
+
+void _VIDEO_GRAPHICS UnlockDrawing()
+{
+	LeaveCriticalSection(&drawingThread.drawingThread);
+}

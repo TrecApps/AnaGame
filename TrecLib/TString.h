@@ -72,14 +72,6 @@ public:
 		const TString* string;
 	};
 
-private:
-	mutable bool shouldUnlock;
-
-	mutable UCHAR BufferCounter;
-
-	void IncrementBuffer()const;
-
-	void DecrementBuffer()const;
 
 public:
 

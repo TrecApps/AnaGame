@@ -98,10 +98,10 @@ TTextField::~TTextField()
 */
 void TTextField::InputChar(wchar_t cha, int times)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!onFocus) // hopefully this is true, but just in case
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	int curCaretLoc = caretLoc;
@@ -137,7 +137,7 @@ void TTextField::InputChar(wchar_t cha, int times)
 				text.Insert(caretLoc++, cha);
 		}
 	}
-	ThreadRelease();
+	
 
 }
 
@@ -150,9 +150,9 @@ void TTextField::InputChar(wchar_t cha, int times)
 */
 bool TTextField::onClick(TPoint cp)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	bool ret = (cp.x > location.left && cp.x < location.right && cp.y > location.top && cp.y < location.bottom);
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -164,9 +164,9 @@ bool TTextField::onClick(TPoint cp)
  */
 void TTextField::LockText()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	isEditable = false;
-	ThreadRelease();
+	
 }
 
 /*
@@ -177,9 +177,9 @@ void TTextField::LockText()
  */
 void TTextField::UnlockText()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	isEditable = true;
-	ThreadRelease();
+	
 }
 
 /*
@@ -204,7 +204,7 @@ int TTextField::loadFromHTML(TFile * ar)
 */
 void TTextField::storeInTML(TFile * ar, int childLevel, bool ov)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TString appendable;
 	resetAttributeString(&appendable, childLevel + 1);
 	if (!isPassword)
@@ -264,7 +264,7 @@ void TTextField::storeInTML(TFile * ar, int childLevel, bool ov)
 	}
 
 	TControl::storeInTML(ar, childLevel);
-	ThreadRelease();
+	
 }
 
 /*
@@ -285,7 +285,7 @@ void TTextField::storeInHTML(TFile * ar)
 */
 bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TGadgetControl::onCreate(r, d3d);
 
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|IsPassword"));
@@ -424,14 +424,14 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 
 	if (!text1.Get())
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	text = text1->text;
 	if (!layout)
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	for (UINT c = 0; c < details.Size(); c++)
@@ -442,7 +442,7 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 		if (details[c].color.Get())
 			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -454,11 +454,11 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 */
 void TTextField::onDraw(TObject* obj)
 {	
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TControl::onDraw(obj);
 	if (!isActive)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	else if (offerPasswordPeek)
@@ -488,7 +488,7 @@ void TTextField::onDraw(TObject* obj)
 	{
 		updateTextString();
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -499,17 +499,17 @@ void TTextField::onDraw(TObject* obj)
 */
 UINT TTextField::determineMinHeightNeeded()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	UINT height = location.bottom - location.top;
 	if (!text1.Get())
 	{
-		ThreadRelease();
+		
 		return height;
 	}
 	TrecComPointer<IDWriteTextLayout> fl = text1->fontLayout;
 	if (!fl.Get())
 	{
-		ThreadRelease();
+		
 		return height;
 	}
 	DWRITE_TEXT_METRICS	dtm;
@@ -524,7 +524,7 @@ UINT TTextField::determineMinHeightNeeded()
 	dtm.widthIncludingTrailingWhitespace = 0;
 	dtm.width = location.right - location.left;
 	fl->GetMetrics(&dtm);
-	ThreadRelease();
+	
 
 	return dtm.height;
 }
@@ -537,12 +537,12 @@ UINT TTextField::determineMinHeightNeeded()
 */
 void TTextField::SetNewLocation(const D2D1_RECT_F& r)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TControl::SetNewLocation(r);
 
 	if (!text1.Get())
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
@@ -555,7 +555,7 @@ void TTextField::SetNewLocation(const D2D1_RECT_F& r)
 		if (details[c].color.Get())
 			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
-	ThreadRelease();
+	
 }
 
 /**
@@ -566,7 +566,7 @@ void TTextField::SetNewLocation(const D2D1_RECT_F& r)
  */
 D2D1_RECT_F TTextField::getLocation()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	D2D1_RECT_F ret;
 	
 	if (!text1.Get())
@@ -582,7 +582,7 @@ D2D1_RECT_F TTextField::getLocation()
 		ret.bottom = ret.top + (max(mets.height, mets.layoutHeight));
 		ret.right = ret.left + (max(mets.widthIncludingTrailingWhitespace, mets.layoutWidth));
 	}
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -597,7 +597,7 @@ D2D1_RECT_F TTextField::getLocation()
 */
 afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	resetArgs();
 	
 	BOOL trailing = false, isInside = false;
@@ -755,7 +755,7 @@ parentCall:
 	{
 		args.text.Set(text1->getCaption());
 	}
-	ThreadRelease();
+	
 
 }
 
@@ -773,7 +773,7 @@ parentCall:
 bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	// To-Do: sort out anomalies with characters
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	resetArgs();
 
 	if (onFocus)
@@ -847,7 +847,7 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 		}
 	}
 	bool ret = onFocus;
-	ThreadRelease();
+	
 
 	return ret;
 }
@@ -864,7 +864,7 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 */
 void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TControl::OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
 
 	if (isContained(&point, &location))
@@ -898,7 +898,7 @@ void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDa
 				*mOut = messageOutput::positiveOverrideUpdate;
 		}
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -912,7 +912,7 @@ void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDa
 */
 void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (isContained(&point, &location))
 	{
 		*mOut = messageOutput::positiveOverrideUpdate;
@@ -937,7 +937,7 @@ void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TD
 		highlighter.ResetUp(locCarLoc);
 
 	TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
-	ThreadRelease();
+	
 }
 
 /*
@@ -948,7 +948,7 @@ void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TD
 */
 void TTextField::AppendBoldText(const TString & t)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	UINT beginFormatting = text.GetSize();
 	if (!text1.Get())
 	{
@@ -962,7 +962,7 @@ void TTextField::AppendBoldText(const TString & t)
 
 	text += t;
 	updateTextString();
-	ThreadRelease();
+	
 }
 
 /*
@@ -973,7 +973,7 @@ void TTextField::AppendBoldText(const TString & t)
 */
 void TTextField::AppendItalicText(const TString & t)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	UINT beginFormatting = text.GetSize();
 	if (!text1.Get())
 	{
@@ -987,7 +987,7 @@ void TTextField::AppendItalicText(const TString & t)
 
 	text += t;
 	updateTextString();
-	ThreadRelease();
+	
 }
 
 /*
@@ -998,7 +998,7 @@ void TTextField::AppendItalicText(const TString & t)
 */
 void TTextField::AppendBoldItalicText(const TString & t)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	UINT beginFormatting = text.GetSize();
 	if (!text1.Get())
 	{
@@ -1012,7 +1012,7 @@ void TTextField::AppendBoldItalicText(const TString & t)
 
 	text += t;
 	updateTextString();
-	ThreadRelease();
+	
 }
 
 /*
@@ -1023,7 +1023,7 @@ void TTextField::AppendBoldItalicText(const TString & t)
 */
 void TTextField::AppendNormalText(const TString & t)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	UINT beginFormatting = text.GetSize();
 	if (!text1.Get())
 	{
@@ -1037,20 +1037,20 @@ void TTextField::AppendNormalText(const TString & t)
 
 	text += t;
 	updateTextString();
-	ThreadRelease();
+	
 }
 
 bool TTextField::ApplyFormatting(FormattingDetails ds)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if ((ds.range.startPosition + ds.range.length) > text.GetSize())
 	{
-		ThreadRelease();
+		
 		return false;
 	}
 	this->details.push_back(ds);
 	updateTextString();
-	ThreadRelease();
+	
 	return true;
 }
 
@@ -1062,9 +1062,9 @@ bool TTextField::ApplyFormatting(FormattingDetails ds)
 */
 bool TTextField::isOnFocus()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	bool ret = onFocus;
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1076,9 +1076,9 @@ bool TTextField::isOnFocus()
 */
 TString TTextField::GetText()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TString ret(text);
-	ThreadRelease();
+	
 	return ret;
 }
 
@@ -1090,11 +1090,11 @@ TString TTextField::GetText()
 */
 void TTextField::SetText(TString t )
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	text.Set(t);
 	updateTextString();
 	Resize(location);
-	ThreadRelease();
+	
 
 }
 
@@ -1111,7 +1111,7 @@ UCHAR * TTextField::GetAnaGameType()
  */
 void TTextField::Resize(D2D1_RECT_F& r)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	TGadgetControl::Resize(r);
 	topBut = DxLocation;
 	topBut.bottom = topBut.bottom - (topBut.bottom - topBut.top) / 2;
@@ -1149,7 +1149,7 @@ void TTextField::Resize(D2D1_RECT_F& r)
 			oldParent->SwitchChildControl(tThis, scrollControl);
 		}
 	}
-	ThreadRelease();
+	
 
 }
 
@@ -1164,7 +1164,7 @@ void TTextField::updateNumber(bool pos)
 	int i = 0;
 	float f = 0.0;
 	short floatResult =0 , intResult = 0;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (text.ConvertToFloat(f) && text.ConvertToInt(i))
 		setToZero();
 	
@@ -1232,7 +1232,7 @@ void TTextField::updateNumber(bool pos)
 		}
 	}
 	updateTextString();
-	ThreadRelease();
+	
 }
 
 /*
@@ -1243,10 +1243,10 @@ void TTextField::updateNumber(bool pos)
 */
 void TTextField::setToZero()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	text.Empty();
 	text.AppendChar(L'0');
-	ThreadRelease();
+	
 }
 
 /*
@@ -1257,10 +1257,10 @@ void TTextField::setToZero()
 */
 void TTextField::setNumericText(int i)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if ((hasMax && i > maximum) || (hasMin && i < minumum))
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	
@@ -1274,7 +1274,7 @@ void TTextField::setNumericText(int i)
 	}
 	if (text1.Get())
 		text1->setCaption(text);
-	ThreadRelease();
+	
 }
 
 /*
@@ -1285,10 +1285,10 @@ void TTextField::setNumericText(int i)
 */
 void TTextField::setNumericText(float f)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if ((hasMax && f > maximum) || (hasMin && f < minumum))
 	{
-		ThreadRelease();
+		
 		return;
 	}
 
@@ -1302,7 +1302,7 @@ void TTextField::setNumericText(float f)
 	}
 	if (text1.Get())
 		text1->setCaption(text);
-	ThreadRelease();
+	
 }
 
 
@@ -1316,16 +1316,16 @@ void TTextField::setNumericText(float f)
  */
 void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!text1.Get() || !drawingBoard.Get())
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	for (UINT C = 0; C < colors.Size(); C++)
@@ -1333,7 +1333,7 @@ void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 		if (col == colors[C].color)
 		{
 			layout->SetDrawingEffect(colors[C].colBrush, DWRITE_TEXT_RANGE{ start, length });
-			ThreadRelease();
+			
 			return;
 		}
 	}
@@ -1346,7 +1346,7 @@ void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 		colors.push_back(ce);
 		layout->SetDrawingEffect(ce.colBrush, DWRITE_TEXT_RANGE{ start, length });
 	}
-	ThreadRelease();
+	
 }
 
 
@@ -1373,7 +1373,7 @@ void TTextField::RemoveFocus()
 
 TrecPointer<LineMetrics> TTextField::GetLineMetrics()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (text1.Get() && text1->fontLayout.Get())
 	{
 		TrecPointer<LineMetrics> ret = TrecPointerKey::GetNewTrecPointer<LineMetrics>(5);
@@ -1382,11 +1382,11 @@ TrecPointer<LineMetrics> TTextField::GetLineMetrics()
 		{
 			ret->SetSize(ret->sizeNeeded);
 			text1->fontLayout->GetLineMetrics(ret->metrics.data(), ret->metrics.Size(), &ret->sizeNeeded);
-			ThreadRelease();
+			
 			return ret;
 		}
 	}
-	ThreadRelease();
+	
 	return TrecPointer<LineMetrics>();
 }
 
@@ -1420,7 +1420,7 @@ float TTextField::GetMinWidth()
 */
 void TTextField::updateTextString()
 {
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	if (!text1.Get())
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
@@ -1430,7 +1430,7 @@ void TTextField::updateTextString()
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
 	{
-		ThreadRelease();
+		
 		return;
 	}
 	HRESULT res = 0;
@@ -1462,7 +1462,7 @@ void TTextField::updateTextString()
 			res = layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
 	highlighter.SetLayout(text1->fontLayout);
-	ThreadRelease();
+	
 }
 
 /*
@@ -1476,7 +1476,7 @@ void TTextField::moveCaretLeft(POINT point)
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
 	DWRITE_HIT_TEST_METRICS metric;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	text1->fontLayout->HitTestPoint(point.x - 1, point.y + 1, &isTrailing, &isInside, &metric);
 	if (isInside)
 	{
@@ -1484,7 +1484,7 @@ void TTextField::moveCaretLeft(POINT point)
 		SetCaretPos(metric.left, point.y);
 		ShowCaret(windowHandle);
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -1498,7 +1498,7 @@ void TTextField::moveCaretRight(POINT point)
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
 	DWRITE_HIT_TEST_METRICS metric;	
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	text1->fontLayout->HitTestPoint(point.x + 1, point.y + 1, &isTrailing, &isInside, &metric);
 	if (isInside)
 	{
@@ -1506,7 +1506,7 @@ void TTextField::moveCaretRight(POINT point)
 		SetCaretPos(metric.left + metric.width, point.y);
 		ShowCaret(windowHandle);
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -1520,7 +1520,7 @@ void TTextField::moveCaretUp(POINT point)
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
 	DWRITE_HIT_TEST_METRICS metric;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	text1->fontLayout->HitTestPoint(point.x, point.y, &isTrailing, &isInside, &metric);
 	float origTop = metric.top;
 
@@ -1540,7 +1540,7 @@ void TTextField::moveCaretUp(POINT point)
 			break;
 		}
 	}
-	ThreadRelease();
+	
 }
 
 /*
@@ -1554,7 +1554,7 @@ void TTextField::moveCaretDown(POINT point)
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
 	DWRITE_HIT_TEST_METRICS metric;
-	ThreadLock();
+	TObjectLocker threadLock(&thread);
 	text1->fontLayout->HitTestPoint(point.x, point.y, &isTrailing, &isInside, &metric);
 	float origTop = metric.top;
 
@@ -1574,7 +1574,7 @@ void TTextField::moveCaretDown(POINT point)
 			break;
 		}
 	}
-	ThreadRelease();
+	
 }
 
 

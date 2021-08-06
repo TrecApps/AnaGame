@@ -16,6 +16,16 @@ extern UCHAR TMapType[];
 
 class TString;
 
+class _TREC_LIB_DLL TObjectLocker
+{
+public:
+	TObjectLocker(CRITICAL_SECTION* section);
+	~TObjectLocker();
+
+private:
+	CRITICAL_SECTION* section;
+};
+
 /*
 * Class: TObject
 * Purpose: Serves as the base object for the AnaGame platform
