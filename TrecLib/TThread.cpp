@@ -21,7 +21,6 @@ DWORD __stdcall RunThread(LPVOID param)
 		!threadParam->handle)
 		throw L"Null Value detected in Thread Management!";
 
-	Sleep(20);
 
 	DWORD res = threadParam->function(threadParam->functionParams);
 
@@ -141,8 +140,8 @@ DWORD TThread::CreateTThread(LPTHREAD_START_ROUTINE routine, LPVOID params)
 		{
 			threadList[Rust].details.function = routine;
 			threadList[Rust].details.functionParams = params;
-			threadList[Rust].details.handle = CreateThread(&att, 0, RunThread,
-				&(threadList[Rust].details), CREATE_SUSPENDED, &threadList[Rust].details.threadId);
+			threadList[Rust].details.handle = CreateThread(&att, 3000000, RunThread,
+				&(threadList[Rust].details), CREATE_SUSPENDED , &threadList[Rust].details.threadId);
 			threadList[Rust].details.type = ThreadType::tt_regular;
 			return threadList[Rust].details.threadId;
 		}
@@ -226,5 +225,5 @@ void TThread::Resume(const TObject* obj)
 
 void TThread::Initialize()
 {
-	details.handle = CreateThread(&att, 0, RunThread, &details, CREATE_SUSPENDED, &details.threadId);
+	details.handle = CreateThread(&att, 3000000, RunThread, &details, CREATE_SUSPENDED, &details.threadId);
 }

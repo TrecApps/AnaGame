@@ -307,7 +307,6 @@ void JsPromise::JsPromiseAllSub(TDataArray<TrecPointer<TVariable>>& params, Trec
 	async_mode aMode = async_mode::m_waiting;
 	while (asyncEntries.Size())
 	{
-		Sleep(20);
 		for (UINT Rust = 0; Rust < asyncEntries.Size(); Rust++)
 		{
 			asyncEntries[Rust]->GetSetMode(aMode, false);
@@ -371,10 +370,9 @@ void JsPromise::JsPromiseAllSettledSub(TDataArray<TrecPointer<TVariable>>& param
 	async_mode aMode = async_mode::m_waiting;
 	while (asyncEntries.Size())
 	{
-		Sleep(20);
 		for (UINT Rust = 0; Rust < asyncEntries.Size(); Rust++)
 		{
-			asyncEntries[Rust]->GetSetMode(aMode, false);
+			asyncEntries[Rust]->GetSetMode(aMode, true);
 			if (aMode == async_mode::m_complete || aMode == async_mode::m_error)
 			{
 				asyncEntries.RemoveAt(Rust--);
@@ -446,7 +444,6 @@ void JsPromise::JsPromiseAnySub(TDataArray<TrecPointer<TVariable>>& params, Trec
 	async_mode aMode = async_mode::m_waiting;
 	while (asyncEntries.Size())
 	{
-		Sleep(20);
 		for (UINT Rust = 0; Rust < asyncEntries.Size(); Rust++)
 		{
 			asyncEntries[Rust]->GetSetMode(aMode, false);
@@ -498,7 +495,6 @@ void JsPromise::JsPromiseRaceSub(TDataArray<TrecPointer<TVariable>>& params, Tre
 	async_mode aMode = async_mode::m_waiting;
 	while (asyncEntries.Size())
 	{
-		Sleep(20);
 		for (UINT Rust = 0; Rust < asyncEntries.Size(); Rust++)
 		{
 			asyncEntries[Rust]->GetSetMode(aMode, false);

@@ -545,7 +545,7 @@ void JsArray::JsArrayForEach(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 		return;
 	TrecSubPointer<TVariable, TContainerVariable> methodArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
 
-	if (params.Size() < 2 || dynamic_cast<TcInterpretor*>(params[1].Get()))
+	if (params.Size() < 2 || !dynamic_cast<TcInterpretor*>(params[1].Get()))
 	{
 		ret.errorMessage.Format(L"Uncaught TypeError: %ws is not a function", params[1].Get() ? params[1]->GetString().GetConstantBuffer().getBuffer() : L"null");
 		ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;

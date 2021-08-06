@@ -366,6 +366,7 @@ void TAsyncVariable::SetResult(TrecPointer<TVariable> var, bool success)
     ThreadLock();
     ret.errorObject = var;
     ret.returnCode = success ? 0 : ReturnObject::ERR_GENERIC_ERROR;
+    mode = success ? async_mode::m_complete : async_mode::m_error;
     ThreadRelease();
 }
 
