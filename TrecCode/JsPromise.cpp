@@ -181,6 +181,7 @@ void JsPromise::JsPromiseAll(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 	TrecPointer<TVariable> varRunner = TrecPointerKey::GetTrecPointerFromSub<>(nativeRunner);
 	TrecSubPointer<TVariable, TcInterpretor> regRunner = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(varRunner);
 	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAsyncVariable>(GetCurrentThreadId(), regRunner);
+	nativeRunner->SetActiveObject(ret.errorObject);
 }
 
 void JsPromise::JsPromiseAllSettled(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -233,6 +234,7 @@ void JsPromise::JsPromiseAny(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 	TrecPointer<TVariable> varRunner = TrecPointerKey::GetTrecPointerFromSub<>(nativeRunner);
 	TrecSubPointer<TVariable, TcInterpretor> regRunner = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(varRunner);
 	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAsyncVariable>(GetCurrentThreadId(), regRunner);
+	nativeRunner->SetActiveObject(ret.errorObject);
 }
 
 void JsPromise::JsPromiseRace(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -258,6 +260,7 @@ void JsPromise::JsPromiseRace(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 	TrecPointer<TVariable> varRunner = TrecPointerKey::GetTrecPointerFromSub<>(nativeRunner);
 	TrecSubPointer<TVariable, TcInterpretor> regRunner = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(varRunner);
 	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TAsyncVariable>(GetCurrentThreadId(), regRunner);
+	nativeRunner->SetActiveObject(ret.errorObject);
 }
 
 void JsPromise::JsPromiseReject(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -286,7 +289,7 @@ void JsPromise::JsPromiseResolve(TDataArray<TrecPointer<TVariable>>& params, Tre
 
 void JsPromise::JsPromiseAllSub(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
-	TrecSubPointer<TVariable, TContainerVariable> promises = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> promises = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[1]);
 
 	TDataArray<TrecPointer<TVariable>> returnEntries;
 	TDataArray<TrecSubPointer<TVariable, TAsyncVariable>> asyncEntries;
@@ -345,6 +348,7 @@ void JsPromise::JsPromiseAllSub(TDataArray<TrecPointer<TVariable>>& params, Trec
 	}
 
 	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(arrayRet);
+	dynamic_cast<TAsyncVariable*>(params[0].Get())->SetResult(ret.errorObject, true);
 }
 
 void JsPromise::JsPromiseAllSettledSub(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -420,7 +424,7 @@ void JsPromise::JsPromiseAllSettledSub(TDataArray<TrecPointer<TVariable>>& param
 
 void JsPromise::JsPromiseAnySub(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
-	TrecSubPointer<TVariable, TContainerVariable> promises = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> promises = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[1]);
 
 	TDataArray<TrecPointer<TVariable>> returnEntries;
 	TDataArray<TrecSubPointer<TVariable, TAsyncVariable>> asyncEntries;
@@ -439,6 +443,7 @@ void JsPromise::JsPromiseAnySub(TDataArray<TrecPointer<TVariable>>& params, Trec
 		else
 		{
 			ret.errorObject = var;
+			dynamic_cast<TAsyncVariable*>(params[0].Get())->SetResult(ret.errorObject, true);
 			return;
 		}
 	}
@@ -467,11 +472,12 @@ void JsPromise::JsPromiseAnySub(TDataArray<TrecPointer<TVariable>>& params, Trec
 
 	ret.returnCode = ret.ERR_GENERIC_ERROR;
 	ret.errorMessage.Set(L"All Promises Rejected!");
+	dynamic_cast<TAsyncVariable*>(params[0].Get())->SetResult(ret.errorObject, false);
 }
 
 void JsPromise::JsPromiseRaceSub(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
-	TrecSubPointer<TVariable, TContainerVariable> promises = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
+	TrecSubPointer<TVariable, TContainerVariable> promises = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[1]);
 
 	TDataArray<TrecPointer<TVariable>> returnEntries;
 	TDataArray<TrecSubPointer<TVariable, TAsyncVariable>> asyncEntries;
@@ -511,4 +517,6 @@ void JsPromise::JsPromiseRaceSub(TDataArray<TrecPointer<TVariable>>& params, Tre
 			}
 		}
 	}
+
+	dynamic_cast<TAsyncVariable*>(params[0].Get())->SetResult(ret.errorObject, true);
 }
