@@ -238,8 +238,19 @@ public:
      */
     DWORD GetThreadCaller();
 
+
+    /**
+     * Method: TAsyncVariable::SetParent
+     * Purpose: Sets the Parent Interpretor of interpretors held by this object
+     * Parameters:TrecSubPointer<TVariable, TcInterpretor> parent - the parent to set
+     *              bool replace - whether to set the parent even if interpretor currently has one
+     * Returns: void
+     */
+    void SetParent(TrecSubPointer<TVariable, TcInterpretor> parent, bool replace);
+
     // Variables
 protected:
+
 
     /**
      * The underlying variable to manipulate, and run at the end

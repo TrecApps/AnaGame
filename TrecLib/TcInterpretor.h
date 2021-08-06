@@ -390,6 +390,15 @@ public:
      */
     void PrepReturn(ReturnObject& ret, const TString& mess, const TString& stackMess, USHORT code, LONG64 line);
 
+    /**
+     * Method: TcInterpretor::SetParent
+     * Purpose: Allows a parent Interpretor to be configured after creation
+     * Parameters: TrecSubPointer<TVariable, TcInterpretor> parent - the parent to set
+     *              bool replace - whether to set the parent even if interpretor currently has one
+     * void: bool - whether the parent was set
+     */
+    bool SetParent(TrecSubPointer<TVariable, TcInterpretor> parent, bool replace);
+
     virtual TrecPointer<TVariable> Clone() override;
 
     UCHAR GetVarStatus(TString& varName);

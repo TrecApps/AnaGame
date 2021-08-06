@@ -299,6 +299,60 @@ DWORD TAsyncVariable::GetThreadCaller()
     return requesterId;
 }
 
+
+/**
+ * Method: TAsyncVariable::SetParent
+ * Purpose: Sets the Parent Interpretor of interpretors held by this object
+ * Parameters:TrecSubPointer<TVariable, TcInterpretor> parent - the parent to set
+ *              bool replace - whether to set the parent even if interpretor currently has one
+ * Returns: void
+ */
+void TAsyncVariable::SetParent(TrecSubPointer<TVariable, TcInterpretor> parent, bool replace)
+{
+    ThreadLock();
+    if (mainFunction.Get())
+        mainFunction->SetParent(parent, replace);
+
+    if (finallyFunction.Get())
+        finallyFunction->SetParent(parent, replace);
+
+    auto e = dynamic_cast<TcInterpretor*>(mainErrorResolve.Get());
+    if (e)
+        e->SetParent(parent, replace);
+
+    for (UINT Rust = 0; Rust < this->successResolve.Size(); Rust++)
+    {
+        auto s = successResolve[Rust];
+        if (!s.Get())
+        {
+            successResolve.RemoveAt(Rust--);
+            continue;
+        }
+        TcInterpretor* tcInt = dynamic_cast<TcInterpretor*>(s.Get());
+        if (tcInt)
+            tcInt->SetParent(parent, replace);
+    }
+
+    if (subErrorResolve.Get())
+    {
+        if (subErrorResolve->GetVarType() == var_type::interpretor)
+            dynamic_cast<TcInterpretor*>(subErrorResolve.Get())->SetParent(parent, replace);
+        else if (subErrorResolve->GetVarType() == var_type::collection)
+        {
+            auto ec = dynamic_cast<TContainerVariable*>(subErrorResolve.Get());
+            UINT Rust = 0;
+            TrecPointer<TVariable> iVar = ec->GetValueAt(Rust++);
+            while (iVar.Get())
+            {
+                dynamic_cast<TcInterpretor*>(iVar.Get())->SetParent(parent, replace);
+                iVar = ec->GetValueAt(Rust++);
+            }
+        }
+    }
+
+    ThreadRelease();
+}
+
 void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar)
 {
     if (asyncVar.Get())

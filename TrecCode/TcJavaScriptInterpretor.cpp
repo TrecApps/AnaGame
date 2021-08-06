@@ -3563,6 +3563,8 @@ UINT TcJavaScriptInterpretor::ProcessPotentalArrowNotation(UINT& parenth, UINT& 
         statementsToAdd.push_back(newStatement);
     }
 
+    jsInt->SetStatements(statementsToAdd);
+
     ret = jsInt->PreProcess();
 
     if (ret.returnCode)
@@ -3697,6 +3699,13 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
     }
     else
     {
+        if (ret.errorObject.Get() && ret.errorObject->GetVarType() == var_type::async)
+        {
+            
+            dynamic_cast<TAsyncVariable*>(ret.errorObject.Get())->SetParent( TrecPointerKey::GetSubPointerFromSoft<>(self), false);
+        }
+
+
         ret.mode = (ret.mode == return_mode::rm_super_return) ? return_mode::rm_return : return_mode::rm_regular;
     }
 

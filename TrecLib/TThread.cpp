@@ -28,6 +28,8 @@ DWORD __stdcall RunThread(LPVOID param)
 	CloseHandle(threadParam->handle);
 	threadParam->handle = 0;
 	threadParam->threadId = 0;
+	threadParam->function = nullptr;
+	threadParam->functionParams = nullptr;
 	return res;
 }
 

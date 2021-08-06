@@ -294,6 +294,19 @@ void TcInterpretor::PrepReturn(ReturnObject& ret, const TString& mess, const TSt
 	}
 }
 
+bool TcInterpretor::SetParent(TrecSubPointer<TVariable, TcInterpretor> parent, bool replace)
+{
+	if (!parent.Get())
+		return false;
+	if (!this->parent.Get() || replace)
+	{
+		auto p = TrecPointerKey::GetTrecPointerFromSub<>(parent);
+		this->parent = TrecPointerKey::GetSoftPointerFromTrec<TVariable>(p);
+		return true;
+	}
+	return false;
+}
+
 TrecPointer<TVariable> TcInterpretor::Clone()
 {
 	auto subSelf = TrecPointerKey::GetSubPointerFromSoft<>(self);
