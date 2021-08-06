@@ -1,6 +1,7 @@
 #pragma once
 #include <TcInterpretor.h>
 #include "TcDataStruct.h"
+#include "TAsyncVariable.h"
 
 /**
  * Class: TReturnInterpretor
@@ -96,7 +97,17 @@ public:
      */
     virtual void ProcessIndividualStatement(const TString& statement, ReturnObject& ret) override;
 
+    /**
+     * Method: TReturnInterpretor::SetAsyncHold
+     * Purpose: An Async Variable to attach (which will then be updated with the provided variable upon being called)
+     * Parameters: TrecSubPoiunter<TVariable, TAsyncVariable> sync - the async var to attach
+     * Returns: void
+     */
+    void SetAsyncHold(TrecSubPointer<TVariable, TAsyncVariable> sync);
+
 protected:
+
+    TrecSubPointer<TVariable, TAsyncVariable> asyncVar;
 
     /**
      * The var to return upon calling

@@ -248,6 +248,14 @@ public:
      */
     void SetParent(TrecSubPointer<TVariable, TcInterpretor> parent, bool replace);
 
+    /**
+     * Method: TAsyncVariable::SetResult
+     * Purpose: Allows Return Interpretors to set the result
+     * Parameters: TrecPointer<TVariable> var - the value of the result
+     *              bool success - whether it was a successful result or not
+     * Returns: void
+     */
+    void SetResult(TrecPointer<TVariable> var, bool success);
     // Variables
 protected:
 

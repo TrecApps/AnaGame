@@ -19,6 +19,8 @@ ReturnObject TReturnInterpretor::Run()
 	ReturnObject ret;
 	ret.errorObject = var;
 	ret.returnCode = success ? ReturnObject::ERR_NO_ERROR : ReturnObject::ERR_GENERIC_ERROR;
+	if (asyncVar.Get())
+		asyncVar->SetResult(var, success);
 	if (superReturn)
 		ret.mode = return_mode::rm_super_return;
 	return ret;
@@ -47,4 +49,16 @@ void TReturnInterpretor::ProcessIndividualStatement(const TString& statement, Re
 {
 	ret.returnCode = ret.ERR_UNSUPPORTED_OP;
 	ret.errorMessage.Set(L"This Interpretor simply returns a value!");
+}
+
+
+/**
+ * Method: TReturnInterpretor::SetAsyncHold
+ * Purpose: An Async Variable to attach (which will then be updated with the provided variable upon being called)
+ * Parameters: TrecSubPoiunter<TVariable, TAsyncVariable> sync - the async var to attach
+ * Returns: void
+ */
+void TReturnInterpretor::SetAsyncHold(TrecSubPointer<TVariable, TAsyncVariable> sync)
+{
+	this->asyncVar = sync;
 }

@@ -353,6 +353,22 @@ void TAsyncVariable::SetParent(TrecSubPointer<TVariable, TcInterpretor> parent, 
     ThreadRelease();
 }
 
+
+/**
+ * Method: TAsyncVariable::SetResult
+ * Purpose: Allows Return Interpretors to set the result
+ * Parameters: TrecPointer<TVariable> var - the value of the result
+ *              bool success - whether it was a successful result or not
+ * Returns: void
+ */
+void TAsyncVariable::SetResult(TrecPointer<TVariable> var, bool success)
+{
+    ThreadLock();
+    ret.errorObject = var;
+    ret.returnCode = success ? 0 : ReturnObject::ERR_GENERIC_ERROR;
+    ThreadRelease();
+}
+
 void TC_DATA_STRUCT ProcessTAsyncObject(TrecSubPointer<TVariable, TAsyncVariable> asyncVar)
 {
     if (asyncVar.Get())

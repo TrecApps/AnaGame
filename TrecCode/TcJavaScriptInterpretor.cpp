@@ -3620,12 +3620,19 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
             return nextRet;
 
         // If blocks were detected, go through and retrieve the current statement we are on
+        bool jumped = false;
         while (uret && statement->next.Get())
         {
             uret--;
             statement = statement->next;
             index = 0;
+            jumped = true;
         }
+
+        // If we jumped, check to see if we start with a comma. If we do, it is likely that the block was the expression and we need to jump over it 
+        //  otherwise, Process Expression will fail to pick up the next variable properly
+        if (statement->statement.GetTrim().StartsWith(L','))
+            index = statement->statement.Find(L',') + 1;
         // Add the parameter
         params.push_back(ret.errorObject);
     }
