@@ -128,6 +128,22 @@ void TCamera::Translate(float degree, DirectX::XMFLOAT3 direction)
 	RETURN_THREAD_UNLOCK;
 }
 
+void TCamera::Zoom(float x)
+{
+	IF_IS_LOOK_TO(this->cameraType)
+	{
+		Translate(x, this->direction_3);
+	}
+	else
+	{
+		DirectX::XMFLOAT3 tDirection = direction_3;
+		tDirection.x -= location_3.x;
+		tDirection.y -= location_3.y;
+		tDirection.z -= location_3.z;
+		Translate(x, tDirection);
+	}
+}
+
 void TCamera::PanX(float x)
 {
 	if (x)

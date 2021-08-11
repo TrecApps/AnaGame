@@ -39,6 +39,8 @@ public:
 	void Rotate(float leftRight, float upDown);
 	void Translate(float degree, DirectX::XMFLOAT3 direction);
 
+	void Zoom(float x);
+
 	void PanX(float x);
 	void PanY(float y);
 
