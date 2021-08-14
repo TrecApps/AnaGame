@@ -280,10 +280,52 @@ void JsString::JsStringPadEnd(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 
 void JsString::JsStringPadStart(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+
+	TString actString(stringObj->GetString());
+
+	UINT startIndex = (params.Size() > 1 && params[1].Get()) ? params[1]->Get4Value() : 0;
+	TString appender((params.Size() > 2 && params[2].Get()) ? params[2]->GetString() : L"");
+
+	for (int diff = static_cast<int>(startIndex) - static_cast<int>(actString.GetSize()); diff > 0; diff = static_cast<int>(startIndex) - static_cast<int>(actString.GetSize()))
+	{
+		actString.Set(appender.SubString(0, diff) + actString);
+	}
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(actString);
 }
 
 void JsString::JsStringRepeat(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+
+	TString actString;
+
+	if (params.Size() > 1 && params[1].Get() && params[1]->GetVarType() == var_type::primitive)
+	{
+		UINT param = params[1]->Get4Value();
+
+		actString.Set(stringObj->GetString());
+		TString appender(actString);
+
+		UINT max = INFINITE / actString.GetSize();
+
+		if (param >= max)
+		{
+			ret.returnCode = ret.ERR_GENERIC_ERROR;
+			ret.errorMessage.Set("RANGE Error!");
+			return;
+		}
+
+		for (UINT Rust = 1; Rust < param; Rust++)
+		{
+			actString.Append(appender);
+		}
+	}
+
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(actString);
 }
 
 void JsString::JsStringReplace(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -300,6 +342,29 @@ void JsString::JsStringSearch(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 
 void JsString::JsStringSlice(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+
+	UINT startIndex = (params.Size() > 1 && params[1].Get()) ? params[1]->Get4Value() : 0;
+	UINT endIndex = (params.Size() > 2 && params[2].Get()) ? params[2]->Get4Value() : 0;
+
+	int iStart = 0, iEnd = 0;
+
+	if (startIndex & 0x80000000)
+		iStart = -(startIndex & 0x7FFFFFFF);
+	else iStart = startIndex;
+
+	if (endIndex & 0x80000000)
+		iEnd = -(endIndex & 0x7FFFFFFF);
+	else iEnd = endIndex;
+
+	if (iStart <= 0)
+		iStart = static_cast<int>(stringObj->GetString().GetSize()) + iStart;
+
+	if (iEnd <= 0)
+		iEnd = static_cast<int>(stringObj->GetString().GetSize()) + iEnd;
+
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString().SubString(iStart, iEnd));
 }
 
 void JsString::JsStringIterator(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -308,14 +373,97 @@ void JsString::JsStringIterator(TDataArray<TrecPointer<TVariable>>& params, Trec
 
 void JsString::JsStringSplit(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+
+	TString token;
+	boolean stringPresented = false;
+	if (params.Size() > 1 && params[1].Get()) {
+		token.Set(params[1]->GetString());
+		stringPresented = true;
+	}
+
+	int endIndex = (params.Size() > 2 && params[2].Get()) ? params[2]->Get4Value() : -1;
+
+	TrecSubPointer<TVariable, TContainerVariable> strArray = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
+
+	if (!stringPresented)
+	{
+		strArray->AppendValue(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString()));
+		ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(strArray);
+		return;
+	}
+
+	if (endIndex == -1)
+	{
+		for (UINT Rust = 0; Rust < stringObj->GetString().GetSize(); Rust++)
+		{
+			strArray->AppendValue(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(TString(stringObj->GetString()[Rust])));
+		}
+		ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(strArray);
+		return;
+	}
+
+	if (endIndex == 0)
+	{
+		ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(strArray);
+		return;
+	}
+
+	TrecPointer<TDataArray<TString>> splits = stringObj->GetString().splitn(token, endIndex);
+	for (UINT Rust = 0; Rust < splits->Size(); Rust++)
+	{
+		strArray->AppendValue(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(splits->at(Rust)));
+	}
+	ret.errorObject = TrecPointerKey::GetTrecPointerFromSub<>(strArray);
 }
 
 void JsString::JsStringStartsWith(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+	TString starter((params.Size() > 1 && params[1].Get()) ? params[1]->GetString() : L"");
+	UINT startIndex = (params.Size() > 2 && params[2].Get()) ? params[2]->Get4Value() : 0;
+	
+	TString actString(stringObj->GetString());
+	if(startIndex)
+	actString.Delete(0, startIndex);
+
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(actString.StartsWith(starter));
 }
 
 void JsString::JsStringSubString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+
+	UINT startIndex = (params.Size() > 1 && params[1].Get()) ? params[1]->Get4Value() : 0;
+	UINT endIndex = (params.Size() > 2 && params[2].Get()) ? params[2]->Get4Value() : 0;
+
+	int iStart = 0, iEnd = 0;
+
+	if (startIndex & 0x80000000)
+		iStart = -(startIndex & 0x7FFFFFFF);
+	else iStart = startIndex;
+
+	if (endIndex & 0x80000000)
+		iEnd = -(endIndex & 0x7FFFFFFF);
+	else iEnd = endIndex;
+
+	if (iStart <= 0)
+		iStart = static_cast<int>(stringObj->GetString().GetSize()) + iStart;
+
+	if (iEnd <= 0)
+		iEnd = static_cast<int>(stringObj->GetString().GetSize()) + iEnd;
+
+	if (iEnd < iStart)
+	{
+		int temp = iEnd;
+		iEnd = iStart;
+		iStart = temp;
+	}
+
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString().SubString(iStart, iEnd));
 }
 
 void JsString::JsStringToLocaleLowerCase(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -328,28 +476,49 @@ void JsString::JsStringToLocaleUpperCase(TDataArray<TrecPointer<TVariable>>& par
 
 void JsString::JsStringToLowerCase(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString().GetLower());
 }
 
 void JsString::JsStringToUpperCase(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString().GetUpper());
 }
 
 void JsString::JsStringToString(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString());
 }
 
 void JsString::JsStringTrim(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString().GetTrim());
 }
 
 void JsString::JsStringTrimStart(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString().GetTrimLeft());
 }
 
 void JsString::JsStringTrimEnd(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString().GetTrimRight());
 }
 
 void JsString::JsStringValueOf(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
+	if (!InspectObjParam(params, ret)) return;
+	TrecSubPointer<TVariable, TStringVariable> stringObj = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(params[0]);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringObj->GetString());
 }
