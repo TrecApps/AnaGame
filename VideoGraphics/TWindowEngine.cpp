@@ -463,6 +463,18 @@ HWND TWindowEngine::GetWindowHandle()
 	return window;
 }
 
+D3D11_INPUT_ELEMENT_DESC* TWindowEngine::GetInputInfo(DefaultShader shaderId, UINT& count)
+{
+	UINT uiShaderId = static_cast<UINT>(shaderId);
+	if (uiShaderId >= this->shaders.Size())
+	{
+		count = 0;
+		return nullptr;
+	}
+	count = shaders[uiShaderId].elementCount;
+	return shaders[uiShaderId].elements;
+}
+
 HDC TWindowEngine::GetDC()
 {
 	if (!surface.Get())

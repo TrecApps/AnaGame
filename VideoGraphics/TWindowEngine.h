@@ -148,6 +148,16 @@ public:
 	 */
 	HWND GetWindowHandle();
 
+
+	/**
+	 * Method: TArenaEngine::GetInputInfo
+	 * Purpose: allows code to access info about the vertex data specs of a given anagame shader
+	 * Parameters: DefaultShader shaderId - the shader to access
+	 *				UINT& count - number of elements in the returned array
+	 * Returns: D3D11_INPUT_ELEMENT_DESC* - pointer to the description map (if null, then no such shader was available and 'count' will be set to 0)
+	 */
+	D3D11_INPUT_ELEMENT_DESC* GetInputInfo(DefaultShader shaderId, UINT& count);
+
 	HDC GetDC();
 	void ClearDC();
 

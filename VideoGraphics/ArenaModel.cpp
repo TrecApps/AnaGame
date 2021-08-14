@@ -52,10 +52,16 @@ ArenaModel::ArenaModel(TrecPointer<TArenaEngine> ae)
 	direction.x = direction.y = direction.z = 1.0f;
 
 	hasPipeColor = false;
+
 	TString logMessage;
 	logMessage.Format(L"CREATE %p ArenaModel(ArenaEngine& ae)", this);
 
 	Log(LogType::lt_memory, logMessage);
+
+
+	// Null the shader id
+	shader.card.id = -1;
+	shader._default = false;
 }
 
 ArenaModel::ArenaModel(ArenaModel& am)
@@ -810,11 +816,71 @@ UCHAR * ArenaModel::GetAnaGameType()
 	return ArenaModelType;
 }
 
+/**
+ * Method: ArenaModel::SetShader
+ * Purpose: Allows code to set the Shader
+ * Parameters: int shaderId - the shader to set
+ * Returns: bool - whether it could be set or not (the model should not already have prexisting vertex data)
+ */
 void ArenaModel::SetSelf(TrecPointer<ArenaModel> s)
 {
 	if (this != s.Get())
 		throw L"Error! Expected Self TrecPointer to point at 'this'";
 	self = TrecPointerKey::GetSoftPointerFromTrec<ArenaModel>(s);
+}
+
+/**
+ * Method: ArenaModel::SetShader
+ * Purpose: Allows code to set the Shader
+ * Parameters: DefaultShader shaderId - the shader to set
+ * Returns: bool - whether it could be set or not (the model should not already have prexisting vertex data)
+ */
+bool ArenaModel::SetShader(int shaderId)
+{
+	if(vertexData.Size() || index.Size())
+	return false;
+
+	shader._default = false;
+	shader.card.id = shaderId;
+	return true;
+}
+
+bool ArenaModel::SetShader(DefaultShader shaderId)
+{
+	if (vertexData.Size() || index.Size())
+		return false;
+
+	shader._default = true;
+	shader.card.dID = shaderId;
+	return true;
+}
+
+ShaderKey ArenaModel::GetShaderId()
+{
+	return shader;
+}
+
+/**
+ * Method: ArenaModel::GetVertices
+ * Purpose: retrieves the vertices
+ * Parameters: void
+ * Returns: TDataArray<float> - the vertices held
+ */
+TDataArray<float> ArenaModel::GetVertices()
+{
+	return this->vertexData;
+}
+
+
+/**
+ * Method: ArenaModel::GetIndices
+ * Purpose: retrieves the indices
+ * Parameters: void
+ * Returns: TDataArray<UINT> - the indices held
+ */
+TDataArray<UINT> ArenaModel::GetIndices()
+{
+	return this->index;
 }
 
 /*

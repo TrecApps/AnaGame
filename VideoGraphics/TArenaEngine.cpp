@@ -462,3 +462,24 @@ TTrecPointerArray<ArenaModel>* TArenaEngine::GetModelList()
 {
 	return &models;
 }
+
+D3D11_INPUT_ELEMENT_DESC* TArenaEngine::GetInputInfo(int shaderId, UINT& count)
+{
+	if (shaderId < 0 || shaderId >= this->shaders.Size())
+	{
+		count = 0;
+		return nullptr;
+	}
+	count = shaders[shaderId].elementCount;
+	return shaders[shaderId].elements;
+}
+
+D3D11_INPUT_ELEMENT_DESC* TArenaEngine::GetInputInfo(DefaultShader shaderId, UINT& count)
+{
+	if (!windowEngine.Get())
+	{
+		count = 0;
+		return nullptr;
+	}
+	return windowEngine->GetInputInfo(shaderId, count);
+}

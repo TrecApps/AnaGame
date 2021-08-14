@@ -180,6 +180,7 @@
     <ClInclude Include="TGradientStop.h" />
     <ClInclude Include="TGradientStopCollection.h" />
     <ClInclude Include="TMediaSink.h" />
+    <ClInclude Include="TObjModelParser.h" />
     <ClInclude Include="TPlayer.h" />
     <ClInclude Include="TPresenter.h" />
     <ClInclude Include="TSampleTexture.h" />
@@ -215,6 +216,7 @@
     <ClCompile Include="TGradientStop.cpp" />
     <ClCompile Include="TGradientStopCollection.cpp" />
     <ClCompile Include="TMediaSink.cpp" />
+    <ClCompile Include="TObjModelParser.cpp" />
     <ClCompile Include="TPlayer.cpp" />
     <ClCompile Include="TPresenter.cpp" />
     <ClCompile Include="TSampleTexture.cpp" />
