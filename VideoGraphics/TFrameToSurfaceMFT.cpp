@@ -2,6 +2,62 @@
 #include <mfreadwrite.h>
 #include <Mferror.h>
 #include <d3d11.h>
+
+HRESULT GetDefaulStride(IMFMediaType* type, UINT& stride)
+{
+    UINT lStride = 0;
+
+    HRESULT ret = type->GetUINT32(MF_MT_DEFAULT_STRIDE, &lStride);
+
+    if (FAILED(ret))
+    {
+        GUID guid = GUID_NULL;
+
+        UINT w = 0, h = 0;
+
+        ret = type->GetGUID(MF_MT_SUBTYPE, &guid);
+        if (SUCCEEDED(ret))
+            ret = MFGetAttributeSize(type, MF_MT_FRAME_SIZE, &w, &h);
+        if (SUCCEEDED(ret))
+            ret = MFGetStrideForBitmapInfoHeader(guid.Data1, w, (LONG*)&lStride);
+
+        // Set for later reference
+        if (SUCCEEDED(ret))
+            type->SetUINT32(MF_MT_DEFAULT_STRIDE, lStride);
+    }
+
+    if (SUCCEEDED(ret))
+        stride = lStride;
+    return ret;
+}
+
+void FillRect(PBYTE scanLine, DWORD width, DWORD height, LONG strideBytes, COLORREF color)
+{
+    PBYTE curScanLine = scanLine;
+
+    for (DWORD count = 0; count < height; count++)
+    {
+        DWORD* word = (DWORD*)curScanLine;
+
+        for (DWORD pixel = 0; pixel < width; pixel++)
+        {
+            word[pixel] = (DWORD)color;
+        }
+        curScanLine += strideBytes;
+    }
+
+}
+
+//void DrawText(PBYTE scanLine, DWORD width, DWORD height, LONG strideBytes, LPCTSTR buff)
+//{
+//    SIZE size = { 0 ,0 };
+//
+//    PBYTE 
+//}
+
+
+
+
 HRESULT __stdcall TFrameToSurfaceMFT::QueryInterface(REFIID iid, void** ppv)
 {
     if (!ppv)
@@ -49,15 +105,16 @@ HRESULT __stdcall TFrameToSurfaceMFT::GetStreamCount(__RPC__out DWORD* pcInputSt
 HRESULT __stdcall TFrameToSurfaceMFT::GetStreamIDs(DWORD dwInputIDArraySize, __RPC__out_ecount_full(dwInputIDArraySize) DWORD* pdwInputIDs,
     DWORD dwOutputIDArraySize, __RPC__out_ecount_full(dwOutputIDArraySize) DWORD* pdwOutputIDs)
 {
-    if (!pdwInputIDs || !pdwOutputIDs)
-        return E_POINTER;
-    if (!dwInputIDArraySize || !dwOutputIDArraySize)
-        return E_INVALIDARG;
+    //if (!pdwInputIDs || !pdwOutputIDs)
+    //    return E_POINTER;
+    //if (!dwInputIDArraySize || !dwOutputIDArraySize)
+    //    return E_INVALIDARG;
 
-    *pdwInputIDs = inputId;
-    *pdwOutputIDs = outputId;
+    //*pdwInputIDs = inputId;
+    //*pdwOutputIDs = outputId;
 
-    return S_OK;
+    //return S_OK;
+    return E_NOTIMPL;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetInputStreamInfo(DWORD dwInputStreamID, MFT_INPUT_STREAM_INFO* pStreamInfo)
@@ -70,17 +127,50 @@ HRESULT __stdcall TFrameToSurfaceMFT::GetOutputStreamInfo(DWORD dwOutputStreamID
     if (!pStreamInfo)
         return E_POINTER;
 
-    pStreamInfo->dwFlags = MFT_OUTPUT_STREAM_PROVIDES_SAMPLES;
-    pStreamInfo->cbSize = 0;
-    pStreamInfo->cbAlignment = 0;
+    if (dwOutputStreamID)
+        return MF_E_INVALIDSTREAMNUMBER;
 
+    TObject::ThreadLock();
+    
 
-    return E_NOTIMPL;
+    pStreamInfo->dwFlags = 
+        MFT_OUTPUT_STREAM_PROVIDES_SAMPLES | 
+        MFT_OUTPUT_STREAM_WHOLE_SAMPLES |
+        MFT_OUTPUT_STREAM_SINGLE_SAMPLE_PER_BUFFER |
+        MFT_OUTPUT_STREAM_FIXED_SAMPLE_SIZE;
+
+    if (outputType.Get())
+    {
+        pStreamInfo->cbSize = imageSize;
+        pStreamInfo->cbAlignment = 1;
+    }
+    else
+    {
+        pStreamInfo->cbSize = 0;
+        pStreamInfo->cbAlignment = 0;
+    }
+
+    TObject::ThreadRelease();
+    return S_OK;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetAttributes(IMFAttributes** pAttributes)
 {
-    return E_NOTIMPL;
+    if (!pAttributes)
+        return E_POINTER;
+    TObject::ThreadLock();
+    HRESULT ret = S_OK;
+    if (!atts)
+    {
+        ret = MFCreateAttributes(&atts, 0);
+        if (SUCCEEDED(ret))
+            atts->SetUINT32(MF_SA_D3D11_AWARE, TRUE);
+        else atts = nullptr;
+    }
+    *pAttributes = atts;
+
+    TObject::ThreadRelease();
+    return ret;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetInputStreamAttributes(DWORD dwInputStreamID, IMFAttributes** pAttributes)
@@ -114,6 +204,9 @@ HRESULT TFrameToSurfaceMFT::GetOutputAvailableType(DWORD dwOutputStreamID, DWORD
     if (!ppType)
         return E_POINTER;
 
+    if (dwOutputStreamID)
+        return MF_E_INVALIDSTREAMNUMBER;
+
     if (inputType == GUID_NULL)
         return MF_E_TRANSFORM_TYPE_NOT_SET;
 
@@ -124,23 +217,37 @@ HRESULT TFrameToSurfaceMFT::GetOutputAvailableType(DWORD dwOutputStreamID, DWORD
     HRESULT ret = MFCreateMediaType(&pType);
     if (FAILED(ret))
         return ret;
+    TObject::ThreadLock();
+    ret = pType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+    if(SUCCEEDED(ret))ret = pType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);
+    if (SUCCEEDED(ret))ret = pType->SetUINT32(MF_MT_FIXED_SIZE_SAMPLES, TRUE);
+    if (SUCCEEDED(ret))ret = pType->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE);
+    if (SUCCEEDED(ret))ret = pType->SetUINT32(MF_MT_SAMPLE_SIZE, pixelHeight * pixelWidth * 4);
 
-    pType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-    pType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB8);
-    MFSetAttributeSize(pType, MF_MT_FRAME_SIZE, decodeDesc.SampleWidth, decodeDesc.SampleHeight);
+    if (SUCCEEDED(ret))ret = MFSetAttributeSize(pType, MF_MT_FRAME_SIZE, pixelWidth, pixelHeight);
+    if (SUCCEEDED(ret))ret = MFSetAttributeRatio(pType, MF_MT_FRAME_RATE, frameRate.Numerator, frameRate.Denominator);
+    if (SUCCEEDED(ret))ret = pType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
+    if (SUCCEEDED(ret))ret = MFSetAttributeRatio(pType, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
 
-    // Go ahead and set the texture description here
-    textureDesc.Width = decodeDesc.SampleWidth;
-    textureDesc.Height = decodeDesc.SampleHeight;
-    textureDesc.ArraySize = 1;
-    textureDesc.Format = DXGI_FORMAT_NV12;
-    textureDesc.SampleDesc.Count = 1;
-    textureDesc.Usage = D3D11_USAGE_DEFAULT;
-    textureDesc.BindFlags = D3D11_BIND_DECODER;
+    if (SUCCEEDED(ret))
+    {
+        // Go ahead and set the texture description here
+        textureDesc.Width = decodeDesc.SampleWidth;
+        textureDesc.Height = decodeDesc.SampleHeight;
+        textureDesc.ArraySize = 1;
+        textureDesc.Format = DXGI_FORMAT_NV12;
+        textureDesc.SampleDesc.Count = 1;
+        textureDesc.Usage = D3D11_USAGE_DEFAULT;
+        textureDesc.BindFlags = D3D11_BIND_DECODER;
 
+        *ppType = pType;
+        pType->AddRef();
+    }
 
-
-    return S_OK; // We don't care about the Output
+    if (pType)pType->Release();
+    pType = nullptr;
+    ThreadRelease();
+    return ret; 
 }
 
 HRESULT  TFrameToSurfaceMFT::SetInputType(DWORD dwInputStreamID, IMFMediaType* pType, DWORD dwFlags)

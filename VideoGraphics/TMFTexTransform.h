@@ -1,28 +1,20 @@
 #pragma once
-#include <mfapi.h>
-#include <d3d11.h>
 #include <mftransform.h>
-#include <TLinkedList.h>
-#include <evr.h>
-#include <TDataArray.h>
-#include <D3D9Types.h>
-#include <dxva2api.h>
-
-/**
- * Class: IMFTransform
- * Purpose: Makes sure that the samples are capable of supplying Direct3D11 surfaces
- */
-class TFrameToSurfaceMFT :
-    public IMFTransform, public TObject
+class TMFTexTransform :
+    public IMFTransform
 {
-public:
-    virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override;
+public: 
+    // IUnknown
+
+    virtual HRESULT STDMETHODCALLTYPE QueryInterface(
+        REFIID riid,
+        _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override;
 
     virtual ULONG STDMETHODCALLTYPE AddRef(void) override;
 
     virtual ULONG STDMETHODCALLTYPE Release(void) override;
 
-
+    // IMFTransform
     virtual HRESULT STDMETHODCALLTYPE GetStreamLimits(
         __RPC__out DWORD* pdwInputMinimum,
         __RPC__out DWORD* pdwInputMaximum,
@@ -122,42 +114,5 @@ public:
         DWORD cOutputBufferCount,
         MFT_OUTPUT_DATA_BUFFER* pOutputSamples,
         DWORD* pdwStatus) override;
-
-    HRESULT CreateInstance(TFrameToSurfaceMFT** in);
-
-    protected:
-
-        TFrameToSurfaceMFT();
-        ~TFrameToSurfaceMFT();
-
-        HRESULT SetUpDevices();
-
-        TLinkedList<IMFSample*> samples;
-
-        // Media Types
-        TrecComPointer<IMFMediaType> inputType, outputType;
-        
-
-        // Format Info
-        DWORD imageSize;
-        UINT pixelHeight, pixelWidth;
-        MFRatio frameRate;
-
-        IMFDXGIDeviceManager* manager;
-        IDirectXVideoProcessor* vService;
-        ID3D11VideoDevice* vDevice;
-        ID3D11Device* device;
-        DWORD inputId, outputId;
-        UINT decoderCount;
-        TDataArray<GUID> guids;
-        TDataArray<D3D11_VIDEO_DECODER_CONFIG> decodeConfigs;
-        GUID inputType;
-        D3D11_VIDEO_DECODER_DESC decodeDesc;
-        D3D11_VIDEO_DECODER_OUTPUT_VIEW_DESC outputDesc;
-
-        IMFAttributes* atts;
-        ULONG counter;
-        HANDLE devHand;
-        D3D11_TEXTURE2D_DESC textureDesc;
 };
 
