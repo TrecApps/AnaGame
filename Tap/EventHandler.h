@@ -277,6 +277,8 @@ protected:
 
 	TString onFocusString;
 
+	TrecPointer<TTextIntercepter> textIntercepter;
+
 	/**
 	 * Method: EventHandler::ShouldProcessMessageByType
 	 * Purpose: Reports whether this Object is of the correct type to recieve the message

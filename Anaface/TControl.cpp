@@ -6688,6 +6688,7 @@ EventID_Cred::EventID_Cred(const EventID_Cred& copy)
 	eventType = copy.eventType;
 	control = copy.control;
 	scroll = copy.scroll;
+	textIntercepter = copy.textIntercepter;
 }
 
 EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c)
@@ -6701,6 +6702,14 @@ EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointe
 	eventType = t;
 	control = c;
 	scroll = sb;
+}
+
+
+EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TTextIntercepter> i)
+{
+	eventType = t;
+	control = c;
+	this->textIntercepter = i;
 }
 
 EventID_Cred::EventID_Cred(TrecPointer<TFlyout> fly)

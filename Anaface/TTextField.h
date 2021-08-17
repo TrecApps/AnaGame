@@ -1,6 +1,7 @@
 #pragma once
 #include "TControl.h"
 #include "TGadgetControl.h"
+#include <TTextIntercepter.h>
 
 
 // Allows TTextControls to keep track of numbers whether they are int or float
@@ -386,6 +387,7 @@ private:
 class _ANAFACE_DLL TTextField :	public TGadgetControl
 {
 	friend class AnafaceParser;
+	friend class TTextFieldIntercepter;
 public:
 
 	/**
@@ -683,8 +685,21 @@ public:
 
 	float GetMinWidth();
 
-protected:
 
+	/*
+	* Method: TTextField::InputChar
+	* Purpose: Adds key stroke to the appropriate location in the string
+	* Parameters: wchar_t cha - the character to input
+	*				int times - the number of times to insert it
+	* Returns: void
+	*/
+	virtual void InputChar(wchar_t, int);
+
+	/**
+	 * 
+	 */
+
+protected:
 
 
 	/**
@@ -769,14 +784,6 @@ protected:
 	void setToZero();
 
 	/*
-	* Method: TTextField::InputChar
-	* Purpose: Adds key stroke to the appropriate location in the string
-	* Parameters: wchar_t cha - the character to input
-	*				int times - the number of times to insert it
-	* Returns: void
-	*/
-	virtual void InputChar(wchar_t, int);
-	/*
 	* Method: TTextField::updateTextString
 	* Purpose: Refreshes the Text string formating
 	* Parameters: void
@@ -833,3 +840,57 @@ protected:
 	TDataArray<ColorEffect> colors;
 };
 
+/**
+ * Class: TTextFieldIntercepter
+ * Purpose: Intercepts characters on behalf of the TTextField
+ */
+class TTextFieldIntercepter : public TTextIntercepter
+{
+	friend class TTextField;
+
+private:
+	TrecSubPointer<TControl, TTextField> textControl;
+
+	TTextFieldIntercepter(TrecSubPointer<TControl, TTextField> control);
+
+public:
+	/**
+	 * Method: TTextFieldIntercepter::OnChar
+	 * Purpose: Takes a character and feeds it to its target
+	 * Parameters: WCHAR ch - the character to report
+	 *          UINT count number of instances of that character to feed
+	 *          UINT flags - flags (usually 0)
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void OnChar(UINT ch, UINT count, UINT flags) override;
+	/**
+	 * Method: TTextFieldIntercepter::OnLoseFocus
+	 * Purpose: Alerts the target that it will no longer be intercepting characters
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void OnLoseFocus() override;
+
+	/**
+	 * Method: TTextFieldIntercepter::OnCopy
+	 * Purpose: Tells the target that CTRL-C was pressed
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void OnCopy() override;
+	/**
+	 * Method: TTextFieldIntercepter::OnCut
+	 * Purpose: Tells the target that CTRL-X was pressed
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void OnCut() override;
+};

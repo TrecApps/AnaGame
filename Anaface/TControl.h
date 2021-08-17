@@ -128,12 +128,14 @@ public:
 	EventID_Cred(const EventID_Cred& copy);
 	EventID_Cred(R_Message_Type t, TrecPointer<TControl> c);
 	EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TScrollBar> sb);
+	EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TTextIntercepter> i);
 	EventID_Cred(TrecPointer<TFlyout> fly);
 
 	R_Message_Type eventType;
 	TrecPointer<TControl> control;
 	TrecPointer<TScrollBar> scroll;
 	TrecPointer<TFlyout> flyout;
+	TrecPointer<TTextIntercepter> textIntercepter;
 };
 
 /**

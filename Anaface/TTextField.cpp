@@ -916,6 +916,12 @@ void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TD
 	if (isContained(&point, &location))
 	{
 		*mOut = messageOutput::positiveOverrideUpdate;
+
+		auto cThis = TrecPointerKey::GetTrecPointerFromSoft<>(tThis);
+
+		EventID_Cred cred(R_Message_Type::On_Focus, cThis, TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter,
+			TTextFieldIntercepter>(TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(cThis)));
+		eventAr.push_back(cred);
 	}
 	showPassword = false;
 
@@ -2287,4 +2293,27 @@ void LineMetrics::SetSize(UINT i, bool fromConstructor)
 	metrics.RemoveAll();
 	for (UINT Rust = 0; Rust < i; Rust++)
 		metrics.push_back(met);
+}
+
+TTextFieldIntercepter::TTextFieldIntercepter(TrecSubPointer<TControl, TTextField> control)
+{
+	this->textControl = control;
+}
+
+void TTextFieldIntercepter::OnChar(UINT ch, UINT count, UINT flags)
+{
+	if (textControl.Get())
+		textControl->InputChar(ch, count);
+}
+
+void TTextFieldIntercepter::OnLoseFocus()
+{
+}
+
+void TTextFieldIntercepter::OnCopy()
+{
+}
+
+void TTextFieldIntercepter::OnCut()
+{
 }

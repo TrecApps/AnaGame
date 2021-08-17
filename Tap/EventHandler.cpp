@@ -198,6 +198,13 @@ void EventHandler::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 bool EventHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)
 {
+	if (textIntercepter.Get())
+	{
+		//To-Do: Detect special keys such as CTRL-X/C/P, or the arrow keys
+
+		textIntercepter->OnChar(nChar, nRepCnt, nFlags);
+		return true;
+	}
 	return false;
 }
 

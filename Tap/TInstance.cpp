@@ -156,10 +156,11 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		win->OnMouseMove(wParam, TPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 		break;
 	case WM_CHAR:
-		win->OnChar(true, wParam, lParam & 0x0000FFFF, 0);
-		break;
-	case WM_KEYDOWN:
-		win->OnChar(false, wParam, lParam & 0x0000FFFF, 0);
+		if (charHandler.Get())
+		{
+			messageOutput mo = messageOutput::negative;
+			charHandler->OnChar(message == WM_CHAR, wParam, lParam & 0x0000FFFF, 0, &mo);
+		}
 		break;
 	case WM_SIZE:
 		win->OnWindowResize(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
@@ -496,6 +497,28 @@ TrecPointer<EventHandler> TInstance::GetHandler(const TString& name, anagame_pag
 	}
 	ThreadRelease();
 	return ret;
+}
+
+/**
+ * Method: TInstance::SetCharIntercepter
+ * Purpose: Sets up the object that intercepts characters
+ * Parameters: TrecPointer<EventHandler> the handler to send characers to
+ *				TrecPointer<TTextIntercepter> the intercepter to recieve characters
+ * Returns: void
+ */
+void TInstance::SetCharIntercepter(TrecPointer<EventHandler> handler, TrecPointer<TTextIntercepter> intercepter)
+{
+	if (handler.Get() && intercepter.Get())
+	{
+		if (charHandler.Get() && charHandler->textIntercepter.Get())
+		{
+			charHandler->textIntercepter->OnLoseFocus();
+			charHandler->textIntercepter.Nullify();
+		}
+
+		handler->textIntercepter = intercepter;
+		charHandler = handler;
+	}
 }
 
 /**

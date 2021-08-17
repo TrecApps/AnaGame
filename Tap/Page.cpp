@@ -633,6 +633,17 @@ void Page::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoint
 	if (handler.Get())
 		handler->HandleEvents(eventAr);
 
+	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
+	{
+		if (eventAr[Rust].textIntercepter.Get())
+		{
+			if (instance.Get())
+			{
+				instance.Get()->SetCharIntercepter(handler, eventAr[Rust].textIntercepter);
+			}
+		}
+	}
+
 	if (miniHandler.Get())
 		miniHandler->OnLButtonUp(nFlags, point, mOut);
 
