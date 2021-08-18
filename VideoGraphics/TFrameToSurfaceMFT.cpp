@@ -537,109 +537,87 @@ HRESULT __stdcall TFrameToSurfaceMFT::ProcessInput(DWORD dwInputStreamID, IMFSam
 
     if (!manager)
         return E_NOT_SET;
+    if (dwInputStreamID)
+        return MF_E_INVALIDSTREAMNUMBER;
 
-    samples.Push(pSample);
+    if (dwFlags)
+        return E_INVALIDARG;
 
+    HRESULT ret = S_OK;
+    LONGLONG timeStamp = 0;
 
-    return S_OK;
+    ThreadLock();
+
+    if (!mediaInputType.Get() || !outputType.Get() || mediaBuffer)
+        ret = MF_E_NOTACCEPTING;
+    if (FAILED(ret))
+    {
+        ThreadRelease();
+        return ret;
+    }
+
+    ret = pSample->ConvertToContiguousBuffer(&mediaBuffer);
+    if (SUCCEEDED(ret))
+        ret = mediaBuffer->Lock(&mediaData, nullptr, &mediaDataSize);
+    if (SUCCEEDED(ret))
+    {
+        if (FAILED(pSample->GetSampleTime(&timeStamp)))
+            timeStamp = _I64_MAX;
+
+        frameTime = timeStamp;
+        ret = Process();
+    }
+
+    ThreadRelease();
+
+    return ret;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::ProcessOutput(DWORD dwFlags, DWORD cOutputBufferCount, MFT_OUTPUT_DATA_BUFFER* pOutputSamples, DWORD* pdwStatus)
 {
-    if (!pOutputSamples)
+    if (!pOutputSamples || !pdwStatus)
         return E_POINTER;
-    if (!manager || !device)
-        return E_NOT_SET; 
-    if (cOutputBufferCount > samples.GetSize())
-        return MF_E_TRANSFORM_NEED_MORE_INPUT;
+
+    if (dwFlags || cOutputBufferCount != 1 || !pOutputSamples[0].pSample)
+        return E_INVALIDARG;
 
     HRESULT ret = S_OK;
+    ThreadLock();
 
-    ID3D11VideoDecoder* vDecode = nullptr;
+    if (!mediaBuffer)
+        ret = MF_E_TRANSFORM_NEED_MORE_INPUT;
 
-    for (UINT Rust = 0; Rust < cOutputBufferCount; Rust++)
+    if (FAILED(ret))
     {
-        if (FAILED(manager->TestDevice(devHand)))
-        {
-            if (vDecode)
-                vDecode->Release();
-            vDecode = nullptr;
-            if(FAILED(ret = SetUpDevices()))
-                return ret;
-        }
-
-        IMFSample* samp = nullptr;
-        if (!samples.Dequeue(samp))
-            return MF_E_TRANSFORM_NEED_MORE_INPUT;
-        DWORD cBuffers;
-        ret = samp->GetBufferCount(&cBuffers);
-        if (FAILED(ret)) return ret;
-
-        IMFMediaBuffer* pBuffer = nullptr;
-        if (1 == cBuffers)
-        {
-            ret = samp->GetBufferByIndex(0, &pBuffer);
-        }
-        else
-            ret = samp->ConvertToContiguousBuffer(&pBuffer);
-
-        if (FAILED(ret))
-            return ret;
-
-        IMF2DBuffer* p2Buff = nullptr;
-        ret = pBuffer->QueryInterface<IMF2DBuffer>(&p2Buff);
-        if (FAILED(ret))
-        {
-            pBuffer->Release();
-            return ret;
-        }
-        BYTE* picByte = nullptr;
-        LONG picLen = 0;
-        D3D11_SUBRESOURCE_DATA resourceData;
-        ZeroMemory(&resourceData, sizeof(resourceData));
-
-
-        ret = p2Buff->Lock2D((BYTE**)(&resourceData.pSysMem), &picLen);
-
-        if (FAILED(ret))
-        {
-            pBuffer->Release();
-            p2Buff->Release();
-            return ret;
-        }
-
-        if (picLen < 0)
-        {
-            // To-Do: Handle Scenario
-            int e = 0;
-        }
-        resourceData.SysMemPitch = picLen;
-
-        ID3D11Texture2D* textures = nullptr;
-        ret = device->CreateTexture2D(&textureDesc, &resourceData, &textures);
-
-        
-
-
-
-        /*if (!vDecode)
-            ret = vDevice->CreateVideoDecoder(&decodeDesc, &decodeConfigs[0], &vDecode);
-        if (FAILED(ret))
-            return ret;
-        ID3D11Texture2D* textures = nullptr;
-        ret = device->CreateTexture2D(&textureDesc, nullptr, &textures);
-
-        if (FAILED(ret))
-            return ret;
-
-        for (UINT C = 0; C < textureDesc.ArraySize; C++)
-        {
-            ret = vDevice->CreateVideoDecoderOutputView(&textures[C], )
-        }*/
+        ThreadRelease();
+        return ret;
     }
 
+    DWORD cData = 0;
+    IMFMediaBuffer* localBuffer = nullptr;
 
-    return E_NOTIMPL;
+    ret = pOutputSamples[0].pSample->GetBufferByIndex(0, &localBuffer);
+    if (SUCCEEDED(ret))
+        ret = localBuffer->GetMaxLength(&cData);
+
+    if (SUCCEEDED(ret))
+        ret = cData < imageSize ? E_INVALIDARG : S_OK;
+
+    if (SUCCEEDED(ret))
+    {
+
+    }
+
+    if (SUCCEEDED(ret))
+    {
+        hasPicture = false;
+
+        if (SUCCEEDED(Process()))
+            pOutputSamples[0].dwStatus |= MFT_OUTPUT_DATA_BUFFER_INCOMPLETE;
+    }
+    ThreadRelease();
+
+    return ret;
 }
 
 HRESULT TFrameToSurfaceMFT::CreateInstance(TFrameToSurfaceMFT** in)
@@ -672,6 +650,9 @@ TFrameToSurfaceMFT::TFrameToSurfaceMFT()
     ZeroMemory(&textureDesc, sizeof(textureDesc));
     ZeroMemory(&outputDesc, sizeof(&outputDesc));
     mediaBuffer = nullptr;
+    mediaData = nullptr;
+    mediaDataSize = 0;
+    hasPicture = false;
 }
 
 TFrameToSurfaceMFT::~TFrameToSurfaceMFT()
@@ -689,6 +670,10 @@ TFrameToSurfaceMFT::~TFrameToSurfaceMFT()
     if (manager) manager->Release();
     manager = nullptr;
 
+}
+
+void TFrameToSurfaceMFT::ResetState()
+{
 }
 
 HRESULT TFrameToSurfaceMFT::SetUpDevices()
@@ -733,20 +718,30 @@ HRESULT TFrameToSurfaceMFT::SetUpDevices()
 
 HRESULT TFrameToSurfaceMFT::OnFlush()
 {
-    return E_NOTIMPL;
+    if (mediaBuffer)
+        mediaBuffer->Release();
+    mediaBuffer = nullptr;
+    return OnDiscontinue();
 }
 
 HRESULT TFrameToSurfaceMFT::OnDiscontinue()
 {
-    return E_NOTIMPL;
+    ResetState();
+    hasPicture = false;
+    return S_OK;
 }
 
 HRESULT TFrameToSurfaceMFT::AllocateStreamers()
 {
-    return E_NOTIMPL;
+    return OnDiscontinue();
 }
 
 HRESULT TFrameToSurfaceMFT::FreeStreamers()
+{
+    return S_OK;
+}
+
+HRESULT TFrameToSurfaceMFT::Process()
 {
     return E_NOTIMPL;
 }

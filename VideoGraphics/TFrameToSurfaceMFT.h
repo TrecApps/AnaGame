@@ -131,21 +131,26 @@ public:
         ~TFrameToSurfaceMFT();
 
         // Helper Methods
+        void ResetState();
         HRESULT SetUpDevices();
         HRESULT OnFlush();
         HRESULT OnDiscontinue();
         HRESULT AllocateStreamers();
         HRESULT FreeStreamers();
+        HRESULT Process();
 
-
-
-        TLinkedList<IMFSample*> samples;
 
         // Media Types
         TrecComPointer<IMFMediaType> mediaInputType, outputType;
         
         // Data management
         IMFMediaBuffer* mediaBuffer;
+        BYTE* mediaData;
+        DWORD mediaDataSize;
+
+        // State of the Stream
+        REFERENCE_TIME frameTime;
+        bool hasPicture;
 
         // Format Info
         DWORD imageSize;
