@@ -254,10 +254,15 @@ HRESULT  TFrameToSurfaceMFT::SetInputType(DWORD dwInputStreamID, IMFMediaType* p
 {
     if (!pType)
         return E_POINTER;
-
+    if (dwInputStreamID)
+        return MF_E_INVALIDSTREAMNUMBER;
     
+    ThreadLock();
     if (!vDevice)
+    {
+        ThreadRelease();
         return E_NOT_SET;
+    }
     UINT decoderCount = vDevice->GetVideoDecoderProfileCount();
     GUID guid = GUID_NULL;
     guids.RemoveAll();
@@ -282,8 +287,10 @@ HRESULT  TFrameToSurfaceMFT::SetInputType(DWORD dwInputStreamID, IMFMediaType* p
         }
     }
     if (inputType == GUID_NULL)
+    {
+        ThreadRelease();
         return MF_E_UNSUPPORTED_D3D_TYPE;
-
+    }
     
 
     ZeroMemory(&decodeDesc, sizeof(decodeDesc));
@@ -292,6 +299,7 @@ HRESULT  TFrameToSurfaceMFT::SetInputType(DWORD dwInputStreamID, IMFMediaType* p
     if (FAILED(ret))
     {
         inputType = GUID_NULL;
+        ThreadRelease();
         return ret;
     }
 
@@ -307,32 +315,158 @@ HRESULT  TFrameToSurfaceMFT::SetInputType(DWORD dwInputStreamID, IMFMediaType* p
 
     //outputDesc.DecodeProfile = ;
 
-    return decodeConfigs.Size() ? S_OK : MF_E_UNSUPPORTED_D3D_TYPE;
+    ret = decodeConfigs.Size() ? S_OK : MF_E_UNSUPPORTED_D3D_TYPE;
+    if (SUCCEEDED(ret))
+    {
+        TrecComPointer<IMFMediaType>::TrecComHolder holder;
+        *holder.GetPointerAddress() = pType;
+        this->mediaInputType = holder.Extract();
+    }
+    ThreadRelease();
+    return ret;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::SetOutputType(DWORD dwOutputStreamID, IMFMediaType* pType, DWORD dwFlags)
 {
-    return S_OK;
+    if (!pType)
+        return E_POINTER;
+    if (dwOutputStreamID)
+        return MF_E_INVALIDSTREAMNUMBER;
+
+    ThreadLock();
+    if (!vDevice)
+    {
+        ThreadRelease();
+        return E_NOT_SET;
+    }
+    UINT decoderCount = vDevice->GetVideoDecoderProfileCount();
+    GUID guid = GUID_NULL;
+    guids.RemoveAll();
+    for (UINT Rust = 0; Rust < decoderCount && SUCCEEDED(vDevice->GetVideoDecoderProfile(Rust, &guid)); Rust++)
+    {
+        guids.push_back(guid);
+    }
+    GUID outputType = GUID_NULL;
+    for (UINT Rust = 0; Rust < guids.Size(); Rust++)
+    {
+        if (SUCCEEDED(pType->GetGUID(guids[Rust], &outputType)))
+        {
+            BOOL sup = TRUE;
+            if (FAILED(vDevice->CheckVideoDecoderFormat(&outputType, DXGI_FORMAT_NV12, &sup))|| !sup)
+            {
+                outputType = GUID_NULL;
+                continue;
+            }
+
+
+            break;
+        }
+    }
+    if (outputType == GUID_NULL)
+    {
+        ThreadRelease();
+        return MF_E_UNSUPPORTED_D3D_TYPE;
+    }
+
+
+    ZeroMemory(&decodeDesc, sizeof(decodeDesc));
+
+    HRESULT ret = vDevice->GetVideoDecoderConfigCount(&decodeDesc, &decoderCount);
+    if (FAILED(ret))
+    {
+        outputType = GUID_NULL;
+        ThreadRelease();
+        return ret;
+    }
+
+    decodeConfigs.RemoveAll();
+    D3D11_VIDEO_DECODER_CONFIG decodeConfig;
+    ZeroMemory(&decodeConfig, sizeof(decodeConfig));
+
+    for (UINT Rust = 0; Rust < decoderCount && SUCCEEDED(vDevice->GetVideoDecoderConfig(&decodeDesc, Rust, &decodeConfig)); Rust++)
+    {
+        decodeConfigs.push_back(decodeConfig);
+    }
+
+
+    //outputDesc.DecodeProfile = ;
+
+    ret = decodeConfigs.Size() ? S_OK : MF_E_UNSUPPORTED_D3D_TYPE;
+    if (SUCCEEDED(ret))
+    {
+        TrecComPointer<IMFMediaType>::TrecComHolder holder;
+        *holder.GetPointerAddress() = pType;
+        this->outputType = holder.Extract();
+    }
+    ThreadRelease();
+    return ret;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetInputCurrentType(DWORD dwInputStreamID, IMFMediaType** ppType)
 {
-    return E_NOTIMPL;
+    if (!ppType)
+        return E_POINTER;
+
+    if (dwInputStreamID)
+        return MF_E_INVALIDSTREAMNUMBER;
+
+    ThreadLock();
+    *ppType = mediaInputType.Get();
+
+    HRESULT ret = S_OK;
+    if (*ppType)
+        (*ppType)->AddRef();
+    else
+        ret = MF_E_TRANSFORM_TYPE_NOT_SET;
+
+    ThreadRelease();
+    return ret;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetOutputCurrentType(DWORD dwOutputStreamID, IMFMediaType** ppType)
 {
-    return E_NOTIMPL;
+    if (!ppType)
+        return E_POINTER;
+
+    if (dwOutputStreamID)
+        return MF_E_INVALIDSTREAMNUMBER;
+
+    ThreadLock();
+    *ppType = outputType.Get();
+
+    HRESULT ret = S_OK;
+    if (*ppType)
+        (*ppType)->AddRef();
+    else
+        ret = MF_E_TRANSFORM_TYPE_NOT_SET;
+
+    ThreadRelease();
+    return ret;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetInputStatus(DWORD dwInputStreamID, DWORD* pdwFlags)
 {
-    return E_NOTIMPL;
+    if (dwInputStreamID)
+        return MF_E_INVALIDSTREAMNUMBER;
+
+    if (!pdwFlags)
+        return E_POINTER;
+
+    ThreadLock();
+    *pdwFlags = (mediaBuffer) ? MFT_INPUT_STATUS_ACCEPT_DATA : 0;
+    ThreadRelease();
+    return S_OK;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::GetOutputStatus(DWORD* pdwFlags)
 {
-    return E_NOTIMPL;
+    if (!pdwFlags)
+        return E_POINTER;
+
+    ThreadLock();
+    *pdwFlags = (mediaBuffer) ? MFT_OUTPUT_STATUS_SAMPLE_READY : 0;
+    ThreadRelease();
+    return S_OK;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::SetOutputBounds(LONGLONG hnsLowerBound, LONGLONG hnsUpperBound)
@@ -354,7 +488,7 @@ HRESULT __stdcall TFrameToSurfaceMFT::ProcessMessage(MFT_MESSAGE_TYPE eMessage, 
         if (!unknownParam)
             return E_POINTER;
 
-
+        ThreadLock();
         if (manager)
             manager->Release();
         manager = nullptr;
@@ -363,15 +497,37 @@ HRESULT __stdcall TFrameToSurfaceMFT::ProcessMessage(MFT_MESSAGE_TYPE eMessage, 
         vService = nullptr;
 
         HRESULT ret = unknownParam->QueryInterface<IMFDXGIDeviceManager>(&manager);
+        ThreadRelease();
         if (FAILED(ret))
             return ret;
 
         // To-Do: Set up Use of the video Service
         return SetUpDevices();
     }
-    if (eMessage == MFT_MESSAGE_NOTIFY_BEGIN_STREAMING)
-        return S_OK;
-    return E_NOTIMPL;
+    HRESULT ret = E_NOTIMPL;
+    ThreadLock();
+    switch (eMessage)
+    {
+    case MFT_MESSAGE_COMMAND_FLUSH:
+        ret = OnFlush();
+        break;
+    case MFT_MESSAGE_COMMAND_DRAIN:
+        ret = OnDiscontinue();
+        break;
+    case MFT_MESSAGE_NOTIFY_BEGIN_STREAMING:
+        ret = AllocateStreamers();
+        break;
+    case MFT_MESSAGE_NOTIFY_END_STREAMING:
+        ret = FreeStreamers();
+        break;
+    case MFT_MESSAGE_NOTIFY_END_OF_STREAM:
+    case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
+        ret = S_OK;
+    }
+    
+    ThreadRelease();
+
+    return ret;
 }
 
 HRESULT __stdcall TFrameToSurfaceMFT::ProcessInput(DWORD dwInputStreamID, IMFSample* pSample, DWORD dwFlags)
@@ -515,6 +671,7 @@ TFrameToSurfaceMFT::TFrameToSurfaceMFT()
     ZeroMemory(&this->decodeDesc, sizeof(decodeDesc));
     ZeroMemory(&textureDesc, sizeof(textureDesc));
     ZeroMemory(&outputDesc, sizeof(&outputDesc));
+    mediaBuffer = nullptr;
 }
 
 TFrameToSurfaceMFT::~TFrameToSurfaceMFT()
@@ -539,7 +696,7 @@ HRESULT TFrameToSurfaceMFT::SetUpDevices()
 
     if (!manager)
         return E_NOT_SET;
- 
+    ThreadLock();
     // Release devices that currently exist
     if (vDevice)
         vDevice->Release();
@@ -551,7 +708,10 @@ HRESULT TFrameToSurfaceMFT::SetUpDevices()
         manager->CloseDeviceHandle(devHand);
     HRESULT ret = manager->OpenDeviceHandle(&devHand);
     if (FAILED(ret))
+    {
+        ThreadRelease();
         return ret;
+    }
     ret = manager->GetVideoService(devHand, __uuidof(ID3D11VideoDevice), (void**)&vDevice);
     HRESULT ret2 = manager->GetVideoService(devHand, __uuidof(ID3D11Device), (void**)&device);
    
@@ -559,16 +719,34 @@ HRESULT TFrameToSurfaceMFT::SetUpDevices()
     if (FAILED(ret2))
         ret = ret2;
 
-    if (FAILED(ret))
-        return ret;
+    if (SUCCEEDED(ret))
+    {
+        decoderCount = vDevice->GetVideoDecoderProfileCount();
+        GUID guid = GUID_NULL;
+        for (UINT Rust = 0; Rust < decoderCount && SUCCEEDED(vDevice->GetVideoDecoderProfile(Rust, &guid)); Rust++)
+            guids.push_back(guid);
+    }
+    ThreadRelease();
+    return ret;
 
-    decoderCount = vDevice->GetVideoDecoderProfileCount();
-    GUID guid = GUID_NULL;
-    for (UINT Rust = 0; Rust < decoderCount && SUCCEEDED(vDevice->GetVideoDecoderProfile(Rust, &guid)); Rust++)
-        guids.push_back(guid);
+}
 
+HRESULT TFrameToSurfaceMFT::OnFlush()
+{
+    return E_NOTIMPL;
+}
 
+HRESULT TFrameToSurfaceMFT::OnDiscontinue()
+{
+    return E_NOTIMPL;
+}
 
-    return S_OK;
+HRESULT TFrameToSurfaceMFT::AllocateStreamers()
+{
+    return E_NOTIMPL;
+}
 
+HRESULT TFrameToSurfaceMFT::FreeStreamers()
+{
+    return E_NOTIMPL;
 }
