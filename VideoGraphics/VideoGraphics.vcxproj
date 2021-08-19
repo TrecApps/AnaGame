@@ -179,6 +179,7 @@
     <ClInclude Include="TGeometry.h" />
     <ClInclude Include="TGradientStop.h" />
     <ClInclude Include="TGradientStopCollection.h" />
+    <ClInclude Include="TInputTextElement.h" />
     <ClInclude Include="TMediaSink.h" />
     <ClInclude Include="TObjModelParser.h" />
     <ClInclude Include="TPlayer.h" />
@@ -217,6 +218,7 @@
     <ClCompile Include="TGeometry.cpp" />
     <ClCompile Include="TGradientStop.cpp" />
     <ClCompile Include="TGradientStopCollection.cpp" />
+    <ClCompile Include="TInputTextElement.cpp" />
     <ClCompile Include="TMediaSink.cpp" />
     <ClCompile Include="TObjModelParser.cpp" />
     <ClCompile Include="TPlayer.cpp" />

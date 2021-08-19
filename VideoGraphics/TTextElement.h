@@ -57,6 +57,7 @@ public:
  */
 class TTextElement : public TObject
 {
+	friend class TrecPointerKey;
 protected:
 	/**
 	 * Whether the base format has been changed
@@ -117,6 +118,19 @@ protected:
 	 * Manages highlighter
 	 */
 	HighlightRange highlightRange;
+
+	/**
+	 * Self Pointer
+	 */
+	TrecPointerSoft<TTextElement> self;
+
+	/**
+	 * Method: TTextElement::SetSelf
+	 * Purpose: Enables TrecPointerKey to assign a self reference upon creation
+	 * Parameters: TrecPointer<TTextElement> self - the self reference
+	 * Returns: void
+	 */
+	void SetSelf(TrecPointer<TTextElement> self);
 
 
 	/*
@@ -373,3 +387,5 @@ public:
 };
 
 _VIDEO_GRAPHICS TrecComPointer<TTextRenderer> GetTTextRenderer();
+
+_VIDEO_GRAPHICS bool IsContained(const TPoint& point, const D2D1_RECT_F& loc);

@@ -100,6 +100,13 @@ bool HighlightRange::SetEnd(UINT end)
 	this->endSet = true;
 }
 
+void TTextElement::SetSelf(TrecPointer<TTextElement> self)
+{
+	if (this != self.Get())
+		throw L"False Self Reference";
+	this->self = TrecPointerKey::GetSoftPointerFromTrec<>(self);
+}
+
 void TTextElement::ReCreateLayout()
 {
 	if (recreateFormat)
