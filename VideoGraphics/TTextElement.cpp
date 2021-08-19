@@ -116,6 +116,10 @@ void TTextElement::ReCreateLayout()
 			wtf.GetPointerAddress());
 		assert(SUCCEEDED(results));
 		format = wtf.Extract();
+
+		format->SetParagraphAlignment(verticalAlignment);
+		format->SetTextAlignment(horizontalAlignment);
+
 		recreateFormat = false;
 	}
 
@@ -183,11 +187,14 @@ void TTextElement::SetLocation(const D2D1_RECT_F& loc)
 		bounds.bottom = bounds.top;
 		bounds.top = t;
 	}
+	ReCreateLayout();
 }
 
 bool TTextElement::SetBasicFormatting(const TextFormattingDetails& details)
 {
 	this->basicDetails = details;
+	recreateFormat = true;
+	ReCreateLayout();
 	return true;
 }
 
@@ -211,7 +218,7 @@ bool TTextElement::OnCLickDown(const TPoint& point)
 		DWRITE_HIT_TEST_METRICS mets;
 		ZeroMemory(&mets, sizeof(mets));
 		BOOL trailing = FALSE, inside = FALSE;
-		if (SUCCEEDED(mainLayout->HitTestPoint(point.x, point.y, &trailing, &inside, &mets)))
+		if (SUCCEEDED(mainLayout->HitTestPoint(point.x - bounds.left, point.y - bounds.top, &trailing, &inside, &mets)))
 		{
 			UINT pos = trailing ? 1 : 0;
 			pos += mets.textPosition;
@@ -234,7 +241,7 @@ bool TTextElement::OnCLickUp(const TPoint& point)
 		DWRITE_HIT_TEST_METRICS mets;
 		ZeroMemory(&mets, sizeof(mets));
 		BOOL trailing = FALSE, inside = FALSE;
-		if (SUCCEEDED(mainLayout->HitTestPoint(point.x, point.y, &trailing, &inside, &mets)))
+		if (SUCCEEDED(mainLayout->HitTestPoint(point.x - bounds.left, point.y - bounds.top, &trailing, &inside, &mets)))
 		{
 			UINT pos = trailing ? 1 : 0;
 			pos += mets.textPosition;
@@ -267,7 +274,7 @@ bool TTextElement::OnMouseMove(const TPoint& point)
 		DWRITE_HIT_TEST_METRICS mets;
 		ZeroMemory(&mets, sizeof(mets));
 		BOOL trailing = FALSE, inside = FALSE;
-		if (isClickDown && SUCCEEDED(mainLayout->HitTestPoint(point.x, point.y, &trailing, &inside, &mets)))
+		if (isClickDown && SUCCEEDED(mainLayout->HitTestPoint(point.x - bounds.left, point.y - bounds.top, &trailing, &inside, &mets)))
 		{
 			UINT pos = trailing ? 1 : 0;
 			pos += mets.textPosition;
@@ -329,6 +336,128 @@ void TTextElement::OnDraw(TObject* obj)
 			//drawingBoard->GetRenderer()->DrawTextLayout(D2D1::Point2F(), fontLayout.Get(), b);
 		}
 	
+}
+
+bool TTextElement::GetColor(TColor& color, bool foreground)
+{
+	if (foreground)
+	{
+		color.SetColor(basicDetails.color->GetColor());
+	}
+	else
+	{
+		color.SetColor(basicDetails.defaultBackgroundColor);
+	}
+	return true;
+}
+
+bool TTextElement::SetColor(const TColor& color, bool foreground)
+{
+	if (foreground)
+		basicDetails.color->SetColor(color);
+	else
+		basicDetails.defaultBackgroundColor.SetColor(color);
+	return true;
+}
+
+DWRITE_PARAGRAPH_ALIGNMENT TTextElement::GetVerticalAligment()
+{
+	return verticalAlignment;
+}
+
+void TTextElement::SetVerticalAlignment(DWRITE_PARAGRAPH_ALIGNMENT vAlignment)
+{
+	verticalAlignment = vAlignment;
+	format->SetParagraphAlignment(vAlignment);
+}
+
+DWRITE_TEXT_ALIGNMENT TTextElement::GetHorizontalAlignment()
+{
+	return horizontalAlignment;
+}
+
+void TTextElement::SetHorizontallignment(DWRITE_TEXT_ALIGNMENT hAlignment)
+{
+	horizontalAlignment = hAlignment;
+	format->SetTextAlignment(hAlignment);
+}
+
+bool TTextElement::GetSetLocale(TString& local, bool doGet)
+{
+	if (doGet)
+	{
+		local.Set(this->locale);
+		return true;
+	}
+	TrecComPointer<IDWriteTextFormat>::TrecComHolder formatHolder;
+	if (FAILED(writeFact->CreateTextFormat(
+		fontType.GetConstantBuffer().getBuffer(),
+		nullptr,
+		basicDetails.weight,
+		basicDetails.style,
+		basicDetails.stretch,
+		basicDetails.fontSize,
+		local.GetConstantBuffer().getBuffer(),
+		formatHolder.GetPointerAddress()
+	)))
+	return false;
+
+	this->format = formatHolder.Extract();
+	this->locale.Set(local);
+	ReCreateLayout();
+	return true;
+}
+
+bool TTextElement::GetSetFont(TString& font, bool doGet)
+{
+	if (doGet)
+	{
+		font.Set(this->fontType);
+		return true;
+	}
+	TrecComPointer<IDWriteTextFormat>::TrecComHolder formatHolder;
+	if (FAILED(writeFact->CreateTextFormat(
+		font.GetConstantBuffer().getBuffer(),
+		nullptr,
+		basicDetails.weight,
+		basicDetails.style,
+		basicDetails.stretch,
+		basicDetails.fontSize,
+		locale.GetConstantBuffer().getBuffer(),
+		formatHolder.GetPointerAddress()
+	)))
+		return false;
+
+	this->format = formatHolder.Extract();
+	this->fontType.Set(font);
+	ReCreateLayout();
+	return true;
+}
+
+bool TTextElement::GetSetFontSize(float& fontSize, bool doGet)
+{
+	if (doGet)
+	{
+		fontSize = basicDetails.fontSize;
+		return true;
+	}
+	TrecComPointer<IDWriteTextFormat>::TrecComHolder formatHolder;
+	if (FAILED(writeFact->CreateTextFormat(
+		fontType.GetConstantBuffer().getBuffer(),
+		nullptr,
+		basicDetails.weight,
+		basicDetails.style,
+		basicDetails.stretch,
+		fontSize,
+		locale.GetConstantBuffer().getBuffer(),
+		formatHolder.GetPointerAddress()
+	)))
+		return false;
+
+	this->format = formatHolder.Extract();
+	basicDetails.fontSize = fontSize;
+	ReCreateLayout();
+	return true;
 }
 
 

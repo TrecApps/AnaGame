@@ -289,6 +289,87 @@ public:
 	  * Attributes: virtual
 	  */
 	 virtual void OnDraw(TObject* obj);
+
+	 /**
+	  * Method: TTextElement::GetColor
+	  * Purpose: Retrieves the specified color
+	  * Parameters: TColor& color - the color to retrieve
+	  *				bool foreground (default true) - color of the text (as opposed to the background)
+	  * Returns: bool - whether a color was returned or not (should be true, but some implemetations might say false)
+	  * 
+	  * Attributes: virtual
+	  */
+	 virtual bool GetColor(TColor& color, bool foreground = true);
+
+	 /**
+	  * Method: TTextElement::SetColor
+	  * Purpose: Sets the specified color
+	  * Parameters: const TColor& color - the color to retrieve
+	  *				bool foreground (default true) - color of the text (as opposed to the background)
+	  * Returns: bool - whether a color was set or not (should be true, but some implemetations might say false)
+	  *
+	  * Attributes: virtual
+	  */
+	 virtual bool SetColor(const TColor& color, bool foreground = true);
+
+	 /**
+	  * Method: TTextEntitlement::GetVerticalAlignment
+	  * Purpose: Retireves the current Vertical alignment
+	  * Parameters: void
+	  * Returns: DWRITE_PARAGRAPH_ALIGNMENT - the vertical alignment of the text
+	  */
+	 DWRITE_PARAGRAPH_ALIGNMENT GetVerticalAligment();
+
+	 /**
+	  * Method: TTextEntitlement::SetVerticalAlignment
+	  * Purpose: Sets the Alignment
+	  * Parameters: DWRITE_PARAGRAPH_ALIGNMENT vAlignment - the alignment to set
+	  * Returns: void
+	  */
+	 void SetVerticalAlignment(DWRITE_PARAGRAPH_ALIGNMENT vAlignment);
+
+	 /**
+	  * Method: TTextEntitlement::GetHorizontalAlignment
+	  * Purpose: Retireves the current Horizontal alignment
+	  * Parameters: void
+	  * Returns: DWRITE_TEXT_ALIGNMENT - the vertical alignment of the text
+	  */
+	 DWRITE_TEXT_ALIGNMENT GetHorizontalAlignment();
+
+	 /**
+	  * Method: TTextEntitlement::SetHorizontallignment
+	  * Purpose: Sets the Alignment
+	  * Parameters: DWRITE_TEXT_ALIGNMENT vAlignment - the alignment to set
+	  * Returns: void
+	  */
+	 void SetHorizontallignment(DWRITE_TEXT_ALIGNMENT vAlignment);
+
+	 /**
+	  * Method: TTextEntitlement::GetSetLocale
+	  * Purpose: Sets or Sets the locale of the text
+	  * Parameters: TString& locale - the locale 
+	  *				bool doGet (true) - if true, mehtod acts like a getter, and acts like a setter if false
+	  * Returns: bool - should be true under get, false if setting failed
+	  */
+	 bool GetSetLocale(TString& local, bool doGet = true);
+
+	 /**
+	  * Method: TTextEntitlement::GetSetFont
+	  * Purpose: Sets or Sets the font of the text
+	  * Parameters: TString& font - the font
+	  *				bool doGet (true) - if true, mehtod acts like a getter, and acts like a setter if false
+	  * Returns: bool - should be true under get, false if setting failed
+	  */
+	 bool GetSetFont(TString& font, bool doGet = true);
+
+	 /**
+	  * Method: TTextEntitlement::GetSetFontSize
+	  * Purpose: Sets or Sets the Font Size of the text
+	  * Parameters: float& fontSize - the locale
+	  *				bool doGet (true) - if true, mehtod acts like a getter, and acts like a setter if false
+	  * Returns: bool - should be true under get, false if setting failed
+	  */
+	 bool GetSetFontSize(float& fontSize, bool doGet = true);
 };
 
 _VIDEO_GRAPHICS TrecComPointer<TTextRenderer> GetTTextRenderer();
