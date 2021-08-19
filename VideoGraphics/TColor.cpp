@@ -182,8 +182,9 @@ void TColor::SetColor(t_color::Enum en)
  */
 void TColor::SetColor(const TString& colorStr)
 {
-	// To-Do - parse the String
-	color = t_color(t_color::Black);
+	bool worked;
+	TColor c = GetColorFromString(colorStr, worked);
+	color = c.GetColor();
 }
 
 /**

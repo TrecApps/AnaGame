@@ -188,6 +188,7 @@
     <ClInclude Include="TShaderHost.h" />
     <ClInclude Include="TShaderParser.h" />
     <ClInclude Include="TStreamSink.h" />
+    <ClInclude Include="TTextElement.h" />
     <ClInclude Include="TTextIntercepter.h" />
     <ClInclude Include="TTextRenderer.h" />
     <ClInclude Include="TVideoMarker.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="TShaderHost.cpp" />
     <ClCompile Include="TShaderParser.cpp" />
     <ClCompile Include="TStreamSink.cpp" />
+    <ClCompile Include="TTextElement.cpp" />
     <ClCompile Include="TTextIntercepter.cpp" />
     <ClCompile Include="TTextRenderer.cpp" />
     <ClCompile Include="TVideoMarker.cpp" />
