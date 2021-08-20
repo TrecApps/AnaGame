@@ -135,6 +135,53 @@ void TTextElement::ReCreateLayout()
 	mainLayout = wfl.Extract();
 }
 
+/**
+ * Method: TTextElement::GetLayout
+ * Purpose: Retrieves the underlying layout
+ * Parameters: void
+ * Returns: TrecCOmPointer<IDWriteTextLayout> - the layout held
+ */
+TrecComPointer<IDWriteTextLayout> TTextElement::GetLayout()
+{
+	return mainLayout;
+}
+
+TrecPointer<TBrush> TTextElement::GetBrush()
+{
+	return this->basicDetails.color;
+}
+
+/*
+ * Method: TTextElement::GetMinWidth
+ * Purpose: Retirvees the minimum width needed before DirectWrtie has to add emergency breaks in line
+ * Parameters: bool& worked - whether the value returned is truely the reported value
+ * Return: float - the min width needed. If inspection fails, this represents the width currently used
+ */
+float TTextElement::GetMinWidth(bool& worked)
+{
+	TObjectLocker threadLock(&thread);
+	float ret = 0.0f;
+	if (!(worked = (mainLayout.Get() && SUCCEEDED(mainLayout->DetermineMinWidth(&ret)))))
+		ret = bounds.right - bounds.left;
+
+
+	return ret;
+}
+
+float TTextElement::GetMinHeight(bool& worked)
+{
+	float ret = 0.0f;
+	DWRITE_TEXT_METRICS mets;
+	worked = false;
+	if (mainLayout.Get() && SUCCEEDED(mainLayout->GetMetrics(&mets)))
+	{
+		worked = true;
+		ret = mets.height;
+	}
+
+	return ret;
+}
+
 TTextElement::TTextElement(TrecPointer<DrawingBoard> drawingBoard)
 {
 	this->drawingBoard = drawingBoard;

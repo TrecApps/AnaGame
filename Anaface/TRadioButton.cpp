@@ -109,12 +109,14 @@ bool TRadioButton::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 
 	if (text1.Get())
 	{
-		text1->bounds.left = text1->bounds.left + bSize;
+		auto tempLoc = text1->GetLocation();
+		tempLoc.left += bSize;
+		text1->SetLocation(tempLoc);
 	}
 	else
 	{
-		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
-		text1->text = L"Radio-Button";
+		text1 = TrecPointerKey::GetNewTrecPointer<TTextElement>(drawingBoard);
+		text1->SetText(L"Radio-Botton");
 	}
 
 	ellBut.point = D2D1::Point2F((DxLocation.right + DxLocation.left) / 2, (DxLocation.top + DxLocation.bottom) / 2);
@@ -177,7 +179,7 @@ void TRadioButton::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut
 			args.eventType = R_Message_Type::On_radio_change;
 			args.positive = isClicked;
 			if (text1.Get())
-				args.text.Set(text1->text);
+				text1->GetText(args.text);
 			args.methodID = getEventID(R_Message_Type::On_radio_change);
 		}
 	}

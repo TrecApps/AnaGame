@@ -5,6 +5,7 @@
 #include <dwrite.h>
 #include <TPoint.h>
 #include "TTextRenderer.h"
+#include "TTextIntercepter.h"
 
 /**
  * Enum CLass: control_text_mode
@@ -55,7 +56,7 @@ public:
  * Class: TTextElement
  * Purpose: Provides support for managing Text
  */
-class TTextElement : public TObject
+class _VIDEO_GRAPHICS TTextElement : public TObject
 {
 	friend class TrecPointerKey;
 protected:
@@ -146,6 +147,24 @@ protected:
 	virtual void ReCreateLayout();
 
 public:
+	float GetMinWidth(bool& worked);
+	float GetMinHeight(bool& worked);
+	/**
+	 * Method: TTextElement::GetLayout
+	 * Purpose: Retrieves the underlying layout
+	 * Parameters: void
+	 * Returns: TrecCOmPointer<IDWriteTextLayout> - the layout held
+	 */
+	TrecComPointer<IDWriteTextLayout> GetLayout();
+
+	/**
+	 * Method: TTextElement::GetBrush
+	 * Purpose: Retrieves the brush
+	 * Parameters: void
+	 * Returns: TrecPointer<TBrush> - the text brush
+	 */
+	TrecPointer<TBrush> GetBrush();
+
 	/**
 	 * Method: TTextElement::TTextElement
 	 * Purpose: Constructor

@@ -181,7 +181,7 @@ void JsString::JsStringConcat(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 	{
 		actString.Append(params[Rust].Get() ? params[Rust]->GetString() : L"null");
 	}
-	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(actString);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(actString);
 }
 
 void JsString::JsStringIncludes(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -275,7 +275,7 @@ void JsString::JsStringPadEnd(TDataArray<TrecPointer<TVariable>>& params, TrecPo
 	{
 		actString.Append(appender.SubString(0, diff));
 	}
-	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(actString);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(actString);
 }
 
 void JsString::JsStringPadStart(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -293,7 +293,7 @@ void JsString::JsStringPadStart(TDataArray<TrecPointer<TVariable>>& params, Trec
 	{
 		actString.Set(appender.SubString(0, diff) + actString);
 	}
-	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(actString);
+	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(actString);
 }
 
 void JsString::JsStringRepeat(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
@@ -350,13 +350,8 @@ void JsString::JsStringSlice(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 
 	int iStart = 0, iEnd = 0;
 
-	if (startIndex & 0x80000000)
-		iStart = -(startIndex & 0x7FFFFFFF);
-	else iStart = startIndex;
-
-	if (endIndex & 0x80000000)
-		iEnd = -(endIndex & 0x7FFFFFFF);
-	else iEnd = endIndex;
+	memcpy_s(&iStart, sizeof(iStart), &startIndex, sizeof(startIndex));
+	memcpy_s(&iEnd, sizeof(iEnd), &endIndex, sizeof(endIndex));
 
 	if (iStart <= 0)
 		iStart = static_cast<int>(stringObj->GetString().GetSize()) + iStart;
@@ -442,13 +437,8 @@ void JsString::JsStringSubString(TDataArray<TrecPointer<TVariable>>& params, Tre
 
 	int iStart = 0, iEnd = 0;
 
-	if (startIndex & 0x80000000)
-		iStart = -(startIndex & 0x7FFFFFFF);
-	else iStart = startIndex;
-
-	if (endIndex & 0x80000000)
-		iEnd = -(endIndex & 0x7FFFFFFF);
-	else iEnd = endIndex;
+	memcpy_s(&iStart, sizeof(iStart), &startIndex, sizeof(startIndex));
+	memcpy_s(&iEnd, sizeof(iEnd), &endIndex, sizeof(endIndex));
 
 	if (iStart <= 0)
 		iStart = static_cast<int>(stringObj->GetString().GetSize()) + iStart;
