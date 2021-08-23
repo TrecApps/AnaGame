@@ -175,6 +175,7 @@
     <ClInclude Include="TCamera.h" />
     <ClInclude Include="TColor.h" />
     <ClInclude Include="TComCommon.h" />
+    <ClInclude Include="TComplexTextElement.h" />
     <ClInclude Include="TFrameToSurfaceMFT.h" />
     <ClInclude Include="TGeometry.h" />
     <ClInclude Include="TGradientStop.h" />
@@ -214,6 +215,7 @@
     <ClCompile Include="TBrush.cpp" />
     <ClCompile Include="TCamera.cpp" />
     <ClCompile Include="TColor.cpp" />
+    <ClCompile Include="TComplexTextElement.cpp" />
     <ClCompile Include="TFrameToSurfaceMFT.cpp" />
     <ClCompile Include="TGeometry.cpp" />
     <ClCompile Include="TGradientStop.cpp" />
