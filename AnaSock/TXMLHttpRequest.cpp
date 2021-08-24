@@ -1,7 +1,9 @@
 #include "TXMLHttpRequest.h"
+#include <TPrimitiveVariable.h>
 
 TXMLHttpRequest::TXMLHttpRequest(): request(THttpMethod::http_get), response("")
 {
+	state = 0; // UNSENT = 0
 }
 
 void TXMLHttpRequest::Abort()
@@ -37,6 +39,8 @@ TString TXMLHttpRequest::GetResponseHeader(const TString& header)
 
 void TXMLHttpRequest::Open(TDataArray<TrecPointer<TVariable>>& variables, ReturnObject& ret)
 {
+
+
 }
 
 void TXMLHttpRequest::Send(TrecPointer<TVariable>)
@@ -47,9 +51,16 @@ void TXMLHttpRequest::SetRequestHeader(const TString& header, const TString& val
 {
 }
 
-void TXMLHttpRequest::SetProperty(TString& prop, TrecPointer<TVariable> value)
+void TXMLHttpRequest::SetProperty(const TString& prop, TrecPointer<TVariable> value)
 {
 
+}
+
+TrecPointer<TVariable> TXMLHttpRequest::GetProperty(const TString& prop)
+{
+	if (!prop.Compare(L"readyState"))
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(this->state);
+	return TrecPointer<TVariable>();
 }
 
 TrecPointer<TVariable> GetXmlHttpRequestMethods()

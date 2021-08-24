@@ -19,11 +19,18 @@ public:
 
 	void SetRequestHeader(const TString& header, const TString& value);
 
-	void SetProperty(TString& prop, TrecPointer<TVariable> value);
+	void SetProperty(const TString& prop, TrecPointer<TVariable> value);
+
+	TrecPointer<TVariable> GetProperty(const TString& prop);
 
 private:
 	THttpRequest request;
 	THttpResponse response;
+
+	TrecPointer<THttpClientSocket> clientSocket;
+	TrecPointer<THttpClientSocket::TAsyncHttpResponse> asyncResponse;
+
+	USHORT state;
 
 	TrecSubPointer<TVariable, TcInterpretor> abort, error, 
 		load, loadend, loadstart, progress, timeout;
