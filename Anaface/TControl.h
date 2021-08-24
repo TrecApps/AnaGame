@@ -28,6 +28,7 @@
 //#define _TREC_LIB_DLL __declspec(dllimport)
 #include <TMap.h>
 #include <TObjectNode.h>
+#include <TTextIntercepter.h>
 
 #define RADIAN_DEGREE_RATIO 57.2957795f
 

@@ -1,5 +1,13 @@
 #include "pch.h"
 #include "THttpClientSocket.h"
+#include <TcNativeInterpretor.h>
+
+
+THttpResponse GetResponse(TString& error)
+{
+
+}
+
 
 THttpClientSocket::THttpClientSocket() : TClientSocket(1)
 {
@@ -37,6 +45,11 @@ THttpResponse THttpClientSocket::Transmit(THttpRequest& req, TString& error)
 		cReq += data[Rust];
 
 	return THttpResponse(cReq);
+}
+
+TrecPointer<TAsyncHttpResponse> THttpClientSocket::TransmitAsync(THttpRequest& req)
+{
+	return TrecPointer<TAsyncHttpResponse >();
 }
 
 THttpRequest::THttpRequest(THttpMethod method)
@@ -79,6 +92,11 @@ void THttpRequest::UpdateMethod(THttpMethod method)
 THttpMethod THttpRequest::GetMethod()
 {
 	return method;
+}
+
+TString THttpRequest::GetBody()
+{
+	return body;
 }
 
 void THttpRequest::SetBody(const TString& body)
@@ -297,6 +315,11 @@ THttpResponse::THttpResponse(const THttpResponse& copy) : headers(copy.headers)
 	this->status.Set(copy.status);
 }
 
+THttpResponse::THttpResponse()
+{
+
+}
+
 short THttpResponse::GetStatusCode()
 {
 	auto pieces = status.splitn(L' ', 2);
@@ -342,4 +365,9 @@ bool THttpResponse::GetHeader(UINT index, TString& key, TString& value)
 TString THttpResponse::GetBody()
 {
 	return body;
+}
+
+TAsyncHttpResponse::TAsyncHttpResponse(const TAsyncHttpResponse& copy)
+{
+	this->error.Set(copy.error);
 }

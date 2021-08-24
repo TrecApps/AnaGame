@@ -45,6 +45,7 @@ private:
 
 class _ANA_SOCK_DLL THttpResponse : public TObject
 {
+    friend class TAsyncHttpResponse;
 public:
     THttpResponse(const std::string& data);
     THttpResponse(const THttpResponse& copy);
@@ -60,9 +61,34 @@ public:
 
 
 private:
+
+    THttpResponse();
+
     TString httpType, status;
     TDataMap<TString> headers;
     TString body;
+};
+
+class _ANA_SOCK_DLL TAsyncHttpResponse : public TObject
+{
+public:
+    TAsyncHttpResponse(SOCKET sock, UINT threadId);
+    TAsyncHttpResponse(const TAsyncHttpResponse& copy);
+    bool Abort();
+
+    void SetResponse(const THttpResponse& resp);
+    void SetError(const TString& err);
+
+    bool IsComplete();
+
+    THttpResponse GetResponse(TString& error);
+
+protected:
+    UINT threadId;
+    SOCKET sock;
+    THttpResponse response;
+    TString error;
+    bool ready;
 };
 
 
@@ -74,5 +100,6 @@ public:
     ~THttpClientSocket();
 
     THttpResponse Transmit(THttpRequest& req, TString& error);
+    TrecPointer<TAsyncHttpResponse> TransmitAsync(THttpRequest& req);
 };
 
