@@ -45,7 +45,6 @@ private:
 
 class _ANA_SOCK_DLL THttpResponse : public TObject
 {
-    friend class THttpClientSocket::TAsyncHttpResponse;
 public:
     THttpResponse(const std::string& data);
     THttpResponse(const THttpResponse& copy);
