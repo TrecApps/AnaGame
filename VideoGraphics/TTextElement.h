@@ -187,6 +187,14 @@ public:
 	 */
 	virtual bool SetText(const TString& text);
 
+	/**
+	 * Method: TTextElement::GetTextInterceptor
+	 * Purpose: Retrieves an interceptor for this element
+	 * Parameters: void
+	 * Returns: TrecPointer<TTextInterceptor> - the interceptor that delivers characters to this element
+	 * 
+	 */
+	TrecPointer<TTextIntercepter> GetTextInterceptor();
 
 	/**
 	 * Method: TTextElement::GetText

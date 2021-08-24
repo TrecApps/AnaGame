@@ -14,6 +14,79 @@ TrecComPointer<TTextRenderer> GetTTextRenderer()
 }
 
 
+
+/**
+ * Class: TTextElementInterceter
+ * Purpose: Intercepts text from handlers to the TTextElements
+ */
+class TTextElementIntercepter : public TTextIntercepter
+{
+public:
+	/**
+	 * Method: TTextIntercepter::OnChar
+	 * Purpose: Takes a character and feeds it to its target
+	 * Parameters: WCHAR ch - the character to report
+	 *          UINT count number of instances of that character to feed
+	 *          UINT flags - flags (usually 0)
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void OnChar(UINT ch, UINT count, UINT flags)
+	{
+		element->OnInputChar(ch, count);
+	}
+	/**
+	 * Method: TTextIntercepter::OnLoseFocus
+	 * Purpose: Alerts the target that it will no longer be intercepting characters
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void OnLoseFocus() 
+	{
+		element->OnLoseFocus();
+	}
+
+	/**
+	 * Method: TTextIntercepter::OnCopy
+	 * Purpose: Tells the target that CTRL-C was pressed
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void OnCopy()
+	{
+		element->OnCutCopyPaste(control_text_mode::ctm_copy);
+	}
+	/**
+	 * Method: TTextIntercepter::OnCut
+	 * Purpose: Tells the target that CTRL-X was pressed
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void OnCut()
+	{
+		element->OnCutCopyPaste(control_text_mode::ctm_cut);
+	}
+
+	TTextElementIntercepter(TrecPointer<TTextElement> element)
+	{
+		this->element = element;
+		assert(element.Get());
+	}
+private:
+	TrecPointer<TTextElement> element;
+};
+
+
+
+
+
 bool IsContained(const TPoint& point, const D2D1_RECT_F& loc)
 {
 	return loc.left <= point.x && point.x <= loc.right &&
@@ -214,6 +287,20 @@ bool TTextElement::SetText(const TString& text)
 	this->text.Set(text);
 	ReCreateLayout();
 	return true;
+}
+
+
+/**
+ * Method: TTextElement::GetTextInterceptor
+ * Purpose: Retrieves an interceptor for this element
+ * Parameters: void
+ * Returns: TrecPointer<TTextInterceptor> - the interceptor that delivers characters to this element
+ *
+ */
+TrecPointer<TTextIntercepter> TTextElement::GetTextInterceptor()
+{
+	auto fullSelf = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+	return TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter, TTextElementIntercepter>(fullSelf);
 }
 
 void TTextElement::GetText(TString& text)

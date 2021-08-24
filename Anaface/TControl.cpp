@@ -617,6 +617,8 @@ TrecPointer<styleTable> classy;
 	onCreate2(&attributes, contain);
 	onCreate3(&attributes, contain);
 
+	SetUpTextElement();
+
 	if (border1.Get())
 	{
 		switch (shape)
@@ -3267,6 +3269,10 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 	}
 
 	isLClick = true;
+	if (text1.Get())
+	{
+		text1->OnCLickDown(point);
+	}
 
 	for (int c = 0; c < children.Count();c++)
 	{
@@ -3311,7 +3317,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_L_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
-	
+
 }
 
 /*
@@ -3638,7 +3644,13 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isClick = true;
 		args.isLeftClick = true;
 		args.control = this;
-		eventAr.push_back(EventID_Cred( R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+
+		EventID_Cred cred(R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
+
+		if (text1.Get())
+			cred.textIntercepter = text1->GetTextInterceptor();
+
+		eventAr.push_back(cred);
 	}
 
 	if (hasEvent(R_Message_Type::On_Click) && isLClick)
@@ -3653,6 +3665,13 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.control = this;
 		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
+
+	if (text1.Get())
+	{
+		text1->OnCLickUp(point);
+
+	}
+
 	isLClick = false;
 	
 }

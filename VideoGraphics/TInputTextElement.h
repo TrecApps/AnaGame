@@ -5,7 +5,7 @@
  * Class: TInputTextElement
  * Purpose: Extends the Text Element to provide support for editing
  */
-class TInputTextElement : public TTextElement
+class _VIDEO_GRAPHICS TInputTextElement : public TTextElement
 {
 protected:
 	/**

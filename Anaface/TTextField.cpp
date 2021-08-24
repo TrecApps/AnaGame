@@ -3,6 +3,7 @@
 #include "TScrollerControl.h"
 #include <atltrace.h>
 #include <TTextRenderer.h>
+#include <TComplexTextElement.h>
 
 // Allows Anaface to keep track of where the caret is
 static TDataArray<TTextField*> TextList;
@@ -60,6 +61,7 @@ TTextField::TTextField(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTab
 	isNumber = false;
 	offerPasswordPeek = false;
 	includeReturn = true;
+	isComplex = false;
 }
 
 /*
@@ -138,6 +140,101 @@ void TTextField::InputChar(wchar_t cha, int times)
 	}
 	
 
+}
+
+void TTextField::SetUpTextElement()
+{
+	TextFormattingDetails details;
+
+	TString locale(L"en-us"), font(L"ariel");
+
+	TString text;
+
+	DWRITE_TEXT_ALIGNMENT hAlign = DWRITE_TEXT_ALIGNMENT_CENTER;
+	DWRITE_PARAGRAPH_ALIGNMENT vAlign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER;
+
+	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|Caption"));
+
+	TColor fontColor;
+	if (valpoint.Get())
+	{
+		text.Set(*valpoint.Get());
+	}
+
+	valpoint = attributes.retrieveEntry(TString(L"|CaptionLocale"));
+	if (valpoint.Get())
+	{
+		locale.Set(valpoint.Get());
+	}
+
+	valpoint = attributes.retrieveEntry(TString(L"|Font"));
+	if (valpoint.Get())
+	{
+		font.Set(valpoint.Get());
+	}
+	valpoint = attributes.retrieveEntry(TString(L"|FontSize"));
+	if (valpoint.Get())
+	{
+		valpoint->ConvertToFloat(details.fontSize);
+	}
+	valpoint = attributes.retrieveEntry(TString(L"|HorizontalAlignment"));
+	if (valpoint.Get())
+	{
+		hAlign = convertStringToTextAlignment(valpoint.Get());
+	}
+	valpoint = attributes.retrieveEntry(TString(L"|VerticalAlignment"));
+	if (valpoint.Get())
+	{
+		vAlign = convertStringToParagraphAlignment(valpoint.Get());
+	}
+
+	valpoint = attributes.retrieveEntry(TString(L"|FontColor"));
+	if (valpoint.Get())
+	{
+		fontColor.SetColor(convertStringToD2DColor(valpoint.Get()));
+	}
+	else
+		fontColor.SetColor(drawingBoard->GetDefaultTextColor());
+
+	// Commented out code (in case gradient colors should be added
+
+	//valpoint = att->retrieveEntry(TString(L"|TextGrad"));
+	//if (valpoint.Get())
+	//{
+	//	if (!text1.Get())
+	//		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
+	//	float entry = 0.0f;
+	//	valpoint->ConvertToFloat(entry);
+	//	//text1->secondColor = true;
+	//	UINT gradCount = 0;
+	//	if (gradCount = text1->stopCollection.GetGradientCount())
+	//		text1->stopCollection.SetPositionAt(entry, gradCount - 1);
+	//}
+
+
+	//valpoint = att->retrieveEntry(TString(L"|TextGradMode"));
+	//if (valpoint.Get())
+	//{
+	//	if (!text1.Get())
+	//		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
+	//	if (valpoint->Compare(L"Radial"))
+	//		text1->useRadial = true;
+	//}
+
+	// See if have text. If we do, then set up text element
+	if (text.GetSize())
+	{
+		details.color = drawingBoard->GetBrush(fontColor);
+
+		text1 = isComplex || !isEditable ? TrecPointerKey::GetNewSelfTrecPointerAlt<TTextElement, TComplexTextElement>(drawingBoard, windowHandle, isEditable) :
+			TrecPointerKey::GetNewSelfTrecPointerAlt<TTextElement, TInputTextElement>(drawingBoard, windowHandle);
+
+		text1->SetLocation(location);
+		text1->SetBasicFormatting(details);
+		text1->SetHorizontallignment(hAlign);
+		text1->SetVerticalAlignment(vAlign);
+		text1->SetText(text);
+	}
 }
 
 /*
@@ -319,6 +416,10 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	valpoint = attributes.retrieveEntry(TString(L"|DrawNumberBoxes"));
 	if (valpoint.Get() && !valpoint->Compare(L"False"))
 		drawNumBoxes = false;
+
+	valpoint = attributes.retrieveEntry(TString(L"|IsComplex"));
+	if (valpoint.Get() && !valpoint->CompareNoCase(L"true"))
+		isComplex = true;
 
 	valpoint = attributes.retrieveEntry(TString(L"|Minimum"));
 	int value = 0;
@@ -672,11 +773,11 @@ void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TD
 	{
 		*mOut = messageOutput::positiveOverrideUpdate;
 
-		auto cThis = TrecPointerKey::GetTrecPointerFromSoft<>(tThis);
+		//auto cThis = TrecPointerKey::GetTrecPointerFromSoft<>(tThis);
 
-		EventID_Cred cred(R_Message_Type::On_Focus, cThis, TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter,
-			TTextFieldIntercepter>(TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(cThis)));
-		eventAr.push_back(cred);
+		//EventID_Cred cred(R_Message_Type::On_Focus, cThis, TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter,
+		//	TTextFieldIntercepter>(TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(cThis)));
+		//eventAr.push_back(cred);
 	}
 	showPassword = false;
 
@@ -1806,8 +1907,8 @@ LineMetrics::LineMetrics()
 
 LineMetrics::LineMetrics(const LineMetrics& orig)
 {
-	UINT size = sizeNeeded ? sizeNeeded : orig.metrics.Size();
-	for (UINT Rust = 0; Rust < size; Rust++)
+	sizeNeeded = orig.sizeNeeded ? orig.sizeNeeded : orig.metrics.Size();
+	for (UINT Rust = 0; Rust < sizeNeeded; Rust++)
 	{
 		auto met = orig.metrics.data()[Rust];
 		metrics.push_back(met);

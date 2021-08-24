@@ -602,6 +602,17 @@ protected:
 
 
 	/**
+	 * Method: TControl::SetUpTextElement
+	 * Purpose: Sets up Text Elements in case Some attributes support it
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: override - Need to create more specific versions of the TTextElement Object
+	 */
+	virtual void SetUpTextElement() override;
+
+
+	/**
 	 * whether the control should hide the text and (if so) offer a peek button
 	 */
 	bool isPassword, offerPasswordPeek;
@@ -609,6 +620,12 @@ protected:
 	 * whether the user can edit the text in the field
 	 */
 	bool isEditable;
+
+	/**
+	 * Is Complex, whether to support complex formats
+	 */
+	bool isComplex;
+
 	/**
 	 * The text being held
 	 */

@@ -5,7 +5,7 @@
  * Class: TComplexTextElement
  * Purpose: Extends the Input Text Element to provide support for complex formats
  */
-class TComplexTextElement : public TInputTextElement
+class _VIDEO_GRAPHICS TComplexTextElement : public TInputTextElement
 {
 protected:
 	/**
