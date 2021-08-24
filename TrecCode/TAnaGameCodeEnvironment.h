@@ -18,12 +18,7 @@ typedef enum class TargetAnagameMachine
 	tam_binary_stack
 }TargetAnagameMachine;
 
-typedef struct Variable
-{
-	TString name;
-	TrecPointer<TType> type;
-	UINT location;
-}Variable;
+
 
 
 class TAnaGameCodeEnvironment :
@@ -75,6 +70,47 @@ public:
 	 */
 	virtual bool PrintLine(const TString& input)override;
 
+	/**
+	 * Method: TEnvironment::SaveEnv
+	 * Purpose: Saves the Current Status of the Environment itself
+	 * Parameters: void
+	 * Returns: UINT - error code (0 for no error)
+	 */
+	virtual UINT SaveEnv() override;
+
+
+	/**
+	 * Method: TEnvironment::GetProjectLayout
+	 * Purpose: Reports the Layout of the Project
+	 * Parameters: void
+	 * Returns: TrecPointer<TObjectNode> nodes - the nodes that represent the layout of the Project
+	 *
+	 * Attributes: abstract
+	 */
+	virtual TrecPointer<TObjectNode> GetProjectLyout() override;
+
+
+	/**
+	 * Method: TEnvironment::AddResource
+	 * Purpose: Adds a file Resource to the Environment
+	 * Parameters: TrecPointer<TFileShell> fileResorce - the file to add
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void AddResource(TrecPointer<TFileShell> fileResource) override;
+
+
+	/**
+	 * Method: TEnvironment::SetLoadFile
+	 * Purpose: Allows Environment to load itself
+	 * Parameters: TrecPointer<TFileShell> file - the file to load from
+	 * Returns: TString - error information (blank means success)
+	 *
+	 * Attributes: abstract
+	 */
+	virtual TString SetLoadFile(TrecPointer<TFileShell> file) override;
+
 protected:
 	TString targetExtensions;	// Extensions to target for compilation
 
@@ -84,6 +120,10 @@ protected:
 
 	TMap<TLanguage> languages;
 
-	TDataArray<Variable> globalVariables;
+	TDataArray<TrecPointer<TFileShell>> files;
+	TrecPointer<TFileShell> mainFile;
+
+	TrecPointer<TVariable> currentRunner;
+
 };
 

@@ -10,6 +10,9 @@ TString HtmlLink::ProcessHtml(TrecPointer<TFile> file, const TString& data)
 {
     TString aData(data.GetTrim());
 
+    if (aData.EndsWith(L">"))
+        aData.Delete(aData.GetSize() - 1);
+
     TrecPointer<TDataArray<TString>> fields = aData.split(L" =\t\n", 3);
 
     if (fields->Size() % 2)
@@ -47,4 +50,25 @@ TString HtmlLink::ProcessHtml(TrecPointer<TFile> file, const TString& data)
     }
 
     return TString();
+}
+
+TString HtmlLink::getVariableValueStr(const TString& varName)
+{
+    TString ret;
+    if (!varName.Compare(L"href"))
+        ret.Set(href);
+    else if (!varName.Compare(L"rel"))
+        ret.Set(rel);
+    else if (!varName.Compare(L"crossorigin"))
+        ret.Set(crossorigin);
+    else if (!varName.Compare(L"integrity"))
+        ret.Set(integrity);
+    else if (!varName.Compare(L"type"))
+        ret.Set(type);
+    else if (!varName.Compare(L"media"))
+        ret.Set(media);
+    else if (!varName.Compare(L"as"))
+        ret.Set(as);
+
+    return ret;
 }

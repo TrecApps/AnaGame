@@ -424,6 +424,11 @@ bool AnafaceParser::Attribute(TrecPointer<TString> v, TString& e)
 	return true;
 }
 
+bool AnafaceParser::Attribute(TString& v, TString e)
+{
+	return Attribute(TrecPointerKey::GetNewTrecPointer<TString>(v), e);
+}
+
 /*
 * Method: AnafaceParser::submitType
 * Purpose: Whether the TML file is written for this parser
@@ -582,6 +587,7 @@ void AnafaceParser::setLayoutParam()
 				result = layoutObject->addRow(rowHeight[c], rowFlex[c]);
 				res = res + 0;
 			}
+			layoutObject->CompileLayout();
 		}
 		else if (columnwidth.Size())
 		{
@@ -590,6 +596,7 @@ void AnafaceParser::setLayoutParam()
 				result = layoutObject->addColunm(columnwidth[c],columnFlex[c]);
 				res = res + 0;
 			}
+			layoutObject->CompileLayout();
 		}
 		else if (rowHeight.Size())
 		{
@@ -598,7 +605,9 @@ void AnafaceParser::setLayoutParam()
 				result = layoutObject->addRow(rowHeight[c],rowFlex[c]);
 				res = res + 0;
 			}
+			layoutObject->CompileLayout();
 		}
+		
 	}
 
 	// now that the TArrays of rows and Colunms have been used, clear them

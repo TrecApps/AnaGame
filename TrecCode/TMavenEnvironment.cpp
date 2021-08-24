@@ -56,3 +56,22 @@ bool TMavenEnvironment::SupportsFileExt(const TString& ext)
 void TMavenEnvironment::SupportsFileExt(TDataArray<TString>& ext)
 {
 }
+
+UINT TMavenEnvironment::SaveEnv()
+{
+	return 0;
+}
+
+TrecPointer<TObjectNode> TMavenEnvironment::GetProjectLyout()
+{
+	return TrecPointer<TObjectNode>();
+}
+
+void TMavenEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
+{
+}
+
+TString TMavenEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
+{
+	return L"Not Implemented";
+}

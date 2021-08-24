@@ -62,11 +62,13 @@ TrecPointer<AnimationBuilder> Page::GetAnimationByName(TString& name)
  */
 void Page::SwitchChildControl(TrecPointer<TControl> newRoot)
 {
+	ThreadLock();
 	if (newRoot.Get())
 	{
 		rootControl = newRoot;
 		rootControl->setParent(selfHolder);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -77,9 +79,12 @@ void Page::SwitchChildControl(TrecPointer<TControl> newRoot)
  */
 void Page::PrepAnimations(TAnimationManager& aManager)
 {
+	ThreadLock();
 	if (!rootControl.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	aManager.CleanBegin();
 
 	TDataArray<TrecPointer<AnimationData>> aData;
@@ -147,6 +152,7 @@ void Page::PrepAnimations(TAnimationManager& aManager)
 
 		aManager.AddStoryBoard(entry->key, entry->object);
 	}
+	ThreadRelease();
 }
 
 
@@ -244,11 +250,17 @@ TrecPointer<Page> Page::GetSmallPage(TrecPointer<TInstance> in, TrecPointer<TWin
  */
 int Page::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 {
+	ThreadLock();
 	if (!file.Get())
+	{
+		ThreadRelease();
 		return -1;
+	}
 	if (!file->IsOpen())
+	{
+		ThreadRelease();
 		return -2;
-
+	}
 	assert(windowHandle.Get());
 
 	TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, AnafaceParser>(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowHandle(), file->GetFileDirectory());
@@ -259,22 +271,36 @@ int Page::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
 	TML_Reader_ reader(file, parser);
 	int result = 0;
 	if (!reader.read(&result))
+	{
+		ThreadRelease();
 		throw result;
-
+	}
 	rootControl = dynamic_cast<AnafaceParser*>(parser.Get())->getRootControl();
 	if (rootControl.Get())
 	{
+		auto vid = rootControl->QueryVideoControl();
+		if (vid.Get())
+		{
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->SetUp3D();
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->submitPlayer(vid);
+		}
+
+
 		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
 		rootControl->setParent(selfHolder);
+		rootControl->QueryMediaControl(mediaControls);
 	}
+	if (windowHandle.Get())
+		TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->RefreshMediaControls();
+
 	persistentStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetPersistentStoryBoards();
 	basicStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetStoryBoards();
 	animations = dynamic_cast<AnafaceParser*>(parser.Get())->GetAnimations();
 
 	if(handler.Get())
 		handler->Initialize(TrecPointerKey::GetTrecPointerFromSoft<Page>(self));
-	
 
+	ThreadRelease();
 	return 0;
 }
 
@@ -288,10 +314,17 @@ int Page::SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh)
  */
 int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
 {
+	ThreadLock();
 	if (!file.Get())
+	{
+		ThreadRelease();
 		return -1;
+	}
 	if (!file->IsOpen())
+	{
+		ThreadRelease();
 		return -2;
+	}
 	assert(windowHandle.Get());
 	TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, AnafaceParser>(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowHandle(), file->GetFileDirectory());
 
@@ -300,14 +333,28 @@ int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
 	TML_Reader_ reader(file, parser);
 	int result = 0;
 	if (!reader.read(&result))
+	{
+		ThreadRelease();
 		throw result;
-
+	}
 	rootControl = dynamic_cast<AnafaceParser*>(parser.Get())->getRootControl();
 	if (rootControl.Get())
 	{
+		auto vid = rootControl->QueryVideoControl();
+		if (vid.Get())
+		{
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->SetUp3D();
+			TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->submitPlayer(vid);
+		}
 		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
 		rootControl->setParent(selfHolder);
+
+		rootControl->QueryMediaControl(mediaControls);
 	}
+	if (windowHandle.Get())
+		TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->RefreshMediaControls();
+
+
 	if(handler.Get())
 		handler->Initialize(TrecPointerKey::GetTrecPointerFromSoft<Page>(self));
 
@@ -315,6 +362,7 @@ int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
 	basicStoryBoards = dynamic_cast<AnafaceParser*>(parser.Get())->GetStoryBoards();
 	animations = dynamic_cast<AnafaceParser*>(parser.Get())->GetAnimations();
 
+	ThreadRelease();
 	return 0;
 }
 
@@ -326,9 +374,11 @@ int Page::SetAnaface(TrecPointer<TFile> file, TDataArray<eventNameID>& id)
  */
 void Page::SetAnaface(TrecPointer<TControl> newRoot)
 {
+	ThreadLock();
 	rootControl = newRoot;
 	if(rootControl.Get())
 	rootControl->setParent(selfHolder);
+	ThreadRelease();
 }
 
 
@@ -340,7 +390,10 @@ void Page::SetAnaface(TrecPointer<TControl> newRoot)
  */
 TrecPointer<TControl> Page::GetRootControl()
 {
-	return rootControl;
+	ThreadLock();
+	auto ret = rootControl;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -351,8 +404,10 @@ TrecPointer<TControl> Page::GetRootControl()
  */
 TrecPointer<TControl> Page::ExtractRootControl()
 {
+	ThreadLock();
 	TrecPointer<TControl> ret(rootControl);
 	rootControl.Nullify();
+	ThreadRelease();
 	return ret;
 }
 
@@ -364,7 +419,10 @@ TrecPointer<TControl> Page::ExtractRootControl()
  */
 TrecPointer<TWindow> Page::GetWindowHandle()
 {
-	return TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
+	ThreadLock();
+	auto ret= TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -375,7 +433,10 @@ TrecPointer<TWindow> Page::GetWindowHandle()
  */
 TrecPointer<EventHandler> Page::GetHandler()
 {
-	return handler;
+	ThreadLock();
+	auto ret = handler;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -386,9 +447,11 @@ TrecPointer<EventHandler> Page::GetHandler()
  */
 void Page::SetHandler(TrecPointer <EventHandler> eh)
 {
+	ThreadLock();
 	handler = eh;
 	if (handler.Get() && instance.Get())
 		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance)->RegisterHandler(handler);
+	ThreadRelease();
 }
 
 /**
@@ -401,6 +464,7 @@ void Page::SetHandler(TrecPointer <EventHandler> eh)
  */
 void Page::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
 {
+	ThreadLock();
 	TDataArray<EventID_Cred> eventAr;
 	OnRButtonUp(nFlags, point, mOut, eventAr);
 	
@@ -411,7 +475,9 @@ void Page::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
 		miniHandler->OnRButtonUp(nFlags, point, mOut);
 
 	if( *mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); 
+
+	ThreadRelease();
 }
 
 /**
@@ -425,6 +491,7 @@ void Page::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
 void Page::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
 	TDataArray<EventID_Cred> eventAr;
+	ThreadLock();
 	OnLButtonDown(nFlags, point, mOut, eventAr, fly);
 	assert(windowHandle.Get());
 	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
@@ -443,7 +510,9 @@ void Page::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoi
 		miniHandler->OnLButtonDown(nFlags, point, mOut);
 
 	if( *mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw();
+
+	ThreadRelease();
 }
 
 /**
@@ -456,6 +525,7 @@ void Page::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoi
  */
 void Page::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
 {
+	ThreadLock();
 	TDataArray<EventID_Cred> eventAr;
 	OnRButtonDown(nFlags, point, mOut, eventAr);
 	
@@ -478,7 +548,9 @@ void Page::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
 	if (miniHandler.Get())
 		miniHandler->OnRButtonDown(nFlags, point, mOut);
 	if (*mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); 
+
+	ThreadRelease();
 }
 
 /**
@@ -491,6 +563,7 @@ void Page::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void Page::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	TDataArray<EventID_Cred> eventAr;
 	OnMouseMove(nFlags, point, mOut, eventAr, fly);
 	
@@ -500,7 +573,9 @@ void Page::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoint
 	if (miniHandler.Get())
 		miniHandler->OnMouseMove(nFlags, point, mOut);
 	if (*mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); 
+
+	ThreadRelease();
 }
 
 /**
@@ -513,6 +588,7 @@ void Page::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoint
  */
 void Page::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
 {
+	ThreadLock();
 	TDataArray<EventID_Cred> eventAr;
 	OnLButtonDblClk(nFlags, point, mOut, eventAr);
 	
@@ -523,7 +599,9 @@ void Page::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
 		miniHandler->OnLButtonDblClk(nFlags, point, mOut);
 
 	if( *mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw();
+
+	ThreadRelease();
 }
 
 /**
@@ -536,6 +614,7 @@ void Page::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
  */
 void Page::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	TDataArray<EventID_Cred> eventAr;
 	OnLButtonUp(nFlags, point, mOut, eventAr, fly);
 
@@ -554,11 +633,24 @@ void Page::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoint
 	if (handler.Get())
 		handler->HandleEvents(eventAr);
 
+	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
+	{
+		if (eventAr[Rust].textIntercepter.Get())
+		{
+			if (instance.Get())
+			{
+				instance.Get()->SetCharIntercepter(handler, eventAr[Rust].textIntercepter);
+			}
+		}
+	}
+
 	if (miniHandler.Get())
 		miniHandler->OnLButtonUp(nFlags, point, mOut);
 
 	if (*mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); 
+
+	ThreadRelease();
 }
 
 /**
@@ -573,6 +665,7 @@ void Page::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPoint
  */
 bool Page::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput *mOut)
 {
+	ThreadLock();
 	TDataArray<EventID_Cred> eventAr;
 	bool returnable = false;
 	if (miniHandler.Get())
@@ -589,7 +682,10 @@ bool Page::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOu
 	}
 
 	if (*mOut == messageOutput::negativeUpdate || *mOut == messageOutput::positiveContinueUpdate || *mOut == messageOutput::positiveOverrideUpdate)
-		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else return false;
+		if (windowHandle.Get())TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->Draw(); else {
+			ThreadRelease(); return false;
+		}
+	ThreadRelease();
 	return returnable;
 }
 
@@ -601,12 +697,15 @@ bool Page::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOu
  *				TrecPointer<TWindowEngine> - the 3D Engine to work with
  * Returns: void
  */
-void Page::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine> engine)
+void Page::OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine> engine)
 {
+	ThreadLock();
 	// Only Resize if basic resources are in order
 	if (!instance.Get() || !windowHandle.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	area = newLoc;
 
 	if (rootControl.Get())
@@ -616,6 +715,24 @@ void Page::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>
 
 	if (miniHandler.Get())
 		miniHandler->OnResize(area);
+	ThreadRelease();
+}
+
+/**
+ * Method: Page::OnScroll
+ * Purpose: Sends Scroll Command to controls
+ * Parameters: const TPoint& point - point of the mouse
+ *				const TPoint& direction - how far to send the scroll
+ * Returns: bool - whether message was recieved
+ *
+ * Attributes: virtual
+ */
+bool Page::OnScroll(const TPoint& point, const TPoint& direction)
+{
+	if(!rootControl.Get())
+		return false;
+
+	return rootControl->OnScroll(point, direction);
 }
 
 /**
@@ -631,9 +748,12 @@ void Page::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>
  */
 void Page::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	if (!isContained(&point, &area))
+	{
+		ThreadRelease();
 		return;
-
+	}
 
 	if (rootControl.Get())
 		rootControl->OnRButtonUp(nFlags, point, mOut, eventAr);
@@ -673,6 +793,7 @@ void Page::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArra
 			*mOut = messageOutput::positiveOverrideUpdate;
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -688,18 +809,25 @@ void Page::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArra
  */
 void Page::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	if (!isContained(&point, &area))
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (fly.Get())
 	{
 		fly->OnLButtonDown(nFlags, point, mOut, eventAr, clickedControl);
 		if (*mOut != messageOutput::negative && *mOut != messageOutput::negativeUpdate)
+		{
+			ThreadRelease();
 			return;
+		}
 	}
 
 	if (rootControl.Get())
 		rootControl->OnLButtonDown(nFlags, point, mOut, eventAr, clickedControl);
+	ThreadRelease();
 }
 
 /**
@@ -715,11 +843,12 @@ void Page::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataAr
  */
 void Page::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	if (!isContained(&point, &area))
-		return;
-
-	if (rootControl.Get())
+	ThreadLock();
+	if (isContained(&point, &area) && rootControl.Get())
+	{
 		rootControl->OnRButtonDown(nFlags, point, mOut, eventAr, rClickedControl);
+	}
+	ThreadRelease();
 }
 
 /**
@@ -735,14 +864,20 @@ void Page::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataAr
  */
 void Page::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	if (!isContained(&point, &area))
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (fly.Get())
 	{
 		fly->OnMouseMove(nFlags, point, mOut, eventAr, mouseFocusControl);
 		if (*mOut != messageOutput::negative && *mOut != messageOutput::negativeUpdate)
+		{
+			ThreadRelease();
 			return;
+		}
 	}
 
 	if (rootControl.Get())
@@ -753,8 +888,8 @@ void Page::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArra
 		if (mouseFocusControl[Rust] && mouseFocusControl[Rust]->OnMouseLeave(nFlags, point, mOut, eventAr))
 			mouseFocusControl.RemoveAt(Rust--);
 
-		
 	}
+	ThreadRelease();
 
 	// mouseFocusControl.RemoveAll();
 }
@@ -772,11 +907,10 @@ void Page::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArra
  */
 void Page::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	if (!isContained(&point, &area))
-		return;
-
-	if (rootControl.Get())
+	ThreadLock();
+	if (isContained(&point, &area) && rootControl.Get())
 		rootControl->OnLButtonDblClk(nFlags, point, mOut, eventAr);
+	ThreadRelease();
 }
 
 /**
@@ -792,14 +926,20 @@ void Page::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TData
  */
 void Page::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TrecPointer<TFlyout> fly)
 {
+	ThreadLock();
 	if (!isContained(&point, &area))
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (fly.Get())
 	{
 		fly->OnLButtonUp(nFlags, point, mOut, eventAr);
 		if (*mOut != messageOutput::negative && *mOut != messageOutput::negativeUpdate)
+		{
+			ThreadRelease();
 			return;
+		}
 	}
 
 	if (rootControl.Get())
@@ -825,6 +965,7 @@ void Page::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArra
 			*mOut = messageOutput::positiveOverrideUpdate;
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -842,10 +983,11 @@ void Page::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArra
  */
 bool Page::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
-	if (rootControl.Get())
-		return rootControl->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut, eventAr);
-
-	return false;
+	ThreadLock();
+	bool ret = (rootControl.Get()) ? rootControl->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut, eventAr)
+		: false;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -871,9 +1013,10 @@ void Page::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& 
  */
 bool Page::OnDestroy()
 {
-	if(handler.Get())
-		return handler->OnDestroy();
-	return true;
+	ThreadLock();
+	bool ret = (handler.Get()) ? handler->OnDestroy() : true;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -899,7 +1042,10 @@ void Page::SetSelf(TrecPointer<Page> s)
  */
 TrecPointer<TInstance> Page::GetInstance()
 {
-	return TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance);
+	ThreadLock();
+	auto ret = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance);
+	ThreadRelease();
+	return ret;
 }
 
 
@@ -914,11 +1060,13 @@ TrecPointer<TInstance> Page::GetInstance()
  */
 void Page::SetMiniHandler(TrecSubPointer<EventHandler, MiniHandler> mh)
 {
+	ThreadLock();
 	miniHandler = mh;
 	if (miniHandler.Get() && instance.Get())
 	{
 		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance)->RegisterHandler(TrecPointerKey::GetTrecPointerFromSub<EventHandler, MiniHandler>(miniHandler));
 	}
+	ThreadRelease();
 }
 
 /**
@@ -930,10 +1078,12 @@ void Page::SetMiniHandler(TrecSubPointer<EventHandler, MiniHandler> mh)
  */
 void Page::AddStory(TString& story, bool persistent)
 {
+	ThreadLock();
 	if (persistent)
 		persistentStoryBoards.push_back(story);
 	else
 		basicStoryBoards.push_back(story);
+	ThreadRelease();
 }
 
 /**
@@ -944,8 +1094,10 @@ void Page::AddStory(TString& story, bool persistent)
  */
 void Page::AddAnimations(TrecPointer<AnimationBuilder> builder)
 {
+	ThreadLock();
 	if (builder.Get())
 		animations.push_back(builder);
+	ThreadRelease();
 }
 
 /**
@@ -956,8 +1108,37 @@ void Page::AddAnimations(TrecPointer<AnimationBuilder> builder)
  */
 void Page::OnFocus()
 {
+	ThreadLock();
 	if (handler.Get())
 		handler->OnFocus();
+	ThreadRelease();
+}
+
+void Page::QueryMediaControls(TDataArray<TrecPointer<TControl>>& mediaControls)
+{
+	ThreadLock();
+	for (UINT Rust = 0; Rust < this->mediaControls.Size(); Rust++)
+	{
+		mediaControls.push_back(this->mediaControls[Rust]);
+	}
+	ThreadRelease();
+}
+TDataArray<TControl*> Page::GetClickedControls()
+{
+	ThreadLock();
+	TDataArray<TControl*> ret = clickedControl;
+	clickedControl.RemoveAll();
+	ThreadRelease();
+	return ret;
+}
+
+TDataArray<TControl*> Page::GetRightClickedControls()
+{
+	ThreadLock();
+	TDataArray<TControl*> ret = rClickedControl;
+	rClickedControl.RemoveAll();
+	ThreadRelease();
+	return ret;
 }
 
 
@@ -978,14 +1159,12 @@ UCHAR * Page::GetAnaGameType()
  */
 void Page::OnSize(UINT nType, int cx, int cy)
 {
-
+	ThreadLock();
 
 	area.top = area.left = 0.0f;
 	area.bottom = cy;
 	area.right = cx;
-
-
-
+	ThreadRelease();
 }
 
 /**
@@ -996,7 +1175,10 @@ void Page::OnSize(UINT nType, int cx, int cy)
  */
 TrecPointer<TArenaEngine> Page::GetArenaEngine()
 {
-	return engine;
+	ThreadLock();
+	auto ret = engine;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -1007,10 +1189,15 @@ TrecPointer<TArenaEngine> Page::GetArenaEngine()
  */
 void Page::CreateLayout()
 {
+	ThreadLock();
 	if (rootControl.Get() && windowHandle.Get())
 	{
 		rootControl->onCreate(area, TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->GetWindowEngine());
+		mediaControls.RemoveAll();
+		rootControl->QueryMediaControl(mediaControls);
+		TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle)->RefreshMediaControls();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -1021,8 +1208,11 @@ void Page::CreateLayout()
  */
 void Page::Draw(TWindowEngine* twe)
 {
-	if (!rootControl.Get() || !drawingBoard.Get()) return;
-
+	ThreadLock();
+	if (!rootControl.Get() || !drawingBoard.Get()) {
+		ThreadRelease();
+		return;
+	}
 	//drawingBoard->SetTransform(adjustMatrix);
 	rootControl->onDraw();
 	//regRenderTarget->EndDraw();
@@ -1033,8 +1223,8 @@ void Page::Draw(TWindowEngine* twe)
 	if (handler.Get())
 	{
 		handler->Draw();
-
 	}
+	ThreadRelease();
 }
 
 /**
@@ -1045,7 +1235,10 @@ void Page::Draw(TWindowEngine* twe)
  */
 D2D1_RECT_F Page::GetArea()
 {
-	return area;
+	ThreadLock();
+	auto ret = area;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -1056,9 +1249,19 @@ D2D1_RECT_F Page::GetArea()
  */
 void Page::SetArea(const D2D1_RECT_F& loc)
 {
+	ThreadLock();
 	area = loc;
 	if (rootControl.Get())
 		rootControl->Resize(area);
+	ThreadRelease();
+}
+
+bool Page::TookTab(TrecPointer<Tab> tab)
+{
+	ThreadLock();
+	bool ret = (!rootControl.Get()) ? false : rootControl->TookTab(tab);
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -1070,7 +1273,9 @@ void Page::SetArea(const D2D1_RECT_F& loc)
 
 TPageParentHolder::TPageParentHolder(TrecPointerSoft<class Page> page)
 {
+	ThreadLock();
 	parent = page;
+	ThreadRelease();
 }
 
 /**
@@ -1093,9 +1298,11 @@ TString TPageParentHolder::GetType()
  */
 void TPageParentHolder::SwitchChildControl(TrecPointerSoft<TControl> cur, TrecPointer<TControl> newTControl)
 {
+	ThreadLock();
 	auto tPage = TrecPointerKey::GetTrecPointerFromSoft<Page>(parent);
 	if (tPage.Get())
 	{
 		tPage->SwitchChildControl(newTControl);
 	}
+	ThreadRelease();
 }

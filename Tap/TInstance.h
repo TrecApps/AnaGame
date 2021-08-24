@@ -207,7 +207,21 @@ public:
 	 */
 	TrecPointer<EventHandler> GetHandler(const TString& name, anagame_page pageType);
 
+	/**
+	 * Method: TInstance::SetCharIntercepter
+	 * Purpose: Sets up the object that intercepts characters
+	 * Parameters: TrecPointer<EventHandler> the handler to send characers to
+	 *				TrecPointer<TTextIntercepter> the intercepter to recieve characters
+	 * Returns: void
+	 */
+	void SetCharIntercepter(TrecPointer<EventHandler> handler, TrecPointer<TTextIntercepter> intercepter);
+
 protected:
+
+	/*
+	 * The handler that is set to handle character input
+	 */
+	TrecPointer<EventHandler> charHandler;
 
 	/**
 	 * Method: TInstance::AssertDialogRegistered

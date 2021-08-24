@@ -22,6 +22,6 @@ private:
 	TrecSubPointer<EventHandler, CameraHandler> cameraControls;
 	TrecSubPointer<EventHandler, ArenaHandler> arena;
 
-	TrecSubPointer<Page, IDEPage> cameraPage;
+	TrecPointer<Page> cameraPage;
 };
 

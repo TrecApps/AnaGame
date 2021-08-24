@@ -52,10 +52,16 @@ ArenaModel::ArenaModel(TrecPointer<TArenaEngine> ae)
 	direction.x = direction.y = direction.z = 1.0f;
 
 	hasPipeColor = false;
+
 	TString logMessage;
 	logMessage.Format(L"CREATE %p ArenaModel(ArenaEngine& ae)", this);
 
 	Log(LogType::lt_memory, logMessage);
+
+
+	// Null the shader id
+	shader.card.id = -1;
+	shader._default = false;
 }
 
 ArenaModel::ArenaModel(ArenaModel& am)
@@ -112,25 +118,26 @@ TString ArenaModel::toString()
 
 TString ArenaModel::getVariableValueStr(const TString & varName)
 {
+	AG_THREAD_LOCK
 	if (!varName.Compare(L"Name"))
 	{
 		TString ret(L"Name: ");
 		ret.Append(name);
-		return ret;
+		RETURN_THREAD_UNLOCK ret;
 	}
 	if (!varName.Compare(L"location"))
 	{
 		TString ret;
 		ret.Format(L"Location: %f, %f, %f", location.x, location.y, location.z);
-		return ret;
+		RETURN_THREAD_UNLOCK ret;
 	}
 	if (!varName.Compare(L"direction"))
 	{
 		TString ret;
 		ret.Format(L"Direction: %f, %f, %f", direction.x, direction.y, direction.z);
-		return ret;
+		RETURN_THREAD_UNLOCK ret;
 	}
-	return TString();
+	RETURN_THREAD_UNLOCK TString();
 }
 
 void ArenaModel::setName(const TString & newName)
@@ -151,11 +158,13 @@ TString ArenaModel::getName()
 */
 void ArenaModel::SetNewEngine(TrecPointer<TArenaEngine> e)
 {
+	AG_THREAD_LOCK
 	if (engine.Get())
 		engine->RemoveModel(TrecPointerKey::GetTrecPointerFromSoft<ArenaModel>(self));
 
 	engine = e;
 	engine->AddModel(TrecPointerKey::GetTrecPointerFromSoft<ArenaModel>(self));
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -190,19 +199,24 @@ HRESULT ArenaModel::LoadModel(TFile & ar)
 */
 int ArenaModel::SetVertexData(TDataArray<float>& data, int shaderID, D3D11_PRIMITIVE_TOPOLOGY prim)
 {
+	AG_THREAD_LOCK
 	//GUARD_CODE -1;
 	int bSize = engine->TShaderHost::getBufferSize(shaderID);
 	if (!bSize)
-		return 1;
+	{
+		RETURN_THREAD_UNLOCK 1;
+	}
 	bufferSize = bSize;
-	if(!SetVertexData(data))
-		return 2;
+	if (!SetVertexData(data))
+	{
+		RETURN_THREAD_UNLOCK 2;
+	}
 	shader._default = false;
 	shader.card.id = shaderID;
 
 	//bufferSize = data.Size();
 	primitive = prim;
-	return 0;
+	RETURN_THREAD_UNLOCK 0;
 }
 
 /*
@@ -214,15 +228,18 @@ int ArenaModel::SetVertexData(TDataArray<float>& data, int shaderID, D3D11_PRIMI
 */
 int ArenaModel::SetVertexData(TDataArray<float>& data, DefaultShader ds, D3D11_PRIMITIVE_TOPOLOGY prim)
 {
+	AG_THREAD_LOCK
 	//GUARD_CODE -1;
 	if (!SetVertexData(data))
-		return 2;
+	{
+		RETURN_THREAD_UNLOCK 2;
+	}
 	shader._default = true;
 	shader.card.dID = ds;
 
 	bufferSize = engine->getBufferSize(ds);
 	primitive = prim;
-	return 0;
+	RETURN_THREAD_UNLOCK 0;
 }
 
 /*
@@ -234,10 +251,11 @@ int ArenaModel::SetVertexData(TDataArray<float>& data, DefaultShader ds, D3D11_P
 int ArenaModel::SetVertexData(TDataArray<float>& data)
 {
 	//GUARD_CODE -1;
-
+	AG_THREAD_LOCK
 	if (!data.Size())
-		return -5;
-
+	{
+		RETURN_THREAD_UNLOCK - 5;
+	}
 	vertexData = data;
 
 
@@ -256,7 +274,7 @@ int ArenaModel::SetVertexData(TDataArray<float>& data)
 	TrecComPointer<ID3D11Buffer>::TrecComHolder vb;
 	HRESULT res = device->CreateBuffer(&vDesc, &rd, vb.GetPointerAddress());
 	vertexBuffer = vb.Extract();
-	return static_cast<int>(SUCCEEDED(res));
+	RETURN_THREAD_UNLOCK static_cast<int>(SUCCEEDED(res));
 }
 
 /*
@@ -268,20 +286,25 @@ int ArenaModel::SetVertexData(TDataArray<float>& data)
 bool ArenaModel::SetIndices(TDataArray<UINT>& indices)
 {
 	//GUARD_CODE false;
-
+	AG_THREAD_LOCK
 	if (!bufferSize)
-		return false;
-
+	{
+		RETURN_THREAD_UNLOCK false;
+	}
 	if (!indices.Size())
-		return false;
+	{
+		RETURN_THREAD_UNLOCK false;
+	}
 	UINT max = 0;
 	for (UINT c = 0; c < indices.Size(); c++)
 	{
 		if (indices[c] > max)
 			max = indices[c];
 	}
-	if (max > vertexData.Size() / (bufferSize/sizeof(float)))
-		return false;
+	if (max > vertexData.Size() / (bufferSize / sizeof(float)))
+	{
+		RETURN_THREAD_UNLOCK false;
+	}
 	D3D11_BUFFER_DESC vDesc;
 	ZeroMemory(&vDesc, sizeof(vDesc));
 	vDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -299,8 +322,8 @@ bool ArenaModel::SetIndices(TDataArray<UINT>& indices)
 
 	if(SUCCEEDED(res))
 		index = indices;
-	else return false;
-	return true;
+	else { RETURN_THREAD_UNLOCK false; }
+	RETURN_THREAD_UNLOCK true;
 }
 
 /*
@@ -324,18 +347,20 @@ void ArenaModel::ProjectionGPU(bool gpu)
 */
 void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera)
 {	//GUARD_CODE;
-
+	AG_THREAD_LOCK
 	if (!renderTarget.Get() && engine.Get())
 		renderTarget = engine->getRederTarget();
 
 	if (!context.Get() || !swapChain.Get() ||
 		!renderTarget.Get() || !device.Get())
-		return;
-
+	{
+		RETURN_THREAD_UNLOCK;
+	}
 
 	if (!vertexData.Size())
-		return;
-
+	{
+		RETURN_THREAD_UNLOCK;
+	}
 	if (!projectionBuffer.Get())
 	{
 		D3D11_BUFFER_DESC vDesc;
@@ -345,7 +370,9 @@ void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera)
 		vDesc.ByteWidth = sizeof(XMMATRIX);
 		TrecComPointer<ID3D11Buffer>::TrecComHolder pb;
 		if (FAILED(device->CreateBuffer(&vDesc, 0, pb.GetPointerAddress())))
-			return;
+		{
+			RETURN_THREAD_UNLOCK;
+		}
 		projectionBuffer = pb.Extract();
 	}
 	signed char modelLocation = -1;
@@ -363,8 +390,9 @@ void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera)
 		viewLocation = engine->GetViewLocation(shader.card.id);
 	}
 	if (modelLocation < 0)
-		return;  // That's it! Back to the Chicken Farm
-
+	{
+		RETURN_THREAD_UNLOCK;  // That's it! Back to the Chicken Farm
+	}
 	bool soft_mvp = engine->DoMvp();
 
 
@@ -444,7 +472,7 @@ void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera)
 		}
 
 	}
-
+	RETURN_THREAD_UNLOCK;
 }
 
 
@@ -458,6 +486,7 @@ void ArenaModel::Render(DirectX::XMMATRIX & proj, DirectX::XMMATRIX& camera)
 */
 int ArenaModel::Rotate(float radian, DirectX::XMFLOAT3 direction_)
 {
+	AG_THREAD_LOCK
 	direction_.x *= abs(radian);
 	direction_.y *= abs(radian);
 	direction_.z *= abs(radian);
@@ -475,7 +504,7 @@ int ArenaModel::Rotate(float radian, DirectX::XMFLOAT3 direction_)
 		this->direction.y -= direction_.y;
 		this->direction.z -= direction_.z;
 	}
-	return 0;
+	RETURN_THREAD_UNLOCK 0;
 }
 
 /*
@@ -487,6 +516,7 @@ int ArenaModel::Rotate(float radian, DirectX::XMFLOAT3 direction_)
 */
 int ArenaModel::Translate(float degree, DirectX::XMFLOAT3 direction)
 {
+	AG_THREAD_LOCK
 	direction.x *= abs(degree);
 	direction.y *= abs(degree);
 	direction.z *= abs(degree);
@@ -503,7 +533,7 @@ int ArenaModel::Translate(float degree, DirectX::XMFLOAT3 direction)
 		this->location.y -= direction.y;
 		this->location.z -= direction.z;
 	}
-	return 0;
+	RETURN_THREAD_UNLOCK 0;
 }
 
 /*
@@ -514,9 +544,10 @@ int ArenaModel::Translate(float degree, DirectX::XMFLOAT3 direction)
 */
 int ArenaModel::Enlarge(float ratio)
 {
+	AG_THREAD_LOCK
 	size +=ratio;
 
-	return 0;
+	RETURN_THREAD_UNLOCK 0;
 }
 
 /*
@@ -552,6 +583,7 @@ DirectX::XMFLOAT3 ArenaModel::GetDirection()
 */
 bool ArenaModel::setColorBuffer(float r, float g, float b, float a)
 {
+	AG_THREAD_LOCK
 	signed char loc = 0;
 	if (shader._default)
 	{
@@ -560,19 +592,20 @@ bool ArenaModel::setColorBuffer(float r, float g, float b, float a)
 	else
 		loc = engine->getColorBufferLocation(shader.card.id);
 	if (loc < 0)
-		return false;
-
+	{
+		RETURN_THREAD_UNLOCK false;
+	}
 
 	int result = engine->GetConstantBuffer(16, singleColorBuffer, device);
 
 	if(result) // failed
 	{
 		singleColorBuffer.Nullify();
-		return false;
+		RETURN_THREAD_UNLOCK false;
 	}
 
 	if (!context.Get())
-		return false;
+		RETURN_THREAD_UNLOCK false;
 
 	float color[4];
 	color[0] = r;
@@ -588,7 +621,7 @@ bool ArenaModel::setColorBuffer(float r, float g, float b, float a)
 	//engine->UpdateConstantBuffer(&singleColorBuffer, sp_Pixel, loc);
 
 
-	return true;
+	RETURN_THREAD_UNLOCK true;
 }
 
 /*
@@ -602,6 +635,7 @@ bool ArenaModel::setColorBuffer(float r, float g, float b, float a)
 */
 bool ArenaModel::setPipeColorBuffer(float r, float g, float b, float a)
 {
+	AG_THREAD_LOCK
 	pipeColor.x = r;
 	pipeColor.y = g;
 	pipeColor.z = b;
@@ -616,20 +650,22 @@ bool ArenaModel::setPipeColorBuffer(float r, float g, float b, float a)
 	else
 		loc = engine->getColorBufferLocation(shader.card.id);
 	if (loc < 0)
-		return false;
-
+	{
+		RETURN_THREAD_UNLOCK false;
+	}
 
 	int result = engine->GetConstantBuffer(16, singlePipeColorBuffer,device);
 
 	if (result) // failed
 	{
 		singlePipeColorBuffer.Nullify();
-		return false;
+		RETURN_THREAD_UNLOCK false;
 	}
 
 	if (!context.Get())
-		return false;
-
+	{
+		RETURN_THREAD_UNLOCK false;
+	}
 	float color[4];
 	color[0] = r;
 	color[1] = g;
@@ -642,7 +678,7 @@ bool ArenaModel::setPipeColorBuffer(float r, float g, float b, float a)
 
 
 
-	return true;
+	RETURN_THREAD_UNLOCK true;
 }
 
 /*
@@ -653,6 +689,7 @@ bool ArenaModel::setPipeColorBuffer(float r, float g, float b, float a)
 */
 bool ArenaModel::setSingleColorBuffer(bool solidColor)
 {
+	AG_THREAD_LOCK
 	signed char loc;
 	if (shader._default)
 	{
@@ -661,20 +698,26 @@ bool ArenaModel::setSingleColorBuffer(bool solidColor)
 	else
 		loc = engine->getColorBufferLocation(shader.card.id);
 	if (loc < 0)
-		return false;
+	{
+		RETURN_THREAD_UNLOCK false;
+	}
 	if (solidColor)
 	{
 		if (!singleColorBuffer.Get())
-			return false;
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
 		engine->ReplaceConstantBuffer(DefaultShader::default_shader_Single_Color, loc, singleColorBuffer);
 	}
 	else
 	{
 		if (!singlePipeColorBuffer.Get())
-			return false;
+		{
+			RETURN_THREAD_UNLOCK false;
+		}
 		engine->ReplaceConstantBuffer(DefaultShader::default_shader_Single_Color, loc, singlePipeColorBuffer);
 	}
-	return true;
+	RETURN_THREAD_UNLOCK true;
 }
 
 /*
@@ -685,6 +728,7 @@ bool ArenaModel::setSingleColorBuffer(bool solidColor)
 */
 int ArenaModel::AddTexture(TString & fileName)
 {
+	AG_THREAD_LOCK
 	signed char id = -2;
 	if (shader._default)
 	{
@@ -696,24 +740,28 @@ int ArenaModel::AddTexture(TString & fileName)
 	}
 
 	if (id < 1)
-		return -1;
-
+	{
+		RETURN_THREAD_UNLOCK -1;
+	}
 	if (id <= textures.Size())
-		return -2;
-
+	{
+		RETURN_THREAD_UNLOCK -2;
+	}
 	TextureResources tr = GetTexture(fileName);
 	if (!tr.colorMap.Get())
-		return -3;
+	{
+		RETURN_THREAD_UNLOCK -3;
+	}
 	if (!tr.sampleState.Get())
 	{
 
 		tr.colorMap.Nullify();
-		return -4;
+		RETURN_THREAD_UNLOCK -4;
 	}
 
 	textures.push_back(tr);
 
-	return textures.Size() - 1;
+	RETURN_THREAD_UNLOCK textures.Size() - 1;
 }
 
 /*
@@ -725,27 +773,33 @@ int ArenaModel::AddTexture(TString & fileName)
 */
 int ArenaModel::UpdateTexture(TString & fileName, int location)
 {
+	AG_THREAD_LOCK
 	if (location < 0)
-		return 1;
+	{
+		RETURN_THREAD_UNLOCK 1;
+	}
 	if (location >= textures.Size())
-		return 2;
-
+	{
+		RETURN_THREAD_UNLOCK 2;
+	}
 	TextureResources tr = GetTexture(fileName);
 	if (!tr.colorMap.Get())
-		return -3;
+	{
+		RETURN_THREAD_UNLOCK -3;
+	}
 	if (!tr.sampleState.Get())
 	{
 		tr.colorMap.Nullify();
-		return -4;
+		RETURN_THREAD_UNLOCK -4;
 	}
 
 
-		textures[location].colorMap.Nullify();
+	textures[location].colorMap.Nullify();
 
-		textures[location].sampleState.Nullify();
+	textures[location].sampleState.Nullify();
 	textures[location] = tr;
 
-	return 0;
+	RETURN_THREAD_UNLOCK 0;
 }
 
 
@@ -762,11 +816,71 @@ UCHAR * ArenaModel::GetAnaGameType()
 	return ArenaModelType;
 }
 
+/**
+ * Method: ArenaModel::SetShader
+ * Purpose: Allows code to set the Shader
+ * Parameters: int shaderId - the shader to set
+ * Returns: bool - whether it could be set or not (the model should not already have prexisting vertex data)
+ */
 void ArenaModel::SetSelf(TrecPointer<ArenaModel> s)
 {
 	if (this != s.Get())
 		throw L"Error! Expected Self TrecPointer to point at 'this'";
 	self = TrecPointerKey::GetSoftPointerFromTrec<ArenaModel>(s);
+}
+
+/**
+ * Method: ArenaModel::SetShader
+ * Purpose: Allows code to set the Shader
+ * Parameters: DefaultShader shaderId - the shader to set
+ * Returns: bool - whether it could be set or not (the model should not already have prexisting vertex data)
+ */
+bool ArenaModel::SetShader(int shaderId)
+{
+	if(vertexData.Size() || index.Size())
+	return false;
+
+	shader._default = false;
+	shader.card.id = shaderId;
+	return true;
+}
+
+bool ArenaModel::SetShader(DefaultShader shaderId)
+{
+	if (vertexData.Size() || index.Size())
+		return false;
+
+	shader._default = true;
+	shader.card.dID = shaderId;
+	return true;
+}
+
+ShaderKey ArenaModel::GetShaderId()
+{
+	return shader;
+}
+
+/**
+ * Method: ArenaModel::GetVertices
+ * Purpose: retrieves the vertices
+ * Parameters: void
+ * Returns: TDataArray<float> - the vertices held
+ */
+TDataArray<float> ArenaModel::GetVertices()
+{
+	return this->vertexData;
+}
+
+
+/**
+ * Method: ArenaModel::GetIndices
+ * Purpose: retrieves the indices
+ * Parameters: void
+ * Returns: TDataArray<UINT> - the indices held
+ */
+TDataArray<UINT> ArenaModel::GetIndices()
+{
+	return this->index;
 }
 
 /*
@@ -777,6 +891,7 @@ void ArenaModel::SetSelf(TrecPointer<ArenaModel> s)
 */
 TextureResources ArenaModel::GetTexture(TString & fileName)
 {
+	AG_THREAD_LOCK
 	DirectX::TexMetadata imageData;
 	DirectX::ScratchImage* scratchy = new DirectX::ScratchImage();
 
@@ -794,7 +909,7 @@ TextureResources ArenaModel::GetTexture(TString & fileName)
 		if (scratchy)
 			delete scratchy;
 		scratchy = nullptr;
-		return ret;
+		RETURN_THREAD_UNLOCK ret;
 	}
 
 	TrecComPointer<ID3D11ShaderResourceView>::TrecComHolder rv;
@@ -818,7 +933,7 @@ TextureResources ArenaModel::GetTexture(TString & fileName)
 	ret.colorMap = rv.Extract();
 	ret.sampleState = ss.Extract();
 
-	return ret;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 TextureResources::TextureResources()

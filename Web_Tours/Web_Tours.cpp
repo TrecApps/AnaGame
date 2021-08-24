@@ -8,6 +8,7 @@
 #include "WebToursHandler.h"
 #include <TWebWindow.h>
 #include "WebEnvironment.h"
+#include <TThread.h>
 
 #define MAX_LOADSTRING 100
 
@@ -40,6 +41,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     TString title(L"Web-Tours");
     TString winClass(L"WebToursWindow");
 
+    TThread::SetMainThread();
+
     mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
 
     WNDCLASSEXW wcex;
@@ -55,7 +58,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_WEBTOURS);
-    wcex.lpszClassName = winClass.GetConstantBuffer();
+    wcex.lpszClassName = winClass.GetConstantBuffer().getBuffer();
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < EventHandler, WebToursHandler>(mainInstance), t_window_type::t_window_type_web);
@@ -65,8 +68,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (webWindow.Get())
     {
         // Web Based Initialization here
-        webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>());
-
+        webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>(mainInstance, mainInstance->GetMainWindow()));
+        webWindow->AddNewTab();
     }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WEBTOURS));

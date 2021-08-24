@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "AnaGameTester.h"
 #include "TestRunner.h"
+#include <TThread.h>
 
 #define MAX_LOADSTRING 100
 
@@ -33,7 +34,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_ANAGAMETESTER, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-
+    TThread::SetMainThread();
 
 	RunTests();
     // Perform application initialization:

@@ -2,7 +2,7 @@
 #include <EventHandler.h>
 
 
-#define SWITCH_HANDLER_METHOD_COUNT 14
+#define SWITCH_HANDLER_METHOD_COUNT 15
 
 class SwitchHandler;
 
@@ -39,6 +39,7 @@ protected:
 	void OnSelectCombo(TrecPointer<TControl> tc, EventArgs ea);
 	void OnSelectScroll(TrecPointer<TControl> tc, EventArgs ea);
 	void OnSelectGif(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectVid(TrecPointer<TControl> tc, EventArgs ea);
 
 
 	void OnSelectSocket(TrecPointer<TControl> tc, EventArgs ea);

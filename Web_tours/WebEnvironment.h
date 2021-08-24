@@ -4,15 +4,31 @@
 #include <TJavaScriptInterpretor.h>
 #include <TAnascriptInterpretor.h>
 #include <TWebWindow.h>
+#include <TcJavaScriptInterpretor.h>
 
 class WebEnvGenerator: public EnvironmentGenerator
 {
+public:
+	WebEnvGenerator(TrecPointer<TInstance> i, TrecPointer<TWindow> w);
+
 	virtual TrecPointer<TEnvironment> GetEnvironment(TrecPointer<TFileShell> shell) override;
+
+private:
+	/**
+	 * The TInstance holding this environment
+	 */
+	TrecPointer<TInstance> instance;
+
+	/**
+	 * The Window this is running in
+	 */
+	TrecPointer<TWindow> window;
 };
 
 
 class WebEnvironment : public TEnvironment
 {
+	friend class WebEnvGenerator;
 public:
 
 
@@ -146,17 +162,62 @@ public:
 	 */
 	virtual void SupportsFileExt(TDataArray<TString>& ext) override;
 
+	/** 
+	 * Method: WebEnvironment::GetWindow
+	 * Purpose: Retrieves the main window
+	 * Parameters: void
+	 * Returns: TrecPointer<TWindow> - the window requested
+	 */
+	TrecPointer<TWindow> GetWindow();
+
+
+	/**
+	 * Method: WebEnvironment::GetInstance
+	 * Purpose: Retrieves the instance
+	 * Parameters: void
+	 * Returns: TrecPointer<TInstance> - the instance requested
+	 */
+	TrecPointer<TInstance> GetInstance();
+	/**
+	 * Method: WebEnvironment::GetVariable
+	 * Purpose: Retrieves the variable requested by the interpretor
+	 * Parameters: TString& var - the name of the variable requested
+	 *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
+	 * Returns: TrecPointer<TVariable> - the variable requested
+	 */
+	virtual TrecPointer<TVariable> GetVariable(TString& var, bool& present, env_var_type evtType = env_var_type::evt_any) override;
+
 private:
 
 	/*
 	 * The Root JavaScript interpretor
 	 */
-	TrecSubPointer<TVariable, TJavaScriptInterpretor> mainJavaScript;
+	TrecSubPointer<TVariable, TcJavaScriptInterpretor> mainJavaScript;
 
 	/**
 	 * The Root Anascript interpretor
 	 */
 	TrecSubPointer<TVariable, TAnascriptInterpretor> mainAnaScript;
 
+	/**
+	 * The TInstance holding this environment
+	 */
+	TrecPointer<TInstance> instance;
+
+	/**
+	 * The Window this is running in
+	 */
+	TrecPointer<TWindow> window;
+
+	/**
+	 * Method: WebEnvironment::SetResources
+	 * Purpose: Allows Generators to provide this environment with the instance and window objects
+	 * Parameters: TrecPointer<TInstance> instance - the instance
+	 *				TrecPointer<TWindow> window -  the window held
+	 * Returns: void
+	 * 
+	 * Note: both parameters must have active objects. Otherwise, an exception will be thrown
+	 */
+	void SetResources(TrecPointer<TInstance> instance, TrecPointer<TWindow> window);
 };
 

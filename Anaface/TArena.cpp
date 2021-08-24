@@ -64,6 +64,9 @@ TArena::~TArena()
 */
 bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	TObject::ThreadLock();
+	// Don't want 3D content automatically overriden by 2D Background
+	drawBackground = false;
 	TControl::onCreate(r,d3d);
 
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|EngineID"));
@@ -84,7 +87,10 @@ bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		arenaEngine = TrecPointerKey::GetNewTrecPointer<TArenaEngine>(d3d, *valpoint.Get());//   ArenaEngine::GetArenaEngine(*(valpoint.Get()), windowHandle, GetModuleHandle(nullptr));
 		if (!arenaEngine.Get())
+		{
+			TObject::ThreadRelease();
 			return false;
+		}
 	}
 
 	valpoint = attributes.retrieveEntry(TString(L"|CameraType"));
@@ -92,6 +98,13 @@ bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		if (!valpoint->Compare(L"LookAt"))
 			lookTo = false;
+	}
+
+	valpoint = attributes.retrieveEntry(TString(L"|LockLookAt"));
+	if (valpoint.Get())
+	{
+		if (!valpoint->CompareNoCase(L"true"))
+			lockLookAt = true;
 	}
 
 	valpoint = attributes.retrieveEntry(TString(L"|StartingDirection"));
@@ -193,9 +206,9 @@ bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	}
 	RefreshVectors();
 
-	return arenaEngine.Get() && viewport;
-
-	
+	bool ret = arenaEngine.Get() && viewport;
+	TObject::ThreadRelease();
+	return ret;	
 }
 
 /*
@@ -206,7 +219,10 @@ bool TArena::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 */
 TrecPointer<TArenaEngine> TArena::getEngine()
 {
-	return arenaEngine;
+	TObject::ThreadLock();
+	auto ret = arenaEngine;
+	TObject::ThreadRelease();
+	return ret;
 }
 
 
@@ -218,22 +234,10 @@ TrecPointer<TArenaEngine> TArena::getEngine()
 */
 void TArena::onDraw(TObject* obj)
 {
+	TObject::ThreadLock();
 	//TControl::onDraw();
 	if (content1.Get())
 		content1->onDraw(TControl::location);
-	
-	/*if (renderTarget)
-	{
-		ID2D1SolidColorBrush* brush = nullptr;
-		
-		if (SUCCEEDED(renderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f,0.0f,0.0f,0.0f), &brush)))
-		{
-			D2D1_RECT_F df;
-			if(convertCRectToD2DRect(&snip, &df))
-				renderTarget->FillRectangle(&df, brush);
-			brush->Release();
-		}
-	}*/
 
 	if (arenaEngine.Get() && viewport)
 	{
@@ -248,9 +252,8 @@ void TArena::onDraw(TObject* obj)
 	{
 		children.ElementAt(c)->onDraw(obj);
 	}
+	TObject::ThreadRelease();
 }
-
-
 
 
 /*
@@ -274,11 +277,47 @@ UCHAR * TArena::GetAnaGameType()
  */
 void TArena::Resize(D2D1_RECT_F& r)
 {
+	TObject::ThreadLock();
 	TControl::Resize(r);
-	if (!viewport)
-		return;
-	viewport->TopLeftX = r.left;
-	viewport->TopLeftY = r.top;
-	viewport->Height = r.bottom - r.top;
-	viewport->Width = r.right - r.left;
+	if (viewport)
+	{
+		viewport->TopLeftX = r.left;
+		viewport->TopLeftY = r.top;
+		viewport->Height = r.bottom - r.top;
+		viewport->Width = r.right - r.left;
+	}
+	TObject::ThreadRelease();
+}
+
+bool TArena::OnScroll(const TPoint& point, const TPoint& direction)
+{
+	if(!isContained(point, TControl::location))
+		return false;
+
+	// DirectX::XMFLOAT3 movment = TCamera::di
+
+	if (cameraType == LOOK_AT && !lockLookAt)
+	{
+		DirectX::XMFLOAT3 movment{ 
+			TCamera::direction_3.x - TCamera::location_3.x,
+			TCamera::direction_3.y - TCamera::location_3.y,
+			TCamera::direction_3.z - TCamera::location_3.z};
+		direction_3.x += (location_3.x * direction.y);
+		direction_3.y += (location_3.y * direction.y);
+		direction_3.z += (location_3.z * direction.y);
+	}
+
+	Translate(direction.y, direction_3);
+
+	TControl::OnScroll(point, direction);
+	return true;
+}
+
+void TArena::QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)
+{
+	TObject::ThreadLock();
+	mediaControls.push_back(TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
+	TControl::QueryMediaControl(mediaControls);
+	TObject::ThreadRelease();
+
 }

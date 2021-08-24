@@ -58,7 +58,7 @@ public:
      * 
      * Attributes: override
      */
-    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) override;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables = true) override;
 
 
     // Methods specific to the Anascript Interpreter

@@ -42,11 +42,13 @@ TSpriteControl::~TSpriteControl()
  */
 void TSpriteControl::onDraw(TObject* obj)
 {
+	ThreadLock();
 	if (sprite.Get())
 	{
 		sprite->Draw(location);
 	}
 	TControl::onDraw(obj);
+	ThreadRelease();
 }
 
 /**
@@ -57,6 +59,8 @@ void TSpriteControl::onDraw(TObject* obj)
  */
 void TSpriteControl::SetSpriteEngine(TrecPointer<T2DSpriteEngine> sprite)
 {
+	ThreadLock();
 	if(sprite.Get())
 		this->sprite = sprite;
+	ThreadRelease();
 }

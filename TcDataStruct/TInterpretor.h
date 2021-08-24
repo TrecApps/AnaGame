@@ -5,6 +5,9 @@
 #include <TDataMap.h>
 #include <TFile.h>
 #include <TEnvironment.h>
+#include "DefaultObjectOperator.h"
+
+#include "TClassStruct.h"
 
 
     /**
@@ -14,55 +17,8 @@
      * Returns: 
      */
 
-/**
- * Union: doubleLong
- * Purpose: Holds either a double, unsigned or signed integer, all 8 bytes
- */
-union doubleLong
-{
-    LONG64 s;
-    ULONG64 u;
-    double d;
-};
 
-/**
- * Enum Class: double_long
- * Purpose: used to keep track of the status of the doubleLong union
- */
-enum class double_long
-{
-    dl_sign,  // Set to a signed integer
-    dl_unsign,// Set to an unsigned integer
-    dl_double,// Set to double
-    dl_invalid // Not properly set
-};
 
-/**
- * Class: DoubleLong
- * Purpose: Aids interpretors in basic arithmetic byt hold values and keeping track of their types
- */
-class TC_DATA_STRUCT DoubleLong
-{
-public:
-    DoubleLong(ULONG64 val);
-    DoubleLong(LONG64 val);
-    DoubleLong(double val);
-    DoubleLong();
-    doubleLong value;
-    double_long type;
-
-    bool operator<(const DoubleLong& o);
-    bool operator<=(const DoubleLong& o);
-    bool operator>=(const DoubleLong& o);
-    bool operator>(const DoubleLong& o);
-    bool operator==(const DoubleLong& o);
-
-    ULONG64 ToUnsignedLong()const;
-
-    ULONG64 GetBitAnd(const DoubleLong& o);
-    ULONG64 GetBitOr(const DoubleLong& o);
-    ULONG64 GetBitXor(const DoubleLong& o);
-};
 
 typedef enum class report_mode
 {
@@ -118,6 +74,11 @@ public:
     TrecPointer<TVariable> errorObject;
 
     /**
+     * The Interpretor that made the call
+     */
+    TrecSubPointer<TVariable, TInterpretor> caller;
+
+    /**
      * What happens when the Interpreter has to return due to a command such as return, break, or continue
      */
     report_mode mode;
@@ -145,14 +106,20 @@ class TC_DATA_STRUCT TInterpretor : public TVariable
 {
 public:
 
+    static void CorrectSplitStringForParenthesis(TrecPointer<TDataArray<TString>> splitString, WCHAR join);
+
+    virtual TrecPointer<TVariable> Clone()override;
+
     /**
      * Method: TInterpretor::UpdateVariable
      * Purpose: Updates an existing Variable
      * Parameters: const TString& name - the name to update
      *              TrecPointer<TVariable> value - value to update it with
+     *              bool addLocally - If true, then tf the variable is not found, go ahead and add it to 'this' interpretor (false by default)
+     *              bool makeConst - whether the variable added should be const or not (ignored if 'addLocally' is false) (false by Default)
      * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable)
      */
-    UINT UpdateVariable(const TString& name, TrecPointer<TVariable> value);
+    virtual UINT UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally = false, bool makeConst = false);
 
     /**
      * Method: TInterpretor::TInterpretor
@@ -232,7 +199,7 @@ public:
      * 
      * Attributes: abstract
      */
-    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params) = 0;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables = true) = 0;
 
 
     /**
@@ -322,7 +289,7 @@ public:
      * 
      * Attributes: override
      */
-    virtual UINT GetType() override;
+    virtual UINT GetVType() override;
 
 
     /**
@@ -344,7 +311,25 @@ public:
      */
     void CheckVarName(TString& varname, ReportObject& ro, UINT line);
 
+    bool SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating);
+
+    void SetFirstParamName(const TString& iParam);
+
+    bool GetClass(const TString& className, TClassStruct& classStruct);
+
+    void SetCaller(TrecSubPointer<TVariable, TInterpretor> caller);
+
 protected:
+    /**
+     * The list of Types held by the Interpretor
+     */
+    TDataMap<TClassStruct> classes;
+
+    /**
+     * The Interpretor that called ths one
+     */
+    TrecSubPointer<TVariable, TInterpretor> caller;
+
     /**
      * The Interpretor that created this interpretor 
      */

@@ -25,19 +25,28 @@ TString TCodeHandler::GetType()
 
 void TCodeHandler::Initialize(TrecPointer<Page> page)
 {
+	ThreadLock();
 	if (!page.Get())
+	{
+		ThreadRelease();
 		return;
+	}
 	auto control = page->GetRootControl();
 
 	if (!control.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if(dynamic_cast<TScrollerControl*>(control.Get()))
 		control = dynamic_cast<TScrollerControl*>(control.Get())->GetChildControl();
 
 	TLayout* lay = dynamic_cast<TLayout*>(control.Get());
 	if (!lay)
+	{
+		ThreadRelease();
 		return;
+	}
 	lines = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(lay->GetLayoutChild(0, 0));
 	code = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(lay->GetLayoutChild(1, 0));
 
@@ -55,7 +64,7 @@ void TCodeHandler::Initialize(TrecPointer<Page> page)
 			{
 				if (codeData.GetSize())
 				{
-					codeData.AppendFormat(L"\n%ws", line.GetConstantBuffer());
+					codeData.AppendFormat(L"\n%ws", line.GetConstantBuffer().getBuffer());
 				}
 				else
 					codeData.Set(line);
@@ -64,6 +73,7 @@ void TCodeHandler::Initialize(TrecPointer<Page> page)
 			code->SetText(codeData);
 		}
 	}
+	ThreadRelease();
 }
 
 void TCodeHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
@@ -76,15 +86,15 @@ void TCodeHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 
 void TCodeHandler::OnSave()
 {
+	ThreadLock();
 	SetSaveFile();
 
 	if (filePointer.Get() && !filePointer->IsDirectory())
 	{
-		
 		TFile saver(filePointer->GetPath(), TFile::t_file_write | TFile::t_file_create_always);
-
 		OnSave(saver);
 	}
+	ThreadRelease();
 }
 
 
@@ -96,8 +106,10 @@ bool TCodeHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> messag
 
 void TCodeHandler::OnSave(TFile& file)
 {
-	if (!file.IsOpen() || !code.Get()) return;
-	file.WriteString(code->GetText());
+	ThreadLock();
+	if (file.IsOpen() && code.Get()) 
+		file.WriteString(code->GetText());
+	ThreadRelease();
 }
 
 void TCodeHandler::OnLoad(TFile&)

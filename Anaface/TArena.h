@@ -95,5 +95,18 @@ public:
 	void Resize(D2D1_RECT_F& r) override;
 
 
+	/**
+	 * Method: TControl::OnScroll
+	 * Purpose: Allows Controls to handle Scrolling messages from Windows
+	 * Parameters: const TPoint& point - where the mouse is
+	 *				const TPoint& direction - indication of which direction it is going in
+	 * Returns: bool - true of a control actually used the message (signal to stop propagating)
+	 *
+	 * Attributes: virtual
+	 */
+	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
+
+
+	virtual void QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls)override;
 };
 

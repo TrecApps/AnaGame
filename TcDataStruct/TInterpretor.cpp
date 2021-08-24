@@ -41,18 +41,27 @@ ReportObject::ReportObject(const ReportObject& obj)
  */
 TrecPointer<TVariable> TInterpretor::GetVariable(TString& varName, bool& present)
 {
+	ThreadLock();
 	TVariableMarker marker;
 	if (variables.retrieveEntry(varName, marker))
 	{
 		present = true;
+		ThreadRelease();
 		return marker.GetVariable();
 	}
 
 	if (parent.Get())
+	{
+		ThreadRelease();
 		return parent->GetVariable(varName, present);
+	}
 	if (environment.Get())
+	{
+		ThreadRelease();
 		return environment->GetVariable(varName, present);
+	}
 	present = false;
+	ThreadRelease();
 	return TrecPointer<TVariable>();
 }
 
@@ -64,11 +73,13 @@ TrecPointer<TVariable> TInterpretor::GetVariable(TString& varName, bool& present
  */
 void TInterpretor::SetParamNames(TDataArray<TString>& names)
 {
+	ThreadLock();
 	this->paramNames.RemoveAll();
 	for (UINT Rust = 0; Rust < names.Size(); Rust++)
 	{
 		paramNames.push_back(names[Rust]);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -133,12 +144,12 @@ UINT TInterpretor::GetSize()
 }
 
 /**
- * Method: TInterpretor::GetType
+ * Method: TInterpretor::GetVType
  * Purpose: Returns the basic type of the object
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
  */
-UINT TInterpretor::GetType()
+UINT TInterpretor::GetVType()
 {
 	return 0;
 }
@@ -159,18 +170,19 @@ void TInterpretor::SetSelf(TrecPointer<TVariable> self)
  */
 void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 {
+	ThreadLock();
 	int badChar = varname.FindOneOf(L"!@#$%^&*(){}[]-=+/,;:'\"\\`~");
 	if (badChar != -1)
 	{
 		ro.returnCode = ReportObject::invalid_name;
 		TString chara(varname.SubString(badChar, badChar + 1));
-		ro.errorMessage.Format(L"Error! Found invalid character '%ws' in variable name!", chara.GetConstantBuffer());
+		ro.errorMessage.Format(L"Error! Found invalid character '%ws' in variable name!", chara.GetConstantBuffer().getBuffer());
 
 		TString stack;
-		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
 		ro.stackTrace.push_back(stack);
 
-
+		ThreadRelease();
 		return;
 	}
 
@@ -180,17 +192,126 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
 	{
 		ro.returnCode = ReportObject::invalid_name;
 		TString chara(firstChar);
-		ro.errorMessage.Format(L"Error! Found invalid character '%ws' as First character in Variable name. Need to be 'a-z', 'A-Z', or '_'!", chara.GetConstantBuffer());
+		ro.errorMessage.Format(L"Error! Found invalid character '%ws' as First character in Variable name. Need to be 'a-z', 'A-Z', or '_'!", chara.GetConstantBuffer().getBuffer());
 
 		TString stack;
-		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer(), line);
+		stack.Format(L"At %ws (line: %i)", file->GetFileName().GetConstantBuffer().getBuffer(), line);
 		ro.stackTrace.push_back(stack);
 
-
-		return;
 	}
 
 	ro.returnCode = 0;
+	ThreadRelease();
+}
+
+bool TInterpretor::SubmitClassType(const TString& className, TClassStruct& classStruct, bool updating)
+{
+	ThreadLock();
+	if (!updating)
+	{
+		TClassStruct s;
+		if (classes.retrieveEntry(className, s))
+		{
+			ThreadRelease();
+			return false;
+		}
+		classes.addEntry(className, classStruct);
+		ThreadRelease();
+		return true;
+	}
+	else
+	{
+		TClassStruct s;
+		if (classes.retrieveEntry(className, s))
+		{
+			classes.setEntry(className, classStruct);
+			ThreadRelease();
+			return true;
+		}
+		bool ret = parent.Get() && parent->SubmitClassType(className, classStruct, updating);
+		ThreadRelease();
+		return ret;
+	}
+}
+
+void TInterpretor::SetFirstParamName(const TString& iParam)
+{
+	ThreadLock();
+	if (!paramNames.Size())
+	{
+		paramNames.push_back(iParam);
+		ThreadRelease();
+		return;
+	}
+
+	if (!iParam.Compare(paramNames[0]))
+	{
+		ThreadRelease();
+		return;
+	}
+	paramNames.push_back(paramNames[paramNames.Size() - 1]);
+
+	for (UINT Rust = paramNames.Size() - 2; Rust < paramNames.Size(); Rust--)
+	{
+		paramNames[Rust + 1].Set(paramNames[Rust]);
+	}
+
+	paramNames[0].Set(iParam);
+	ThreadRelease();
+}
+
+bool TInterpretor::GetClass(const TString& className, TClassStruct& classStruct)
+{
+	ThreadLock();
+	if (classes.retrieveEntry(className, classStruct))
+	{
+		ThreadRelease();
+		return true;
+	}
+	if (parent.Get())
+		parent->GetClass(className, classStruct);
+	ThreadRelease();
+	return false;
+}
+
+void TInterpretor::SetCaller(TrecSubPointer<TVariable, TInterpretor> caller)
+{
+	this->caller = caller;
+}
+
+void TInterpretor::CorrectSplitStringForParenthesis(TrecPointer<TDataArray<TString>> splitString, WCHAR join)
+{
+	for (UINT Rust = 1; Rust < splitString->Size(); Rust++)
+	{
+		TString first(splitString->at(Rust - 1));
+		TString second(splitString->at(Rust));
+
+		if (first.CountFinds(L'(') > first.CountFinds(L')'))
+		{
+			first.AppendChar(join);
+			first.Append(second);
+
+			splitString->at(Rust - 1).Set(first);
+			splitString->RemoveAt(Rust--);
+			continue;
+		}
+		if (first.CountFinds(L'[') > first.CountFinds(L']'))
+		{
+			first.AppendChar(join);
+			first.Append(second);
+
+			splitString->at(Rust - 1).Set(first);
+			splitString->RemoveAt(Rust--);
+		}
+	}
+}
+
+TrecPointer<TVariable> TInterpretor::Clone()
+{
+	ThreadLock();
+	auto ret = TrecPointerKey::GetTrecPointerFromSub<TVariable,TInterpretor>(TrecPointerKey::GetSubPointerFromSoft<TVariable, TInterpretor>(self));
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -198,10 +319,16 @@ void TInterpretor::CheckVarName(TString& varname, ReportObject& ro, UINT line)
  * Purpose: Updates an existing Variable
  * Parameters: const TString& name - the name to update
  *              TrecPointer<TVariable> value - value to update it with
- * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable)
+ *              bool addLocally - If true, then tf the variable is not found, go ahead and add it to 'this' interpretor (false by default)
+ *              bool makeConst - whether the variable added should be const or not (ignored if 'addLocally' is false) (false by Default)
+ * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable, 3 for no name Provided)
  */
-UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value)
+UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally, bool makeConst)
 {
+	if (!name.GetSize())
+		return 3;
+
+	ThreadLock();
 	for (UINT Rust = 0; Rust < variables.count(); Rust++)
 	{
 		TDataEntry<TVariableMarker> varMarker;
@@ -213,13 +340,26 @@ UINT TInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> va
 				{
 					varMarker.object.SetVariable(value);
 					variables.setEntry(name, varMarker.object);
+					ThreadRelease();
 					return 0;
 				}
-				else return 2;
+				else
+				{
+					ThreadRelease();
+					return 2;
+				}
 			}
 		}
 	}
-	return parent.Get() ? parent->UpdateVariable(name, value) : 1;
+	UINT res = parent.Get() ? parent->UpdateVariable(name, value) : 1;
+	if (res == 1 && addLocally)
+	{
+		variables.addEntry(name, TVariableMarker(!makeConst, value));
+		ThreadRelease();
+		return 0;
+	}
+	ThreadRelease();
+	return res;
 }
 
 
@@ -257,20 +397,25 @@ var_type TInterpretor::GetVarType()
  */
 UINT TInterpretor::SetCode(TrecPointer<TFile> file, ULONG64 start, ULONG64 end)
 {
+	ThreadLock();
+	UINT ret = 0;
 	if (!file.Get())
-		return 1;
-	if (!file->IsOpen())
-		return 2;
-	if (file->GetLength() < end)
-		return 3;
-	if (start >= end)
-		return 4;
+		ret = 1;
+	else if (!file->IsOpen())
+		ret = 2;
+	else if (file->GetLength() < end)
+		ret = 3;
+	else if (start >= end)
+		ret = 4;
 
-	this->file = file;
-	this->start = start;
-	this->end = end;
-
-	return 0;
+	if (!ret)
+	{
+		this->file = file;
+		this->start = start;
+		this->end = end;
+	}
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -283,8 +428,10 @@ UINT TInterpretor::SetCode(TrecPointer<TFile> file, ULONG64 start, ULONG64 end)
  */
 void TInterpretor::CloseFile()
 {
+	ThreadLock();
 	if (file.Get() && file->IsOpen())
 		file->Close();
+	ThreadRelease();
 }
 
 
@@ -935,45 +1082,7 @@ DoubleLong TInterpretor::Exponent(const DoubleLong& v1, const DoubleLong& v2)
  */
 DoubleLong TInterpretor::GetValueFromPrimitive(TrecPointer<TVariable> var)
 {
-	if(!var.Get() || var->GetVarType() != var_type::primitive)
-		return DoubleLong();
-
-	double f_value = 0.0;
-	ULONG64 u_value = 0ULL;
-	LONG64 s_value = 0LL;
-
-	switch (var->GetType())
-	{
-	case (TPrimitiveVariable::type_bool):
-		return DoubleLong( 1ULL);
-
-	case (0b00110010):						// Indicates a four-byte float
-		u_value = var->Get4Value();
-		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
-		return DoubleLong( f_value);
-
-	case (0b01000010):						// Indicates an eight-byte float
-		u_value = var->Get8Value();
-		memcpy_s(&f_value, sizeof(f_value), &u_value, sizeof(u_value));
-		return DoubleLong( f_value);
-
-	case (0b00010000):						// Indicates a 1-byte int
-	case (0b00100000):						// Indicates a 2-byte int
-	case (0b00110000):						// Indicates a 4-byte int
-	case (0b01000000):						// Indicates an 8-byte int
-		u_value = var->Get8Value();
-		memcpy_s(&s_value, sizeof(s_value), &u_value, sizeof(u_value));
-		return DoubleLong( s_value);
-
-	case (0b00011000):						// Indicates a 1-byte uint
-	case (0b00101000):						// Indicates a 2-byte uint
-	case (0b00111000):						// Indicates a 4-byte uint
-	case (0b01001000):						// Indicates an 8-byte uint
-		return DoubleLong( static_cast<ULONG64>(u_value));
-
-
-	}
-	return DoubleLong();
+	return DoubleLong::GetValueFromPrimitive(var);
 }
 
 /**
@@ -987,8 +1096,10 @@ TString TInterpretor::GetStringFromPrimitive(TrecPointer<TVariable> var)
 	if (!var.Get() || var->GetVarType() != var_type::primitive)
 		return TString();
 	TString strValue;
-	auto v1Type = var->GetType();
+	auto v1Type = var->GetVType();
 
+
+	ThreadLock();
 	if (v1Type == (TPrimitiveVariable::type_char & TPrimitiveVariable::type_one))
 		strValue.Set(static_cast<char>(var->Get4Value()));
 	else if (v1Type == (TPrimitiveVariable::type_char & TPrimitiveVariable::type_two))
@@ -1015,267 +1126,6 @@ TString TInterpretor::GetStringFromPrimitive(TrecPointer<TVariable> var)
 			strValue.Format(L"%u", value.value.u);
 		}
 	}
+	ThreadRelease();
 	return strValue;
-}
-
-DoubleLong::DoubleLong(ULONG64 val)
-{
-	value.u = val;
-	type = double_long::dl_unsign;
-}
-
-DoubleLong::DoubleLong(LONG64 val)
-{
-	value.s = val;
-	type = double_long::dl_sign;
-}
-
-DoubleLong::DoubleLong(double val)
-{
-	value.d = val;
-	type = double_long::dl_double;
-}
-
-DoubleLong::DoubleLong()
-{
-	type = double_long::dl_invalid;
-	value.u = 0ULL;
-}
-
-bool DoubleLong::operator<(const DoubleLong& o)
-{
-	switch (type)
-	{
-	case double_long::dl_double:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.d < o.value.d;
-		case double_long::dl_sign:
-			return value.d < o.value.s;
-		case double_long::dl_unsign:
-			return value.d < o.value.u;
-		}
-		break;
-	case double_long::dl_sign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.s < o.value.d;
-		case double_long::dl_sign:
-			return value.s < o.value.s;
-		case double_long::dl_unsign:
-			return value.s < o.value.u;
-		}
-		break;
-	case double_long::dl_unsign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.u < o.value.d;
-		case double_long::dl_sign:
-			return value.u < o.value.s;
-		case double_long::dl_unsign:
-			return value.u < o.value.u;
-		}
-	}
-
-	return false;
-}
-
-bool DoubleLong::operator==(const DoubleLong& o)
-{
-	switch (type)
-	{
-	case double_long::dl_double:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.d == o.value.d;
-		case double_long::dl_sign:
-			return value.d == o.value.s;
-		case double_long::dl_unsign:
-			return value.d == o.value.u;
-		}
-		break;
-	case double_long::dl_sign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.s == o.value.d;
-		case double_long::dl_sign:
-			return value.s == o.value.s;
-		case double_long::dl_unsign:
-			return value.s == o.value.u;
-		}
-		break;
-	case double_long::dl_unsign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.u == o.value.d;
-		case double_long::dl_sign:
-			return value.u == o.value.s;
-		case double_long::dl_unsign:
-			return value.u == o.value.u;
-		}
-	}
-	return type == o.type;
-}
-
-ULONG64 DoubleLong::ToUnsignedLong()const
-{
-	ULONG64 ret;
-
-	switch (type)
-	{
-	case double_long::dl_double:
-		memcpy_s(&ret, sizeof(ret), &value.d, sizeof(value.d));
-		break;
-	case double_long::dl_sign:
-		memcpy_s(&ret, sizeof(ret), &value.s, sizeof(value.s));
-		break;
-	case double_long::dl_unsign:
-		ret = value.u;
-		break;
-	default:
-		ret = 0ULL;
-	}
-
-	return ret;
-}
-
-ULONG64 DoubleLong::GetBitAnd(const DoubleLong& o)
-{
-	return ToUnsignedLong() & o.ToUnsignedLong();
-}
-
-ULONG64 DoubleLong::GetBitOr(const DoubleLong& o)
-{
-	return ToUnsignedLong() | o.ToUnsignedLong();
-}
-
-ULONG64 DoubleLong::GetBitXor(const DoubleLong& o)
-{
-	return ToUnsignedLong() ^ o.ToUnsignedLong();
-}
-
-bool DoubleLong::operator<=(const DoubleLong& o)
-{
-	switch (type)
-	{
-	case double_long::dl_double:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.d <= o.value.d;
-		case double_long::dl_sign:
-			return value.d <= o.value.s;
-		case double_long::dl_unsign:
-			return value.d <= o.value.u;
-		}
-		break;
-	case double_long::dl_sign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.s <= o.value.d;
-		case double_long::dl_sign:
-			return value.s <= o.value.s;
-		case double_long::dl_unsign:
-			return value.s <= o.value.u;
-		}
-		break;
-	case double_long::dl_unsign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.u <= o.value.d;
-		case double_long::dl_sign:
-			return value.u <= o.value.s;
-		case double_long::dl_unsign:
-			return value.u <= o.value.u;
-		}
-	}
-	return false;
-}
-
-bool DoubleLong::operator>=(const DoubleLong& o)
-{
-	switch (type)
-	{
-	case double_long::dl_double:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.d >= o.value.d;
-		case double_long::dl_sign:
-			return value.d >= o.value.s;
-		case double_long::dl_unsign:
-			return value.d >= o.value.u;
-		}
-		break;
-	case double_long::dl_sign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.s >= o.value.d;
-		case double_long::dl_sign:
-			return value.s >= o.value.s;
-		case double_long::dl_unsign:
-			return value.s >= o.value.u;
-		}
-		break;
-	case double_long::dl_unsign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.u >= o.value.d;
-		case double_long::dl_sign:
-			return value.u >= o.value.s;
-		case double_long::dl_unsign:
-			return value.u >= o.value.u;
-		}
-	}
-	return false;
-}
-
-bool DoubleLong::operator>(const DoubleLong& o)
-{
-	switch (type)
-	{
-	case double_long::dl_double:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.d > o.value.d;
-		case double_long::dl_sign:
-			return value.d > o.value.s;
-		case double_long::dl_unsign:
-			return value.d > o.value.u;
-		}
-		break;
-	case double_long::dl_sign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.s > o.value.d;
-		case double_long::dl_sign:
-			return value.s > o.value.s;
-		case double_long::dl_unsign:
-			return value.s > o.value.u;
-		}
-		break;
-	case double_long::dl_unsign:
-		switch (o.type)
-		{
-		case double_long::dl_double:
-			return value.u > o.value.d;
-		case double_long::dl_sign:
-			return value.u > o.value.s;
-		case double_long::dl_unsign:
-			return value.u > o.value.u;
-		}
-	}
-	return false;
 }

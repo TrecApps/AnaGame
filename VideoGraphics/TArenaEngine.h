@@ -263,6 +263,25 @@ public:
 	 * Note: Because this is a raw pointer, this should eventually be replaced
 	 */
 	TTrecPointerArray<ArenaModel>* GetModelList();
+
+	/**
+	 * Method: TArenaEngine::GetInputInfo
+	 * Purpose: allows code to access info about the vertex data specs of a given external shader
+	 * Parameters: int shaderId - the shader to access
+	 *				UINT& count - number of elements in the returned array
+	 * Returns: D3D11_INPUT_ELEMENT_DESC* - pointer to the description map (if null, then no such shader was available and 'count' will be set to 0)
+	 */
+	D3D11_INPUT_ELEMENT_DESC* GetInputInfo(int shaderId, UINT& count);
+
+
+	/**
+	 * Method: TArenaEngine::GetInputInfo
+	 * Purpose: allows code to access info about the vertex data specs of a given anagame shader
+	 * Parameters: DefaultShader shaderId - the shader to access
+	 *				UINT& count - number of elements in the returned array
+	 * Returns: D3D11_INPUT_ELEMENT_DESC* - pointer to the description map (if null, then no such shader was available and 'count' will be set to 0)
+	 */
+	D3D11_INPUT_ELEMENT_DESC* GetInputInfo(DefaultShader shaderId, UINT& count);
 protected:
 	/**
 	 * the Window Level Engine to work with (holds D3D Resources)

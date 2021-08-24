@@ -3,15 +3,28 @@
 #include <new>
 #include <memory>
 #include "TrecLib.h"
+#include <cassert>
 
 #include "AnagameDef.h"
 
+#define AG_THREAD_LOCK ThreadLock();
+#define RETURN_THREAD_UNLOCK ThreadRelease(); return 
 
 extern UCHAR TArrayType[];
 extern UCHAR TDataArrayType[];
 extern UCHAR TMapType[];
 
 class TString;
+
+class _TREC_LIB_DLL TObjectLocker
+{
+public:
+	TObjectLocker(CRITICAL_SECTION* section);
+	~TObjectLocker();
+
+private:
+	CRITICAL_SECTION* section;
+};
 
 /*
 * Class: TObject
@@ -118,6 +131,36 @@ public:
 
 protected:
 	
+	/**
+	 * Method: TObject::ThreadLock
+	 * Purpose: Allows any Object that can claim TObject as a type to restrict access to the Current Thread being called
+	 * Parameters: void
+	 * Returns: bool - whether the locking mechanism worked
+	 * 
+	 * Note: In order for this method and ThreadRelease to work properly, you must hold on to the boo that is returned and pass it into ThreadRelease.
+	 *		Since methods can call each other, Only the first method called should be the one that actually unlocks the object
+	 */
+	void ThreadLock() const;
+
+	/**
+	 * Method: TObject::ThreadRelease
+	 * Purpose: Allows the TObject to release any thread that may have previously been restricted, assuming that true is passed
+	 * Parameters: bool key - whether the unlocking mechanism should actually proceed
+	 * Returns: void
+	 */
+	void ThreadRelease()const;
+
+	/**
+	 * Critical Section
+	 */
+	mutable CRITICAL_SECTION thread;
+
+	mutable UCHAR threadCounter;
+
+	/**
+	 * Whether we are currently in a critical section
+	 */
+	mutable bool isInSection;
 };
 
 

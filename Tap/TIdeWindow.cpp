@@ -57,7 +57,8 @@ TString TIdeWindow::GetType()
 int TIdeWindow::PrepareWindow()
 {
 	//body = TrecPointerKey::GetNewSelfTrecPointerAlt<Page, IDEPage>(ide_page_type_body, pageBarSpace);
-	
+
+	ThreadLock();
 	TrecSubPointer<Page, IDEPage>* pages[] = {
 		&body,
 		&basicConsole,
@@ -84,9 +85,67 @@ int TIdeWindow::PrepareWindow()
 				dynamic_cast<IDEPage*>(pages[c]->Get())->SetLink(*pages[rust], static_cast<ide_page_type>(rust));
 		}
 	}
+	int ret = TWindow::PrepareWindow();
+
+	ThreadRelease();
+	return ret;
+}
+
+void TIdeWindow::OnWindowResize(UINT width, UINT height)
+{
+	ThreadLock();
+	if (!mainPage.Get())
+	{
+		ThreadRelease();
+		return;
+	}
+	size.top = size.left = 0;
+	size.right = width;
+	size.left = height;
+
+	D2D1_RECT_F curArea = convertRECTToD2DRectF(size);
+	curArea.bottom = curArea.top + this->mainViewSpace;
+
+	mainPage->OnResize(curArea, 0, d3dEngine);
 
 
-	return TWindow::PrepareWindow();
+	curArea.top += this->mainViewSpace;
+
+
+	D2D1_RECT_F left = curArea;
+	D2D1_RECT_F middle = curArea;
+	D2D1_RECT_F right = curArea;
+	D2D1_RECT_F bottom = curArea;
+
+
+	left.right = width / 5;
+	right.left = width - (width / 5);
+	middle.left = left.right;
+	middle.right = right.left;
+
+	bottom.top = height * 2 / 3 + mainViewSpace;
+
+	left.bottom = right.bottom = middle.bottom = bottom.top;
+
+	D2D1_RECT_F zeroRec{ 0,0,0,0 };
+
+	body->OnResize(middle, 0, d3dEngine);
+	upperLeft->OnResize(left, 0, d3dEngine);
+	upperRight->OnResize(right, 0, d3dEngine);
+	basicConsole->OnResize(zeroRec, 0, d3dEngine);
+	lowerLeft->OnResize(zeroRec, 0, d3dEngine);
+	lowerRight->OnResize(zeroRec, 0, d3dEngine);
+	deepConsole->OnResize(bottom, 0, d3dEngine);
+
+	if (d3dEngine.Get())
+	{
+		d3dEngine->Resize(width, height);
+	}
+	if (drawingBoard.Get())
+	{
+		drawingBoard->Resize(currentWindow, size, d3dEngine);
+	}
+	ThreadRelease();
 }
 
 /**
@@ -98,78 +157,74 @@ int TIdeWindow::PrepareWindow()
  */
 void TIdeWindow::OnLButtonUp(UINT nFlags, TPoint point)
 {
-	if (dynamic_cast<IDEPage*>(body.Get())->OnLButtonUp(point) && currentHolder.Get())
+	ThreadLock();
+	if (currentHolder.Get())
 	{
-		if (focusPage.Get() && body.Get() != focusPage.Get())
+		TrecSubPointer<Page, IDEPage> recievedPage;
+
+		if (body->TookTab(currentHolder))
 		{
-			focusPage->RemovePage(currentHolder);
+			recievedPage = body;
+			goto doneCheckingTab;
 		}
-		body->AddNewPage(currentHolder);
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(basicConsole.Get())->OnLButtonUp(point) && currentHolder.Get())
-	{
-		if (focusPage.Get() && basicConsole.Get() != focusPage.Get())
+		if (basicConsole->TookTab(currentHolder))
 		{
-			focusPage->RemovePage(currentHolder);
+			recievedPage = basicConsole;
+			goto doneCheckingTab;
 		}
-		basicConsole->AddNewPage(currentHolder);
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(deepConsole.Get())->OnLButtonUp(point) && currentHolder.Get())
-	{
-		if (focusPage.Get() && deepConsole.Get() != focusPage.Get())
+		if (upperLeft->TookTab(currentHolder))
 		{
-			focusPage->RemovePage(currentHolder);
+			recievedPage = upperLeft;
+			goto doneCheckingTab;
 		}
-		deepConsole->AddNewPage(currentHolder);
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(upperRight.Get())->OnLButtonUp(point) && currentHolder.Get())
-	{  
-		if (focusPage.Get() && upperRight.Get() != focusPage.Get())
+		if (upperRight->TookTab(currentHolder))
 		{
-			focusPage->RemovePage(currentHolder);
+			recievedPage = upperRight;
+			goto doneCheckingTab;
 		}
-		upperRight->AddNewPage(currentHolder);
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(lowerRight.Get())->OnLButtonUp(point) && currentHolder.Get())
-	{
-		if (focusPage.Get() && lowerRight.Get() != focusPage.Get())
+		if (lowerLeft->TookTab(currentHolder))
 		{
-			focusPage->RemovePage(currentHolder);
+			recievedPage = lowerLeft;
+			goto doneCheckingTab;
 		}
-		lowerRight->AddNewPage(currentHolder);
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(upperLeft.Get())->OnLButtonUp(point) && currentHolder.Get())
-	{
-		if (focusPage.Get() && upperLeft.Get() != focusPage.Get())
+		if (lowerRight->TookTab(currentHolder))
 		{
-			focusPage->RemovePage(currentHolder);
+			recievedPage = lowerRight;
+			goto doneCheckingTab;
 		}
-		upperLeft->AddNewPage(currentHolder);
-		currentHolder.Nullify();
-	}
-	if (dynamic_cast<IDEPage*>(lowerLeft.Get())->OnLButtonUp(point) && currentHolder.Get())
-	{
-		if (focusPage.Get() && lowerLeft.Get() != focusPage.Get())
+		if (deepConsole->TookTab(currentHolder))
 		{
-			focusPage->RemovePage(currentHolder);
+			recievedPage = deepConsole;
+			goto doneCheckingTab;
 		}
-		lowerLeft->AddNewPage(currentHolder);
-		currentHolder.Nullify();
+		if (basicConsole->TookTab(currentHolder))
+		{
+			recievedPage = basicConsole;
+			goto doneCheckingTab;
+		}
+	doneCheckingTab:
+
+		if (!recievedPage.Get() && tabPage.Get() && tabPage->TookTab(currentHolder))
+		{
+			recievedPage = tabPage;
+		}
+
+		if (recievedPage.Get() && recievedPage.Get() != tabPage.Get() && tabPage.Get())
+		{
+			tabPage->RemovePage(currentHolder);
+		}
+
+		if (recievedPage.Get())
+		{
+			tabPage.Nullify();
+			currentHolder.Nullify();
+		}
+
 	}
-	if (focusPage.Get() && currentHolder.Get())
-	{
-		focusPage->AddNewPage(currentHolder);
-	}
-	currentHolder.Nullify();
 
 	TWindow::OnLButtonUp(nFlags, point);
 	focusPage.Nullify();
-
+	ThreadRelease();
 }
 
 /**
@@ -180,15 +235,19 @@ void TIdeWindow::OnLButtonUp(UINT nFlags, TPoint point)
  * Returns: void
  */
 void TIdeWindow::OnMouseMove(UINT nFlags, TPoint point)
-{ 
-	if (locked) return;
+{
+	ThreadLock();
+	if (locked) {
+		ThreadRelease();
+		return;
+	}
 	messageOutput output = messageOutput::negative;
 	if (currentScrollBar.Get())
 	{
-
 		currentScrollBar->OnMouseMove(nFlags, point, &output);
 		
 		Draw();
+		ThreadRelease();
 		return;
 	}
 
@@ -251,12 +310,13 @@ finish:
 
 	if (currentHolder.Get())
 	{
-		currentHolder->Move(point);
+		currentHolder->MovePoint(point.x, point.y);
 	}
 
 
 	if (output == messageOutput::positiveContinueUpdate || output == messageOutput::positiveOverrideUpdate || output == messageOutput::negativeUpdate)
 		Draw();
+	ThreadRelease();
 }
 
 /**
@@ -268,7 +328,11 @@ finish:
  */
 void TIdeWindow::OnLButtonDown(UINT nFlags, TPoint point)
 {
-	if (locked) return;
+	ThreadLock();
+	if (locked) {
+		ThreadRelease(); 
+		return;
+	}
 	messageOutput output = messageOutput::negative;
 
 
@@ -331,11 +395,31 @@ void TIdeWindow::OnLButtonDown(UINT nFlags, TPoint point)
 
 finish:
 	
-
-
-
 	if (output == messageOutput::positiveContinueUpdate || output == messageOutput::positiveOverrideUpdate || output == messageOutput::negativeUpdate)
 		Draw();
+	ThreadRelease();
+}
+
+bool TIdeWindow::OnScroll(const TPoint& point, const TPoint& direction)
+{
+	if (TWindow::OnScroll(point, direction))
+		return true;
+	if (body->OnScroll(point, direction))
+		return true;
+	if (basicConsole->OnScroll(point, direction))
+		return true;
+	if (lowerLeft->OnScroll(point, direction))
+		return true;
+	if (lowerRight->OnScroll(point, direction))
+		return true;
+	if (upperLeft->OnScroll(point, direction))
+		return true;
+	if (upperRight->OnScroll(point, direction))
+		return true;
+	if (deepConsole->OnScroll(point, direction))
+		return true;
+
+	return false;
 }
 
 /**
@@ -346,10 +430,12 @@ finish:
  */
 void TIdeWindow::AddNewMiniApp(TrecPointer<MiniApp> app)
 {
+	ThreadLock();
 	if (app.Get())
 	{
 		apps.push_back(app);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -363,15 +449,19 @@ void TIdeWindow::AddNewMiniApp(TrecPointer<MiniApp> app)
  *				bool pageTypeStrict - whether the caller is strict when it comes to the location of the Page
  * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
  */
-TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict)
+TrecPointer<Page> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict)
 {
+	ThreadLock();
 	if (!mainPage.Get())
-		return TrecSubPointer<Page, IDEPage>();
-
+	{
+		ThreadRelease();
+		return TrecPointer<Page>();
+	}
 	TrecPointer<EventHandler> pageHandler;
 	TrecPointer<TFile> uiFile = TrecPointerKey::GetNewTrecPointer<TFile>();
 	TrecPointer<TFileShell> fileShell;
 
+	handler_data_source dataSource = handler_data_source::hds_files;
 
 	switch (pageType)
 	{
@@ -402,13 +492,18 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
 		else
 			pageHandler = handler;
 		break;
+	case anagame_page::anagame_page_project_explorer:
+		dataSource = handler_data_source::hds_project;
 	case anagame_page::anagame_page_file_node:
 		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
+			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), dataSource);
 		else
 			pageHandler = handler;
+		break;
+	
+
 		break;
 	case anagame_page::anagame_page_object_explorer:
 
@@ -425,21 +520,20 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
 		break;
 	case anagame_page::anagame_page_custom:
 		if (!handler.Get())
-			return TrecSubPointer<Page, IDEPage>();
+		{
+			ThreadRelease();
+			return TrecPointer<Page>();
+		}
 		pageHandler = handler;
 		uiFile->Open(tmlLoc, TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 
 	}
 
-	if (!uiFile->IsOpen())
-		return TrecSubPointer<Page, IDEPage>();
-
-	if (!pageHandler.Get())
-		return TrecSubPointer<Page, IDEPage>();
-
-	if (!name.GetSize())
-		return TrecSubPointer<Page, IDEPage>();
-
+	if (!uiFile->IsOpen() || !pageHandler.Get() || !name.GetSize())
+	{
+		ThreadRelease();
+		return TrecPointer<Page>();
+	}
 
 	TrecSubPointer<Page, IDEPage> targetPage = body;
 	switch (pageLoc)
@@ -470,10 +564,11 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
 	uiFile->Close();
 
 	newPage->SetHandler(pageHandler);
-	if (pageHandler.Get())
-		pageHandler->Initialize(newPage);
 
-	return TrecPointerKey::GetTrecSubPointerFromTrec<Page, IDEPage>(newPage);
+	targetPage->currentPage = newPage;
+
+	ThreadRelease();
+	return newPage;
 }
 
 /**
@@ -484,32 +579,38 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_
  *				TString name - name of the page to write on the Tab
  * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
  */
-TrecSubPointer<Page, IDEPage> TIdeWindow::AddPage(anagame_page pageType, ide_page_type pageLoc, TString name)
+TrecPointer<Page> TIdeWindow::AddPage(anagame_page pageType, ide_page_type pageLoc, TString name)
 {
-	TrecSubPointer<Page, IDEPage> ret;
+	TrecPointer<Page> ret;
+	ThreadLock();
 	if (!this->windowInstance.Get())
+	{
+		ThreadRelease();
 		return ret;
-
+	}
 	auto handler = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->GetHandler(name, pageType);
 
-
-
 	if (handler.Get())
-		ret = TrecPointerKey::GetTrecSubPointerFromTrec<Page, IDEPage>(handler->GetPage());
-
-	if (ret.Get())
+	{
+		ThreadRelease();
 		return ret;
+	}
+
+	handler_data_source dataSource = handler_data_source::hds_files;
 
 	switch (pageType)
 	{
 	case anagame_page::anagame_page_command_prompt:
 	case anagame_page::anagame_page_console:
-		return AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)));
+		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)));
+		break;
+	case anagame_page::anagame_page_project_explorer:
+		dataSource = handler_data_source::hds_project;
 	case anagame_page::anagame_page_file_node:
-		return AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)));
+		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), dataSource));
+		break;
 	}
-
-
+	ThreadRelease();
 	return ret;
 }
 
@@ -522,31 +623,45 @@ TrecSubPointer<Page, IDEPage> TIdeWindow::AddPage(anagame_page pageType, ide_pag
  */
 int TIdeWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 {
+	ThreadLock();
 	if (!windowInstance.Get())
+	{
+		ThreadRelease();
 		return -1;
+	}
 	if (!currentWindow)
+	{
+		ThreadRelease();
 		return -2;
+	}
 	TrecPointer<TFile> aFile = TrecPointerKey::GetNewTrecPointer<TFile>(file, TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 
 	if (!aFile.Get() || !aFile->IsOpen())
+	{
+		ThreadRelease();
 		return 1;
-
+	}
 	directFactory = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->GetFactory();
 
 	mainPage = Page::GetWindowPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), eh);
 
 	D2D1_RECT_F curArea = mainPage->GetArea();
+
+	drawingBoard->Resize(currentWindow, convertD2DRectToRECT( curArea), d3dEngine);
+
 	curArea.bottom = curArea.top + this->mainViewSpace;
 
 	mainPage->SetArea(curArea);
 
 	if (!mainPage.Get())
+	{
+		ThreadRelease();
 		return 2;
-
+	}
 	mainPage->SetAnaface(aFile, eh);
-	RECT lArea;
-	GetClientRect(GetWindowHandle(), &lArea);
-	curArea = convertRECTToD2DRectF(lArea);
+	;
+	GetClientRect(GetWindowHandle(), &size);
+	curArea = convertRECTToD2DRectF(size);
 	curArea.top += this->mainViewSpace;
 
 
@@ -587,18 +702,22 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 	safeToDraw = 1;
 	Draw();
 
+	ThreadRelease();
 	return 0;
 }
 
 /**
  * Method: TIdeWindow::SetCurrentHolder
  * Purpose: Marks a Page Holder as being dragged by the User
- * Parameters: TrecPointer<IDEPageHolder> holder - the Page holder believed to be dragged
+ * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
  * Returns: void
  */
-void TIdeWindow::SetCurrentHolder(TrecPointer<IDEPageHolder> holder)
+void TIdeWindow::SetCurrentHolder(TrecPointer<Tab> holder, TrecPointer<Page> page)
 {
+	ThreadLock();
 	currentHolder = holder;
+	tabPage = TrecPointerKey::GetTrecSubPointerFromTrec<Page, IDEPage>(page);
+	ThreadRelease();
 }
 
 /**
@@ -609,13 +728,18 @@ void TIdeWindow::SetCurrentHolder(TrecPointer<IDEPageHolder> holder)
  */
 void TIdeWindow::SetEnvironment(TrecPointer<TEnvironment> env)
 {
+	ThreadLock();
 	environment = env;
+	ThreadRelease();
 }
 
 
 TrecPointer<TEnvironment> TIdeWindow::GetEnvironment()
 {
-	return environment;
+	ThreadLock();
+	auto ret = environment;
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -626,9 +750,10 @@ TrecPointer<TEnvironment> TIdeWindow::GetEnvironment()
  */
 TrecPointer<TFileShell> TIdeWindow::GetEnvironmentDirectory()
 {
-	if (environment.Get())
-		return environment->GetRootDirectory();
-	return TrecPointer<TFileShell>();
+	ThreadLock();
+	auto ret = (environment.Get()) ? environment->GetRootDirectory() : TrecPointer<TFileShell>();
+	ThreadRelease();
+	return ret;
 }
 
 /**
@@ -639,11 +764,13 @@ TrecPointer<TFileShell> TIdeWindow::GetEnvironmentDirectory()
  */
 void TIdeWindow::SaveAll()
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < apps.Size(); Rust++)
 	{
 		if (apps[Rust].Get())
 			apps[Rust]->OnSave();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -654,8 +781,10 @@ void TIdeWindow::SaveAll()
  */
 void TIdeWindow::SaveCurrent()
 {
+	ThreadLock();
 	if (currentApp.Get())
 		currentApp->OnSave();
+	ThreadRelease();
 }
 
 /**
@@ -666,10 +795,14 @@ void TIdeWindow::SaveCurrent()
  */
 void TIdeWindow::SetCurrentApp(TrecPointer<MiniApp> app)
 {
+	ThreadLock();
 	if (app.Get())
 	{
 		if (currentApp.Get() == app.Get())
+		{
+			ThreadRelease();
 			return;
+		}
 		currentApp = app;
 		bool addApp = true;
 		for (UINT Rust = 0; Rust < apps.Size(); Rust++)
@@ -688,6 +821,7 @@ void TIdeWindow::SetCurrentApp(TrecPointer<MiniApp> app)
 		if (hand.Get())
 			hand->OnFocus();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -698,6 +832,7 @@ void TIdeWindow::SetCurrentApp(TrecPointer<MiniApp> app)
  */
 UINT TIdeWindow::OpenFile(TrecPointer<TFileShell> shell)
 {
+	ThreadLock();
 	if(!shell.Get())
 	{
 		ATLTRACE(L"Null object submitted!\n");
@@ -705,9 +840,10 @@ UINT TIdeWindow::OpenFile(TrecPointer<TFileShell> shell)
 	}
 	TString format(L"File to open: %ls \n");
 	TString printOut;
-	printOut.Format(format, shell->GetPath().GetConstantBuffer());
+	printOut.Format(format, shell->GetPath().GetConstantBuffer().getBuffer());
 
-	ATLTRACE(printOut.GetConstantBuffer());
+	ATLTRACE(printOut.GetConstantBuffer().getBuffer());
+	ThreadRelease();
 }
 
 /**
@@ -718,6 +854,7 @@ UINT TIdeWindow::OpenFile(TrecPointer<TFileShell> shell)
  */
 void TIdeWindow::DrawOtherPages()
 {
+	ThreadLock();
 	if (body.Get())dynamic_cast<IDEPage*>(body.Get())->Draw(panelbrush, d3dEngine.Get());
 	if (basicConsole.Get())dynamic_cast<IDEPage*>(basicConsole.Get())->Draw(panelbrush, d3dEngine.Get());
 	if (deepConsole.Get())dynamic_cast<IDEPage*>(deepConsole.Get())->Draw(panelbrush, d3dEngine.Get());
@@ -729,4 +866,5 @@ void TIdeWindow::DrawOtherPages()
 
 	if (currentHolder.Get())
 		currentHolder->Draw();
+	ThreadRelease();
 }

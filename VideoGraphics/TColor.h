@@ -81,6 +81,14 @@ public:
 	 */
 	TColor(const color_struct& color);
 
+	/**
+	 * Method: TColor::TColor
+	 * Purpose: String Constructor
+	 * Parameters: const TString& colorStr - the Color in String form
+	 * Returns: new TColor Object
+	 */
+	TColor(const TString& colorStr);
+
 
 	/**
 	 * Method: TColor::SetColor
@@ -89,6 +97,15 @@ public:
 	 * Returns: void
 	 */
 	void SetColor(t_color::Enum);
+
+
+	/**
+	 * Method: TColor::SetColor
+	 * Purpose: Sets the color based off of the Enumeration for the color
+	 * Parameters: const TString& colorStr - the Color in String form
+	 * Returns: void
+	 */
+	void SetColor(const TString& colorStr);
 
 	/**
 	 * Method: TColor::SetColor
@@ -170,6 +187,29 @@ public:
 	 * Attributes: const
 	 */
 	color_struct GetColor()const;
+
+	/**
+	 * Method: TColor::GetColorFromString
+	 * Purpose: Returns a Color based off of the provided String
+	 * Parameters: const TString& color - string to derive a color out of
+	 *				bool& worked - reports whether a color can be derived from the string
+	 * Returns: TColor - the color returned
+	 * 
+	 * Note: If the string cannot be converted to a color, Black is returned and the 'worked' parameter is set to false
+	 *
+	 * Attributes: static
+	 */
+	static TColor GetColorFromString(const TString& color, bool& worked);
+
+	/**
+	 * Method: TObject::toString
+	 * Purpose: Returns a string representation of this object
+	 * Parameters: void
+	 * Returns: TString - repreetnation of this object
+	 *
+	 * Attributes: virtual
+	 */
+	virtual TString toString() override;
 private:
 	color_struct color;
 };

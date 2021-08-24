@@ -3,6 +3,13 @@
 extern TDataArray<TTextField*> TextList;
 
 
+TrecPointer<TConsoleHolder> TPromptControl::GetConsoleHolder()
+{
+
+	return TrecPointerKey::GetNewTrecPointerAlt<TConsoleHolder, TPromptHolder>(
+		TrecPointerKey::GetTrecPointerFromSoft<>(this->tThis));
+}
+
 /**
  * Method: TPromptControl::GetType
  * Purpose: Returns a String Representation of the object type
@@ -46,6 +53,7 @@ TPromptControl::~TPromptControl()
 */
 bool TPromptControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	TTextField::onCreate(r, d3d);
 
 	auto valpoint = attributes.retrieveEntry(L"|ConsoleMode");
@@ -54,7 +62,7 @@ bool TPromptControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 
 	isPassword = false;
 	isNumber = false;
-
+	ThreadRelease();
 	return false;
 }
 
@@ -66,6 +74,7 @@ bool TPromptControl::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 */
 void TPromptControl::onDraw(TObject* obj)
 {
+	ThreadLock();
 	TString shellOutput(shell.GetOutput());
 
 	if (shellOutput.GetSize())
@@ -85,8 +94,6 @@ void TPromptControl::onDraw(TObject* obj)
 	}
 
 	bool processCheck = shell.CheckProcess();
-
-
 	if (promptMode == prompt_mode::regular)
 	{
 		if (processRunning && !processCheck)
@@ -113,8 +120,9 @@ void TPromptControl::onDraw(TObject* obj)
 			caretLoc += add.GetSize();
 		}
 	}
-
 	TControl::onDraw(obj);
+	ThreadRelease();
+
 }
 
 /*
@@ -128,6 +136,7 @@ void TPromptControl::onDraw(TObject* obj)
 */
 void TPromptControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
+	ThreadLock();
 	resetArgs();
 
 	BOOL trailing = false, isInside = false;
@@ -278,6 +287,7 @@ parentCall:
 	{
 		args.text.Set(text1->getCaption());
 	}
+	ThreadRelease();
 }
 
 /*
@@ -293,6 +303,7 @@ parentCall:
 */
 bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	// To-Do: sort out anomalies with characters
 	resetArgs();
 
@@ -301,12 +312,11 @@ bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags
 		if (fromChar)
 		{
 			InputChar(static_cast<WCHAR>(LOWORD(nChar)), nRepCnt);
-
 		}
 		else
 		{
 			POINT caretPoint;
-			for (int c = 0; c < nRepCnt; c++)
+			for (UINT c = 0; c < nRepCnt; c++)
 			{
 				switch (nChar)
 				{
@@ -331,18 +341,7 @@ bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags
 					text.AppendChar(L'\n');
 					caretLoc++;
 					break;
-				/*case VK_UP:
-					if (GetCaretPos(&caretPoint))
-					{
-						moveCaretUp(caretPoint);
-					}
-					break;
-				case VK_DOWN:
-					if (GetCaretPos(&caretPoint))
-					{
-						moveCaretDown(caretPoint);
-					}
-					break;*/
+
 				case VK_UP:
 				case VK_DOWN: // To-Do: Add History feature for these commands
 				case VK_ESCAPE:
@@ -371,7 +370,10 @@ bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags
 			highlighter.SetLayout(text1->fontLayout);
 		}
 	}
-	return onFocus;
+	bool ret = onFocus;
+	ThreadRelease();
+
+	return ret;
 }
 
 
@@ -387,9 +389,11 @@ void TPromptControl::SetText(TString)
  */
 void TPromptControl::SubmitCommand(TString& command)
 {
+	ThreadLock();
 	isPassword = false;
 	shell.SubmitCommand(command);
 	processRunning = true;
+	ThreadRelease();
 }
 
 /**
@@ -400,11 +404,13 @@ void TPromptControl::SubmitCommand(TString& command)
  */
 void TPromptControl::Print(const TString& input)
 {
+	ThreadLock();
 	if (promptMode == prompt_mode::print_only)
 	{
 		text.Append(input);
 		updateTextString();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -415,8 +421,10 @@ void TPromptControl::Print(const TString& input)
  */
 void TPromptControl::PrintLine(const TString& input)
 {
+	ThreadLock();
 	TString lInput(input + L'\n');
 	Print(lInput);
+	ThreadRelease();
 }
 
 /**
@@ -427,8 +435,10 @@ void TPromptControl::PrintLine(const TString& input)
  */
 void TPromptControl::Clear()
 {
+	ThreadLock();
 	text.Empty();
 	updateTextString();
+	ThreadRelease();
 }
 
 /*
@@ -439,8 +449,11 @@ void TPromptControl::Clear()
  */
 bool TPromptControl::isInInput(UINT proposeLoc)
 {
+	ThreadLock();
 	auto textSize = text.GetSize();
-	return proposeLoc < textSize && proposeLoc >= (textSize - input.GetSize());
+	bool ret = proposeLoc < textSize && proposeLoc >= (textSize - input.GetSize());
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -451,6 +464,7 @@ bool TPromptControl::isInInput(UINT proposeLoc)
  */
 void TPromptControl::SubmitCommand()
 {
+	ThreadLock();
 	isPassword = false;
 
 	// if mode == regular
@@ -460,10 +474,9 @@ void TPromptControl::SubmitCommand()
 
 	// else if mode == program_input
 
-
-
-
 	input.Empty();
+	ThreadRelease();
+
 }
 
 /*
@@ -475,9 +488,12 @@ void TPromptControl::SubmitCommand()
  */
 void TPromptControl::InputChar(wchar_t cha, int times)
 {
+	ThreadLock();
 	if (!onFocus) // hopefully this is true, but just in case
+	{
+		ThreadRelease();
 		return;
-
+	}
 	int caretDif = text.GetSize() - input.GetSize();
 
 	for (int c = 0; c < times; c++)
@@ -491,9 +507,7 @@ void TPromptControl::InputChar(wchar_t cha, int times)
 				text.Delete(caretLoc - 1, 1);
 				input.Delete(caretLoc - 1 - caretDif, 1);
 				caretLoc--;
-
 			}
-
 			break;
 		case VK_OEM_PERIOD:
 			if (isPassword)
@@ -523,7 +537,6 @@ void TPromptControl::InputChar(wchar_t cha, int times)
 		case VK_DELETE:
 			if (text.GetSize() > 0)
 			{
-
 				text.Delete(caretLoc, 1);
 				input.Delete(caretLoc - caretDif, 1);
 			}
@@ -539,6 +552,61 @@ void TPromptControl::InputChar(wchar_t cha, int times)
 			input.Insert(caretLoc++ - caretDif, cha);
 		}
 	}
+	ThreadRelease();
 }
 
+void TPromptHolder::Warn(TrecPointer<TVariable> var)
+{
+	if (control.Get())
+	{
+		LockDrawing();
+		TString prepend(tabs + L"WARNING: ");
+		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+		UnlockDrawing();
+	}
+}
 
+void TPromptHolder::Error(TrecPointer<TVariable> var)
+{
+	if (control.Get())
+	{
+		LockDrawing();
+		TString prepend(tabs + L"ERROR: ");
+		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+		UnlockDrawing();
+	}
+}
+
+void TPromptHolder::Info(TrecPointer<TVariable> var)
+{
+	if (control.Get())
+	{
+		LockDrawing();
+		TString prepend(tabs + L"INFO: ");
+		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+		UnlockDrawing();
+	}
+}
+
+void TPromptHolder::Log(TrecPointer<TVariable> var)
+{
+	if (control.Get())
+	{
+		LockDrawing();
+		TString prepend(tabs);
+		dynamic_cast<TPromptControl*>(control.Get())->PrintLine(prepend + (var.Get() ? var->GetString() : L"null"));
+		UnlockDrawing();
+	}
+}
+
+/**
+ * Method: TPromptHolder::TPromptHolder
+ * Purpose: Allows the TPromptControl to create an instance of this holder pointing to it
+ * Parameters: TrecPointer<TControl> control - the control to point to
+ * Returns: new TPromptHolder object
+ */
+TPromptHolder::TPromptHolder(TrecPointer<TControl> control)
+{
+	if (dynamic_cast<TPromptControl*>(control.Get()))
+		this->control = control;
+}

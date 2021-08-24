@@ -55,15 +55,21 @@ int NameDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	file.Append(L"Resources\\TextDialog.tml");
 
+	ThreadLock();
 	TrecPointer<EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<EventHandler, OkayHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
 
 	int returnable = TWindow::CompileView(file, eh);
 
-	if (returnable)return returnable;
-
+	if (returnable)
+	{
+		ThreadRelease();
+		return returnable;
+	}
 	if (!mainPage.Get())
+	{
+		ThreadRelease();
 		return 10;
-
+	}
 	TrecPointer<TControl> control = mainPage->GetRootControl();
 	TLayout* layout = dynamic_cast<TLayout*>(control.Get());
 
@@ -89,6 +95,7 @@ int NameDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	userInput = TrecPointerKey::GetNewTrecPointer<TString>();
 
+	ThreadRelease();
 	return 0;
 }
 
@@ -102,15 +109,19 @@ bool NameDialog::OnDestroy()
 {
 	bool ret = TDialog::OnDestroy();
 
+	ThreadLock();
 	if (!textField.Get() || !userInput.Get())
+	{
+		ThreadRelease();
 		return ret;
-
+	}
 	TTextField* tf = dynamic_cast<TTextField*>(textField.Get());
 
 	// Set the Pointer String so that clients of this dialog will still have the data collected
 	// even after this dialog is destroyed
 	userInput->Set(tf->GetText());
 
+	ThreadRelease();
 	return ret;
 }
 
@@ -122,5 +133,7 @@ bool NameDialog::OnDestroy()
  */
 TrecPointer<TString> NameDialog::GetText()
 {
-	return userInput;
+	ThreadLock();
+	auto ret = userInput;
+	return ret;
 }

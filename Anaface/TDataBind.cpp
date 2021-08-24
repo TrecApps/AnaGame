@@ -26,6 +26,7 @@ TDataBind::TDataBind(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable
 	widthHeight = 90;
 	dataRaw = nullptr;
 	dataWrap = nullptr;
+	isScrolling = false;
 }
 
 
@@ -47,6 +48,7 @@ TDataBind::~TDataBind()
  */
 void TDataBind::Resize(D2D1_RECT_F& r)
 {
+	ThreadLock();
 	// First Check to see if we need a new scroll control
 	D2D1_RECT_F tempLoc = this->getLocation();
 	if ((tempLoc.bottom - tempLoc.top > r.bottom - r.top) ||
@@ -61,10 +63,9 @@ void TDataBind::Resize(D2D1_RECT_F& r)
 			location.left = r.left;
 			location.top = r.top;
 		}
+		ThreadRelease();
 		return;
 	}
-
-
 	// We do not, so proceed
 	location = r;
 	updateComponentLocation();
@@ -91,6 +92,8 @@ void TDataBind::Resize(D2D1_RECT_F& r)
 		}
 		ele->Resize(loc);
 	}
+	ThreadRelease();
+
 }
 
 /**
@@ -101,6 +104,7 @@ void TDataBind::Resize(D2D1_RECT_F& r)
  */
 D2D1_RECT_F TDataBind::getLocation()
 {
+	ThreadLock();
 	D2D1_RECT_F returnable = location;
 
 	UINT objects = 0;
@@ -108,8 +112,10 @@ D2D1_RECT_F TDataBind::getLocation()
 		objects = dataRaw->Size();
 	else if (dataWrap)
 		objects = dataWrap->Count();
-	else return returnable;
-
+	else {
+		ThreadRelease();
+		return returnable;
+	}
 	TControl* ele = nullptr;
 	if (children.Count() && (ele = children.ElementAt(0).Get()))
 	{
@@ -123,7 +129,7 @@ D2D1_RECT_F TDataBind::getLocation()
 			returnable.right = returnable.left + (cLoc.right - cLoc.left) * objects;
 		}
 	}
-
+	ThreadRelease();
 	return returnable;
 }
 
@@ -138,11 +144,14 @@ void TDataBind::onDraw(TObject * obj)
 	UINT r, c;
 
 	UINT startElement = 0, startRow = 0, startCol = 0;
+	ThreadLock();
 	TrecPointer<TControl> cont = children.ElementAt(0);
 	if (!cont.Get())
+	{
+		ThreadRelease();
 		return;
+	}
 	D2D1_RECT_F original = cont->getLocation();
-
 
 	if (dataRaw)
 	{
@@ -192,8 +201,6 @@ void TDataBind::onDraw(TObject * obj)
 			}
 
 			messageState curState = cont->mState;
-
-
 			if (isContained(&mouseMovePoint, &curLoc))
 				cont->mState = messageState::mouseHover;
 
@@ -215,6 +222,7 @@ void TDataBind::onDraw(TObject * obj)
 		}
 	}
 	cont->Resize(original);
+	ThreadRelease();
 }
 
 /**
@@ -235,7 +243,9 @@ UCHAR * TDataBind::GetAnaGameType()
  */
 void TDataBind::setData(TDataArrayBase* data)
 {
+	ThreadLock();
 	dataRaw = data;
+	ThreadRelease();
 }
 /**
  * Method: TDataBind::setData
@@ -245,7 +255,9 @@ void TDataBind::setData(TDataArrayBase* data)
  */
 void TDataBind::setData(TArrayBase* data)
 {
+	ThreadLock();
 	dataWrap = data;
+	ThreadRelease();
 }
 
 /**
@@ -257,7 +269,8 @@ void TDataBind::setData(TArrayBase* data)
  */
 bool TDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
-	D2D1_RECT_F loc = r;
+	D2D1_RECT_F loc = r; 
+	ThreadLock();
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|ColumnWidth"));
 	if (valpoint.Get())
 	{
@@ -298,7 +311,7 @@ bool TDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		children.ElementAt(0)->onCreate(r, d3d);
 	}
-
+	ThreadRelease();
 	return ret;
 }
 /**
@@ -312,6 +325,7 @@ bool TDataBind::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
  */
 void TDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons)
 {
+	ThreadLock();
 	TControl::OnLButtonDown(nFlags, point, mOut, eventAr, clickedButtons);
 
 	if (*mOut == messageOutput::positiveOverride || *mOut == messageOutput::positiveOverrideUpdate)
@@ -319,50 +333,7 @@ void TDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TD
 		clickedButtons.push_back(this);
 		mState = messageState::mouseLClick;
 	}
-	/*if (mState == mouseLClick)
-	{
-		UINT items = 0;
-		if (dataRaw)
-			items = dataRaw->Size();
-		else if (dataWrap)
-			items = dataWrap->Count();
-
-		TrecPointer<TControl> cont = children.ElementAt(0);
-		if (!cont.Get())
-			return;
-		RECT original = cont->getLocation();
-
-		for (UINT Rust = 0; Rust < items && isContained(&point, &location); Rust++)
-		{
-			if (isContained(&point, &original))
-			{
-				resetArgs();
-				args.arrayLabel = Rust;
-				args.isClick = true;
-				args.isLeftClick = true;
-				args.eventType = On_sel_change;
-				args.control = this;
-				args.methodID = getEventID(On_sel_change);
-				args.point = point;
-				eventAr.push_back({ On_sel_change, this });
-				break;
-
-
-			}
-			if (isStack)
-			{
-				original.bottom += widthHeight;
-				original.top += widthHeight;
-			}
-			else
-			{
-				original.left += widthHeight;
-				original.right += widthHeight;
-			}
-		}
-
-
-	}*/
+	ThreadRelease();
 }
 
 /**
@@ -376,6 +347,7 @@ void TDataBind::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TD
  */
 void TDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	bool wasClicked = mState == messageState::mouseLClick;
 	TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
 	if (wasClicked && isContained(&point, &location))
@@ -388,7 +360,10 @@ void TDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 
 		TrecPointer<TControl> cont = children.ElementAt(0);
 		if (!cont.Get())
+		{
+			ThreadRelease();
 			return;
+		}
 		D2D1_RECT_F original = cont->getLocation();
 
 		for (UINT Rust = 0; Rust < items && isContained(&point, &location); Rust++)
@@ -405,8 +380,6 @@ void TDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 				args.point = point;
 				eventAr.push_back({ R_Message_Type::On_sel_change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis) });
 				break;
-
-
 			}
 			if (isStack)
 			{
@@ -419,9 +392,8 @@ void TDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 				original.right += widthHeight;
 			}
 		}
-
-
 	}
+	ThreadRelease();
 }
 /**
  * Method: TDataBind::OnMouseMove
@@ -435,7 +407,9 @@ void TDataBind::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
  */
 void TDataBind::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
+	ThreadLock();
 	TControl::OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
 	if (mState == messageState::mouseHover)
 		mouseMovePoint = point;
+	ThreadRelease();
 }

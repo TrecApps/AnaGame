@@ -56,3 +56,22 @@ bool TGradleEnvironment::SupportsFileExt(const TString& ext)
 void TGradleEnvironment::SupportsFileExt(TDataArray<TString>& ext)
 {
 }
+
+UINT TGradleEnvironment::SaveEnv()
+{
+	return 0;
+}
+
+TrecPointer<TObjectNode> TGradleEnvironment::GetProjectLyout()
+{
+	return TrecPointer<TObjectNode>();
+}
+
+void TGradleEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
+{
+}
+
+TString TGradleEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
+{
+	return L"Not Implemented";
+}

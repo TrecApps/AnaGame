@@ -12,6 +12,7 @@
 #include <TrecReference.h>
 #include <TDataArray.h>
 #include <TFile.h>
+#include <TTextRenderer.h>
 #include <TPoint.h>
 
 #include <DrawingBoard.h>
@@ -28,13 +29,17 @@
 #include <TMap.h>
 #include <TObjectNode.h>
 
-#define RADIAN_DEGREE_RATIO 57.2957795
+#define RADIAN_DEGREE_RATIO 57.2957795f
 
 #define afx_msg
+
+	extern TTextRenderer* textRenderer;
+
 
 class TControl;
 class TFlyout;
 class TContextMenu;
+class Tab;
 //using namespace ControlTypeSafety;
 
 // Declare existance of classes so that they can be attributes
@@ -123,12 +128,14 @@ public:
 	EventID_Cred(const EventID_Cred& copy);
 	EventID_Cred(R_Message_Type t, TrecPointer<TControl> c);
 	EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TScrollBar> sb);
+	EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TTextIntercepter> i);
 	EventID_Cred(TrecPointer<TFlyout> fly);
 
 	R_Message_Type eventType;
 	TrecPointer<TControl> control;
 	TrecPointer<TScrollBar> scroll;
 	TrecPointer<TFlyout> flyout;
+	TrecPointer<TTextIntercepter> textIntercepter;
 };
 
 /**
@@ -158,17 +165,7 @@ typedef struct sizeControl
 	int maxHeight;
 }sizeControl;
 
-/**
- * Enum Class: TShape
- * Purpose: Determines the basic size of the TControl
- * NOTE: Feature is unstable, stick with T_Rect for now
- */
-typedef enum class TShape {
-	T_Rect,
-	T_Rounded_Rect,
-	T_Ellipse,
-	T_Custom_shape
-}TShape;
+
 
 /**
  * Enum Class: BrushMarker
@@ -612,9 +609,17 @@ public:
 	 * Method: TText::GetMinWidth
 	 * Purpose: Retirvees the minimum width needed before DirectWrtie has to add emergency breaks in line
 	 * Parameters: bool& worked - whether the value returned is truely the reported value
-	 * Return: float - the min width needed. If inspection fails, this represents the width currently used
+	 * Returns: float - the min width needed. If inspection fails, this represents the width currently used
 	 */
 	float GetMinWidth(bool& worked);
+
+	/**
+	 * Method: TText::GetMinHeight
+	 * Purpose: Retrieves the minimum height needed
+	 * Parameters: bool& worked - whether the value returned is truely the reported value
+	 * Returns: void
+	 */
+	float GetMinHeight(bool& worked);
 
 	// More Set Methods
 
@@ -1191,6 +1196,15 @@ public:
 	*/
 	virtual void storeInHTML(TFile* ar);
 
+
+	/**
+	 * Method: TControl::TookTab
+	 * Purpose: Allows TControls with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab);
+
 	// Normal running messages
 
 
@@ -1305,6 +1319,19 @@ public:
 	* Attributes: virtual; message
 	*/
 	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput *mOut, TDataArray<EventID_Cred>& eventAr);
+
+	/**
+	 * Method: TControl::OnScroll
+	 * Purpose: Allows Controls to handle Scrolling messages from Windows
+	 * Parameters: const TPoint& point - where the mouse is
+	 *				const TPoint& direction - indication of which direction it is going in
+	 * Returns: bool - true of a control actually used the message (signal to stop propagating)
+	 * 
+	 * Attributes: virtual
+	 */
+	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
+
+
 
 	// Builder Messages
 
@@ -1738,7 +1765,23 @@ public:
 	*/
 	void SetNormalMouseState();
 
+	/**
+	 * Method: TControl::QueryVideoControl
+	 * Purpose: Retrieves a specified video Player
+	 * Parameters: void
+	 * Returns: TrecSubPointer<TControl, TVideo> - the video player requested
+	 */
+	virtual TrecPointer<TControl> QueryVideoControl();
+
+	virtual void QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControls);
+
 protected:
+
+	/**
+	 * If no children and a content is not being drawn, draw the color using the DrawingBoard
+	 */
+	bool drawBackground;
+
 	//CMap<CString, CString, CString, CString> styles;
 	TDataArray<TrecPointer<AnimationData>> animateData;
 

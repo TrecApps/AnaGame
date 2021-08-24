@@ -21,8 +21,8 @@ typedef enum class js_statement_type
     js_regular,
     js_continue,
     js_break,
-    js_return
-
+    js_return,
+    js_proto_add
 }js_statement_type;
 
 
@@ -36,6 +36,8 @@ public:
     void operator=(const JavaScriptStatement& other);
 
     TrecSubPointer<TVariable, TInterpretor> body;
+
+    TrecPointer<TVariable> var;
 
     js_statement_type type;
 
@@ -59,6 +61,17 @@ public:
     TrecPointer<TVariable> value;
 };
 
+/**
+ * Enum Class: JS_Prototype_Op
+ * Purpose: What Operation is being performed on the Prototype
+ */
+typedef enum class JS_Prototype_Op
+{
+    jpo_add_const,
+    jpo_add_objs,
+    jpo_delete
+}JS_Prototype_Op;
+
 
 /**
  * Class: TJavaScriptInterpretor
@@ -69,6 +82,8 @@ public:
 class _TREC_CODE_DLL TJavaScriptInterpretor :
     public TInterpretor
 {
+    friend class TJavaScriptInterpretor;
+    friend class TJavaScriptClassInterpretor;
 public:
     /**
      * Method: TJavaScriptInterpretor::TInterpretor
@@ -107,18 +122,45 @@ public:
      * Method: TJavaScriptInterpretor::Run
      * Purpose: Runs the interpretor with the following parameters
      * Parameters: TDataArray<TVariable> params - list of parameters to provide
+     *              bool clearVariables - whether to clrear any exising Variables the Interpretor might hold
      * Returns: ReportObject - objct indicating the success of the program or falure information
      *
      * Note: this method is intended to be called in interpretors that represent specific methods or functions
      * 
      * Attributes: override
      */
-    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params)override;
+    virtual ReportObject Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVariables = true)override;
 
-    void ProcessStatements(ReportObject& ro);
+    virtual void ProcessStatements(ReportObject& ro);
 
     void setLine(UINT line);
-private:
+
+    
+
+protected:
+    void AddAssignStatement(const TString& expression, TrecPointer<TVariable> var);
+    /**
+     * Method: TInterpretor::ProcessAddition
+     * Purpose: Filters variables in preparation for performing an addition operation
+     * Parameters: TrecPointer<TVariable> var1 - The first variable, representing the first addend
+     *              TrecPointer<TVariable> var2 - the second variable, representing the second addend
+     * Returns: ReportObject - the result of performing the operation, including error information if it occurs
+     *
+     * Attributes: virtual
+     */
+    virtual ReportObject ProcessAddition(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2) override;
+
+    /**
+     * Method: TInterpretor::ProcessPrototypeOperation
+     * Purpose: Enables operations dealing with prototypes
+     * Parameters: const TString& className - the name of the type to apply the operation to
+     *              const TString& attName - the name of the attribute on the type
+     *              const TrecPointer<TVariable> value - value to assign
+     *              JS_Prototype_Op operation - the operation to performed
+     * Returns: ReportObject - the results of the operation
+     */
+    ReportObject ProcessPrototypeOperation(const TString& className, const TString& attName, const TrecPointer<TVariable> value, JS_Prototype_Op operation);
+protected:
     UINT line;
 
     TDataArray<JavaScriptStatement> statements;
@@ -140,7 +182,7 @@ private:
     void ProcessVar(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
     void ProcessLet(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
     void ProcessConst(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
-    void ProcessFunction(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
+    void ProcessFunction(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro, bool addToVars = true);
     void ProcessClass(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
     void ProcessReg(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
     void ProcessReturn(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro);
@@ -151,12 +193,15 @@ private:
 
     // Helper Process Methods
     void AssignmentStatement(TDataArray<JavaScriptStatement>& statements, UINT cur, const JavaScriptStatement& statement, ReportObject& ro, TDataMap<TVariableMarker>& variables);
-    void ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
+    void ProcessExpression(TDataArray<JavaScriptStatement>& statements, UINT& cur, TString& exp, UINT line, ReportObject& ro);
     void ProcessArrayExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
-    void ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
+    UINT ProcessFunctionDef(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
     void InspectNumber(TString& exp, UINT line, ReportObject& ro);
-    bool InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
-    void ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> obj);
+    bool InspectVariable(TDataArray<JavaScriptStatement>& statements, UINT& cur, TString& exp, UINT line, ReportObject& ro);
+    UINT ProcessProcedureCall(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro, TrecPointer<TVariable> obj);
+    void ProcessJsonExpression(TDataArray<JavaScriptStatement>& statements, UINT cur, TString& exp, UINT line, ReportObject& ro);
+
+    bool InspectVariable(const TString& exp);
 
     // Operator Handler Methods
     void HandlePreExpr(TDataArray<JavaScriptStatement>& statements, UINT cur, TDataArray<JavaScriptExpression>& expresions, TDataArray<TString>& operators, ReportObject& ro);

@@ -127,7 +127,7 @@ public:
 		bool found = false;
 		for (target = 0; target < fields.Size(); target++)
 		{
-			if (str.Compare(fields[target].key))
+			if (!str.Compare(fields[target].key))
 			{
 				found = true;
 				break;
@@ -171,7 +171,7 @@ public:
 	*/
 	bool retrieveEntry(const TString& str, T& entry)
 	{
-		for (int c = 0; c < fields.Size(); c++)
+		for (UINT c = 0; c < fields.Size(); c++)
 		{
 			if (!str.Compare(fields.at(c).key))
 			{
@@ -218,7 +218,7 @@ public:
 	*/
 	bool removeEntry(TString& str, T& entry)
 	{
-		for (int c = 0; c < fields.Size(); c++)
+		for (UINT c = 0; c < fields.Size(); c++)
 		{
 			if (!str.Compare(fields.at(c).key))
 			{
@@ -242,7 +242,7 @@ public:
 	* Method: TMap::
 	* Purpose: Retrieves the number of entries added to the TMap
 	* Parameters: void
-	* Returns: int - the count of entries in the TMap
+	* Returns: UINT - the count of entries in the TMap
 	*/
 	int count() const { return fields.Size(); }
 
@@ -254,7 +254,7 @@ public:
 	*/
 	void operator=(TDataMap<T>& cop)
 	{
-		for (int c = 0; c < cop.fields.Size(); c++)
+		for (UINT c = 0; c < cop.fields.Size(); c++)
 		{
 			fields.push_back(cop.fields.at(c));
 		}

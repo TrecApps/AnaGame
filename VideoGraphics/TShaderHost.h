@@ -27,22 +27,25 @@ typedef enum class ShaderPhase
 */
 typedef enum class _VIDEO_GRAPHICS DefaultShader
 {
-	default_shader_Single_Color = 0, // Shader has only one color
-	default_shader_3D_Color = 1,     // Shader takes in an RGB float color as part of the input data
-	default_Shader_4D_Color = 2,     // Shader takes in an RGBA float color as part of the input data
-	default_Shader_Texture = 3,      // Shader uses one texture per mode
-	default_Shader_Texture2 = 4,     // Shader uses 2 textures per model
+	default_shader_uninitialized = 0,
+	default_shader_Single_Color = 1, // Shader has only one color
+	default_shader_3D_Color = 2,     // Shader takes in an RGB float color as part of the input data
+	default_Shader_4D_Color = 3,     // Shader takes in an RGBA float color as part of the input data
+	default_Shader_Texture = 4,      // Shader uses one texture per mode
+	default_Shader_Texture2 = 5,     // Shader uses 2 textures per model
 }DefaultShader;
 
 /*
 * struct ConstantBufferMark
 * Holds a shader's constant buffer as well as a label signaling what that buffer is
 */
-typedef struct ConstantBufferMark
+class _VIDEO_GRAPHICS ConstantBufferMark
 {
+public:
+	ConstantBufferMark();
 	unsigned char label;
 	TrecComPointer<ID3D11Buffer> buff;
-}ConstantBufferMark;
+};
 
 /*
 * Class: ShaderProgram
@@ -79,7 +82,8 @@ public:
 */
 class _VIDEO_GRAPHICS DefaultShaderProgram
 {
-public: 
+public:
+	DefaultShaderProgram();
 	ShaderProgram sp;
 	DefaultShader type;
 };

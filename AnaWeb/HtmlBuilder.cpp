@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "HtmlBuilder.h"
 
-HtmlBuilder::HtmlBuilder(TrecPointer<TEnvironment> env)
+
+HtmlBuilder::HtmlBuilder(TrecPointer<TEnvironment> env, TrecPointer<DrawingBoard> board)
 {
     if (!env.Get())
         throw L"Null Environment passed";
@@ -14,9 +15,10 @@ HtmlBuilder::HtmlBuilder(TrecPointer<TEnvironment> env)
 
     directory = fileLoc;
     environment = env;
+    this->board = board;
 }
 
-TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
+TString HtmlBuilder::BuildPage(TrecPointer<TFile> file, HWND win)
 {
     TString ret;
 
@@ -66,8 +68,8 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
     // Now check the body
     if (topLine.StartsWith(L"<") && topLine.GetLower().Find(L"body") != -1)
     {
-        body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment);
-        ret.Set(body->ProcessHtml(file, topLine));
+        body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment, board);
+        ret.Set(body->ProcessHtml(file, topLine, win));
         if (ret.GetSize()) return ret;
     }
 
@@ -99,8 +101,8 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
     // Just in case we get the body first (or the header was detected as 'topLine'
     else if (line.StartsWith(L"<") && line.GetLower().Find(L"body") != -1)
     {
-        body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment);
-        ret.Set(body->ProcessHtml(file, line));
+        body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment, board);
+        ret.Set(body->ProcessHtml(file, line, win));
         if (ret.GetSize()) return ret;
     }
     else
@@ -131,11 +133,21 @@ TString HtmlBuilder::BuildPage(TrecPointer<TFile> file)
 
     else if (line.StartsWith(L"<") && line.GetLower().Find(L"body") != -1)
     {
-        body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment);
-        ret.Set(body->ProcessHtml(file, line));
+        body = TrecPointerKey::GetNewTrecPointer<HtmlBody>(environment, board);
+        ret.Set(body->ProcessHtml(file, line,win));
         if (ret.GetSize()) return ret;
     }
     else goto processBlock2;
 
     return ret;
+}
+
+TrecPointer<HtmlHeader> HtmlBuilder::RetrieveHeader()
+{
+    return header;
+}
+
+TrecPointer<HtmlBody> HtmlBuilder::RetrieveBody()
+{
+    return body;
 }

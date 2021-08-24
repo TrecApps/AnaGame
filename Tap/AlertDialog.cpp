@@ -60,22 +60,27 @@ int AlertDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	if (returnable)return returnable;
 
-	if (!mainPage.Get())
-		return 10;
+	ThreadLock();
+	int ret = 10;
 
-	TrecPointer<TControl> control = mainPage->GetRootControl();
-	TLayout* layout = dynamic_cast<TLayout*>(control.Get());
+	if (mainPage.Get())
+	{
 
-	assert (layout);
+		TrecPointer<TControl> control = mainPage->GetRootControl();
+		TLayout* layout = dynamic_cast<TLayout*>(control.Get());
 
-	textField = layout->GetLayoutChild(0, 0);
+		assert(layout);
 
-	TTextField* tf = dynamic_cast<TTextField*>(textField.Get());
+		textField = layout->GetLayoutChild(0, 0);
 
-	assert(tf);
+		TTextField* tf = dynamic_cast<TTextField*>(textField.Get());
 
-	tf->SetText(caption);
-	tf->LockText();
+		assert(tf);
 
-	return 0;
+		tf->SetText(caption);
+		tf->LockText();
+		ret = 0;
+	}
+	ThreadRelease();
+	return ret;
 }

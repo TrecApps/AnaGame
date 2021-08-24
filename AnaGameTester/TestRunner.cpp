@@ -1,4 +1,5 @@
 #include "TestRunner.h"
+#include "TThreadTester.h"
 
 
 TestRunner tester;
@@ -11,6 +12,9 @@ void TestRunner::DoTests(std::string& directory)
 
 	TFileTester tFileTester(directory + "file1.txt", directory + "file2.txt");
 	tFileTester.Run(testResults);
+
+	TThreadTester threadTester;
+	threadTester.Run(testResults);
 }
 
 void TestRunner::Draw(HWND window, PAINTSTRUCT structure)

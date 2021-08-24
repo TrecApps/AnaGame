@@ -327,6 +327,47 @@ public:
 	 */
 	void SetSelf(TrecPointer<ArenaModel>);
 
+	/**
+	 * Method: ArenaModel::SetShader
+	 * Purpose: Allows code to set the Shader
+	 * Parameters: int shaderId - the shader to set
+	 * Returns: bool - whether it could be set or not (the model should not already have prexisting vertex data)
+	 */
+	bool SetShader(int shaderId);
+
+	/**
+	 * Method: ArenaModel::SetShader
+	 * Purpose: Allows code to set the Shader
+	 * Parameters: DefaultShader shaderId - the shader to set
+	 * Returns: bool - whether it could be set or not (the model should not already have prexisting vertex data)
+	 */
+	bool SetShader(DefaultShader shaderId);
+
+	/**
+	 * Method: ArenaModel::GetShaderId
+	 * Purpose: Reports the shader this model uses
+	 * Parameters: void
+	 * Returns: ShaderKey - the shader id used
+	 */
+	ShaderKey GetShaderId();
+
+	/**
+	 * Method: ArenaModel::GetVertices
+	 * Purpose: retrieves the vertices
+	 * Parameters: void
+	 * Returns: TDataArray<float> - the vertices held
+	 */
+	TDataArray<float> GetVertices();
+
+
+	/**
+	 * Method: ArenaModel::GetIndices
+	 * Purpose: retrieves the indices
+	 * Parameters: void
+	 * Returns: TDataArray<UINT> - the indices held
+	 */
+	TDataArray<UINT> GetIndices();
+
 protected:
 
 	/**

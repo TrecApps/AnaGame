@@ -3,14 +3,240 @@
 #include "TFile.h"
 #include "TMap.h"
 #include "TrecLib.h"
-#include "TType.h"
 #include "TDirectory.h"
 #include "TObjectNode.h"
 #include "TVariable.h"
+#include "Parser_.h"
 
-class TControl;
-class TPromptControl;
 
+typedef enum class env_var_type
+{
+	evt_any,
+	evt_interpretor
+};
+
+class _TREC_LIB_DLL EnvironmentEntry
+{
+public:
+	EnvironmentEntry();
+	EnvironmentEntry(const EnvironmentEntry& copy);
+
+	bool IsEqual(const EnvironmentEntry& ent);
+
+	TString filePath, source, type, name;
+};
+
+class _TREC_LIB_DLL EnvironmentEntryParser : public Parser_
+{
+public:
+
+
+	/**
+	 * Method: EnvironmentntryParser::GetType
+	 * Purpose: Returns a String Representation of the object type
+	 * Parameters: void
+	 * Returns: TString - representation of the object type
+	 */
+	virtual TString GetType()override;
+
+	/*
+	* Method: EnvironmentntryParser::EnvironmentntryParser
+	* Purpose: Constructor
+	* Parameters: void
+	* Returns: void
+	*/
+	EnvironmentEntryParser();
+	/*
+	* Method: EnvironmentntryParser::~EnvironmentntryParser
+	* Purpose: Destructor
+	* Parameters: void
+	* Returns: void
+	*/
+	virtual ~EnvironmentEntryParser();
+
+	// for the initial object type
+	/*
+	 * Method: EnvironmentntryParser::Obj
+	 * Purpose: Takes in a String that represents an Object title
+	 * Parameters: TString* v - the name of a class
+	 * Returns: bool - false for the base class
+	 *
+	 * Attributes: virtual
+	 */
+	virtual bool Obj(TString& v) override;
+	// for the attribute name
+
+	/*
+	 * Method: EnvironmentntryParser::Attribute
+	 * Purpose: Sets up attributes for the current object being analyzed
+	 * Parameters: TString* v - the value to parse in an attribute
+	 *			TString e - the attribute name
+	 * Returns: bool - success result
+	 *
+	 * Attributes: virtual
+	 */
+	virtual bool Attribute(TString& v, TString e) override;
+
+
+	/*
+	* Method: EnvironmentntryParser
+	* Purpose: Sets up attributes for the current object being analyzed
+	* Parameters: TrecPointer<TString> v - the value to parse in an attribute
+	*			TString& e - the attribute name
+	* Returns: bool - success result
+	 *
+	 * Attributes: virtual
+	*/
+	virtual bool Attribute(TrecPointer<TString> v, TString& e) override;
+	// for the attribute value (here it may be good that TStrings are used)
+
+
+	/*
+	 * Method: EnvironmentntryParser::submitType
+	 * Purpose: For a parser to process the type it is parsing, incase the information is incompatible with its purpose
+	 * Parameters: TString v - the Parse type to check
+	 * Returns: bool - whether the parser type is the correct type
+	 *
+	 * Attributes: virtual
+	 */
+	virtual bool submitType(TString v) override;
+	/**
+	 * Method: EnvironmentntryParser::submitEdition
+	 * Purpose: Version of the Parse type, to handle incompatabilities between version
+	 * Parameters: TString v - the version string
+	 * Returns: bool - whether or not a version is compatible
+	 *
+	 * Attributes: virtual
+	 */
+	virtual bool submitEdition(TString v) override;
+
+	/**
+	 * Method: EnvironmentntryParser::goChild
+	 * Purpose: Objects submitted will be children of the current object
+	 * Parameters: void
+	 * Returns: bool
+	 *
+	 * Attributes: virtual
+	 */
+	virtual bool goChild() override;
+	/**
+	 * Method: EnvironmentntryParser::goParent
+	 * Purpose: Go up a node in a parsed object tree
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: virtual
+	 */
+	virtual void goParent() override;
+
+	/**
+	 * Method: EnvironmentEntryParser::GetEntries
+	 * Purpose: Retrieves the entries generated
+	 * Parameters: TDataArray<EnvironmentEntry>& entries - held by the caller
+	 * Raturns: void
+	 */
+	void GetEntries(TDataArray<EnvironmentEntry>& entries);
+
+	TDataArray<EnvironmentEntry> entries;
+
+	EnvironmentEntry entry;
+};
+
+
+/**
+ * Class: TConsoleHolder
+ * Purpose: Provides an abstract way to print to the console, regardless of the object type that is acting like a console
+ */
+class _TREC_LIB_DLL TConsoleHolder
+{
+public:
+	/**
+	 * Method: TConsoleHolder::TConsoleHolder
+	 * Purpose: default Constructor
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: virtual
+	 */
+	TConsoleHolder();
+	/**
+	 * Method: TConsoleHolder::~TConsoleHolder
+	 * Purpose: virtualized destructor
+	 * Parameters: void
+	 * Returns: void
+	 * 
+	 * Attributes: virtual
+	 */
+	virtual ~TConsoleHolder();
+
+	/**
+	 * Method: TConsoleHolder::Warn
+	 * Purpose: A warning message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 * 
+	 * Attributes: abstract
+	 */
+	virtual void Warn(TrecPointer<TVariable> var) = 0;
+	
+	/**
+	 * Method: TConsoleHolder::Error
+	 * Purpose: An error message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void Error(TrecPointer<TVariable> var) = 0;
+
+	/**
+	 * Method: TConsoleHolder::Info
+	 * Purpose: An information message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void Info(TrecPointer<TVariable> var) = 0;
+
+	/**
+	 * Method: TConsoleHolder::Log
+	 * Purpose: A regular message is sent
+	 * Parameters: TrecPointer<TVariable> var - the variable to output
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void Log(TrecPointer<TVariable> var) = 0;
+
+	/**
+	 * Method: TConsoleHolder::Group
+	 * Purpose: Sets Up indentation
+	 * Parameters: bool collapsed = false - whether any logging should be hidden in a drop-down
+	 * Returns: UINT - the new group Indent
+	 *
+	 * Attributes: virtual
+	 * 
+	 * Note: collapse was provided with JavaScript's "console.groupCollapsed" method in mind. Not all consoles would support such a feature 
+	 *		and thus ignore the parameter, but it is provided for implementations that do support this feature
+	 */
+	virtual UINT Group(bool collapsed = false);
+
+	/**
+	 * Method: TConsoleHolder::EndGroup
+	 * Purpose: Ends the Group
+	 * Parameters: void
+	 * Returns: UINT - the new group Indent
+	 * 
+	 * Attributes: virtual
+	 */
+	virtual UINT EndGroup();
+
+
+protected:
+	UINT groupLevel;
+	TString tabs;
+};
 
 
 void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataArray<TString>& environmentType);
@@ -41,6 +267,16 @@ class _TREC_LIB_DLL TEnvironment :
 	public TObject
 {
 public:
+
+	/**
+	 * Method: TEnvironment::GetProjectLayout
+	 * Purpose: Reports the Layout of the Project
+	 * Parameters: void
+	 * Returns: TrecPointer<TObjectNode> nodes - the nodes that represent the layout of the Project
+	 * 
+	 * Attributes: abstract
+	 */
+	virtual TrecPointer<TObjectNode> GetProjectLyout() = 0;
 
 	/**
 	 * Method: TEnvironment::GetUrl
@@ -86,27 +322,27 @@ public:
 	/**
 	 * Method: TEnvironment::TEnvironment
 	 * Purpose: Constructor
-	 * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
+	 * Parameters: TrecPointer<TConsoleHolder> prompt - the Command Prompt to work with
 	 * Returns: new Environment object
 	 */
-	TEnvironment(TrecSubPointer<TControl, TPromptControl> prompt);
+	TEnvironment(TrecPointer<TConsoleHolder> prompt);
 
 	/**
 	 * Method: TEnvironment::SetPrompt
 	 * Purpose: Allows a prompt to be set after the construction
-	 * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
+	 * Parameters: TrecPointer<TConsoleHolder> prompt - the Command Prompt to work with
 	 * Returns: void
 	 */
-	void SetPrompt(TrecSubPointer<TControl, TPromptControl> prompt);
+	void SetPrompt(TrecPointer<TConsoleHolder> prompt);
 
 
 	/**
 	 * Method: TEnvironment::GetPrompt
 	 * Purpose: Returns the Current Prompt being used by the Environment
 	 * Parameters: void
-	 * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
+	 * Returns: TrecPointer<TConsoleHolder> - the Command Prompt to work with
 	 */
-	TrecSubPointer<TControl, TPromptControl> GetPrompt();
+	TrecPointer<TConsoleHolder> GetPrompt();
 
 
 	/**
@@ -231,7 +467,7 @@ public:
 	 *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
 	 * Returns: TrecPointer<TVariable> - the variable requested
 	 */
-	TrecPointer<TVariable> GetVariable(TString& var, bool& present);
+	virtual TrecPointer<TVariable> GetVariable(TString& var, bool& present, env_var_type evtType = env_var_type::evt_any);
 
 	/**
 	 * Method: TEnvironment::SetSelf
@@ -283,7 +519,59 @@ public:
 	 */
 	void AddVariable(const TString& name, TrecPointer<TVariable> var);
 
+	/**
+	 * Method: TEnvironment::SaveEnv
+	 * Purpose: Saves the Current Status of the Environment itself
+	 * Parameters: void
+	 * Returns: UINT - error code (0 for no error)
+	 * 
+	 * Attributes: abstract
+	 */
+	virtual UINT SaveEnv() = 0;
+
+	/**
+	 * Method: TEnvironment::AddResource
+	 * Purpose: Adds a file Resource to the Environment
+	 * Parameters: TrecPointer<TFileShell> fileResorce - the file to add
+	 * Returns: void
+	 * 
+	 * Attributes: abstract
+	 */
+	virtual void AddResource(TrecPointer<TFileShell> fileResource) = 0;
+
+	/**
+	 * Method: TEnvironment::SetLoadFile
+	 * Purpose: Allows Environment to load itself
+	 * Parameters: TrecPointer<TFileShell> file - the file to load from
+	 * Returns: TString - error information (blank means success)
+	 * 
+	 * Attributes: abstract
+	 */
+	virtual TString SetLoadFile(TrecPointer<TFileShell> file) = 0;
+
+	/**
+	 * Method: TEnvironment::GetName
+	 * Purpose: Retrieves the name of the environment
+	 * Parameters: void
+	 * Returns: TString - the name derived
+	 */
+	TString GetName();
+
+
+
 protected:
+
+	/**
+	 * Method: TEnvironment::UpdateProjectRepo
+	 * Purpose: Allows Environment Objects to update the Repository for Environment Projects, called by Objects
+	 * Parameters: TrecPointer<TFileShell> file - the file to save
+	 *				const TString& envSource - where the Environment can be found (in Anagame itself or a third party Library)
+	 *				const TString& envType - the actual type of environment used
+	 *				const TString& name - the name of the environment
+	 * Returns: void
+	 */
+	void UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType, const TString& name);
+
 
 	/**
 	 * Method: TEnvironment::SetUpLanguageExtensionMapping
@@ -292,6 +580,10 @@ protected:
 	 * Returns: void
 	 */
 	void SetUpLanguageExtensionMapping();
+
+	/**
+	 * 
+	 */
 
 	/**
 	 * the Working directory of the Environment
@@ -306,7 +598,7 @@ protected:
 	/**
 	 * The Command Prompt to work with (send shell commands to)
 	 */
-	TrecSubPointer<TControl, TPromptControl> shellRunner;
+	TrecPointer<TConsoleHolder> shellRunner;
 
 	/**
 	 * Holds a collection of variables so that interpretors underneath them could have access to them
@@ -323,5 +615,10 @@ protected:
 	 * For Web, it would be what the user typed into the search box and the base Website url that results
 	 */
 	TString url;
+
+	/**
+	 * The Name of the Environment
+	 */
+	TString name;
 };
 

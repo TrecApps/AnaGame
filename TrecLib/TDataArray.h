@@ -13,7 +13,7 @@
 * 
 * SuperClass: TDataArrayBase - common base class for all TDataArrays
 */
-template<typename T> class  TDataArray : public TDataArrayBase
+template<typename T> class _TREC_LIB_DLL TDataArray : public TDataArrayBase
 {
 	friend class TDataArray<T>;
 private:
@@ -180,6 +180,28 @@ public:
 		return size - 1;
 	}
 
+	/**
+	 * Method: TDataArray::InsertAt
+	 * Purpose: Adds element at the specified location
+	 * Parameters: T element - the data to insert
+	 *				UINT index - the index of th array to insert at
+	 * Returns: UINT - the new size of the array
+	 */
+	UINT InsertAt(T element, UINT index)
+	{
+		if (index >= size)
+			return push_back(element);
+		UINT ret = push_back(element);
+
+		for (UINT Rust = size - 1; Rust > index; Rust--)
+		{
+			array[Rust] = array[Rust - 1];
+		}
+		array[index] = element;
+
+		return ret;
+	}
+
 	/*
 	* Method: TDataArray::RemoveAt
 	* Purpose: Removes an element at a certain location
@@ -195,6 +217,8 @@ public:
 		for (; c < size - 1; c++)
 			array[c] = array[c + 1];
 		size--;
+		// Set to the Default
+		array[size] = T();
 		return returnable;
 	}
 
@@ -225,7 +249,7 @@ public:
 * SuperClass: TDataArrayBase - common base class for all TDataArrays
 */
 template<typename T> 
-class  TDataArray<T*> : public TDataArrayBase
+class  _TREC_LIB_DLL TDataArray<T*> : public TDataArrayBase
 {
 	friend class TDataArray<T*>;
 private:
@@ -410,6 +434,7 @@ public:
 		for (; c < size - 1; c++)
 			array[c] = array[c + 1];
 		size--;
+		array[size] = nullptr;
 		return returnable;
 	}
 

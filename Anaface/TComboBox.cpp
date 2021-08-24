@@ -101,15 +101,13 @@ TComboBox::~TComboBox()
 */
 bool TComboBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
+	ThreadLock();
 	extension = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TComboBoxExtension>(drawingBoard, TrecPointer<TArray<styleTable>>(), 
 		TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TComboBox>(TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 
 	flyout = TrecPointerKey::GetNewSelfTrecPointer<TFlyout>(TrecPointerKey::GetTrecPointerFromSub<TControl, TComboBoxExtension>(extension));
 
-
-
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|SubHeight"));
-
 
 	int childHeight;
 	if (valpoint.Get() && !valpoint->ConvertToInt(childHeight))
@@ -129,7 +127,6 @@ bool TComboBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 		defaultText = valpoint.Get();
 
 		text1->setCaption(defaultText);
-
 	}
 	int occ = 0;
 	valpoint = attributes.retrieveEntry(TString(L"|BoxEntry"),occ++);
@@ -156,8 +153,6 @@ bool TComboBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	vertexPoint = D2D1::Point2F(midDx, DxLocation.bottom);
 
 	// Handle Styling of the Extension box
-
-
 	bool handledFontSize = false, handledContentColor = false;
 	for (UINT Rust = 0; Rust < comboAtt.Size() && regAtt.Size(); Rust++)
 	{
@@ -180,16 +175,11 @@ bool TComboBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		extension->attributes.addEntry(L"|FontSize", TrecPointerKey::GetNewTrecPointer<TString>(L"12"));
 	}
-
 	if (!handledContentColor)
 	{
 		extension->attributes.addEntry(L"|ContentColor", TrecPointerKey::GetNewTrecPointer<TString>(L"1.0,1.0,1.0,1.0"));
 	}
-
 	extension->onCreate(r, d3d);
-
-
-
 
 	// Remaining attributes
 	valpoint = attributes.retrieveEntry(TString(L"|BoxEntry"));
@@ -198,62 +188,10 @@ bool TComboBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	{
 		extension->maxHeight = childHeight;
 	}
+	ThreadRelease();
 
 	return false;
 }
-
-
-
-//
-///*
-//* Method: TComboBox - storeInTML
-//* Purpose: Stores the Combo-box specific attributes in a TML file
-//* Parameters:  CArchive* ar - the file to save to
-//*				int childLevel - the generation if the TControl
-//*				bool overrideChildren - whether to ignore the children to save
-//* Returns: void
-//*/
-//void TComboBox::storeInTML(TFile* ar, int childLevel, bool ov)
-//{
-//	//	_Unreferenced_parameter_(ov);
-//
-//
-//	TString appendable;
-//	resetAttributeString(&appendable, childLevel + 1);
-//	appendable.Append(L"|SubHeight:");
-//	appendable.AppendFormat("%d", childHeight);
-//	_WRITE_THE_STRING;
-//
-//
-//	if (defaultText.GetSize())
-//	{
-//		appendable.Append(L"|DefaultText:");
-//		appendable.Append(defaultText);
-//		_WRITE_THE_STRING;
-//	}
-//
-//	TControl* tc = nullptr;
-//	for (int c = 0; c < children.Count(); c++)
-//	{
-//		appendable.Append(L"|BoxEntry:");
-//		if (children.ElementAt(c).Get())
-//
-//		tc = children.ElementAt(c).Get();
-//
-//		if (tc && tc->getText(1).Get() && tc->text1->getCaption().GetSize())
-//		{
-//			appendable.Append(tc->text1->getCaption());
-//		}
-//		else
-//			appendable.Append(L"NULL");
-//		_WRITE_THE_STRING;
-//	}
-//
-//	TGadgetControl::storeInTML(ar, childLevel, true);
-//
-//
-//
-//}
 
 
 
@@ -268,6 +206,7 @@ bool TComboBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 */
 void TComboBox::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
+	ThreadLock();
 	resetArgs();
 
 	if (isContained(point, location))
@@ -275,11 +214,12 @@ void TComboBox::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, T
 		initClick = true;
 		clickedControl.push_back(this);
 	}
-
+	ThreadRelease();
 }
 
 void TComboBox::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	resetArgs();
 
 	if (isContained(point, location) && initClick)
@@ -291,11 +231,13 @@ void TComboBox::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 		// End to-do
 	}
 	initClick = false;
+	ThreadRelease();
 }
 
 
 void TComboBox::Resize(D2D1_RECT_F& r)
 {
+	ThreadLock();
 	TGadgetControl::Resize(r);
 	
 	if (extension.Get())
@@ -304,12 +246,12 @@ void TComboBox::Resize(D2D1_RECT_F& r)
 		r.bottom = r.bottom + 10;
 		extension->Resize(r);
 	}
-		
-
+	ThreadRelease();
 }
 
 void TComboBox::UpdateCaption(TString& str, UINT index)
 {
+	ThreadLock();
 	if (text1.Get())
 		text1->setCaption(str);
 
@@ -322,6 +264,7 @@ void TComboBox::UpdateCaption(TString& str, UINT index)
 	args.isLeftClick = true;
 	args.methodID = getEventID(R_Message_Type::On_sel_change);
 	args.text = str;
+	ThreadRelease();
 }
 
 /**
@@ -355,9 +298,10 @@ TComboBoxExtension::TComboBoxExtension(TrecPointer<DrawingBoard> rt, TrecPointer
 */
 void TComboBoxExtension::addElement(TString& str)
 {
-	if (str.IsEmpty())
-		return;
-	elements.push_back(str);
+	ThreadLock();
+	if (!str.IsEmpty())
+		elements.push_back(str);
+	ThreadRelease();
 }
 
 /*
@@ -368,23 +312,32 @@ void TComboBoxExtension::addElement(TString& str)
 */
 bool TComboBoxExtension::removeElement(TString& str)
 {
+	ThreadLock();
+	bool ret = false;
 	for (UINT Rust = 0; Rust < elements.Size(); Rust++)
 	{
 		if (!elements[Rust].Compare(str))
-			return true;
+		{
+			ret = true;
+			break;;
+		}
 	}
-	return false;
+	ThreadRelease();
+	return ret;
 }
 
 void TComboBoxExtension::Resize(D2D1_RECT_F& r)
 {
+	ThreadLock();
 	location = r;
 
 	// To-Do: Handle scenario where a TScrollerControl may need to be created
+	ThreadRelease();
 }
 
 void TComboBoxExtension::onDraw(TObject* obj)
 {
+	ThreadLock();
 	D2D1_RECT_F miniLoc = location;
 	miniLoc.bottom = miniLoc.top + childHeight;
 
@@ -413,10 +366,12 @@ void TComboBoxExtension::onDraw(TObject* obj)
 		miniLoc.top += childHeight;
 		miniLoc.bottom += childHeight;
 	}
+	ThreadRelease();
 }
 
 void TComboBoxExtension::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
+	ThreadLock();
 	auto rect = location;
 
 	rect.bottom = rect.top + childHeight * elements.Size();
@@ -427,10 +382,12 @@ void TComboBoxExtension::OnLButtonDown(UINT nFlags, TPoint point, messageOutput*
 
 		*mOut = messageOutput::positiveOverrideUpdate;
 	}
+	ThreadRelease();
 }
 
 void TComboBoxExtension::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	ThreadLock();
 	auto rect = location;
 
 	rect.bottom = rect.top + childHeight * elements.Size();
@@ -447,6 +404,7 @@ void TComboBoxExtension::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* m
 		*mOut = messageOutput::positiveOverrideUpdate;
 	}
 	clickSelection = -1;
+	ThreadRelease();
 }
 
 /**
@@ -461,6 +419,7 @@ void TComboBoxExtension::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* m
  */
 void TComboBoxExtension::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
+	ThreadLock();
 	auto rect = location;
 
 	rect.bottom = rect.top + childHeight * elements.Size();
@@ -470,4 +429,5 @@ void TComboBoxExtension::OnMouseMove(UINT nFlags, TPoint point, messageOutput* m
 
 		*mOut = messageOutput::positiveOverrideUpdate;
 	}
+	ThreadRelease();
 }

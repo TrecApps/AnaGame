@@ -137,6 +137,50 @@ TPrimitiveVariable::TPrimitiveVariable()
     Set(0ull);
 }
 
+TString TPrimitiveVariable::GetString(TString format, bool useExponent)
+{
+    ThreadLock();
+    TString ret;
+    if (type & TPrimitiveVariable::type_bool)
+    {
+        if (value)
+            ret.Set("true");
+        else
+            ret.Set("false");
+    }
+
+    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_one)
+    {
+        char v = static_cast<char>(value);
+        ret.Format(format + (useExponent ? L"e" : L"c"), v);
+    }
+    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_two)
+    {
+        WCHAR v[2] = { static_cast<WCHAR>(value), L'\0' };
+        ret.Format(format + (useExponent ? L"e" : L"ls"), v);
+    }
+    else if (type & TPrimitiveVariable::type_float)
+    {
+        double d;
+
+        memcpy_s(&d, sizeof(d), &value, sizeof(value));
+
+        ret.Format(format + (useExponent ? L"e" : L"f"), d);
+    }
+    else if (type & TPrimitiveVariable::type_unsigned)
+    {
+        ret.Format(format + (useExponent ? L"e" : L"llu"), value);
+    }
+    else
+    {
+        LONG64 l = static_cast<LONG64>(value);
+
+        ret.Format(format + (useExponent ? L"e" : L"lld"), l);
+    }
+    ThreadRelease();
+    return ret;
+}
+
 
 /**
  * Method: TPrimitiveVariable::TPrimitiveVariable
@@ -169,11 +213,13 @@ TPrimitiveVariable::TPrimitiveVariable(bool value)
  */
 void TPrimitiveVariable::Set(float value)
 {
-
+    ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 4);
-    this->value = this->value >> 32;
+    // this->value = this->value >> 32;
 
     type = type_four | type_float;
+    ThreadRelease();
 }
 
 /**
@@ -184,9 +230,11 @@ void TPrimitiveVariable::Set(float value)
  */
 void TPrimitiveVariable::Set(double value)
 {
+    ThreadLock();
     memcpy_s(&this->value, 8, &value, 8);
 
     type = type_eight | type_float;
+    ThreadRelease();
 }
 
 /**
@@ -197,10 +245,12 @@ void TPrimitiveVariable::Set(double value)
  */
 void TPrimitiveVariable::Set(signed char value)
 {
+    ThreadLock();
     memcpy_s(&this->value, 8, &value, 1);
     this->value = this->value >> 56;
 
     type = type_one;
+    ThreadRelease();
 }
 
 /**
@@ -211,10 +261,12 @@ void TPrimitiveVariable::Set(signed char value)
  */
 void TPrimitiveVariable::Set(char value)
 {
+    ThreadLock();
     memcpy_s(&this->value, 8, &value, 1);
     this->value = this->value >> 56;
 
     type = type_one | type_unsigned;
+    ThreadRelease();
 }
 
 /**
@@ -225,10 +277,12 @@ void TPrimitiveVariable::Set(char value)
  */
 void TPrimitiveVariable::Set(UCHAR value)
 {
+    ThreadLock();
     memcpy_s(&this->value, 8, &value, 2);
     this->value = this->value >> 48;
 
     type = type_two | type_unsigned;
+    ThreadRelease();
 }
 
 /**
@@ -239,10 +293,13 @@ void TPrimitiveVariable::Set(UCHAR value)
  */
 void TPrimitiveVariable::Set(short value)
 {
+    ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 2);
-    this->value = this->value >> 48;
+    // this->value = this->value >> 48;
 
     type = type_two;
+    ThreadRelease();
 }
 
 /**
@@ -253,10 +310,13 @@ void TPrimitiveVariable::Set(short value)
  */
 void TPrimitiveVariable::Set(USHORT value)
 {
+    ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 2);
-    this->value = this->value >> 48;
+    // this->value = this->value >> 48;
 
     type = type_two | type_char;
+    ThreadRelease();
 }
 
 /**
@@ -267,10 +327,13 @@ void TPrimitiveVariable::Set(USHORT value)
  */
 void TPrimitiveVariable::Set(WCHAR value)
 {
+    ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 2);
-    this->value = this->value >> 48;
+    // this->value = this->value >> 48;
 
     type = type_two | type_char;
+    ThreadRelease();
 }
 
 /**
@@ -281,10 +344,13 @@ void TPrimitiveVariable::Set(WCHAR value)
  */
 void TPrimitiveVariable::Set(int value)
 {
+    ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 4);
-    this->value = this->value >> 32;
+    //this->value = this->value >> 32;
 
     type = type_four;
+    ThreadRelease();
 }
 
 /**
@@ -295,10 +361,13 @@ void TPrimitiveVariable::Set(int value)
  */
 void TPrimitiveVariable::Set(UINT value)
 {
+    ThreadLock();
+    this->value = 0ULL;
     memcpy_s(&this->value, 8, &value, 4);
-    this->value = this->value >> 32;
+    //this->value = this->value >> 32;
 
     type = type_four | type_unsigned;
+    ThreadRelease();
 }
 
 /**
@@ -309,8 +378,10 @@ void TPrimitiveVariable::Set(UINT value)
  */
 void TPrimitiveVariable::Set(LONG64 value)
 {
+    ThreadLock();
     memcpy_s(&this->value, 8, &value, 8);
     type = type_eight;
+    ThreadRelease();
 }
 
 /**
@@ -321,9 +392,11 @@ void TPrimitiveVariable::Set(LONG64 value)
  */
 void TPrimitiveVariable::Set(ULONG64 value)
 {
+    ThreadLock();
     this->value = value;
 
     type = type_eight | type_unsigned;
+    ThreadRelease();
 }
 
 /**
@@ -334,6 +407,7 @@ void TPrimitiveVariable::Set(ULONG64 value)
  */
 void TPrimitiveVariable::Set(bool value)
 {
+    ThreadLock();
     if (value)
         this->value = 1LL;
     else
@@ -341,6 +415,7 @@ void TPrimitiveVariable::Set(bool value)
 
     type = 0;
     type = type_bool | type_one;
+    ThreadRelease();
 }
 
 /**
@@ -364,11 +439,17 @@ void TPrimitiveVariable::Set(bool value)
  */
 bool TPrimitiveVariable::BitShift(bool rightShift, UINT shiftCount, USHORT flags)
 {
+    ThreadLock();
     if (!(flags & 1) && type & 0b00000001)    // It was a boolean and the passed flag doesn't allow for that
+    {
+        ThreadRelease();
         return false;
+    }
     if (!(flags & 2) && type & type_float)      // Type was a float and the passed flag doesn't allow for that
+    {
+        ThreadRelease();
         return false;
-
+    }
     ULONG64 preShift = value;
 
     UINT moder = 64;
@@ -430,6 +511,7 @@ bool TPrimitiveVariable::BitShift(bool rightShift, UINT shiftCount, USHORT flags
             if (type & type_float)
             {
                 value = preShift;
+                ThreadRelease();
                 return false;
             }
 
@@ -446,6 +528,7 @@ bool TPrimitiveVariable::BitShift(bool rightShift, UINT shiftCount, USHORT flags
             if (type & type_float)
             {
                 value = preShift;
+                ThreadRelease();
                 return false;
             }
 
@@ -461,6 +544,7 @@ bool TPrimitiveVariable::BitShift(bool rightShift, UINT shiftCount, USHORT flags
         {
             // We are supposed to cast to unsigned but not if it is a float
             value = preShift;
+            ThreadRelease();
             return false;
         }
 
@@ -485,15 +569,16 @@ bool TPrimitiveVariable::BitShift(bool rightShift, UINT shiftCount, USHORT flags
             }
         }
     }
-
+    ThreadRelease();
     return true;
 }
 
 TrecPointer<TVariable> TPrimitiveVariable::Clone()
 {
-
+    ThreadLock();
     TrecPointer<TVariable> ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(value);
     dynamic_cast<TPrimitiveVariable*>(ret.Get())->type = type;
+    ThreadRelease();
     return ret;
 }
 
@@ -529,43 +614,7 @@ var_type TPrimitiveVariable::GetVarType()
  */
 TString TPrimitiveVariable::GetString()
 {
-    TString ret;
-    if (type & TPrimitiveVariable::type_bool)
-    {
-        if (value)
-            ret.Set("true");
-        else
-            ret.Set("false");
-    }
-    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_one)
-    {
-        char v = static_cast<char>(value);
-        ret.Format(L"%c", v);
-    }
-    else if (type & TPrimitiveVariable::type_char && type & TPrimitiveVariable::type_two)
-    {
-        WCHAR v[2] = { static_cast<WCHAR>(value), L'\0' };
-        ret.Format(L"%ls", v);
-    }
-    else if (type & TPrimitiveVariable::type_float)
-    {
-        double d;
-
-        memcpy_s(&d, sizeof(d), &value, sizeof(value));
-
-        ret.Format(L"%f", d);
-    }
-    else if (type & TPrimitiveVariable::type_unsigned)
-    {
-        ret.Format(L"%llu", value);
-    }
-    else
-    {
-        LONG64 l = static_cast<LONG64>(value);
-
-        ret.Format(L"%lld", l);
-    }
-    return ret;
+    return GetString(TString(L"%"));
 }
 
 /**
@@ -576,7 +625,10 @@ TString TPrimitiveVariable::GetString()
  */
 UINT TPrimitiveVariable::Get4Value()
 {
-    return static_cast<UINT>(value);
+    ThreadLock();
+    UINT ret = static_cast<UINT>(value);
+    ThreadRelease();
+    return ret;
 }
 
 /**
@@ -587,7 +639,10 @@ UINT TPrimitiveVariable::Get4Value()
  */
 ULONG64 TPrimitiveVariable::Get8Value()
 {
-    return value;
+    ThreadLock();
+    ULONG64 ret = value;
+    ThreadRelease();
+    return ret;
 }
 
 /**
@@ -598,18 +653,24 @@ ULONG64 TPrimitiveVariable::Get8Value()
  */
 UINT TPrimitiveVariable::GetSize()
 {
+    ThreadLock();
+    UINT ret = 0;
     switch (type >> 4)
     {
     case 0b0001:
-        return 1;
+        ret = 1;
+        break;
     case 0b0010:
-        return 2;
+        ret = 2;
+        break;
     case 0b0011:
-        return 4;
+        ret = 4;
+        break;
     case 0b0100:
-        return 8;
+        ret = 8;
     }
-    return 0;
+    ThreadRelease();
+    return ret;
 }
 
 /**
@@ -618,7 +679,10 @@ UINT TPrimitiveVariable::GetSize()
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
  */
-UINT TPrimitiveVariable::GetType()
+UINT TPrimitiveVariable::GetVType()
 {
-    return type;
+    ThreadLock();
+    UINT ret = type;
+    ThreadRelease();
+    return ret;
 }

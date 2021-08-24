@@ -256,8 +256,16 @@ public:
 	 * Parameters: const D2D1_RECT_F& loc -  the location to provide this Page
 	 * Returns: void
 	 */
-	void SetArea(const D2D1_RECT_F& loc);
+	virtual void SetArea(const D2D1_RECT_F& loc);
 
+
+	/**
+	 * Method: Page::TookTab
+	 * Purpose: Allows Page with Tab Bars to take in a tab
+	 * Parameters: TrecPointer<Tab> tab - the tab to take
+	 * Returns: bool - whether the tab was taken in
+	 */
+	virtual bool TookTab(TrecPointer<Tab> tab);
 
 	/**
 	 * Method: Page::OnRButtonUp
@@ -358,9 +366,18 @@ public:
 	 * 
 	 * Attributes: message; virtual
 	 */
-	afx_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>);
+	afx_msg virtual void OnResize(const D2D1_RECT_F& newLoc, UINT nFlags, TrecPointer<TWindowEngine>);
 
-
+	/**
+	 * Method: Page::OnScroll
+	 * Purpose: Sends Scroll Command to controls
+	 * Parameters: const TPoint& point - point of the mouse
+	 *				const TPoint& direction - how far to send the scroll
+	 * Returns: bool - whether message was recieved
+	 * 
+	 * Attributes: virtual
+	 */
+	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
 
 	/**
 	 * Method: Page::OnRButtonUp
@@ -560,7 +577,30 @@ public:
 	 */
 	void OnFocus();
 
+	virtual void QueryMediaControls(TDataArray<TrecPointer<TControl>>& mediaControls);
+	/**
+	 * Mehtod: Page::GetClickedControls
+	 * Purpose: Retireves List of controls that were clicked under this page
+	 * Parameters: void
+	 * Returns: TDataArray<TControl*> - controls that were clicked
+	 * 
+	 * Note: Calling this method will return a copy of the list and clear the original list
+	 */
+	TDataArray<TControl*> GetClickedControls();
+
+	/**
+	 * Mehtod: Page::GetRightClickedControls
+	 * Purpose: Retireves List of controls that were right-clicked under this page
+	 * Parameters: void
+	 * Returns: TDataArray<TControl*> - controls that were right-clicked
+	 *
+	 * Note: Calling this method will return a copy of the list and clear the original list
+	 */
+	TDataArray<TControl*> GetRightClickedControls();
+
 protected:
+
+	TDataArray<TrecPointer<TControl>> mediaControls;
 
 	/**
 	 * Reports whether the Drawing has commenced

@@ -55,7 +55,9 @@ UINT TObjectNode::GetLevel()
 */
 void TObjectNode::SetParent(TrecPointerSoft<TObjectNode> p)
 {
+	ThreadLock();
 	parentNode = p;
+	ThreadRelease();
 }
 
 /*

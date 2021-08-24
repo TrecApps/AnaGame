@@ -162,6 +162,7 @@
     <ClInclude Include="HtmlLink.h" />
     <ClInclude Include="HtmlScriptBlock.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TWebForm.h" />
     <ClInclude Include="TWebNode.h" />
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +178,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TWebForm.cpp" />
     <ClCompile Include="TWebNode.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

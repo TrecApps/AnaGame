@@ -5,6 +5,7 @@
 #include <DirectoryInterface.h>
 #include <shlobj.h>
 #include <TWindow.h>
+#include <TML_Reader_.h>
 
 TString on_SelectRecent(L"OnSelectRecent");
 TString on_SelectAvailable(L"OnSelectAvailable");
@@ -13,6 +14,49 @@ TString on_ImportProject(L"OnImportProject");
 TString on_Confirm(L"OnConfirm");
 TString on_FileType(L"OnFileType");
 
+/**
+ * Function: CollectSavedEnv
+ * Purpose: Collects a List of saved Environments
+ * Parameters: TTrecPointerArray<SavedEnvironment>& envList - list of environments to populate
+ * Returns: void
+ */
+void CollectSavedEnv(TTrecPointerArray<SavedEnvironment>& envList)
+{
+    TString repoName = GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"AnaGame\\";
+
+    ForgeDirectory(repoName);
+    repoName.Append(L"Envronments.tml");
+
+    TrecPointer<TFile> repoFile = TrecPointerKey::GetNewTrecPointer<TFile>(repoName, TFile::t_file_open_existing | TFile::t_file_read);
+
+    TDataArray<EnvironmentEntry> envEntries;
+
+    if (repoFile->IsOpen())
+    {
+        TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, EnvironmentEntryParser>();
+        TML_Reader_ reader(repoFile, parser);
+        int num = 0;
+        if (reader.read(&num))
+        {
+            dynamic_cast<EnvironmentEntryParser*>(parser.Get())->GetEntries(envEntries);
+        }
+
+        repoFile->Close();
+    }
+
+    for (UINT Rust = 0; Rust < envEntries.Size(); Rust++)
+    {
+        TrecPointer<SavedEnvironment> envEnt = TrecPointerKey::GetNewTrecPointer<SavedEnvironment>(envEntries[Rust].type, envEntries[Rust].source,
+            envEntries[Rust].name, TFileShell::GetFileInfo(envEntries[Rust].filePath));
+
+        if (!envEnt->GetFileLocation().Get())
+            continue;
+
+        envList.push_back(envEnt);
+    }
+
+
+}
 
 /**
  * Method: EnvironmentHandler::EnvironmentHandler
@@ -85,6 +129,8 @@ void EnvironmentHandler::Initialize(TrecPointer<Page> page)
     window = page->GetWindowHandle();
 
     RefreshEnvironmentList();
+    savedEnvironments.RemoveAll();
+    CollectSavedEnv(savedEnvironments);
 
     auto rootStack = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(page->GetRootControl());
 
@@ -117,6 +163,7 @@ void EnvironmentHandler::Initialize(TrecPointer<Page> page)
 
 
     newBinder->setData(&availableEnvironments);
+    recentBinder->setData(&savedEnvironments);
 
     // Set a default directory for the workspace
 
@@ -184,6 +231,19 @@ TrecPointer<TEnvironment> EnvironmentHandler::GetEnvironment()
 
 void EnvironmentHandler::OnSelectRecent(TrecPointer<TControl> tc, EventArgs ea)
 {
+    auto index = ea.arrayLabel;
+
+    if (index >= 0 && index < savedEnvironments.Size())
+    {
+        selectedEnvType = TrecPointerKey::GetNewTrecPointer<EnvironmentList>(savedEnvironments[index]->GetEnvironment(), savedEnvironments[index]->GetBuilder());
+        nameEntry->SetText(savedEnvironments[index]->GetName());
+        envFile = savedEnvironments[index]->GetFileLocation();
+        if (envFile.Get())
+            currentWorkspace = envFile->GetParent();
+    }
+    mode = environment_handler_mode::ehm_recent_set;
+
+    RefreshView();
 }
 
 void EnvironmentHandler::OnSelectAvailable(TrecPointer<TControl> tc, EventArgs ea)
@@ -193,8 +253,12 @@ void EnvironmentHandler::OnSelectAvailable(TrecPointer<TControl> tc, EventArgs e
     if (index >= 0 && index < availableEnvironments.Size())
         selectedEnvType = availableEnvironments[index];
 
-    if (mode == environment_handler_mode::ehm_not_set)
-        mode = environment_handler_mode::ehm_available_set;
+    if (mode != environment_handler_mode::ehm_available_set)
+    {
+        nameEntry->SetText(L"");
+    }
+    envFile.Nullify();
+    mode = environment_handler_mode::ehm_available_set;
 
     RefreshView();
 }
@@ -243,7 +307,7 @@ void EnvironmentHandler::OnConfirm(TrecPointer<TControl> tc, EventArgs ea)
     {
         TString name(nameEntry->GetText());
 
-        if (name.GetSize())
+        if (name.GetSize() && mode == environment_handler_mode::ehm_available_set)
         {
             TString dir(currentWorkspace->GetPath() + L'\\');
             dir.Append(name);
@@ -254,6 +318,10 @@ void EnvironmentHandler::OnConfirm(TrecPointer<TControl> tc, EventArgs ea)
 
 
     environment = TEnvironmentBuilder::GetEnvironment(selectedEnvType->GetEnvironment(), selectedEnvType->GetBuilder(), currentWorkspace);
+
+    assert(environment.Get());
+    if (envFile.Get())
+        assert(!environment->SetLoadFile(envFile).GetSize());
 
     DestroyWindow(window->GetWindowHandle());
 }
@@ -281,12 +349,14 @@ void EnvironmentHandler::RefreshView()
         TString param;
         if (builderReport.Get())
         {
-            param.Format(L"Environment Builder: %ws", selectedEnvType->GetBuilder().GetConstantBuffer());
+            auto builderBuffer = selectedEnvType->GetBuilder();
+            param.Format(L"Environment Builder: %ws", builderBuffer.GetConstantBuffer().getBuffer());
             builderReport->SetText(param);
         }
         if (environmentReport.Get())
         {
-            param.Format(L"Environment: %ws", selectedEnvType->GetEnvironment().GetConstantBuffer());
+            auto builderBuffer = selectedEnvType->GetEnvironment();
+            param.Format(L"Environment: %ws", builderBuffer.GetConstantBuffer().getBuffer());
             environmentReport->SetText(param);
         }
     }
@@ -314,19 +384,19 @@ void EnvironmentHandler::RefreshView()
     {
     case environment_handler_mode::ehm_not_set:
         if (nameEntry.Get())
-            nameEntry->setActive(true);
+            nameEntry->UnlockText();
         break;
     case environment_handler_mode::ehm_available_set:
         if (nameEntry.Get())
-            nameEntry->setActive(true);
+            nameEntry->UnlockText();
         break;
     case environment_handler_mode::ehm_recent_set:
         if (nameEntry.Get())
-            nameEntry->setActive(false);
+            nameEntry->LockText();
         break;
     case environment_handler_mode::ehm_import_set:
         if (nameEntry.Get())
-            nameEntry->setActive(false);
+            nameEntry->LockText();
 
     }
 
@@ -379,7 +449,7 @@ PIDLIST_ABSOLUTE EnvironmentHandler::BrowseFolder(const TString& message)
     WCHAR* startPath = (currentWorkspace.Get()) ? currentWorkspace->GetPath().GetBufferCopy() : nullptr;
 
     info.hwndOwner = (window.Get()) ? window->GetWindowHandle() : 0;
-    info.lpszTitle = message.GetConstantBuffer();
+    info.lpszTitle = message.GetConstantBuffer().getBuffer();
     info.pszDisplayName = folderPath;
     info.ulFlags = BIF_NEWDIALOGSTYLE;
     info.lParam = (LPARAM)startPath;
@@ -434,4 +504,41 @@ TString EnvironmentList::GetEnvironment()const
 TString EnvironmentList::GetBuilder() const
 {
     return environmentBuilder;
+}
+
+SavedEnvironment::SavedEnvironment(const TString& environment, const TString& builder, const TString& name, TrecPointer<TFileShell> fileLoc) : EnvironmentList(environment, builder)
+{
+    this->fileLoc = fileLoc;
+    this->name.Set(name);
+}
+
+SavedEnvironment::SavedEnvironment(const SavedEnvironment& list)
+{
+    this->environment.Set(list.GetEnvironment());
+    this->environmentBuilder.Set(list.GetBuilder());
+    this->fileLoc = list.fileLoc;
+    this->name.Set(list.name);
+}
+
+SavedEnvironment::SavedEnvironment()
+{
+}
+
+TString SavedEnvironment::getVariableValueStr(const TString& varName)
+{
+    if (!varName.Compare(L"Location"))
+        return fileLoc.Get() ? fileLoc->GetPath() : L"[Null File]";
+    if (!varName.Compare(L"Name"))
+        return name;
+    return EnvironmentList::getVariableValueStr(varName);
+}
+
+TrecPointer<TFileShell> SavedEnvironment::GetFileLocation()
+{
+    return fileLoc;
+}
+
+TString SavedEnvironment::GetName()
+{
+    return name;
 }

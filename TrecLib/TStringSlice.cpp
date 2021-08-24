@@ -14,6 +14,19 @@ void TStringSlice::Invalidate()
 	valid = false;
 }
 
+/**
+ * Method: TStringSlice::GetStringCopy
+ * Purpose: Retrieves the sliced contentes of the underlying string
+ * Parameters: void
+ * Returns: TString - string representing what was in the slice
+ *
+ * Note: The returned string is a copy of the sliced string. Changes made to the copy have no impact on the source string
+ */
+TString TStringSlice::GetStringCopy()
+{
+	return (string.Get() && valid) ? string->SubString(start, start + count): TString();
+}
+
 TStringSliceManager::TStringSliceManager(TrecPointer<TString> string)
 {
 	this->string = string;

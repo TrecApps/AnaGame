@@ -1,5 +1,8 @@
 #include "TFileShell.h"
 #include "TDirectory.h"
+#include <PathCch.h>
+#include <strsafe.h>
+#include <intsafe.h>
 
 /**
  * Method: TBlankNode::TFileShell
@@ -31,7 +34,9 @@ bool TFileShell::IsDirectory()
 */
 bool TFileShell::IsValid()
 {
-	return path.GetSize() && !deleted;
+	AG_THREAD_LOCK
+		bool ret =path.GetSize() && !deleted;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -44,7 +49,9 @@ bool TFileShell::IsValid()
 */
 TString TFileShell::GetPath()
 {
-	return path;
+	AG_THREAD_LOCK
+		TString ret(path);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -55,11 +62,10 @@ TString TFileShell::GetPath()
 */
 TString TFileShell::GetName()
 {
+	AG_THREAD_LOCK
 	int slashLoc = path.FindLastOneOf(TString(L"/\\"));
-	if (slashLoc == -1)
-		return path;
-
-	return path.SubString(slashLoc+1);
+	TString ret((slashLoc == -1 ? path : path.SubString(slashLoc + 1)));
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -73,16 +79,57 @@ TString TFileShell::GetName()
 */
 TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 {
-	DWORD ftyp = GetFileAttributesW(path.GetConstantBuffer());
+	TString newPath(path);
+
+	newPath.Replace(L'/', L'\\');
+	while(newPath.Replace(L"\\\\", L"\\"));
+
+	// Make sure path is canonical
+	WCHAR newPathBuff[300];
+	for (UINT Rust = 0; Rust < 300; Rust++)
+	{
+		newPathBuff[Rust] = L'\0';
+	}
+
+	if (FAILED(PathCchCanonicalizeEx(newPathBuff, 300, newPath.GetConstantBuffer().getBuffer(), 1)))
+		return TrecPointer<TFileShell>();
+
+	newPath.Set(newPathBuff);
+
+	DWORD ftyp = GetFileAttributesW(newPath.GetConstantBuffer().getBuffer());
 
 	if (ftyp == INVALID_FILE_ATTRIBUTES)
 		return TrecPointer<TFileShell>(); // if Invalid, simply return a Null
 
 
 	if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
-		return TrecPointerKey::GetNewTrecPointerAlt<TFileShell, TDirectory>(path);
+		return TrecPointerKey::GetNewTrecPointerAlt<TFileShell, TDirectory>(newPath);
 	else
-		return TrecPointerKey::GetNewTrecPointer<TFileShell>(path);
+		return TrecPointerKey::GetNewTrecPointer<TFileShell>(newPath);
+}
+
+
+/**
+ * Method: TFileShell::GetParent
+ * Purpose: Enables the File Object to return a representation of it's parent folder
+ * Parameters: void
+ * Returns: TrecPointer<TFileShell> - the directory of the current file (if null, then likely this file is as high as it can be)
+ */
+TrecPointer<TFileShell> TFileShell::GetParent()
+{
+	auto pieces = path.split(L'\\');
+
+	TString newPath;
+
+	for (UINT Rust = 0; Rust < pieces->Size() - 1; Rust++)
+	{
+		if (newPath.GetSize())
+			newPath.AppendChar(L'\\');
+		newPath.Append(pieces->at(Rust));
+	}
+
+	newPath.AppendChar(L'\\');
+	return TFileShell::GetFileInfo(newPath);
 }
 
 /*
@@ -93,8 +140,10 @@ TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 */
 FILETIME TFileShell::GetCreationDate()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return fileInfo.ftCreationTime;
+	FILETIME ret = fileInfo.ftCreationTime;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -105,8 +154,10 @@ FILETIME TFileShell::GetCreationDate()
 */
 FILETIME TFileShell::GetLastAccessed()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return fileInfo.ftLastAccessTime;
+	FILETIME ret = fileInfo.ftLastAccessTime;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -117,8 +168,10 @@ FILETIME TFileShell::GetLastAccessed()
 */
 FILETIME TFileShell::GetLastWritten()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return fileInfo.ftLastWriteTime;
+	FILETIME ret = fileInfo.ftLastWriteTime;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -129,8 +182,85 @@ FILETIME TFileShell::GetLastWritten()
 */
 ULONG64 TFileShell::GetSize()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return (static_cast<ULONG64>(fileInfo.nFileSizeHigh) << 32) + static_cast<ULONG64>(fileInfo.nFileSizeLow);
+	ULONG64 ret = (static_cast<ULONG64>(fileInfo.nFileSizeHigh) << 32) + static_cast<ULONG64>(fileInfo.nFileSizeLow);
+	RETURN_THREAD_UNLOCK ret;
+}
+
+/**
+ * Method: TFileShell::GetRelativePath
+ * Purpose: Retrieves the Relative file path for the Provided directory
+ * Parameters: TString& relativePath - the relative path provided if successful
+ *				TrecPointer<TFileShell> directory - the directory to check (must be valid and a TDirectory)
+ *				bool allowOutside - if true, than this file can be outside of the provided directory
+ * Returns: bool - true if the method worked, false otherwise
+ */
+bool TFileShell::GetRelativePath(TString& relativePath, TrecPointer<TFileShell> directory, bool allowOutside)
+{
+	if (!directory.Get() || !directory->IsDirectory())
+		return false;
+
+	TString d(directory->GetPath());
+	if (!d.EndsWith(L'\\'))
+		d.AppendChar(L'\\');
+	TString f(path);
+
+	bool done = false;
+
+	if (f.Find(d) == 0)
+	{
+		relativePath.Set(f.SubString(d.GetSize()));
+		done = true;
+	}
+
+	if (!done && allowOutside)
+	{
+		int index = 0; 
+
+		while (index != -1)
+		{
+			int dIndex = d.Find(L'\\', index);
+
+			int fIndex = f.Find(L'\\', index);
+
+			if(dIndex == fIndex && dIndex != -1 && d.SubString(0, dIndex).CompareNoCase(f.SubString(0, fIndex)))
+				index = dIndex;
+			else break;
+		}
+
+		TString remainingDirectory(d.SubString(index + 1));
+
+		relativePath.Empty();
+
+		UINT slashCount = remainingDirectory.CountFinds(L'\\');
+
+		while (slashCount--)
+		{
+			relativePath.Append(L"..\\");
+		}
+
+		relativePath.Append(f.SubString(index + 1));
+		done = true;
+	}
+
+	return done;
+}
+
+
+/**
+ * Method: TFileShell::GetDirectoryName
+ * Purpose: Retrieves the Name fo the directory containing this file path ("C:\\Users\\John\\Desktop\\file.txt" returns "Desktop")
+ * Parameters: void
+ * Returns: TString - the name of the containing Directory
+ */
+TString TFileShell::GetDirectoryName()
+{
+	auto pieces = path.split(L'\\');
+
+	UINT pSize = pieces->Size();
+
+	return pSize > 1 ? pieces->at(pSize - 2) : L"";
 }
 
 /*
@@ -141,8 +271,10 @@ ULONG64 TFileShell::GetSize()
 */
 bool TFileShell::IsArchive()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return fileInfo.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE;
+	bool ret = fileInfo.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -153,8 +285,10 @@ bool TFileShell::IsArchive()
 */
 bool TFileShell::IsEncrypted()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return  fileInfo.dwFileAttributes & FILE_ATTRIBUTE_ENCRYPTED;
+	bool ret = fileInfo.dwFileAttributes & FILE_ATTRIBUTE_ENCRYPTED;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -165,8 +299,10 @@ bool TFileShell::IsEncrypted()
 */
 bool TFileShell::IsHidden()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return  fileInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN;
+	bool ret =  fileInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /*
@@ -177,8 +313,10 @@ bool TFileShell::IsHidden()
 */
 bool TFileShell::IsReadOnly()
 {
+	AG_THREAD_LOCK
 	Refresh();
-	return  fileInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY;
+	bool ret = fileInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 
@@ -190,11 +328,14 @@ bool TFileShell::IsReadOnly()
 */
 TFileShell::TFileShell(const TString& path)
 {
-	if (GetFileAttributesExW(path.GetConstantBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
+	AG_THREAD_LOCK
+	TString newPath(path);
+	if (GetFileAttributesExW(newPath.GetConstantBuffer().getBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
 		this->path.Set(path);
 
 
 	deleted = false;
+	RETURN_THREAD_UNLOCK;
 }
 
 /*
@@ -205,9 +346,11 @@ TFileShell::TFileShell(const TString& path)
 */
 void TFileShell::Refresh()
 {
-	if (!GetFileAttributesExW(path.GetConstantBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
+	AG_THREAD_LOCK
+	if (!GetFileAttributesExW(path.GetConstantBuffer().getBuffer(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &this->fileInfo))
 	{
 		if (path.GetSize())
 			deleted = true;
 	}
+	RETURN_THREAD_UNLOCK;
 }

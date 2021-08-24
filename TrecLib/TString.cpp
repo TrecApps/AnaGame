@@ -13,7 +13,7 @@ void fillWhiteChar()
 		return;
 
 	whiteChar.push_back(L' ');
-	whiteChar.push_back(L'\s');
+	// whiteChar.push_back(L'\s');
 	whiteChar.push_back(L'\n');
 	whiteChar.push_back(L'\r');
 	whiteChar.push_back(L'\t');
@@ -35,12 +35,173 @@ TString::TString()
 	fillWhiteChar();
 }
 
+
+bool ConvertTStringToBinary(const TString& string, UINT& val)
+{
+	if (string.GetSize() > 32)
+		return false;
+	UINT tempVal = 0;
+	for (UINT Rust = string.GetSize() - 1, mark = 0x00000001; Rust < string.GetSize() && mark; Rust--, mark = mark << 1)
+	{
+		WCHAR ch = string.GetAt(Rust);
+		switch (ch)
+		{
+		case L'0':
+			break;
+		case L'1':
+			tempVal = tempVal | mark;
+			break;
+		default:
+			return false;
+		}
+	}
+	val = tempVal;
+	return true;
+}
+
+bool ConvertTStringToOctal(const TString& string, UINT& val)
+{
+	UINT stringSize = string.GetSize();
+	
+	// Max number is 37777777777.
+	if (stringSize > 11)
+		return false;
+	if (stringSize == 11)
+	{
+		WCHAR ch = string.GetAt(0);
+		if (ch > L'3' || ch < L'0')
+			return false;
+	}
+
+	UINT tempVal = 0, shift = 0;
+
+	for (UINT Rust = string.GetSize() - 1; Rust < stringSize; Rust--, shift += 3)
+	{
+		WCHAR ch = string.GetAt(Rust);
+		if (ch > L'7' || ch < L'0')
+			return false;
+		UINT charVal = ch - L'0';
+
+		tempVal += (charVal << shift);
+	}
+	val = tempVal;
+	return true;
+}
+
+bool ConvertTStringToHex(const TString& string, UINT& val)
+{
+	if (string.GetSize() > 8)
+		return false;
+	UINT tempVal = 0, shift = 0;
+
+	for (UINT Rust = string.GetSize() - 1; Rust < string.GetSize(); Rust--, shift += 4)
+	{
+		WCHAR ch = string.GetAt(Rust);
+		UINT charVal = 0;
+
+		if (ch <= L'9' && ch >= L'0')
+			charVal = ch - L'0';
+		else if (ch <= L'f' && ch >= L'a')
+			charVal = ch - L'a' + 10;
+		else
+			return false;
+
+		tempVal += (charVal << shift);
+	}
+	val = tempVal;
+	return true;
+}
+
+/**
+ * Method: TString::ConvertStringToUint
+ * Purpose: Allows TString class to convert itself into a numeral representation
+ * Parameters: const TString& string - the string to convert
+ *				UINT& num - the number to hold the data in
+ *				number_base base - the base to assume
+ * Returns: bool - whether the string could be converted into an int
+ *
+ * Note: if the String starts with a number specifier (0x or 0b), then the base param must
+ *		match the specifier or be 'generic'. Otherwise it will fail and false is returned.
+ *		Also, if 'generic' is set and string has no specifier, then decimal will be considered followed by hex.
+ *		Finally, if you dont want octal, then add a binary/hex specifier tot he string, remove all leading zeros, or
+ *		don't use 'generic' as the base parameter
+ */
+bool TString::ConvertStringToUint(const TString& string, UINT& num, number_base base)
+{
+	number_base assumeBase = number_base::nb_generic;
+	
+	// Easier to just deal with lowercase than worry about both lower and upper case
+	TString tempString(string.GetLower().GetTrim());
+	if (tempString.StartsWith(L"0x", true) || tempString.StartsWith(L"x", true))
+	{
+		assumeBase = number_base::nb_hexadecimal;
+		tempString.Delete(0, tempString.Find(L'x') + 1);
+	}
+	else if (tempString.StartsWith(L"0b", true) || tempString.StartsWith(L"b", true))
+	{
+		assumeBase = number_base::nb_binary;
+		tempString.Delete(0, tempString.Find(L'b') + 1);
+	}
+	else if (tempString.StartsWith(L'0'))
+	{
+		assumeBase = number_base::nb_octal;
+	}
+	
+
+	// Now make sure that there is no inconsistancy in what the user is asking for and what the string provides
+	bool works = false;
+	switch (base)
+	{
+	case number_base::nb_generic:	// User has no preference, use the assumed
+		works = true;
+		break;
+	case number_base::nb_binary:	// User has a preference. Make sure our assumption is generic or octal or matches the user preference
+	case number_base::nb_decimal:
+	case number_base::nb_hexadecimal:
+	case number_base::nb_octal:
+		if (assumeBase == number_base::nb_generic || assumeBase == number_base::nb_octal)
+			assumeBase = base;
+		works = (assumeBase == base);
+	}
+
+	if (!works)
+		return false;
+	int iNum = 0;
+
+	switch (assumeBase)
+	{
+	case number_base::nb_binary:
+		works = ConvertTStringToBinary(tempString, num);
+		break;
+	case number_base::nb_decimal:
+		works = (tempString.ConvertToInt(iNum) == 0);
+		if (works)
+			num = static_cast<UINT>(iNum);
+		break;
+	case number_base::nb_hexadecimal:
+		works = ConvertTStringToHex(tempString, num);
+		break;
+	case number_base::nb_octal:
+		works = ConvertTStringToOctal(tempString, num);
+		break;
+	default: // i.e. Generic
+		works = (tempString.ConvertToInt(iNum) == 0);
+		if (works)
+			num = static_cast<UINT>(iNum);
+		else
+			works = ConvertTStringToHex(tempString, num);
+	}
+
+	return works;
+}
+
 /**
  * Method: TString::GetType
- * Purpose: Returns a String Representation of the object type
+ * Purpose: returns a String Representation of the object type
  * Parameters: void
  * Returns: TString - representation of the object type
  */
+
 TString TString::GetType()
 {
 	return TString(L"TString;") + TObject::GetType();
@@ -54,8 +215,10 @@ TString TString::GetType()
 */
 TString::~TString()
 {
+	TObjectLocker threadLock(&thread);
 	if (string)
 		delete[] string;
+	return;
 }
 
 
@@ -202,9 +365,11 @@ TString::TString(WCHAR c)
 */
 short TString::ConvertToInt(int& value)
 {
+	TObjectLocker threadLock(&thread);
 	if (!size)
+	{
 		return NOT_NUMB;
-	int temp = value;
+	}int temp = value;
 
 	value = 0;
 	int hold;
@@ -241,8 +406,11 @@ short TString::ConvertToInt(int& value)
 */
 short TString::ConvertToInt(long& value)
 {
+	TObjectLocker threadLock(&thread);
 	if (!size)
+	{
 		return NOT_NUMB;
+	}
 	int temp = value;
 
 	value = 0;
@@ -280,8 +448,11 @@ short TString::ConvertToInt(long& value)
 */
 short TString::ConvertToLong(long long& value)
 {
+	TObjectLocker threadLock(&thread);
 	if (!size)
+	{
 		return NOT_NUMB;
+	}
 	long long temp = value;
 
 	value = 0;
@@ -321,8 +492,11 @@ short TString::ConvertToLong(long long& value)
 */
 short TString::ConvertToDouble(double& value)
 {
+	TObjectLocker threadLock(&thread);
 	if (!size)
+	{
 		return NOT_NUMB;
+	}
 	double temp = value;
 
 	value = 0;
@@ -374,8 +548,11 @@ short TString::ConvertToDouble(double& value)
 */
 short TString::ConvertToFloat(float& value)
 {
+	TObjectLocker threadLock(&thread);
 	if (!size)
+	{
 		return NOT_NUMB;
+	}
 	float temp = value;
 
 	value = 0;
@@ -455,6 +632,7 @@ TrecPointer<TDataArray<TString>> TString::split(TString str, UCHAR flags, WCHAR 
 */
 TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCHAR flags, WCHAR exitQuote) const
 {
+	TObjectLocker threadLock(&thread);
 	TrecPointer<TDataArray<TString>> ret;
 	ret = TrecPointerKey::GetNewTrecPointer<TDataArray<TString>>();
 
@@ -500,7 +678,15 @@ TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCH
 
 		(ret).Get()->push_back(tok);
 		begPos = pos;
-		tok.Set(this->Tokenize(str, pos, flags & 0b00000010));
+		if (hasLimit && elements == 1)
+		{
+			while (pos == ((flags & 2) ? FindOneOf(str, pos) : FindOneOfOutOfQuotes(str, pos)))
+				pos++;
+			ret->push_back(SubString(pos));
+			break;
+		}
+		else
+			tok.Set(this->Tokenize(str, pos, flags & 0b00000010));
 	}
 
 	return ret;
@@ -508,9 +694,11 @@ TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCH
 
 bool TString::IsBackSlashChar(UINT index)
 {
-	if(index > size)
+	TObjectLocker threadLock(&thread);
+	if (index > size)
+	{
 		return false;
-
+	}
 	UINT comp = 0;
 
 	for (int C = index - 1; C >= 0 && this->string[C] == L'\\'; C--)
@@ -530,6 +718,7 @@ bool TString::IsBackSlashChar(UINT index)
 */
 WCHAR * TString::GetBufferCopy() const 
 {
+	TObjectLocker threadLock(&thread);
 	WCHAR* returnable = new WCHAR[size+1];
 	for (UINT c = 0; c < GetSize(); c++)
 		returnable[c] = string[c];
@@ -539,24 +728,26 @@ WCHAR * TString::GetBufferCopy() const
 
 /*
  * Mehtod: TString::GetConstantBuffer
- * Purpose: Returns the underlying String 
+ * Purpose: returns the underlying String 
  * Parameters: void
  * Returns: const WCHAR* - a constant pointer of the underlying string buffer
  */
-const WCHAR* TString::GetConstantBuffer() const
+TString::TConstBuffer TString::GetConstantBuffer() const
 {
-	return string;
+	// TObject::ThreadLock();
+	return TConstBuffer(this);
 }
 
 /*
 * Method: TString::SubString
-* Purpose: Returns a substring specified 
+* Purpose: returns a substring specified 
 * Parameters: UINT beginningIndex - the index to start at
 *			int endIndex - exclusive index to end (use negative value to go to end)
 * Returns: TString::the Substring generated
 */
 TString TString::SubString(UINT beginningIndex, int endIndex) const
 {
+	TObjectLocker threadLock(&thread);
 
 	TString returnable;
 	if (endIndex == -1)
@@ -583,8 +774,10 @@ TString TString::SubString(UINT beginningIndex, int endIndex) const
 */
 void TString::Trim()
 {
+	TObjectLocker threadLock(&thread);
 	TrimRight();
 	TrimLeft();
+	return;
 }
 
 /**
@@ -595,6 +788,7 @@ void TString::Trim()
  */
 TString TString::GetTrim() const
 {
+	TObjectLocker threadLock(&thread);
 	TString ret(this);
 	ret.Trim();
 	return ret;
@@ -608,6 +802,7 @@ TString TString::GetTrim() const
  */
 void TString::TrimRight()
 {
+	TObjectLocker threadLock(&thread);
 	int end = size - 1;
 	while (end >= 0 && iswspace(string[end]))
 	{
@@ -616,6 +811,7 @@ void TString::TrimRight()
 	end++;
 	size = end;
 	string[size] = L'\0';
+	return;
 }
 
 /**
@@ -626,6 +822,7 @@ void TString::TrimRight()
  */
 TString TString::GetTrimRight()
 {
+	TObjectLocker threadLock(&thread);
 	TString ret(this);
 	ret.TrimRight();
 	return ret;
@@ -639,6 +836,7 @@ TString TString::GetTrimRight()
  */
 void TString::TrimLeft()
 {
+	TObjectLocker threadLock(&thread);
 	UINT end = 0;
 	while (end < size && iswspace(string[end])) end++;
 	UINT sEnd = end;
@@ -648,6 +846,7 @@ void TString::TrimLeft()
 	}
 	size -= sEnd;
 	string[size] = L'\0';
+	return;
 }
 
 /**
@@ -658,6 +857,7 @@ void TString::TrimLeft()
  */
 TString TString::GetTrimLeft()
 {
+	TObjectLocker threadLock(&thread);
 	TString ret(this);
 	ret.TrimLeft();
 	return ret;
@@ -671,6 +871,7 @@ TString TString::GetTrimLeft()
  */
 void TString::Empty()
 {
+	TObjectLocker threadLock(&thread);
 	if (string)
 		delete[] string;
 	string = nullptr;
@@ -679,6 +880,7 @@ void TString::Empty()
 	string = new WCHAR[3];
 	capacity = 3;
 	string[0] = string[1] = string[2] = L'\0';
+	return;
 }
 
 /**
@@ -700,6 +902,7 @@ bool TString::IsEmpty()
  */
 std::string TString::GetRegString()
 {
+	TObjectLocker threadLock(&thread);
 	std::string reg;
 	char* regString = new char[size + 1];
 	BOOL bFlag = FALSE;
@@ -720,9 +923,11 @@ std::string TString::GetRegString()
 */
 bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 {
-	if(!GetSize())
+	TObjectLocker threadLock(&thread);
+	if (!GetSize())
+	{
 		return false;
-	// First Check for a Hex Format
+	}// First Check for a Hex Format
 	if (GetAt(0) == L'#' && GetSize() == 7 || GetSize() == 9)
 	{
 		UINT value = 0;
@@ -731,7 +936,9 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 		{
 			UINT v1, v2;
 			if (!convertToNumberHex(GetAt(c), v1) || convertToNumberHex(GetAt(c + 1), v2))
+			{
 				return false;
+			}
 			v1 *= 16;
 			v1 += v2;
 
@@ -801,8 +1008,9 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 	// Okay, check for rbg[a] or hsl[a]
 	values = split(TString(L", ()"));
 	if (!values.Get() || values->Size() < 4) // We don't have enough data for either format
+	{
 		return false;
-
+	}
 
 	values->at(0).SetLower();
 
@@ -817,8 +1025,9 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 		if (values->at(1).ConvertToInt(tempColor[0]) ||
 			values->at(2).ConvertToInt(tempColor[1]) ||
 			values->at(3).ConvertToInt(tempColor[2]))
+		{
 			return false;
-
+		}
 		// Okay, we have legitimate values now, time to convert
 		color.r = static_cast<float>(tempColor[0]) / 255.0f;
 		color.g = static_cast<float>(tempColor[1]) / 255.0f;
@@ -845,8 +1054,9 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 		// Try getting the hue
 		int h = 0;
 		if (values->at(1).ConvertToInt(h))
+		{
 			return false;
-		
+		}
 		h = abs(h) % 360;
 
 
@@ -855,10 +1065,13 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
 
 		float s, l;
 		if (values->at(2).ConvertToFloat(s) || values->at(2).ConvertToFloat(l))
+		{
 			return false;
+		}
 		if (s > 100.0f || l > 100.0f)
+		{
 			return false;
-
+		}
 		// We now have legitimate values for hsl and now we need to convert it to rgb
 		// The algorithm is based of of the JavaScript code for the conversion by a Garry Tan 
 		// was posted at StackOverFlow at this url: https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
@@ -912,6 +1125,7 @@ bool TString::ConvertToColor(D2D1_COLOR_F & color, ColorFormat& cf)
  */
 int TString::FindOutOfQuotes(const TString& subString, int start, bool ignoreEscape) const 
 {
+	TObjectLocker threadLock(&thread);
 	TDataArray<int> possibleIndeces;
 	while (start != -1) 
 	{
@@ -970,13 +1184,14 @@ int TString::FindOutOfQuotes(const TString& subString, int start, bool ignoreEsc
 				continue;
 			}
 		}
-		if (works) return ind;
+		if (works) { return ind; }
 	}
 	return -1;
 }
 
 int TString::FindOneOfOutOfQuotes(const TString& chars, int start) const
 {
+	TObjectLocker threadLock(&thread);
 	int min = INT32_MAX;
 
 	bool found = false;
@@ -1005,7 +1220,9 @@ int TString::FindOneOfOutOfQuotes(const TString& chars, int start) const
  */
 void TString::Set(const TString& t)
 {
+	TObjectLocker threadLock(&thread);
 	Set(&t);
+	return;
 }
 
 /**
@@ -1015,7 +1232,8 @@ void TString::Set(const TString& t)
  * Returns: void
  */
 void TString::Set(const TString* s)
-{	
+{
+	TObjectLocker threadLock(&thread);
 	if (s)
 	{
 		if (string)
@@ -1028,6 +1246,7 @@ void TString::Set(const TString* s)
 			string[c] = s->string[c];
 		string[size] = L'\0';
 	}
+	return;
 }
 
 
@@ -1039,11 +1258,13 @@ void TString::Set(const TString* s)
  */
 void TString::Set(const WCHAR* w)
 {
+	TObjectLocker threadLock(&thread);
 	if (w)
 	{
 		TString str(w);
 		Set(&str);
 	}
+	return;
 }
 
 /**
@@ -1054,8 +1275,10 @@ void TString::Set(const WCHAR* w)
  */
 void TString::Set(WCHAR w)
 {
+	TObjectLocker threadLock(&thread);
 	this->Empty();
 	this->AppendChar(w);
+	return;
 }
 
 /*
@@ -1066,6 +1289,7 @@ void TString::Set(WCHAR w)
 */
 TString TString::operator=(const TString &t)
 {
+	TObjectLocker threadLock(&thread);
 	Set(t);
 	return this;
 }
@@ -1080,6 +1304,7 @@ TString TString::operator=(const TString &t)
 */
 TString TString::operator=(const TString * s)
 {
+	TObjectLocker threadLock(&thread);
 	Set(s);
 	return this;
 }
@@ -1094,6 +1319,7 @@ TString TString::operator=(const TString * s)
 */
 TString TString::operator=(const WCHAR * w)
 {
+	TObjectLocker threadLock(&thread);
 	Set(w);
 	return this;
 }
@@ -1106,6 +1332,7 @@ TString TString::operator=(const WCHAR * w)
 */
 TString TString::operator=(WCHAR w)
 {
+	TObjectLocker threadLock(&thread);
 	Set(w);
 	return this;
 }
@@ -1118,10 +1345,11 @@ TString TString::operator=(WCHAR w)
 */
 TString TString::operator+(const TString & t)const
 {
-	TString returnString = this;
+	TObjectLocker threadLock(&thread);
+	TString returnstring = this;
 	for (UINT c = 0; c < t.GetSize();c++)
-		returnString.AppendChar(t.GetAt(c));
-	return returnString;
+		returnstring.AppendChar(t.GetAt(c));
+	return returnstring;
 }
 
 
@@ -1134,12 +1362,13 @@ TString TString::operator+(const TString & t)const
 */
 TString TString::operator+(const TString *t) const
 {
+	TObjectLocker threadLock(&thread);
 	if (t)
 	{
-		TString returnString = this;
+		TString returnstring = this;
 		for (UINT c = 0; c < t->GetSize(); c++)
-			returnString.AppendChar(t->GetAt(c));
-		return returnString;
+			returnstring.AppendChar(t->GetAt(c));
+		return returnstring;
 	}
 	return this;
 }
@@ -1154,27 +1383,29 @@ TString TString::operator+(const TString *t) const
 */
 TString TString::operator+(const WCHAR * w)const 
 {
+	TObjectLocker threadLock(&thread);
 	if (w)
 	{
-		TString returnString = this;
+		TString returnstring = this;
 		for (int c = 0; w[c] != L'\0'; c++)
-			returnString.AppendChar(w[c]);
-		return returnString;
+			returnstring.AppendChar(w[c]);
+		return returnstring;
 	}
-	return this; // Return this string since there was nothing to add
+	return this; // return this string since there was nothing to add
 }
 
 /**
  * Method: TString::operator+
- * Purpose: Returns a version of this string with the character appended
+ * Purpose: returns a version of this string with the character appended
  * Parameters: WCHAR w -the character to append
  * Returns: TString version of the string with the appended character
  */
 TString TString::operator+(WCHAR w) const
 {
-	TString returnString = this;
-	returnString.AppendChar(w);
-	return returnString;
+	TObjectLocker threadLock(&thread);
+	TString returnstring = this;
+	returnstring.AppendChar(w);
+	return returnstring;
 }
 
 /*
@@ -1185,6 +1416,7 @@ TString TString::operator+(WCHAR w) const
 */
 TString TString::operator+=(const TString& t)
 {
+	TObjectLocker threadLock(&thread);
 	for (UINT c = 0; c < t.GetSize(); c++)
 		AppendChar(t.GetAt(c));
 	return this;
@@ -1199,6 +1431,7 @@ TString TString::operator+=(const TString& t)
 */
 TString TString::operator+=(const TString* t)
 {
+	TObjectLocker threadLock(&thread);
 	if (t)
 	{
 		for (UINT c = 0; c < t->GetSize(); c++)
@@ -1217,6 +1450,7 @@ TString TString::operator+=(const TString* t)
 */
 TString TString::operator+=(const WCHAR* w)
 {
+	TObjectLocker threadLock(&thread);
 	if (w)
 	{
 		for (int c = 0; w[c] != L'\0'; c++)
@@ -1233,6 +1467,7 @@ TString TString::operator+=(const WCHAR* w)
  */
 TString TString::operator+=(WCHAR w)
 {
+	TObjectLocker threadLock(&thread);
 	AppendChar(w);
 	return this;
 }
@@ -1245,11 +1480,16 @@ TString TString::operator+=(WCHAR w)
 */
 bool TString::operator==(TString & s)
 {
+	TObjectLocker threadLock(&thread);
 	if (GetSize() != s.GetSize())
+	{
 		return false;
+	}
 	for (UINT c = 0; c < GetSize(); c++)
 		if (GetAt(c) != s[c])
+		{
 			return false;
+		}
 	return true;
 }
 
@@ -1263,13 +1503,20 @@ bool TString::operator==(TString & s)
 */
 bool TString::operator==(TString * s)
 {
-	if(!s)
-	return false;
-	if (GetSize() != s->GetSize())
+	TObjectLocker threadLock(&thread);
+	if (!s)
+	{
 		return false;
+	}
+	if (GetSize() != s->GetSize())
+	{
+		return false;
+	}
 	for (UINT c = 0; c < GetSize(); c++)
 		if (GetAt(c) != s->GetAt(c))
+		{
 			return false;
+		}
 	return true;
 }
 
@@ -1282,14 +1529,21 @@ bool TString::operator==(TString * s)
 */
 bool TString::operator==(WCHAR * s)
 {
-	if(!s)
+	TObjectLocker threadLock(&thread);
+	if (!s)
+	{
 		return false;
-	for (UINT c = 0; c < GetSize(); c++,s++)
+	}
+	for (UINT c = 0; c < GetSize(); c++, s++)
 	{
 		if (*s == L'\0')
+		{
 			return false;
+		}
 		if (*s != GetAt(c))
+		{
 			return false;
+		}
 	}
 	return *s == L'\0';
 }
@@ -1302,6 +1556,7 @@ bool TString::operator==(WCHAR * s)
 */
 bool TString::operator!=(TString & s)
 {
+	TObjectLocker threadLock(&thread);
 	return !(*this == s);
 }
 
@@ -1315,6 +1570,7 @@ bool TString::operator!=(TString & s)
 */
 bool TString::operator!=(TString * s)
 {
+	TObjectLocker threadLock(&thread);
 	return !(*this == s);
 }
 
@@ -1328,6 +1584,7 @@ bool TString::operator!=(TString * s)
 */
 bool TString::operator!=(WCHAR * s)
 {
+	TObjectLocker threadLock(&thread);
 	return !(*this == s);
 }
 
@@ -1337,9 +1594,16 @@ bool TString::operator!=(WCHAR * s)
  * Parameters: UINT loc - the index of the character
  * Returns: WCHAR - the character at the index, '\0' if index is out of bounds
  */
-WCHAR TString::operator[](UINT loc) const 
+WCHAR& TString::operator[](UINT loc) const 
 {
-	return GetAt(loc);
+	ThreadLock();
+	if (loc > size)
+	{
+		ThreadRelease();
+		throw L"IndexOutOfBounds";
+	}
+	ThreadRelease();
+	return string[loc];
 }
 
 /*
@@ -1350,6 +1614,7 @@ WCHAR TString::operator[](UINT loc) const
 */
 UCHAR * TString::GetAnaGameType()
 {
+	TObjectLocker threadLock(&thread);
 	return TStringType;
 }
 
@@ -1372,8 +1637,11 @@ UINT TString::GetSize() const
  */
 WCHAR TString::GetAt(UINT c) const
 {
+	TObjectLocker threadLock(&thread);
 	if (c < size)
+	{
 		return string[c];
+	}
 	return L'\0';
 }
 
@@ -1386,15 +1654,15 @@ WCHAR TString::GetAt(UINT c) const
  */
 void TString::AppendFormat(const WCHAR* format, ...)
 {
+	
 	if (!format)
 		return;
 	va_list vList;
 	va_start(vList, format);
+	TObjectLocker threadLock(&thread);
 	TString tFormat(format);
 
 	WCHAR* formatedString = new WCHAR[tFormat.capacity * 2 + 100];
-
-
 
 	int result = vswprintf(formatedString, (tFormat.capacity * 2) + 99, tFormat.string, vList);
 
@@ -1409,6 +1677,7 @@ void TString::AppendFormat(const WCHAR* format, ...)
 	}
 
 	delete[] formatedString;
+	return;
 }
 
 /**
@@ -1420,11 +1689,10 @@ void TString::AppendFormat(const WCHAR* format, ...)
  */
 void TString::AppendFormat(const TString format, ...)
 {
-	WCHAR* formatedString = new WCHAR[format.capacity * 2 + 100];
-
-
 	va_list vList;
 	va_start(vList, format);
+	TObjectLocker threadLock(&thread);;
+	WCHAR* formatedString = new WCHAR[format.capacity * 2 + 100];
 	int result = vswprintf(formatedString, (format.capacity * 2) + 99, format.string, vList);
 
 	va_end(vList);
@@ -1438,6 +1706,7 @@ void TString::AppendFormat(const TString format, ...)
 	}
 
 	delete[] formatedString;
+	return;
 }
 
 /**
@@ -1449,10 +1718,12 @@ void TString::AppendFormat(const TString format, ...)
  */
 void TString::Format(const WCHAR* format, ...)
 {
+	
 	if (!format)
 		return;
 	va_list vList;
 	va_start(vList, format);
+	TObjectLocker threadLock(&thread);
 	TString tFormat(format);
 
 	WCHAR* formatedString = new WCHAR[tFormat.capacity * 2 + 100];
@@ -1470,6 +1741,7 @@ void TString::Format(const WCHAR* format, ...)
 	}
 
 	delete[] formatedString;
+	return;
 }
 
 /**
@@ -1483,6 +1755,7 @@ void TString::Format(const TString format, ...)
 {
 	va_list vList;
 	va_start(vList, format);
+	TObjectLocker threadLock(&thread);
 	WCHAR* formatedString = new WCHAR[format.capacity * 2 + 100];
 
 
@@ -1500,6 +1773,7 @@ void TString::Format(const TString format, ...)
 	}
 
 	delete[] formatedString;
+	return;
 }
 
 /**
@@ -1510,6 +1784,7 @@ void TString::Format(const TString format, ...)
  */
 void TString::AppendChar(WCHAR ch)
 {
+	TObjectLocker threadLock(&thread);
 	if (size + 1 == capacity)
 	{
 		WCHAR* newString = new WCHAR[++capacity];
@@ -1520,7 +1795,7 @@ void TString::AppendChar(WCHAR ch)
 	}
 
 	string[size++] = ch;
-	string[size] = L'\0';
+	string[size] = L'\0'; return;
 }
 
 /**
@@ -1531,6 +1806,7 @@ void TString::AppendChar(WCHAR ch)
  */
 void TString::Append(const TString& app)
 {
+	TObjectLocker threadLock(&thread);
 	capacity += app.capacity;
 
 	WCHAR* newString = new WCHAR[capacity];
@@ -1550,6 +1826,7 @@ void TString::Append(const TString& app)
 	newString[size] = L'\0';
 	delete[] string;
 	string = newString;
+	return;
 }
 
 bool IsWhitespace(WCHAR ch)
@@ -1703,6 +1980,21 @@ float ConvertHueToRGB(float p, float q, int hue)
 }
 
 /*
+* Function: ReturnCharType
+* Purpose: returns the WCHAR representation of the char
+* Parameters: char c - the chaacter to convert
+* Returns: WCHAR - the wide version of the character
+*/
+WCHAR ReturnCharType(char c)
+{
+	WCHAR w[] = { L'0',L'\0' };
+	size_t conv = 0;
+	char charTo[] = { c, '\0' };
+	mbstowcs_s(&conv, w, 2, charTo, 1);
+	return w[0];
+}
+
+/*
 * Function: ReturnWCharType
 * Purpose: Returns the WCHAR representation of the char
 * Parameters: char c - the chaacter to convert
@@ -1771,17 +2063,22 @@ int TString::Compare(const TString& other) const
  */
 int TString::Compare(const WCHAR* other) const
 {
+	TObjectLocker threadLock(&thread);
 	int min = min(size, lstrlenW(other));
 	for (int c = 0; c < min; c++)
 	{
 		if (string[c] < other[c])
-			return -(c + 1);
+		{
+			return - (c + 1);
+		}
 		if (string[c] > other[c])
+		{
 			return c + 1;
+		}
 	}
 
-	if (size == lstrlenW(other)) return 0;
-	if (size > lstrlenW(other)) return lstrlenW(other); 
+	if (size == lstrlenW(other)) { return 0; }
+	if (size > lstrlenW(other)) { return lstrlenW(other); }
 	return static_cast<int>(-1);
 }
 
@@ -1791,8 +2088,9 @@ int TString::Compare(const WCHAR* other) const
  * Parameters: const TString& other - the string to compare this string to
  * Returns: int - 0 if they are the same
  */
-int TString::CompareNoCase(const TString& other)
+int TString::CompareNoCase(const TString& other) const
 {
+	TObjectLocker threadLock(&thread);
 	TString _this(this);
 	TString _other(other);
 	_this.SetLower();
@@ -1820,11 +2118,16 @@ int TString::Compare(const TString& str1, const TString& str2)
  * Returns: int - the new size of the string
  */
 int TString::Delete(int index, int count)
-{	if (count < 1)
+{
+	TObjectLocker threadLock(&thread);
+	if (count < 1)
+	{
 		return size;
+	}
 	if (index < 0 || index > size)
+	{
 		return size;
-
+	}
 	WCHAR* newString = new WCHAR[capacity];
 	for (int c = 0; c < index; c++)
 	{
@@ -1854,6 +2157,7 @@ int TString::Delete(int index, int count)
  */
 TString TString::GetDelete(int& ret, int index, int count)
 {
+	TObjectLocker threadLock(&thread);
 	TString retStr(this);
 	ret = retStr.Delete(index, count);
 	return retStr;
@@ -1871,9 +2175,11 @@ TString TString::GetDelete(int& ret, int index, int count)
  */
 bool TString::StartsWith(const TString& seq, bool ignoreCase, bool whitespace) const
 {
+	TObjectLocker threadLock(&thread);
 	if (seq.GetSize() > size)
+	{
 		return false;
-
+	}
 	if (ignoreCase)
 	{
 		TString lSeq(seq.GetLower());
@@ -1881,28 +2187,31 @@ bool TString::StartsWith(const TString& seq, bool ignoreCase, bool whitespace) c
 
 		for (UINT Rust = 0; Rust < lSeq.GetSize(); Rust++)
 		{
-			if (lThis[Rust] != lSeq[Rust]) return false;
+			if (lThis[Rust] != lSeq[Rust]) { return false; }
 		}
 	}
 	else
 	{
 		for (UINT Rust = 0; Rust < seq.GetSize(); Rust++)
 		{
-			if (string[Rust] != seq[Rust]) return false;
+			if (string[Rust] != seq[Rust]) { return false; }
 		}
 	}
 
 	if (whitespace)
 	{
 		if (seq.GetSize() == size)
+		{
 			return false;
-
+		}
 		WCHAR ch = this->string[seq.GetSize()];
 
 		for (UINT Rust = 0; Rust < whiteChar.Size(); Rust++)
 		{
 			if (whiteChar[Rust] == ch)
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -1923,9 +2232,11 @@ bool TString::StartsWith(const TString& seq, bool ignoreCase, bool whitespace) c
  */
 bool TString::EndsWith(const TString& seq, bool ignoreCase)const 
 {
+	TObjectLocker threadLock(&thread);
 	if (seq.GetSize() > size)
+	{
 		return false;
-
+	}
 	if (ignoreCase)
 	{
 		TString lSeq(seq.GetLower());
@@ -1933,7 +2244,9 @@ bool TString::EndsWith(const TString& seq, bool ignoreCase)const
 		for (UINT C = lThis.GetSize() - 1, Rust = lSeq.GetSize() - 1; C < size && Rust < size; C--, Rust--)
 		{
 			if (lThis[C] != lSeq[Rust])
+			{
 				return false;
+			}
 		}
 	}
 	else
@@ -1941,7 +2254,9 @@ bool TString::EndsWith(const TString& seq, bool ignoreCase)const
 		for (UINT C = size - 1, Rust = seq.GetSize() - 1; C < size && Rust < size; C--, Rust--)
 		{
 			if (string[C] != seq[Rust])
+			{
 				return false;
+			}
 		}
 	}
 	return true;
@@ -1953,10 +2268,12 @@ bool TString::EndsWith(const TString& seq, bool ignoreCase)const
  * Parameters: const TString& sub - the string to search for
  *				int start - the index to begin the search from 
  *				bool ignoreEscape - whether to ignore the presence of an escape character infront of a possible hit
+	 *				bool notAlphaNum - false if you don't care if entry is surrounded by alpha-numberic characters, true if you want it isolated from alphanumeric characters
  * Returns: int - the index of the string found
  */
-int TString::Find(const TString& sub, int start, bool ignoreEscape) const
+int TString::Find(const TString& sub, int start, bool ignoreEscape, bool notAlphaNum) const
 {
+	TObjectLocker threadLock(&thread);
 	int indexStart = start;
 
 	while ((indexStart = Find(sub[0], indexStart, ignoreEscape)) != -1)
@@ -1983,7 +2300,21 @@ int TString::Find(const TString& sub, int start, bool ignoreEscape) const
 
 		if (works)
 		{
-			return indexStart;
+			if(!notAlphaNum) // If we don't care about what surrounds our entry, go ahead and return it
+			{
+				return indexStart;
+			}// Otherwise, check to see if it is isolated from other alpha numeric characters
+			// Use this to track the ends. 1 = clear from beginning, 2 means clear from end, need three to return
+			UCHAR uWorks = 0;
+			if (indexStart == 0 || !isalnum(string[indexStart - 1]))
+				uWorks += 1;
+			int indexEnd = indexStart + sub.GetSize();
+			if (indexEnd >= size || !isalnum(string[indexEnd]))
+				uWorks += 2;
+			if (uWorks == 3)
+			{
+				return indexStart;
+			}
 		}
 		indexStart++;
 	}
@@ -2001,8 +2332,11 @@ int TString::Find(const TString& sub, int start, bool ignoreEscape) const
  */
 int TString::Find(WCHAR sub, int start, bool ignoreEscape) const 
 {
+	TObjectLocker threadLock(&thread);
 	if (start < 0)
-		return -1;
+	{
+		return - 1;
+	}
 	for (int c = start; c < size; c++)
 	{
 		if (string[c] == sub)
@@ -2032,14 +2366,19 @@ int TString::Find(WCHAR sub, int start, bool ignoreEscape) const
  */
 int TString::FindOneOf(const TString& chars, int start) const
 {
+	TObjectLocker threadLock(&thread);
 	if (start < 0)
-		return -1;
+	{
+		return - 1;
+	}
 	for (int c = start; c < size; c++)
 	{
 		for (UINT rust = 0; rust < chars.GetSize(); rust++)
 		{
 			if (string[c] == chars[rust])
+			{
 				return c;
+			}
 		}
 	}
 
@@ -2056,9 +2395,11 @@ int TString::FindOneOf(const TString& chars, int start) const
  */
 int TString::FindLast(const TString& sub, int start) const
 {
+	TObjectLocker threadLock(&thread);
 	if (start >= static_cast<int>(size))
-		return -1;
-
+	{
+		return - 1;
+	}
 	if (start < 0)
 		start = size - 1;
 
@@ -2076,7 +2417,9 @@ int TString::FindLast(const TString& sub, int start) const
 				}
 			}
 			if (works)
+			{
 				return c;
+			}
 		}
 	}
 	return -1;
@@ -2091,12 +2434,17 @@ int TString::FindLast(const TString& sub, int start) const
  */
 int TString::FindLast(WCHAR sub, int start) const 
 {
+	TObjectLocker threadLock(&thread);
 	if (start >= static_cast<int>(size))
-		return -1;
+	{
+		return - 1;
+	}
 	for (int rust = ((start == -1) ? size - 1 : start); rust >= 0; rust--)
 	{
 		if (string[rust] == sub)
+		{
 			return rust;
+		}
 	}
 	return -1;
 }
@@ -2110,9 +2458,11 @@ int TString::FindLast(WCHAR sub, int start) const
  */
 int TString::FindLastOneOf(const TString& chars, int start) const 
 {
+	TObjectLocker threadLock(&thread);
 	if (start >= static_cast<int>(size))
-		return -1;
-
+	{
+		return - 1;	
+	}
 	if (start < 0)
 		start =  size-1;
 
@@ -2121,7 +2471,9 @@ int TString::FindLastOneOf(const TString& chars, int start) const
 		for (UINT rust = 0; rust < chars.GetSize(); rust++)
 		{
 			if (string[c] == chars[rust])
+			{
 				return c;
+			}
 		}
 	}
 
@@ -2136,13 +2488,15 @@ int TString::FindLastOneOf(const TString& chars, int start) const
  */
 bool TString::SetAsEnvironmentVariable(TString& var)
 {
+	TObjectLocker threadLock(&thread);
 	WCHAR* newString = new WCHAR[1000];
 
 	int newSize = GetEnvironmentVariableW(var.string, newString, 999);
 
 	if (!newSize)
+	{
 		return false;
-
+	}
 	WCHAR* newString2 = new WCHAR[newSize + 1];
 	for (int c = 0; c < newSize + 1; c++)
 	{
@@ -2171,13 +2525,16 @@ bool TString::SetAsEnvironmentVariable(TString& var)
  * 
  * Attributes: const
  */
-UINT TString::CountFinds(const TString& query) const
+UINT TString::CountFinds(const TString& query, int stop) const
 {
+	TObjectLocker threadLock(&thread);
 	UINT ret = 0;
 
 	int start = 0;
+	if (stop < 0)
+		stop = size;
 
-	while ((start = Find(query, start)) != -1)
+	while ((start = Find(query, start)) != -1 && start < stop)
 	{
 		ret++;
 		start++;
@@ -2194,13 +2551,16 @@ UINT TString::CountFinds(const TString& query) const
  * 
  * Attributes: const
  */
-UINT TString::CountFinds(WCHAR ch) const
+UINT TString::CountFinds(WCHAR ch, int stop) const
 {
+	TObjectLocker threadLock(&thread);
 	UINT ret = 0;
 
 	int start = 0;
+	if (stop < 0)
+		stop = size;
 
-	while ((start = Find(ch, start)) != -1)
+	while ((start = Find(ch, start)) != -1 && start < stop)
 	{
 		ret++;
 		start++;
@@ -2219,6 +2579,7 @@ UINT TString::CountFinds(WCHAR ch) const
  */
 UINT TString::CountOneOfFinds(const TString& query) const
 {
+	TObjectLocker threadLock(&thread);
 	UINT ret = 0;
 
 	int start = 0;
@@ -2241,9 +2602,11 @@ UINT TString::CountOneOfFinds(const TString& query) const
  */
 int TString::Insert(int index, const TString& subStr)
 {
-	if(index < 0 || index > size)
+	TObjectLocker threadLock(&thread);
+	if (index < 0 || index > size)
+	{
 		return size;
-
+	}
 	WCHAR* newString = new WCHAR[capacity + subStr.capacity];
 
 	
@@ -2281,6 +2644,7 @@ int TString::Insert(int index, const TString& subStr)
  */
 TString TString::GetInsert(int& ret, int index, TString& subStr)
 {
+	TObjectLocker threadLock(&thread);
 	TString retStr(this);
 	ret = retStr.Insert(index, subStr);
 	return retStr;
@@ -2295,6 +2659,7 @@ TString TString::GetInsert(int& ret, int index, TString& subStr)
  */
 int TString::Insert(int index, WCHAR ch)
 {
+	TObjectLocker threadLock(&thread);
 	TString sub(ch);
 	return Insert(index,sub);
 }
@@ -2309,6 +2674,7 @@ int TString::Insert(int index, WCHAR ch)
  */
 TString TString::GetInsert(int& ret, int index, WCHAR ch)
 {
+	TObjectLocker threadLock(&thread);
 	TString retStr(this);
 	ret = retStr.Insert(index, ch);
 	return retStr;
@@ -2322,6 +2688,7 @@ TString TString::GetInsert(int& ret, int index, WCHAR ch)
  */
 void TString::SetLower()
 {
+	TObjectLocker threadLock(&thread);
 	for (UINT c = 0; c < size; c++)
 	{
 		string[c] = towlower(string[c]);
@@ -2336,6 +2703,7 @@ void TString::SetLower()
  */
 TString TString::GetLower() const
 {
+	TObjectLocker threadLock(&thread);
 	TString ret(this);
 	ret.SetLower();
 	return ret;
@@ -2349,6 +2717,7 @@ TString TString::GetLower() const
  */
 void TString::SetUpper()
 {
+	TObjectLocker threadLock(&thread);
 	for (UINT c = 0; c < size; c++)
 	{
 		string[c] = towupper(string[c]);
@@ -2363,6 +2732,7 @@ void TString::SetUpper()
  */
 TString TString::GetUpper()const
 {
+	TObjectLocker threadLock(&thread);
 	TString ret(this);
 	ret.SetUpper();
 	return ret;
@@ -2376,6 +2746,7 @@ TString TString::GetUpper()const
  */
 void TString::SetReverse()
 {
+	TObjectLocker threadLock(&thread);
 	for (UINT Rust = 0; Rust < size / 2; Rust++)
 	{
 		WCHAR temp = string[Rust];
@@ -2392,6 +2763,7 @@ void TString::SetReverse()
  */
 TString TString::GetReverse()
 {
+	TObjectLocker threadLock(&thread);
 	TString ret(this);
 	ret.SetReverse();
 	return ret;
@@ -2405,6 +2777,7 @@ TString TString::GetReverse()
  */
 int TString::Remove(WCHAR c, bool outOfQuotes)
 {
+	TObjectLocker threadLock(&thread);
 	WCHAR* newString = new WCHAR[capacity];
 
 	int newCount = 0;
@@ -2433,13 +2806,14 @@ int TString::Remove(WCHAR c, bool outOfQuotes)
 
 /**
  * Method: TString::GetRemove
- * Purpose: Returns a TString with a given character removed
+ * Purpose: returns a TString with a given character removed
  * Parameters: int& ret - The number of times the WCHAR was found in the string
  *				WCHAR c - the character to remove
  * Returns: TString::copy with the specified character removed
  */
 TString TString::GetRemove(int& ret, WCHAR c, bool outOfQuotes)
 {
+	TObjectLocker threadLock(&thread);
 	TString retStr(this);
 	ret = retStr.Remove(c, outOfQuotes);
 	return retStr;
@@ -2454,6 +2828,7 @@ TString TString::GetRemove(int& ret, WCHAR c, bool outOfQuotes)
  */
 int TString::Replace(const TString& oldStr, const TString& newStr)
 {
+	TObjectLocker threadLock(&thread);
 	TDataArray<int> indices;
 
 	int index = 0;
@@ -2468,8 +2843,9 @@ int TString::Replace(const TString& oldStr, const TString& newStr)
 
 	// If the old string does not appear, make no changes
 	if (!indices.Size())
+	{
 		return 0;
-
+	}
 	int difference = (static_cast<int>(newStr.size) - static_cast<int>(oldStr.size)) * indices.Size();
 	int newSize = size + difference;
 
@@ -2512,7 +2888,7 @@ int TString::Replace(const TString& oldStr, const TString& newStr)
 
 /**
  * Method: TString::GetReplace
- * Purpose: Returns a copy of the TString with the old String replaced by the new one
+ * Purpose: returns a copy of the TString with the old String replaced by the new one
  * Parameters: int& ret - reference of the replacemnt counter
  *				const TString& oldStr - the String to replace
  *				const TString& newStr - the String to replace the old string with
@@ -2520,6 +2896,7 @@ int TString::Replace(const TString& oldStr, const TString& newStr)
  */
 TString TString::GetReplace(int& ret, const TString& oldStr, const TString& newStr) const 
 {
+	TObjectLocker threadLock(&thread);
 	TString retStr(this);
 	ret = retStr.Replace(oldStr, newStr);
 	return retStr;
@@ -2534,6 +2911,7 @@ TString TString::GetReplace(int& ret, const TString& oldStr, const TString& newS
  */
 int TString::Replace(WCHAR& oldStr, WCHAR& newStr)
 {
+	TObjectLocker threadLock(&thread);
 	int ret = 0;
 
 	for (UINT Rust = 0; Rust < size; Rust++)
@@ -2550,7 +2928,7 @@ int TString::Replace(WCHAR& oldStr, WCHAR& newStr)
 
 /**
  * Method: TString::GetReplace
- * Purpose: Returns a copy of the TString with the old character replaced by the new one
+ * Purpose: returns a copy of the TString with the old character replaced by the new one
  * Parameters: int& ret - reference to the return value, see "Returns:" for the Replace method
  *				 WCHAR& oldStr - the character to replace
  *				 WCHAR& newStr - the character to replace the old one with
@@ -2558,6 +2936,7 @@ int TString::Replace(WCHAR& oldStr, WCHAR& newStr)
  */
 TString TString::GetReplace(int& ret, WCHAR& oldStr, WCHAR& newStr)
 {
+	TObjectLocker threadLock(&thread);
 	TString retStr(this);
 	ret = retStr.Replace(oldStr, newStr);
 	return retStr;
@@ -2572,6 +2951,7 @@ TString TString::GetReplace(int& ret, WCHAR& oldStr, WCHAR& newStr)
  */
 TString TString::Tokenize(TString& tokens, int& start, bool outOfQuotes) const
 {
+	TObjectLocker threadLock(&thread);
 	int end;
 	if (!outOfQuotes)
 	{
@@ -2592,4 +2972,28 @@ TString TString::Tokenize(TString& tokens, int& start, bool outOfQuotes) const
 
 
 	return ret;
+}
+
+TString::TConstBuffer::TConstBuffer(const TString* string)
+{
+	if (!string)
+		throw L"Null Pointer Exception";
+	this->string = string;
+	string->ThreadLock();
+}
+
+TString::TConstBuffer::TConstBuffer(const TConstBuffer& buff)
+{
+	this->string = buff.string;
+	string->ThreadLock();
+}
+
+TString::TConstBuffer::~TConstBuffer()
+{
+	string->ThreadRelease();
+}
+
+const WCHAR* TString::TConstBuffer::getBuffer()
+{
+	return string->string;
 }

@@ -39,6 +39,8 @@ public:
 	void Rotate(float leftRight, float upDown);
 	void Translate(float degree, DirectX::XMFLOAT3 direction);
 
+	void Zoom(float x);
+
 	void PanX(float x);
 	void PanY(float y);
 
@@ -55,6 +57,8 @@ public:
 	DirectX::XMFLOAT3 GetCameraLocation();
 	DirectX::XMFLOAT3 GetCameraDirection();
 
+	void SetLookAtLock(bool b);
+	bool GetLookAtLock();
 protected:
 
 	TrecPointer<TArenaEngine> arenaEngine;
@@ -73,7 +77,7 @@ protected:
 	// Since this effectively holds the camera, attributes for the camera matrix
 	CAMERA_TYPE cameraType;
 	DirectX::XMMATRIX camera; // camera matrix (view in model-view-projection)
-	bool lookTo;              // use a look to if true, a look at if false
+	bool lookTo, lockLookAt;              // use a look to if true, a look at if false
 	DirectX::XMFLOAT3 location_3, direction_3, up_3;
 	DirectX::XMVECTOR location, direction, up;
 };

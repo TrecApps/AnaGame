@@ -55,7 +55,10 @@ TrecObjectPointer TStringVariable::GetObject()
  */
 TString TStringVariable::GetString()
 {
-    return string;
+    ThreadLock();
+    TString ret(string);
+    ThreadRelease();
+    return ret;
 }
 
 /**
@@ -88,7 +91,10 @@ ULONG64 TStringVariable::Get8Value()
  */
 UINT TStringVariable::GetSize()
 {
-    return string.GetSize();
+    ThreadLock();
+    UINT ret = string.GetSize();
+    ThreadRelease();
+    return ret;
 }
 
 /**
@@ -97,7 +103,7 @@ UINT TStringVariable::GetSize()
  * Parameters: void
  * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
  */
-UINT TStringVariable::GetType()
+UINT TStringVariable::GetVType()
 {
     return 0;
 }

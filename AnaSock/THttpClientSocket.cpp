@@ -132,7 +132,7 @@ void THttpRequest::CompileRequest(std::string& request)
 		break;
 	}
 
-	top.AppendFormat(L" %ws %ws", endpoint.GetSize() ? endpoint.GetConstantBuffer() : L"/", L"HTTP/1.1");
+	top.AppendFormat(L" %ws %ws", endpoint.GetSize() ? endpoint.GetConstantBuffer().getBuffer() : L"/", L"HTTP/1.1");
 
 	std::string uBody;
 
@@ -140,7 +140,7 @@ void THttpRequest::CompileRequest(std::string& request)
 	{
 		int requiredSize = WideCharToMultiByte(CP_UTF8, // Http Uses UTF-8
 			0,											// No Special flags
-			body.GetConstantBuffer(),					// The Data to scan
+			body.GetConstantBuffer().getBuffer(),					// The Data to scan
 			-1,											// Dat is null-terminated
 			nullptr,									// no data for output
 			0,											// We are seeking the required space
@@ -155,7 +155,7 @@ void THttpRequest::CompileRequest(std::string& request)
 		// Now covert body to UTF-8
 		WideCharToMultiByte(CP_UTF8,
 			0,
-			body.GetConstantBuffer(),
+			body.GetConstantBuffer().getBuffer(),
 			-1,
 			buffer,
 			requiredSize,
@@ -186,13 +186,13 @@ void THttpRequest::CompileRequest(std::string& request)
 		{
 			tHeaders.AppendFormat(L"%ws%ws:%ws",
 				tHeaders.GetSize() ? L"\r\n" : L"", // Add CRLF but only if this isn't the first iteration (that one will be added later
-				entry.key.GetConstantBuffer(),		// Add the Key
-				entry.object.GetConstantBuffer());	// Add the Value
+				entry.key.GetConstantBuffer().getBuffer(),		// Add the Key
+				entry.object.GetConstantBuffer().getBuffer());	// Add the Value
 		}
 	}
 
 	// Append the headers to the top line
-	top.AppendFormat(L"%ws%ws", tHeaders.GetSize() ? L"\r\n" : L"", tHeaders.GetConstantBuffer());
+	top.AppendFormat(L"%ws%ws", tHeaders.GetSize() ? L"\r\n" : L"", tHeaders.GetConstantBuffer().getBuffer());
 
 
 	// Add headers to main request data

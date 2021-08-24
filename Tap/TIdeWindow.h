@@ -31,6 +31,7 @@ typedef enum class anagame_page
 	anagame_page_code_explorer,   // Presents a page that holds a node control that focuses on code elements
 	anagame_page_object_explorer, // Presents a Page intended to present the properties of a given object
 	anagame_page_code_file,       // Presents a Page that holds a Text Edit control intended to hold a code file
+	anagame_page_project_explorer,// Presents a Page that holds a node control that Explores the Project
 	anagame_page_arena,           // Presents a Page that holds a 3D arena control
 	anagame_page_camera           // Presents a Page that provides a Camera Panel
 };
@@ -93,6 +94,18 @@ public:
 	 */
 	virtual int PrepareWindow()override;
 
+
+	/**
+	 * Method: TIdeWindow::OnWindowResize
+	 * Purpose: Resizes the Window
+	 * Parameters: UINT width - the new width of the window
+	 *				UINT height - the new height of the Window
+	 * Returns: void
+	 *
+	 * Attributes: message, override
+	 */
+	afx_msg virtual void OnWindowResize(UINT width, UINT height)override;
+
 	/**
 	 * Method: TIdeWindow::OnLButtonUp
 	 * Purpose: Manages the Left Button Up Message
@@ -128,6 +141,18 @@ public:
 
 
 	/**
+	 * Method: TIdeWindow::OnScroll
+	 * Purpose: Sends Scroll Command to controls
+	 * Parameters: const TPoint& point - point of the mouse
+	 *				const TPoint& direction - how far to send the scroll
+	 * Returns: bool - whether message was recieved
+	 *
+	 * Attributes: virtual
+	 */
+	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction)override;
+
+
+	/**
 	 * Method: TIdeWindow::AddNewMiniApp
 	 * Purpose: Adds a MiniApp to the list of Apps being managed
 	 * Parameters: TrecPointer<MiniApp> app - the App to add
@@ -147,7 +172,7 @@ public:
 	 *				bool pageTypeStrict - whether the caller is strict when it comes to the location of the Page
 	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
 	 */
-	TrecSubPointer<Page, IDEPage> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict = false);
+	TrecPointer<Page> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict = false);
 
 	/**
 	 * Method: TIdeWindow::AddPage
@@ -157,7 +182,7 @@ public:
 	 *				TString name - name of the page to write on the Tab
 	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
 	 */
-	TrecSubPointer<Page, IDEPage> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
+	TrecPointer<Page> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
 
 
 	/**
@@ -175,10 +200,10 @@ public:
 	/**
 	 * Method: TIdeWindow::SetCurrentHolder
 	 * Purpose: Marks a Page Holder as being dragged by the User
-	 * Parameters: TrecPointer<IDEPageHolder> holder - the Page holder believed to be dragged
+	 * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
 	 * Returns: void
 	 */
-	void SetCurrentHolder(TrecPointer<IDEPageHolder> holder);
+	void SetCurrentHolder(TrecPointer<Tab> holder, TrecPointer<Page> page);
 
 	/**
 	 * Method: TIdeWindow::SetEnvironment
@@ -254,7 +279,7 @@ protected:
 	/**
 	 * Holder being dragged
 	 */
-	TrecPointer<IDEPageHolder> currentHolder;
+	TrecPointer<Tab> currentHolder;
 
 	/**
 	 * the Environment to manage a Project
@@ -311,7 +336,7 @@ protected:
 	/**
 	 * Page to focus on (used when shifting the boundaries between two or three pages)
 	 */
-	TrecSubPointer<Page, IDEPage> focusPage;
+	TrecSubPointer<Page, IDEPage> focusPage, tabPage;
 
 
 	/**

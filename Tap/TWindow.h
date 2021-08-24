@@ -5,6 +5,20 @@
 
 bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference);
 #include "TAnimationManager.h"
+#include <TVideo.h>
+
+
+
+class _TAP_DLL MediaControlLoc
+{
+public:
+	MediaControlLoc();
+	MediaControlLoc(const MediaControlLoc& copy);
+
+	TrecPointer<TControl> control;
+	RECT loc;
+};
+
 
 /**
  * Class: TWindow
@@ -120,6 +134,9 @@ public:
 	 */
 	void Draw(Page& draw);
 
+	virtual void RefreshMediaControls();
+
+
 	/**
 	 * Method: TWindow::InduceDraw
 	 * Purpose: Sends a Message to Windows to send the Draw message
@@ -130,6 +147,7 @@ public:
 	 */
 	void InduceDraw();
 	
+	afx_msg void OnVideoEvent(WPARAM param);
 
 	/**
 	 * Method: TWindow::OnRButtonUp
@@ -219,7 +237,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg void OnWindowResize(UINT width, UINT height);
+	afx_msg virtual void OnWindowResize(UINT width, UINT height);
 
 	/**
 	 * Method: TWindow::OnDestroy
@@ -230,6 +248,18 @@ public:
 	 * Attributes: message
 	 */
 	afx_msg virtual bool OnDestroy();
+
+
+	/**
+	 * Method: TWindow::OnScroll
+	 * Purpose: Sends Scroll Command to controls
+	 * Parameters: const TPoint& point - point of the mouse
+	 *				const TPoint& direction - how far to send the scroll
+	 * Returns: bool - whether message was recieved
+	 *
+	 * Attributes: virtual
+	 */
+	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
 
 
 	/**
@@ -406,7 +436,17 @@ public:
 	 */
 	TrecComPointer<ID2D1Factory1> GetFactory();
 
+	void submitPlayer(TrecPointer<TControl> play);
+
+	HDC GetTWindowDc();
+
+	void FlushDc();
+
+
 protected:
+	TDataArray<MediaControlLoc> mediaControls;
+
+	TrecSubPointer<TControl, TVideo> videoPlayer;
 
 	// Draw Other pages that are special to the Window
 	/**
@@ -445,6 +485,7 @@ protected:
 	 */
 	bool hasDrawn;
 
+	RECT size;
 
 	/**
 	 * Main content of the window

@@ -16,6 +16,7 @@ class MiniApp;
 class _TAP_DLL EventHandler: public TObject
 {
 	friend class TInstance;
+	friend class IDEPage;
 public:
 
 	/**
@@ -275,6 +276,8 @@ protected:
 	TrecPointerSoft<EventHandler> hSelf;
 
 	TString onFocusString;
+
+	TrecPointer<TTextIntercepter> textIntercepter;
 
 	/**
 	 * Method: EventHandler::ShouldProcessMessageByType

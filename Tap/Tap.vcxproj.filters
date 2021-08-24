@@ -123,6 +123,12 @@
     <ClInclude Include="TWebWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TInterpretorEventHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WebHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -225,6 +231,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TWebWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TInterpretorEventHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

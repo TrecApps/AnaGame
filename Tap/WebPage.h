@@ -108,6 +108,13 @@ public:
 	 * Returns: void
 	 */
 	void SetPage(TrecPointer<Page> p);
+
+/// <summary>
+/// Event Handlers
+/// </summary>
+/// 
+
+
 protected:
 	/**
 	 * Image to draw on the Tab
@@ -234,13 +241,83 @@ public:
 	void Close();
 
 
+
+	/**
+	 * Method: Page::OnLButtonDown
+	 * Purpose: Responds to the Left Button Down Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				TPoint point - the point included in the message
+	 *				messageOutput* mOut -  the result of the message
+	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
+	 * Returns: void
+	 *
+	 * Attributes: message; virtual
+	 */
+	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
+
+
+	/**
+	 * Method: Page::OnMouseMove
+	 * Purpose: Responds to the Mouse Move Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				TPoint point - the point included in the message
+	 *				messageOutput* mOut -  the result of the message
+	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
+	 * Returns: void
+	 *
+	 * Attributes: message; virtual
+	 */
+	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
+
+	/**
+	 * Method: Page::OnLButtonDblClk
+	 * Purpose: Responds to the Left Button Double CLick Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				TPoint point - the point included in the message
+	 *				messageOutput* mOut -  the result of the message
+	 * Returns: void
+	 *
+	 * Attributes: message; virtual
+	 */
+	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut);
+
+	/**
+	 * Method: Page::OnLButtonUp
+	 * Purpose: Responds to the Left Button Up Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				TPoint point - the point included in the message
+	 *				messageOutput* mOut -  the result of the message
+	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
+	 * Returns: void
+	 *
+	 * Attributes: message; virtual
+	 */
+	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
+
+	/**
+	 * Method: WebPage::GetTitle
+	 * Purpose: Retirves the title of this web page
+	 * Parameters: void
+	 * Returns TString - the title of the web page
+	 * 
+	 * Note: This value could be an empty String. It is up to the caller to check for that and handle it accordingly
+	 */
+	TString GetTitle();
+
 protected:
+	TString directory;
+
+	TString SetUpCSS();
+
+	TrecPointer<TArray<styleTable>> styles;
 
 	TrecPointer<HtmlBuilder> htmlBuilder;
 
 	TrecPointer<TEnvironment> environment;
 
-	TrecPointer<TWebNode> rootNode;
+	TrecPointer<TWebNode> rootNode, focusNode;
 
 	TrecPointer<WebPageHolder> tab;
+
+	TDataArray<TrecPointer<TWebNode>> clickNodes, moveNodes;
 };

@@ -78,9 +78,11 @@ TWindowEngine::~TWindowEngine()
  */
 int TWindowEngine::Initialize()
 {
-	if (isInit)
-		return 0;
-	 
+	AG_THREAD_LOCK
+		if (isInit)
+		{
+			RETURN_THREAD_UNLOCK 0;
+		}
 	GetClientRect(window, &Location);
 
 	unsigned int width = Location.right - Location.left,
@@ -117,10 +119,10 @@ int TWindowEngine::Initialize()
 	swapChainDescription.SampleDesc.Quality = 0;
 	swapChainDescription.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	swapChainDescription.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapChainDescription.Flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
+	swapChainDescription.Flags = 0;
 	swapChainDescription.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;// DXGI_SWAP_EFFECT_DISCARD;
 
-	unsigned int flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	unsigned int flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
 
 #if _DEBUG
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -139,7 +141,7 @@ int TWindowEngine::Initialize()
 
 	if (FAILED(results))
 	{
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 	}
 
 	dxDev.Nullify();
@@ -152,7 +154,7 @@ int TWindowEngine::Initialize()
 
 		graphicsDevice.Nullify();
 		contextDevice.Nullify();
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 	}
 	dxDev = raw_dxDev.Extract();
 	results = dxDev->GetParent(__uuidof(IDXGIAdapter), (void**)& dxAdpt);
@@ -162,7 +164,7 @@ int TWindowEngine::Initialize()
 		graphicsDevice.Nullify();
 		contextDevice.Nullify();
 		dxDev.Nullify();
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 	}
 	results = dxAdpt->GetParent(__uuidof(IDXGIFactory), (void**)& dxFact);
 
@@ -175,7 +177,7 @@ int TWindowEngine::Initialize()
 		graphicsDevice.Nullify();
 		contextDevice.Nullify();
 		dxDev.Nullify();
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 	}
 
 
@@ -190,7 +192,7 @@ int TWindowEngine::Initialize()
 		dxDev.Nullify();
 		graphicsDevice.Nullify();
 		contextDevice.Nullify();
-		return NO_DEVICE;
+		RETURN_THREAD_UNLOCK NO_DEVICE;
 
 
 	}
@@ -201,7 +203,7 @@ int TWindowEngine::Initialize()
 	results = swapper->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)& texture);
 	if (FAILED(results))
 	{
-		return NO_SWAP_CHAIN;
+		RETURN_THREAD_UNLOCK NO_SWAP_CHAIN;
 	}
 
 	D3D11_RENDER_TARGET_VIEW_DESC rendDesc;
@@ -222,7 +224,7 @@ int TWindowEngine::Initialize()
 
 	if (FAILED(results))
 	{
-		return NO_RENDER_TARGET;
+		RETURN_THREAD_UNLOCK NO_RENDER_TARGET;
 	}
 
 	// Create a DXGISurface so that Interoperability with Direct2D is simpler
@@ -260,7 +262,7 @@ int TWindowEngine::Initialize()
 
 	SetDefaultRasterization();
 	InitializeDefaultShaders();
-	return NO_ERROR;
+	RETURN_THREAD_UNLOCK NO_ERROR;
 }
 
 /**
@@ -272,15 +274,17 @@ int TWindowEngine::Initialize()
  */
 void TWindowEngine::Resize(UINT x, UINT y)
 {
-	if (!swapper.Get() || !surface.Get() || !contextDevice.Get())
-		return;
-
+	AG_THREAD_LOCK
+		if (!swapper.Get() || !surface.Get() || !contextDevice.Get())
+		{
+			RETURN_THREAD_UNLOCK;
+		}
 	UINT buffCount = 2;
 	UINT width = x;
 	UINT height = y;
 
 	DXGI_FORMAT NewFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
-	UINT flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
+	// UINT flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
 
 	renderTarget.Delete();
 	surface.Delete();
@@ -289,7 +293,7 @@ void TWindowEngine::Resize(UINT x, UINT y)
 
 	//ReportLiveObjects();
 
-	HRESULT res = swapper->ResizeBuffers(buffCount, width, height, NewFormat, flags);
+	HRESULT res = swapper->ResizeBuffers(buffCount, width, height, NewFormat, 0);
 	if (FAILED(res))
 		int e = 0;
 
@@ -298,7 +302,7 @@ void TWindowEngine::Resize(UINT x, UINT y)
 	res = swapper->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&texture);
 	if (FAILED(res))
 	{
-		return ;
+		RETURN_THREAD_UNLOCK;
 	}
 
 
@@ -320,13 +324,14 @@ void TWindowEngine::Resize(UINT x, UINT y)
 
 	if (FAILED(res))
 	{
-		return;
+		RETURN_THREAD_UNLOCK;
 	}
 
 	// Create a DXGISurface so that Interoperability with Direct2D is simpler
 	TrecComPointer<IDXGISurface1>::TrecComHolder surfaceHolder;
 	res = swapper->GetBuffer(0, __uuidof(IDXGISurface1), (void**)surfaceHolder.GetPointerAddress());
 	surface = surfaceHolder.Extract();
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -403,13 +408,17 @@ TrecComPointer<IDXGISurface1> TWindowEngine::GetSurface()
  */
 void TWindowEngine::PrepareScene(D2D1::ColorF color)
 {
-	if (!contextDevice.Get() || !renderTarget.Get())
-		return;
+	AG_THREAD_LOCK
+		if (!contextDevice.Get() || !renderTarget.Get())
+		{
+			RETURN_THREAD_UNLOCK;
+		}
 	float clearColor[4] = { color.r, color.g ,color.b,color.a };
 
-	contextDevice->ClearRenderTargetView(renderTarget.Get(), clearColor);
+	//contextDevice->ClearRenderTargetView(renderTarget.Get(), clearColor);
 	ID3D11RenderTargetView* const renderer = renderTarget.Get();
-	contextDevice->OMSetRenderTargets(1, &renderer, nullptr);
+	contextDevice->OMSetRenderTargets(1, &renderer, nullptr); 
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -420,8 +429,10 @@ void TWindowEngine::PrepareScene(D2D1::ColorF color)
  */
 void TWindowEngine::FinalizeScene()
 {
+	AG_THREAD_LOCK
 	if (swapper.Get())
 		swapper->Present(0, 0);
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -432,11 +443,13 @@ void TWindowEngine::FinalizeScene()
  */
 void TWindowEngine::ReportLiveObjects()
 {
-	if (!graphicsDevice.Get())return;
+	AG_THREAD_LOCK
+		if (!graphicsDevice.Get()) { RETURN_THREAD_UNLOCK; }
 	ID3D11Debug* debugger = nullptr;
 	graphicsDevice->QueryInterface(__uuidof(ID3D11Debug), (void**)&debugger);
 	if (debugger)
 		debugger->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+	RETURN_THREAD_UNLOCK;
 }
 
 /**
@@ -450,6 +463,33 @@ HWND TWindowEngine::GetWindowHandle()
 	return window;
 }
 
+D3D11_INPUT_ELEMENT_DESC* TWindowEngine::GetInputInfo(DefaultShader shaderId, UINT& count)
+{
+	UINT uiShaderId = static_cast<UINT>(shaderId);
+	if (uiShaderId >= this->shaders.Size())
+	{
+		count = 0;
+		return nullptr;
+	}
+	count = shaders[uiShaderId].elementCount;
+	return shaders[uiShaderId].elements;
+}
+
+HDC TWindowEngine::GetDC()
+{
+	if (!surface.Get())
+		return 0;
+	HDC dc;
+	assert(SUCCEEDED(surface->GetDC(FALSE, &dc)));
+	return dc;
+}
+
+void TWindowEngine::ClearDC()
+{
+	if (surface.Get())
+		surface->ReleaseDC(nullptr);
+}
+
 
 
 /**
@@ -460,9 +500,11 @@ HWND TWindowEngine::GetWindowHandle()
  */
 int TWindowEngine::InitializeDefaultShaders()
 {
-	if (defaultShadersSet)
-		return 0;
-
+	AG_THREAD_LOCK
+		if (defaultShadersSet)
+		{
+			RETURN_THREAD_UNLOCK 0;
+		}
 
 	TString tDirectory = GetDirectoryWithSlash(CentralDirectories::cd_Executable);
 
@@ -493,13 +535,13 @@ int TWindowEngine::InitializeDefaultShaders()
 
 			file->Close();
 			delete read;
-			return -2;
+			RETURN_THREAD_UNLOCK -2;
 		}
 	}
 	catch (...)
 	{
 
-		return 2;
+		RETURN_THREAD_UNLOCK 2;
 	}
 
 
@@ -528,13 +570,13 @@ int TWindowEngine::InitializeDefaultShaders()
 		{
 			file->Close();
 			delete read;
-			return -3;
+			RETURN_THREAD_UNLOCK -3;
 		}
 	}
 	catch (...)
 	{
 
-		return 3;
+		RETURN_THREAD_UNLOCK 3;
 	}
 	file->Close();
 	delete read;
@@ -559,13 +601,13 @@ int TWindowEngine::InitializeDefaultShaders()
 		{
 			file->Close();
 			delete read;
-			return -4;
+			RETURN_THREAD_UNLOCK -4;
 		}
 	}
 	catch (...)
 	{
 
-		return 4;
+		RETURN_THREAD_UNLOCK 4;
 	}
 	file->Close();
 	delete read;
@@ -589,13 +631,13 @@ int TWindowEngine::InitializeDefaultShaders()
 		{
 			file->Close();
 			delete read;
-			return -5;
+			RETURN_THREAD_UNLOCK -5;
 		}
 	}
 	catch (...)
 	{
 
-		return 5;
+		RETURN_THREAD_UNLOCK 5;
 	}
 	file->Close();
 	delete read;
@@ -618,13 +660,13 @@ int TWindowEngine::InitializeDefaultShaders()
 		{
 			file->Close();
 			delete read;
-			return -6;
+			RETURN_THREAD_UNLOCK -6;
 		}
 	}
 	catch (...)
 	{
 
-		return 6;
+		RETURN_THREAD_UNLOCK 6;
 	}
 	file->Close();
 	delete read;
@@ -634,7 +676,7 @@ int TWindowEngine::InitializeDefaultShaders()
 
 
 	defaultShadersSet = true;
-	return 0;
+	RETURN_THREAD_UNLOCK 0;
 }
 
 /**
@@ -645,15 +687,16 @@ int TWindowEngine::InitializeDefaultShaders()
  */
 void TWindowEngine::SetDefaultRasterization()
 {
-	if (contextDevice.Get())
-	{
-		rasterizer.CullMode = D3D11_CULL_BACK;
-		rasterizer.FillMode = D3D11_FILL_SOLID;
-		TrecComPointer<ID3D11RasterizerState>::TrecComHolder state;
-		graphicsDevice->CreateRasterizerState(&rasterizer, state.GetPointerAddress());
-		rasterizerState = state.Extract();
-		contextDevice->RSSetState(rasterizerState.Get());
-		isFill = true;
-		cullMode = CULL_BACK + 1;
-	}
+	AG_THREAD_LOCK
+		if (contextDevice.Get())
+		{
+			rasterizer.CullMode = D3D11_CULL_BACK;
+			rasterizer.FillMode = D3D11_FILL_SOLID;
+			TrecComPointer<ID3D11RasterizerState>::TrecComHolder state;
+			graphicsDevice->CreateRasterizerState(&rasterizer, state.GetPointerAddress());
+			rasterizerState = state.Extract();
+			contextDevice->RSSetState(rasterizerState.Get());
+			isFill = true;
+			cullMode = CULL_BACK + 1;
+		}RETURN_THREAD_UNLOCK;
 }

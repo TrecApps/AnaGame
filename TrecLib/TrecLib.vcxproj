@@ -98,7 +98,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;Pathcch.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -158,11 +158,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CodeStatement.h" />
+    <ClInclude Include="ObjectOperator.h" />
     <ClInclude Include="TBlankNode.h" />
+    <ClInclude Include="TcBashInterpretor.h" />
+    <ClInclude Include="TcInterpretor.h" />
     <ClInclude Include="TDataMap.h" />
+    <ClInclude Include="TLinkedList.h" />
     <ClInclude Include="TSliceManager.h" />
     <ClInclude Include="TStringSlice.h" />
-    <ClInclude Include="TVariable.h" />
     <ClInclude Include="TEnvironment.h" />
     <ClInclude Include="AnagameDef.h" />
     <ClInclude Include="Animation.h" />
@@ -170,7 +174,6 @@
     <ClInclude Include="DirectoryInterface.h" />
     <ClInclude Include="Dragable.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="HTML_Reader.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="ParseReader_.h" />
     <ClInclude Include="Parser_.h" />
@@ -191,7 +194,6 @@
     <ClInclude Include="TObject.h" />
     <ClInclude Include="TObjectNode.h" />
     <ClInclude Include="TPoint.h" />
-    <ClInclude Include="TPrimitiveType.h" />
     <ClInclude Include="TrecLib.h" />
     <ClInclude Include="TrecReference.h" />
     <ClInclude Include="TServerSocket.h" />
@@ -200,21 +202,25 @@
     <ClInclude Include="TString.h" />
     <ClInclude Include="TTrecPointerArray.h" />
     <ClInclude Include="TTrecSoftPointerArray.h" />
-    <ClInclude Include="TType.h" />
-    <ClInclude Include="TTypeMetadata.h" />
+    <ClInclude Include="TVariable.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CodeStatement.cpp" />
+    <ClCompile Include="ObjectOperator.cpp" />
     <ClCompile Include="TBlankNode.cpp" />
+    <ClCompile Include="TLinkedList.cpp" />
     <ClCompile Include="TSliceManager.cpp" />
     <ClCompile Include="TStringSlice.cpp" />
+    <ClCompile Include="TThread.cpp" />
     <ClCompile Include="TVariable.cpp" />
+    <ClCompile Include="TcBashInterpretor.cpp" />
+    <ClCompile Include="TcInterpretor.cpp" />
     <ClCompile Include="TEnvironment.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="DirectoryInterface.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Dragable.cpp" />
-    <ClCompile Include="HTML_Reader.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="ParseReader_.cpp" />
     <ClCompile Include="Parser_.cpp" />
@@ -227,7 +233,6 @@
     </ClCompile>
     <ClCompile Include="TArrayBase.cpp" />
     <ClCompile Include="TClientSocket.cpp" />
-    <ClCompile Include="TAttribute.cpp" />
     <ClCompile Include="TControlComponent.cpp" />
     <ClCompile Include="TDataArrayBase.cpp" />
     <ClCompile Include="TDirectory.cpp" />
@@ -239,15 +244,12 @@
     <ClCompile Include="TObject.cpp" />
     <ClCompile Include="TObjectNode.cpp" />
     <ClCompile Include="TPoint.cpp" />
-    <ClCompile Include="TPrimitiveType.cpp" />
     <ClCompile Include="TrecLib.cpp" />
     <ClCompile Include="TrecReference.cpp" />
     <ClCompile Include="TServerSocket.cpp" />
     <ClCompile Include="TSocket.cpp" />
     <ClCompile Include="TShell.cpp" />
     <ClCompile Include="TString.cpp" />
-    <ClCompile Include="TType.cpp" />
-    <ClCompile Include="TTypeMetadata.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

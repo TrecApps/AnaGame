@@ -1,5 +1,7 @@
 #include "TObject.h"
 #include "TString.h"
+#include "TThread.h"
+#include <cassert>
 
 UCHAR TObjectType[] = { 1, 0b10000000 };
 
@@ -16,6 +18,9 @@ WCHAR str_false[] = L"false";
 TObject::TObject()
 {
 	//sys_Type = new LPCTSTR((LPCTSTR)"SYS_TOBJECT");
+	InitializeCriticalSection(&thread);
+	isInSection = false;
+	threadCounter = 0;
 }
 
 /*
@@ -26,7 +31,7 @@ TObject::TObject()
 */
 TObject::~TObject()
 {
-
+	DeleteCriticalSection(&thread);
 }
 
 /*
@@ -98,6 +103,35 @@ TObject* TObject::ProcessPointer(float* obj)
 	return nullptr;
 }
 
+/**
+ * Method: TObject::ThreadLock
+ * Purpose: Allows any Object that can claim TObject as a type to restrict access to the Current Thread being called
+ * Parameters: void
+ * Returns: bool - whether the locking mechanism worked
+ *
+ * Note: In order for this method and ThreadRelease to work properly, you must hold on to the boo that is returned and pass it into ThreadRelease.
+ *		Since methods can call each other, Only the first method called should be the one that actually unlocks the object
+ */
+void TObject::ThreadLock() const
+{
+	
+	EnterCriticalSection(&thread);
+	threadCounter++;
+}
+
+/**
+ * Method: TObject::ThreadRelease
+ * Purpose: Allows the TObject to release any thread that may have previously been restricted, assuming that true is passed
+ * Parameters: bool key - whether the unlocking mechanism should actually proceed
+ * Returns: void
+ */
+void TObject::ThreadRelease() const
+{
+	threadCounter--;
+		LeaveCriticalSection(&thread);
+	
+}
+
 /*
 * Function: boolToString 
 * Purpose: returns string representations of the bool
@@ -110,4 +144,17 @@ WCHAR* boolToString(bool val)
 		return str_true;
 	else
 		return str_false;
+}
+
+TObjectLocker::TObjectLocker(CRITICAL_SECTION* section)
+{
+	assert(section);
+	this->section = section;
+	EnterCriticalSection(this->section);
+}
+
+TObjectLocker::~TObjectLocker()
+{
+	LeaveCriticalSection(section);
+	section = nullptr;
 }

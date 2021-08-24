@@ -25,6 +25,9 @@
  *			because these types are created by a Factory method/function and deleting them requires calling the Release() method rather than
  *			manually deleting them.
  *
+ *		TrecBox<T> - a Unique type pointer that ensures only it holds ownership of a given object until it goes out of scope or it gives up ownership through
+ *			the TrecPointerKey (or you simply call 'Nullify'
+ *
  *		TrecObjectPointer - A new Pointer type that holds a counter to any type that can call itself a TObject. Written with Anagame 
  *			Interpretors in mind
  *
@@ -36,7 +39,7 @@
  * Class: TrecBoxPointerBase
  * Purpose: Holds the counter and base for the 
  */
-class TrecBoxPointerBase
+class _TREC_LIB_DLL TrecBoxPointerBase
 {
 	friend class TrecPointerKey;
 	friend class TrecObjectPointer;
@@ -158,7 +161,7 @@ public:
  * Class: TrecBoxPointer
  * Purpose: holds the raw pointer and a counter to the object referenced by the various TrecPointers
  */
-template<class T> class TrecBoxPointer: public TrecBoxPointerBase
+template<class T> class _TREC_LIB_DLL TrecBoxPointer: public TrecBoxPointerBase
 {
 	/**
 	 * Need to allow the utility class TrecPointerKey access for it to perform it's job properly
@@ -322,7 +325,7 @@ public:
  * Class: TrecComBoxPointer
  * Purpose: Holds the actual raw pointer to COM types used
  */
-template<class T> class TrecComBoxPointer
+template<class T> class _TREC_LIB_DLL TrecComBoxPointer
 {
 private:
 	/**
@@ -416,7 +419,7 @@ public:
  * 
  * Note: Written to allow certain objects to hold references to themselves and return regular TrecPointer's to themselves
  */
-template<class T> class TrecPointerSoft
+template<class T> class _TREC_LIB_DLL TrecPointerSoft
 {
 	friend class TrecPointerKey;
 private:
@@ -454,6 +457,18 @@ public:
 	}
 
 	/**
+	 * Method: TrecPointerSoft::TrecPointerSoft
+	 * Purpose: Copy constructor
+	 * Parameters: const TrecPointerSoft<T>& copy - the soft pointer to copy from
+	 * Returns: New TrecPointerSoft Object
+	 */
+	TrecPointerSoft(const TrecPointerSoft<T>& copy)
+	{
+		pointer = copy.pointer;
+		if (pointer)pointer->IncrementSoft();
+	}
+
+	/**
 	 * Method: TrecPointerSoft::~TrecPointerSoft
 	 * Purpose: Destructor
 	 * Parameters: void
@@ -463,6 +478,7 @@ public:
 	{
 		if(pointer)
 			pointer->DecrementSoft();
+		pointer = nullptr;
 	}
 
 	/**
@@ -505,7 +521,7 @@ public:
  * Class: TrecSubPointerSoft
  * Purpose: Provides a weak pointer type for the TrecSubPointer (which assumes object is a subclass of type u)
  */
-template<class T, class U> class TrecSubPointerSoft
+template<class T, class U> class _TREC_LIB_DLL TrecSubPointerSoft
 {
 	friend class TrecPointerKey;
 private:
@@ -543,6 +559,19 @@ public:
 	}
 
 	/**
+	 * Method: TrecSubPointerSoft::TrecSubPointerSoft
+	 * Purpose: Copy Constructor
+	 * Parameters: const TrecSubPointerSoft& copy - the pointer to copy from
+	 * Returns: New TrecSubPointerSoft Object
+	 */
+	TrecSubPointerSoft(const TrecSubPointerSoft& copy)
+	{
+		pointer = copy.pointer;
+		if (pointer)pointer->IncrementSoft();
+	}
+
+
+	/**
 	 * Method: TrecSubPointerSoft::~TrecSubPointerSoft
 	 * Purpose: Destructor
 	 * Parameters: void
@@ -552,6 +581,7 @@ public:
 	{
 		if (pointer)
 			pointer->DecrementSoft();
+		pointer = nullptr;
 	}
 
 	/**
@@ -584,6 +614,7 @@ public:
 			pointer->DecrementSoft();
 
 		pointer = other.pointer;
+		if (pointer)pointer->IncrementSoft();
 	}
 };
 
@@ -591,7 +622,7 @@ public:
  * Class: TrecSubPointer
  * Purpose: Provide a means to hold a reference to a base class T and provide easy access to members of sub class U
  */
-template<class t, class u> class TrecSubPointer
+template<class t, class u> class _TREC_LIB_DLL TrecSubPointer
 {
 	friend class TrecPointerKey;
 	// friend class TrecPointer<t>;
@@ -748,7 +779,7 @@ public:
  * Class: TrecPointer
  * Purpose: Provide a Smart Pointer for use in Anagame
  */
-template<class t> class TrecPointer
+template<class t> class _TREC_LIB_DLL TrecPointer
 {
 	friend class TrecPointerKey;
 protected:
@@ -829,12 +860,12 @@ public:
 	 * Parameters: const TrecPointer<t>& other - the Pointer to copy from
 	 * Returns: void
 	 */
-	void operator=(const TrecPointer<t>& other)
+	TrecPointer<t> operator=(const TrecPointer<t>& other)
 	{
 		// First, make sure that the other TrecPointer isn't pointing to the same reference.
 		// If it is, we don't want to decrement the reference lest it become 0 (and self-destructs)
 		if (other.pointer == pointer)
-			return;
+			return *this;
 
 		if(pointer)
 			pointer->Decrement();
@@ -843,6 +874,7 @@ public:
 
 		if (pointer)
 			pointer->Increment();
+		return *this;
 	}
 
 	/**
@@ -933,7 +965,7 @@ public:
  *		// Use the TrecPointerKey to get the TrecComPointer
  *		renderer = TrecPointerKey::GetComPointer<ID2D1RenderTarget, ID2D1HwndRenderTarget>(renderHw);
  */
-template<class t> class TrecComPointer
+template<class t> class _TREC_LIB_DLL TrecComPointer
 {
 	friend class TrecPointerKey;
 protected:
@@ -1136,7 +1168,7 @@ public:
 	 */
 	t* operator->()
 	{
-		if (!pointer)return nullptr;
+		if (!pointer || !pointer->Get())throw L"Attempt to Access a null object!";
 		return pointer->Get();
 	}
 
@@ -1155,6 +1187,119 @@ public:
 	}
 };
 
+/**
+ * Class: TrecBox
+ * Purpose: Provides an Option to have a singluar Smart pointer (i.e.) only one reference to the object
+ *
+ * Note: the "Box" name was inspired by the Box type n Rust. It can also be compared to the unique_ptr in the C++ Standard Library
+ */
+template<class T> class TrecBox
+{
+	friend class TrecPointerKey;
+protected:
+
+	/**
+	 * The raw Pointer
+	 */
+	T* rawPointer;
+
+	/**
+	 * Method: TrecBox::TrecBox
+	 * Purpose: Private Contstructor for initializing a New Object
+	 * Parameter: T* rawPointer - Pointer given by the TrecPointerKey to this Unique object
+	 * Returns: New TrecBox Object with ownership of a deeper object
+	 */
+	TrecBox(T* rawPointer)
+	{
+		this->rawPointer = rawPointer;
+	}
+
+
+	/**
+	 * Method: TrecBox::Extract
+	 * Purpose: Allows the Box to give up ownership of the object without deleting it, intended to be sent to a regular TrecPointer
+	 * Parameter: void
+	 * Returns: T* the raw Pointer being given up
+	 */
+	T* Extract()
+	{
+		T* ret = rawPointer;
+		rawPointer = nullptr;
+		return ret;
+	}
+
+public:
+
+	/**
+	 * Method: TrecBox::~TrecBox
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	~TrecBox()
+	{
+		Nullify();
+	}
+
+	/**
+	 * Method: TrecBox::TrecBox
+	 * Purpose: Default Constructor
+	 * Parameter: void
+	 * Returns: New NULL Box
+	 */
+	TrecBox()
+	{
+		rawPointer = nullptr;
+	}
+
+	/**
+	 * Method: TrecBox::operator=
+	 * Purpose: Allows an assignment to take place. Note: this will remove ownership from the Box beign assign to this box
+	 * Parameter: TrecBox<T>& other - the Other Box to extract the object from
+	 * Returns: void
+	 */
+	void operator=(TrecBox<T>& other)
+	{
+		rawPointer = other.Extract();
+	}
+
+	/**
+	 * Method: TrecBox::Get
+	 * Purpose: Retrieves the Raw Pointer, useful for NULL checks
+	 * Parameter: void
+	 * Returns: T* the raw Pointer held by the Box
+	 */
+	T* Get()
+	{
+		return rawPointer;
+	}
+
+	/**
+	 * Method: TrecBox::operator->
+	 * Purpose: Allows users to access public members of the underlying object if available
+	 * Parameter: void
+	 * Returns: T* the raw Pointer held by the Box
+	 */
+	T* operator->()
+	{
+		return rawPointer;
+	}
+
+	/**
+	 * Method: TrecBox::Nullify
+	 * Purpose: Allows users to go ahead and delete the object ahead of Box's destruction
+	 * Parameter: void
+	 * Returns: void
+	 */
+	void Nullify()
+	{
+		if (rawPointer)
+			delete rawPointer;
+		rawPointer = nullptr;
+	}
+
+	
+};
 
 
 
@@ -1162,7 +1307,7 @@ public:
  * Class: TrecPointerKey
  * Purpose: Utility class to allow for initializing various TrecPointer types and swapping compatible TrecPointer types
  */
-class TrecPointerKey
+class _TREC_LIB_DLL TrecPointerKey
 {
 public:
 
@@ -1274,8 +1419,10 @@ public:
 	{
 		TrecPointer<t> ret;
 		ret.pointer = sub.pointer;
-		if (ret.pointer && ret.pointer)
+		if (ret.pointer && ret.pointer->counter)
+		{
 			ret.pointer->Increment();
+		}
 		return ret;
 	}
 
@@ -1292,8 +1439,9 @@ public:
 		TrecSubPointer<t, u> ret;
 		ret.pointer = tPointer.pointer;
 		if (ret.pointer && ret.pointer)
+		{
 			ret.pointer->Increment();
-		return ret;
+		}return ret;
 	}
 
 	/**
@@ -1356,13 +1504,15 @@ public:
 	 * Parameters: TrecSubPointerSoft<T, U> s - The Soft pointer to get the strong one from
 	 * Returns:TrecSubPointer<T, U> -  the Sub Pointer sought 
 	 */
-	template <class T, class U> static TrecSubPointer<T, U> GetSubPointerFromSoft(TrecSubPointerSoft<T, U> s)
+	template <class T, class U> static TrecSubPointer<T, U> GetSubPointerFromSoft(const TrecSubPointerSoft<T, U>& s)
 	{
 		TrecSubPointer<T, U> ret;
 
 		ret.pointer = s.pointer;
 		if (ret.pointer)
+		{
 			ret.pointer->Increment();
+		}
 		return ret;
 	}
 
@@ -1383,11 +1533,16 @@ public:
 	 * Parameters: TrecPointerSoft<T> trec -  the Pointer with the object
 	 * Returns: TrecSubPointerSoft<T, U> trec - the Soft version of the TrecSubPointer
 	 */
-	template <class T, class U> static TrecSubPointerSoft<T, U> GetSoftSubPointerFromSoft(TrecPointerSoft<T> trec)
+	template <class T, class U> static TrecSubPointerSoft<T, U> GetSoftSubPointerFromSoft(const TrecPointerSoft<T>& trec)
 	{
-		if(trec.pointer)
-			return TrecSubPointerSoft<T, U>(trec.pointer);
-		return TrecSubPointerSoft<T, U>();
+		TrecSubPointerSoft<T, U> ret;
+
+		ret.pointer = trec.pointer;
+		if (ret.pointer)
+		{
+			ret.pointer->IncrementSoft();
+		}
+		return ret;
 	}
 
 	/**
@@ -1406,5 +1561,31 @@ public:
 			return TrecObjectPointer(obj.pointer);
 		}
 		return TrecObjectPointer();
+	}
+
+	/**
+	 * Method: static TrecPointerKey::GetNewTrecBox<T>
+	 * Purpose: Retrieves a New TrecBox from the provided parameters
+	 * Parameters: types&& ... args - the arguments that get passed to the constructor of the object
+	 * Returns: TrecBox<T> - Smart Unique pointer that holds the object
+	 */
+	template <class T, class...types> static TrecBox<T> GetNewTrecBox(types&& ... args)
+	{
+		return TrecBox<T>(new T(args));
+	}
+
+	/**
+	 * Method: static TrecPointerKey::GetTrecPointerFromTrecBox<T>
+	 * Purpose: Retrieves a TrecObjectPointer that just sees a TObject
+	 * Parameters: TrecPointer<T> - the TrecPointer to convert
+	 * Returns: TrecPointer<T> - TrecPointer that holds the object previously held by the Box Pointer
+	 *
+	 * Note: In order to prevent delete from being called twice, this operation will remove ownership of the object from the TrecBox. If the Box is null, then the TrecPointer will also be Null
+	 */
+	template <class T> static TrecPointer<T> GetTrecPointerFromTrecBox(TrecBox<T>& box)
+	{
+		if(box.Get())
+			return TrecPointer<T>(box.Extract());
+		return TrecPointer<T>();
 	}
 };

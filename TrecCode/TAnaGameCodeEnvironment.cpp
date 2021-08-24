@@ -3,6 +3,9 @@
 #include "TJavaScriptInterpretor.h"
 #include <TFileNode.h>
 #include <TPromptControl.h>
+#include "TcJavaScriptInterpretor.h"
+#include <TStringVariable.h>
+#include <TBlankNode.h>
 
 TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shell)
 {
@@ -84,13 +87,13 @@ UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 
 						for (UINT Rust = 0; Rust < result.stackTrace.Size(); Rust++)
 						{
-							resultStr.AppendFormat(L"\n\t%ws", result.stackTrace[Rust].GetConstantBuffer());
+							resultStr.AppendFormat(L"\n\t%ws", result.stackTrace[Rust].GetConstantBuffer().getBuffer());
 						}
 						resultStr.AppendChar(L'\n');
 					}
 
 
-					shellRunner->Print(resultStr);
+					shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(resultStr));
 				}
 			}
 		}
@@ -99,37 +102,9 @@ UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 			// We have an Anascript file on our hands
 			auto interpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(), TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
 
-			TFile file(task, TFile::t_file_open_existing | TFile::t_file_read);
+			TrecPointer<TFileShell> jsFile = TFileShell::GetFileInfo(task);
+			Run(jsFile);
 
-
-			if (file.IsOpen())
-			{
-				interpretor->SetCode(file);
-
-				file.Close();
-
-				auto result = interpretor->Run();
-
-				if (this->shellRunner.Get())
-				{
-					TString resultStr(L"Program exited with code: ");
-					resultStr.AppendFormat(L"%i\n", result.returnCode);
-
-					if (result.returnCode)
-					{
-						resultStr.Append(result.errorMessage);
-
-						for (UINT Rust = 0; Rust < result.stackTrace.Size(); Rust++)
-						{
-							resultStr.AppendFormat(L"\n\t%ws", result.stackTrace[Rust].GetConstantBuffer());
-						}
-						resultStr.AppendChar(L'\n');
-					}
-
-
-					shellRunner->Print(resultStr);
-				}
-			}
 		}
 	}
 	return 0;
@@ -159,8 +134,10 @@ void TAnaGameCodeEnvironment::Run()
 void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 {
 	if (!file.Get() || file->IsDirectory())
+	{
+		this->PrintLine(L"Null File or a Directory has been provided!");
 		return;
-
+	}
 	auto path = file->GetPath();
 
 
@@ -181,16 +158,65 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 	}
 	else if (path.GetSize() > 3 && path.EndsWith(L".js"))
 	{
-		auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TJavaScriptInterpretor>(TrecSubPointer<TVariable, TInterpretor>(),
+		auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcJavaScriptInterpretor>(TrecSubPointer<TVariable, TcInterpretor>(),
 			TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
-		TFile actualFile(path, TFile::t_file_open_always | TFile::t_file_read);
-		UINT setCodeResult = javaScriptInterpretor->SetCode(actualFile);
+		ReturnObject ret;
+		javaScriptInterpretor->SetFile(file, ret);
 
-		if (setCodeResult)
+		currentRunner = TrecPointerKey::GetTrecPointerFromSub<>(javaScriptInterpretor);
+
+		if (ret.returnCode)
+		{
+			TString message;
+			message.Format(L"Java Script file Preprocessing exited with Error code: %d", ret.returnCode);
+			this->PrintLine(message);
+			this->PrintLine(ret.errorMessage);
+
+			for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+			{
+				this->Print(L'\t');
+				this->PrintLine(ret.stackTrace[Rust]);
+			}
 			return;
+		}
 
-		auto runCodeResult = javaScriptInterpretor->Run();
+		javaScriptInterpretor->PreProcess(ret);
+		if (ret.returnCode)
+		{
+			TString message;
+			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", path.GetConstantBuffer().getBuffer(), ret.returnCode);
+			this->PrintLine(message);
+			this->PrintLine(ret.errorMessage);
 
+			for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+			{
+				this->Print(L'\t');
+				this->PrintLine(ret.stackTrace[Rust]);
+			}
+			return;
+		}
+
+		ret = javaScriptInterpretor->Run();
+		if (ret.returnCode)
+		{
+			TString message;
+			message.Format(L"Java Script '%ws' file Run exited with Error code: %d", path.GetConstantBuffer().getBuffer(), ret.returnCode);
+			this->PrintLine(message);
+			this->PrintLine(ret.errorMessage);
+
+			for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+			{
+				this->Print(L'\t');
+				this->PrintLine(ret.stackTrace[Rust]);
+			}
+			return;
+		}
+		else
+		{
+			TString message;
+			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code 0", path.GetConstantBuffer().getBuffer());
+			this->PrintLine(message);
+		}
 		int e = 3;
 	}
 }
@@ -200,10 +226,24 @@ TrecPointer<TObjectNode> TAnaGameCodeEnvironment::GetBrowsingNode()
 	if(!rootDirectory.Get())
 		return TrecPointer<TObjectNode>();
 
-	auto node = TrecPointerKey::GetNewSelfTrecPointerAlt<TObjectNode, TFileNode>(0);
-	auto path(rootDirectory->GetPath());
-	node->Initialize(path);
-	return node;
+	auto node = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TBlankNode>(0);
+
+	UINT rootSize = rootDirectory->GetPath().GetSize();
+
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		TString name(files[Rust]->GetPath());
+		name.Delete(0, rootSize);
+		int firstSlash = name.Find(L'\\');
+
+		name.Set(rootDirectory->GetPath() + name.SubString(0, firstSlash));
+		auto fNode = TrecPointerKey::GetNewSelfTrecPointerAlt<TObjectNode, TFileNode>(1);
+
+		fNode->Initialize(name);
+		node->AddNode(fNode);
+	}
+
+	return TrecPointerKey::GetTrecPointerFromSub<>(node);
 }
 
 bool TAnaGameCodeEnvironment::SupportsFileExt(const TString& ext)
@@ -219,7 +259,8 @@ bool TAnaGameCodeEnvironment::Print(const TString& input)
 {
 	if (shellRunner.Get())
 	{
-		shellRunner->Print(input);
+		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input));
+		RedrawWindow(nullptr, nullptr, nullptr, 0);
 		return true;
 	}
 	return false;
@@ -229,8 +270,99 @@ bool TAnaGameCodeEnvironment::PrintLine(const TString& input)
 {
 	if (shellRunner.Get())
 	{
-		shellRunner->PrintLine(input);
+		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input));
+		RedrawWindow(nullptr, nullptr, nullptr, 0);
 		return true;
 	}
 	return false;
+}
+
+UINT TAnaGameCodeEnvironment::SaveEnv()
+{
+	if (!rootDirectory.Get())
+		return 1;
+
+	TFile file(rootDirectory->GetPath() + L"\\treccode.tml", TFile::t_file_open_always | TFile::t_file_write);
+
+	if (!file.IsOpen())
+		return 2;
+
+	file.WriteString(L"->TML\n");
+	file.WriteString(L"-|Type: Anacode\n");
+	file.WriteString(L"-|Version: 0.0.1\n");
+	file.WriteString(L"-/\n");
+
+	file.WriteString(L"->Project\n");
+	TString relatives;
+	if(mainFile.Get() && mainFile->GetRelativePath(relatives, rootDirectory, false))
+		file.WriteString(TString(L"-|MainFile: ") + relatives + L'\n');
+	for (UINT Rust = 0; Rust < files.Size(); Rust++)
+	{
+		if(files[Rust].Get() && files[Rust]->GetRelativePath(relatives, rootDirectory, false))
+		file.WriteString(TString(L"-|File: ") + relatives + L'\n');
+	}
+
+
+	TEnvironment::UpdateProjectRepo(TFileShell::GetFileInfo(file.GetFilePath()), L"Anagame", L"AnaCode", name);
+	file.Close();
+	return 0;
+}
+
+TrecPointer<TObjectNode> TAnaGameCodeEnvironment::GetProjectLyout()
+{
+	return TrecPointer<TObjectNode>();
+}
+
+void TAnaGameCodeEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
+{
+	if (!fileResource.Get())
+		return;
+
+	// Need to make sure that we aren't adding effectively the same file
+	bool canAdd = true;
+	for (UINT Rust = 0; Rust < files.Size() && canAdd; Rust++)
+	{
+		TrecPointer<TFileShell> f = files[Rust];
+		if (!fileResource->GetPath().CompareNoCase(f->GetPath()))
+		{
+			canAdd = false;
+		}
+	}
+
+	if (canAdd)
+		files.push_back(fileResource);
+}
+
+TString TAnaGameCodeEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
+{
+	if (!file.Get())
+		return L"Null Parameter";
+	if (!rootDirectory.Get())
+		return L"RootDirectory Not Set";
+
+	TFile actFile(file->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
+
+	if (!actFile.IsOpen())
+		return L"File Failed to Open!";
+	TString line;
+	while (actFile.ReadString(line))
+	{
+		if (line.StartsWith(L"-|File:"))
+		{
+			line.Delete(0, 7);
+			line.Trim();
+			TString dLine(rootDirectory->GetPath());
+			if (!dLine.EndsWith(L"\\"))
+				dLine.AppendChar(L'\\');
+			line.Set(dLine + line);
+
+			TrecPointer<TFileShell> f = TFileShell::GetFileInfo(line);
+			if (f.Get())
+				this->files.push_back(f);
+			continue;
+		}
+	}
+	name.Set(file->GetDirectoryName());
+	actFile.Close();
+	return TString();
 }

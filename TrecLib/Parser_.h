@@ -45,7 +45,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual bool Obj(TString& v);
+	virtual bool Obj(TString& v) = 0;
 	// for the attribute name
 
 	/*
@@ -57,7 +57,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual bool Attribute(TString& v, TString e);
+	virtual bool Attribute(TString& v, TString e)=0;
 
 
 	/*
@@ -69,7 +69,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	*/
-	virtual bool Attribute(TrecPointer<TString> v, TString& e);
+	virtual bool Attribute(TrecPointer<TString> v, TString& e)=0;
 	// for the attribute value (here it may be good that TStrings are used)
 
 
@@ -81,7 +81,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual bool submitType(TString v);
+	virtual bool submitType(TString v)=0;
 	/**
 	 * Method: Parser_::submitEdition
 	 * Purpose: Version of the Parse type, to handle incompatabilities between version
@@ -90,7 +90,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual bool submitEdition(TString v);
+	virtual bool submitEdition(TString v)=0;
 
 	/**
 	 * Method: Parser_::goChild
@@ -100,7 +100,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual bool goChild();
+	virtual bool goChild()=0;
 	/**
 	 * Method: Parser_::goParent
 	 * Purpose: Go up a node in a parsed object tree
@@ -109,7 +109,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual void goParent();
+	virtual void goParent()=0;
 
 	/*
 	* Method: Parser_::GetAnaGameType

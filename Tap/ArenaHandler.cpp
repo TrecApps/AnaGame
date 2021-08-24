@@ -42,13 +42,18 @@ ArenaHandler::~ArenaHandler()
  */
 void ArenaHandler::Initialize(TrecPointer<Page> page)
 {
+	ThreadLock();
 	if (!page.Get() || !app.Get() || !page->GetWindowHandle().Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	auto control = page->GetRootControl();
 	if (!control.Get())
+	{
+		ThreadRelease();
 		return;
-
+	}
 	arenaControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TArena>(control);
 
 	this->engine = page->GetWindowHandle()->GetNewArenaEngine(name);
@@ -69,6 +74,7 @@ void ArenaHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 {
 	int e_id = -1;
 	EventArgs ea;
+	ThreadLock();
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
 		auto tc = eventAr.at(c).control;
@@ -85,8 +91,8 @@ void ArenaHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
 		}
 	}
 
-	//onDraw();
 	eventAr.RemoveAll();
+	ThreadRelease();
 }
 
 /**
@@ -103,27 +109,37 @@ void ArenaHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
  */
 void ArenaHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
+	ThreadLock();
 	if (!message.Get() || !arenaControl.Get() || !app.Get())
+	{
+		ThreadRelease();
 		return;
+	}
 	TString strMessage(message->GetMessage_());
 
-	auto messages = strMessage.split(L"\s ");
+	auto messages = strMessage.split(L" ");
 
 	if (!messages.Get() || messages->Size() < 3)
+	{
+		ThreadRelease();
 		return;
-
+	}
 	if (!messages->at(0).Compare(L"Camera"))
 	{
 		TString data(messages->at(2));
 		auto dataPoints = data.split(L";");
 		if (!dataPoints.Get() || dataPoints->Size() < 2)
+		{
+			ThreadRelease();
 			return;
-
+		}
 		float x, y, z, m;
 
 		if (dataPoints->at(0).ConvertToFloat(x) || dataPoints->at(1).ConvertToFloat(y))
+		{
+			ThreadRelease();
 			return;
-
+		}
 		if (!messages->at(1).Compare(L"Location") && dataPoints->Size() > 2 && !dataPoints->at(2).ConvertToFloat(z))
 		{
 			arenaControl->UpdatePos(x, 0);
@@ -152,6 +168,7 @@ void ArenaHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 		TrecPointer<HandlerMessage> newMessage = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name, handler_type::handler_type_camera, 0, message_transmission::message_transmission_name_type, 0, messageStr);
 		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->DispatchAnagameMessage(newMessage);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -162,7 +179,8 @@ void ArenaHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
  */
 bool ArenaHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
 {
-	if (!message.Get())
-		return false;
-	return message->GetHandlerType() == handler_type::handler_type_arena;
+	ThreadLock();
+	bool ret = (!message.Get()) ? false : message->GetHandlerType() == handler_type::handler_type_arena;
+	ThreadRelease();
+	return ret;
 }

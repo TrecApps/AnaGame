@@ -92,7 +92,7 @@ public:
      * 
      * Attributes: override
      */
-    virtual UINT GetType()override;
+    virtual UINT GetVType()override;
 
     /**
      * Method: TPrimitiveVariable::TPrimitiveVariable
@@ -358,6 +358,10 @@ private:
 
     TPrimitiveVariable();
 
+protected:
+
+    TString GetString(TString format, bool useExponent = false);
+    
 
 public:
     /**

@@ -2,6 +2,7 @@
 #include "TTextField.h"
 #include "TScrollerControl.h"
 #include <atltrace.h>
+#include <TTextRenderer.h>
 
 // Allows Anaface to keep track of where the caret is
 static TDataArray<TTextField*> TextList;
@@ -97,9 +98,12 @@ TTextField::~TTextField()
 */
 void TTextField::InputChar(wchar_t cha, int times)
 {
+	TObjectLocker threadLock(&thread);
 	if (!onFocus) // hopefully this is true, but just in case
+	{
+		
 		return;
-
+	}
 	int curCaretLoc = caretLoc;
 
 	for (int c = 0; c < times; c++)
@@ -112,9 +116,7 @@ void TTextField::InputChar(wchar_t cha, int times)
 
 				text.Delete(caretLoc - 1, 1);
 				caretLoc--;
-
 			}
-
 			break;
 		case VK_OEM_PERIOD:
 			text.Insert(caretLoc++, L'.');
@@ -129,14 +131,14 @@ void TTextField::InputChar(wchar_t cha, int times)
 				goto def;
 			text.Insert(caretLoc++, L'/');
 			break;
-
 		default:
 		def:
 			if(cha != VK_RETURN || includeReturn)
 				text.Insert(caretLoc++, cha);
-
 		}
 	}
+	
+
 }
 
 /*
@@ -148,13 +150,10 @@ void TTextField::InputChar(wchar_t cha, int times)
 */
 bool TTextField::onClick(TPoint cp)
 {
-	if (cp.x > location.left && cp.x < location.right && cp.y > location.top && cp.y < location.bottom)
-	{
-		// TO-DO: figure out how to set caret
-
-		return true;
-	}
-	return false;
+	TObjectLocker threadLock(&thread);
+	bool ret = (cp.x > location.left && cp.x < location.right && cp.y > location.top && cp.y < location.bottom);
+	
+	return ret;
 }
 
 /*
@@ -165,7 +164,9 @@ bool TTextField::onClick(TPoint cp)
  */
 void TTextField::LockText()
 {
+	TObjectLocker threadLock(&thread);
 	isEditable = false;
+	
 }
 
 /*
@@ -176,7 +177,9 @@ void TTextField::LockText()
  */
 void TTextField::UnlockText()
 {
+	TObjectLocker threadLock(&thread);
 	isEditable = true;
+	
 }
 
 /*
@@ -201,11 +204,9 @@ int TTextField::loadFromHTML(TFile * ar)
 */
 void TTextField::storeInTML(TFile * ar, int childLevel, bool ov)
 {
-	//_Unreferenced_parameter_(ov);
-
+	TObjectLocker threadLock(&thread);
 	TString appendable;
 	resetAttributeString(&appendable, childLevel + 1);
-
 	if (!isPassword)
 	{
 		appendable.Append(L"|IsPassword:False");
@@ -263,6 +264,7 @@ void TTextField::storeInTML(TFile * ar, int childLevel, bool ov)
 	}
 
 	TControl::storeInTML(ar, childLevel);
+	
 }
 
 /*
@@ -283,7 +285,7 @@ void TTextField::storeInHTML(TFile * ar)
 */
 bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 {
-
+	TObjectLocker threadLock(&thread);
 	TGadgetControl::onCreate(r, d3d);
 
 	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|IsPassword"));
@@ -308,7 +310,6 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	valpoint = attributes.retrieveEntry(L"|BlockReturn");
 	if (valpoint.Get() && !valpoint->CompareNoCase(L"true"))
 		includeReturn = false;
-
 
 	valpoint = attributes.retrieveEntry(TString(L"|IsNumberControl"));
 	if (valpoint.Get() && !valpoint->Compare(L"True"))
@@ -420,26 +421,28 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 		circleCenter.x = passwordPeek_outer.point.x;
 		circleCenter.y = passwordPeek_outer.point.y;
 	}
-	// in this class, text2 and text3 could actually get in the way, so remove
-	// them if normal creation process allocated them.
-	//if (text2.Get())
-	//	text2 = null<TText>();
-	//if (text3.Get())
-	//	text3 = null<TText>();
 
 	if (!text1.Get())
+	{
+		
 		return false;
-
+	}
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	text = text1->text;
 	if (!layout)
+	{
+		
 		return false;
-	for (int c = 0; c < details.Size(); c++)
+	}
+	for (UINT c = 0; c < details.Size(); c++)
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
-	}
 
+		if (details[c].color.Get())
+			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
+	}
+	
 	return true;
 }
 
@@ -451,25 +454,22 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 */
 void TTextField::onDraw(TObject* obj)
 {	
-
+	TObjectLocker threadLock(&thread);
 	TControl::onDraw(obj);
 	if (!isActive)
+	{
+		
 		return;
-
+	}
 	else if (offerPasswordPeek)
 	{
-
 		brush->DrawEllipse(passwordPeek_outer);
-
 		brush->FillEllipse(passwordPeek_inner);
 	}
 	else if (isNumber)
 	{
-
 		brush->DrawRectangle(topBut);
 		brush->DrawRectangle(botBut);
-
-		
 	}
 
 	// deal with passwords
@@ -480,7 +480,6 @@ void TTextField::onDraw(TObject* obj)
 		for (int c = 0; c < len;c++)
 		{
 			text1->text += L'*';
-			
 		}
 		text1->reCreateLayout();
 		highlighter.SetLayout(text1->fontLayout);
@@ -489,7 +488,7 @@ void TTextField::onDraw(TObject* obj)
 	{
 		updateTextString();
 	}
-
+	
 }
 
 /*
@@ -500,14 +499,19 @@ void TTextField::onDraw(TObject* obj)
 */
 UINT TTextField::determineMinHeightNeeded()
 {
+	TObjectLocker threadLock(&thread);
 	UINT height = location.bottom - location.top;
 	if (!text1.Get())
+	{
+		
 		return height;
-	
+	}
 	TrecComPointer<IDWriteTextLayout> fl = text1->fontLayout;
 	if (!fl.Get())
+	{
+		
 		return height;
-
+	}
 	DWRITE_TEXT_METRICS	dtm;
 	
 	dtm.height = 0;
@@ -520,6 +524,7 @@ UINT TTextField::determineMinHeightNeeded()
 	dtm.widthIncludingTrailingWhitespace = 0;
 	dtm.width = location.right - location.left;
 	fl->GetMetrics(&dtm);
+	
 
 	return dtm.height;
 }
@@ -532,19 +537,25 @@ UINT TTextField::determineMinHeightNeeded()
 */
 void TTextField::SetNewLocation(const D2D1_RECT_F& r)
 {
+	TObjectLocker threadLock(&thread);
 	TControl::SetNewLocation(r);
 
 	if (!text1.Get())
+	{
+		
 		return;
-
+	}
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
 		return ;
-	for (int c = 0; c < details.Size(); c++)
+	for (UINT c = 0; c < details.Size(); c++)
 	{
 		layout->SetFontStyle(details[c].style, details[c].range);
 		layout->SetFontWeight(details[c].weight, details[c].range);
+		if (details[c].color.Get())
+			layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
 	}
+	
 }
 
 /**
@@ -555,21 +566,23 @@ void TTextField::SetNewLocation(const D2D1_RECT_F& r)
  */
 D2D1_RECT_F TTextField::getLocation()
 {
-	if (!text1.Get())
-		return location;
-
-	DWRITE_TEXT_METRICS mets;
-
-	text1->fontLayout->GetMetrics(&mets);
-
+	TObjectLocker threadLock(&thread);
 	D2D1_RECT_F ret;
+	
+	if (!text1.Get())
+		ret = location;
+	else
+	{
+		DWRITE_TEXT_METRICS mets;
+		text1->fontLayout->GetMetrics(&mets);
 
-	ret.left = location.left;
-	ret.top = location.top;
+		ret.left = location.left;
+		ret.top = location.top;
 
-	ret.bottom = ret.top + (max(mets.height, mets.layoutHeight));
-	ret.right = ret.left + (max(mets.widthIncludingTrailingWhitespace, mets.layoutWidth));
-
+		ret.bottom = ret.top + (max(mets.height, mets.layoutHeight));
+		ret.right = ret.left + (max(mets.widthIncludingTrailingWhitespace, mets.layoutWidth));
+	}
+	
 	return ret;
 }
 
@@ -584,6 +597,7 @@ D2D1_RECT_F TTextField::getLocation()
 */
 afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
+	TObjectLocker threadLock(&thread);
 	resetArgs();
 	
 	BOOL trailing = false, isInside = false;
@@ -599,8 +613,6 @@ afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput*
 			DestroyCaret();
 
 		CreateCaret(windowHandle, NULL, 1, metrics.height);
-
-
 
 		if (trailing)
 		{
@@ -619,7 +631,7 @@ afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput*
 			highlighter.SetFirstPosition(caretLoc);
 		
 		TTextField* feild = nullptr;
-		for (int c = 0; c < TextList.Size(); c++)
+		for (UINT c = 0; c < TextList.Size(); c++)
 		{
 			feild = TextList[c];
 			if (feild)
@@ -681,7 +693,7 @@ parentCall:
 	{
 		
 		TTextField* feild = nullptr;
-		for (int c = 0; c < TextList.Size(); c++)
+		for (UINT c = 0; c < TextList.Size(); c++)
 		{
 			feild = TextList[c];
 			if (feild)
@@ -743,6 +755,8 @@ parentCall:
 	{
 		args.text.Set(text1->getCaption());
 	}
+	
+
 }
 
 /*
@@ -759,19 +773,17 @@ parentCall:
 bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	// To-Do: sort out anomalies with characters
+	TObjectLocker threadLock(&thread);
 	resetArgs();
 
 	if (onFocus)
 	{
 		if (fromChar)
-		{
 			InputChar(static_cast<WCHAR>(LOWORD(nChar)), nRepCnt);
-			
-		}
 		else
 		{
 			POINT caretPoint;
-			for (int c = 0; c < nRepCnt;c++)
+			for (UINT c = 0; c < nRepCnt;c++)
 			{
 				switch (nChar)
 				{
@@ -806,9 +818,7 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 				case VK_DELETE:
 					if (text.GetSize() > 0)
 					{
-
 						text.Delete(caretLoc, 1);
-
 					}
 					break;
 				case VK_ESCAPE:
@@ -816,7 +826,6 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 				case VK_RETURN:
 				case VK_END:
 					break;
-
 				}
 			}
 		}
@@ -837,7 +846,10 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 			highlighter.SetLayout(text1->fontLayout);
 		}
 	}
-	return onFocus;
+	bool ret = onFocus;
+	
+
+	return ret;
 }
 
 /*
@@ -852,6 +864,7 @@ bool TTextField::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, me
 */
 void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
+	TObjectLocker threadLock(&thread);
 	TControl::OnMouseMove(nFlags, point, mOut, eventAr, hoverControls);
 
 	if (isContained(&point, &location))
@@ -885,6 +898,7 @@ void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDa
 				*mOut = messageOutput::positiveOverrideUpdate;
 		}
 	}
+	
 }
 
 /*
@@ -898,9 +912,16 @@ void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDa
 */
 void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
 {
+	TObjectLocker threadLock(&thread);
 	if (isContained(&point, &location))
 	{
 		*mOut = messageOutput::positiveOverrideUpdate;
+
+		auto cThis = TrecPointerKey::GetTrecPointerFromSoft<>(tThis);
+
+		EventID_Cred cred(R_Message_Type::On_Focus, cThis, TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter,
+			TTextFieldIntercepter>(TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(cThis)));
+		eventAr.push_back(cred);
 	}
 	showPassword = false;
 
@@ -913,17 +934,16 @@ void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TD
 	if (trailing)
 	{
 		locCarLoc = metrics.textPosition + 1;
-		
 	}
 	else
 	{
 		locCarLoc = metrics.textPosition;
-		
 	}
 	if (isInside)
 		highlighter.ResetUp(locCarLoc);
 
 	TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
+	
 }
 
 /*
@@ -934,12 +954,13 @@ void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TD
 */
 void TTextField::AppendBoldText(const TString & t)
 {
+	TObjectLocker threadLock(&thread);
 	UINT beginFormatting = text.GetSize();
 	if (!text1.Get())
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_NORMAL;
 	fd.weight = DWRITE_FONT_WEIGHT_BOLD;
@@ -947,6 +968,7 @@ void TTextField::AppendBoldText(const TString & t)
 
 	text += t;
 	updateTextString();
+	
 }
 
 /*
@@ -957,12 +979,13 @@ void TTextField::AppendBoldText(const TString & t)
 */
 void TTextField::AppendItalicText(const TString & t)
 {
+	TObjectLocker threadLock(&thread);
 	UINT beginFormatting = text.GetSize();
 	if (!text1.Get())
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_ITALIC;
 	fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
@@ -970,6 +993,7 @@ void TTextField::AppendItalicText(const TString & t)
 
 	text += t;
 	updateTextString();
+	
 }
 
 /*
@@ -980,12 +1004,13 @@ void TTextField::AppendItalicText(const TString & t)
 */
 void TTextField::AppendBoldItalicText(const TString & t)
 {
+	TObjectLocker threadLock(&thread);
 	UINT beginFormatting = text.GetSize();
 	if (!text1.Get())
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_ITALIC;
 	fd.weight = DWRITE_FONT_WEIGHT_BOLD;
@@ -993,6 +1018,7 @@ void TTextField::AppendBoldItalicText(const TString & t)
 
 	text += t;
 	updateTextString();
+	
 }
 
 /*
@@ -1003,12 +1029,13 @@ void TTextField::AppendBoldItalicText(const TString & t)
 */
 void TTextField::AppendNormalText(const TString & t)
 {
+	TObjectLocker threadLock(&thread);
 	UINT beginFormatting = text.GetSize();
 	if (!text1.Get())
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
 	}
-	formattingDetails fd;
+	FormattingDetails fd;
 	fd.range = { beginFormatting, static_cast<UINT>(t.GetSize()) };
 	fd.style = DWRITE_FONT_STYLE_NORMAL;
 	fd.weight = DWRITE_FONT_WEIGHT_NORMAL;
@@ -1016,6 +1043,21 @@ void TTextField::AppendNormalText(const TString & t)
 
 	text += t;
 	updateTextString();
+	
+}
+
+bool TTextField::ApplyFormatting(FormattingDetails ds)
+{
+	TObjectLocker threadLock(&thread);
+	if ((ds.range.startPosition + ds.range.length) > text.GetSize())
+	{
+		
+		return false;
+	}
+	this->details.push_back(ds);
+	updateTextString();
+	
+	return true;
 }
 
 /*
@@ -1026,7 +1068,10 @@ void TTextField::AppendNormalText(const TString & t)
 */
 bool TTextField::isOnFocus()
 {
-	return onFocus;
+	TObjectLocker threadLock(&thread);
+	bool ret = onFocus;
+	
+	return ret;
 }
 
 /*
@@ -1037,7 +1082,10 @@ bool TTextField::isOnFocus()
 */
 TString TTextField::GetText()
 {
-	return text;
+	TObjectLocker threadLock(&thread);
+	TString ret(text);
+	
+	return ret;
 }
 
 /*
@@ -1048,9 +1096,12 @@ TString TTextField::GetText()
 */
 void TTextField::SetText(TString t )
 {
-	text = t;
+	TObjectLocker threadLock(&thread);
+	text.Set(t);
 	updateTextString();
 	Resize(location);
+	
+
 }
 
 UCHAR * TTextField::GetAnaGameType()
@@ -1066,6 +1117,7 @@ UCHAR * TTextField::GetAnaGameType()
  */
 void TTextField::Resize(D2D1_RECT_F& r)
 {
+	TObjectLocker threadLock(&thread);
 	TGadgetControl::Resize(r);
 	topBut = DxLocation;
 	topBut.bottom = topBut.bottom - (topBut.bottom - topBut.top) / 2;
@@ -1086,14 +1138,11 @@ void TTextField::Resize(D2D1_RECT_F& r)
 		circleCenter.x = passwordPeek_outer.point.x;
 		circleCenter.y = passwordPeek_outer.point.y;
 	}
-
 	
 	if (text1.Get() && parent.Get() && !parent->IsScroller())
 	{
 		text1->SetLocation(location);
-
 		D2D1_RECT_F textLoc = this->getLocation();
-
 		if ((textLoc.right - textLoc.left > location.right - location.left + 2.0f)
 			|| (textLoc.bottom - textLoc.top > location.bottom - location.top + 2.0f))
 		{
@@ -1104,9 +1153,10 @@ void TTextField::Resize(D2D1_RECT_F& r)
 
 			dynamic_cast<TScrollerControl*>(scrollControl.Get())->SetChildControl(TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
 			oldParent->SwitchChildControl(tThis, scrollControl);
-			
 		}
 	}
+	
+
 }
 
 /*
@@ -1120,9 +1170,9 @@ void TTextField::updateNumber(bool pos)
 	int i = 0;
 	float f = 0.0;
 	short floatResult =0 , intResult = 0;
+	TObjectLocker threadLock(&thread);
 	if (text.ConvertToFloat(f) && text.ConvertToInt(i))
 		setToZero();
-
 	
 	intResult = text.ConvertToInt(i);
 	floatResult = text.ConvertToFloat(f);
@@ -1188,6 +1238,7 @@ void TTextField::updateNumber(bool pos)
 		}
 	}
 	updateTextString();
+	
 }
 
 /*
@@ -1198,8 +1249,10 @@ void TTextField::updateNumber(bool pos)
 */
 void TTextField::setToZero()
 {
+	TObjectLocker threadLock(&thread);
 	text.Empty();
 	text.AppendChar(L'0');
+	
 }
 
 /*
@@ -1210,10 +1263,12 @@ void TTextField::setToZero()
 */
 void TTextField::setNumericText(int i)
 {
-	if (hasMax && i > maximum)
+	TObjectLocker threadLock(&thread);
+	if ((hasMax && i > maximum) || (hasMin && i < minumum))
+	{
+		
 		return;
-	if (hasMin && i < minumum)
-		return;
+	}
 	
 	text.Empty();
 	text.Format(L"%d", i);
@@ -1225,6 +1280,7 @@ void TTextField::setNumericText(int i)
 	}
 	if (text1.Get())
 		text1->setCaption(text);
+	
 }
 
 /*
@@ -1235,10 +1291,12 @@ void TTextField::setNumericText(int i)
 */
 void TTextField::setNumericText(float f)
 {
-	if (hasMax && f > maximum)
+	TObjectLocker threadLock(&thread);
+	if ((hasMax && f > maximum) || (hasMin && f < minumum))
+	{
+		
 		return;
-	if (hasMin && f < minumum)
-		return;
+	}
 
 	text.Empty();
 	text.Format(L"%f", f);
@@ -1250,6 +1308,7 @@ void TTextField::setNumericText(float f)
 	}
 	if (text1.Get())
 		text1->setCaption(text);
+	
 }
 
 
@@ -1263,18 +1322,24 @@ void TTextField::setNumericText(float f)
  */
 void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 {
+	TObjectLocker threadLock(&thread);
 	if (!text1.Get() || !drawingBoard.Get())
+	{
+		
 		return;
-
+	}
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
+	{
+		
 		return;
-
+	}
 	for (UINT C = 0; C < colors.Size(); C++)
 	{
 		if (col == colors[C].color)
 		{
 			layout->SetDrawingEffect(colors[C].colBrush, DWRITE_TEXT_RANGE{ start, length });
+			
 			return;
 		}
 	}
@@ -1287,6 +1352,7 @@ void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 		colors.push_back(ce);
 		layout->SetDrawingEffect(ce.colBrush, DWRITE_TEXT_RANGE{ start, length });
 	}
+	
 }
 
 
@@ -1299,12 +1365,57 @@ void TTextField::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 void TTextField::RemoveFocus()
 {
 	TTextField* feild = nullptr;
-	for (int c = 0; c < TextList.Size(); c++)
+	for (UINT c = 0; c < TextList.Size(); c++)
 	{
 		feild = TextList[c];
 		if (feild)
+		{
+			feild->ThreadLock();
 			feild->onFocus = false;
+			feild->ThreadRelease();
+		}
 	}
+}
+
+TrecPointer<LineMetrics> TTextField::GetLineMetrics()
+{
+	TObjectLocker threadLock(&thread);
+	if (text1.Get() && text1->fontLayout.Get())
+	{
+		TrecPointer<LineMetrics> ret = TrecPointerKey::GetNewTrecPointer<LineMetrics>(5);
+		HRESULT res = text1->fontLayout->GetLineMetrics(ret->metrics.data(), ret->metrics.Size(), &ret->sizeNeeded);
+		if (res == E_NOT_SUFFICIENT_BUFFER)
+		{
+			ret->SetSize(ret->sizeNeeded);
+			text1->fontLayout->GetLineMetrics(ret->metrics.data(), ret->metrics.Size(), &ret->sizeNeeded);
+			
+			return ret;
+		}
+	}
+	
+	return TrecPointer<LineMetrics>();
+}
+
+void TTextField::ShrinkHeight()
+{
+	if (text1.Get())
+	{
+		bool worked;
+		float height = text1->GetMinHeight(worked);
+		if (worked) {
+			location.bottom = location.top + height;
+			text1->bounds.bottom = location.bottom;
+			updateTextString();
+		}
+	}
+}
+
+float TTextField::GetMinWidth()
+{
+	bool w;
+	if (text1.Get())
+		return text1->GetMinWidth(w);
+	return 0.0f;
 }
 
 /*
@@ -1315,23 +1426,49 @@ void TTextField::RemoveFocus()
 */
 void TTextField::updateTextString()
 {
+	TObjectLocker threadLock(&thread);
 	if (!text1.Get())
 	{
 		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
-
 	}
 	text1->setCaption(text);
 	text1->reCreateLayout();
 	IDWriteTextLayout* layout = text1->fontLayout.Get();
 	if (!layout)
-		return;
-	for (int c = 0; c < details.Size(); c++)
 	{
-		layout->SetFontStyle(details[c].style, details[c].range);
-		layout->SetFontWeight(details[c].weight, details[c].range);
+		
+		return;
 	}
+	HRESULT res = 0;
+	for (UINT c = 0; c < details.Size(); c++)
+	{
+		res = layout->SetFontStyle(details[c].style, details[c].range);
+		res = layout->SetFontWeight(details[c].weight, details[c].range);
+		res = layout->SetFontSize(details[c].fontSize, details[c].range);
 
+		if (details[c].bColor.Get() && details[c].color.Get())
+		{
+			TDoubleBrushHolder* dBrushHolder = new TDoubleBrushHolder(details[c].color->GetUnderlyingBrush().Get(),
+				details[c].bColor->GetUnderlyingBrush().Get());
+			layout->SetDrawingEffect(dBrushHolder, details[c].range);
+			dBrushHolder->Release();
+			dBrushHolder = nullptr;
+		}
+		else if (details[c].bColor.Get())
+		{
+			if (!text1->penBrush.Get())
+				text1->ResetBrush();
+			TDoubleBrushHolder* dBrushHolder = new TDoubleBrushHolder(text1->penBrush.Get() ? text1->penBrush->GetUnderlyingBrush().Get() : nullptr,
+				details[c].bColor->GetUnderlyingBrush().Get());
+			layout->SetDrawingEffect(dBrushHolder, details[c].range);
+			dBrushHolder->Release();
+			dBrushHolder = nullptr;
+		}
+		else if (details[c].color.Get())
+			res = layout->SetDrawingEffect(details[c].color->GetUnderlyingBrush().Get(), details[c].range);
+	}
 	highlighter.SetLayout(text1->fontLayout);
+	
 }
 
 /*
@@ -1345,6 +1482,7 @@ void TTextField::moveCaretLeft(POINT point)
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
 	DWRITE_HIT_TEST_METRICS metric;
+	TObjectLocker threadLock(&thread);
 	text1->fontLayout->HitTestPoint(point.x - 1, point.y + 1, &isTrailing, &isInside, &metric);
 	if (isInside)
 	{
@@ -1352,7 +1490,7 @@ void TTextField::moveCaretLeft(POINT point)
 		SetCaretPos(metric.left, point.y);
 		ShowCaret(windowHandle);
 	}
-
+	
 }
 
 /*
@@ -1365,7 +1503,8 @@ void TTextField::moveCaretRight(POINT point)
 {
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
-	DWRITE_HIT_TEST_METRICS metric;
+	DWRITE_HIT_TEST_METRICS metric;	
+	TObjectLocker threadLock(&thread);
 	text1->fontLayout->HitTestPoint(point.x + 1, point.y + 1, &isTrailing, &isInside, &metric);
 	if (isInside)
 	{
@@ -1373,6 +1512,7 @@ void TTextField::moveCaretRight(POINT point)
 		SetCaretPos(metric.left + metric.width, point.y);
 		ShowCaret(windowHandle);
 	}
+	
 }
 
 /*
@@ -1386,7 +1526,7 @@ void TTextField::moveCaretUp(POINT point)
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
 	DWRITE_HIT_TEST_METRICS metric;
-
+	TObjectLocker threadLock(&thread);
 	text1->fontLayout->HitTestPoint(point.x, point.y, &isTrailing, &isInside, &metric);
 	float origTop = metric.top;
 
@@ -1406,6 +1546,7 @@ void TTextField::moveCaretUp(POINT point)
 			break;
 		}
 	}
+	
 }
 
 /*
@@ -1419,7 +1560,7 @@ void TTextField::moveCaretDown(POINT point)
 	BOOL isInside = true;
 	BOOL isTrailing = FALSE;
 	DWRITE_HIT_TEST_METRICS metric;
-
+	TObjectLocker threadLock(&thread);
 	text1->fontLayout->HitTestPoint(point.x, point.y, &isTrailing, &isInside, &metric);
 	float origTop = metric.top;
 
@@ -1439,6 +1580,7 @@ void TTextField::moveCaretDown(POINT point)
 			break;
 		}
 	}
+	
 }
 
 
@@ -1968,6 +2110,24 @@ void incrimentControl::operator=(float f)
 	value.f = f;
 }
 
+FormattingDetails::FormattingDetails()
+{
+	this->style = DWRITE_FONT_STYLE_NORMAL;
+	this->weight = DWRITE_FONT_WEIGHT_NORMAL;
+	this->fontSize = 12.0f;
+	this->range = { 0,0 };
+}
+
+FormattingDetails::FormattingDetails(const FormattingDetails& copy)
+{
+	this->style = copy.style;
+	this->weight = copy.weight;
+	this->range = copy.range;
+	this->color = copy.color;
+	this->bColor = copy.bColor;
+	this->fontSize = copy.fontSize;
+}
+
 /*
  * Method: TextHighlighter::TextHighlighter
  * Purpose: Constructor
@@ -2103,4 +2263,57 @@ void TextHighlighter::ResetUp(UINT cLocation)
 bool TextHighlighter::IsActive()
 {
 	return isActive;
+}
+
+LineMetrics::LineMetrics()
+{
+	sizeNeeded = 0;
+}
+
+LineMetrics::LineMetrics(const LineMetrics& orig)
+{
+	UINT size = sizeNeeded ? sizeNeeded : orig.metrics.Size();
+	for (UINT Rust = 0; Rust < size; Rust++)
+	{
+		auto met = orig.metrics.data()[Rust];
+		metrics.push_back(met);
+	}
+}
+
+LineMetrics::LineMetrics(USHORT i)
+{
+	SetSize(true);
+}
+
+void LineMetrics::SetSize(UINT i, bool fromConstructor)
+{
+	DWRITE_LINE_METRICS met;
+	sizeNeeded = fromConstructor ? 0 : i;
+	ZeroMemory(&met, sizeof(met));
+	metrics.RemoveAll();
+	for (UINT Rust = 0; Rust < i; Rust++)
+		metrics.push_back(met);
+}
+
+TTextFieldIntercepter::TTextFieldIntercepter(TrecSubPointer<TControl, TTextField> control)
+{
+	this->textControl = control;
+}
+
+void TTextFieldIntercepter::OnChar(UINT ch, UINT count, UINT flags)
+{
+	if (textControl.Get())
+		textControl->InputChar(ch, count);
+}
+
+void TTextFieldIntercepter::OnLoseFocus()
+{
+}
+
+void TTextFieldIntercepter::OnCopy()
+{
+}
+
+void TTextFieldIntercepter::OnCut()
+{
 }

@@ -42,9 +42,11 @@ TString TAnimationManager::GetType()
  */
 void TAnimationManager::SetWindow(TrecPointer<TWindow> win)
 {
+	ThreadLock();
 	window = TrecPointerKey::GetSoftPointerFromTrec<TWindow>(win);
 	begin.SetWindow(win);
 	end.SetWindow(win);
+	ThreadRelease();
 }
 
 /**
@@ -55,7 +57,9 @@ void TAnimationManager::SetWindow(TrecPointer<TWindow> win)
  */
 void TAnimationManager::AddAnimationBegin(TrecPointer<Animation> a)
 {
+	ThreadLock();
 	begin.AddAnimation(a);
+	ThreadRelease();
 }
 
 /**
@@ -66,7 +70,9 @@ void TAnimationManager::AddAnimationBegin(TrecPointer<Animation> a)
  */
 void TAnimationManager::AddAnimationEnd(TrecPointer<Animation> a)
 {
+	ThreadLock();
 	end.AddAnimation(a);
+	ThreadRelease();
 }
 
 /**
@@ -78,6 +84,7 @@ void TAnimationManager::AddAnimationEnd(TrecPointer<Animation> a)
  */
 void TAnimationManager::AddStoryBoard(TString& name, TrecPointer<TStoryBoard> story)
 {
+	ThreadLock();
 	if (name.GetSize() && story.Get())
 	{
 		stories.addEntry(name, story);
@@ -85,6 +92,7 @@ void TAnimationManager::AddStoryBoard(TString& name, TrecPointer<TStoryBoard> st
 			newPersistantStoryBoards.push_back(story);
 	}
 
+	ThreadRelease();
 }
 
 /**
@@ -95,8 +103,10 @@ void TAnimationManager::AddStoryBoard(TString& name, TrecPointer<TStoryBoard> st
  */
 void TAnimationManager::CleanBegin()
 {
+	ThreadLock();
 	begin.Terminate();
 	begin.Empty();
+	ThreadRelease();
 }
 
 /**
@@ -107,7 +117,9 @@ void TAnimationManager::CleanBegin()
  */
 void TAnimationManager::StartBegin()
 {
+	ThreadLock();
 	begin.Run();
+	ThreadRelease();
 }
 
 /**
@@ -118,7 +130,9 @@ void TAnimationManager::StartBegin()
  */
 void TAnimationManager::StartEnd()
 {
+	ThreadLock();
 	end.Run();
+	ThreadRelease();
 }
 
 /**
@@ -129,10 +143,12 @@ void TAnimationManager::StartEnd()
  */
 void TAnimationManager::StartStory(TString& name)
 {
+	ThreadLock();
 	TrecPointer<TStoryBoard> story = stories.retrieveEntry(name);
 
 	if (story.Get())
 		story->Run();
+	ThreadRelease();
 }
 
 /**
@@ -143,12 +159,14 @@ void TAnimationManager::StartStory(TString& name)
  */
 void TAnimationManager::StartNewPersistant()
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < newPersistantStoryBoards.Size(); Rust++)
 	{
 		if (newPersistantStoryBoards[Rust].Get())
 			newPersistantStoryBoards[Rust]->Run();
 	}
 	newPersistantStoryBoards.RemoveAll();
+	ThreadRelease();
 }
 
 /**
@@ -159,10 +177,12 @@ void TAnimationManager::StartNewPersistant()
  */
 void TAnimationManager::StopStory(TString& name)
 {
+	ThreadLock();
 	TrecPointer<TStoryBoard> story = stories.retrieveEntry(name);
 
 	if (story.Get())
 		story->Terminate();
+	ThreadRelease();
 }
 
 /**
@@ -173,6 +193,7 @@ void TAnimationManager::StopStory(TString& name)
  */
 void TAnimationManager::Stop()
 {
+	ThreadLock();
 	begin.Terminate();
 	end.Terminate();
 
@@ -182,6 +203,7 @@ void TAnimationManager::Stop()
 		if (story.Get())
 			story->Terminate();
 	}
+	ThreadRelease();
 }
 
 /**
@@ -192,10 +214,12 @@ void TAnimationManager::Stop()
  */
 void TAnimationManager::PauseStory(TString& name)
 {
+	ThreadLock();
 	TrecPointer<TStoryBoard> story = stories.retrieveEntry(name);
 
 	if (story.Get() && story->Pause())
 		pausedStories.push_back(story);
+	ThreadRelease();
 }
 
 /**
@@ -206,6 +230,7 @@ void TAnimationManager::PauseStory(TString& name)
  */
 void TAnimationManager::Pause()
 {
+	ThreadLock();
 	beginPaused = begin.Pause();
 	endPaused = end.Pause();
 
@@ -215,6 +240,7 @@ void TAnimationManager::Pause()
 		if (story.Get() && story->Pause())
 			pausedStories.push_back(story);
 	}
+	ThreadRelease();
 }
 
 /**
@@ -225,10 +251,14 @@ void TAnimationManager::Pause()
  */
 void TAnimationManager::ResumeStory(TString& name)
 {
+	ThreadLock();
 	TrecPointer<TStoryBoard> story = stories.retrieveEntry(name);
 
 	if (!story.Get())
+	{
+		ThreadRelease();
 		return;
+	}
 	story->Resume();
 
 	for (UINT Rust = 0; Rust < pausedStories.Size(); Rust++)
@@ -236,9 +266,11 @@ void TAnimationManager::ResumeStory(TString& name)
 		if (pausedStories[Rust].Get() == story.Get())
 		{
 			pausedStories.RemoveAt(Rust);
+			ThreadRelease();
 			return;
 		}
 	}
+	ThreadRelease();
 }
 
 /**
@@ -249,6 +281,7 @@ void TAnimationManager::ResumeStory(TString& name)
  */
 void TAnimationManager::Resume()
 {
+	ThreadLock();
 	if (endPaused)
 	{
 		endPaused = false;
@@ -265,4 +298,5 @@ void TAnimationManager::Resume()
 		pausedStories[Rust]->Resume();
 	}
 	pausedStories.RemoveAll();
+	ThreadRelease();
 }

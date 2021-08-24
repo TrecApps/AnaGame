@@ -49,8 +49,9 @@ ReportObject TNativeInterpretor::Run()
  *
  * Note: this method is intended to be called in interpretors that represent specific methods or functions
  */
-ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params)
+ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params, bool clearVars)
 {
+	ThreadLock();
 	ReportObject result;
 	if (!nativeFunction)
 	{
@@ -58,6 +59,10 @@ ReportObject TNativeInterpretor::Run(TDataArray<TrecPointer<TVariable>>& params)
 		result.errorMessage.Set(L"Null Reference to Native Function!\n");
 	}
 	else
+	{
+		result.caller = caller;
 		nativeFunction(params, environment, result);
+		ThreadRelease();
+	}
 	return result;
 }

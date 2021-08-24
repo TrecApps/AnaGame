@@ -1,7 +1,8 @@
-#include "pch.h"
 #include "TEnvironment.h"
 #include "TMap.h"
 #include "DirectoryInterface.h"
+#include "TcInterpretor.h"
+#include "TML_Reader_.h"
 
 static bool languagesMapped = false;
 
@@ -17,7 +18,9 @@ static TDataArray<LangNames> languageList;
  */
 TrecPointer<TFileShell> TEnvironment::GetRootDirectory()
 {
-	return rootDirectory;
+	AG_THREAD_LOCK
+		auto ret = rootDirectory;
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -27,25 +30,28 @@ TrecPointer<TFileShell> TEnvironment::GetRootDirectory()
  *				bool& present - whether the variable was present or not (used to distinguish between 'null' and 'undefined')
  * Returns: TrecPointer<TVariable> - the variable requested
  */
-TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present)
+TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present, env_var_type evtType)
 {
+	AG_THREAD_LOCK
 	for (UINT Rust = 0; Rust < envVariables.count(); Rust++)
 	{
 		auto entry = envVariables.GetEntryAt(Rust);
 		if (!entry.Get())
 		{
 			present = false;
-			return TrecPointer<TVariable>();
+			RETURN_THREAD_UNLOCK TrecPointer<TVariable>();
 		}
 
 		if (!entry->key.Compare(var))
 		{
 			present = true;
-			return entry->object;
+			ThreadRelease();
+			if(evtType == env_var_type::evt_any || dynamic_cast<TcInterpretor*>(entry->object.Get()))
+				return entry->object;
 		}
 	}
 	present = false;
-	return TrecPointer<TVariable>();
+	RETURN_THREAD_UNLOCK TrecPointer<TVariable>();
 }
 
 /**
@@ -70,7 +76,94 @@ void TEnvironment::SetSelf(TrecPointer<TEnvironment> self)
  */
 void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
 {
+	AG_THREAD_LOCK
 	envVariables.addEntry(name, var);
+	RETURN_THREAD_UNLOCK;
+}
+
+/**
+ * Method: TEnvironment::GetName
+ * Purpose: Retrieves the name of the environment
+ * Parameters: void
+ * Returns: TString - the name derived
+ */
+TString TEnvironment::GetName()
+{
+	return name;
+}
+
+/**
+ * Method: TEnvironment::UpdateProjectRepo
+ * Purpose: Allows Environment Objects to update the Repository for Environment Projects, called by Objects
+ * Parameters: TrecPointer<TFileShell> file - the file to save
+ *				const TString& envSource - where the Environment can be found (in Anagame itself or a third party Library)
+ *				const TString& envType - the actual type of environment used
+ * Returns: void
+ */
+void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType, const TString& name)
+{
+	if (!file.Get() || file->IsDirectory())
+		return;
+
+	TString repoName = GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"AnaGame\\";
+
+	ForgeDirectory(repoName);
+	repoName.Append(L"Envronments.tml");
+
+	TrecPointer<TFile> repoFile = TrecPointerKey::GetNewTrecPointer<TFile>(repoName, TFile::t_file_open_existing | TFile::t_file_read);
+
+	TDataArray<EnvironmentEntry> envEntries;
+
+	if (repoFile->IsOpen())
+	{
+		TrecPointer<Parser_> parser = TrecPointerKey::GetNewTrecPointerAlt<Parser_, EnvironmentEntryParser>();
+		TML_Reader_ reader(repoFile, parser);
+		int num = 0;
+		if (reader.read(&num))
+		{
+			dynamic_cast<EnvironmentEntryParser*>(parser.Get())->GetEntries(envEntries);
+		}
+
+		repoFile->Close();
+	}
+
+	EnvironmentEntry curEntry;
+	curEntry.filePath.Set(file->GetPath());
+	curEntry.source.Set(envSource);
+	curEntry.type.Set(envType);
+	curEntry.name.Set(name);
+
+	bool doPush = true;
+	for (UINT Rust = 0; Rust < envEntries.Size(); Rust++)
+	{
+		if (envEntries[Rust].IsEqual(curEntry))
+		{
+			doPush = false;
+			break;
+		}
+	}
+
+	if (doPush)
+		envEntries.push_back(curEntry);
+
+	repoFile->Open(repoName, TFile::t_file_create_always | TFile::t_file_write);
+
+	repoFile->WriteString(L"->TML\n");
+	repoFile->WriteString(L"-|Type: Environment_Repo\n");
+	repoFile->WriteString(L"-|Version: 0.0.1\n");
+	repoFile->WriteString(L"-/\n");
+
+	for (UINT Rust = 0; Rust < envEntries.Size(); Rust++)
+	{
+		repoFile->WriteString(L"->Environment\n");
+		repoFile->WriteString(TString(L"-|Source: ") + envEntries[Rust].source + L'\n');
+		repoFile->WriteString(TString(L"-|Type: ") + envEntries[Rust].type + L'\n');
+		repoFile->WriteString(TString(L"-|Path: ") + envEntries[Rust].filePath + L'\n');
+		repoFile->WriteString(TString(L"-|Name: ") + envEntries[Rust].name + L'\n');
+	}
+
+	repoFile->Close();
+
 }
 
 /**
@@ -81,13 +174,14 @@ void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
  */
 void TEnvironment::SetUpLanguageExtensionMapping()
 {
+	AG_THREAD_LOCK
 	if (languagesMapped)
-		return;
+		RETURN_THREAD_UNLOCK;
 
 	TString languageFolder = GetDirectoryWithSlash(CentralDirectories::cd_Executable) + TString(L"Languages");
 
 	if (languageList.Size())
-		return;
+		RETURN_THREAD_UNLOCK;
 
 	TFile languageLister;
 
@@ -97,7 +191,7 @@ void TEnvironment::SetUpLanguageExtensionMapping()
 	{
 		//char errorBuf[100];
 		//ex.GetErrorMessage((LPTSTR)errorBuf, 99);
-		return;
+		RETURN_THREAD_UNLOCK;
 	}
 	TString line;
 	while (languageLister.ReadString(line))
@@ -122,10 +216,12 @@ void TEnvironment::SetUpLanguageExtensionMapping()
 	}
 
 	languageLister.Close();
+	RETURN_THREAD_UNLOCK;
 }
 
 TString retrieveLanguageByExtension(TString ext)
 {
+
 	for (UINT c = 0; c < languageList.Size(); c++)
 	{
 		for (UINT Rust = 0; Rust < languageList[c].fileExtensions.Size(); Rust++)
@@ -145,7 +241,9 @@ TString retrieveLanguageByExtension(TString ext)
  */
 TString TEnvironment::GetUrl()
 {
-	return url;
+	AG_THREAD_LOCK
+		TString ret(url);
+	RETURN_THREAD_UNLOCK ret;
 }
 
 /**
@@ -199,7 +297,7 @@ TEnvironment::~TEnvironment()
  * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
  * Returns: new Environment object
  */
-TEnvironment::TEnvironment(TrecSubPointer<TControl, TPromptControl> prompt)
+TEnvironment::TEnvironment(TrecPointer<TConsoleHolder> prompt)
 {
 	shellRunner = prompt;
 }
@@ -207,10 +305,10 @@ TEnvironment::TEnvironment(TrecSubPointer<TControl, TPromptControl> prompt)
 /**
  * Method: TEnvironment::SetPrompt
  * Purpose: Allows a prompt to be set after the construction
- * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
+ * Parameters: TrecPointer<TConsoleHolder> prompt - the Command Prompt to work with
  * Returns: void
  */
-void TEnvironment::SetPrompt(TrecSubPointer<TControl, TPromptControl> prompt)
+void TEnvironment::SetPrompt(TrecPointer<TConsoleHolder> prompt)
 {
 	shellRunner = prompt;
 }
@@ -220,9 +318,9 @@ void TEnvironment::SetPrompt(TrecSubPointer<TControl, TPromptControl> prompt)
  * Method: TEnvironment::GetPrompt
  * Purpose: Returns the Current Prompt being used by the Environment
  * Parameters: void
- * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
+ * Returns:TrecPointer<TConsoleHolder> - the Command Prompt to work with
  */
-TrecSubPointer<TControl, TPromptControl> TEnvironment::GetPrompt()
+TrecPointer<TConsoleHolder> TEnvironment::GetPrompt()
 {
 	return shellRunner;
 }
@@ -310,4 +408,135 @@ void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataA
 			continue;
 		}
 	}
+}
+
+EnvironmentEntry::EnvironmentEntry()
+{
+}
+
+EnvironmentEntry::EnvironmentEntry(const EnvironmentEntry& copy)
+{
+	filePath.Set(copy.filePath);
+	source.Set(copy.source);
+	type.Set(copy.type);
+	name.Set(copy.name);
+}
+
+bool EnvironmentEntry::IsEqual(const EnvironmentEntry& ent)
+{
+	return !ent.filePath.CompareNoCase(filePath);
+}
+
+TString EnvironmentEntryParser::GetType()
+{
+	return TString(L"EnvironmentntryParser;") + Parser_::GetType();
+}
+
+EnvironmentEntryParser::EnvironmentEntryParser()
+{
+}
+
+EnvironmentEntryParser::~EnvironmentEntryParser()
+{
+}
+
+bool EnvironmentEntryParser::Obj(TString& v)
+{
+	if (entry.filePath.GetSize() && entry.source.GetSize() && entry.type.GetSize())
+		entries.push_back(entry);
+
+	entry.filePath.Empty();
+	entry.source.Empty();
+	entry.type.Empty();
+
+	return true;
+}
+
+bool EnvironmentEntryParser::Attribute(TString& v, TString e)
+{
+	bool ret = false;
+	if (!e.Compare(L"|Source"))
+	{
+		entry.source.Set(v);
+		ret = true;
+	}
+	else if (!e.Compare(L"|Type"))
+	{
+		entry.type.Set(v);
+		ret = true;
+	}
+	else if (!e.Compare(L"|Path"))
+	{
+		entry.filePath.Set(v);
+		ret = true;
+	}
+	else if (!e.Compare(L"|Name"))
+	{
+		entry.name.Set(v);
+		ret = true;
+	}
+
+	return ret;
+}
+
+bool EnvironmentEntryParser::Attribute(TrecPointer<TString> v, TString& e)
+{
+	if(!v.Get())
+		return false;
+	return Attribute(*v.Get(), e);
+}
+
+bool EnvironmentEntryParser::submitType(TString v)
+{
+	return !v.CompareNoCase(L"Environment_Repo");
+}
+
+bool EnvironmentEntryParser::submitEdition(TString v)
+{
+	return true;
+}
+
+bool EnvironmentEntryParser::goChild()
+{
+	return true;
+}
+
+void EnvironmentEntryParser::goParent()
+{
+}
+
+void EnvironmentEntryParser::GetEntries(TDataArray<EnvironmentEntry>& entries)
+{
+	TString v;
+	Obj(v);
+
+	for (UINT Rust = 0; Rust < this->entries.Size(); Rust++)
+	{
+		entries.push_back(this->entries[Rust]);
+	}
+}
+
+TConsoleHolder::TConsoleHolder()
+{
+	groupLevel = 0;
+}
+
+TConsoleHolder::~TConsoleHolder()
+{
+}
+
+UINT TConsoleHolder::Group(bool collapsed)
+{
+	tabs.AppendChar(L'\t');
+	return ++groupLevel;
+}
+
+UINT TConsoleHolder::EndGroup()
+{
+	if (groupLevel)
+	{
+		groupLevel--;
+		tabs.Delete(0);
+	}
+	return groupLevel;
 }

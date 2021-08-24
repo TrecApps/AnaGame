@@ -52,10 +52,12 @@ TLayout::~TLayout()
 */
 bool TLayout::setLayout(orgLayout ol)
 {
-	if(lChildren.Count() > 0)
-	return false;
-	organization = ol;
-	return true;
+	ThreadLock();
+	bool ret = lChildren.Count() == 0;
+	if(ret)
+		organization = ol;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -67,10 +69,12 @@ bool TLayout::setLayout(orgLayout ol)
 */
 bool TLayout::setConflictResolutionMode(conflictRes cr)
 {
-	if(lChildren.Count() > 0)
-	return false;
-	conflictResolute = cr;
-	return true;
+	ThreadLock();
+	bool ret = lChildren.Count() > 0;
+	if (ret)
+		conflictResolute = cr;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -82,10 +86,12 @@ bool TLayout::setConflictResolutionMode(conflictRes cr)
 */
 bool TLayout::setSpecialFunction(specialLayout sl)
 {
-	if(specialFunction != specialLayout::Basic || lChildren.Count() > 0)
-	return false;
-	specialFunction = sl;
-	return true;
+	ThreadLock();
+	bool ret = (specialFunction != specialLayout::Basic || lChildren.Count() > 0);
+	if(ret)
+		specialFunction = sl;
+	ThreadRelease();
+	return ret;
 }
 
 
@@ -98,6 +104,7 @@ bool TLayout::setSpecialFunction(specialLayout sl)
 */
 bool TLayout::addColunm(int x, bool markDetected)
 {
+	ThreadLock();
 	D2D1_RECT_F tempRect = D2D1_RECT_F{ 0,0,0,0 };
 
 	bool AcceptMark = true;
@@ -121,55 +128,7 @@ bool TLayout::addColunm(int x, bool markDetected)
 	case orgLayout::VMix:
 	case orgLayout::VStack:
 		return false; // these have rows
-		//To-Do: continue rest
-	case orgLayout::grid:
-
-		if (rows == 0)
-		{
-			rows++;
-			updateRow = false;
-		}
-		D2D1_RECT_F tempRect2 = D2D1_RECT_F{ 0,0,0,0 };
-		tempRect.left = returnMinX(true);
-		tempRect.right = tempRect.left + x;
-		for (int c = 0; c < rows;c++)
-		{
-			tempRect2 = returnRectY(c);
-			tempRect.top = tempRect2.top;
-			tempRect.bottom = tempRect2.bottom;
-			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
-			tempContC->x = colunms;
-			tempContC->y = c;
-			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
-			
-			tempContC->contain->setLocation(tempRect);
-
-			lChildren.Add(tempContC);
-		}
-		if (updateColumn)
-			colunms++;
-		else
-			updateColumn = true;
-		columnLines.push_back(x);
-		AddToColFlex(AcceptMark);
-		return true;
 	default:
-
-		if (lChildren.Count() > 0)
-			tempRect.left = returnMinX(colunms);
-		else
-			tempRect.left = this->location.left;
-		tempRect.right = tempRect.left + x;
-		tempRect.bottom = location.bottom;
-		tempRect.top = location.top;
-		tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
-		tempContC->x = colunms++;
-		tempContC->y = 0;
-		tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
-
-		tempContC->contain->setLocation(tempRect);
-
-		lChildren.Add(tempContC);
 		columnLines.push_back(x);
 		AddToColFlex(AcceptMark);
 		return true;
@@ -189,7 +148,7 @@ bool TLayout::addRow(int y, bool markDetected)
 	D2D1_RECT_F tempRect = D2D1_RECT_F{ 0,0,0,0 };
 
 	bool AcceptMark = true;
-
+	ThreadLock();
 	switch (organization)
 	{
 	case orgLayout::VStack:
@@ -202,66 +161,81 @@ bool TLayout::addRow(int y, bool markDetected)
 	case orgLayout::grid:
 		AcceptMark = markDetected;
 	}
-
+	bool ret = false;
 	switch (organization)
 	{
 	case orgLayout::HBuff:
 	case orgLayout::HMix:
 	case orgLayout::HStack:
-		return false;    // These go by colunms
-		//To-Do: the rest
-	case orgLayout::grid:
-		if (colunms == 0)
+		
+		break;    // These go by colunms
+
+	default:
+		rowLines.push_back(y);
+		AddToRowFlex(AcceptMark);
+		ret = true;
+	}
+	ThreadRelease();
+	return false;
+}
+
+void TLayout::CompileLayout()
+{
+	ThreadLock();
+	switch (organization)
+	{
+	case orgLayout::HBuff:
+	case orgLayout::HMix:
+	case orgLayout::HStack:
+		for (UINT x = 0; x < columnLines.Size(); x++)
 		{
-			colunms++;
-			updateColumn = false;
-		}
-		D2D1_RECT_F tempRect2 = D2D1_RECT_F{ 0,0,0,0 };
-		tempRect.top = returnMinY(rows);
-		tempRect.bottom = tempRect.top + y;
-		for (int c = 0; c < colunms;c++)
-		{
-			tempRect2 = returnRectX(c);
-			tempRect.left = tempRect2.left;
-			tempRect.right = tempRect2.right;
 			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
-			tempContC->x = c;
-			tempContC->y = rows;
+			tempContC->x = tempContC->x2 = x;
+			tempContC->extend = false;
+			tempContC->y = tempContC->y2 = 0;
 			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
 
-			tempContC->contain->setLocation(tempRect);
+			tempContC->contain->setLocation(getRawSectionLocation(0, x));
 
 			lChildren.Add(tempContC);
 		}
-		if (updateRow)
-			rows++;
-		else
-			updateRow = true;
-		rowLines.push_back(y);
-		AddToRowFlex(AcceptMark);
-		return true;
-	default:
+		break;
+	case orgLayout::VBuff:
+	case orgLayout::VMix:
+	case orgLayout::VStack:
 
-		if (lChildren.Count() > 0)
-			tempRect.top = returnMinY(rows);
-		else
-			tempRect.top = this->location.top;
-		tempRect.bottom = tempRect.top + y;
-		tempRect.left = location.left;
-		tempRect.right = location.right;
-		tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
-		tempContC->x = 0;
-		tempContC->y = rows++;
-		tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
+		for (UINT y = 0; y < rowLines.Size(); y++)
+		{
+			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
+			tempContC->x = tempContC->x2 = 0;
+			tempContC->extend = false;
+			tempContC->y = tempContC->y2 = y;
+			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
 
-		tempContC->contain->setLocation(tempRect);
+			tempContC->contain->setLocation(getRawSectionLocation(y, 0));
 
-		lChildren.Add(tempContC);
-		rowLines.push_back(y);
-		AddToRowFlex(AcceptMark);
-		return true;
+			lChildren.Add(tempContC);
+		}
+		break;
+	case orgLayout::grid:
+
+		for (UINT x = 0; x < columnLines.Size(); x++)
+		{
+			for (UINT y = 0; y < rowLines.Size(); y++)
+			{
+				tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
+				tempContC->x = tempContC->x2 = x;
+				tempContC->extend = false;
+				tempContC->y = tempContC->y2 = y;
+				tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
+
+				tempContC->contain->setLocation(getRawSectionLocation(y, x));
+
+				lChildren.Add(tempContC);
+			}
+		}
 	}
-	return false;
+	ThreadRelease();
 }
 
 /*
@@ -276,24 +250,24 @@ int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y)
 {
 	if (!tc.Get())
 		return 1;
+	ThreadLock();
 	for (int c = 0; c < lChildren.Count();c++)
 	{
 		if (lChildren.ElementAt(c)->x == x && lChildren.ElementAt(c)->y == y)
 		{
 			if (!lChildren.ElementAt(c)->contain.Get())
+			{
+				ThreadRelease();
 				return 3;
+			}
 			lChildren.ElementAt(c)->extend = false;
 			lChildren.ElementAt(c)->contain = tc;
 			lChildren.ElementAt(c)->contain->setParent(GetParentReference());
-			/*for (UINT rust = 0; rust < children.Count(); rust++)
-			{
-				if (children.ElementAt(rust).Get() == tc.Get())
-					return 0;
-			}
-			children.Add(tc);*/
+			ThreadRelease();
 			return 0;
 		}
 	}
+	ThreadRelease();
 	return 2;
 }
 
@@ -311,12 +285,16 @@ int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y, UINT x_2, UINT y
 {
 	if (!tc.Get())
 		return 1;
+	ThreadLock();
 	for (int c = 0; c < lChildren.Count(); c++)
 	{
 		if (lChildren.ElementAt(c)->x == x && lChildren.ElementAt(c)->y == y)
 		{
 			if (!lChildren.ElementAt(c)->contain.Get())
+			{
+				ThreadRelease();
 				return 3;
+			}
 			if (x_2 >= x && (x_2 < columnLines.Size() || !columnLines.Size())
 				&& y_2 >= y && (y_2 < rowLines.Size() || !rowLines.Size()))
 			{
@@ -328,9 +306,11 @@ int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y, UINT x_2, UINT y
 				lChildren.ElementAt(c)->extend = false;
 			lChildren.ElementAt(c)->contain = tc;
 			lChildren.ElementAt(c)->contain->setParent(GetParentReference());
+			ThreadRelease();
 			return 0;
 		}
 	}
+	ThreadRelease();
 	return 2;
 }
 
@@ -345,11 +325,17 @@ int TLayout::addChild(TrecPointer<TControl> tc, UINT x, UINT y, UINT x_2, UINT y
 */
 bool TLayout::setGrid(TDataArray<int>& col, TDataArray<int>& row)
 {
-	if(organization != orgLayout::grid)
+	ThreadLock();
+	if (organization != orgLayout::grid)
+	{
+		ThreadRelease();
 		return false;
+	}
 	if (!col.Size() || !row.Size())
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	D2D1_RECT_F tempRect;
 	tempRect.top = 0;
 	tempRect.left = 0;
@@ -381,6 +367,7 @@ bool TLayout::setGrid(TDataArray<int>& col, TDataArray<int>& row)
 	{
 		addRow(row[c], true);
 	}
+	ThreadRelease();
 	return true;
 }
 
@@ -392,9 +379,12 @@ bool TLayout::setGrid(TDataArray<int>& col, TDataArray<int>& row)
 */
 bool TLayout::setStack(TDataArray<int>& nums)
 {
+	ThreadLock();
 	if (organization == orgLayout::grid)
+	{
+		ThreadRelease();
 		return false;
-
+	}
 	switch (organization)
 	{
 	case orgLayout::VStack:
@@ -415,8 +405,7 @@ bool TLayout::setStack(TDataArray<int>& nums)
 		for (int c = 0; c < nums.Size();c++)
 			addColunm(nums[c], true);
 	}
-
-
+	ThreadRelease();
 	return true;
 }
 
@@ -443,7 +432,7 @@ int TLayout::loadFromHTML(TFile * ar)
 void TLayout::storeInTML(TFile * ar, int childLevel,bool ov)
 {
 	//_Unreferenced_parameter_(ov);
-
+	ThreadLock();
 	TString appendable;
 	resetAttributeString(&appendable, childLevel + 1);
 	switch (organization)
@@ -484,6 +473,7 @@ void TLayout::storeInTML(TFile * ar, int childLevel,bool ov)
 	}
 
 	TControl::storeInTML(ar, childLevel);
+	ThreadRelease();
 }
 
 /*
@@ -505,13 +495,13 @@ void TLayout::storeInHTML(TFile * ar)
 bool TLayout::onCreate(D2D1_RECT_F margin, TrecPointer<TWindowEngine> d3d)
 {
 	//TContainer* tempCont = NULL;
-
+	ThreadLock();
 	Resize(margin);
 
 
 	children.Clear();
 
-	for (int c = 0; c < lChildren.Count();c++)
+	for (int c = 0; c < lChildren.Count(); c++)
 	{
 
 		TrecPointer<TControl> tempCont = lChildren.ElementAt(c)->contain;
@@ -524,8 +514,8 @@ bool TLayout::onCreate(D2D1_RECT_F margin, TrecPointer<TWindowEngine> d3d)
 		//{
 		//	tempCont->setLocation(location);
 		//}
-		
-		lChildren.ElementAt(c)->contain->setLocation( tempCont->getLocation());
+
+		lChildren.ElementAt(c)->contain->setLocation(tempCont->getLocation());
 
 		children.Add(tempCont);
 		/*if (lChildren.ElementAt(c)->contain->child->isLayout)
@@ -534,17 +524,17 @@ bool TLayout::onCreate(D2D1_RECT_F margin, TrecPointer<TWindowEngine> d3d)
 			childLayout->onCreate(lChildren.ElementAt(c)->contain->location);
 		}
 		else*/
-		
-			//tempCont->onCreate(tempCont->getLocation());
-		
+
+		//tempCont->onCreate(tempCont->getLocation());
+
 		lChildren.ElementAt(c)->contain->onCreate(tempCont->getLocation(), d3d);
 
 	}
 
-//	for (int c = 0; c < lChildren.Count();c++)
-	//{
-	//
-	//}
+	//	for (int c = 0; c < lChildren.Count();c++)
+		//{
+		//
+		//}
 
 	auto valpoint = attributes.retrieveEntry(TString(L"|InternalBorderColor"));
 	if (valpoint.Get())
@@ -561,16 +551,13 @@ bool TLayout::onCreate(D2D1_RECT_F margin, TrecPointer<TWindowEngine> d3d)
 
 	// To-Do: Add support for gradients in future build
 
-
-
-
-
 	if (internalInit && drawingBoard.Get())
-	{		
+	{
 		internalBrush = drawingBoard->GetBrush(internalColor);
 	}
-
-	return TControl::onCreate(margin, d3d);
+	bool ret = TControl::onCreate(margin, d3d);
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -581,30 +568,42 @@ bool TLayout::onCreate(D2D1_RECT_F margin, TrecPointer<TWindowEngine> d3d)
 */
 void TLayout::onDraw(TObject* obj)
 {
+	ThreadLock();
 	if (!isActive)
+	{
+		ThreadRelease();
 		return;
+	}
 	TControl::onDraw(obj);
 
-	for (int c = 0; c < lChildren.Count(); c++)
+	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
 		if(lChildren.ElementAt(c)->contain.Get())
 		lChildren.ElementAt(c)->contain->onDraw(obj);
 	}
 	if (internalBrush.Get())
 	{
-		for (int c = 0; c < rowLines.Size();c++)
+		for (UINT Rust = 0; Rust < lChildren.Count(); Rust++)
 		{
-			int add = rowLines[c];
+			auto ch = lChildren.ElementAt(Rust);
+			if (ch.Get())
+				internalBrush->DrawRectangle(getRawSectionLocation(ch->y, ch->x));
+		}
+
+		/*for (UINT c = 0; c < rowLines.Size();c++)
+		{
+			float add = rowLines[c];
 			internalBrush->DrawLine(D2D1::Point2F(location.left, location.top + add),
 				D2D1::Point2F(location.right, location.top + add), thickness);
 		}
-		for (int c = 0; c < columnLines.Size();c++)
+		for (UINT c = 0; c < columnLines.Size();c++)
 		{
-			int add = columnLines[c];
+			float add = columnLines[c];
 			internalBrush->DrawLine(D2D1::Point2F(location.left + add, location.top),
-				D2D1::Point2F(location.left, location.bottom), thickness);
-		}
+				D2D1::Point2F(location.left + add, location.bottom), thickness);
+		}*/
 	}
+	ThreadRelease();
 }
 
 /*
@@ -615,16 +614,33 @@ void TLayout::onDraw(TObject* obj)
 */
 int TLayout::returnMinX(bool newColumn)
 {
+	ThreadLock();
 	if (colunms == 0)
-		return 0;
-
-	for (int c = 0; c < lChildren.Count(); c++)
 	{
-		if (newColumn && lChildren.ElementAt(c)->x == colunms - 1)
-			return lChildren.ElementAt(c)->contain->getLocation().right;
-		else if (lChildren.ElementAt(c)->x == colunms)
-			return lChildren.ElementAt(c)->contain->getLocation().right;
+		ThreadRelease();
+		return 0;
 	}
+	for (UINT c = 0; c < lChildren.Count(); c++)
+	{
+		bool found = false;
+		int ret = 0;
+		if (newColumn && lChildren.ElementAt(c)->x == colunms - 1)
+		{
+			found = true;
+			ret = lChildren.ElementAt(c)->contain->getLocation().right;
+		}
+		else if (lChildren.ElementAt(c)->x == colunms)
+		{
+			found = true;
+			ret = lChildren.ElementAt(c)->contain->getLocation().right;
+		}
+		if (found)
+		{
+			ThreadRelease();
+			return ret;
+		}
+	}
+	ThreadRelease();
 	return 0;
 }
 
@@ -636,16 +652,33 @@ int TLayout::returnMinX(bool newColumn)
 */
 int TLayout::returnMinY(bool newRow)
 {
+	ThreadLock();
 	if (rows == 0)
-		return 0;
-
-	for (int c = 0; c < lChildren.Count(); c++)
 	{
-		if (newRow && lChildren.ElementAt(c)->y == rows - 1)
-			return lChildren.ElementAt(c)->contain->getLocation().bottom;
-		else if(lChildren.ElementAt(c)->y == rows)
-			return lChildren.ElementAt(c)->contain->getLocation().bottom;
+		ThreadRelease();
+		return 0;
 	}
+	for (UINT c = 0; c < lChildren.Count(); c++)
+	{
+		bool found = false;
+		int ret = 0;
+		if (newRow && lChildren.ElementAt(c)->y == rows - 1)
+		{
+			found = true;
+			ret = lChildren.ElementAt(c)->contain->getLocation().bottom;
+		}
+		else if (lChildren.ElementAt(c)->y == rows)
+		{
+			found = true;
+			ret = lChildren.ElementAt(c)->contain->getLocation().bottom;
+		}
+		if (found)
+		{
+			ThreadRelease();
+			return ret;
+		}
+	}
+	ThreadRelease();
 	return 0;
 }
 
@@ -657,12 +690,18 @@ int TLayout::returnMinY(bool newRow)
 */
 D2D1_RECT_F TLayout::returnRectX(int x)
 {
-	for (int c = 0; c < lChildren.Count(); c++)
+	ThreadLock();
+	auto ret =  D2D1_RECT_F();
+	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
 		if (lChildren.ElementAt(c)->x == x)
-			return lChildren.ElementAt(c)->contain->getLocation();
+		{
+			ret = lChildren.ElementAt(c)->contain->getLocation();
+			break;
+		}
 	}
-	return D2D1_RECT_F();
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -673,12 +712,18 @@ D2D1_RECT_F TLayout::returnRectX(int x)
 */
 D2D1_RECT_F TLayout::returnRectY(int y)
 {
-	for (int c = 0; c < lChildren.Count(); c++)
+	ThreadLock();
+	auto ret = D2D1_RECT_F();
+	for (UINT c = 0; c < lChildren.Count(); c++)
 	{
 		if (lChildren.ElementAt(c)->y == y)
-			return lChildren.ElementAt(c)->contain->getLocation();
+		{
+			ret = lChildren.ElementAt(c)->contain->getLocation();
+			break;
+		}
 	}
-	return D2D1_RECT_F();
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -689,10 +734,15 @@ D2D1_RECT_F TLayout::returnRectY(int y)
 */
 bool TLayout::GetColumnFlexAt(UINT col)
 {
-	if(col >= columnLines.Size() || col / 8 >= columnFlex.Size())
-		return false;
-	UCHAR comp = 0b10000000 >> (col % 8);
-	return columnFlex[col / 8] & comp;
+	ThreadLock();
+	bool ret = (col < columnLines.Size() && (col / 8) < columnFlex.Size());
+	if (ret)
+	{
+		UCHAR comp = 0b10000000 >> (col % 8);
+		ret = columnFlex[col / 8] & comp;
+	}
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -703,10 +753,15 @@ bool TLayout::GetColumnFlexAt(UINT col)
 */
 bool TLayout::GetRowFlexAt(UINT row)
 {
-	if (row >= rowLines.Size() || row / 8 >= rowFlex.Size())
-		return false;
-	UCHAR comp = 0b10000000 >> (row % 8);
-	return rowFlex[row / 8] & comp;
+	ThreadLock();
+	bool ret = (row < rowLines.Size() < (row / 8) < rowFlex.Size());
+	if (ret)
+	{
+		UCHAR comp = 0b10000000 >> (row % 8);
+		ret = rowFlex[row / 8] & comp;
+	}
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -717,6 +772,7 @@ bool TLayout::GetRowFlexAt(UINT row)
 */
 void TLayout::AddToColFlex(bool val)
 {
+	ThreadLock();
 	UINT el = columnLines.Size();
 	if (el / 8 >= columnFlex.Size())
 		columnFlex.push_back(static_cast<UCHAR>(0));
@@ -726,11 +782,7 @@ void TLayout::AddToColFlex(bool val)
 	{
 		columnFlex[el / 8] = columnFlex[el / 8] | setter;
 	}
-//	else
-	//{
-		//setter = setter ^ 0b11111111;
-		//columnFlex[el / 8] = columnFlex[el / 8] & setter;
-//	}
+	ThreadRelease();
 }
 
 /*
@@ -741,6 +793,7 @@ void TLayout::AddToColFlex(bool val)
 */
 void TLayout::AddToRowFlex(bool val)
 {
+	ThreadLock();
 	UINT el = rowLines.Size();
 	if (el / 8 >= rowFlex.Size())
 		rowFlex.push_back(static_cast<UCHAR>(0));
@@ -750,11 +803,7 @@ void TLayout::AddToRowFlex(bool val)
 	{
 		rowFlex[el / 8] = rowFlex[el / 8] | setter;
 	}
-//	else
-//	{
-//		setter = setter ^ 0b11111111;
-//		rowFlex[el / 8] = rowFlex[el / 8] & setter;
-//	}
+	ThreadRelease();
 }
 
 /*
@@ -765,14 +814,19 @@ void TLayout::AddToRowFlex(bool val)
 */
 UINT TLayout::GetTotalFlexRow()
 {
+	ThreadLock();
 	UINT ret = 0;
 	if (!rowFlex.Size())
+	{
+		ThreadRelease();
 		return ret;
+	}
 	for (UINT c = 0; c < rowLines.Size(); c++)
 	{
 		if (GetRowFlexAt(c))
 			ret += rowLines[c];
 	}
+	ThreadRelease();
 	return ret;
 }
 
@@ -784,14 +838,20 @@ UINT TLayout::GetTotalFlexRow()
 */
 UINT TLayout::GetTotalSetRow()
 {
+	ThreadLock();
 	if (!rowFlex.Size())
-		return location.bottom - location.top;
+	{
+		UINT ret = location.bottom - location.top;
+		ThreadRelease();
+		return ret;
+	}
 	UINT ret = 0;
 	for (UINT c = 0; c < rowLines.Size(); c++)
 	{
 		if (!GetRowFlexAt(c))
 			ret += rowLines[c];
 	}
+	ThreadRelease();
 	return ret;
 }
 
@@ -804,8 +864,10 @@ UINT TLayout::GetTotalSetRow()
 UINT TLayout::GetTotalFlexCol()
 {
 	UINT ret = 0;
+	ThreadLock();
 	if (!columnFlex.Size())
 	{
+		ThreadRelease();
 		return ret;
 	}
 	for (UINT c = 0; c < columnLines.Size(); c++)
@@ -813,6 +875,7 @@ UINT TLayout::GetTotalFlexCol()
 		if (GetColumnFlexAt(c))
 			ret += columnLines[c];
 	}
+	ThreadRelease();
 	return ret;
 }
 
@@ -824,10 +887,12 @@ UINT TLayout::GetTotalFlexCol()
 */
 UINT TLayout::GetTotalSetCol()
 {
-	
+	ThreadLock();
 	if (!columnFlex.Size())
 	{
-		return location.right - location.left;
+		UINT ret = location.right - location.left;
+		ThreadRelease();
+		return ret;
 	}
 	UINT ret = 0;
 	for (UINT c = 0; c < columnLines.Size(); c++)
@@ -835,6 +900,7 @@ UINT TLayout::GetTotalSetCol()
 		if (!GetColumnFlexAt(c))
 			ret += columnLines[c];
 	}
+	ThreadRelease();
 	return ret;
 }
 
@@ -847,6 +913,7 @@ UINT TLayout::GetTotalSetCol()
  */
 void TLayout::Resize(D2D1_RECT_F& r)
 {
+	ThreadLock();
 	TControl::Resize(r);
 
 	int rWidth = (r.right - margin.right) - (r.left + margin.left);
@@ -865,7 +932,7 @@ void TLayout::Resize(D2D1_RECT_F& r)
 	{
 
 
-		for (int c = 0; c < columnLines.Size(); c++)
+		for (UINT c = 0; c < columnLines.Size(); c++)
 		{
 			if (GetColumnFlexAt(c))
 			{
@@ -881,7 +948,7 @@ void TLayout::Resize(D2D1_RECT_F& r)
 	}
 	if (!vScroll.Get() || (organization != orgLayout::VStack)) // Ditto with a vertical Scroll bar and rows
 	{
-		for (int c = 0; c < rowLines.Size(); c++)
+		for (UINT c = 0; c < rowLines.Size(); c++)
 		{
 			if (GetRowFlexAt(c))
 			{
@@ -902,7 +969,7 @@ void TLayout::Resize(D2D1_RECT_F& r)
 		if (rowLines.Size())
 		{
 			location.bottom = location.top;
-			for (int c = 0; c < rowLines.Size(); c++)
+			for (UINT c = 0; c < rowLines.Size(); c++)
 				location.bottom += rowLines[c];
 		}
 	}
@@ -912,7 +979,7 @@ void TLayout::Resize(D2D1_RECT_F& r)
 		if (columnLines.Size())
 		{
 			location.right = location.left;
-			for (int c = 0; c < columnLines.Size(); c++)
+			for (UINT c = 0; c < columnLines.Size(); c++)
 				location.right += columnLines[c];
 		}
 	}
@@ -931,8 +998,7 @@ void TLayout::Resize(D2D1_RECT_F& r)
 		auto loc = getRawSectionLocation(lChild->y, lChild->x);
 		child->Resize(loc);
 	}
-
-	
+	ThreadRelease();
 }
 
 
@@ -944,13 +1010,18 @@ void TLayout::Resize(D2D1_RECT_F& r)
 */
 int TLayout::returnColumnsWidth(int x)
 {
+	ThreadLock();
 	if (x > columnLines.Size() || x < 0)
+	{
+		ThreadRelease();
 		return -1;
+	}
 	int returnable = 0;
 	for (int c = 1; c < x+1; c++)
 	{
 		returnable = returnable + columnLines[c-1];
 	}
+	ThreadRelease();
 	return returnable;
 }
 
@@ -962,13 +1033,18 @@ int TLayout::returnColumnsWidth(int x)
 */
 int TLayout::returnRowsHeight(int y)
 {
+	ThreadLock();
 	if (y > rowLines.Size() || y < 0)
+	{
+		ThreadRelease();
 		return -1;
+	}
 	int returnable = 0;
 	for (int c = 1; c < y + 1; c++)
 	{
 		returnable = returnable + rowLines[c-1];
 	}
+	ThreadRelease();
 	return returnable;
 }
 
@@ -980,9 +1056,10 @@ int TLayout::returnRowsHeight(int y)
 */
 int TLayout::getColunmWidth(int x)
 {
-	if(x >= columnLines.Size() || x < 0)
-		return 0;
-	return columnLines[x];
+	ThreadLock();
+	int ret = (x >= columnLines.Size() || x < 0) ? 0 : columnLines[x];
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -993,10 +1070,10 @@ int TLayout::getColunmWidth(int x)
 */
 int TLayout::getRowHeight(int y)
 {
-	if (y >= rowLines.Size() || y < 0)
-		return 0;
-	return rowLines[y];
-
+	ThreadLock();
+	int ret = (y >= rowLines.Size() || y < 0) ? 0 : rowLines[y];
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1010,6 +1087,7 @@ UINT TLayout::determineMinHeightNeeded()
 	UINT newHeight2 = 0;
 	UINT newHeight = 0;
 	UINT maxNeeded = 0;
+	ThreadLock();
 	switch (organization)
 	{
 	case orgLayout::VStack:
@@ -1023,10 +1101,8 @@ UINT TLayout::determineMinHeightNeeded()
 				UINT minSize = lChildren.ElementAt(c)->contain->determineMinHeightNeeded();
 				if (rowLines[lChildren.ElementAt(c)->y] > minSize)
 					rowLines[lChildren.ElementAt(c)->y] = minSize;
-				
 			}
 		}
-
 		for (UINT c = 0; c < rowLines.Size(); c++)
 			newHeight += rowLines[c];
 		location.bottom = location.top + newHeight;
@@ -1039,16 +1115,12 @@ UINT TLayout::determineMinHeightNeeded()
 		{
 			if (lChildren.ElementAt(c)->contain.Get())
 			{
-
 				UINT minSize = lChildren.ElementAt(c)->contain->determineMinHeightNeeded();
 				if (minSize > maxNeeded)
 					maxNeeded = minSize;
-				
 			}
 		}
 		location.bottom = location.top + maxNeeded;
-
-
 		break;
 	case orgLayout::grid: // To-Do
 		TDataArray<UINT> rowHieghts;
@@ -1072,7 +1144,9 @@ UINT TLayout::determineMinHeightNeeded()
 			newHeight2 += rowLines[c];
 		location.bottom = location.top + newHeight2;
 	}
-	return location.bottom - location.top;
+	UINT ret = location.bottom - location.top;
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1083,6 +1157,7 @@ UINT TLayout::determineMinHeightNeeded()
 */
 void TLayout::SetNewLocation(const D2D1_RECT_F& r)
 {
+	ThreadLock();
 	TControl::SetNewLocation(r);
 
 	for (UINT c = 0; c < lChildren.Count(); c++)
@@ -1092,8 +1167,8 @@ void TLayout::SetNewLocation(const D2D1_RECT_F& r)
 			continue;
 		//cc->contain->location = r;
 		cc->contain->SetNewLocation(getRawSectionLocation(cc->y, cc->x));
-
 	}
+	ThreadRelease();
 }
 
 /*
@@ -1104,8 +1179,10 @@ void TLayout::SetNewLocation(const D2D1_RECT_F& r)
 */
 void TLayout::ShrinkHeight()
 {
+	ThreadLock();
 	determineMinHeightNeeded();
 	SetNewLocation(location);
+	ThreadRelease();
 }
 
 /*
@@ -1117,11 +1194,14 @@ void TLayout::ShrinkHeight()
 */
 void TLayout::setNewColunmSize(int xLoc, int x)
 {
+	ThreadLock();
 	if (xLoc >= columnLines.Size() || xLoc < 0)
+	{
+		ThreadRelease();
 		return;
+	}
 	int currentSize = columnLines[xLoc];
 	columnLines[xLoc] = x;
-
 
 	if (dimensions && dimensions->width)
 	{
@@ -1131,6 +1211,7 @@ void TLayout::setNewColunmSize(int xLoc, int x)
 		else
 			dimensions->width += difference;
 	}
+	ThreadRelease();
 }
 
 /*
@@ -1142,8 +1223,12 @@ void TLayout::setNewColunmSize(int xLoc, int x)
 */
 void TLayout::setNewRowSize(int yLoc, int y)
 {
+	ThreadLock();
 	if (yLoc >= rowLines.Size() || yLoc < 0)
+	{
+		ThreadRelease();
 		return;
+	}
 	int currentSize = rowLines[yLoc];
 	rowLines[yLoc] = y;
 
@@ -1155,6 +1240,7 @@ void TLayout::setNewRowSize(int yLoc, int y)
 		else
 			dimensions->height += difference;
 	}
+	ThreadRelease();
 }
 
 /*
@@ -1165,7 +1251,10 @@ void TLayout::setNewRowSize(int yLoc, int y)
 */
 int TLayout::getRowNumber()
 {
-	return rowLines.Size();
+	ThreadLock();
+	int ret = rowLines.Size();
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1176,7 +1265,10 @@ int TLayout::getRowNumber()
 */
 int TLayout::getColumnNumber()
 {
-	return columnLines.Size();
+	ThreadLock();
+	int ret = columnLines.Size();
+	ThreadRelease();
+	return ret;
 }
 
 /*
@@ -1189,9 +1281,12 @@ int TLayout::getColumnNumber()
 D2D1_RECT_F TLayout::getRawSectionLocation(int r, int c)
 {
 	D2D1_RECT_F returnable{ 0,0,0,0 };
+	ThreadLock();
 	if (r > rowLines.Size() || c > columnLines.Size())
+	{
+		ThreadRelease();
 		return returnable;
-
+	}
 	returnable.top = location.top;
 	returnable.left = location.left;
 	returnable.bottom = returnable.top;
@@ -1255,6 +1350,7 @@ D2D1_RECT_F TLayout::getRawSectionLocation(int r, int c)
 			}
 		}
 	}
+	ThreadRelease();
 	return returnable;
 }
 
@@ -1268,15 +1364,19 @@ D2D1_RECT_F TLayout::getRawSectionLocation(int r, int c)
 TrecPointer<TControl> TLayout::GetLayoutChild(int x, int y)
 {
 	containerControl cc;
-	for (int c = 0; c < lChildren.Count();c++)
+	ThreadLock();
+	for (UINT c = 0; c < lChildren.Count();c++)
 	{
 		if (!lChildren.ElementAt(c).Get())
 			continue;
 		cc = *(lChildren.ElementAt(c).Get());
 		if (cc.x == x && cc.y == y)
-			return TrecPointer<TControl>(cc.contain);
+		{
+			ThreadRelease();
+			return (cc.contain);
+		}
 	}
-	
+	ThreadRelease();
 	return  TrecPointer<TControl>();
 }
 
@@ -1288,7 +1388,10 @@ TrecPointer<TControl> TLayout::GetLayoutChild(int x, int y)
 */
 orgLayout TLayout::GetOrganization()
 {
-	return organization;
+	ThreadLock();
+	auto ret = organization;
+	ThreadRelease();
+	return ret;
 }
 
 UCHAR * TLayout::GetAnaGameType()
@@ -1305,6 +1408,7 @@ UCHAR * TLayout::GetAnaGameType()
  */
 void TLayout::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPointer<TControl> newControl)
 {
+	ThreadLock();
 	for (UINT Rust = 0; Rust < lChildren.Count(); Rust++)
 	{
 		if (lChildren.ElementAt(Rust).Get() && lChildren.ElementAt(Rust)->contain.Get() == curControl.Get())
@@ -1320,6 +1424,7 @@ void TLayout::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoint
 		}
 	}
 	TControl::SwitchChildControl(curControl, newControl);
+	ThreadRelease();
 }
 
 /**
@@ -1330,11 +1435,14 @@ void TLayout::SwitchChildControl(TrecPointerSoft<TControl> curControl, TrecPoint
  */
 TrecPointer<TParentHolder> TLayout::GetParentReference()
 {
+	ThreadLock();
 	if (!thisParent.Get())
 	{
 		thisParent = TrecPointerKey::GetNewTrecPointerAlt<TParentHolder, TLayoutParentHolder>(TrecPointerKey::GetSoftSubPointerFromSoft<TControl, TLayout>(tThis));
 	}
-	return thisParent;
+	auto ret = thisParent;
+	ThreadRelease();
+	return ret;
 }
 
 containerControl::containerControl()
