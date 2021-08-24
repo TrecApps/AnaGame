@@ -60,7 +60,6 @@
     <ClInclude Include="MiniHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-<<<<<<< HEAD
     <ClInclude Include="TIdeWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -68,7 +67,8 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TerminalHandler.h">
-=======
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="TVirtualMachine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -85,7 +85,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TStackObjectVirtualMachine.h">
->>>>>>> TrecCode_2
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -126,7 +125,6 @@
     <ClCompile Include="MiniHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-<<<<<<< HEAD
     <ClCompile Include="TIdeWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -134,7 +132,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TerminalHandler.cpp">
-=======
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="TVirtualMachine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -151,7 +150,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TStackObjectVirtualMachine.cpp">
->>>>>>> TrecCode_2
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

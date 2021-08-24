@@ -186,12 +186,9 @@
     <ClInclude Include="TrecReference.h" />
     <ClInclude Include="TShell.h" />
     <ClInclude Include="TString.h" />
-<<<<<<< HEAD
     <ClInclude Include="TTrecPointerArray.h" />
-=======
     <ClInclude Include="TType.h" />
     <ClInclude Include="TTypeMetadata.h" />
->>>>>>> TrecCode_2
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DirectoryInterface.cpp" />
