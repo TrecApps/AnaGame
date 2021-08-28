@@ -222,19 +222,18 @@ void TTextField::SetUpTextElement()
 	//}
 
 	// See if have text. If we do, then set up text element
-	if (text.GetSize())
-	{
-		details.color = drawingBoard->GetBrush(fontColor);
 
-		text1 = isComplex || !isEditable ? TrecPointerKey::GetNewSelfTrecPointerAlt<TTextElement, TComplexTextElement>(drawingBoard, windowHandle, isEditable) :
-			TrecPointerKey::GetNewSelfTrecPointerAlt<TTextElement, TInputTextElement>(drawingBoard, windowHandle);
+	details.color = drawingBoard->GetBrush(fontColor);
 
-		text1->SetLocation(location);
-		text1->SetBasicFormatting(details);
-		text1->SetHorizontallignment(hAlign);
-		text1->SetVerticalAlignment(vAlign);
-		text1->SetText(text);
-	}
+	text1 = isComplex || !isEditable ? TrecPointerKey::GetNewSelfTrecPointerAlt<TTextElement, TComplexTextElement>(drawingBoard, windowHandle, isEditable) :
+		TrecPointerKey::GetNewSelfTrecPointerAlt<TTextElement, TInputTextElement>(drawingBoard, windowHandle);
+
+	text1->SetLocation(location);
+	text1->SetBasicFormatting(details);
+	text1->SetHorizontallignment(hAlign);
+	text1->SetVerticalAlignment(vAlign);
+	text1->SetText(text);
+	
 }
 
 /*
@@ -536,6 +535,16 @@ bool TTextField::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 void TTextField::onDraw(TObject* obj)
 {	
 	TObjectLocker threadLock(&thread);
+
+	TString curText;
+	if (isPassword && !showPassword)
+	{
+		text1->GetText(curText);
+		TString passText;
+		for (UINT Rust = 0; Rust < curText.GetSize(); Rust++)
+			passText.AppendChar(L'\x25cf');
+		text1->SetText(passText);
+	}
 	TControl::onDraw(obj);
 	if (!isActive)
 	{
@@ -554,17 +563,8 @@ void TTextField::onDraw(TObject* obj)
 	}
 
 	// deal with passwords
-	if (isPassword && !showPassword && text1.Get())
-	{
-		TString passText;
-		for (UINT Rust = 0; Rust < text.GetSize(); Rust++)
-			passText.AppendChar(L'*');
-		text1->SetText(passText);
-	}
-	else if (isPassword && showPassword) 
-	{
-		updateTextString();
-	}
+	if (isPassword && !showPassword)
+		text1->SetText(curText);
 	
 }
 

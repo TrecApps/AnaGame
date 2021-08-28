@@ -3644,16 +3644,10 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isClick = true;
 		args.isLeftClick = true;
 		args.control = this;
-
-		EventID_Cred cred(R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
-
-		if (text1.Get())
-			cred.textIntercepter = text1->GetTextInterceptor();
-
-		eventAr.push_back(cred);
+		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 
-	if (hasEvent(R_Message_Type::On_Click) && isLClick)
+	if (hasEvent(R_Message_Type::On_Click) || isLClick)
 	{
 		// Set args
 		resetArgs();
@@ -3663,7 +3657,15 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isClick = true;
 		args.isLeftClick = true;
 		args.control = this;
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+
+		EventID_Cred cred(R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
+
+		if (text1.Get())
+			cred.textIntercepter = text1->GetTextInterceptor();
+
+		eventAr.push_back(cred);
+
+		
 	}
 
 	if (text1.Get())

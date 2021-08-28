@@ -10,7 +10,7 @@ void TInputTextElement::UpdateCarotPoisition(UINT loc)
 		if (carotActive)
 			DestroyCaret();
 		CreateCaret(window, nullptr, 1.0f, mets.height);
-		SetCaretPos(x, y);
+		SetCaretPos(x + this->bounds.left, y + bounds.top);
 		ShowCaret(window);
 		carotActive = true;
 		carotLoc = loc;
@@ -96,7 +96,7 @@ bool TInputTextElement::OnCLickUp(const TPoint& point)
 				if (this->highlightRange.GetCarotLocation(this->carotLoc))
 				{
 					CreateCaret(window, nullptr, 1, mets.height);
-					SetCaretPos(mets.left, mets.top);
+					SetCaretPos(mets.left + bounds.left, mets.top + bounds.top);
 					ShowCaret(window);
 					carotActive = true;
 				}
@@ -152,11 +152,10 @@ bool TInputTextElement::OnInputChar(WCHAR ch, UINT count)
 				break;
 			default:
 			def:
-				if (ch != VK_RETURN)
 					text.Insert(carotLoc++, ch);
 			}
 		}
-
+		ReCreateLayout();
 		UpdateCarotPoisition(carotLoc);
 	}
 	else if (this->highlightRange.GetHighlightRange(start, end))
@@ -187,8 +186,10 @@ bool TInputTextElement::OnInputChar(WCHAR ch, UINT count)
 				if (ch != VK_RETURN)
 					text.Insert(start, ch);
 			}
-			UpdateCarotPoisition(++start);
+			
 		}
+		ReCreateLayout();
+		UpdateCarotPoisition(start + count);
 	}
 	return true;
 }

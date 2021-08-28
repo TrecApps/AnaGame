@@ -74,6 +74,19 @@ public:
 		element->OnCutCopyPaste(control_text_mode::ctm_cut);
 	}
 
+	/**
+	 * Method: TTextElementIntercepter::GetTarget
+	 * Purpose: Reports the TTextElement address it points to
+	 * Parameters: void
+	 * Returns: void* - address of the TTextElement
+	 * 
+	 * Attributes: override
+	 */
+	virtual void* GetTarget() override
+	{
+		return element.Get();
+	}
+
 	TTextElementIntercepter(TrecPointer<TTextElement> element)
 	{
 		this->element = element;
