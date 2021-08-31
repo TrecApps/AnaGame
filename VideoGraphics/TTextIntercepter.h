@@ -30,7 +30,7 @@ public:
      *
      * Attributes: abstract
      */
-    virtual void OnKey(UINT ch, UINT count, UINT flags);
+    virtual void OnKey(UINT ch, UINT count, UINT flags) = 0;
 
     /**
      * Method: TTextIntercepter::OnLoseFocus

@@ -5,7 +5,7 @@ void TInputTextElement::UpdateCarotPoisition(UINT loc)
 	DWRITE_HIT_TEST_METRICS mets;
 	ZeroMemory(&mets, sizeof(mets));
 	float x = 0.0f, y = 0.0f;
-	if (SUCCEEDED(mainLayout->HitTestTextPosition(loc, TRUE, &x, &y, &mets)))
+	if (SUCCEEDED(mainLayout->HitTestTextPosition(loc, FALSE, &x, &y, &mets)))
 	{
 		if (carotActive)
 			DestroyCaret();
@@ -127,38 +127,7 @@ void TInputTextElement::OnCutCopyPaste(control_text_mode mode)
 bool TInputTextElement::OnInputChar(WCHAR ch, UINT count)
 {
 	UINT start = 0, end = 0;
-	if (carotActive)
-	{
-		for (int c = 0; c < count; c++)
-		{
-			switch (ch)
-			{
-			case VK_BACK:
-				if (carotLoc)
-					text.Delete(--carotLoc);
-				break;
-			case VK_OEM_PERIOD:
-				text.Insert(carotLoc++, L'.');
-				break;
-			case VK_SUBTRACT:
-				if (ch == L'm')
-					goto def;
-				text.Insert(carotLoc++, L'-');
-				break;
-			case VK_DIVIDE:
-				if (ch == L'o')
-					goto def;
-				text.Insert(carotLoc++, L'/');
-				break;
-			default:
-			def:
-					text.Insert(carotLoc++, ch);
-			}
-		}
-		ReCreateLayout();
-		UpdateCarotPoisition(carotLoc);
-	}
-	else if (this->highlightRange.GetHighlightRange(start, end))
+	if (this->highlightRange.GetHighlightRange(start, end) && carotActive)
 	{
 		text.Delete(start, end - start);
 
@@ -191,6 +160,37 @@ bool TInputTextElement::OnInputChar(WCHAR ch, UINT count)
 		ReCreateLayout();
 		UpdateCarotPoisition(start + count);
 	}
+	else if (carotActive)
+	{
+		for (int c = 0; c < count; c++)
+		{
+			switch (ch)
+			{
+			case VK_BACK:
+				if (carotLoc)
+					text.Delete(--carotLoc);
+				break;
+			case VK_OEM_PERIOD:
+				text.Insert(carotLoc++, L'.');
+				break;
+			case VK_SUBTRACT:
+				if (ch == L'm')
+					goto def;
+				text.Insert(carotLoc++, L'-');
+				break;
+			case VK_DIVIDE:
+				if (ch == L'o')
+					goto def;
+				text.Insert(carotLoc++, L'/');
+				break;
+			default:
+			def:
+					text.Insert(carotLoc++, ch);
+			}
+		}
+		ReCreateLayout();
+		UpdateCarotPoisition(carotLoc);
+	}
 	return true;
 }
 
@@ -211,6 +211,8 @@ bool TInputTextElement::OnInputKey(UINT key, UINT count)
 
 	DWRITE_HIT_TEST_METRICS mets;
 	ZeroMemory(&mets, sizeof(mets));
+	DWRITE_TEXT_METRICS mets2;
+	assert(SUCCEEDED(mainLayout->GetMetrics(&mets2)));
 	
 	float x = 0.f, y = 0.f;
 	BOOL trail = FALSE, inside = FALSE;
@@ -225,9 +227,9 @@ bool TInputTextElement::OnInputKey(UINT key, UINT count)
 		processed = true;
 		if (!curLine)
 			break;
-		actLineCount = ((curLine + 1 < count) ? 0 : curLine + 1 - count);
+		actLineCount = ((curLine < count) ? 0 : curLine - count);
 
-		data = bounds.top;
+		data = mets2.top + bounds.top;
 
 		for (UINT Rust = 0; Rust <= actLineCount; Rust++)
 		{
@@ -236,7 +238,7 @@ bool TInputTextElement::OnInputKey(UINT key, UINT count)
 
 		data -= (metrics[actLineCount].height / 2);
 
-		assert(SUCCEEDED(mainLayout->HitTestPoint(p.x, data, &trail, &inside, &mets)));
+		assert(SUCCEEDED(mainLayout->HitTestPoint(p.x - bounds.left, data, &trail, &inside, &mets)));
 
 		UpdateCarotPoisition(mets.textPosition + (trail ? 0 : 1));
 
@@ -246,7 +248,7 @@ bool TInputTextElement::OnInputKey(UINT key, UINT count)
 		if (curLine == lineCount)
 			break;
 		actLineCount = (curLine + count > lineCount) ? lineCount + 1 : curLine + count;
-		data = bounds.top;
+		data = mets2.top + bounds.top;
 
 		for (UINT Rust = 0; Rust <= actLineCount; Rust++)
 		{
@@ -255,7 +257,7 @@ bool TInputTextElement::OnInputKey(UINT key, UINT count)
 
 		data -= (metrics[actLineCount].height / 2);
 
-		assert(SUCCEEDED(mainLayout->HitTestPoint(p.x, data, &trail, &inside, &mets)));
+		assert(SUCCEEDED(mainLayout->HitTestPoint(p.x - bounds.left, data, &trail, &inside, &mets)));
 
 		UpdateCarotPoisition(mets.textPosition + (trail ? 0 : 1));
 

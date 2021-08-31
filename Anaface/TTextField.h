@@ -781,6 +781,19 @@ public:
 	 * Attributes: override
 	 */
 	virtual void OnChar(UINT ch, UINT count, UINT flags) override;
+
+	/**
+	 * Method: TTextFieldIntercepter::OnChar
+	 * Purpose: Takes a character and feeds it to its target
+	 * Parameters: WCHAR ch - the character to report
+	 *          UINT count number of instances of that character to feed
+	 *          UINT flags - flags (usually 0)
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void OnKey(UINT ch, UINT count, UINT flags) override;
+
 	/**
 	 * Method: TTextFieldIntercepter::OnLoseFocus
 	 * Purpose: Alerts the target that it will no longer be intercepting characters

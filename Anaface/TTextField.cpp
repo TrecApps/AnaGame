@@ -1941,6 +1941,10 @@ void TTextFieldIntercepter::OnChar(UINT ch, UINT count, UINT flags)
 		textControl->InputChar(ch, count);
 }
 
+void TTextFieldIntercepter::OnKey(UINT ch, UINT count, UINT flags)
+{
+}
+
 void TTextFieldIntercepter::OnLoseFocus()
 {
 }
