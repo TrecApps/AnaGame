@@ -175,7 +175,7 @@ bool HighlightRange::GetCarotLocation(UINT& loc)
 
 bool HighlightRange::GetHighlightRange(UINT& begin, UINT& end)
 {
-	if(!beginSet || !endSet)
+	if(!beginSet || !endSet || (this->begin == this->end))
 		return false;
 	begin = this->begin;
 	end = this->end;

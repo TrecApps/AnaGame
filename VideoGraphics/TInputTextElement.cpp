@@ -30,7 +30,7 @@ bool TInputTextElement::OnCLickDown(const TPoint& point)
 {
 	if (IsContained(point, bounds))
 	{
-		this->highlightRange.Reset();
+		
 
 		DWRITE_HIT_TEST_METRICS mets;
 		ZeroMemory(&mets, sizeof(mets));
@@ -40,7 +40,7 @@ bool TInputTextElement::OnCLickDown(const TPoint& point)
 			UINT pos = trailing ? 1 : 0;
 			pos += mets.textPosition;
 
-			
+
 			isClickDown = true;
 
 			// Check to see if we just grabbed onto highlighted text
@@ -48,9 +48,12 @@ bool TInputTextElement::OnCLickDown(const TPoint& point)
 			if (this->highlightRange.GetHighlightRange(curStart, curEnd) && curStart <= pos && pos <= curEnd && curStart != curEnd)
 				this->grabbedRange = true;
 			else
+			{
+				this->highlightRange.Reset();
 				this->highlightRange.SetBegin(pos);
+			}
 		}
-
+		
 
 		return true;
 	}
@@ -110,7 +113,43 @@ bool TInputTextElement::OnCLickUp(const TPoint& point)
 
 bool TInputTextElement::OnMouseMove(const TPoint& point)
 {
-	return TTextElement::OnMouseMove(point);
+	if (IsContained(point, bounds))
+	{
+		DWRITE_HIT_TEST_METRICS mets;
+		ZeroMemory(&mets, sizeof(mets));
+		BOOL trailing = FALSE, inside = FALSE;
+		if (isClickDown && SUCCEEDED(mainLayout->HitTestPoint(point.x - bounds.left, point.y - bounds.top, &trailing, &inside, &mets)))
+		{
+			UINT pos = trailing ? 1 : 0;
+			pos += mets.textPosition;
+			if (grabbedRange)
+			{
+				UpdateCarotPoisition(pos);
+			}
+			else
+			{
+				
+				UINT start = 0, end = 0;
+				if (this->highlightRange.GetHighlightRange(start, end))
+					this->mainLayout->SetDrawingEffect(nullptr, DWRITE_TEXT_RANGE{ start, end - start });
+
+				this->highlightRange.SetEnd(pos);
+
+				// Range Highlighter
+				if (this->highlightRange.GetHighlightRange(start, end))
+				{
+					TrecPointer<TBrush> newB = drawingBoard->GetBrush(TColor(this->basicDetails.defaultBackgroundColor));
+					TDoubleBrushHolder* dHolder = new TDoubleBrushHolder(this->basicDetails.color->GetUnderlyingBrush().Get(), newB->GetUnderlyingBrush().Get());
+					this->mainLayout->SetDrawingEffect(dHolder, DWRITE_TEXT_RANGE{ start, end - start });
+					dHolder->Release();
+					dHolder = nullptr;
+				}
+			}
+		}
+		return true;
+
+	}
+	return false;
 }
 
 void TInputTextElement::OnLoseFocus()
@@ -127,47 +166,23 @@ void TInputTextElement::OnCutCopyPaste(control_text_mode mode)
 bool TInputTextElement::OnInputChar(WCHAR ch, UINT count)
 {
 	UINT start = 0, end = 0;
-	if (this->highlightRange.GetHighlightRange(start, end) && carotActive)
+	if (carotActive)
 	{
-		text.Delete(start, end - start);
-
-		for (int c = 0; c < count; c++)
+		bool didDelete = false;
+		if (this->highlightRange.GetHighlightRange(start, end))
 		{
-			switch (ch)
-			{
-			case VK_BACK:
-				continue;
-			case VK_OEM_PERIOD:
-				text.Insert(start, L'.');
-				break;
-			case VK_SUBTRACT:
-				if (ch == L'm')
-					goto def2;
-				text.Insert(start, L'-');
-				break;
-			case VK_DIVIDE:
-				if (ch == L'o')
-					goto def2;
-				text.Insert(start, L'/');
-				break;
-			default:
-			def2:
-				if (ch != VK_RETURN)
-					text.Insert(start, ch);
-			}
-			
+			text.Delete(start, end - start);
+			this->mainLayout->SetDrawingEffect(nullptr, DWRITE_TEXT_RANGE{ start, end - start });
+			highlightRange.Reset();
+			didDelete = true;
+			carotLoc = start;
 		}
-		ReCreateLayout();
-		UpdateCarotPoisition(start + count);
-	}
-	else if (carotActive)
-	{
 		for (int c = 0; c < count; c++)
 		{
 			switch (ch)
 			{
 			case VK_BACK:
-				if (carotLoc)
+				if (carotLoc && !didDelete)
 					text.Delete(--carotLoc);
 				break;
 			case VK_OEM_PERIOD:
@@ -285,25 +300,31 @@ void TInputTextElement::OnTransferText(UINT newPos)
 	if (!highlightRange.GetHighlightRange(start, end) || start == end)
 		return;
 
-	if (start <= newPos || newPos <= end)
+	if (start <= newPos && newPos <= end)
 		return;
 
-	TString subRange(text.SubString(start, end + 1));
+	TString subRange(text.SubString(start, end));
 
-	mainLayout->SetDrawingEffect(nullptr, DWRITE_TEXT_RANGE{ start, end });
+	mainLayout->SetDrawingEffect(nullptr, DWRITE_TEXT_RANGE{ start, end - start });
 
 	if (newPos < start)
 	{
 		text.Delete(start, end - start);
 		text.Insert(newPos, subRange);
+		start = newPos;
+		end = start + subRange.GetSize();
 	}
 	else
 	{
 		text.Insert(newPos, subRange);
 		text.Delete(start, end - start);
-		start -= subRange.GetSize();
-		end -= subRange.GetSize();
+		start = newPos - subRange.GetSize();
+		end = start + subRange.GetSize();
 	}
+
+	highlightRange.Reset();
+	highlightRange.SetBegin(start);
+	highlightRange.SetEnd(end);
 
 	ReCreateLayout();
 
