@@ -194,6 +194,88 @@ bool TInputTextElement::OnInputChar(WCHAR ch, UINT count)
 	return true;
 }
 
+bool TInputTextElement::OnInputKey(UINT key, UINT count)
+{
+	if (!carotActive)
+		return false;
+	UINT lineCount = text.CountFinds(L'\r');
+	UINT curLine = text.CountFinds(L'\r', carotLoc);
+	DWRITE_LINE_METRICS* metrics = new DWRITE_LINE_METRICS[lineCount + 1];
+
+	UINT actLineCount = 0;
+
+	mainLayout->GetLineMetrics(metrics, lineCount + 1, &actLineCount);
+
+	bool processed = false;
+	float data = 0;
+
+	DWRITE_HIT_TEST_METRICS mets;
+	ZeroMemory(&mets, sizeof(mets));
+	
+	float x = 0.f, y = 0.f;
+	BOOL trail = FALSE, inside = FALSE;
+
+	POINT p = { 0,0 };
+
+	GetCaretPos(&p);
+
+	switch (key)
+	{
+	case VK_UP:
+		processed = true;
+		if (!curLine)
+			break;
+		actLineCount = ((curLine + 1 < count) ? 0 : curLine + 1 - count);
+
+		data = bounds.top;
+
+		for (UINT Rust = 0; Rust <= actLineCount; Rust++)
+		{
+			data += metrics[Rust].height;
+		}
+
+		data -= (metrics[actLineCount].height / 2);
+
+		assert(SUCCEEDED(mainLayout->HitTestPoint(p.x, data, &trail, &inside, &mets)));
+
+		UpdateCarotPoisition(mets.textPosition + (trail ? 0 : 1));
+
+		break;
+	case VK_DOWN:
+		processed = true;
+		if (curLine == lineCount)
+			break;
+		actLineCount = (curLine + count > lineCount) ? lineCount + 1 : curLine + count;
+		data = bounds.top;
+
+		for (UINT Rust = 0; Rust <= actLineCount; Rust++)
+		{
+			data += metrics[Rust].height;
+		}
+
+		data -= (metrics[actLineCount].height / 2);
+
+		assert(SUCCEEDED(mainLayout->HitTestPoint(p.x, data, &trail, &inside, &mets)));
+
+		UpdateCarotPoisition(mets.textPosition + (trail ? 0 : 1));
+
+		break;
+	case VK_LEFT:
+		if (carotLoc)
+			UpdateCarotPoisition(carotLoc - (count > carotLoc ? carotLoc : count));
+		processed = true;
+		break;
+	case VK_RIGHT:
+		UpdateCarotPoisition((carotLoc + count >= text.GetSize()) ? text.GetSize() : carotLoc + count);
+		processed = true;
+	}
+
+	delete[] metrics;
+	metrics = nullptr;
+
+	return processed;
+}
+
 void TInputTextElement::OnTransferText(UINT newPos)
 {
 	UINT start = 0, end = 0;

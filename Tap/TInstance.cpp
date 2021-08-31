@@ -156,6 +156,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		win->OnMouseMove(wParam, TPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 		break;
 	case WM_CHAR:
+	case WM_KEYDOWN:
 		if (charHandler.Get())
 		{
 			messageOutput mo = messageOutput::negative;

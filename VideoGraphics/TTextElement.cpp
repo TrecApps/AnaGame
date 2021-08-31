@@ -36,6 +36,23 @@ public:
 	{
 		element->OnInputChar(ch, count);
 	}
+
+	/**
+	 * Method: TTextIntercepter::OnChar
+	 * Purpose: Takes a character and feeds it to its target
+	 * Parameters: WCHAR ch - the character to report
+	 *          UINT count number of instances of that character to feed
+	 *          UINT flags - flags (usually 0)
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void OnKey(UINT ch, UINT count, UINT flags) override
+	{
+		element->OnInputKey(ch, count);
+	}
+
+
 	/**
 	 * Method: TTextIntercepter::OnLoseFocus
 	 * Purpose: Alerts the target that it will no longer be intercepting characters
@@ -464,6 +481,11 @@ void TTextElement::OnCutCopyPaste(control_text_mode mode)
 }
 
 bool TTextElement::OnInputChar(WCHAR ch, UINT count)
+{
+	return false;
+}
+
+bool TTextElement::OnInputKey(UINT key, UINT count)
 {
 	return false;
 }

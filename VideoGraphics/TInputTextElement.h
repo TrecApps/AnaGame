@@ -108,6 +108,17 @@ public:
 	virtual bool OnInputChar(WCHAR ch, UINT count) override;
 
 	/**
+	 * Method:TTextElement::OnInputKey
+	 * Purpose: handles keyboard input that does not qualify as characters
+	 * Parameters: UINT key - the key pressed
+	 *				UINT count - the number of times to process it
+	 * Returns: bool - whether the object did anything with it
+	 *
+	 * Attributes: override
+	 */
+	virtual bool OnInputKey(UINT key, UINT count);
+
+	/**
 	 * Method: TInputTextElement::OnTransferText
 	 * Purpose: Performs the transfer of text
 	 * Parameters: UINT newPos - the new position of the text
