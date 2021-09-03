@@ -15,6 +15,7 @@
 #include "JsArray.h"
 #include <TFunctionGen.h>
 #include "JsTimer.h"
+#include "JsString.h"
 
 
 static TDataArray<TString> standardOperators;
@@ -181,6 +182,9 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
         variables.addEntry(L"Iterator", TcVariableHolder(false, L"", GetJsIteratorMethods(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
         //Promise
         this->classes.addEntry(L"Promise", JsPromise::GetPromiseClass(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment));
+
+        // String methods
+        variables.addEntry(L"String", TcVariableHolder(false, L"", JsString::GetJsStringMethods(TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment)));
 
         // Timer Functionality
         JsTimer::GetFunctions(variables, TrecPointerKey::GetSubPointerFromSoft<TVariable>(self), environment);
@@ -2501,6 +2505,7 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
             exp.Trim();
         }
 
+
         bool foundOp = false;
         for (UINT Rust = 0; Rust < standardOperators.Size(); Rust++)
         {
@@ -2535,6 +2540,21 @@ UINT TcJavaScriptInterpretor::ProcessExpression(UINT& parenth, UINT& square, UIN
 
         switch (ch)
         {
+        case L'.':
+            if (expressions.Size())
+            {
+                JavaScriptExpression2 exp = expressions[expressions.Size() - 1];
+                if (exp.varName.IsEmpty() && exp.value.Get())
+                {
+                    switch (exp.value->GetVarType())
+                    {
+                    case var_type::string:
+                    case var_type::collection:
+                        ret.errorObject2 = exp.value;
+                    }
+                }
+            }
+            break;
         case L']':
             if (!square)
             {
@@ -2847,7 +2867,9 @@ UINT TcJavaScriptInterpretor::ProcessVariableExpression(UINT& parenth, UINT& squ
     bool loopAround;
     bool isAsync = false;
 
-    TrecPointer<TVariable> var, vThis;
+    TrecPointer<TVariable> var = ret.errorObject2, vThis;
+
+    ret.errorObject2.Nullify();
 
 throughString:
     loopAround = false;
@@ -2990,6 +3012,37 @@ throughString:
                     vThis = var;
 
                 var = classAtt.def;
+            }
+            else if (var->GetVarType() == var_type::string)
+            {
+                TString s(L"String");
+                bool pres = false;
+                TrecPointer<TVariable> stringMethods = GetVariable(s, pres);
+                if (!stringMethods.Get() || stringMethods->GetVarType() != var_type::collection)
+                {
+                    ret.returnCode = ret.ERR_INTERNAL;
+                    ret.errorMessage.Set(L"Failed to Access String Methods in Method call on String data");
+
+                    return uret;
+                }
+
+                if (!phrase.Compare(L"length"))
+                {
+                    var = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(var->GetSize());
+                }
+                else
+                {
+                    TrecPointer<TVariable> method = dynamic_cast<TContainerVariable*>(var.Get())->GetValue(phrase, pres);
+                    if (!method.Get())
+                    {
+                        ret.returnCode = ret.ERR_BROKEN_REF;
+                        ret.errorMessage.Format(L"Failed to find '%ws' Method on String object!", phrase.GetConstantBuffer().getBuffer());
+
+                        return uret;
+                    }
+                    vThis = var;
+                    var = method;
+                }
             }
         }
         else
