@@ -175,7 +175,7 @@ void TPresenter::Shutdown()
     TObject::ThreadRelease();
 }
 
-HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample)
+HRESULT TPresenter::ProcessFrame(TrecComPointer<IMFMediaType> pCurrentType, IMFSample* pSample, UINT32* punInterlaceMode, BOOL* pbDeviceChanged, IMFSample** ppOutputSample)
 {
     TObject::ThreadLock();
 
@@ -185,19 +185,15 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
         return MF_E_SHUTDOWN;
     }
 
-    if (punInterlaceMode == NULL || pCurrentType == NULL || pSample == NULL || pbDeviceChanged == NULL)
+    if (punInterlaceMode == NULL || pCurrentType.Get() == NULL || pSample == NULL || pbDeviceChanged == NULL)
     {
         TObject::ThreadRelease();
         return E_POINTER;
     }
 
     *pbDeviceChanged = FALSE;
- 
-    IMFSample* samp = nullptr;
 
-    pSample->QueryInterface(__uuidof(IMFSample), (void**)&samp);
-
-    MFVideoInterlaceMode unInterlaceMode = pCurrentType ? (MFVideoInterlaceMode)MFGetAttributeUINT32(pCurrentType, MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) :
+    MFVideoInterlaceMode unInterlaceMode = pCurrentType.Get() ? (MFVideoInterlaceMode)MFGetAttributeUINT32(pCurrentType.Get(), MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive) :
         MFVideoInterlaceMode::MFVideoInterlace_Unknown;
 
     //
@@ -205,20 +201,46 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
         //
     if (MFVideoInterlace_MixedInterlaceOrProgressive == unInterlaceMode)
     {
-        BOOL fInterlaced = MFGetAttributeUINT32(samp, MFSampleExtension_Interlaced, FALSE);
+        BOOL fInterlaced = MFGetAttributeUINT32(pSample, MFSampleExtension_Interlaced, FALSE);
         if (!fInterlaced) // Progressive sample
             *punInterlaceMode = MFVideoInterlace_Progressive;
        else
         {
-            BOOL fBottomFirst = MFGetAttributeUINT32(samp, MFSampleExtension_BottomFieldFirst, FALSE);
+            BOOL fBottomFirst = MFGetAttributeUINT32(pSample, MFSampleExtension_BottomFieldFirst, FALSE);
             if (fBottomFirst)
                 *punInterlaceMode = MFVideoInterlace_FieldInterleavedLowerFirst;
             else
                 *punInterlaceMode = MFVideoInterlace_FieldInterleavedUpperFirst;
         }
     }
+    DWORD bufferCount = 0;
+    
+    HRESULT ret = pSample->GetBufferCount(&bufferCount);
 
-    samp->Release();
+    if (FAILED(ret))
+    {
+        ThreadRelease();
+        return ret;
+    }
+
+    TrecComPointer<IMFMediaBuffer>::TrecComHolder medBuf;
+    ret = pSample->ConvertToContiguousBuffer(medBuf.GetPointerAddress());
+    if (FAILED(ret))
+    {
+        ThreadRelease();
+        return ret;
+    }
+
+    TString res(board->SetFrame(boardSlot, pCurrentType, medBuf.Extract()));
+
+    if (res.GetSize())
+    {
+        assert(!res.GetSize());
+    }
+    
+    // To-Do: Add Support for 
+
+    /*
     TrecComPointer<ID3D11Device> d3dDevice = engine->getDeviceD();
     TrecComPointer<ID3D11DeviceContext> d3dContext = engine->getDevice();
     if (!d3dDevice.Get() || !d3dContext.Get())
@@ -279,7 +301,7 @@ HRESULT TPresenter::ProcessFrame(IMFMediaType* pCurrentType, IMFSample* pSample,
     dxgiSurf->Unmap();
     dxgiSurf->Release();
     if (d3dText) d3dText->Release();
-    return res;
+    return res;*/
 }
 /**
  * Method: TPresenter::SetCurrentMediaType

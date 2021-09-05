@@ -384,7 +384,7 @@ private:
     // Stream Specific References
     IMFMediaEventQueue* m_pEventQueue;                  // Event queue
     TComCallback<TStreamSink> callBack;                 // Callback mechanism
-    IMFMediaType* currType;                             // Type of Media
+    TrecComPointer<IMFMediaType> currType;                             // Type of Media
     TrecPointer<TScheduler> schedule;
     TrecComPointer<ID3D11Device> device;
 };

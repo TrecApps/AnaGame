@@ -483,6 +483,14 @@ HRESULT TEVRPresenter::IsMediaTypeSupported(IMFMediaType* type)
     return E_NOTIMPL;
 }
 
+MFOffset MakeOffset(float value)
+{
+    MFOffset ret;
+    ret.value = short(value);
+    ret.fract = WORD(65536 * (value - ret.value));
+    return ret;
+}
+
 void MakeArea(MFVideoArea& rect, float left, float top, DWORD width, DWORD height)
 {
     rect.Area.cx = width;
@@ -590,12 +598,6 @@ done:
 }
 
 
-MFOffset MakeOffset(float value)
-{
-    MFOffset ret;
-    ret.value = short(value);
-    ret.fract = WORD(65536 * (value - ret.value));
-}
 
 
 HRESULT TEVRPresenter::CreateOptimalMediaType(IMFMediaType* prop, IMFMediaType** opt)

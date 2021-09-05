@@ -4,15 +4,6 @@
 #include "TVideoMarker.h"
 #include <mfapi.h>
 
-/**
- * struct: guid_to_dxgi_vid_formats
- * Purpose: Serves as a link between MF Video Formats and their DXGI Format counterparts 
- */
-typedef struct guid_to_dxgi_vid_formats
-{
-    GUID guidFormat;        // Reference to a Video Format
-    DXGI_FORMAT dxgiFormat; // THe DXGI Format
-}guid_to_dxgi_vid_formats;
 
 /**
  * Array of format links
@@ -450,9 +441,9 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetCurrentMediaType(_Outptr_ IMFMe
 
     ThreadLock();
     HRESULT ret = S_OK;
-    if (currType)
+    if (currType.Get())
     {
-        *ppMediaType = currType;
+        *ppMediaType = currType.Get();
         currType->AddRef();
     }
     else
@@ -478,7 +469,7 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::GetMajorType(__RPC__out GUID* pgui
 
     ThreadLock();
     HRESULT ret = S_OK;
-    if (currType)
+    if (currType.Get())
     {
         currType->GetGUID(MF_MT_MAJOR_TYPE, pguidMajorType);
     }
@@ -643,13 +634,11 @@ STDMETHODIMP_(HRESULT __stdcall) TStreamSink::SetCurrentMediaType(IMFMediaType* 
         schedule->SetFrameRate(s_DefaultFrameRate);
     }
 
-    
-
-    if (currType)
-        currType->Release();
     if (SUCCEEDED(MFGetAttributeSize(pMediaType, MF_MT_FRAME_SIZE, &textureDesc.Width, &textureDesc.Height)))
     {
-        currType = pMediaType;
+        TrecComPointer<IMFMediaType>::TrecComHolder holder;
+        *holder.GetPointerAddress() = pMediaType;
+        currType = holder.Extract();
         currType->AddRef();
     }
     if (PlayState::State_Started != this->state && PlayState::State_Paused != state)

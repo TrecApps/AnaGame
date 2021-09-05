@@ -5,6 +5,7 @@
 #include "TWindowEngine.h"
 #include "TBrush.h"
 #include "TBitmapBrush.h"
+#include <mfobjects.h>
 
 class TWindow;
 
@@ -35,6 +36,16 @@ public:
 	TrecComPointer<ID2D1StrokeStyle> value;
 };
 
+/**
+ * struct: guid_to_dxgi_vid_formats
+ * Purpose: Serves as a link between MF Video Formats and their DXGI Format counterparts
+ */
+typedef struct guid_to_dxgi_vid_formats
+{
+	GUID guidFormat;        // Reference to a Video Format
+	DXGI_FORMAT dxgiFormat; // THe DXGI Format
+}guid_to_dxgi_vid_formats;
+
 
 /**
  * Enum Class: TShape
@@ -62,6 +73,7 @@ public:
 	bool set;
 	D2D1_RECT_F loc;
 	TrecComPointer<ID2D1Bitmap> frame;
+	TrecComPointer<IMFMediaType> mediaType;
 };
 
 /**
@@ -402,6 +414,16 @@ public:
 	 * Returns: bool - whether it was successful or not			
 	 */
 	bool SetFrame(DXGI_MAPPED_RECT& data, D2D1_SIZE_U& size, UINT slot);
+
+	/**
+	 * Method: DrawingBoard::SetFrame
+	 * Purpose: Sets the Frame, taking into account the media type and adapting the bitmap to accomidate it
+	 * Parameters: UINT slot - the slot to use
+	 *				TrecComPointer<IMFMediaType> mediaType - the type of media to use
+	 *				TrecComPointer<IMFSample> sample - the sample to set up
+	 * Return: TString - error message (empty if no error)
+	 */
+	TString SetFrame(UINT slot, TrecComPointer<IMFMediaType> mediaType, TrecComPointer<IMFMediaBuffer> sample);
 
 	/**
 	 * Method: DrawingBoard::PresentFrame

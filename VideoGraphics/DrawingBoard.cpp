@@ -1,7 +1,21 @@
 #include "DrawingBoard.h"
 #include "TGeometry.h"
+#include <mfapi.h>
 
-
+/**
+ * Array of format links
+ */
+guid_to_dxgi_vid_formats const formatTableDraw[] = {
+	{MFVideoFormat_NV12, DXGI_FORMAT_NV12},
+	{MFVideoFormat_YUY2, DXGI_FORMAT_YUY2},
+	{MFVideoFormat_RGB32, DXGI_FORMAT_R32G32B32_FLOAT},
+	//{MFVideoFormat_RGB24, DXGI_FORMAT_RGB24},
+	//{MFVideoFormat_RGB555, DXGI_FORMAT_RGB555},
+	//{MFVideoFormat_RGB565, DXGI_FORMAT_RGB565},
+	//{MFVideoFormat_RGB8, DXGI_FORMAT_RGB8},
+	{MFVideoFormat_AYUV, DXGI_FORMAT_AYUV},
+	{MFVideoFormat_NV11, DXGI_FORMAT_NV11}
+};
 
 
 static D2D1_PIXEL_FORMAT desc2d = { DXGI_FORMAT_B8G8R8A8_UNORM , D2D1_ALPHA_MODE_IGNORE };
@@ -823,6 +837,88 @@ bool DrawingBoard::SetFrame(DXGI_MAPPED_RECT& data, D2D1_SIZE_U& size, UINT slot
 	}
 	ThreadLock();
 	return ret;
+}
+
+TString DrawingBoard::SetFrame(UINT slot, TrecComPointer<IMFMediaType> mediaType, TrecComPointer<IMFMediaBuffer> sample)
+{
+	if (slot < slots.Size() || !slots[slot].set)
+		return L"Invalid Slot!";
+
+	if (!mediaType.Get() || !sample.Get())
+		return L"Null Pointer Parameter";
+
+	bool update = slots[slot].mediaType.Get() != nullptr;
+	bool hasCurrentType = update;
+	
+	
+	UINT x = 0, y = 0, cX = 0, cY = 0;
+	if(FAILED(MFGetAttributeSize(mediaType.Get(), MF_MT_FRAME_SIZE, &x, &y))) return L"Media Type Lacked size attributes!";
+	if (hasCurrentType)
+		MFGetAttributeSize(slots[slot].mediaType.Get(), MF_MT_FRAME_SIZE, &cX, &cY);
+	if (x != cX || y != cY)
+		update = true;
+
+
+	GUID paramGuid = GUID_NULL, curGuid = GUID_NULL;
+
+	if (FAILED(mediaType->GetGUID(MF_MT_SUBTYPE, &paramGuid))) return L"Media Type Lacked Subtype attributes!";
+	if (hasCurrentType)
+		slots[slot].mediaType->GetGUID(MF_MT_SUBTYPE, &curGuid);
+	if (paramGuid != curGuid)
+		update = true;
+
+
+	UINT newStride = 0, curStride = 0;
+	if (FAILED(mediaType->GetUINT32(MF_MT_DEFAULT_STRIDE, &newStride))) return L"Stride Not supplied!";
+	if (hasCurrentType)
+		slots[slot].mediaType->GetUINT32(MF_MT_DEFAULT_STRIDE, &curStride);
+	if (curStride != newStride)
+		update = true;
+
+	
+
+	if (update)
+	{
+		
+		D2D1_SIZE_U memSize{ x, y };
+		D2D1_BITMAP_PROPERTIES props;
+		ZeroMemory(&props, sizeof(props));
+		props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_STRAIGHT;
+		bool found = false;
+		for (UINT Rust = 0; Rust < ARRAYSIZE(formatTableDraw); Rust++)
+		{
+			if (paramGuid == formatTableDraw[Rust].guidFormat)
+			{
+				found = true;
+				props.pixelFormat.format = formatTableDraw[Rust].dxgiFormat;
+				break;
+			}
+		}
+		if (!found)
+			return L"Unsupported Media Type!";
+		
+		TrecComPointer<ID2D1Bitmap>::TrecComHolder holder;
+		if (FAILED(this->renderer->CreateBitmap(memSize, props, holder.GetPointerAddress())))
+			return L"Failed to Create a Bitmap for video frame!";
+	
+		slots[slot].mediaType = mediaType;
+		slots[slot].frame = holder.Extract();
+		frameBrush.Nullify();
+	}
+
+	BYTE* bytes = nullptr;
+	DWORD curSize = 0;	DWORD frameSize = 0;
+	if(FAILED(sample->Lock(&bytes, &frameSize, &curSize))) return L"Failed to Access Data";
+
+
+	D2D1_RECT_U memCopy{0,0,x,y};
+	HRESULT ret = slots[slot].frame->CopyFromMemory(&memCopy, bytes, newStride);
+
+	sample->Unlock();
+
+
+
+	return TString(SUCCEEDED(ret) ? L"" : L"Failed to copy video frame data");
 }
 
 void DrawingBoard::PresentFrame(UINT slot)
