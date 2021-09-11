@@ -778,6 +778,10 @@ HRESULT AddBranchToPartialTopology(
 	IMFTopologyNode* pSourceNode = NULL;
 	IMFTopologyNode* pTransformNode = nullptr;
 	IMFTopologyNode* pOutputNode = NULL;
+
+	IMFTopologyNode* node = nullptr;
+	IMFTransform* toRgba = nullptr;
+
 	GUID streamType;
 
 	BOOL fSelected = FALSE;
@@ -825,19 +829,32 @@ HRESULT AddBranchToPartialTopology(
 				goto done;
 			}
 
-
-
 			// Create the output node for the renderer.
 			IMFStreamSink* streamer = nullptr;
 			
 			sink->GetStreamSinkByIndex(0, &streamer);
 			hr = AddOutputNode(pTopology, streamer, 0, &pOutputNode);
+
 			if (FAILED(hr))
 			{
 				goto done;
 			}
+
 			
-			hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
+			UINT transformFlags = MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_LOCALMFT | MFT_ENUM_FLAG_SORTANDFILTER;
+			
+			HRESULT hr2 = CoCreateInstance(CLSID_VideoProcessorMFT, nullptr, 0, __uuidof(IMFTransform), (void**)&toRgba);
+			if (SUCCEEDED(hr2))
+			{
+				assert(SUCCEEDED(MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &node)));
+
+				node->SetObject(toRgba);
+
+				pSourceNode->ConnectOutput(0, node, 0);
+				hr = node->ConnectOutput(0, pOutputNode, 0);
+			}
+			else
+				hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
 		}
 	}
 	// else: If not selected, don't add the branch. 
@@ -846,6 +863,8 @@ done:
 	SafeRelease(pSD);
 	SafeRelease(pSourceNode);
 	SafeRelease(pOutputNode);
+	SafeRelease(toRgba);
+	SafeRelease(node);
 	return hr;
 }
 
