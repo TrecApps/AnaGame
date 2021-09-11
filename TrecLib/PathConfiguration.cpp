@@ -48,9 +48,9 @@ PathConfiguration::~PathConfiguration()
  * Parameters: TString& name - the name of the path config
  * Returns: void
  */
-void PathConfiguration::SetName(TString& name)
+void PathConfiguration::SetName(const TString& name)
 {
-	name.Set(name);
+	this->name.Set(name);
 }
 
 /**
@@ -88,7 +88,7 @@ bool PathConfiguration::SetCurrentPath(UINT index)
  *
  * Note: this is meant to be called while the object is being read from the file and should not be used during the regular Runtime of Anagame
  */
-void PathConfiguration::SetCurrentPath(TString& path)
+void PathConfiguration::SetCurrentPath(const TString& path)
 {
 	currentPath.Set(path);
 }
@@ -110,7 +110,7 @@ TString PathConfiguration::GetCurrentPath()
  * Parameters: TString& path - the path to add
  * Returns: bool - whether it was a valid path on the system
  */
-bool PathConfiguration::AddToPath(TString& path)
+bool PathConfiguration::AddToPath(const TString& path)
 {
 	if (!TFileShell::GetFileInfo(path).Get())
 		return false;
@@ -279,7 +279,7 @@ void InitializePathConfig()
  * Note: If the command is brand new (meaning it was not already documented, the new object will have the current path set to command.
  *    If the command currently exists, the current path will not be set to command.
  */
-bool SubmitPossiblePath(TString& command, TString& path)
+bool SubmitPossiblePath(const TString& command, const TString& path)
 {
 	InitializePathConfig();
 	if (!TFileShell::GetFileInfo(path).Get())
@@ -311,7 +311,7 @@ bool SubmitPossiblePath(TString& command, TString& path)
  *               UINT number - the index in the command to set the current command to
  * Returns: UINT - Error code. 0 = Success, 1 = number was out of bounds, 2 = command did not exist
  */
-UINT SetCurrentPath(TString& command, UINT number)
+UINT SetCurrentPath(const TString& command, UINT number)
 {
 	InitializePathConfig();
 	for (UINT Rust = 0; Rust < paths.Size(); Rust++)
@@ -330,7 +330,7 @@ UINT SetCurrentPath(TString& command, UINT number)
  * Parameters: TString& command - the command to get the path from
  * Returns: TString - the current path of the command
  */
-TString GetCurrentPath(TString& command)
+TString GetCurrentPath(const TString& command)
 {
 	InitializePathConfig();
 	for (UINT Rust = 0; Rust < paths.Size(); Rust++)
@@ -380,7 +380,7 @@ void PersistPathConfig()
  *               UINT number - the index of the possible path
  * Returns: TString - the path at the given location (empty if out of bounds)
  */
-TString GetPossiblePath(TString& command, UINT number)
+TString GetPossiblePath(const TString& command, UINT number)
 {
 	InitializePathConfig();
 

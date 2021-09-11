@@ -44,7 +44,7 @@ public:
      * Parameters: TString& name - the name of the path config
      * Returns: void
      */
-    void SetName(TString& name);
+    void SetName(const TString& name);
 
     /**
      * Method: PathConfiguration::GetName
@@ -71,7 +71,7 @@ public:
      *
      * Note: this is meant to be called while the object is being read from the file and should not be used during the regular Runtime of Anagame
      */
-    void SetCurrentPath(TString& path);
+    void SetCurrentPath(const TString& path);
 
     /**
      * Method: PathConfiguration::GetCurrentPath
@@ -88,7 +88,7 @@ public:
      * Parameters: TString& path - the path to add
      * Returns: bool - whether it was a valid path on the system
      */
-    bool AddToPath(TString& path);
+    bool AddToPath(const TString& path);
 
     /**
      * Method: PathConfiguration::Persist
@@ -142,7 +142,7 @@ private:
   * Note: If the command is brand new (meaning it was not already documented, the new object will have the current path set to command.
   *    If the command currently exists, the current path will not be set to command.
   */
-bool SubmitPossiblePath(TString& command, TString& path);
+bool _TREC_LIB_DLL SubmitPossiblePath(const TString& command, const TString& path);
 
 /**
  * Function: SetCurrentPath
@@ -151,7 +151,7 @@ bool SubmitPossiblePath(TString& command, TString& path);
  *               UINT number - the index in the command to set the current command to
  * Returns: UINT - Error code. 0 = Success, 1 = number was out of bounds, 2 = command did not exist
  */
-UINT SetCurrentPath(TString& command, UINT number);
+UINT _TREC_LIB_DLL SetCurrentPath(const TString& command, UINT number);
 
 /**
  * Function: GetCurrentPath
@@ -159,7 +159,7 @@ UINT SetCurrentPath(TString& command, UINT number);
  * Parameters: TString& command - the command to get the path from
  * Returns: TString - the current path of the command
  */
-TString GetCurrentPath(TString& command);
+TString _TREC_LIB_DLL GetCurrentPath(const TString& command);
 
 /**
  * Function: PersistPathConfig
@@ -169,7 +169,7 @@ TString GetCurrentPath(TString& command);
  *
  * Note: Meant to be called when the DLL shuts down
  */
-void PersistPathConfig();
+void _TREC_LIB_DLL PersistPathConfig();
 
 /**
  * Function: GetPossiblePath
@@ -178,4 +178,4 @@ void PersistPathConfig();
  *               UINT number - the index of the possible path
  * Returns: TString - the path at the given location (empty if out of bounds)
  */
-TString GetPossiblePath(TString& command, UINT number);
+TString _TREC_LIB_DLL GetPossiblePath(const TString& command, UINT number);
