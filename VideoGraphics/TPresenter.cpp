@@ -231,23 +231,43 @@ HRESULT TPresenter::ProcessFrame(TrecComPointer<IMFMediaType> pCurrentType, IMFS
         return ret;
     }
 
-    TString res(board->SetFrame(boardSlot, pCurrentType, medBuf.Extract()));
-
-    if (res.GetSize())
-    {
-        assert(!res.GetSize());
-    }
-    
-    // To-Do: Add Support for 
-
-    /*
     TrecComPointer<ID3D11Device> d3dDevice = engine->getDeviceD();
+    TrecComPointer<IMFMediaBuffer> buff = medBuf.Extract();
     TrecComPointer<ID3D11DeviceContext> d3dContext = engine->getDevice();
     if (!d3dDevice.Get() || !d3dContext.Get())
     {
         ThreadRelease();
         return E_POINTER;
     }
+    if (!videoDevice && FAILED(ret = d3dDevice->QueryInterface<>(&videoDevice)))
+    {
+        ThreadRelease();
+        return ret;
+    }
+
+/*    D3D11_TEXTURE2D_DESC d2d_desc;
+    ZeroMemory(&d2d_desc, sizeof(d2d_desc));
+
+    d2d_desc.Format
+
+        ;;*/// d3dDevice->CreateTexture2D();
+
+
+
+    TString res(board->SetFrame(boardSlot, pCurrentType, buff));
+
+    if (res.GetSize())
+    {
+        assert(!res.GetSize());
+    }
+
+    ThreadRelease();
+    return ret;
+    
+    // To-Do: Add Support for 
+
+    /*
+
     
     ID3D11Texture2D* d3dText = nullptr;
     UINT resourceIndex = 0;
@@ -263,12 +283,7 @@ HRESULT TPresenter::ProcessFrame(TrecComPointer<IMFMediaType> pCurrentType, IMFS
     }
 
 
-    if (!videoDevice && FAILED(res = d3dDevice->QueryInterface<>(&videoDevice)))
-    {
-        ThreadRelease();
-        if (d3dText) d3dText->Release();
-        return res;
-    }
+
 
     D3D11_TEXTURE2D_DESC td;
     ZeroMemory(&td, sizeof(td));

@@ -9,15 +9,16 @@
  * Array of format links
  */
 guid_to_dxgi_vid_formats const formatTable[] = {
-    {MFVideoFormat_NV12, DXGI_FORMAT_NV12},
-    {MFVideoFormat_YUY2, DXGI_FORMAT_YUY2},
-    {MFVideoFormat_RGB32, DXGI_FORMAT_R32G32B32_FLOAT},
+    //{MFVideoFormat_NV12, DXGI_FORMAT_NV12},
+    //{MFVideoFormat_YUY2, DXGI_FORMAT_YUY2},
+    {MFVideoFormat_ARGB32, DXGI_FORMAT_R8G8B8A8_TYPELESS},
     //{MFVideoFormat_RGB24, DXGI_FORMAT_RGB24},
     //{MFVideoFormat_RGB555, DXGI_FORMAT_RGB555},
     //{MFVideoFormat_RGB565, DXGI_FORMAT_RGB565},
     //{MFVideoFormat_RGB8, DXGI_FORMAT_RGB8},
-    {MFVideoFormat_AYUV, DXGI_FORMAT_AYUV},
-    {MFVideoFormat_NV11, DXGI_FORMAT_NV11}
+    //{MFVideoFormat_AYUV, DXGI_FORMAT_AYUV},
+    //{MFVideoFormat_NV11, DXGI_FORMAT_NV11}
+    //{MFVideoFormat_RGBA}
 };
 
 /**
@@ -79,23 +80,23 @@ void GetBytesPerPixel(GUID guidSubtype, sFraction& m_imageBytesPP)
  */
 GUID const* const s_pVideoFormats[] =
 {
-    &MFVideoFormat_NV12,
+    //&MFVideoFormat_NV12,
     //&MFVideoFormat_IYUV,
-    &MFVideoFormat_YUY2,
+    //&MFVideoFormat_YUY2,
     //&MFVideoFormat_YV12,
-    &MFVideoFormat_RGB32,
+    &MFVideoFormat_ARGB32,
     //&MFVideoFormat_RGB32,
     //&MFVideoFormat_RGB24,
     //&MFVideoFormat_RGB555,
     //&MFVideoFormat_RGB565,
     //&MFVideoFormat_RGB8,
-    &MFVideoFormat_AYUV,
+    //&MFVideoFormat_AYUV,
     //&MFVideoFormat_UYVY,
     //&MFVideoFormat_YVYU,
     //&MFVideoFormat_YVU9,
     //&MFVideoFormat_v410,
     //&MFVideoFormat_I420,
-    &MFVideoFormat_NV11//,
+    //&MFVideoFormat_NV11//,
     //&MFVideoFormat_420O
 };
 

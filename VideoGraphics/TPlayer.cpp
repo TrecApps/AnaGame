@@ -30,7 +30,60 @@ HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource);
 HRESULT CreatePlaybackTopology(IMFMediaSource* pSource,
 	IMFPresentationDescriptor* pPD, TrecPointer<DrawingBoard> board, IMFTopology** ppTopology, TrecComPointer<TMediaSink>& sink);
 
+HRESULT PrepSourceReader(IMFMediaSource* pSource, IMFSourceReader** ppReader)
+{
+	if (!pSource || !ppReader)
+		return E_POINTER;
 
+	HRESULT ret = S_OK;
+	IMFAttributes* atts = nullptr;
+	ret = MFCreateAttributes(&atts, 2);
+
+	if (FAILED(ret))
+		return ret;
+
+	atts->SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, TRUE);
+	atts->SetUINT32(MF_READWRITE_DISABLE_CONVERTERS, FALSE);
+
+	IMFMediaType* type = nullptr;
+	ret = MFCreateMediaType(&type);
+	if (FAILED(ret))
+	{
+		atts->Release();
+		atts = nullptr;
+		return;
+	}
+
+
+	ret = MFCreateSourceReaderFromMediaSource(pSource, atts, ppReader);
+
+	if (FAILED(ret))
+	{
+		atts->Release();
+		atts = nullptr;
+		type->Release();
+		type = nullptr;
+		return;
+	}
+
+	type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_ARGB32);
+
+
+	ret = (*ppReader)->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, type);
+
+
+	atts->Release();
+	atts = nullptr;
+	type->Release();
+	type = nullptr;
+	if (FAILED(ret))
+	{
+		(*ppReader)->Release();
+		*ppReader = nullptr;
+	}
+
+	return ret;
+}
 
 
 /**
@@ -836,6 +889,11 @@ HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource)
 	// Get the IMFMediaSource interface from the media source.
 	hr = pSource->QueryInterface(IID_PPV_ARGS(ppSource));
 
+	if (SUCCEEDED(hr))
+	{
+		
+	}
+
 done:
 	SafeRelease(pSourceResolver);
 	SafeRelease(pSource);
@@ -881,6 +939,7 @@ HRESULT CreatePlaybackTopology(IMFMediaSource* pSource, IMFPresentationDescripto
 	// Adjust Topology settings for Direct3D Compatibility
 	pTopology->SetUINT32(MF_TOPOLOGY_HARDWARE_MODE, MFTOPOLOGY_HWMODE_USE_HARDWARE);
 	pTopology->SetUINT32(MF_TOPOLOGY_DXVA_MODE, MFTOPOLOGY_DXVA_FULL);
+
 
 done:
 	SafeRelease(pTopology);

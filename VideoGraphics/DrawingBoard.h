@@ -69,11 +69,14 @@ class _VIDEO_GRAPHICS TVideoSlot
 public:
 	TVideoSlot();
 	TVideoSlot(const TVideoSlot& copy);
+	~TVideoSlot();
 
-	bool set;
+	bool set, textUsable;
 	D2D1_RECT_F loc;
 	TrecComPointer<ID2D1Bitmap> frame;
 	TrecComPointer<IMFMediaType> mediaType;
+	TrecComPointer<ID3D11Texture2D> texture;
+	TrecComPointer<IMFMediaBuffer> sample;
 };
 
 /**

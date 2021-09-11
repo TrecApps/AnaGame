@@ -6,15 +6,15 @@
  * Array of format links
  */
 guid_to_dxgi_vid_formats const formatTableDraw[] = {
-	{MFVideoFormat_NV12, DXGI_FORMAT_NV12},
-	{MFVideoFormat_YUY2, DXGI_FORMAT_YUY2},
-	{MFVideoFormat_RGB32, DXGI_FORMAT_R32G32B32_FLOAT},
+	//{MFVideoFormat_NV12, DXGI_FORMAT_NV12},
+	//{MFVideoFormat_YUY2, DXGI_FORMAT_YUY2},
+	{MFVideoFormat_RGB32, DXGI_FORMAT_R8G8B8A8_TYPELESS},
 	//{MFVideoFormat_RGB24, DXGI_FORMAT_RGB24},
 	//{MFVideoFormat_RGB555, DXGI_FORMAT_RGB555},
 	//{MFVideoFormat_RGB565, DXGI_FORMAT_RGB565},
 	//{MFVideoFormat_RGB8, DXGI_FORMAT_RGB8},
-	{MFVideoFormat_AYUV, DXGI_FORMAT_AYUV},
-	{MFVideoFormat_NV11, DXGI_FORMAT_NV11}
+	//{MFVideoFormat_AYUV, DXGI_FORMAT_AYUV},
+	//{MFVideoFormat_NV11, DXGI_FORMAT_NV11}
 };
 
 
@@ -841,18 +841,25 @@ bool DrawingBoard::SetFrame(DXGI_MAPPED_RECT& data, D2D1_SIZE_U& size, UINT slot
 
 TString DrawingBoard::SetFrame(UINT slot, TrecComPointer<IMFMediaType> mediaType, TrecComPointer<IMFMediaBuffer> sample)
 {
-	if (slot < slots.Size() || !slots[slot].set)
+	ThreadLock();
+	if (slot >= slots.Size() || !slots[slot].set)
+	{
+		ThreadRelease();
 		return L"Invalid Slot!";
-
+	}
 	if (!mediaType.Get() || !sample.Get())
+	{
+		ThreadRelease();
 		return L"Null Pointer Parameter";
-
+	}
 	bool update = slots[slot].mediaType.Get() != nullptr;
 	bool hasCurrentType = update;
-	
-	
+
+
 	UINT x = 0, y = 0, cX = 0, cY = 0;
-	if(FAILED(MFGetAttributeSize(mediaType.Get(), MF_MT_FRAME_SIZE, &x, &y))) return L"Media Type Lacked size attributes!";
+	if (FAILED(MFGetAttributeSize(mediaType.Get(), MF_MT_FRAME_SIZE, &x, &y))) {
+		ThreadRelease(); return L"Media Type Lacked size attributes!";
+	}
 	if (hasCurrentType)
 		MFGetAttributeSize(slots[slot].mediaType.Get(), MF_MT_FRAME_SIZE, &cX, &cY);
 	if (x != cX || y != cY)
@@ -861,7 +868,9 @@ TString DrawingBoard::SetFrame(UINT slot, TrecComPointer<IMFMediaType> mediaType
 
 	GUID paramGuid = GUID_NULL, curGuid = GUID_NULL;
 
-	if (FAILED(mediaType->GetGUID(MF_MT_SUBTYPE, &paramGuid))) return L"Media Type Lacked Subtype attributes!";
+	if (FAILED(mediaType->GetGUID(MF_MT_SUBTYPE, &paramGuid))) {
+		ThreadRelease(); return L"Media Type Lacked Subtype attributes!";
+	}
 	if (hasCurrentType)
 		slots[slot].mediaType->GetGUID(MF_MT_SUBTYPE, &curGuid);
 	if (paramGuid != curGuid)
@@ -869,17 +878,19 @@ TString DrawingBoard::SetFrame(UINT slot, TrecComPointer<IMFMediaType> mediaType
 
 
 	UINT newStride = 0, curStride = 0;
-	if (FAILED(mediaType->GetUINT32(MF_MT_DEFAULT_STRIDE, &newStride))) return L"Stride Not supplied!";
+	if (FAILED(mediaType->GetUINT32(MF_MT_DEFAULT_STRIDE, &newStride))) {
+		ThreadRelease(); return L"Stride Not supplied!";
+	}
 	if (hasCurrentType)
 		slots[slot].mediaType->GetUINT32(MF_MT_DEFAULT_STRIDE, &curStride);
 	if (curStride != newStride)
 		update = true;
 
-	
+
 
 	if (update)
 	{
-		
+
 		D2D1_SIZE_U memSize{ x, y };
 		D2D1_BITMAP_PROPERTIES props;
 		ZeroMemory(&props, sizeof(props));
@@ -895,12 +906,16 @@ TString DrawingBoard::SetFrame(UINT slot, TrecComPointer<IMFMediaType> mediaType
 			}
 		}
 		if (!found)
+		{
+			ThreadRelease();
 			return L"Unsupported Media Type!";
-		
+		}
 		TrecComPointer<ID2D1Bitmap>::TrecComHolder holder;
 		if (FAILED(this->renderer->CreateBitmap(memSize, props, holder.GetPointerAddress())))
+		{
+			ThreadRelease();
 			return L"Failed to Create a Bitmap for video frame!";
-	
+		}
 		slots[slot].mediaType = mediaType;
 		slots[slot].frame = holder.Extract();
 		frameBrush.Nullify();
@@ -908,14 +923,16 @@ TString DrawingBoard::SetFrame(UINT slot, TrecComPointer<IMFMediaType> mediaType
 
 	BYTE* bytes = nullptr;
 	DWORD curSize = 0;	DWORD frameSize = 0;
-	if(FAILED(sample->Lock(&bytes, &frameSize, &curSize))) return L"Failed to Access Data";
+	if (FAILED(sample->Lock(&bytes, &frameSize, &curSize))) {
+		ThreadRelease(); return L"Failed to Access Data";
+	}
 
 
-	D2D1_RECT_U memCopy{0,0,x,y};
+	D2D1_RECT_U memCopy{ 0,0,x,y };
 	HRESULT ret = slots[slot].frame->CopyFromMemory(&memCopy, bytes, newStride);
 
 	sample->Unlock();
-
+	ThreadRelease();
 
 
 	return TString(SUCCEEDED(ret) ? L"" : L"Failed to copy video frame data");
@@ -946,7 +963,7 @@ void DrawingBoard::PresentFrame(UINT slot)
 	// To-Do: Set Brush to use frame
 
 	frameBrush->FillRectangle(slots[slot].loc);
-	if(!isDrawing)
+	if (!isDrawing)
 		EndDraw();
 	ThreadRelease();
 }
@@ -1007,7 +1024,7 @@ bool DrawingBoard::GetVideoPosition(UINT slot, D2D1_RECT_F& loc)
 
 TVideoSlot::TVideoSlot()
 {
-	set = true;
+	set = true; textUsable = false;
 	loc = { 0.0f,0.0f,0.0f,0.0f };
 }
 
@@ -1016,6 +1033,16 @@ TVideoSlot::TVideoSlot(const TVideoSlot& copy)
 	set = copy.set;
 	loc = copy.loc;
 	frame = copy.frame;
+	texture = copy.texture;
+	textUsable = copy.textUsable;
+	mediaType = copy.mediaType;
+	sample = copy.sample;
+}
+
+TVideoSlot::~TVideoSlot()
+{
+	if (sample.Get())
+		sample->Unlock();
 }
 
 StrokeStyle::StrokeStyle()

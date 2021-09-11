@@ -175,6 +175,7 @@
     <ClInclude Include="TCamera.h" />
     <ClInclude Include="TColor.h" />
     <ClInclude Include="TComCommon.h" />
+    <ClInclude Include="TComputer.h" />
     <ClInclude Include="TEVRPresenter.h" />
     <ClInclude Include="TEVRScheduler.h" />
     <ClInclude Include="TFrameToSurfaceMFT.h" />
@@ -213,6 +214,7 @@
     <ClCompile Include="TBrush.cpp" />
     <ClCompile Include="TCamera.cpp" />
     <ClCompile Include="TColor.cpp" />
+    <ClCompile Include="TComputer.cpp" />
     <ClCompile Include="TEVRPresenter.cpp" />
     <ClCompile Include="TEVRScheduler.cpp" />
     <ClCompile Include="TFrameToSurfaceMFT.cpp" />
