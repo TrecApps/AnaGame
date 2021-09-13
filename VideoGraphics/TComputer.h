@@ -3,6 +3,7 @@
 #include <TrecReference.h>
 #include <d3d11.h>
 #include <TString.h>
+#include <mfobjects.h>
 
 
 /**
@@ -30,7 +31,22 @@ public:
 	 * Returns: TString - error message (empty if no error)
 	 */
 	TString ConvertNV12ToRGBA8(BYTE* nv12, UINT byteLength, BYTE** rgba8, UINT& newByteLength);
+	
+	/**
+	 * Method: TComputer::ConvertMediaFormats
+	 * Purpose: Converts Data type from format to another
+	 * Parameters: IMFMediaType* inputType - details about the input type
+	 *				GUID outputType - the output type
+	 *				IMFSample* input - input sample
+	 *				IMFSample** output - output sample
+	 * Returns: HRESULT - the result of the operation
+	 */
+	HRESULT ConvertMediaFormats(IMFMediaType* inputType, GUID outputType, IMFSample* input, IMFSample** output);
+
+	bool IsConversionSupported(GUID input, GUID output);
 protected:
+
+	
 
 	/**
 	 * The Device Context to Use

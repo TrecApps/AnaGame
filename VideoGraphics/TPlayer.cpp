@@ -51,7 +51,7 @@ HRESULT PrepSourceReader(IMFMediaSource* pSource, IMFSourceReader** ppReader)
 	{
 		atts->Release();
 		atts = nullptr;
-		return;
+		return ret;
 	}
 
 
@@ -63,7 +63,7 @@ HRESULT PrepSourceReader(IMFMediaSource* pSource, IMFSourceReader** ppReader)
 		atts = nullptr;
 		type->Release();
 		type = nullptr;
-		return;
+		return ret;
 	}
 
 	type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_ARGB32);
@@ -843,15 +843,45 @@ HRESULT AddBranchToPartialTopology(
 			
 			UINT transformFlags = MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_LOCALMFT | MFT_ENUM_FLAG_SORTANDFILTER;
 			
-			HRESULT hr2 = CoCreateInstance(CLSID_VideoProcessorMFT, nullptr, 0, __uuidof(IMFTransform), (void**)&toRgba);
+			HRESULT hr2 = CoCreateInstance(CLSID_VideoProcessorMFT, nullptr, CLSCTX_INPROC_SERVER, __uuidof(IMFTransform), (void**)&toRgba);
 			if (SUCCEEDED(hr2))
 			{
-				assert(SUCCEEDED(MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &node)));
+				DWORD typeCount = 0;
+				assert(SUCCEEDED(typeHand->GetMediaTypeCount(&typeCount)));
 
+				bool found = false;
+
+				for (UINT Rust = 0; Rust < typeCount && !found; Rust++)
+				{
+					IMFMediaType* mType = nullptr;
+					assert(SUCCEEDED(typeHand->GetMediaTypeByIndex(Rust, &mType)));
+					hr2 = toRgba->SetInputType(0, mType, 0);
+					mType->Release();
+					if (FAILED(hr2))
+						continue;
+
+					for (UINT C = 0; SUCCEEDED(toRgba->GetOutputAvailableType(0, C, &mType)); C++)
+					{
+						GUID subType = GUID_NULL;
+						assert(SUCCEEDED(mType->GetGUID(MF_MT_SUBTYPE, &subType)));
+						mType->Release();
+						if (subType == MFVideoFormat_ARGB32)
+						{
+							found = true;
+							break;
+						}
+					}
+				}
+
+				assert(found);
+
+				assert(SUCCEEDED(MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &node)));
+				pTopology->AddNode(node);
 				node->SetObject(toRgba);
 
 				pSourceNode->ConnectOutput(0, node, 0);
 				hr = node->ConnectOutput(0, pOutputNode, 0);
+				assert(SUCCEEDED(hr));
 			}
 			else
 				hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
@@ -912,7 +942,7 @@ HRESULT CreateMediaSource(PCWSTR pszURL, IMFMediaSource** ppSource)
 	{
 		
 	}
-
+	
 done:
 	SafeRelease(pSourceResolver);
 	SafeRelease(pSource);
