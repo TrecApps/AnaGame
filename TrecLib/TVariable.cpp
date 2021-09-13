@@ -104,3 +104,8 @@ TrecPointer<TVariable> TVariable::Clone()
 {
 	return TrecPointer<TVariable>();
 }
+
+bool TVObject::HasVariableSupport()
+{
+	return true;
+}

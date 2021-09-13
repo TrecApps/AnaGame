@@ -47,7 +47,7 @@ public:
      * 
      * Attributes: override
      */
-    virtual TrecObjectPointer GetObject()override;
+    TrecObjectPointer GetObject();
 
     /**
      * Method: TObjectVariable::GetObject

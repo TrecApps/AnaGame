@@ -1,6 +1,4 @@
 #pragma once
-
-#include "TObject.h"
 #include "TrecReference.h"
 #include "TString.h"
 
@@ -30,7 +28,7 @@ typedef enum class var_type
  * Class: TVariable
  * Purpose: Represents a given variable in the system, abstract to support both Objects and raw data types
  */
-class _TREC_LIB_DLL TVariable : public TObject
+class _TREC_LIB_DLL TVariable: public TObject
 {
 public:
 
@@ -45,19 +43,6 @@ public:
      * Attributes: abstract
      */
     virtual var_type GetVarType() = 0;
-
-
-    /**
-     * Method: TVariable::GetObject
-     * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
-     * Parameters: void
-     * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
-     *
-     * Note: Call "GetVarType" first and make sure that it returns "var_type::native_object" first
-     *
-     * Attributes: abstract
-     */
-    virtual TrecObjectPointer GetObject() = 0;
 
 
     /**
@@ -126,6 +111,48 @@ public:
      */
     virtual void SetSelf(TrecPointer<TVariable>);
 };
+
+
+/**
+ * Class: TVObject
+ * Purpose: Adds TVariable integration to the TObject
+ */
+class TVObject : public TObject
+{
+public:
+
+    /**
+     * Method: TVObject::HasVariableSupport
+     * Purpose: Reports whether this TObject has TVariable support (since TVariables expect TObjects to exist and thus Raw TObjects cannot support it)
+     * Parameters: void
+     * Returns: bool - false for base object, true for any object that extends TVObject
+     */
+    virtual bool HasVariableSupport();
+
+    /**
+     * Method: TVObject::GetVariable
+     * Purpose: Revtrieves a value in Variable form
+     * Parameters: const TString& name - the name of the variable
+     *              TrecPointer<TVariable>& var - holds the variable retrieved if valid
+     * Returns: bool - whether the variable was valid or not
+     * 
+     * Attributes: abstract
+     */
+    virtual bool GetVariable(const TString& name, TrecPointer<TVariable>& var) = 0;
+
+    /**
+     * Method: TVObject::SetVariable
+     * Purpose: Sets a value in Variable form
+     * Parameters: const TString& name - the name of the variable
+     *              TrecPointer<TVariable> var - the value to set
+     * Returns: bool - whether the variable was valid or not
+     *
+     * Attributes: abstract
+     */
+    virtual bool SetVariable(const TString& name, TrecPointer<TVariable> var) = 0;
+};
+
+
 
 namespace VarFunction
 {

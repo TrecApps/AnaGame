@@ -33,10 +33,6 @@ var_type TAsyncVariable::GetVarType()
     return var_type::async;
 }
 
-TrecObjectPointer TAsyncVariable::GetObject()
-{
-    return TrecObjectPointer();
-}
 
 TString TAsyncVariable::GetString()
 {

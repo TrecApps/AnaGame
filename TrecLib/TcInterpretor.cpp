@@ -97,20 +97,6 @@ var_type TcInterpretor::GetVarType()
 	return var_type::interpretor;
 }
 
-/**
- * Method: TcInterpretor::GetObject
- * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
- * Parameters: void
- * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
- *
- * Note: Call "GetVarType" first and make sure that it returns "var_type::native_object" first
- *
- * Attributes: override
- */
-TrecObjectPointer TcInterpretor::GetObject()
-{
-	return TrecObjectPointer();
-}
 
 /**
  * Method: TcInterpretor::GetObject

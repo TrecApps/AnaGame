@@ -34,6 +34,11 @@ TObject::~TObject()
 	DeleteCriticalSection(&thread);
 }
 
+bool TObject::HasVariableSupport()
+{
+	return false;
+}
+
 /*
 * Method: TObject::GetAnaGameType
 * Purpose: Retrieves the AnaGame type

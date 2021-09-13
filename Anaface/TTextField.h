@@ -847,7 +847,7 @@ protected:
 class TTextFieldIntercepter : public TTextIntercepter
 {
 	friend class TTextField;
-
+	friend class TrecPointerKey;
 private:
 	TrecSubPointer<TControl, TTextField> textControl;
 

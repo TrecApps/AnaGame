@@ -13,6 +13,7 @@
 #include <TDataArray.h>
 #include <TFile.h>
 #include <TTextRenderer.h>
+#include <TTextIntercepter.h>
 #include <TPoint.h>
 
 #include <DrawingBoard.h>

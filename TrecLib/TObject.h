@@ -48,6 +48,14 @@ public:
 	*/
 	virtual ~TObject();
 
+	/**
+	 * Method: TObject::HasVariableSupport
+	 * Purpose: Reports whether this TObject has TVariable support (since TVariables expect TObjects to exist and thus Raw TObjects cannot support it)
+	 * Parameters: void
+	 * Returns: bool - false for base object, true for any object that extends TObjectVariable
+	 */
+	virtual bool HasVariableSupport();
+
 	/*
 	* Method: TObject::GetAnaGameType
 	* Purpose: Retrieves the AnaGame type

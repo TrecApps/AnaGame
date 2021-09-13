@@ -2,17 +2,17 @@
 
 
 
-const CHAR* _sem_V = "POSITION";
-const CHAR* _sem_BN = "BINORMAL";
-const CHAR* _sem_BW = "BLENDWEIGHT";
-const CHAR* _sem_BI = "BLENDINDICES";
-const CHAR* _sem_T = "TEXCOORD";
-const CHAR* _sem_N = "NORMAL";
-const CHAR* _sem_C = "COLOR";
-const CHAR* _sem_PT = "POSITIONT";
-const CHAR* _sem_TA = "TANGENT";
-const CHAR* _sem_F = "FOG";
-const CHAR* _sem_TS = "TESSFACTOR";
+const CHAR* __sem_V = "POSITION";
+const CHAR* __sem_BN = "BINORMAL";
+const CHAR* __sem_BW = "BLENDWEIGHT";
+const CHAR* __sem_BI = "BLENDINDICES";
+const CHAR* __sem_T = "TEXCOORD";
+const CHAR* __sem_N = "NORMAL";
+const CHAR* __sem_C = "COLOR";
+const CHAR* __sem_PT = "POSITIONT";
+const CHAR* __sem_TA = "TANGENT";
+const CHAR* __sem_F = "FOG";
+const CHAR* __sem_TS = "TESSFACTOR";
 
 bool TObjModelParserBuilder::FormatSupport(const TString& extension)
 {
@@ -166,7 +166,6 @@ TString TObjModelParser::Save(TrecPointer<ArenaModel> model)
 
     // Normals
     writer.WriteString(L"\n# Normals\n");
-    TString line;
     for (UINT Rust = 0; Rust < this->normal.Size(); Rust++)
     {
         TVertex v = normal[Rust];
@@ -177,7 +176,6 @@ TString TObjModelParser::Save(TrecPointer<ArenaModel> model)
 
     // Textures
     writer.WriteString(L"\n# Textures\n");
-    TString line;
     for (UINT Rust = 0; Rust < this->textures.Size(); Rust++)
     {
         T2Float v = textures[Rust];

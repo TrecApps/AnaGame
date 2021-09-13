@@ -41,10 +41,6 @@ var_type TFunctionGen::GetVarType()
 	return var_type::interpretor_gen;
 }
 
-TrecObjectPointer TFunctionGen::GetObject()
-{
-	return TrecObjectPointer();
-}
 
 TString TFunctionGen::GetString()
 {

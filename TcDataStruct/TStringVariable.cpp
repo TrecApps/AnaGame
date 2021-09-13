@@ -31,19 +31,6 @@ var_type TStringVariable::GetVarType()
 }
 
 
-/**
- * Method: TStringVariable::GetObject
- * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
- * Parameters: void
- * Returns: TrecObjectPointer - The Object referered by the variable (or null if not an object)
- *
- * Note: Call "IsObject" first before calling this method as there is no point if the "IsObject" returns false
- */
-TrecObjectPointer TStringVariable::GetObject()
-{
-    return TrecObjectPointer();
-}
-
 
 /**
  * Method: TStringVariable::GetObject
