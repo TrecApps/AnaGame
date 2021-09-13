@@ -52,6 +52,16 @@ void TXMLHttpRequest::SetProperty(TString& prop, TrecPointer<TVariable> value)
 
 }
 
+bool TXMLHttpRequest::SetVariable(const TString& prop, TrecPointer<TVariable> var)
+{
+	return false;
+}
+
+bool TXMLHttpRequest::GetVariable(const TString& prop, TrecPointer<TVariable>& var)
+{
+	return false;
+}
+
 TrecPointer<TVariable> GetXmlHttpRequestMethods()
 {
 	return TrecPointer<TVariable>();

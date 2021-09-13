@@ -3,7 +3,7 @@
 #include <TcInterpretor.h>
 #include "THttpClientSocket.h"
 
-class _ANA_SOCK_DLL TXMLHttpRequest : public TObject
+class _ANA_SOCK_DLL TXMLHttpRequest : public TVObject
 {
 public:
 	TXMLHttpRequest();
@@ -19,6 +19,10 @@ public:
 	void SetRequestHeader(const TString& header, const TString& value);
 
 	void SetProperty(TString& prop, TrecPointer<TVariable> value);
+
+	virtual bool SetVariable(const TString& prop, TrecPointer<TVariable> var) override;
+
+	virtual bool GetVariable(const TString& prop, TrecPointer<TVariable>& var) override;
 
 private:
 	THttpRequest request;

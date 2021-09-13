@@ -81,6 +81,11 @@ THttpMethod THttpRequest::GetMethod()
 	return method;
 }
 
+TString THttpRequest::GetBody()
+{
+	return body;
+}
+
 void THttpRequest::SetBody(const TString& body)
 {
 	this->body.Set(body);
