@@ -1,19 +1,6 @@
 #include "TObjModelParser.h"
 
 
-
-const CHAR* __sem_V = "POSITION";
-const CHAR* __sem_BN = "BINORMAL";
-const CHAR* __sem_BW = "BLENDWEIGHT";
-const CHAR* __sem_BI = "BLENDINDICES";
-const CHAR* __sem_T = "TEXCOORD";
-const CHAR* __sem_N = "NORMAL";
-const CHAR* __sem_C = "COLOR";
-const CHAR* __sem_PT = "POSITIONT";
-const CHAR* __sem_TA = "TANGENT";
-const CHAR* __sem_F = "FOG";
-const CHAR* __sem_TS = "TESSFACTOR";
-
 bool TObjModelParserBuilder::FormatSupport(const TString& extension)
 {
     return extension.CompareNoCase(L"obj") == 0 || extension.CompareNoCase(L".obj");

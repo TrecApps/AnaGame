@@ -1,7 +1,8 @@
 #pragma once
+#include "THttpClientSocket.h"
 #include <TObject.h>
 #include <TcInterpretor.h>
-#include "THttpClientSocket.h"
+
 
 class _ANA_SOCK_DLL TXMLHttpRequest : public TVObject
 {
@@ -18,7 +19,9 @@ public:
 
 	void SetRequestHeader(const TString& header, const TString& value);
 
-	void SetProperty(TString& prop, TrecPointer<TVariable> value);
+	void SetProperty(const TString& prop, TrecPointer<TVariable> value);
+
+	TrecPointer<TVariable> GetProperty(const TString& prop);
 
 	virtual bool SetVariable(const TString& prop, TrecPointer<TVariable> var) override;
 
@@ -27,6 +30,11 @@ public:
 private:
 	THttpRequest request;
 	THttpResponse response;
+
+	TrecPointer<THttpClientSocket> clientSocket;
+	TrecPointer<THttpClientSocket::TAsyncHttpResponse> asyncResponse;
+
+	USHORT state;
 
 	TrecSubPointer<TVariable, TcInterpretor> abort, error, 
 		load, loadend, loadstart, progress, timeout;

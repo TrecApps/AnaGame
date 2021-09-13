@@ -1,16 +1,16 @@
 #include "T3DModelParser.h"
 
-const CHAR* ___sem_V = "POSITION";
-const CHAR* ___sem_BN = "BINORMAL";
-const CHAR* ___sem_BW = "BLENDWEIGHT";
-const CHAR* ___sem_BI = "BLENDINDICES";
-const CHAR* ___sem_T = "TEXCOORD";
-const CHAR* ___sem_N = "NORMAL";
-const CHAR* ___sem_C = "COLOR";
-const CHAR* ___sem_PT = "POSITIONT";
-const CHAR* ___sem_TA = "TANGENT";
-const CHAR* ___sem_F = "FOG";
-const CHAR* ___sem_TS = "TESSFACTOR";
+const CHAR* _3_sem_V = "POSITION";
+const CHAR* _3_sem_BN = "BINORMAL";
+const CHAR* _3_sem_BW = "BLENDWEIGHT";
+const CHAR* _3_sem_BI = "BLENDINDICES";
+const CHAR* _3_sem_T = "TEXCOORD";
+const CHAR* _3_sem_N = "NORMAL";
+const CHAR* _3_sem_C = "COLOR";
+const CHAR* _3_sem_PT = "POSITIONT";
+const CHAR* _3_sem_TA = "TANGENT";
+const CHAR* _3_sem_F = "FOG";
+const CHAR* _3_sem_TS = "TESSFACTOR";
 
 TDataArray<TrecPointer<T3DModelParserBuilder>> modelBuilders;
 
@@ -96,11 +96,10 @@ typedef enum class model_compiler_target{
 }model_compiler_target;
 
 class ModelCompiler {
-	friend class TDataArray < ModelCompiler>;
+	friend class TDataArray<ModelCompiler>;
 private:
 	model_compiler_target mct;
-	ModelCompiler()
-	{
+	ModelCompiler() {
 		this->mct = model_compiler_target::mct_normal_3;
 	}
 public:
@@ -226,15 +225,15 @@ void T3DModelParser::Compile(D3D11_INPUT_ELEMENT_DESC* desc, UINT count, TString
 	{
 		D3D11_INPUT_ELEMENT_DESC* curDesc = &desc[Rust];
 
-		if (!strcmp(curDesc->SemanticName, ___sem_V))
+		if (!strcmp(curDesc->SemanticName, _3_sem_V))
 		{
 			modelComps.push_back(ModelCompiler(curDesc->Format == DXGI_FORMAT_R32G32B32_FLOAT ? model_compiler_target::mct_vertex_3 : model_compiler_target::mct_vertex_4));
 		}
-		else if (!strcmp(curDesc->SemanticName, ___sem_T))
+		else if (!strcmp(curDesc->SemanticName, _3_sem_T))
 		{
 			modelComps.push_back(ModelCompiler(model_compiler_target::mct_texture_2));
 		}
-		else if (!strcmp(curDesc->SemanticName, ___sem_N))
+		else if (!strcmp(curDesc->SemanticName, _3_sem_N))
 		{
 			modelComps.push_back(ModelCompiler(model_compiler_target::mct_normal_3));
 		}

@@ -1,4 +1,5 @@
 #pragma once
+#define _WINSOCKAPI_
 #include <TObject.h>
 #include <TFileShell.h>
 #include "AnaSock.h"

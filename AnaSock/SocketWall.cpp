@@ -106,11 +106,11 @@ TString PrepareSocketWall(socket_wall_type type, TrecPointer<TFileShell> info)
         theWall = TrecPointerKey::GetNewTrecPointerAlt<SocketWall, AdminSocketWall>();
         break;
     case socket_wall_type::allow:
-        theWall = TrecPointerKey::GetNewTrecPointerAlt<SocketWall, AllowListSocketWall>(type);
+        theWall = TrecPointerKey::GetNewTrecPointerAlt<SocketWall, AllowListSocketWall>(info);
         theWall->Works(ret);
         break;
     case socket_wall_type::block:
-        theWall = TrecPointerKey::GetNewTrecPointerAlt<SocketWall, BlockListSocketWall>(type);
+        theWall = TrecPointerKey::GetNewTrecPointerAlt<SocketWall, BlockListSocketWall>(info);
         theWall->Works(ret);
     }
 

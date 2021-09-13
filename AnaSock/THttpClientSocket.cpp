@@ -1,5 +1,30 @@
 #include "pch.h"
 #include "THttpClientSocket.h"
+#include <TcNativeInterpretor.h>
+
+DWORD __stdcall RunHttpRequest(LPVOID param)
+{
+	TrecPointer<THttpClientSocket::TAsyncHttpResponse>* pResp = (TrecPointer<THttpClientSocket::TAsyncHttpResponse>*)param;
+	TrecPointer<THttpClientSocket::TAsyncHttpResponse> resp = *pResp;
+	delete pResp;
+	pResp = nullptr;
+
+	Sleep(20);
+	if (!resp->GetSocket().Get())
+		resp->SetError(L"No Socket Available!");
+	else
+	{
+		TString err;
+		THttpRequest req(resp->GetRequest());
+		resp->SetResponse(resp->GetSocket()->Transmit(req, err));
+		resp->SetError(err);
+		resp->SetResponseReady();
+	}
+
+	return 0;
+}
+
+
 
 THttpClientSocket::THttpClientSocket() : TClientSocket(1)
 {
@@ -7,6 +32,13 @@ THttpClientSocket::THttpClientSocket() : TClientSocket(1)
 
 THttpClientSocket::~THttpClientSocket()
 {
+}
+
+void THttpClientSocket::SetSelf(TrecPointer<THttpClientSocket> sock)
+{
+	if (this != sock.Get())
+		throw L"Self reference is not equal to this!";
+	self = TrecPointerKey::GetSoftPointerFromTrec<>(sock);
 }
 
 THttpResponse THttpClientSocket::Transmit(THttpRequest& req, TString& error)
@@ -37,6 +69,25 @@ THttpResponse THttpClientSocket::Transmit(THttpRequest& req, TString& error)
 		cReq += data[Rust];
 
 	return THttpResponse(cReq);
+}
+
+TrecPointer<THttpClientSocket::TAsyncHttpResponse> THttpClientSocket::TransmitAsync(THttpRequest& req)
+{
+	auto ret = TrecPointerKey::GetNewTrecPointer<THttpClientSocket::TAsyncHttpResponse>(this->sock, GetCurrentThreadId(), req);
+
+	ret->SetSocket(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+
+	auto param = new TrecPointer<THttpClientSocket::TAsyncHttpResponse>(ret);
+	DWORD id = 0;
+	HANDLE h = 0;
+	if (h = CreateThread(nullptr, 0, RunHttpRequest, param, CREATE_SUSPENDED, &id))
+	{
+		ret->SetRunThread(id);
+		ResumeThread(h);
+		return ret;
+	}
+
+	return TrecPointer<TAsyncHttpResponse >();
 }
 
 THttpRequest::THttpRequest(THttpMethod method)
@@ -300,6 +351,28 @@ THttpResponse::THttpResponse(const THttpResponse& copy) : headers(copy.headers)
 	this->body.Set(copy.body);
 	this->httpType.Set(copy.httpType);
 	this->status.Set(copy.status);
+	TDataEntry<TString> entry;
+	for (UINT Rust = 0; copy.headers.GetEntryAt(Rust,entry ); Rust++)
+	{
+		this->headers.addEntry(entry.key, entry.object);
+	}
+}
+
+void THttpResponse::operator=(const THttpResponse& copy)
+{
+	this->body.Set(copy.body);
+	this->httpType.Set(copy.httpType);
+	this->status.Set(copy.status);
+	TDataEntry<TString> entry;
+	for (UINT Rust = 0; copy.headers.GetEntryAt(Rust, entry); Rust++)
+	{
+		this->headers.addEntry(entry.key, entry.object);
+	}
+}
+
+THttpResponse::THttpResponse()
+{
+
 }
 
 short THttpResponse::GetStatusCode()
@@ -347,4 +420,90 @@ bool THttpResponse::GetHeader(UINT index, TString& key, TString& value)
 TString THttpResponse::GetBody()
 {
 	return body;
+}
+
+THttpClientSocket::TAsyncHttpResponse::TAsyncHttpResponse(SOCKET sock, UINT threadId, const THttpRequest& req): request(req)
+{
+	this->sock = sock;
+	this->threadId = threadId;
+	this->ready = false;
+	this->runningThread = 0;
+}
+
+THttpClientSocket::TAsyncHttpResponse::TAsyncHttpResponse(const TAsyncHttpResponse& copy): response(copy.response), request(copy.request)
+{
+	this->error.Set(copy.error);
+	this->sock = copy.sock;
+	this->ready = copy.ready;
+	this->threadId = copy.threadId;
+	this->runningThread = copy.runningThread;
+}
+
+bool THttpClientSocket::TAsyncHttpResponse::Abort()
+{
+	ThreadLock();
+	bool ret = false;
+	if (!ready)
+	{
+		ret = true;
+		if (socket.Get())
+			socket->Close();
+		error.Set(L"Terminated");
+	}
+	ThreadRelease();
+	return ret;
+}
+
+void THttpClientSocket::TAsyncHttpResponse::SetResponse(const THttpResponse& resp)
+{
+	ThreadLock();
+	this->response = resp;
+	ThreadRelease();
+}
+
+void THttpClientSocket::TAsyncHttpResponse::SetError(const TString& err)
+{
+	ThreadLock();
+	if(!ready)
+	this->error.Set(err);
+	ThreadRelease();
+}
+
+void THttpClientSocket::TAsyncHttpResponse::SetResponseReady()
+{
+	ThreadLock();
+	ready = true;
+	ThreadRelease();
+}
+
+void THttpClientSocket::TAsyncHttpResponse::SetRunThread(UINT runningThread)
+{
+	this->runningThread = runningThread;
+}
+
+bool THttpClientSocket::TAsyncHttpResponse::IsComplete()
+{
+	return ready;
+}
+
+void THttpClientSocket::TAsyncHttpResponse::SetSocket(TrecPointer<THttpClientSocket> socket)
+{
+	this->socket = socket;
+}
+
+TrecPointer<THttpClientSocket> THttpClientSocket::TAsyncHttpResponse::GetSocket()
+{
+	return socket;
+}
+
+THttpResponse THttpClientSocket::TAsyncHttpResponse::GetResponse(TString& error)
+{
+	if (!ready)
+		error.Set(L"Incomplete!");
+	return this->response;
+}
+
+THttpRequest THttpClientSocket::TAsyncHttpResponse::GetRequest()
+{
+	return request;
 }
