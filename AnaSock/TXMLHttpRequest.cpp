@@ -59,6 +59,52 @@ namespace JSXmlHttpRequest
 		if(retStr.GetSize())
 			ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(retStr);
 	}
+
+	void JsOpen(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
+	{
+		if (!IsValidObjectType(params, ret))
+			return;
+
+		dynamic_cast<TXMLHttpRequest*>(
+			dynamic_cast<TObjectVariable*>(params[0].Get())->GetObjectW().Get())->Open(params, ret);
+	}
+
+
+	void JsSend(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
+	{
+		if (!IsValidObjectType(params, ret))
+			return;
+
+		try {
+			dynamic_cast<TXMLHttpRequest*>(
+				dynamic_cast<TObjectVariable*>(params[0].Get())->GetObjectW().Get())->Send(params.Size() > 1 ? params[1] : TrecPointer<TVariable>());
+		}
+		catch (UINT u)
+		{
+			if (u == 1)
+			{
+				ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+				ret.errorMessage.Set(L"Request Not properly configured!");
+			}
+		}
+	}
+
+
+	void JsSetRequestHeader(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
+	{
+		if (!IsValidObjectType(params, ret))
+			return;
+
+		if (params.Size() < 3 || !params[1].Get() || !params[2].Get())
+		{
+			ret.returnCode = ret.ERR_IMPROPER_TYPE;
+			ret.errorMessage.Set(L"SetRequestHeader expected a header and value for parameters!");
+			return;
+		}
+
+		dynamic_cast<TXMLHttpRequest*>(
+			dynamic_cast<TObjectVariable*>(params[0].Get())->GetObjectW().Get())->SetRequestHeader(params[1]->GetString(), params[2]->GetString());
+	}
 };
 
 
