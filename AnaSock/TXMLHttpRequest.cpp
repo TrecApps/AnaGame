@@ -24,6 +24,13 @@ namespace JSXmlHttpRequest
 		return true;
 	}
 
+	void JsConstructor(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
+	{
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(
+			TrecPointerKey::GetTrecObjectPointer(TrecPointerKey::GetNewSelfTrecPointer<TXMLHttpRequest>())
+			);
+	}
+
 	void JsAbort(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 	{
 		if (!IsValidObjectType(params, ret))
@@ -250,6 +257,11 @@ bool TXMLHttpRequest::GetVariable(const TString& prop, TrecPointer<TVariable>& v
 
 }
 
+TString TXMLHttpRequest::GetType()
+{
+	return TString(L"TXMLHttpRequest;") + TObject::GetType();
+}
+
 TrecPointer<TVariable> TXMLHttpRequest::GetProperty(const TString& prop)
 {
 	if (!prop.Compare(L"readyState"))
@@ -257,7 +269,32 @@ TrecPointer<TVariable> TXMLHttpRequest::GetProperty(const TString& prop)
 	return TrecPointer<TVariable>();
 }
 
-TrecPointer<TVariable> GetXmlHttpRequestMethods()
+void GetXmlHttpRequestMethods(TDataMap<TcVariableHolder>& variables, TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env)
 {
-	return TrecPointer<TVariable>();
+	TcVariableHolder hold;
+	if (variables.retrieveEntry(L"TXMLHttpRequest::send", hold))
+		return;
+	hold.mut = false;
+
+
+	hold.value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSXmlHttpRequest::JsAbort, parent, env);
+	variables.addEntry(L"TXMLHttpRequest::abort", hold);
+
+	hold.value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSXmlHttpRequest::JsGetAllResponseHeaders, parent, env);
+	variables.addEntry(L"TXMLHttpRequest::getAllResponseHeaders", hold);
+
+	hold.value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSXmlHttpRequest::JsGetResponseHeader, parent, env);
+	variables.addEntry(L"TXMLHttpRequest::getResponseHeader", hold);
+
+	hold.value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSXmlHttpRequest::JsOpen, parent, env);
+	variables.addEntry(L"TXMLHttpRequest::open", hold);
+
+	hold.value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSXmlHttpRequest::JsSend, parent, env);
+	variables.addEntry(L"TXMLHttpRequest::send", hold);
+
+	hold.value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSXmlHttpRequest::JsSetRequestHeader, parent, env);
+	variables.addEntry(L"TXMLHttpRequest::setRequestHeader", hold);
+
+	hold.value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JSXmlHttpRequest::JsConstructor, parent, env);
+	variables.addEntry(L"XMLHttpRequest", hold);
 }
