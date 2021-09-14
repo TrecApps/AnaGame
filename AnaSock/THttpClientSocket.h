@@ -16,6 +16,15 @@ typedef enum class THttpMethod
     http_patch
 }THttpMethod;
 
+/**
+ * Function: ConvertHttpMethodForms
+ * Purpose: Assesses an Http method in string form
+ * Parameters: const TString& strMethod - the string holding the HTTP method data
+ *               THttpMethod& actMethod - the Http method in enum form
+ * Returns: bool - whether the string passed in was valid or not
+ */
+bool ConvertHttpMethodForms(const TString& strMethod, THttpMethod& actMethod);
+
 class _ANA_SOCK_DLL THttpRequest : public TObject
 {
 public:

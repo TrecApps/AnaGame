@@ -33,7 +33,7 @@ private:
 
 	TrecPointer<THttpClientSocket> clientSocket;
 	TrecPointer<THttpClientSocket::TAsyncHttpResponse> asyncResponse;
-
+	bool useAsync;
 	USHORT state;
 
 	TrecSubPointer<TVariable, TcInterpretor> abort, error, 

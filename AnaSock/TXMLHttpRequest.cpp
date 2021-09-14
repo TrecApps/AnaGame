@@ -109,16 +109,83 @@ TString TXMLHttpRequest::GetResponseHeader(const TString& header)
 
 void TXMLHttpRequest::Open(TDataArray<TrecPointer<TVariable>>& variables, ReturnObject& ret)
 {
+	TString method, url;
+	useAsync = true;
+	TString user, password;
 
+	if (variables.Size() < 3)
+	{
+		ret.returnCode = ret.ERR_TOO_FEW_PARMS;
+		ret.errorMessage.Set(L"Too few params, needed (request, url) at minimum!");
+		return;
+	}
 
+	method.Set(variables[1].Get() ? variables[1]->GetString() : L"null");
+	url.Set(variables[2].Get() ? variables[2]->GetString() : L"null");
+
+	if (variables.Size() >= 4)
+		VarFunction::IsTrue(variables[3], useAsync, 0xFF);
+	THttpMethod meth = THttpMethod::http_get;
+	if (!ConvertHttpMethodForms(method, meth))
+	{
+		ret.returnCode = ret.ERR_IMPROPER_NAME;
+		ret.errorMessage.Set(L"Second parameter needed to be a string of [GET, POST, PUT, DELETE, HEAD, OPTIONS, CONNECT, PATCH]");
+		return;
+	}
+
+	// To-Do: Handle Username/Password
+
+	clientSocket = TrecPointerKey::GetNewSelfTrecPointer<THttpClientSocket>();
+	if (clientSocket->InitializeSocket(url))
+	{
+		// Assume URL is invalid
+		ret.errorMessage.Set(L"DOM Error! URL not valid!");
+		ret.returnCode = ret.ERR_GENERIC_ERROR;
+		return;
+	}
+
+	this->request.UpdateMethod(meth);
+
+	int slash = url.Find(L'/', url.Find(L'.'));
+	if (slash > 0)
+	{
+		request.SetEndpoint(url.SubString(slash));
+	}
 }
 
-void TXMLHttpRequest::Send(TrecPointer<TVariable>)
+void TXMLHttpRequest::Send(TrecPointer<TVariable> pBody)
 {
+	if (!clientSocket.Get() || clientSocket->Connect())
+	{
+		throw (UINT)1;
+	}
+	if (pBody.Get())
+	{
+		switch (pBody->GetVarType())
+		{
+		case var_type::native_object:
+
+			break;
+		default:
+			request.SetBody(pBody->GetString());
+		}
+	}
+
+	if (useAsync)
+	{
+		this->asyncResponse = clientSocket->TransmitAsync(request);
+		// To-Do: Set up thread that monitors response and runs handlers as a response
+	}
+	else
+	{
+		TString err;
+		this->response = clientSocket->Transmit(request, err);
+	}
 }
 
 void TXMLHttpRequest::SetRequestHeader(const TString& header, const TString& value)
 {
+	request.AddHeader(header, value);
 }
 
 void TXMLHttpRequest::SetProperty(const TString& prop, TrecPointer<TVariable> value)
