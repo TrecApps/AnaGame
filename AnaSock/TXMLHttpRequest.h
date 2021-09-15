@@ -47,9 +47,10 @@ private:
 	TrecPointer<THttpClientSocket::TAsyncHttpResponse> asyncResponse;
 	bool useAsync;
 	USHORT state;
+	TString url;
 
 	TrecSubPointer<TVariable, TcInterpretor> abort, error, 
-		load, loadend, loadstart, progress, timeout;
+		load, loadend, loadstart, progress, timeout, stateChange;
 };
 
 void _ANA_SOCK_DLL GetXmlHttpRequestMethods(TDataMap<TcVariableHolder>& variables, TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env);

@@ -204,6 +204,7 @@ void TXMLHttpRequest::Open(TDataArray<TrecPointer<TVariable>>& variables, Return
 	{
 		request.SetEndpoint(url.SubString(slash));
 	}
+	this->url.Set(url);
 }
 
 void TXMLHttpRequest::Send(TrecPointer<TVariable> pBody)
@@ -248,11 +249,92 @@ void TXMLHttpRequest::SetProperty(const TString& prop, TrecPointer<TVariable> va
 
 bool TXMLHttpRequest::SetVariable(const TString& prop, TrecPointer<TVariable> var)
 {
+	if (!prop.Compare(L"onreadystatechange"))
+	{
+		if (var.Get() && var->GetVarType() != var_type::interpretor)
+			return false;
+		stateChange = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(var);
+		return true;
+	}
+
+	if (!prop.Compare(L"responseType"))
+	{
+
+	}
+	if (!prop.Compare(L"timeout"))
+	{
+
+	}
+	if (!prop.Compare(L"withCredentials"))
+	{
+
+	}
 	return false;
 }
 
 bool TXMLHttpRequest::GetVariable(const TString& prop, TrecPointer<TVariable>& var)
 {
+	var.Nullify();
+	if (!prop.Compare(L"onreadystatechange"))
+	{
+		var = TrecPointerKey::GetTrecPointerFromSub<>(this->stateChange);
+		return true;
+	}
+	if (!prop.Compare(L"readyState")) // ro
+	{
+		var = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(this->state);
+		return true;
+	}
+	if (!prop.Compare(L"response")) // ro
+	{
+		// To-Do: distinguish between response types
+	}
+	if (!prop.Compare(L"responseText")) // ro
+	{
+		
+		short status = response.GetStatusCode();
+
+		if(status >= 200 && status < 300)
+			var = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(response.GetBody());
+		return true;
+	}
+	if (!prop.Compare(L"responseType"))
+	{
+
+	}
+	if (!prop.Compare(L"responseURL")) // ro
+	{
+		if(url.GetSize())
+			var = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(url);
+		return true;
+	}
+	if (!prop.Compare(L"responseXML")) // ro
+	{
+
+	}
+	if (!prop.Compare(L"status")) // ro
+	{
+		var = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(response.GetStatusCode());
+		return true;
+	}
+	if (!prop.Compare(L"statusText")) // ro
+	{
+
+		var = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(response.GetFullStatus());
+		return true;
+	}
+	if (!prop.Compare(L"timeout"))
+	{
+
+	}
+	if (!prop.Compare(L"withCredentials"))
+	{
+
+	}
+
+	
+
+
 	return false;
 
 }
