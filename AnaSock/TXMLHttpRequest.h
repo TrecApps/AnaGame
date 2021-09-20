@@ -27,17 +27,30 @@ public:
 
 	virtual bool GetVariable(const TString& prop, TrecPointer<TVariable>& var) override;
 
+	/**
+ * Method: TObject::GetType()
+ * Purpose: Returns a String Representation of the object type
+ * Parameters: void
+ * Returns: TString - representation of the object type
+ *
+ * Note: This method is provided to allow interpretors to allow scripts to access methods of Anagame Objects.
+ *   subclasses should report their type first, then the parent clss type and seperate it with a SemiColon
+ *
+ * Attributes: virtual
+ */
+	virtual TString GetType();
 private:
 	THttpRequest request;
 	THttpResponse response;
 
 	TrecPointer<THttpClientSocket> clientSocket;
 	TrecPointer<THttpClientSocket::TAsyncHttpResponse> asyncResponse;
-
+	bool useAsync;
 	USHORT state;
+	TString url;
 
 	TrecSubPointer<TVariable, TcInterpretor> abort, error, 
-		load, loadend, loadstart, progress, timeout;
+		load, loadend, loadstart, progress, timeout, stateChange;
 };
 
-TrecPointer<TVariable> _ANA_SOCK_DLL GetXmlHttpRequestMethods();
+void _ANA_SOCK_DLL GetXmlHttpRequestMethods(TDataMap<TcVariableHolder>& variables, TrecSubPointer<TVariable, TcInterpretor> parent, TrecPointer<TEnvironment> env);

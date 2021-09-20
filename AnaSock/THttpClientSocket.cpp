@@ -507,3 +507,29 @@ THttpRequest THttpClientSocket::TAsyncHttpResponse::GetRequest()
 {
 	return request;
 }
+
+bool ConvertHttpMethodForms(const TString& strMethod, THttpMethod& actMethod)
+{
+	TString localMethod(strMethod.GetTrim().GetUpper());
+	if(!localMethod.Compare(L"GET"))
+		actMethod = THttpMethod::http_get;
+	else if (!localMethod.Compare(L"POST"))
+		actMethod = THttpMethod::http_get;
+	else if (!localMethod.Compare(L"PUT"))
+		actMethod = THttpMethod::http_get;
+	else if (!localMethod.Compare(L"DELETE"))
+		actMethod = THttpMethod::http_get;
+	else if (!localMethod.Compare(L"HEAD"))
+		actMethod = THttpMethod::http_get;
+	else if (!localMethod.Compare(L"CONNECT"))
+		actMethod = THttpMethod::http_get;
+	else if (!localMethod.Compare(L"OPTIONS"))
+		actMethod = THttpMethod::http_get;
+	else if (!localMethod.Compare(L"TRACE"))
+		actMethod = THttpMethod::http_get;
+	else if (!localMethod.Compare(L"PATCH"))
+		actMethod = THttpMethod::http_get;
+	else
+		return false;
+	return true;
+}

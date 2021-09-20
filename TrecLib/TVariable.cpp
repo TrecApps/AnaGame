@@ -3,7 +3,41 @@
 
 bool VarFunction::IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def)
 {
-	return false;
+	if (!var.Get())
+	{
+		bool ret = (def & 0b00000001);
+		if(ret)
+			result = false;
+		return ret;
+	}
+
+	switch (var->GetVarType())
+	{
+	case var_type::string:
+		if (def & 0b00000100)
+		{
+			TString v(var->GetString().GetTrim().GetLower());
+			result = v.Compare(L'false');
+			break;
+		}
+		else return false;
+	case var_type::primitive:
+	case var_type::primitive_formatted:
+
+		result = var->Get8Value() > 0;
+		return true;
+	case var_type::collection:
+		if (def & 0b00010000)
+		{
+			result = var->GetSize() > 0;
+			return true;
+		}
+		else return false;
+	default:
+		result = true;
+	}
+
+	return true;
 }
 
 /**
