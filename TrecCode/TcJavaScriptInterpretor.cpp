@@ -16,6 +16,7 @@
 #include <TFunctionGen.h>
 #include "JsTimer.h"
 #include "JsString.h"
+#include <TObjectVariable.h>
 
 
 static TDataArray<TString> standardOperators;
@@ -3044,6 +3045,22 @@ throughString:
                     var = method;
                 }
             }
+            else if (var->GetVarType() == var_type::native_object)
+            {
+                TrecObjectPointer objP = dynamic_cast<TObjectVariable*>(var.Get())->GetObjectW();
+                if (!dynamic_cast<TVObject*>(objP.Get()))
+                {
+                    TString mess;
+                    mess.Format(L"Null or Invalid Object detected through variable '%ws'", (wholePhrase + phrase).GetConstantBuffer().getBuffer());
+                    this->PrepReturn(ret, mess, L"", ret.ERR_INTERNAL, statement->lineStart);
+                }
+
+                if (!dynamic_cast<TVObject*>(objP.Get())->GetVariable(phrase, var))
+                    var.Nullify();
+                else
+                    vThis = var;
+
+            }
         }
         else
         {
@@ -4464,6 +4481,53 @@ void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>
             {
                 AddAssignStatement(pieces->at(0), pieces->at(2), right, ro);
                 return;
+            }
+
+            // Now check to see if we have a native object
+           
+            int lastDot = expressions[Rust].varName.FindLast(L'.');
+            if (lastDot != -1)
+            {
+                TString thisObj(expressions[Rust].varName.SubString(0, lastDot)), 
+                    attribute(expressions[Rust].varName.SubString(lastDot + 1));
+                ProcessIndividualStatement(thisObj, ro);
+                if (ro.returnCode)
+                    return;
+                CheckVarName(attribute, ro);
+                if (ro.returnCode)
+                    return;
+                if (!ro.errorObject.Get())
+                {
+                    TString mess;
+                    mess.Format(L"NULL reference at object '%ws' detected in assign statement!", thisObj.GetConstantBuffer().getBuffer());
+                    PrepReturn(ro, mess, L"", ro.ERR_BROKEN_REF, 0);
+                    return;
+                }
+                switch (ro.errorObject->GetVarType())
+                {
+                case var_type::collection:
+                    dynamic_cast<TContainerVariable*>(ro.errorObject.Get())->SetValue(attribute, right);
+                    break;
+                case var_type::native_object:
+                    do
+                    {
+                        TrecObjectPointer objP = dynamic_cast<TObjectVariable*>(ro.errorObject.Get())->GetObjectW();
+                        if (!dynamic_cast<TVObject*>(objP.Get()))
+                        {
+                            ro.returnCode = ro.ERR_INTERNAL;
+                            ro.errorMessage.Format(L"Null or Invalid Object detected through variable '%ws'", thisObj.GetConstantBuffer().getBuffer()); return;
+                        }
+
+                        if (!dynamic_cast<TVObject*>(objP.Get())->SetVariable(attribute, right))
+                        {
+                            ro.returnCode = ro.ERR_BROKEN_REF;
+                            ro.errorMessage.Format(L"Cannot set attribute '%ws' on object at '%ws' - operation not supported!", attribute.GetConstantBuffer().getBuffer(), thisObj.GetConstantBuffer().getBuffer());
+                            return;
+                        }
+                    } while (false);
+                    break;
+                default:
+                }
             }
         }
         else if (!ops[Rust].Compare(L"+="))

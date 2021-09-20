@@ -1,5 +1,8 @@
 #pragma once
 #include "TEnvironmentBuilder.h"
+#include <Page.h>
+
+
 
 /**
  * Class: TAnagameEnvironmentBuilder
@@ -74,5 +77,37 @@ public:
      * Attributes: override
 	 */
 	virtual TString GetEnvironmentTypes() override;
+
+	/**
+	 * Method: TAnagameEnvironmentBuilder::GetPageSupport
+	 * Purpose: Retrieves Supported Pages based off of the page type
+	 * Parameters: page_type - type of page to look at
+	 *				TDataArray<TString>& types - holds list of Page Types supported by this Builder
+	 * Returns: void
+	 * 
+	 * Attributes: override
+	 */
+	virtual void GetPageSupport(page_type type, TDataArray<TString>& types) override;
+
+	/**
+	 * Method: TAnagameEnvironmentBuilder::GetPageSupport
+	 * Purpose: Retrieves Supported Pages based off of the page type
+	 * Parameters: const TString& fileType - file type to examine
+	 *				TDataArray<TString>& types - holds list of Page Types supported by this Builder
+	 * Returns: void
+	 *
+	 * Attributes: override
+	 */
+	virtual void GetPageSupport(const TString& fileType, TDataArray<TString>& types) override;
+
+	/**
+	 * Method: TAnagameEnvironmentBuilder::GetPage
+	 * Purpose: Retrieves a page based off of type
+	 * Parameters: const TString& type - the type of page to retrieve
+	 * Returns: TrecPointer<Page> - the page requested, complete with a handler (if supported, null if otherwise)
+	 * 
+	 * Attributes: override
+	 */
+	virtual TrecPointer<Page> GetPage(const TString& type) override;
 };
 
