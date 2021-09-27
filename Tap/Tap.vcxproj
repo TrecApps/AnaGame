@@ -172,6 +172,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="HandlerMessage.h" />
     <ClInclude Include="IDEPage.h" />
+    <ClInclude Include="IDEPageManager.h" />
     <ClInclude Include="MiniApp.h" />
     <ClInclude Include="NameDialog.h" />
     <ClInclude Include="OkayHandler.h" />
@@ -212,6 +213,7 @@
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="HandlerMessage.cpp" />
     <ClCompile Include="IDEPage.cpp" />
+    <ClCompile Include="IDEPageManager.cpp" />
     <ClCompile Include="MiniApp.cpp" />
     <ClCompile Include="NameDialog.cpp" />
     <ClCompile Include="OkayHandler.cpp" />
