@@ -117,6 +117,9 @@
     <ClInclude Include="TComputer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TPlayer2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -213,6 +216,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TComputer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TPlayer2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
