@@ -1376,12 +1376,12 @@ public:
 	*/
 	afx_msg void Builder_OnMouseMove(UINT flags, TPoint, TControl** mOut,const RECT&, messageOutput* o);
 
-	/*
-	* Method: TControl::setActive
-	* Purpose: Enables controls to be either active (default) or inactive (they don't draw or respond to events)
-	* Parameters: bool act - whether control should be active or not
-	* Returns: void
-	*/
+	/**
+	 * Method: TControl::setActive
+	 * Purpose: Enables controls to be either active (default) or inactive (they don't draw or respond to events)
+	 * Parameters: bool act - whether control should be active or not
+	 * Returns: void
+	 */
 	void setActive(bool act);
 
 	/**
@@ -1408,8 +1408,8 @@ public:
 	 * Parameters: RECT contain - the area it can use
 	 * Returns: bool - success
 	 * Note: You Must call this on the Root Control before any control can be drawn on sreen
-	* 
-	* Attributes: virtual
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d);
 

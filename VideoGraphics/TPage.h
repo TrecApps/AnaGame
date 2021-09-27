@@ -4,8 +4,63 @@
 #include "DrawingBoard.h"
 #include <TPoint.h>
 #include "TTextIntercepter.h"
-
+#include <TMap.h>
+#include <TObjectNode.h>
 #define ag_msg
+
+
+/**
+ * Class: EventArgs
+ * Purpose: Event Arguements, used to supply Event Handlers with the necessary information to
+ *		do their job properly
+ */
+class _VIDEO_GRAPHICS EventArgs
+{
+public:
+	EventArgs();
+	void Reset();
+	EventArgs(const EventArgs& args);
+
+	TString text;
+	bool positive;
+	TPoint point;
+	bool isClick;
+	bool isLeftClick;
+	R_Message_Type eventType;
+	// TrecPointer<TPage> control;
+	int methodID;
+	int arrayLabel;
+	WCHAR type;
+	TrecPointer<TObjectNode> object;
+};
+
+/**
+ * Class: styleTable
+ * Purpose: Holds the list of styles according to name, useful in declaring 'classes' in Anaface
+ */
+class _VIDEO_GRAPHICS styleTable : public TObject
+{
+public:
+	TString style;
+	TMap<TString> names;
+};
+
+
+/**
+ * Class: Dimensions
+ * Purpose: Controls the size of a Given TControl
+ */
+class Dimensions
+{
+public:
+	Dimensions();
+	UINT width;
+	UINT height;
+	UINT minHeight;
+	UINT minWidth;
+	UINT maxWidth;
+	UINT maxHeight;
+};
 
 /** 
  * Enum Class: message_output
@@ -272,7 +327,7 @@ public:
      *
      * Attributes: message; abstract
      */
-    ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
+    ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
 
 
 	/**
@@ -286,7 +341,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
+	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
 
 
 	/**
@@ -300,7 +355,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
+	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
 
 
 	/**
@@ -314,7 +369,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
+	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
 
 	/**
 	 * Method: TPage::OnMouseMove
@@ -326,7 +381,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
+	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
 
 	/**
 	 * Method: TPage::OnLButtonDblClk
@@ -338,7 +393,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut) = 0;
+	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&) = 0;
 
 	/**
 	 * Method: TPage::OnResize
@@ -353,7 +408,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr) = 0;
+	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&) = 0;
 
 	/**
 	 * Method: Page::OnDestroy
@@ -375,7 +430,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction) = 0;
+	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) = 0;
 
 
 	/**
@@ -411,6 +466,22 @@ public:
     D2D1_RECT_F GetArea();
 
 
+	/**
+	 * Method: TPage::RotateDegrees
+	 * Purpose: Rotates the Control
+	 * Parameters: float degrees - the angle to rotate the Control by (in degrees)
+	 * Returns: void
+	 */
+	void RotateDegrees(float degrees);
+	/**
+	 * Method: TPage::RotateRadians
+	 * Purpose: Rotates the Control
+	 * Parameters: float radians - the angle to rotate the Control by (in degrees)
+	 * Returns: void
+	 */
+	void RotateRadians(float radians);
+
+
 protected:
     /**
      * The Drawing Board to Draw against
@@ -426,5 +497,10 @@ protected:
 	 * Self-Reference and Parent
 	 */
 	TrecPointerSoft<TPage> self, parent;
+
+	/**
+	 * How much to rotate by before drawing
+	 */
+	float rotate;
 };
 

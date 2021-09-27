@@ -358,6 +358,14 @@ D2D1_RECT_F TPage::GetArea()
 	return area;
 }
 
+void TPage::RotateDegrees(float degrees)
+{
+}
+
+void TPage::RotateRadians(float radians)
+{
+}
+
 TPage::TPage(TrecPointer<DrawingBoard> board)
 {
 	this->drawingBoard = board;
@@ -379,4 +387,10 @@ void TPage::TScrollBar::EstablishScrollColors()
 	middle_box_click = D2D1::ColorF(0x00000099);
 	end_box = D2D1::ColorF(0x00000066);
 	pointer = &value;
+}
+
+Dimensions::Dimensions()
+{
+	this->height = this->maxHeight = this->minHeight =
+		this->width = this->maxWidth = this->minWidth = 0;
 }
