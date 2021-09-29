@@ -117,17 +117,7 @@ bool TComboBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	else
 		extension->childHeight = 30;
 	valpoint = attributes.retrieveEntry(TString(L"|DefaultText"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-		{
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard,this);
-		}
-		text1->removeCaption();
-		defaultText = valpoint.Get();
-
-		text1->setCaption(defaultText);
-	}
+	attributes.addEntry(L"|Caption", valpoint);
 	int occ = 0;
 	valpoint = attributes.retrieveEntry(TString(L"|BoxEntry"),occ++);
 
@@ -253,7 +243,7 @@ void TComboBox::UpdateCaption(TString& str, UINT index)
 {
 	ThreadLock();
 	if (text1.Get())
-		text1->setCaption(str);
+		text1->SetText(str);
 
 	resetArgs();
 
@@ -343,7 +333,6 @@ void TComboBoxExtension::onDraw(TObject* obj)
 
 	for (UINT Rust = 0; Rust < elements.Size(); Rust++)
 	{
-		TrecPointer<TText> useText = (Rust == hoverSelection && text2.Get()) ? text2: text1;
 		TrecPointer<TContent> useContent = (Rust == hoverSelection && content2.Get()) ? content2 : content1;
 		TrecPointer<TBorder> useBorder = (Rust == hoverSelection && border2.Get()) ? border2 : border1;
 
@@ -353,10 +342,10 @@ void TComboBoxExtension::onDraw(TObject* obj)
 			useContent->onDraw(miniLoc);
 		}
 
-		if (useText.Get())
+		if (text1.Get())
 		{
-			useText->setCaption(elements[Rust]);
-			useText->onDraw(miniLoc);
+			text1->SetText(elements[Rust]);
+			text1->OnDraw(obj);
 		}
 		if (useBorder.Get())
 		{

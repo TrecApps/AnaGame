@@ -48,12 +48,14 @@ bool TCheckBox::onCreate(D2D1_RECT_F r, TrecPointer<TWindowEngine> d3d)
 	TGadgetControl::onCreate(r,d3d);
 	if (text1.Get())
 	{
-		text1->bounds.left = text1->bounds.left + bSize;
+		auto tempLoc = text1->GetLocation();
+		tempLoc.left += bSize;
+		text1->SetLocation(tempLoc);
 	}
 	else
 	{
-		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
-		text1->text = L"Check-Box";
+		text1 = TrecPointerKey::GetNewTrecPointer<TTextElement>(drawingBoard);
+		text1->SetText( L"Check-Box");
 	}
 	ThreadRelease();
 
@@ -129,7 +131,7 @@ void TCheckBox::OnLButtonDown(UINT nFlags, TPoint point, messageOutput * mOut, T
 			args.eventType = R_Message_Type::On_check;
 			args.positive = isClicked;
 			if (text1.Get())
-				args.text.Set(text1->text);
+				text1->GetText(args.text);
 			args.methodID = getEventID(R_Message_Type::On_check);
 		}
 

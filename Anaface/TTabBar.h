@@ -345,7 +345,7 @@ private:
 	/**
 	 * The Text Object to Render
 	 */
-	TrecPointer<TText> text;
+	TrecPointer<TTextElement> text;
 	/**
 	 * The Contents to render
 	 */

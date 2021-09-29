@@ -37,12 +37,9 @@ public:
 	FormattingDetails();
 	FormattingDetails(const FormattingDetails& copy);
 
-	DWRITE_FONT_WEIGHT weight; // For handling boldness
-	DWRITE_FONT_STYLE style;   // For handling italics
+
 	DWRITE_TEXT_RANGE range;   // the Range through which it should be done
-	TrecPointer<TBrush> color; // The color of the Text
-	TrecPointer<TBrush> bColor;// The Color of the Highlight
-	float fontSize;
+	TextFormattingDetails details;
 };
 
 /**
@@ -62,226 +59,227 @@ public:
 	UINT sizeNeeded;
 };
 
-/*
-* Function: operator>
-* Purpose:  Compares two incrimentControls for >
-* Parameters: incrimentControl& ic1 - the first incrimentControl
-*				incrimentControl& ic2 - the second incrimentControl
-* Returns: bool - the results of the comparison
-*/
-bool operator>(incrimentControl& ic1, incrimentControl& ic2);
-/*
-* Function: operator>
-* Purpose: Compares an incrimentControl to an int for >
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				int i - the integer to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator>(incrimentControl& ic, int i);
-/*
-* Function: operator>
-* Purpose: Compares an incrimentControl to an int for >
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				float f - the float to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator>(incrimentControl& ic, float f);
-/*
-* Function: operator>
-* Purpose: Compares an incrimentControl to an int for >
-* Parameters: int i - the integer to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator>(int i, incrimentControl& ic);
-/*
-* Function: operator>
-* Purpose: Compares an incrimentControl to a float for >
-* Parameters: float f - the float to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator>(float f, incrimentControl& ic);
+
+	/*
+	* Function: operator>
+	* Purpose:  Compares two incrimentControls for >
+	* Parameters: incrimentControl& ic1 - the first incrimentControl
+	*				incrimentControl& ic2 - the second incrimentControl
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>(incrimentControl& ic1, incrimentControl& ic2);
+	/*
+	* Function: operator>
+	* Purpose: Compares an incrimentControl to an int for >
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				int i - the integer to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>(incrimentControl& ic, int i);
+	/*
+	* Function: operator>
+	* Purpose: Compares an incrimentControl to an int for >
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				float f - the float to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>(incrimentControl& ic, float f);
+	/*
+	* Function: operator>
+	* Purpose: Compares an incrimentControl to an int for >
+	* Parameters: int i - the integer to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>(int i, incrimentControl& ic);
+	/*
+	* Function: operator>
+	* Purpose: Compares an incrimentControl to a float for >
+	* Parameters: float f - the float to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>(float f, incrimentControl& ic);
 
 
 
-/*
-* Function: operator>
-* Purpose:  Compares two incrimentControls for <
-* Parameters: incrimentControl& ic1 - the first incrimentControl
-*				incrimentControl& ic2 - the second incrimentControl
-* Returns: bool - the results of the comparison
-*/
-bool operator<(incrimentControl& ic1, incrimentControl& ic2);
-/*
-* Function: operator<
-* Purpose: Compares an incrimentControl to an int for <
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				int i - the integer to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator<(incrimentControl& ic, int i);
-/*
-* Function: operator<
-* Purpose:
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				float f - the float to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator<(incrimentControl& ic, float f);
-/*
-* Function: operator<
-* Purpose: Compares an incrimentControl to an int for <
-* Parameters: int i - the integer to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator<(int i, incrimentControl& ic);
-/*
-* Function: operator<
-* Purpose:
-* Parameters: float f - the float to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator<(float f, incrimentControl& ic);
+	/*
+	* Function: operator>
+	* Purpose:  Compares two incrimentControls for <
+	* Parameters: incrimentControl& ic1 - the first incrimentControl
+	*				incrimentControl& ic2 - the second incrimentControl
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<(incrimentControl& ic1, incrimentControl& ic2);
+	/*
+	* Function: operator<
+	* Purpose: Compares an incrimentControl to an int for <
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				int i - the integer to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<(incrimentControl& ic, int i);
+	/*
+	* Function: operator<
+	* Purpose:
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				float f - the float to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<(incrimentControl& ic, float f);
+	/*
+	* Function: operator<
+	* Purpose: Compares an incrimentControl to an int for <
+	* Parameters: int i - the integer to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<(int i, incrimentControl& ic);
+	/*
+	* Function: operator<
+	* Purpose:
+	* Parameters: float f - the float to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<(float f, incrimentControl& ic);
 
 
 
-/*
-* Function: operator>=
-* Purpose:  Compares two incrimentControls for >=
-* Parameters: incrimentControl& ic1 - the first incrimentControl
-*				incrimentControl& ic2 - the second incrimentControl
-* Returns: bool - the results of the comparison
-*/
-bool operator>=(incrimentControl& ic1, incrimentControl& ic2);
-/*
-* Function:operator>=
-* Purpose: Compares an incrimentControl to an int for >=
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				int i - the integer to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator>=(incrimentControl& ic, int i);
-/*
-* Function: operator>=
-* Purpose:
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				float f - the float to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator>=(incrimentControl& ic, float f);
-/*
-* Function: operator>=
-* Purpose: Compares an incrimentControl to an int for >=
-* Parameters: int i - the integer to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator>=(int i, incrimentControl& ic);
-/*
-* Function: operator>=
-* Purpose:
-* Parameters: float f - the float to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator>=(float f, incrimentControl& ic);
+	/*
+	* Function: operator>=
+	* Purpose:  Compares two incrimentControls for >=
+	* Parameters: incrimentControl& ic1 - the first incrimentControl
+	*				incrimentControl& ic2 - the second incrimentControl
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>=(incrimentControl& ic1, incrimentControl& ic2);
+	/*
+	* Function:operator>=
+	* Purpose: Compares an incrimentControl to an int for >=
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				int i - the integer to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>=(incrimentControl& ic, int i);
+	/*
+	* Function: operator>=
+	* Purpose:
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				float f - the float to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>=(incrimentControl& ic, float f);
+	/*
+	* Function: operator>=
+	* Purpose: Compares an incrimentControl to an int for >=
+	* Parameters: int i - the integer to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>=(int i, incrimentControl& ic);
+	/*
+	* Function: operator>=
+	* Purpose:
+	* Parameters: float f - the float to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator>=(float f, incrimentControl& ic);
 
 
-/*
-* Function: operator<=
-* Purpose: Compares two incrimentControls for <=
-* Parameters: incrimentControl& ic1 - the first incrimentControl
-*				incrimentControl& ic2 - the second incrimentControl
-* Returns: bool - the results of the comparison
-*/
-bool operator<=(incrimentControl& ic1, incrimentControl& ic2);
-/*
-* Function: operator<=
-* Purpose: Compares an incrimentControl to an int for <=
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				int i - the integer to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator<=(incrimentControl& ic, int i);
-/*
-* Function: operator<=
-* Purpose: Compares an incrimentControl to an int for <=
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				float f - the float to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator<=(incrimentControl& ic, float f);
-/*
-* Function: operator<=
-* Purpose: Compares an incrimentControl to an int for <=
-* Parameters: int i - the integer to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator<=(int i, incrimentControl& ic);
-/*
-* Function: operator<=
-* Purpose: Compares an incrimentControl to an int for <=
-* Parameters: float f - the float to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - the results of the comparison
-*/
-bool operator<=(float f, incrimentControl& ic);
+	/*
+	* Function: operator<=
+	* Purpose: Compares two incrimentControls for <=
+	* Parameters: incrimentControl& ic1 - the first incrimentControl
+	*				incrimentControl& ic2 - the second incrimentControl
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<=(incrimentControl& ic1, incrimentControl& ic2);
+	/*
+	* Function: operator<=
+	* Purpose: Compares an incrimentControl to an int for <=
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				int i - the integer to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<=(incrimentControl& ic, int i);
+	/*
+	* Function: operator<=
+	* Purpose: Compares an incrimentControl to an int for <=
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				float f - the float to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<=(incrimentControl& ic, float f);
+	/*
+	* Function: operator<=
+	* Purpose: Compares an incrimentControl to an int for <=
+	* Parameters: int i - the integer to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<=(int i, incrimentControl& ic);
+	/*
+	* Function: operator<=
+	* Purpose: Compares an incrimentControl to an int for <=
+	* Parameters: float f - the float to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - the results of the comparison
+	*/
+	bool operator<=(float f, incrimentControl& ic);
 
 
 
-/*
-* Function: operator==
-* Purpose: Compares two incrimentControls for equality
-* Parameters: incrimentControl& ic1 - the first incrimentControl
-*				incrimentControl& ic2 - the second incrimentControl
-* Returns: bool - whether the values are equal
-*/
-bool operator==(incrimentControl& ic1, incrimentControl& ic2);
-/*
-* Function: operator==
-* Purpose: Compares an incrimentControl to an int for equality
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				int i - the integer to compare
-* Returns: bool - whether the values are equal
-*/
-bool operator==(incrimentControl& ic, int i);
-/*
-* Function: operator==
-* Purpose: Compares an incrimentControl to a float for equality
-* Parameters: incrimentControl& ic - the incrimentControl to compare
-*				float f - the float to compare
-* Returns: bool - whether the values are equal
-*/
-bool operator==(incrimentControl& ic, float f);
-/*
-* Function: operator==
-* Purpose: Compares an incrimentControl to an int for equality
-* Parameters: int i - the integer to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - whether the values are equal
-*/
-bool operator==(int i, incrimentControl& ic);
-/*
-* Function: operator==
-* Purpose: Compares an incrimentControl to a float
-* Parameters: float f - the float to compare
-*				incrimentControl& ic - the incrimentControl to compare
-* Returns: bool - whether the values are equal
-*/
-bool operator==(float f, incrimentControl& ic);
+	/*
+	* Function: operator==
+	* Purpose: Compares two incrimentControls for equality
+	* Parameters: incrimentControl& ic1 - the first incrimentControl
+	*				incrimentControl& ic2 - the second incrimentControl
+	* Returns: bool - whether the values are equal
+	*/
+	bool operator==(incrimentControl& ic1, incrimentControl& ic2);
+	/*
+	* Function: operator==
+	* Purpose: Compares an incrimentControl to an int for equality
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				int i - the integer to compare
+	* Returns: bool - whether the values are equal
+	*/
+	bool operator==(incrimentControl& ic, int i);
+	/*
+	* Function: operator==
+	* Purpose: Compares an incrimentControl to a float for equality
+	* Parameters: incrimentControl& ic - the incrimentControl to compare
+	*				float f - the float to compare
+	* Returns: bool - whether the values are equal
+	*/
+	bool operator==(incrimentControl& ic, float f);
+	/*
+	* Function: operator==
+	* Purpose: Compares an incrimentControl to an int for equality
+	* Parameters: int i - the integer to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - whether the values are equal
+	*/
+	bool operator==(int i, incrimentControl& ic);
+	/*
+	* Function: operator==
+	* Purpose: Compares an incrimentControl to a float
+	* Parameters: float f - the float to compare
+	*				incrimentControl& ic - the incrimentControl to compare
+	* Returns: bool - whether the values are equal
+	*/
+	bool operator==(float f, incrimentControl& ic);
 
-/*
-* Function: operator==
-* Purpose: Compares two colors
-* Parameters: D2D1_COLOR_F & c1 - the first color to compare
-*				D2D1_COLOR_F & c2 - the second color to compare
-* Returns: bool - whether the values are equal
-*/
-bool operator==(D2D1_COLOR_F& c1, D2D1_COLOR_F& c2);
+	/*
+	* Function: operator==
+	* Purpose: Compares two colors
+	* Parameters: D2D1_COLOR_F & c1 - the first color to compare
+	*				D2D1_COLOR_F & c2 - the second color to compare
+	* Returns: bool - whether the values are equal
+	*/
+	bool operator==(D2D1_COLOR_F& c1, D2D1_COLOR_F& c2);
 
 typedef struct ColorEffect
 {
@@ -289,93 +287,6 @@ typedef struct ColorEffect
 	D2D1_COLOR_F color;
 };
 
-/**
- * Class: TextHighlighter
- * Purpose: Helps the TTextField highlight text when the user clicks and moves
- */
-class TextHighlighter
-{
-public:
-
-	/*
-	 * Method: TextHighlighter::TextHighlighter
-	 * Purpose: Constructor
-	 * Parameters: TrecPointer<DrawingBoard> - the drawing board to draw to
-	 * Returns: New Text Highlighter object
-	 */
-	TextHighlighter(TrecPointer<DrawingBoard>);
-
-	/*
-	 * Method: TextHighlighter::SetLayout
-	 * Purpose: Sets the layout of the text to apply the effect to
-	 * Parameters: TrecComPointer<IDWriteTextLayout> l - the layout to apply effects to
-	 * Returns: void
-	 */
-	void SetLayout(TrecComPointer<IDWriteTextLayout> l);
-	/*
-	 * Method: TextHighlighter::SetFirstPosition
-	 * Purpose: ID's the index of the first point and sets the highlighter to active
-	 * Parameters: UINT f - the location of the first point in the text
-	 * Returns: void
-	 */
-	void SetFirstPosition(UINT);
-	/*
-	 * Method: TextHighlighter::SetSecondPosition
-	 * Purpose: Identifies the second position the user has specified and applies the highlighing effect to the region betweent he two positions
-	 * Parameters: UINT s - the location of the second point in the text
-	 * Returns: void
-	 */
-	void SetSecondPosition(UINT);
-
-	/*
-	 * Method: TextHighlighter::Reset
-	 * Purpose: Resets the highlighter
-	 * Parameters: UINT location - the location where the mouse is unclicked
-	 * Returns: bool - whether the highlighter was reset
-	 */
-	bool Reset(UINT location);
-	/*
-	 * Method: TextHighlighter::ResetUp
-	 * Purpose: Resets the highlighter if necessary
-	 * Parameters: UINT location - the location where the mouse is unclicked
-	 * Returns: void
-	 */
-	void ResetUp(UINT location);
-	/*
-	 * Method: TextHighlighter::IsActive
-	 * Purpose: Reports whether the highlighter is looking for the second position
-	 * Parameters: void
-	 * Returns: bool - whether the highlighter is actively looking for the second position
-	 */
-	bool IsActive();
-private:
-	/**
-	 * the boundaries between the highlighter in the text
-	 */
-	UINT beginningPosition, endingPosition;
-	/**
-	 * Whether the first position is smller than the second position
-	 */
-	bool beginningIsInitial;
-
-	/**
-	 * whether it is ctively looking for a second position
-	 */
-	bool isActive;
-
-	/**
-	 * THe Drawing Board
-	 */
-	TrecPointer<DrawingBoard> renderer;
-	/**
-	 * Not sure if this is used
-	 */
-	TrecPointer<TBrush> brush;
-	/**
-	 * the layout with the text
-	 */
-	TrecComPointer<IDWriteTextLayout> layout;
-};
 
 
 /*
@@ -531,18 +442,7 @@ public:
 	 * Attributes: override
 	*/
 	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)override;
-	/*
-	* Method: TTextField::OnChar
-	* Purpose: Adds a character to the String
-	* Parameters: bool fromChar - can be called either from on Key Down or OnChar
-	*				UINT nChar - The ID of the character that was pressed
-	*				UINT nRepCnt - how many times the character was processed for this event
-	*				UINT nFlags - flags provided by MFC's Message system, not used
-	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
-	* Returns: void
-	*/
-	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)override;
+
 	/*
 	* Method: TTextField::OnMouseMove
 	* Purpose: Allows Controls to catch themessageState::mouse Move event and deduce if the cursor has hovered over it, used by Text field to oversee the selection of text
@@ -660,7 +560,6 @@ public:
 	 */
 	void AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length);
 
-	TextHighlighter highlighter;
 
 	/*
 	 * Method: TTextField::RemoveFocus
@@ -703,6 +602,17 @@ protected:
 
 
 	/**
+	 * Method: TControl::SetUpTextElement
+	 * Purpose: Sets up Text Elements in case Some attributes support it
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: override - Need to create more specific versions of the TTextElement Object
+	 */
+	virtual void SetUpTextElement() override;
+
+
+	/**
 	 * whether the control should hide the text and (if so) offer a peek button
 	 */
 	bool isPassword, offerPasswordPeek;
@@ -710,6 +620,12 @@ protected:
 	 * whether the user can edit the text in the field
 	 */
 	bool isEditable;
+
+	/**
+	 * Is Complex, whether to support complex formats
+	 */
+	bool isComplex;
+
 	/**
 	 * The text being held
 	 */
@@ -865,6 +781,19 @@ public:
 	 * Attributes: override
 	 */
 	virtual void OnChar(UINT ch, UINT count, UINT flags) override;
+
+	/**
+	 * Method: TTextFieldIntercepter::OnChar
+	 * Purpose: Takes a character and feeds it to its target
+	 * Parameters: WCHAR ch - the character to report
+	 *          UINT count number of instances of that character to feed
+	 *          UINT flags - flags (usually 0)
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void OnKey(UINT ch, UINT count, UINT flags) override;
+
 	/**
 	 * Method: TTextFieldIntercepter::OnLoseFocus
 	 * Purpose: Alerts the target that it will no longer be intercepting characters

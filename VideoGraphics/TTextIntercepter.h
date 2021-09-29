@@ -19,6 +19,19 @@ public:
      * Attributes: abstract
      */
     virtual void OnChar(UINT ch, UINT count, UINT flags) = 0;
+
+    /**
+     * Method: TTextIntercepter::OnChar
+     * Purpose: Takes a character and feeds it to its target
+     * Parameters: WCHAR ch - the character to report
+     *          UINT count number of instances of that character to feed
+     *          UINT flags - flags (usually 0)
+     * Returns: void
+     *
+     * Attributes: abstract
+     */
+    virtual void OnKey(UINT ch, UINT count, UINT flags) = 0;
+
     /**
      * Method: TTextIntercepter::OnLoseFocus
      * Purpose: Alerts the target that it will no longer be intercepting characters
@@ -47,6 +60,18 @@ public:
      * Attributes: abstract
      */
     virtual void OnCut() = 0;
+
+    /**
+     * Method: TTextIntercepter::GetTarget
+     * Purpose: Retrieves the target for operations, so TInstance can determine if it should direct input to a new target
+     * Parameters: void
+     * Returns: void* - raw pointer to target (only used to determine if Object operated on is the same
+     * 
+     * Attributes: abstract
+     */
+    virtual void* GetTarget() = 0;
+
+
     // virtual void OnPaste() = 0;
 };
 

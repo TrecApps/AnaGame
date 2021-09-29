@@ -2,6 +2,18 @@
 #include <TObject.h>
 #include "TrecCode.h"
 #include <TEnvironment.h>
+#include <Page.h>
+
+/**
+ * Enum Class: page_type
+ * Purpose: TYpe of Pages that Anagame Supports at the IDE level
+ */
+typedef enum class page_type
+{
+	pt_ribbon,  // Page fits in with the Ribbon
+	pt_regular,  // Regular page
+	pt_helper
+}page_type;
 
 /**
  * Class: TEnvironmentBuilder
@@ -137,5 +149,38 @@ public:
      * Attributes: static
 	 */
 	static TrecPointer<TEnvironment> GetEnvironment(const TString& envType, const TString& builder, TrecPointer<TFileShell> dir);
+
+
+	/**
+	 * Method: TAnagameEnvironmentBuilder::GetPageSupport
+	 * Purpose: Retrieves Supported Pages based off of the page type
+	 * Parameters: page_type - type of page to look at
+	 *				TDataArray<TString>& types - holds list of Page Types supported by this Builder
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void GetPageSupport(page_type type, TDataArray<TString>& types) = 0;
+
+	/**
+	 * Method: TAnagameEnvironmentBuilder::GetPageSupport
+	 * Purpose: Retrieves Supported Pages based off of the page type
+	 * Parameters: const TString& fileType - file type to examine
+	 *				TDataArray<TString>& types - holds list of Page Types supported by this Builder
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void GetPageSupport(const TString& fileType, TDataArray<TString>& types) = 0;
+
+	/**
+	 * Method: TAnagameEnvironmentBuilder::GetPage
+	 * Purpose: Retrieves a page based off of type
+	 * Parameters: const TString& type - the type of page to retrieve
+	 * Returns: TrecPointer<Page> - the page requested, complete with a handler (if supported, null if otherwise)
+	 *
+	 * Attributes: abstract
+	 */
+	virtual TrecPointer<Page> GetPage(const TString& type) = 0;
 };
 

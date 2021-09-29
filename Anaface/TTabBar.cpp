@@ -53,10 +53,10 @@ bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 	
 	if (!text1.Get())
 	{
-		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
+		text1 = TrecPointerKey::GetNewTrecPointer<TTextElement>(drawingBoard);
 	}
-	text1->stopCollection.AddGradient(TGradientStop(TColor(), 0.0f));
-	text1->onCreate(location);
+	
+	text1->SetLocation(location);
 	
 
 	valpoint = attributes.retrieveEntry(TString(L"|HaveAddTab"));
@@ -79,7 +79,7 @@ bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 	leftTab.content1 = content1;
 	leftTab.content2 = content2;
 
-	leftTab.text = TrecPointerKey::GetNewTrecPointer<TText>(text1, this);
+	leftTab.text = TrecPointerKey::GetNewTrecPointer<TTextElement>(drawingBoard);
 
 	leftTab.isAdd = false;
 	leftTab.draw1 = true;
@@ -88,7 +88,7 @@ bool TTabBar::onCreate(D2D1_RECT_F loc, TrecPointer<TWindowEngine> d3d)
 	rightTab.content1 = content1;
 	rightTab.content2 = content2;
 
-	rightTab.text = TrecPointerKey::GetNewTrecPointer<TText>(text1, this);
+	rightTab.text = TrecPointerKey::GetNewTrecPointer<TTextElement>(drawingBoard);
 
 	rightTab.isAdd = false;
 	rightTab.draw1 = true;
@@ -276,14 +276,13 @@ TrecPointer<Tab> TTabBar::AddTab(const TString& text)
 	newTab->content1 = content1;
 	newTab->content2 = content2;
 
-	newTab->text = text1.Get() ? TrecPointerKey::GetNewTrecPointer<TText>(text1, this) :
-		TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, this);
+	newTab->text = TrecPointerKey::GetNewTrecPointer<TTextElement>(drawingBoard);
 
 	newTab->isAdd = false;
 	newTab->draw1 = true;
 	newTab->SetText(text);
 
-	newTab->text->onCreate(location);
+	newTab->text->SetLocation(location);
 
 	tabs.push_back(newTab);
 
@@ -550,7 +549,7 @@ void Tab::SetText(const TString& text)
 {
 	if (this->text.Get())
 	{
-		this->text->setCaption(text);
+		this->text->SetText(text);
 		// this->text->onCreate(location);
 	}
 }
@@ -587,7 +586,7 @@ D2D1_RECT_F Tab::SetLocation(const D2D1_RECT_F& newLoc, UINT buffer)
 		content2->onCreate(location);
 	location.right -= height;
 	if (text.Get())
-		text->onCreate(location);
+		text->SetLocation(location);
 
 	location.right += height;
 
@@ -615,7 +614,7 @@ void Tab::Draw()
 		location.right -= (location.bottom - location.top);
 	}
 	if (text.Get())
-		text->onDraw(location);
+		text->OnDraw(nullptr);
 
 	if(exitHover.Get() || exitReg.Get())
 		location.right += (location.bottom - location.top);
@@ -673,7 +672,10 @@ TabClickMode Tab::AttemptClick(const TPoint& point)
  */
 TString Tab::GetText()
 {
-	return text.Get() ? text->getCaption() : L"";
+	TString ret;
+	if (text.Get())
+		text->GetText(ret);
+	return ret;
 }
 
 bool Tab::MovedOutside()

@@ -202,7 +202,10 @@ bool EventHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, 
 	{
 		//To-Do: Detect special keys such as CTRL-X/C/P, or the arrow keys
 
-		textIntercepter->OnChar(nChar, nRepCnt, nFlags);
+		if (fromChar)
+			textIntercepter->OnChar(nChar, nRepCnt, nFlags);
+		else
+			textIntercepter->OnKey(nChar, nRepCnt, nFlags);
 		return true;
 	}
 	return false;

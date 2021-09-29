@@ -75,3 +75,39 @@ TString TAnagameEnvironmentBuilder::GetEnvironmentTypes()
 {
 	return TString(L"Gradle;Maven;AnaCode");
 }
+
+void TAnagameEnvironmentBuilder::GetPageSupport(page_type type, TDataArray<TString>& types)
+{
+	types.RemoveAll();
+
+	switch (type)
+	{
+	case page_type::pt_regular:
+		types.push_back(L"source_code");
+		types.push_back(L"base_arena");
+		// types.push_back(L"base_model");
+		return;
+	case page_type::pt_ribbon:
+		types.push_back(L"ribbon_source");
+		types.push_back(L"ribbon_arena");
+		//types.push_back(L"");
+		return;
+	case page_type::pt_helper:
+		types.push_back(L"helper_arena_camera");
+		types.push_back(L"helper_properties");
+	}
+}
+
+void TAnagameEnvironmentBuilder::GetPageSupport(const TString& fileType, TDataArray<TString>& types)
+{
+	types.RemoveAll();
+}
+
+TrecPointer<Page> TAnagameEnvironmentBuilder::GetPage(const TString& type)
+{
+	if (!type.Compare(L"source_code"))
+	{
+		//TrecPointer<Page> ret = TrecPointerKey::GetNewSelfTrecPointer<Page>();
+	}
+	return TrecPointer<Page>();
+}

@@ -30,6 +30,8 @@
 #include <TMap.h>
 #include <TObjectNode.h>
 #include <TTextIntercepter.h>
+#include <TTextElement.h>
+
 
 #define RADIAN_DEGREE_RATIO 57.2957795f
 
@@ -1376,12 +1378,12 @@ public:
 	*/
 	afx_msg void Builder_OnMouseMove(UINT flags, TPoint, TControl** mOut,const RECT&, messageOutput* o);
 
-	/*
-	* Method: TControl::setActive
-	* Purpose: Enables controls to be either active (default) or inactive (they don't draw or respond to events)
-	* Parameters: bool act - whether control should be active or not
-	* Returns: void
-	*/
+	/**
+	 * Method: TControl::setActive
+	 * Purpose: Enables controls to be either active (default) or inactive (they don't draw or respond to events)
+	 * Parameters: bool act - whether control should be active or not
+	 * Returns: void
+	 */
 	void setActive(bool act);
 
 	/**
@@ -1408,8 +1410,8 @@ public:
 	 * Parameters: RECT contain - the area it can use
 	 * Returns: bool - success
 	 * Note: You Must call this on the Root Control before any control can be drawn on sreen
-	* 
-	* Attributes: virtual
+	 * 
+	 * Attributes: virtual
 	 */
 	virtual bool onCreate(D2D1_RECT_F, TrecPointer<TWindowEngine> d3d);
 
@@ -1780,6 +1782,18 @@ public:
 protected:
 
 	/**
+	 * Method: TControl::SetUpTextElement
+	 * Purpose: Sets up Text Elements in case Some attributes support it
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: virtual - allows sub classes to create more complex Text Elements than what the standard TControl uses
+	 */
+	virtual void SetUpTextElement();
+
+
+
+	/**
 	 * If no children and a content is not being drawn, draw the color using the DrawingBoard
 	 */
 	bool drawBackground;
@@ -1875,7 +1889,7 @@ protected:
 	/**
 	 * the Text of the control
 	 */
-	TrecPointer<TText> text1 , text2, text3;
+	TrecPointer<TTextElement> text1;
 	/**
 	 * The content of the control
 	 */
