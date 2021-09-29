@@ -205,6 +205,14 @@ void TXMLHttpRequest::Open(TDataArray<TrecPointer<TVariable>>& variables, Return
 		request.SetEndpoint(url.SubString(slash));
 	}
 	this->url.Set(url);
+
+	state = 1; // 1 means Open has been called
+
+	if (this->stateChange.Get() && stateChange->GetVarType() == var_type::interpretor)
+	{
+		// Now that state has changed, call method responsible for responding to change
+		dynamic_cast<TcInterpretor*>(stateChange.Get())->Run();
+	}
 }
 
 void TXMLHttpRequest::Send(TrecPointer<TVariable> pBody)
@@ -229,11 +237,19 @@ void TXMLHttpRequest::Send(TrecPointer<TVariable> pBody)
 	{
 		this->asyncResponse = clientSocket->TransmitAsync(request);
 		// To-Do: Set up thread that monitors response and runs handlers as a response
+		// In this thread, state can be updated to 2, 3, or 4
 	}
 	else
 	{
 		TString err;
 		this->response = clientSocket->Transmit(request, err);
+		state = 4; // 4 means Operation is complete
+
+		if (this->stateChange.Get() && stateChange->GetVarType() == var_type::interpretor)
+		{
+			// Now that state has changed, call method responsible for responding to change
+			dynamic_cast<TcInterpretor*>(stateChange.Get())->Run();
+		}
 	}
 }
 
