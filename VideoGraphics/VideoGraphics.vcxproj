@@ -175,10 +175,12 @@
     <ClInclude Include="TCamera.h" />
     <ClInclude Include="TColor.h" />
     <ClInclude Include="TComCommon.h" />
+    <ClInclude Include="TComplexTextElement.h" />
     <ClInclude Include="TFrameToSurfaceMFT.h" />
     <ClInclude Include="TGeometry.h" />
     <ClInclude Include="TGradientStop.h" />
     <ClInclude Include="TGradientStopCollection.h" />
+    <ClInclude Include="TInputTextElement.h" />
     <ClInclude Include="TMediaSink.h" />
     <ClInclude Include="TObjModelParser.h" />
     <ClInclude Include="TPage.h" />
@@ -189,6 +191,7 @@
     <ClInclude Include="TShaderHost.h" />
     <ClInclude Include="TShaderParser.h" />
     <ClInclude Include="TStreamSink.h" />
+    <ClInclude Include="TTextElement.h" />
     <ClInclude Include="TTextIntercepter.h" />
     <ClInclude Include="TTextRenderer.h" />
     <ClInclude Include="TVideoMarker.h" />
@@ -213,10 +216,12 @@
     <ClCompile Include="TBrush.cpp" />
     <ClCompile Include="TCamera.cpp" />
     <ClCompile Include="TColor.cpp" />
+    <ClCompile Include="TComplexTextElement.cpp" />
     <ClCompile Include="TFrameToSurfaceMFT.cpp" />
     <ClCompile Include="TGeometry.cpp" />
     <ClCompile Include="TGradientStop.cpp" />
     <ClCompile Include="TGradientStopCollection.cpp" />
+    <ClCompile Include="TInputTextElement.cpp" />
     <ClCompile Include="TMediaSink.cpp" />
     <ClCompile Include="TObjModelParser.cpp" />
     <ClCompile Include="TPage.cpp" />
@@ -227,6 +232,7 @@
     <ClCompile Include="TShaderHost.cpp" />
     <ClCompile Include="TShaderParser.cpp" />
     <ClCompile Include="TStreamSink.cpp" />
+    <ClCompile Include="TTextElement.cpp" />
     <ClCompile Include="TTextIntercepter.cpp" />
     <ClCompile Include="TTextRenderer.cpp" />
     <ClCompile Include="TVideoMarker.cpp" />

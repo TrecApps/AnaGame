@@ -367,6 +367,22 @@ bool TLayout::setGrid(TDataArray<int>& col, TDataArray<int>& row)
 	{
 		addRow(row[c], true);
 	}
+	tempRect.top += row[0];
+
+	for (UINT C = 0; C < columnLines.Size(); C++)
+	{
+		for (UINT Rust = C ? 0 : 1; Rust < rowLines.Size(); Rust++)
+		{
+			tempContC = TrecPointerKey::GetNewTrecPointer<containerControl>();
+			tempContC->x = C;
+			tempContC->y = Rust;
+			tempContC->contain = TrecPointerKey::GetNewSelfTrecPointer<TControl>(drawingBoard, styles);
+
+			tempContC->contain->setLocation(tempRect);
+			lChildren.Add(tempContC);
+		}
+	}
+
 	ThreadRelease();
 	return true;
 }

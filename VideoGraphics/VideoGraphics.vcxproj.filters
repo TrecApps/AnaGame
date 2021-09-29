@@ -114,6 +114,15 @@
     <ClInclude Include="TPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TTextElement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TInputTextElement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TComplexTextElement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -207,6 +216,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClCompile Include="TTextElement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TInputTextElement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TComplexTextElement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

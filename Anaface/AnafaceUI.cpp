@@ -428,10 +428,8 @@ void AnafaceUI::onDraw(TObject* obj)
 			border3->onDraw(location);
 		else if (border1.Get())
 			border1->onDraw(location);
-		if (text3.Get())
-			text3->onDraw(location, obj);
 		else if (text1.Get())
-			text1->onDraw(location, obj);
+			text1->OnDraw(obj);
 	}
 	else if (mState == messageState::mouseHover)
 	{
@@ -443,10 +441,8 @@ void AnafaceUI::onDraw(TObject* obj)
 			border2->onDraw(location);
 		else if (border1.Get())
 			border1->onDraw(location);
-		if (text2.Get())
-			text2->onDraw(location, obj);
 		else if (text1.Get())
-			text1->onDraw(location, obj);
+			text1->OnDraw(obj);
 	}
 	else
 	{
@@ -455,7 +451,7 @@ void AnafaceUI::onDraw(TObject* obj)
 		if (border1.Get())
 			border1->onDraw(location);
 		if (text1.Get())
-			text1->onDraw(location, obj);
+			text1->OnDraw(obj);
 	}
 	/*
 	if (vScroll)

@@ -156,10 +156,12 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		win->OnMouseMove(wParam, TPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 		break;
 	case WM_CHAR:
+	case WM_KEYDOWN:
 		if (charHandler.Get())
 		{
 			messageOutput mo = messageOutput::negative;
-			charHandler->OnChar(message == WM_CHAR, wParam, lParam & 0x0000FFFF, 0, &mo);
+			if (charHandler->OnChar(message == WM_CHAR, wParam, lParam & 0x0000FFFF, 0, &mo))
+				win->Draw();
 		}
 		break;
 	case WM_SIZE:
@@ -510,8 +512,12 @@ void TInstance::SetCharIntercepter(TrecPointer<EventHandler> handler, TrecPointe
 {
 	if (handler.Get() && intercepter.Get())
 	{
+
 		if (charHandler.Get() && charHandler->textIntercepter.Get())
 		{
+			if (intercepter->GetTarget() == charHandler->textIntercepter->GetTarget())
+				return;
+
 			charHandler->textIntercepter->OnLoseFocus();
 			charHandler->textIntercepter.Nullify();
 		}

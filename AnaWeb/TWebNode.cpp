@@ -2041,14 +2041,14 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 		det.range.length = textNode->textDataList[Rust].text.GetSize();
 		beginningIndex += det.range.length;
 
-		det.style = textNode->textDataList[Rust].fontStyle;
-		det.weight = textNode->textDataList[Rust].fontWeight;
-		det.color = board->GetBrush(textNode->textDataList[Rust].textColor);
-		det.fontSize = textNode->textDataList[Rust].fontSize;
+		det.details.style = textNode->textDataList[Rust].fontStyle;
+		det.details.weight = textNode->textDataList[Rust].fontWeight;
+		det.details.color = board->GetBrush(textNode->textDataList[Rust].textColor);
+		det.details.fontSize = textNode->textDataList[Rust].fontSize;
 
 		if (textNode->textDataList[Rust].hasBackgroundColor)
 		{
-			det.bColor = board->GetBrush(textNode->textDataList[Rust].backgroundColor);
+			det.details.bColor = board->GetBrush(textNode->textDataList[Rust].backgroundColor);
 		}
 
 		// Do-To: Add more fields to the FormattingDetails object and transfer dditional fields over to it

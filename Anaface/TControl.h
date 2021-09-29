@@ -30,6 +30,8 @@
 #include <TMap.h>
 #include <TObjectNode.h>
 #include <TTextIntercepter.h>
+#include <TTextElement.h>
+
 
 #define RADIAN_DEGREE_RATIO 57.2957795f
 
@@ -1780,6 +1782,18 @@ public:
 protected:
 
 	/**
+	 * Method: TControl::SetUpTextElement
+	 * Purpose: Sets up Text Elements in case Some attributes support it
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: virtual - allows sub classes to create more complex Text Elements than what the standard TControl uses
+	 */
+	virtual void SetUpTextElement();
+
+
+
+	/**
 	 * If no children and a content is not being drawn, draw the color using the DrawingBoard
 	 */
 	bool drawBackground;
@@ -1875,7 +1889,7 @@ protected:
 	/**
 	 * the Text of the control
 	 */
-	TrecPointer<TText> text1 , text2, text3;
+	TrecPointer<TTextElement> text1;
 	/**
 	 * The content of the control
 	 */
