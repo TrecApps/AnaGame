@@ -51,6 +51,10 @@ public:
 	~PlayerNode();
 
 	void AttachOutput(TrecPointer<PlayerNode> node);
+	IMFMediaSource* GetMediaSource();
+	IMFTransform* GetMediaTransform();
+	IMFMediaSink* GetMediaSink();
+	player_node_type GetType();
 
 private:
 	player_node_type type;
@@ -111,5 +115,11 @@ public:
 	 * Returns: String - the results of the operation (empty means success)
 	 */
 	TString PrepTopology(UINT maxTransforms);
+
+protected:
+
+	TrecPointer<PlayerNode> source;
+
+	TDataArray<TrecPointer<PlayerNode>> sinks;
 };
 

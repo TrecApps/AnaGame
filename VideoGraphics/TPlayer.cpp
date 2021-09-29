@@ -1,5 +1,6 @@
 #include "TPlayer.h"
 #include <mfreadwrite.h>
+#include <atltrace.h>
 
 #define SafeRelease(value) if(value){ value->Release(); value = nullptr;}
 
@@ -839,9 +840,61 @@ HRESULT AddBranchToPartialTopology(
 			{
 				goto done;
 			}
+			DWORD typeCount = 0;
+			assert(SUCCEEDED(typeHand->GetMediaTypeCount(&typeCount)));
 
+			IMFMediaType* sourceType = nullptr;
+			for (UINT Rust = 0; SUCCEEDED(typeHand->GetMediaTypeByIndex(Rust, &sourceType)); Rust++)
+			{
+				GUID subType = GUID_NULL;
+				assert(SUCCEEDED(sourceType->GetGUID(MF_MT_SUBTYPE, &subType)));
+
+				if (subType == MFVideoFormat_ARGB32)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_ARGB32\n");
+
+				if (subType == MFVideoFormat_AYUV)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_AYUV\n");
+				if (subType == MFVideoFormat_I420)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_I420\n");
+				if (subType == MFVideoFormat_IYUV)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_IYUV\n");
+				if (subType == MFVideoFormat_NV11)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_NV11\n");
+				if (subType == MFVideoFormat_NV12)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_NV12\n");
+				if (subType == MFVideoFormat_RGB24)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB24\n");
+				if (subType == MFVideoFormat_RGB32)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB32\n");
+				if (subType == MFVideoFormat_RGB555)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB555\n");
+				if (subType == MFVideoFormat_RGB565)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB565\n");
+				if (subType == MFVideoFormat_RGB8)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB8\n");
+
+				if (subType == MFVideoFormat_UYVY)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_UYVY\n");
+				if (subType == MFVideoFormat_v410)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_v410\n");
+				if (subType == MFVideoFormat_Y216)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_Y216\n");
+				if (subType == MFVideoFormat_Y41P)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_Y41P\n");
+				if (subType == MFVideoFormat_Y41T)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_Y41T\n");
+
+				if (subType == MFVideoFormat_Y42T)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_Y42T\n");
+				if (subType == MFVideoFormat_YVYU)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_YVYU\n");
+				if (subType == MFVideoFormat_YUY2)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_YUY2\n");
+				if (subType == MFVideoFormat_YV12)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_YV12\n");
+			}
 			
-			UINT transformFlags = MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_LOCALMFT | MFT_ENUM_FLAG_SORTANDFILTER;
+			/*UINT transformFlags = MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_LOCALMFT | MFT_ENUM_FLAG_SORTANDFILTER;
 			
 			HRESULT hr2 = CoCreateInstance(CLSID_VideoProcessorMFT, nullptr, CLSCTX_INPROC_SERVER, __uuidof(IMFTransform), (void**)&toRgba);
 			if (SUCCEEDED(hr2))
@@ -883,7 +936,7 @@ HRESULT AddBranchToPartialTopology(
 				hr = node->ConnectOutput(0, pOutputNode, 0);
 				assert(SUCCEEDED(hr));
 			}
-			else
+			else*/
 				hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
 		}
 	}
