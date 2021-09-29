@@ -200,23 +200,23 @@ UINT TBrush::GetMaxColors()
 void TBrush::SetColor(const TColor& color, UINT index)
 {
 	ThreadLock();
-	switch (brushType)
-	{
-	case brush_type::brush_type_solid:
-		ATLTRACE(L"SOLID BRUSH TYPE\n");
-		break;
-	case brush_type::brush_type_linear:
-		ATLTRACE(L"LINEAR BRUSH TYPE\n");
-		break;
-	case brush_type::brush_type_radial:
-		ATLTRACE(L"RADIAL BRUSH TYPE\n");
-		break;
-	case brush_type::brush_type_bitmap:
-		ATLTRACE(L"BITMAP BRUSH TYPE\n");
-		break;
-	default:
-		ATLTRACE(L"OTHER BRUSH TYPE\n");
-	}
+	//switch (brushType)
+	//{
+	//case brush_type::brush_type_solid:
+	//	ATLTRACE(L"SOLID BRUSH TYPE\n");
+	//	break;
+	//case brush_type::brush_type_linear:
+	//	ATLTRACE(L"LINEAR BRUSH TYPE\n");
+	//	break;
+	//case brush_type::brush_type_radial:
+	//	ATLTRACE(L"RADIAL BRUSH TYPE\n");
+	//	break;
+	//case brush_type::brush_type_bitmap:
+	//	ATLTRACE(L"BITMAP BRUSH TYPE\n");
+	//	break;
+	//default:
+	//	ATLTRACE(L"OTHER BRUSH TYPE\n");
+	//}
 
 
 	if (brushType == brush_type::brush_type_solid)
@@ -225,10 +225,7 @@ void TBrush::SetColor(const TColor& color, UINT index)
 		if (brush.Get())
 		{
 			reinterpret_cast<ID2D1SolidColorBrush*>(brush.Get())->SetColor(color.GetColor());
-			ATLTRACE(L"Set color!");
 		}
-		else
-			ATLTRACE(L"COLD NOT GET BRUSH!");
 	}
 	else
 	{

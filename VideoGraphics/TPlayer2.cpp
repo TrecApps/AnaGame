@@ -1,5 +1,13 @@
 #include "TPlayer2.h"
 
+void SafeRelease(IUnknown** u)
+{
+	if (!u || !(*u))
+		return;
+	(*u)->Release();
+	(*u) = nullptr;
+}
+
 GUID clInputTypes[] = {
 	MFVideoFormat_ARGB32,
 	MFVideoFormat_AYUV,
@@ -114,13 +122,7 @@ TrecPointer<TransformTypeNode> PrepNodeLinks(IMFTransform* transform, IMFMediaTy
 }
 
 
-void SafeRelease(IUnknown** u)
-{
-	if (!u || !(*u))
-		return;
-	(*u)->Release();
-	(*u) = nullptr;
-}
+
 
 PlayerNode::PlayerNode(IMFMediaSource* source)
 {

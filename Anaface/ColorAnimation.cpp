@@ -36,7 +36,7 @@ ColorAnimation::ColorAnimation(animation_phase ap): Animation(ap)
  */
 bool ColorAnimation::Update(float progress)
 {
-	ATLTRACE(L"COLOR ANIMATION UPDATE called!\n");
+	//ATLTRACE(L"COLOR ANIMATION UPDATE called!\n");
 	if (!brush.Get())
 		return false;
 	if(millisecondLength && millisecondStoryLength)

@@ -892,6 +892,9 @@ HRESULT AddBranchToPartialTopology(
 					ATLTRACE(L"Source SupportedType: MFVideoFormat_YUY2\n");
 				if (subType == MFVideoFormat_YV12)
 					ATLTRACE(L"Source SupportedType: MFVideoFormat_YV12\n");
+
+				if (subType == MFVideoFormat_AV1)
+					ATLTRACE(L"Source SupportedType: MFVideoFormat_AV1\n");
 			}
 			
 			/*UINT transformFlags = MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_LOCALMFT | MFT_ENUM_FLAG_SORTANDFILTER;
