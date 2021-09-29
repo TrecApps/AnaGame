@@ -168,6 +168,13 @@
     <ClInclude Include="TcNativeInterpretor.h" />
     <ClInclude Include="TContainerVariable.h" />
     <ClInclude Include="TcTypeInterpretor.h" />
+    <ClInclude Include="TFormatReader.h" />
+    <ClInclude Include="TFormatReaderHtml.h" />
+    <ClInclude Include="TFormatReaderJson.h" />
+    <ClInclude Include="TFormatReaderProps.h" />
+    <ClInclude Include="TFormatReaderTml.h" />
+    <ClInclude Include="TFormatReaderXml.h" />
+    <ClInclude Include="TFormatReaderYaml.h" />
     <ClInclude Include="TFunctionGen.h" />
     <ClInclude Include="TInterpretor.h" />
     <ClInclude Include="TIteratorVariable.h" />
@@ -199,6 +206,13 @@
     <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
     <ClCompile Include="TcTypeInterpretor.cpp" />
+    <ClCompile Include="TFormatReader.cpp" />
+    <ClCompile Include="TFormatReaderHtml.cpp" />
+    <ClCompile Include="TFormatReaderJson.cpp" />
+    <ClCompile Include="TFormatReaderProps.cpp" />
+    <ClCompile Include="TFormatReaderTml.cpp" />
+    <ClCompile Include="TFormatReaderXml.cpp" />
+    <ClCompile Include="TFormatReaderYaml.cpp" />
     <ClCompile Include="TFunctionGen.cpp" />
     <ClCompile Include="TInterpretor.cpp" />
     <ClCompile Include="TIteratorVariable.cpp" />

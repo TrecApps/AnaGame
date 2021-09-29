@@ -1,6 +1,7 @@
 #pragma once
 #include "Anaface2.h"
 #include <TPage.h>
+#include <TTextElement.h>
 
 /**
  * Enum Class: dimension_spec
