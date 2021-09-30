@@ -32,6 +32,7 @@ public:
 	int arrayLabel;
 	WCHAR type;
 	TrecPointer<TObjectNode> object;
+	D2D1_RECT_F newSize, oldSize;
 };
 
 /**
@@ -98,6 +99,7 @@ typedef enum class R_Message_Type
 	On_Click,          // User presses down and releases left mouse button
 	On_Hold_Click,     // (Not implemented)
 	On_Hover,          // Mouse is over the control
+	On_Hover_Enter,		// Mouse just enetered the control's space
 	On_Hover_Leave,    // Mouse leaves the control
 	On_Right_Click,    // User presses down and releases right mouse button
 	On_Click_Release,  // (deprecated)
@@ -111,7 +113,9 @@ typedef enum class R_Message_Type
 	On_Lose_Focus,     // A Control no longer has focus
 	On_Select_Scroller,// A Scroll bar is involved
 	On_Flyout,         // A control is to appear in a flyout
-	On_LDoubleClick    // Double Click detected
+	On_LDoubleClick,    // Double Click detected
+	On_Scrolled,			// Control was scrolled
+	On_Resized
 }R_Message_Type;
 
 
@@ -204,7 +208,7 @@ public:
 		 *
 		 * Attributes: virtual
 		 */
-		virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut);
+		virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args);
 
 		/**
 		 * Method: TScrollBar::MovedContent
@@ -369,7 +373,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
+	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
 
 	/**
 	 * Method: TPage::OnMouseMove
@@ -482,7 +486,20 @@ public:
 	void RotateRadians(float radians);
 
 
+	/**
+	 * Method: TPage::InjectScrollerPage
+	 * Purpose: Inserts a Scrolling Page between the parent page and the calling Page
+	 * Parameters: const D2D1_RECT_F& bounds - the bounds of the calling page
+	 *				TrecPointer<TPage> page - the calling page
+	 * Returns: void
+	 *
+	 * Attributes: virtual
+	 */
+	virtual void InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& needs, TrecPointer<TPage> page);
+
 protected:
+
+
     /**
      * The Drawing Board to Draw against
      */
@@ -504,3 +521,4 @@ protected:
 	float rotate;
 };
 
+D2D1_RECT_F _VIDEO_GRAPHICS ConvertStringToD2D1Rect(const TString& str);

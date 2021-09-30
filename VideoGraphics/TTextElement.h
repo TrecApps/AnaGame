@@ -6,6 +6,7 @@
 #include <TPoint.h>
 #include "TTextRenderer.h"
 #include "TTextIntercepter.h"
+#include <TVariable.h>
 
 /**
  * Enum CLass: control_text_mode
@@ -341,6 +342,16 @@ public:
 	  * Attributes: virtual
 	  */
 	 virtual void OnDraw(TObject* obj);
+
+	 /**
+	  * Method: TTextElement::OnDraw
+	  * Purpose: Draws the Text, using a TVariable for data Binding
+	  * Parameters: TrecPointer<TVariable> dataText - the text to inject
+	  * Returns: void
+	  * 
+	  * Attributes: virtual
+	  */
+	 virtual void OnDraw(TrecPointer<TVariable> dataText);
 
 	 /**
 	  * Method: TTextElement::GetColor

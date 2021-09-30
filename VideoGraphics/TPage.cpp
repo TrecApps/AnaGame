@@ -158,7 +158,7 @@ void TPage::TScrollBar::OnLButtonUp(UINT nFlags, TPoint point, message_output& m
  *
  * Attributes: virtual
  */
-void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut)
+void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args)
 {
 	if (!onFocus) return;
 
@@ -171,7 +171,7 @@ void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& m
 			point.x = body_rect.left + BOX_SIZE;
 
 		float move = -MovedContent(point.x - prevPoint.x);
-		parent.Get()->OnScroll(point, TPoint(move / widthFactor, 0));
+		parent.Get()->OnScroll(point, TPoint(move / widthFactor, 0), args);
 	}
 	else
 	{
@@ -182,7 +182,7 @@ void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& m
 			point.y = body_rect.top + BOX_SIZE;
 
 		float move = -MovedContent(point.y - prevPoint.y);
-		parent.Get()->OnScroll(point, TPoint(0, move / widthFactor));
+		parent.Get()->OnScroll(point, TPoint(0, move / widthFactor),args);
 	}
 	prevPoint = point;
 }
@@ -225,6 +225,7 @@ float TPage::TScrollBar::MovedContent(float degree)
 void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& area)
 {
 	body_rect = location;
+	TDataArray<EventArgs> args;
 
 	if (scrollAlignment == ScrollOrient::so_horizontal)
 	{
@@ -250,7 +251,7 @@ void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& 
 			scroll_rect.left += diff;
 			scroll_rect.right += diff;
 
-			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(diff / widthFactor, 0));
+			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(diff / widthFactor, 0),args);
 		}
 		else if (scroll_rect.right > (body_rect.right - BOX_SIZE))
 		{
@@ -258,7 +259,7 @@ void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& 
 			scroll_rect.left += diff;
 			scroll_rect.right += diff;
 
-			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(diff / widthFactor, 0));
+			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(diff / widthFactor, 0),args);
 		}
 
 	}
@@ -288,7 +289,7 @@ void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& 
 			scroll_rect.top += diff;
 			scroll_rect.bottom += diff;
 
-			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(0, -(diff / widthFactor)));
+			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(0, -(diff / widthFactor)),args);
 		}
 		else if (scroll_rect.bottom > (body_rect.bottom - BOX_SIZE))
 		{
@@ -296,7 +297,7 @@ void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& 
 			scroll_rect.top += diff;
 			scroll_rect.bottom += diff;
 
-			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(0, -(diff / widthFactor)));
+			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(0, -(diff / widthFactor)),args);
 		}
 	}
 }
@@ -366,6 +367,11 @@ void TPage::RotateRadians(float radians)
 {
 }
 
+void TPage::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& needs, TrecPointer<TPage> page)
+{
+	// If no children, do nothing
+}
+
 TPage::TPage(TrecPointer<DrawingBoard> board)
 {
 	this->drawingBoard = board;
@@ -389,8 +395,64 @@ void TPage::TScrollBar::EstablishScrollColors()
 	pointer = &value;
 }
 
+EventArgs::EventArgs()
+{
+	Reset();
+}
+void EventArgs::Reset()
+{
+	isClick = false;
+	isLeftClick = false;
+	methodID = -1;
+	point.x = 0.0f;
+	point.y = 0.0f;
+	positive = false;
+	text.Empty();
+	type = L'\0';
+	object.Nullify();
+	oldSize = newSize = { 0,0,0,0 };
+}
+EventArgs::EventArgs(const EventArgs& args)
+{
+	text.Set(args.text);
+	positive = args.positive;
+	point = args.point;
+	isClick = args.isClick;
+	isLeftClick = args.isLeftClick;
+	eventType = args.eventType;
+	methodID = args.methodID;
+	arrayLabel = args.arrayLabel;
+	type = args.type;
+	object = args.object;
+	oldSize = args.oldSize;
+	newSize = args.newSize;
+}
+
 Dimensions::Dimensions()
 {
 	this->height = this->maxHeight = this->minHeight =
 		this->width = this->maxWidth = this->minWidth = 0;
 }
+
+
+D2D1_RECT_F ConvertStringToD2D1Rect(const TString& str)
+{
+	D2D1_RECT_F returnable = D2D1_RECT_F{ 0,0,0,0 };
+
+	TrecPointer<TDataArray<TString>> strSpl = str.split(",");
+
+
+	int res[4] = { 0,0,0,0 };
+	if (strSpl.Get() == NULL || strSpl->Size() != 4)
+	{
+		return returnable;
+	}
+	res[0] = strSpl->at(0).ConvertToFloat(returnable.top);
+	res[1] = strSpl->at(1).ConvertToFloat(returnable.left);
+	res[2] = strSpl->at(2).ConvertToFloat(returnable.bottom);
+	res[3] = strSpl->at(3).ConvertToFloat(returnable.right);
+	if (res[0] > 0 || res[1] > 0 || res[2] > 0 || res[3] > 0)
+		ZeroMemory(&returnable, sizeof(returnable));
+	return returnable; LONG i;
+}
+

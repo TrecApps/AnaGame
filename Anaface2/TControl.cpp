@@ -411,6 +411,10 @@ TControl::TControl(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<st
 	controlTransform = D2D1::Matrix3x2F::Identity();
 	shape = TShape::T_Rect;
 	location = margin = bounds = { 0,0,0,0 };
+	isRightClicked = isLeftClicked = isMouseIn = false;
+	fixedWidth = fixedHeight = false;
+
+	this->styles = styles;
 }
 
 /**
@@ -442,6 +446,108 @@ bool TControl::GetActive()
 
 bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 {
+	TObjectLocker threadLock(&thread);
+
+	bounds = loc;
+	TString valpoint;
+
+	OnCreateSize();
+
+	if (attributes.retrieveEntry(L"|ArrayID", valpoint))
+	{
+		valpoint.ConvertToInt(arrayID);
+	}
+
+	if (attributes.retrieveEntry(L"|Shape", valpoint))
+	{
+		if (valpoint.Compare(L"Ellipse"))
+		{
+			shape = TShape::T_Ellipse;
+			ellipse.point = D2D1::Point2F((location.right + location.left) / 2, (location.top + location.bottom) / 2);
+			ellipse.radiusX = (location.right - location.left) / 2;
+			ellipse.radiusY = (location.bottom - location.top) / 2;
+		}
+		else if (valpoint.Compare(L"RoundedRectangle"))
+		{
+			shape = TShape::T_Rounded_Rect;
+			float xRound = (location.left - location.right) / 10;
+			float yRound = (location.bottom - location.top) / 10;
+			if (attributes.retrieveEntry(L"|RoundedRectX", valpoint))
+			{
+				valpoint.ConvertToFloat(xRound);
+			}
+			if (attributes.retrieveEntry(L"|RoundedRectY", valpoint))
+			{
+				valpoint.ConvertToFloat(yRound);
+			}
+			roundedRect.rect = location;
+			roundedRect.radiusX = xRound;
+			roundedRect.radiusY = yRound;
+		}
+		else if (valpoint.Compare(L"Custom"))
+		{
+
+		}
+	}
+
+	if (attributes.retrieveEntry(L"|id", valpoint) || attributes.retrieveEntry(L"|ID", valpoint))
+	{
+		ID.Set(valpoint);
+	}
+
+	if (attributes.retrieveEntry(L"|Class", valpoint))
+	{
+		TrecPointer<styleTable> classy;
+
+		TrecPointer<TDataArray<TString>> classes = className.split(L";");
+
+		for (int c = 0; c < classes->Size(); c++)
+		{
+			if (classes->at(c).GetSize())
+			{
+				if (styles.Get())
+				{
+
+					for (int c = 0; c < styles->Count(); c++)
+					{
+						if (styles->ElementAt(c)->style == classes->at(c))
+						{
+							classy = styles->ElementAt(c);
+							if (classy.Get())
+							{
+								TDataMap<TString> dataClassy;
+
+								for (UINT Rust = 0; Rust < classy->names.count(); Rust++)
+								{
+									auto ent = classy->names.GetEntryAt(Rust);
+									if(ent.Get())
+										dataClassy.addEntry(ent->key, ent->object.Get());
+								}
+
+								OnCreateStyle(dataClassy);
+							}//break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	OnCreateStyle(attributes);
+
+
+	if (attributes.retrieveEntry(TString(L"|FixedHeight"),valpoint))
+	{
+		if (!valpoint.Compare(L"true"))
+			fixedHeight = true;
+	}
+
+	if (attributes.retrieveEntry(TString(L"|FixedWidth"), valpoint))
+	{
+		if (!valpoint.Compare(L"true"))
+			fixedWidth = true;
+	}
+
 	return false;
 }
 
@@ -474,7 +580,14 @@ D2D1_RECT_F TControl::getMargin()
 
 bool TControl::SetMargin(const D2D1_RECT_F& newMargin)
 {
-	return false;
+	if((bounds.left + newMargin.left) > (bounds.right - newMargin.right))
+		return false;
+
+	if ((bounds.top + newMargin.top) > (bounds.right - newMargin.right))
+		return false;
+
+	margin = newMargin;
+	return true;
 }
 
 
@@ -563,7 +676,7 @@ bool TControl::SetDimension(UINT dimensionValue, dimension_spec spec)
 		dimensions->minWidth = dimensionValue;
 	}
 
-	return false;
+	return true;
 }
 
 UINT TControl::GetDimension(dimension_spec spec)
@@ -632,30 +745,277 @@ bool TControl::HandlesEvents()
 
 void TControl::Draw(TrecPointer<TVariable> object)
 {
+	if (!isActive)
+		return;
+	if (content.Get())
+		content->onDraw(location);
+	if (text.Get())
+		text->OnDraw(object);
+	if (border.Get())
+		border->onDraw(location);
 }
 
-void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>& args)
 {
+	if (!isActive)
+		return;
+	if (IsContained(point, location))
+	{
+		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
+
+		if (isLeftClicked)
+		{
+			int index = HasEvent(R_Message_Type::On_Click);
+			if (index != -1)
+			{
+				this->args.Reset();
+				this->args.arrayLabel = this->arrayID;
+				this->args.eventType = R_Message_Type::On_Click;
+				this->args.isClick = true;
+				this->args.isLeftClick = false;
+				this->args.methodID = index;
+				this->args.point = point;
+				this->args.positive = true;
+				this->args.type = L'\0';
+				args.push_back(this->args);
+			}
+		}
+		else
+		{
+			int index = HasEvent(R_Message_Type::On_L_Button_Up);
+			if (index != -1)
+			{
+				this->args.Reset();
+				this->args.arrayLabel = this->arrayID;
+				this->args.eventType = R_Message_Type::On_L_Button_Up;
+				this->args.isClick = true;
+				this->args.isLeftClick = false;
+				this->args.methodID = index;
+				this->args.point = point;
+				this->args.positive = true;
+				this->args.type = L'\0';
+				args.push_back(this->args);
+			}
+		}
+	}
+	isLeftClicked = false;
 }
 
-void TControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& pages, TDataArray<EventArgs>& args)
 {
+	if (!isActive)
+		return;
+	if (IsContained(point, location))
+	{
+		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
+
+		int index = HasEvent(R_Message_Type::On_R_Button_Down);
+		if (index != -1)
+		{
+			this->args.Reset();
+			this->args.arrayLabel = this->arrayID;
+			this->args.eventType = R_Message_Type::On_R_Button_Down;
+			this->args.isClick = true;
+			this->args.isLeftClick = false;
+			this->args.methodID = index;
+			this->args.point = point;
+			this->args.positive = true;
+			this->args.type = L'\0';
+			args.push_back(this->args);
+		}
+
+		pages.push_back(EventID_Cred(R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<>(self)));
+		isRightClicked = true;
+	}
 }
 
-void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>& args)
 {
+	if (!isActive)
+		return;
+	if (IsContained(point, location))
+	{
+		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
+
+		if (isLeftClicked)
+		{
+			int index = HasEvent(R_Message_Type::On_Click);
+			if (index != -1)
+			{
+				this->args.Reset();
+				this->args.arrayLabel = this->arrayID;
+				this->args.eventType = R_Message_Type::On_Click;
+				this->args.isClick = true;
+				this->args.isLeftClick = true;
+				this->args.methodID = index;
+				this->args.point = point;
+				this->args.positive = true;
+				this->args.type = L'\0';
+				args.push_back(this->args);
+			}
+		}
+		else
+		{
+			int index = HasEvent(R_Message_Type::On_L_Button_Up);
+			if (index != -1)
+			{
+				this->args.Reset();
+				this->args.arrayLabel = this->arrayID;
+				this->args.eventType = R_Message_Type::On_L_Button_Up;
+				this->args.isClick = true;
+				this->args.isLeftClick = true;
+				this->args.methodID = index;
+				this->args.point = point;
+				this->args.positive = true;
+				this->args.type = L'\0';
+				args.push_back(this->args);
+			}
+		}
+	}
+	isLeftClicked = false;
 }
 
-void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& pages, TDataArray<EventArgs>& args)
 {
+	if (!isActive)
+		return;
+	if (IsContained(point, location))
+	{
+		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
+		if (!isMouseIn)
+		{
+			int index = HasEvent(R_Message_Type::On_Hover_Enter);
+			if (index != -1)
+			{
+				this->args.Reset();
+				this->args.arrayLabel = this->arrayID;
+				this->args.eventType = R_Message_Type::On_Hover_Enter;
+				this->args.isClick = false;
+				this->args.isLeftClick = false;
+				this->args.methodID = index;
+				this->args.point = point;
+				this->args.positive = true;
+				this->args.type = L'\0';
+				args.push_back(this->args);
+			}
+		}
+		isMouseIn = true;
+		int index = HasEvent(R_Message_Type::On_Hover);
+		if (index != -1)
+		{
+			this->args.Reset();
+			this->args.arrayLabel = this->arrayID;
+			this->args.eventType = R_Message_Type::On_Hover;
+			this->args.isClick = false;
+			this->args.isLeftClick = false;
+			this->args.methodID = index;
+			this->args.point = point;
+			this->args.positive = true;
+			this->args.type = L'\0';
+			args.push_back(this->args);
+		}
+		pages.push_back(EventID_Cred(R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<>(self)));
+	}
+	else
+	{
+		if (isMouseIn)
+		{
+			int index = HasEvent(R_Message_Type::On_Hover_Leave);
+			if (index != -1)
+			{
+				this->args.Reset();
+				this->args.arrayLabel = this->arrayID;
+				this->args.eventType = R_Message_Type::On_Hover_Leave;
+				this->args.isClick = true;
+				this->args.isLeftClick = true;
+				this->args.methodID = index;
+				this->args.point = point;
+				this->args.positive = true;
+				this->args.type = L'\0';
+				args.push_back(this->args);
+			}
+		}
+		isMouseIn = false;
+	}
 }
 
-void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&)
+void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args)
 {
+	if (!isActive)
+		return;
+	if (IsContained(point, location))
+	{
+		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
+
+		int index = HasEvent(R_Message_Type::On_LDoubleClick);
+		if (index != -1)
+		{
+			this->args.Reset();
+			this->args.arrayLabel = this->arrayID;
+			this->args.eventType = R_Message_Type::On_LDoubleClick;
+			this->args.isClick = true;
+			this->args.isLeftClick = true;
+			this->args.methodID = index;
+			this->args.point = point;
+			this->args.positive = true;
+			this->args.type = L'\0';
+			args.push_back(this->args);
+		}
+
+	}
 }
 
-void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&)
+void TControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& pages , TDataArray<EventArgs>& args)
 {
+	if (!isActive)
+		return;
+	if (IsContained(point, location))
+	{
+		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
+
+		int index = HasEvent(R_Message_Type::On_L_Button_Down);
+		if (index != -1)
+		{
+			this->args.Reset();
+			this->args.arrayLabel = this->arrayID;
+			this->args.eventType = R_Message_Type::On_L_Button_Down;
+			this->args.isClick = true;
+			this->args.isLeftClick = true;
+			this->args.methodID = index;
+			this->args.point = point;
+			this->args.positive = true;
+			this->args.type = L'\0';
+			args.push_back(this->args);
+		}
+
+		pages.push_back(EventID_Cred(R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<>(self)));
+		isLeftClicked = true;
+	}
+}
+
+void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+{
+	bounds = newLoc;
+	auto curLoc = location;
+	SetSize();
+
+	int index = HasEvent(R_Message_Type::On_Resized);
+	if (index != -1)
+	{
+		this->args.Reset();
+		this->args.arrayLabel = this->arrayID;
+		this->args.eventType = R_Message_Type::On_Resized;
+		this->args.isClick = false;
+		this->args.isLeftClick = false;
+		this->args.methodID = index;
+		this->args.point.x = 0;
+		this->args.point.y = 0;
+		this->args.positive = true;
+		this->args.type = L'\0';
+		this->args.oldSize = curLoc;
+		this->args.newSize = location;
+		args.push_back(this->args);
+	}
 }
 
 bool TControl::OnDestroy()
@@ -663,7 +1023,232 @@ bool TControl::OnDestroy()
 	return true;
 }
 
-bool TControl::OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&)
+bool TControl::OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
 {
+	location.bottom += direction.y;
+	location.top += direction.y;
+	location.left += direction.x;
+	location.right += direction.x;
+
+	if (point.x > 0 && point.y > 0)
+	{
+		int index = HasEvent(R_Message_Type::On_Scrolled);
+		if (index != -1)
+		{
+			this->args.Reset();
+			this->args.arrayLabel = this->arrayID;
+			this->args.eventType = R_Message_Type::On_Scrolled;
+			this->args.isClick = false;
+			this->args.isLeftClick = false;
+			this->args.methodID = index;
+			this->args.point = point;
+			this->args.positive = true;
+			this->args.type = L'\0';
+			args.push_back(this->args);
+		}
+		return true;
+	}
+
 	return false;
 }
+
+int TControl::HasEvent(R_Message_Type mType)
+{
+	for (UINT Rust = 0; Rust < eventList.Size(); Rust++)
+	{
+		if (eventList[Rust].eventType == mType)
+			return eventList[Rust].eventID;
+	}
+	return -1;
+}
+
+void TControl::OnCreateSize()
+{
+	location = bounds;
+
+	TString valpoint;
+	UINT dime = 0;
+	if (attributes.retrieveEntry(L"|Height", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	{
+		SetDimension(dime, dimension_spec::ds_height);
+	}
+	if (attributes.retrieveEntry(L"|MaxHeight", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	{
+		SetDimension(dime, dimension_spec::ds_height_max);
+	}
+	if (attributes.retrieveEntry(L"|MinHeight", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	{
+		SetDimension(dime, dimension_spec::ds_height_min);
+	}
+
+
+	if (attributes.retrieveEntry(L"|Width", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	{
+		SetDimension(dime, dimension_spec::ds_width);
+	}
+	if (attributes.retrieveEntry(L"|MaxWidth", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	{
+		SetDimension(dime, dimension_spec::ds_width_max);
+	}
+	if (attributes.retrieveEntry(L"|MinWidth", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	{
+		SetDimension(dime, dimension_spec::ds_width_min);
+	}
+
+
+	if (attributes.retrieveEntry(L"|Margin", valpoint))
+		SetMargin(ConvertStringToD2D1Rect(valpoint));
+
+	SetSize();
+}
+
+void TControl::SetSize()
+{
+	location.top += margin.top;
+	location.left += margin.left;
+	location.right -= margin.right;
+	location.bottom -= margin.bottom;
+
+
+	float curWidth = location.right - location.left;
+	float curHeight = location.bottom - location.top;
+
+	UINT maxDime = GetDimension(dimension_spec::ds_width_max),
+		minDime = GetDimension(dimension_spec::ds_width_min);
+
+	if (maxDime && curWidth > maxDime)
+	{
+		location.right = location.left + maxDime;
+	}
+	else if (minDime && curWidth < minDime)
+	{
+		D2D1_RECT_F newBounds = bounds;
+		UINT diff = curWidth - minDime;
+		location.right += diff;
+		newBounds.right += diff;
+
+		if (parent.Get())
+		{
+			TrecPointer<TPage> tParent = TrecPointerKey::GetTrecPointerFromSoft<>(parent);
+			tParent->InjectScrollerPage(bounds, newBounds, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+			bounds = newBounds;
+		}
+	}
+
+
+	UINT maxDime = GetDimension(dimension_spec::ds_height_max),
+		minDime = GetDimension(dimension_spec::ds_height_min);
+
+	if (maxDime && curHeight > maxDime)
+	{
+		location.bottom = location.top + maxDime;
+	}
+	else if (minDime && curHeight < minDime)
+	{
+		D2D1_RECT_F newBounds = bounds;
+		UINT diff = curHeight - minDime;
+		location.bottom += diff;
+		newBounds.bottom += diff;
+
+		if (parent.Get())
+		{
+			TrecPointer<TPage> tParent = TrecPointerKey::GetTrecPointerFromSoft<>(parent);
+			tParent->InjectScrollerPage(bounds, newBounds, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+			bounds = newBounds;
+		}
+	}
+}
+
+void TControl::OnCreateStyle(TDataMap<TString>& atts)
+{
+	TString valpoint;
+
+	if (atts.retrieveEntry(L"|BorderThickness", valpoint))
+	{
+		if (!border.Get())
+			border = TControlComponent::GetControlBorder(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));  //TrecPointerKey::GetNewTrecPointer<TControlComponent>(drawingBoard, (this));
+		valpoint.ConvertToFloat((border->thickness));         // Logic Bug needs fixing
+	}
+
+	bool worked;
+	if (atts.retrieveEntry(L"|BorderColor", valpoint))
+	{
+		if (!border.Get())
+			border = TControlComponent::GetControlBorder(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		
+		TColor::GetColorFromString(valpoint, worked);
+		border->stopCollection.AddGradient(TGradientStop(TColor::GetColorFromString(valpoint, worked), 0.0f));
+	}
+
+
+	if (atts.retrieveEntry(L"|ContentThickness", valpoint))
+	{
+		if (!content.Get())
+			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		valpoint.ConvertToFloat((content->thickness));
+	}
+
+	if (atts.retrieveEntry(L"|ContentColor", valpoint))
+	{
+		if (!content.Get())
+			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		content->stopCollection.AddGradient(TGradientStop(TColor::GetColorFromString(valpoint, worked), 0.0f));
+	}
+
+	if (atts.retrieveEntry(L"|ContentGrad", valpoint))
+	{
+		if (!content.Get())
+			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		float entry = 0.0f;
+		valpoint.ConvertToFloat(entry);
+		//content->secondColor = true;
+		UINT gradCount = 0;
+		if (gradCount = content->stopCollection.GetGradientCount())
+			content->stopCollection.SetPositionAt(entry, gradCount - 1);
+	}
+
+	if (atts.retrieveEntry(L"|BorderGrad", valpoint))
+	{
+		if (!border.Get())
+			border = TControlComponent::GetControlBorder(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		float entry = 0.0f;
+		valpoint.ConvertToFloat(entry);
+		//border->secondColor = true;
+		UINT gradCount = 0;
+		if (gradCount = border->stopCollection.GetGradientCount())
+			border->stopCollection.SetPositionAt(entry, gradCount - 1);
+	}
+
+	if (atts.retrieveEntry(L"|ContentGradMode", valpoint))
+	{
+		if (!content.Get())
+			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		if (valpoint.Compare(L"Radial"))
+			content->useRadial = true;
+	}
+	if (atts.retrieveEntry(L"|BorderGradMode", valpoint))
+	{
+		if (!border.Get())
+			border = TControlComponent::GetControlBorder(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		if (valpoint.Compare(L"Radial"))
+			border->useRadial = true;
+	}
+
+	if (atts.retrieveEntry(L"|ImageSource", valpoint))
+	{
+		if (!content.Get())
+			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		valpoint.Replace(L"/", L"\\");
+
+		TrecPointer<TFileShell> file = TFileShell::GetFileInfo(valpoint);
+
+		if (file.Get())
+		{
+			TObjectLocker threadLock(&thread);
+			content->image = drawingBoard->GetBrush(file, location);
+		}
+	}
+
+
+}
+

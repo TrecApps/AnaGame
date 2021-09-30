@@ -2,6 +2,7 @@
 #include "Anaface2.h"
 #include <TPage.h>
 #include <TTextElement.h>
+#include <TDataMap.h>
 
 /**
  * Enum Class: dimension_spec
@@ -529,6 +530,19 @@ public:
 	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&) override;
 
 	/**
+	 * Method: TControl::OnLButtonDown
+	 * Purpose: Responds to the Left Button Down Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				const TPoint& point - the point included in the message
+	 *				message_output& mOut -  the result of the message
+	 *				TDataArray<EventID_Cred>& - list of events to be handled
+	 * Returns: void
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>& args) override;
+
+	/**
 	 * Method: TControl::OnResize
 	 * Purpose: Resizes the Page
 	 * Parameters: D2D1_RECT_F& newLoc - the new regoin of the Page
@@ -570,9 +584,24 @@ public:
 protected:
 
 	/**
+	 * Attributes for creation
+	 */
+	TDataMap<TString> attributes;
+	
+	/**
+	 * whether the sizes are fixed upon creation or not
+	 */
+	bool fixedWidth, fixedHeight;
+
+	/**
 	 * The Border and Content of the Control
 	 */
 	TrecPointer<TControlComponent> border, content;
+
+	/**
+	 * Text Support for TControls
+	 */
+	TrecPointer<TTextElement> text;
 
 	/**
 	 * List of Style classes
@@ -586,6 +615,19 @@ protected:
 	 * Where the Control is to reside
 	 */
 	D2D1_RECT_F location, margin, bounds;
+
+
+	/**
+	 * the ellipse to pass into the Border and content if used
+	 */
+	D2D1_ELLIPSE ellipse;
+	/**
+	 * the rounded rect to pass into the Border and content if used
+	 */
+	D2D1_ROUNDED_RECT roundedRect;
+
+	TrecPointer<TArray<styleTable>> styles;
+
 	/**
 	 * ScrollBars in case content is larger than it's allocated drawing space
 	 */
@@ -638,5 +680,40 @@ protected:
 	 * Controls can be disabled, through this bool
 	 */
 	bool isActive;
+
+	/**
+	 * Keeps track of being Clicked, and mouse movements
+	 */
+	bool isRightClicked, isLeftClicked, isMouseIn;
+
+protected:
+	/**
+	 * Method: TControl::HasEvent
+	 * Purpose: Whether the TControl Possesses the Event type specified
+	 * Parameters: R_Message_Type mType - the message Type to check for
+	 * Returns: int - the index of the event method (or -1)
+	 */
+	int HasEvent(R_Message_Type mType);
+
+	/**
+	 * Method: TControl::OnCreateSize
+	 * Purpose: Aids the creation Method by Handling Sizing Logic
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void OnCreateSize();
+
+	/**
+	 * Method: TControl::SetSize
+	 * Purpose: Aids the setting of the controls location upon being set with new bounds
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void SetSize();
+
+	/**
+	 *
+	 */
+	void OnCreateStyle(TDataMap<TString>& atts);
 };
 
