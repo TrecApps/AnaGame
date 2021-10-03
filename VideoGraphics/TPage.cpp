@@ -377,6 +377,12 @@ TPage::TPage(TrecPointer<DrawingBoard> board)
 	this->drawingBoard = board;
 }
 
+TString TPage::PrepPage(TrecPointer<TFileShell> file, TrecPointer<EventHandler> handler)
+{
+	return L"Not Supported";
+}
+
+
 
 /**
  * Method: TScrollBar::EstablishScrollColors

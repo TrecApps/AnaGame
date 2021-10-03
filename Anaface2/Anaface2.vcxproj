@@ -74,6 +74,7 @@
     <LinkIncremental>true</LinkIncremental>
     <ExternalIncludePath>..\VideoGraphics;..\TrecLib;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\TcDataStruct;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -97,7 +98,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TcDataStruct.lib;TrecLib.lib;VideoGraphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -155,11 +156,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Anaface2.h" />
+    <ClInclude Include="AnafacePage.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TControl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnafacePage.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
