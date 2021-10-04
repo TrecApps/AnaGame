@@ -168,7 +168,6 @@
     <ClInclude Include="TcNativeInterpretor.h" />
     <ClInclude Include="TContainerVariable.h" />
     <ClInclude Include="TcTypeInterpretor.h" />
-    <ClInclude Include="TFileModifier.h" />
     <ClInclude Include="TFunctionGen.h" />
     <ClInclude Include="TInterpretor.h" />
     <ClInclude Include="TIteratorVariable.h" />
@@ -200,7 +199,6 @@
     <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
     <ClCompile Include="TcTypeInterpretor.cpp" />
-    <ClCompile Include="TFileModifier.cpp" />
     <ClCompile Include="TFunctionGen.cpp" />
     <ClCompile Include="TInterpretor.cpp" />
     <ClCompile Include="TIteratorVariable.cpp" />

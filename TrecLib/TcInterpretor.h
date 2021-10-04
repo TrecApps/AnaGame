@@ -5,6 +5,7 @@
 #include "TDataMap.h"
 #include "CodeStatement.h"
 #include "ObjectOperator.h"
+#include "TFileModifier.h"
 
 #ifndef TC_INTERPRETOR_COMPILE
 #define TC_INTERPRETOR_COMPILE
@@ -393,6 +394,8 @@ public:
 
 
 protected:
+
+    TDataArray<TrecPointer<TFileModifier>> fileModifiers; // Easy means through which Source Files can be Altered
 
     /**
      * Self Reference

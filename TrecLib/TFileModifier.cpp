@@ -1,5 +1,5 @@
 #include "TFileModifier.h"
-#include <TFile.h>
+#include "TFile.h"
 
 TFileModifier::TFileModifier(TrecPointer<TFileShell> inputFile, const TString& outputFile)
 {

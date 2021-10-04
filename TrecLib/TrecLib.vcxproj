@@ -188,6 +188,7 @@
     <ClInclude Include="TFile.h" />
     <ClInclude Include="TFileNode.h" />
     <ClInclude Include="TFileShell.h" />
+    <ClInclude Include="TFileModifier.h" />
     <ClInclude Include="TMap.h" />
     <ClInclude Include="TMapBase.h" />
     <ClInclude Include="TML_Reader_.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="TFile.cpp" />
     <ClCompile Include="TFileNode.cpp" />
     <ClCompile Include="TFileShell.cpp" />
+    <ClCompile Include="TFileModifier.cpp" />
     <ClCompile Include="TMapBase.cpp" />
     <ClCompile Include="TML_Reader_.cpp" />
     <ClCompile Include="TObject.cpp" />
