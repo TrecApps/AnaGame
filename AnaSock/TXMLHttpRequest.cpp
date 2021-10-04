@@ -115,6 +115,36 @@ namespace JSXmlHttpRequest
 };
 
 
+DWORD __stdcall RunRequest(LPVOID param)
+{
+	TrecPointer<TXMLHttpRequest>* pParam = reinterpret_cast<TrecPointer<TXMLHttpRequest>*>(param);
+	TrecPointer<TXMLHttpRequest> xmlReq = *pParam;
+	delete pParam;
+	pParam = nullptr;
+
+	while (!xmlReq->IsAsyncComplete() && !xmlReq->IsAborted())
+		Sleep(50);
+
+	if (!xmlReq->IsAborted())
+	{
+		xmlReq->SetComplete(GetCurrentThreadId());
+	}
+
+}
+
+DWORD __stdcall RunAsyncMethod(LPVOID param)
+{
+	TrecSubPointer<TVariable, TcInterpretor>* pParam = reinterpret_cast<TrecSubPointer<TVariable, TcInterpretor>*>(param);
+	TrecSubPointer<TVariable, TcInterpretor> runner = *pParam;
+	delete pParam;
+	pParam = nullptr;
+	if (runner.Get())
+		runner->Run();
+
+}
+
+
+
 
 
 
@@ -122,18 +152,36 @@ namespace JSXmlHttpRequest
 TXMLHttpRequest::TXMLHttpRequest(): request(THttpMethod::http_get), response("")
 {
 	state = 0; // UNSENT = 0
+	threadId = 0;
+	isAborted = false;
+	useAsync = true;
 }
 
 void TXMLHttpRequest::Abort()
 {
+	TObjectLocker lock(&this->thread);
 	if (asyncResponse.Get())
 		asyncResponse->Abort();
 
+	isAborted = true;
+	DWORD word;
+	CreateThread(nullptr, 0, RunAsyncMethod, new TrecSubPointer<TVariable, TcInterpretor>(this->abort), 0, &word);
+
 	// To-Do: Check if Request is already complete
+	if (asyncResponse->IsComplete())
+	{
+
+	}
+	else
+	{
+
+	}
+	this->UpdateState(0);
 }
 
 TString TXMLHttpRequest::GetResponseHeaders(bool& pres)
 {
+	TObjectLocker lock(&this->thread);
 	TString ret;
 	TString header, headValue;
 	pres = false;
@@ -155,6 +203,7 @@ TString TXMLHttpRequest::GetResponseHeaders(bool& pres)
 
 TString TXMLHttpRequest::GetResponseHeader(const TString& header)
 {
+	TObjectLocker lock(&this->thread);
 	TString ret;
 	response.GetHeader(header, ret);
 	return ret;
@@ -162,6 +211,7 @@ TString TXMLHttpRequest::GetResponseHeader(const TString& header)
 
 void TXMLHttpRequest::Open(TDataArray<TrecPointer<TVariable>>& variables, ReturnObject& ret)
 {
+	TObjectLocker lock(&this->thread);
 	TString method, url;
 	useAsync = true;
 	TString user, password;
@@ -206,7 +256,7 @@ void TXMLHttpRequest::Open(TDataArray<TrecPointer<TVariable>>& variables, Return
 	}
 	this->url.Set(url);
 
-	state = 1; // 1 means Open has been called
+	UpdateState(1); // 1 means Open has been called
 
 	if (this->stateChange.Get() && stateChange->GetVarType() == var_type::interpretor)
 	{
@@ -217,6 +267,7 @@ void TXMLHttpRequest::Open(TDataArray<TrecPointer<TVariable>>& variables, Return
 
 void TXMLHttpRequest::Send(TrecPointer<TVariable> pBody)
 {
+	TObjectLocker lock(&this->thread);
 	if (!clientSocket.Get() || clientSocket->Connect())
 	{
 		throw (UINT)1;
@@ -238,23 +289,23 @@ void TXMLHttpRequest::Send(TrecPointer<TVariable> pBody)
 		this->asyncResponse = clientSocket->TransmitAsync(request);
 		// To-Do: Set up thread that monitors response and runs handlers as a response
 		// In this thread, state can be updated to 2, 3, or 4
+		TrecPointer<TXMLHttpRequest>* pReq = new TrecPointer<TXMLHttpRequest>(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		CreateThread(nullptr, 0, RunRequest, pReq, 0, &this->threadId);
 	}
 	else
 	{
 		TString err;
 		this->response = clientSocket->Transmit(request, err);
-		state = 4; // 4 means Operation is complete
-
-		if (this->stateChange.Get() && stateChange->GetVarType() == var_type::interpretor)
-		{
-			// Now that state has changed, call method responsible for responding to change
-			dynamic_cast<TcInterpretor*>(stateChange.Get())->Run();
-		}
+		UpdateState(4); // 4 means Operation is complete
+		DWORD word;
+		if (err.GetSize())
+			CreateThread(nullptr, 0, RunAsyncMethod, new TrecSubPointer<TVariable, TcInterpretor>(error), 0, &word);
 	}
 }
 
 void TXMLHttpRequest::SetRequestHeader(const TString& header, const TString& value)
 {
+	TObjectLocker lock(&this->thread);
 	request.AddHeader(header, value);
 }
 
@@ -265,11 +316,13 @@ void TXMLHttpRequest::SetProperty(const TString& prop, TrecPointer<TVariable> va
 
 bool TXMLHttpRequest::SetVariable(const TString& prop, TrecPointer<TVariable> var)
 {
+	TObjectLocker lock(&this->thread);
 	if (!prop.Compare(L"onreadystatechange"))
 	{
 		if (var.Get() && var->GetVarType() != var_type::interpretor)
 			return false;
-		stateChange = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(var);
+		PrepHandler(stateChange, TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(var));
+		
 		return true;
 	}
 
@@ -290,6 +343,7 @@ bool TXMLHttpRequest::SetVariable(const TString& prop, TrecPointer<TVariable> va
 
 bool TXMLHttpRequest::GetVariable(const TString& prop, TrecPointer<TVariable>& var)
 {
+	TObjectLocker lock(&this->thread);
 	var.Nullify();
 	if (!prop.Compare(L"onreadystatechange"))
 	{
@@ -355,13 +409,64 @@ bool TXMLHttpRequest::GetVariable(const TString& prop, TrecPointer<TVariable>& v
 
 }
 
+bool TXMLHttpRequest::IsAborted()
+{
+	TObjectLocker lock(&this->thread);
+	return this->isAborted;
+}
+
+void TXMLHttpRequest::SetSelf(TrecPointer<TXMLHttpRequest> xmlReq)
+{
+	if (this != xmlReq.Get())
+		throw L"Not this pointer";
+	self = TrecPointerKey::GetSoftPointerFromTrec<>(xmlReq);
+}
+
+bool TXMLHttpRequest::IsAsyncComplete()
+{
+	TObjectLocker lock(&this->thread);
+	return useAsync && asyncResponse.Get() && asyncResponse->IsComplete();;
+}
+
 TString TXMLHttpRequest::GetType()
 {
 	return TString(L"TXMLHttpRequest;") + TObject::GetType();
 }
 
+void TXMLHttpRequest::SetComplete(DWORD id)
+{
+	TObjectLocker lock(&this->thread);
+	if (id == threadId)
+	{
+		UpdateState(4);
+		DWORD word; 
+		if (asyncResponse.Get() && asyncResponse->IsError())
+			CreateThread(nullptr, 0, RunAsyncMethod, new TrecSubPointer<TVariable, TcInterpretor>(error), 0, &word);
+	}
+}
+
+void TXMLHttpRequest::PrepHandler(TrecSubPointer<TVariable, TcInterpretor>& handler, TrecSubPointer<TVariable, TcInterpretor> code)
+{
+	handler = code;
+
+	auto obj = TrecPointerKey::GetTrecObjectPointer(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+
+	handler->SetActiveObject(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(obj));
+}
+
+void TXMLHttpRequest::UpdateState(USHORT newState)
+{
+	TObjectLocker lock(&this->thread);
+	if (newState > 4)
+		return;
+	UpdateState(newState);
+	DWORD word;
+	CreateThread(nullptr, 0, RunAsyncMethod, new TrecSubPointer<TVariable, TcInterpretor>(stateChange), 0, &word);
+}
+
 TrecPointer<TVariable> TXMLHttpRequest::GetProperty(const TString& prop)
 {
+	TObjectLocker lock(&this->thread);
 	if (!prop.Compare(L"readyState"))
 		return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(this->state);
 	return TrecPointer<TVariable>();

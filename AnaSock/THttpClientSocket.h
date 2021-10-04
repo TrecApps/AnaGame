@@ -107,6 +107,8 @@ public:
         THttpResponse GetResponse(TString& error);
         THttpRequest GetRequest();
 
+        bool IsError();
+
     protected:
         UINT runningThread;
         UINT threadId;

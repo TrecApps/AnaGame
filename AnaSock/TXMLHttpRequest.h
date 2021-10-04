@@ -27,6 +27,12 @@ public:
 
 	virtual bool GetVariable(const TString& prop, TrecPointer<TVariable>& var) override;
 
+	bool IsAborted();
+
+	void SetSelf(TrecPointer<TXMLHttpRequest> xmlReq);
+
+	bool IsAsyncComplete();
+
 	/**
  * Method: TObject::GetType()
  * Purpose: Returns a String Representation of the object type
@@ -39,15 +45,26 @@ public:
  * Attributes: virtual
  */
 	virtual TString GetType();
+
+	void SetComplete(DWORD);
 private:
+
+	void PrepHandler(TrecSubPointer<TVariable, TcInterpretor>& handler, TrecSubPointer<TVariable, TcInterpretor> code);
+
+	void UpdateState(USHORT newState);
 	THttpRequest request;
 	THttpResponse response;
 
 	TrecPointer<THttpClientSocket> clientSocket;
 	TrecPointer<THttpClientSocket::TAsyncHttpResponse> asyncResponse;
 	bool useAsync;
+	bool isAborted;
 	USHORT state;
 	TString url;
+	DWORD threadId;
+	DWORD threadId;
+
+	TrecPointerSoft<TXMLHttpRequest> self;
 
 	TrecSubPointer<TVariable, TcInterpretor> abort, error, 
 		load, loadend, loadstart, progress, timeout, stateChange;

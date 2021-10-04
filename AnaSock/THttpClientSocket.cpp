@@ -508,6 +508,12 @@ THttpRequest THttpClientSocket::TAsyncHttpResponse::GetRequest()
 	return request;
 }
 
+bool THttpClientSocket::TAsyncHttpResponse::IsError()
+{
+	TObjectLocker lock(&this->thread);
+	return error.GetSize();
+}
+
 bool ConvertHttpMethodForms(const TString& strMethod, THttpMethod& actMethod)
 {
 	TString localMethod(strMethod.GetTrim().GetUpper());
