@@ -395,6 +395,17 @@ public:
 
 protected:
 
+    /**
+     * Method: TcInterpretor::AddModifiers
+     * Purpose: Configures the file Modifiers before processing the file
+     * Parameters: void
+     * Returns: void
+     * 
+     * Attributes: virtual
+     */
+    virtual void AddModifiers();
+
+
     TDataArray<TrecPointer<TFileModifier>> fileModifiers; // Easy means through which Source Files can be Altered
 
     /**

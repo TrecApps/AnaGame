@@ -159,6 +159,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="JavaScriptModifiers.h" />
     <ClInclude Include="JsArray.h" />
     <ClInclude Include="JsConsole.h" />
     <ClInclude Include="JsPromise.h" />
@@ -180,6 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="JavaScriptModifiers.cpp" />
     <ClCompile Include="JsArray.cpp" />
     <ClCompile Include="JsConsole.cpp" />
     <ClCompile Include="JsPromise.cpp" />

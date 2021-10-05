@@ -315,6 +315,10 @@ UCHAR TcInterpretor::GetVarStatus(TString& varName)
 	return 0;
 }
 
+void TcInterpretor::AddModifiers()
+{
+}
+
 
 
 /**
