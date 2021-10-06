@@ -2,10 +2,14 @@
 
 LayoutSpace::LayoutSpace()
 {
+	isFlex = false;
+	space = 0;
 }
 
 LayoutSpace::LayoutSpace(const LayoutSpace& copy)
 {
+	isFlex = copy.isFlex;
+	space = copy.space;
 }
 
 bool TLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)

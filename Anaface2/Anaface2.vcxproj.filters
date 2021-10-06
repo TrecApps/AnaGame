@@ -36,6 +36,9 @@
     <ClInclude Include="TLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -54,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TLayout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
