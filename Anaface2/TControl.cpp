@@ -763,7 +763,7 @@ void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 
-		if (isLeftClicked)
+		if (isRightClicked)
 		{
 			int index = HasEvent(R_Message_Type::On_Click);
 			if (index != -1)

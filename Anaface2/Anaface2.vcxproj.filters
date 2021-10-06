@@ -30,6 +30,12 @@
     <ClInclude Include="AnafacePage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TRandomLayout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TLayout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -42,6 +48,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AnafacePage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TRandomLayout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

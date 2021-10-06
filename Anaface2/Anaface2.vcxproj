@@ -160,6 +160,8 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TControl.h" />
+    <ClInclude Include="TLayout.h" />
+    <ClInclude Include="TRandomLayout.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnafacePage.cpp" />
@@ -171,6 +173,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TControl.cpp" />
+    <ClCompile Include="TLayout.cpp" />
+    <ClCompile Include="TRandomLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
