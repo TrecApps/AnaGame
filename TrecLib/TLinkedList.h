@@ -85,6 +85,11 @@ public:
 		return current;
 	}
 
+	TrecPointer<ListNode<T>> GetTailNode()
+	{
+		return tail;
+	}
+
 	bool Dequeue(T& data)
 	{
 		if (head.Get())
@@ -136,11 +141,25 @@ public:
 		return true;
 	}
 
+	void ToTail()
+	{
+		current = tail;
+		currentNode = size - 1;
+	}
+
+	void ToHead()
+	{
+		current = head;
+		currentNode = 0;
+	}
+
 	bool Prev()
 	{
 		if (!size || !currentNode)
 			return false;
 		current = TrecPointerKey::GetTrecPointerFromSoft<ListNode<T>>(current->prev);
+		currentNode--;
+		return true;
 	}
 	
 	

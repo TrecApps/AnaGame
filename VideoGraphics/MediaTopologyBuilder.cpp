@@ -4,13 +4,9 @@
 #include <Wmcodecdsp.h>
 #include <Camerauicontrol.h>
 #include <mfidl.h>
+#include <TLinkedList.h>
 
-typedef struct MediaTopologyLink
-{
-	GUID input;
-	GUID output;
-	REFCLSID transformer;
-}MediaTopologyLink;
+
 
 MediaTopologyLink links[] = {
 	//// CLSID_CMSAACDecMFT - the AAC Decoder
@@ -376,3 +372,122 @@ MediaTopologyLink links[] = {
 
 
 };
+
+int ExamineLink(UINT baseIndex, TDataArray<TLinkedList< MediaTopologyLink>>& options, TDataArray<bool>& viableOptions, GUID targetOutput)
+{
+	auto link = options[baseIndex].GetTailNode();
+	// If node is not present, we failed to find a link
+	if(!link.Get())
+		return -2;
+
+	// Get the output of the current tail node
+	GUID output = link->data.output;
+
+	// We found a successful link, return index
+	if (output == targetOutput)
+		return baseIndex;
+
+	if (isOutoutInputToAnotherNode(options, output))
+	{
+		viableOptions[baseIndex] = false;
+		return -1;
+	}
+
+	TDataArray<MediaTopologyLink> tempLinks;
+
+	for (UINT Rust = 0; Rust < ARRAYSIZE(links); Rust++)
+	{
+		if (links[Rust].input == output && !isOutoutInputToAnotherNode(options, links[Rust].output))
+		{
+			tempLinks.push_back(links[Rust]);
+		}
+	}
+
+	if (!tempLinks.Size())
+	{
+		viableOptions[baseIndex] = false;
+		return -1;
+	}
+
+	for (UINT Rust = 1; Rust < tempLinks.Size(); Rust++)
+	{
+		UINT index = options.push_back(TLinkedList<MediaTopologyLink>());
+		viableOptions.push_back(true);
+
+		options[baseIndex].ToHead();
+		do
+		{
+			options[index].Push(options[baseIndex].GetCurrentNode()->data);
+		} while (options[baseIndex].Next());
+
+		options[index].Push(tempLinks[Rust]);
+	}
+
+	options[baseIndex].Push(tempLinks[0]);
+
+	return -1;
+}
+
+bool isOutoutInputToAnotherNode(TDataArray<TLinkedList< MediaTopologyLink>>& options, GUID output)
+{
+	for (UINT Rust = 0; Rust < options.Size(); Rust++)
+	{
+		options[Rust].ToHead();
+		do
+		{
+			auto linkNode = options[Rust].GetCurrentNode();
+			assert(linkNode.Get());
+			if (linkNode->data.input == output)
+				return true;
+		}while (options[Rust].Next());
+	}
+	return false;
+}
+
+
+TDataArray<MediaTopologyLink> GetLink(GUID input, GUID output)
+{
+	TDataArray<TLinkedList< MediaTopologyLink>> options;
+	TDataArray<bool> viableOptions;
+
+	// Establish Base Link
+	for (UINT Rust = 0; Rust < ARRAYSIZE(links); Rust++)
+	{
+		if (links[Rust].input == input)
+		{
+			UINT index = options.push_back(TLinkedList<MediaTopologyLink>());
+			options[index].Push(links[Rust]);
+			viableOptions.push_back(true);
+		}
+	}
+
+	bool found = false;
+	int foundable = -1;
+	for (UINT Rust = 1; Rust < 5 && !found; Rust++)
+	{
+		for (UINT C = 0; C < options.Size(); C++)
+		{
+			if (options[C].GetSize() == Rust && viableOptions[C])
+			{
+				foundable = ExamineLink(C, options, viableOptions, output);
+				if (foundable != -1)
+				{
+					found = true;
+					break;
+				}
+			}
+		}
+	}
+
+	TDataArray< MediaTopologyLink> ret;
+
+	if (foundable > -1)
+	{
+		options[foundable].ToHead();
+		do
+		{
+			ret.push_back(options[foundable].GetCurrentNode()->data);
+		} while (options[foundable].Next());
+	}
+	return ret;
+}
