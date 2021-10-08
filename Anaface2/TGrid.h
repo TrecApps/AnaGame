@@ -106,7 +106,34 @@ public:
 	 * Attributes: virtual
 	 */
 	virtual void GetControlCapacity(UINT& row, UINT& col) override;
+
+
+	/**
+	 * Method: TLayout::AddRow
+	 * Purpose: Adds a New Row to the Layout
+	 * Parameters: UINT space - the default Space
+	 *				bool isFlex - whether this row can bend according to space
+	 * Returns: int - the row space added (in regular TLayout, can be -1 if 'primaryStack' flag is false)
+	 *
+	 * Attributes: virtual
+	 */
+	virtual int AddRow(UINT space, bool isFlex);
+
+
+	/**
+	 * Method: TLayout::AddCol
+	 * Purpose: Adds a New Column to the Layout
+	 * Parameters: UINT space - the default Space
+	 *				bool isFlex - whether this row can bend according to space
+	 * Returns: int - the column space added (in regular TLayout, can be -1 if 'primaryStack' flag is true)
+	 *
+	 * Attributes: virtual
+	 */
+	virtual int AddCol(UINT space, bool isFlex);
 protected:
+
+	void RefreshChildControls(bool newRow);
+
 	/**
 	 * Spacing Information of the second Dimension
 	 */

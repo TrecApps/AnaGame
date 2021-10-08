@@ -176,6 +176,8 @@ bool TRandomLayout::AddPage(TrecPointer<TPage> page, UINT row, UINT col, bool do
         return false;
 
     childControls.push_back(cc);
+    if (page.Get())
+        page->SetParentPage(TrecPointerKey::GetTrecPointerFromSoft<>(self));
     return true;
 }
 

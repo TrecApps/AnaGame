@@ -8,7 +8,7 @@ public:
 	LayoutSpace(const LayoutSpace& copy);
 
 	bool isFlex;
-	UINT space;
+	UINT space, actualSpace;
 };
 
 /**
@@ -128,7 +128,40 @@ public:
 	 */
 	virtual TrecPointer<TPage> GetPage(UINT row, UINT col) override;
 
+	/**
+	 * Method: TLayout::AddRow
+	 * Purpose: Adds a New Row to the Layout
+	 * Parameters: UINT space - the default Space
+	 *				bool isFlex - whether this row can bend according to space
+	 * Returns: int - the row space added (in regular TLayout, can be -1 if 'primaryStack' flag is false)
+	 * 
+	 * Attributes: virtual
+	 */
+	virtual int AddRow(UINT space, bool isFlex);
+
+
+	/**
+	 * Method: TLayout::AddCol
+	 * Purpose: Adds a New Column to the Layout
+	 * Parameters: UINT space - the default Space
+	 *				bool isFlex - whether this row can bend according to space
+	 * Returns: int - the column space added (in regular TLayout, can be -1 if 'primaryStack' flag is true)
+	 *
+	 * Attributes: virtual
+	 */
+	virtual int AddCol(UINT space, bool isFlex);
+
 protected:
+
+	/**
+	 * Method: TLayout::ParseDimensions
+	 * Purpose: Goes through Dimension Arrays and Updates the actual value on flexible children
+	 * Parameters: TDataArray<LayoutSpace>& dimension - the dimension array to go through
+	 *				UINT totalSpace - the total space available for that dimension
+	 * Returns: bool needsScrolling - whether a scrollbar is needed to deal with overflow
+	 */
+	bool ParseDimensions(TDataArray<LayoutSpace>& dimension, UINT totalSpace);
+
 	/**
 	 * Spacing Information of the Dimension
 	 */
