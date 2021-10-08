@@ -38,6 +38,14 @@ public:
      */
     TString Modify();
 
+    /**
+     * Method: TFileModifier::GetOutputFile
+     * Purpose: Retrives the output file for the modifier
+     * Parameters: void
+     * Returns: TrecPointer<TFileShell> the file that was written to
+     */
+    TrecPointer<TFileShell> GetOutputFile();
+
 protected:
 
     /**

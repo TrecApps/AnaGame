@@ -237,3 +237,26 @@ TString GetShadowFilePath(const TFile& f)
 
 	return shadowDirectories[dirNum] + TString(L"\\") + returnable;
 }
+
+TString _TREC_LIB_DLL GetShadowFilePath(TrecPointer<TFileShell> f)
+{
+	if (!f.Get())
+		return TString();
+
+	UINT dirNum = 0;
+	TString returnable = f->GetPath();
+	while (dirNum < 9)
+	{
+		if (returnable.Find(directories[dirNum]) != -1)
+		{
+			returnable.Replace(directories[dirNum], TString(L""));
+			break;
+		}
+		dirNum++;
+	}
+
+	if (dirNum > 8)
+		return TString();
+
+	return shadowDirectories[dirNum] + TString(L"\\") + returnable;
+}

@@ -17,3 +17,8 @@ TString TFileModifier::Modify()
 {
     return Modify(L"default");
 }
+
+TrecPointer<TFileShell> TFileModifier::GetOutputFile()
+{
+    return TFileShell::GetFileInfo(outputFile);
+}

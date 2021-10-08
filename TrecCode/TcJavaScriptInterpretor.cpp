@@ -17,6 +17,8 @@
 #include "JsTimer.h"
 #include "JsString.h"
 #include <TObjectVariable.h>
+#include <DirectoryInterface.h>
+#include "JavaScriptModifiers.h"
 
 
 static TDataArray<TString> standardOperators;
@@ -142,18 +144,36 @@ void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnOb
         return;
     }
 
+    sourceFile = codeFile;
+
+    AddModifiers();
+
+    for (UINT Rust = 0; Rust < fileModifiers.Size(); Rust++)
+    {
+        TString result(fileModifiers[Rust]->Modify());
+        if (result.GetSize())
+        {
+            ret.returnCode = ret.ERR_GENERIC_ERROR;
+            ret.errorMessage.Set(result);
+            return;
+        }
+    }
+
+    sourceFile = fileModifiers[fileModifiers.Size() - 1]->GetOutputFile();
+    assert(sourceFile.Get());
+
     StatementCollector collector;
     UINT line = 0;
     TString stack;
-    switch (collector.RunCollector(codeFile, ret.errorMessage, line))
+    switch (collector.RunCollector(sourceFile, ret.errorMessage, line))
     {
     case 1:
-        ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", codeFile->GetPath().GetConstantBuffer().getBuffer());
+        ret.errorMessage.Format(L"Could not Open JavaScript File '%ws' for reading!", sourceFile->GetPath().GetConstantBuffer().getBuffer());
         ret.returnCode = ReturnObject::ERR_INVALID_FILE_PARAM;
         return;
     case 2:
         ret.returnCode = ReturnObject::ERR_GENERIC_ERROR;
-        stack.Format(L"In File '%ws'", codeFile->GetPath().GetConstantBuffer().getBuffer());
+        stack.Format(L"In File '%ws'", sourceFile->GetPath().GetConstantBuffer().getBuffer());
         ret.stackTrace.push_back(stack);
         stack.Format(L"At Line: %d", line);
         ret.stackTrace.push_back(stack);
@@ -376,6 +396,16 @@ TcJavaScriptInterpretor::TcJavaScriptInterpretor(TrecSubPointer<TVariable, TcInt
     {
         one = TrecPointerKey::GetNewTrecPointerAlt<TVariable, TPrimitiveVariable>(static_cast<int>(1));
     }
+}
+
+void TcJavaScriptInterpretor::AddModifiers()
+{
+    TrecPointer<TFileModifier> mod1 = TrecPointerKey::GetNewTrecPointerAlt<TFileModifier, JSCommentModifier>(sourceFile, GetShadowFilePath(sourceFile));
+    TrecPointer<TFileShell> secondFile = mod1->GetOutputFile();
+    TrecPointer<TFileModifier> mod2 = TrecPointerKey::GetNewTrecPointerAlt<TFileModifier, JSSemiColonModifier>(secondFile, secondFile->GetPath() + L'2');
+
+    fileModifiers.push_back(mod1);
+    fileModifiers.push_back(mod2);
 }
 
 int TcJavaScriptInterpretor::DetermineParenthStatus(const TString& string)
