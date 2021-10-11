@@ -60,74 +60,7 @@ public:
     TcVariableHolder(bool mut, const TString& type, TrecPointer<TVariable> value);
 };
 
-/**
- * Enum Class: return_mode
- * Purpose: How Returning works
- */
-typedef enum class return_mode
-{
-    rm_regular,     // Nothing special
-    rm_break,       // Break was detected
-    rm_continue,    // Continue was detected
-    rm_return,       // Return was detected
-    rm_super_return, // Return was detected, and the caller should also return
-    rm_yield        // Similar to Return, but function is expected to resume from the yield point
-}return_mode;
 
-/**
- * Class: ReturnObject
- * Purpose: Represents information returned from an operation
- */
-class _TREC_LIB_DLL ReturnObject
-{
-public:
-    TString errorMessage;               // String Information
-    TrecPointer<TVariable> errorObject; // A Variable Generated
-    TrecPointer<TVariable> errorObject2;// Backup Variable
-    USHORT returnCode;                  // 0 if working, error otherwise
-    TDataArray<TString> stackTrace;     // stack trace info
-    return_mode mode;                   // Mode, the context in which an operation ended
-    USHORT nextCount;                   // How many Statements were part of a single Expression (statement and next statement)
-
-
-    /**
-     * Mehtod: ReturnObject::ReturnObject
-     * Purpose: Default Constructor
-     * Parameters: void
-     * Returns: New Return Object
-     */
-    ReturnObject();
-
-    /**
-     * Mehtod: ReturnObject::ReturnObject
-     * Purpose: Copy Constructor
-     * Parameters: const ReutnrObject& copy - the object to copy
-     * Returns: new Return Object
-     */
-    ReturnObject(const ReturnObject& copy);
-
-    void operator=(const ReturnObject& copy);
-
-    const static USHORT ERR_NO_ERROR = 0;
-    const static USHORT ERR_BRACKET_MISMATCH = 1;
-    const static USHORT ERR_PARENTH_MISMATCH = 2;
-    const static USHORT ERR_NOT_NUMBER = 3;
-    const static USHORT ERR_TOO_FEW_PARMS = 4;
-    const static USHORT ERR_EXISTING_VAR = 5;
-    const static USHORT ERR_UNDEFINED = 6;
-    const static USHORT ERR_BROKEN_REF = 7;
-    const static USHORT ERR_INCOMPLETE_STATEMENT = 8;
-    const static USHORT ERR_IMPROPER_TYPE = 9;
-    const static USHORT ERR_IMPROPER_NAME = 10;
-    const static USHORT ERR_UNEXPECTED_TOK = 11;
-    const static USHORT ERR_UNSUPPORTED_OP = 12;
-    const static USHORT ERR_INVALID_FILE_PARAM = 13;
-
-    const static USHORT ERR_THROWN = 19;
-    const static USHORT ERR_GENERIC_ERROR = 20;
-    const static USHORT ERR_INTERNAL = 21;          // Indicates an Issue that the Interpretor has detected witin itself
-
-};
 
 /**
  * Class: TcInterpretor
@@ -150,6 +83,17 @@ public:
      * Returns: UINT - error code (0 for no error, 1 for doesn't exist, 2 for value is immutable)
      */
     virtual UINT UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally = false, bool makeConst = false);
+
+
+    /**
+     * Method: TVariable::GetIterator
+     * Purpose: for type that support it, retrieves an Iterator Variable of this Variable
+     * Parameters: void
+     * Return: TrecPointer<TVariable> - for some variable types, this would be null, but other variable types woudld support iteration
+     *
+     * Attributes: virtual
+     */
+    virtual TrecPointer<TVariable> GetIterator();
 
     /// TVariable Methods
     /**

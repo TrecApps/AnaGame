@@ -48,6 +48,16 @@ public:
     TContainerVariable(ContainerType ct);
 
     /**
+     * Method: TVariable::GetIterator
+     * Purpose: for type that support it, retrieves an Iterator Variable of this Variable
+     * Parameters: void
+     * Return: TrecPointer<TVariable> - for some variable types, this would be null, but other variable types woudld support iteration
+     *
+     * Attributes: virtual
+     */
+    virtual TrecPointer<TVariable> GetIterator();
+
+    /**
      * Method: TContainerVariable::GetVarType
      * Purpose: Reports the type of varible that this object represents
      * Parameters: void

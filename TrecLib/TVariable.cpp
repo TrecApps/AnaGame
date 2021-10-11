@@ -46,8 +46,11 @@ bool VarFunction::IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def)
  * Parameters: TrecPointer<TVariable> - reference to assign
  * Returns: void
  */
-void TVariable::SetSelf(TrecPointer<TVariable>)
+void TVariable::SetSelf(TrecPointer<TVariable> vSelf)
 {
+	if (vSelf.Get() != this)
+		throw L"Non Matching reference!";
+	this->vSelf = TrecPointerKey::GetSoftPointerFromTrec <> (vSelf);
 }
 
 /**
@@ -139,7 +142,42 @@ TrecPointer<TVariable> TVariable::Clone()
 	return TrecPointer<TVariable>();
 }
 
+TrecPointer<TVariable> TVariable::GetIterator()
+{
+	return TrecPointer<TVariable>();
+}
+
 bool TVObject::HasVariableSupport()
 {
 	return true;
+}
+
+var_type TVariableIterator::GetVarType()
+{
+	return var_type::iterator;
+}
+
+UINT TVariableIterator::GetVType()
+{
+	return 0;
+}
+
+TString TVariableIterator::GetString()
+{
+	return TString();
+}
+
+UINT TVariableIterator::Get4Value()
+{
+	return 0;
+}
+
+ULONG64 TVariableIterator::Get8Value()
+{
+	return ULONG64();
+}
+
+ReturnObject TVariableIterator::GetErrorInfo()
+{
+	return ReturnObject();
 }

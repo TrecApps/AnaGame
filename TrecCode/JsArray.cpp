@@ -331,7 +331,7 @@ void JsArray::JsArrayEntries(TDataArray<TrecPointer<TVariable>>& params, TrecPoi
 		return;
 	TrecSubPointer<TVariable, TContainerVariable> rreturnArray = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(params[0]);
 
-	ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TIteratorVariable>(rreturnArray);
+	ret.errorObject = rreturnArray->GetIterator();
 }
 
 void JsArray::JsArrayEvery(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)

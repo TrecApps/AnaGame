@@ -1,6 +1,87 @@
 #include "pch.h"
 #include "TContainerVariable.h"
 
+
+class TContainerIterator : public TVariableIterator
+{
+protected:
+    /**
+     * The String to Analyse
+     */
+    TrecSubPointer<TVariable, TContainerVariable> targetVar;
+
+    /**
+     * Whether it is in reverse or not
+     */
+    bool doReverse;
+
+    /**
+     * UINT current Index
+     */
+    UINT currentIndex;
+
+public:
+
+    TContainerIterator(TrecSubPointer<TVariable, TContainerVariable> targetVar)
+    {
+        this->targetVar = targetVar;
+        assert(targetVar.Get());
+        doReverse = false;
+        currentIndex = 0;
+    }
+
+
+    /**
+     * Method: TContainerIterator::SetReverse
+     * Purpose: enables iterators to go through backwards
+     * Parameters: bool doReverse - if true, the iterator will now go in reverse (if supported)
+     *              bool reset - if true, will point to the beginning or end of the target variable
+     * Returns: bool - whether the operation was supported
+     *
+     * Attributes: abstract
+     */
+    virtual bool SetReverse(bool doReverse, bool reset)
+    {
+        this->doReverse = doReverse;
+        if (reset)
+        {
+            currentIndex = doReverse ? targetVar->GetSize() - 1 : 0;
+        }
+    }
+
+
+    /**
+     * Method: TContainerIterator::Traverse
+     * Purpose: Goues through the variable
+     * Parameters: UINT& currentIndex - the index of the retrieved variable
+     *              TString& currentName - the name of the retrieved variable
+     *              TrecPointer<TVariable>& value - the retireved variable
+     * Returns: bool - whether the variable was retrieved
+     *
+     * Attributes: abstract
+     */
+    virtual bool Traverse(UINT& currentIndex, TString& currentName, TrecPointer<TVariable>& value)
+    {
+        bool ret = targetVar->GetValueAt(currentIndex, currentName, value);
+        if (ret)
+        {
+            if (doReverse)
+                currentIndex--;
+            else
+                currentIndex++;
+        }
+        return ret;
+    }
+};
+
+
+TrecPointer<TVariable> TContainerVariable::GetIterator()
+{
+    TrecPointer<TVariable> v = TrecPointerKey::GetTrecPointerFromSoft<TVariable>(vSelf);
+    return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerIterator>(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(v));
+}
+
+
 TrecPointer<TVariable> TContainerVariable::Clone()
 {
     ThreadLock();

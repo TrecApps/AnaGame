@@ -43,10 +43,102 @@ TcVariableHolder::TcVariableHolder(bool mut, const TString& type, TrecPointer<TV
 	this->value = value;
 }
 
+
+
+class TcInterpretorIterator : public TVariableIterator
+{
+protected:
+	/**
+	 * The String to Analyse
+	 */
+	TrecSubPointer<TVariable, TcInterpretor> targetVar;
+
+	/**
+	 * Whether the function is considered Finished
+	 */
+	bool isDone;
+
+	/**
+	 * The current 'index' or how many times the function has been called previously
+	 */
+	UINT index;
+
+	ReturnObject ret;
+
+public:
+
+	TcInterpretorIterator(TrecSubPointer<TVariable, TcInterpretor> targetVar)
+	{
+		this->targetVar = targetVar;
+		assert(targetVar.Get());
+		isDone = false;
+		index = 0;
+	}
+
+
+	/**
+	 * Method: TcInterpretorIterator::SetReverse
+	 * Purpose: enables iterators to go through backwards
+	 * Parameters: bool doReverse - if true, the iterator will now go in reverse (if supported)
+	 *              bool reset - if true, will point to the beginning or end of the target variable
+	 * Returns: bool - whether the operation was supported
+	 *
+	 * Attributes: abstract
+	 */
+	virtual bool SetReverse(bool doReverse, bool reset)
+	{
+		return false;
+	}
+
+
+	/**
+	 * Method: TcInterpretorIterator::Traverse
+	 * Purpose: Goues through the variable
+	 * Parameters: UINT& currentIndex - the index of the retrieved variable
+	 *              TString& currentName - the name of the retrieved variable
+	 *              TrecPointer<TVariable>& value - the retireved variable
+	 * Returns: bool - whether the variable was retrieved
+	 *
+	 * Attributes: abstract
+	 */
+	virtual bool Traverse(UINT& currentIndex, TString& currentName, TrecPointer<TVariable>& value)
+	{
+		if (isDone)
+			return false;
+		
+		ret = targetVar->Run();
+
+		if (ret.returnCode)
+		{
+			isDone = true;
+			return false;
+		}
+		if (ret.mode != return_mode::rm_yield)
+			isDone = true;
+
+		currentIndex = index++;
+		currentName.Empty();
+		value = ret.errorObject;
+		return true;
+	}
+
+	ReturnObject GetErrorInfo()
+	{
+		return ret;
+	}
+};
+
+
 ///
 /// TcInterpretor 
 ///
 
+
+TrecPointer<TVariable> TcInterpretor::GetIterator()
+{
+	TrecPointer<TVariable> v = TrecPointerKey::GetTrecPointerFromSoft<TVariable>(vSelf);
+	return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcInterpretorIterator>(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(v));
+}
 
 UINT TcInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally, bool makeConst)
 {
@@ -193,8 +285,7 @@ TcInterpretor::TcInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInte
  */
 void TcInterpretor::SetSelf(TrecPointer<TVariable> self)
 {
-	if (this != self.Get())
-		throw L"Error! Not Properly called";
+	TVariable::SetSelf(self);
 	this->self = TrecPointerKey::GetSoftSubPointerFromSoft<TVariable, TcInterpretor>(TrecPointerKey::GetSoftPointerFromTrec<TVariable>(self));
 }
 
