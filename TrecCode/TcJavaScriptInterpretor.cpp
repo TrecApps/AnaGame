@@ -1798,7 +1798,83 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
             return;
         }
 
-        ProcessExpression(statement, ret);
+        TString forExp(statement->statement.SubString(statement->statement.Find(L'(') + 1, statement->statement.FindLast(L')')));
+        auto pieces = forExp.split(L' \n\r\t');
+
+        UINT tokenCount = pieces->Size();
+        if (tokenCount < 3 || tokenCount > 4)
+        {
+            ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
+            ret.errorMessage.Format(L"expected 'For' to have 3 tokens but instead has %d", tokenCount);
+            return;
+        }
+        bool thisScope = tokenCount == 3;
+        bool pres;
+        auto iteratorSupplier = GetVariable(pieces->at(thisScope ? 2 : 3), pres);
+
+        TrecSubPointer<TVariable, TVariableIterator> iterator;
+        if (iteratorSupplier.Get())
+            iterator = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TVariableIterator>(iteratorSupplier->GetIterator());
+        if (!iterator.Get())
+        {
+            ret.returnCode = ReturnObject::ERR_BROKEN_REF;
+            ret.errorMessage.Format(L"Null/Undefined iterator supplied from variable '%ws'!", pieces->at(2).GetConstantBuffer().getBuffer());
+            return;
+        }
+        TString varName = pieces->at(thisScope ? 0 : 1);
+
+        CheckVarName(varName, ret);
+        if (ret.returnCode)
+            return;
+
+        bool targetProps;
+        if (!pieces->at(thisScope ? 1 : 2).Compare(L"in"))
+            targetProps = true;
+        else if (!pieces->at(thisScope ? 1 : 2).Compare(L"of"))
+            targetProps = false;
+        else
+        {
+            ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
+            ret.errorMessage.Format(L"expected 'For' to have a middle token of 'in' or 'of' but instead was '%ws", pieces->at(thisScope ? 1: 2).GetConstantBuffer().getBuffer());
+            return;
+        }
+        bool makeMut = true;
+
+        if (thisScope)
+        {
+            GetVariable(pieces->at(1), pres);
+            if (!pres)
+            {
+                ret.returnCode = ReturnObject::ERR_BROKEN_REF;
+                ret.errorMessage.Format(L"Undefined variable '%ws' was not declared in For loop!", pieces->at(1).GetConstantBuffer().getBuffer());
+                return;
+            }
+        }
+        else if (!pieces->at(0).Compare(L"const"))
+            makeMut = false;
+        UINT forIndex = 0;
+        TString forName;
+        TrecPointer<TVariable> forValue;
+        auto jsVar = dynamic_cast<TcJavaScriptInterpretor*>(block->statementVar.Get());
+        while (iterator->Traverse(forIndex, forName, forValue))
+        {
+            if (targetProps)
+                forValue = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(forName);
+            if (jsVar)
+            {
+                jsVar->variables.clear();
+                TcVariableHolder holder;
+                holder.mut = makeMut;
+                holder.value = forValue;
+                jsVar->variables.addEntry(varName, holder);
+                ret = jsVar->Run();
+                if (ret.returnCode)
+                    return;
+            }
+        }
+        ret = iterator->GetErrorInfo();
+
+        /*ProcessExpression(statement, ret);
         if (ret.returnCode)
             return;
 
@@ -1846,9 +1922,9 @@ void TcJavaScriptInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>&
             ret = jsVar->Run();
             if (ret.returnCode)
                 return;
-        }
+        }*/
 
-        if (block->next.Get())
+        if (block->next.Get() && !ret.returnCode)
         {
             ret = Run(statements, index, block->next);
         }
@@ -3766,7 +3842,7 @@ UINT TcJavaScriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, 
     {
         function = dynamic_cast<TFunctionGen*>(proc.Get())->Generate(params);
         assert(function.Get());
-        ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TIteratorVariable>(function);
+        ret.errorObject = function->GetIterator();
         return nextRet;
     }
 
