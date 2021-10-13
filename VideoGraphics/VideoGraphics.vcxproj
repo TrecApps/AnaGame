@@ -188,6 +188,7 @@
     <ClInclude Include="TPresenter.h" />
     <ClInclude Include="TSampleTexture.h" />
     <ClInclude Include="TScheduler.h" />
+    <ClInclude Include="TScrollerPage.h" />
     <ClInclude Include="TShaderHost.h" />
     <ClInclude Include="TShaderParser.h" />
     <ClInclude Include="TStreamSink.h" />
@@ -229,6 +230,7 @@
     <ClCompile Include="TPresenter.cpp" />
     <ClCompile Include="TSampleTexture.cpp" />
     <ClCompile Include="TScheduler.cpp" />
+    <ClCompile Include="TScrollerPage.cpp" />
     <ClCompile Include="TShaderHost.cpp" />
     <ClCompile Include="TShaderParser.cpp" />
     <ClCompile Include="TStreamSink.cpp" />

@@ -77,7 +77,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
+	ag_msg virtual bool OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
 
 	/**
 	 * Method: TRandomLayout::AddPage

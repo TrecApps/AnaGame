@@ -1,46 +1,49 @@
 #pragma once
-#include <TPage.h>
-
-/**
- * Class: AnafacePage
- * Purpose: Serves as the root page for Anaface 2 - UIs and holds an Event Handler
- */
-class AnafacePage : public TPage
+#include "TPage.h"
+class _VIDEO_GRAPHICS TScrollerPage :
+    public TPage
 {
-public:
+protected:
 	/**
-	 * Method: AnafacePage::AnafacePage
+	 * The Child Page to scroll
+	 */
+	TrecPointer<TPage> childPage;
+
+	/**
+	 * The Scroll Bars
+	 */
+	TrecPointer<TPage::TScrollBar> hScroll, vScroll;
+
+	/**
+	 * Method: TScrollerControl::RefreshScroll
+	 * Purpose: Refreshes the Scroll bars
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void RefreshScroll();
+public:
+
+	/**
+	 * Method: TScrollerPage::TScrollerPage
 	 * Purpose: Constructor
 	 * Parameters: TrecPointer<DrawingBoard> board - the drawing board to draw against
-	 * Returns: new AnafacePage Object
+	 * Returns: new TPage Object
 	 */
-	AnafacePage(TrecPointer<DrawingBoard> board);
+	TScrollerPage(TrecPointer<DrawingBoard> board, TrecPointer<TPage> cPage);
 
 	/**
-	 * Method: AnafacePage::HandlesEvents
-	 * Purpose: Whether the object is of a Page type that Handles Events (i.e. has what would be called an Event Handler, an object that
-	 *      runs it's own methods in response to receiving an "event"
+	 * Method: TScrollerPage::IsScroller
+	 * Purpose: Reports whether this page supports Scollong
 	 * Parameters: void
-	 * Returns: bool - whether the page had an "Event Handler" (Top level Page types, such as 'TAnafacePage' or 'TWebPage' should report true while sub pages such as
-	 *              'TControl' or 'TWebNode' should report false)
-	 *
-	 * Attributes: override
-	 */
-	virtual bool HandlesEvents() override;
-
-	/**
-	 * Method: AnafacePage::PrepPage
-	 * Purpose: Allows top-level Pages to set up subordinate Pages and manage event handling
-	 * Parameters: TrecPointer<TFileShell> file - the file to read
-	 *				TrecPointer<EventHandler> handler - the event handler to use
-	 * Returns: TString - error information (empty string means no errors)
+	 * Returns: bool - whether this Page scrolls
 	 *
 	 * Attributes: virtual
 	 */
-	virtual TString PrepPage(TrecPointer<TFileShell> file, TrecPointer<EventHandler> handler) override;
+	virtual bool IsScroller() override;
+
 
 	/**
-	 * Method: AnafacePage::Draw
+	 * Method: TPage::Draw
 	 * Purpose: Draws the Page to the Window
 	 * Parameters: TrecPointer<TVariable> object - Memory Safe means of enabling Data-Binding, if the Page has to tailor it's drawing to data provided by this parameter
 	 * Returns: void
@@ -51,7 +54,20 @@ public:
 
 
 	/**
-	 * Method: AnafacePage::OnRButtonUp
+	 * Method: TPage::HandlesEvents
+	 * Purpose: Whether the object is of a Page type that Handles Events (i.e. has what would be called an Event Handler, an object that
+	 *      runs it's own methods in response to receiving an "event"
+	 * Parameters: void
+	 * Returns: bool - whether the page had an "Event Handler" (Top level Page types, such as 'TAnafacePage' or 'TWebPage' should report true while sub pages such as
+	 *              'TControl' or 'TWebNode' should report false)
+	 *
+	 * Attributes: override
+	 */
+	virtual bool HandlesEvents() override;
+
+
+	/**
+	 * Method: TPage::OnRButtonUp
 	 * Purpose: Responds to the Right Button Up Message
 	 * Parameters: UINT nFlags - flags associated with the message
 	 *				const TPoint& point - the point included in the message
@@ -65,7 +81,7 @@ public:
 
 
 	/**
-	 * Method: AnafacePage::OnRButtonDown
+	 * Method: TPage::OnRButtonDown
 	 * Purpose: Responds to the Right Button Down Message
 	 * Parameters: UINT nFlags - flags associated with the message
 	 *				const TPoint& point - the point included in the message
@@ -77,9 +93,8 @@ public:
 	 */
 	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
 
-
 	/**
-	 * Method: AnafacePage::OnLButtonUp
+	 * Method: TPage::OnLButtonUp
 	 * Purpose: Responds to the Left Button Up Message
 	 * Parameters: UINT nFlags - flags associated with the message
 	 *				const TPoint& point - the point included in the message
@@ -93,7 +108,7 @@ public:
 
 
 	/**
-	 * Method: AnafacePage::OnLButtonDown
+	 * Method: TPage::OnLButtonDown
 	 * Purpose: Responds to the Left Button Down Message
 	 * Parameters: UINT nFlags - flags associated with the message
 	 *				const TPoint& point - the point included in the message
@@ -105,8 +120,9 @@ public:
 	 */
 	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
 
+
 	/**
-	 * Method: AnafacePage::OnMouseMove
+	 * Method: TPage::OnMouseMove
 	 * Purpose: Responds to the Mouse Move Message
 	 * Parameters: UINT nFlags - flags associated with the message
 	 *				TPoint point - the point included in the message
@@ -117,20 +133,21 @@ public:
 	 */
 	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
 
+
 	/**
-	 * Method: AnafacePage::OnLButtonDblClk
+	 * Method: TPage::OnLButtonDblClk
 	 * Purpose: Responds to the Left Button Double CLick Message
 	 * Parameters: UINT nFlags - flags associated with the message
 	 *				TPoint point - the point included in the message
 	 *				message_output& mOut -  the result of the message
 	 * Returns: void
 	 *
-	 * Attributes: message; override
+	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args) override;
 
 	/**
-	 * Method: AnafacePage::OnResize
+	 * Method: TPage::OnResize
 	 * Purpose: Resizes the Page
 	 * Parameters: D2D1_RECT_F& newLoc - the new regoin of the Page
 	 *				UINT nFlags - flags associated with the move
@@ -156,7 +173,7 @@ public:
 
 
 	/**
-	 * Method: AnafacePage::OnScroll
+	 * Method: TPage::OnScroll
 	 * Purpose: Sends Scroll Command to controls
 	 * Parameters: const TPoint& point - point of the mouse
 	 *				const TPoint& direction - how far to send the scroll
@@ -164,39 +181,6 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual bool OnScroll(bool,const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
-
-
-	/**
-	 * Method: AnafacePage::InjectScrollerPage
-	 * Purpose: Inserts a Scrolling Page between the parent page and the calling Page
-	 * Parameters: const D2D1_RECT_F& bounds - the bounds of the calling page
-	 *				TrecPointer<TPage> page - the calling page
-	 * Returns: void
-	 *
-	 * Attributes: virtual
-	 */
-	virtual void InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& needs, TrecPointer<TPage> page) override;
-
-protected:
-	/**
-	 * The root Page (TControl)
-	 */
-	TrecPointer<TPage> rootPage;
-
-	/**
-	 * Handles Events
-	 */
-	TrecPointer<EventHandler> handler;
-
-
-protected:
-	// Methods used for construction
-
-	void HandleNode(const TString& name, TString& result, TrecPointer<TVariable> var, TrecPointer<TPage> curPage);
-
-	TrecPointer<TPage> HandleControl(const TString& name, TString& result, TrecPointer<TVariable> var);
-
-	//void 
+	ag_msg virtual bool OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
 };
 

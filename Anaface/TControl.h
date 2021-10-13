@@ -5,8 +5,7 @@
 #include <dwrite.h>					// Direct Write
 #include <TString.h>				// Use AnaGame's TString for simple conversion to numbers
 #include <wincodec.h>				
-#include "Anaface.h"				
-#include "ControlTypeSafety.h"
+#include "Anaface.h"
 #include "TScrollBar.h"
 #include "EventTarget.h"
 #include <TrecReference.h>
@@ -31,6 +30,7 @@
 #include <TObjectNode.h>
 #include <TTextIntercepter.h>
 #include <TTextElement.h>
+#include <TPage.h>
 
 
 #define RADIAN_DEGREE_RATIO 57.2957795f
@@ -66,81 +66,6 @@ typedef enum class  messageState
 	mouseRClick  // Control is in Mouse-Right-Click mode
 } messageState;
 
-
-/**
- * Enum Class: R_Message_Type
- * Purpose: Determines the message type for UI Responsiveness
- */
-typedef enum class R_Message_Type
-{
-	On_L_Button_Down,  // User presses down on left mouse button
-	On_L_Button_Up,    // User releases left mouse button
-	On_R_Button_Down,  // User presses down on right mouse button
-	On_R_Button_Up,    // User releases right mouse button
-	On_Click,          // User presses down and releases left mouse button
-	On_Hold_Click,     // (Not implemented
-	On_Hover,          // Mouse is over the control
-	On_Hover_Leave,    // Mouse leaves the control
-	On_Right_Click,    // User presses down and releases right mouse button
-	On_Click_Release,  // (deprecated)
-	On_Text_Change,    // The text of this control has changed
-	On_Right_Release,  // (deprecated)
-	On_sel_change,     // A Selection has changed
-	On_check,          // a Checkbox status has been changed
-	On_radio_change,   // A Radio Button group has been updated
-	On_Char,           // A Character has been entered
-	On_Focus,          // A Control is now the focus
-	On_Lose_Focus,     // A Control no longer has focus
-	On_Select_Scroller,// A Scroll bar is involved
-	On_Flyout,         // A control is to appear in a flyout
-	On_LDoubleClick    // Double Click detected
-}R_Message_Type;
-
-/**
- * Class: EventArgs
- * Purpose: Event Arguements, used to supply Event Handlers with the necessary information to 
- *		do their job properly
- */
-class _ANAFACE_DLL EventArgs
-{
-public:
-	EventArgs();
-	void Reset();
-	EventArgs(const EventArgs& args);
-
-	TString text;
-	bool positive;
-	TPoint point;
-	bool isClick;
-	bool isLeftClick;
-	R_Message_Type eventType;
-	TControl* control;
-	int methodID;
-	int arrayLabel;
-	WCHAR type;
-	TrecPointer<TObjectNode> object;
-} ;
-
-/**
- * Class: EventID_Cred
- * Purpose: Used by controls to register themselves in the message queue if they have a message handler
- */
-class _ANAFACE_DLL EventID_Cred
-{
-public:
-	EventID_Cred();
-	EventID_Cred(const EventID_Cred& copy);
-	EventID_Cred(R_Message_Type t, TrecPointer<TControl> c);
-	EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TScrollBar> sb);
-	EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TTextIntercepter> i);
-	EventID_Cred(TrecPointer<TFlyout> fly);
-
-	R_Message_Type eventType;
-	TrecPointer<TControl> control;
-	TrecPointer<TScrollBar> scroll;
-	TrecPointer<TFlyout> flyout;
-	TrecPointer<TTextIntercepter> textIntercepter;
-};
 
 /**
  * Class: EventTypeId
@@ -1218,12 +1143,12 @@ public:
 	 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	 *				TPoint point - the point on screen where the event occured
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	 *				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 * Returns: void
 	* 
 	* Attributes: virtual; message
 	 */
-	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr);
 
 	/*
 	* Method: TControl::OnLButtonDown
@@ -1231,13 +1156,13 @@ public:
 	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
 	* 
 	* Attributes: virtual; message
 	*/
-	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons);
+	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& clickedButtons);
 
 	/*
 	* Method: TControl::OnRButtonDown
@@ -1245,13 +1170,13 @@ public:
 	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
 	* 
 	* Attributes: virtual; message
 	*/
-	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls);
+	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls);
 
 	/*
 	* Method: TControl::OnMouseMove
@@ -1259,13 +1184,13 @@ public:
 	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	*				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	* Returns: void
 	* 
 	* Attributes: virtual; message
 	*/
-	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls);
+	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls);
 
 
 
@@ -1275,13 +1200,13 @@ public:
 	 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	 *				TPoint point - the point on screen where the event occured
 	 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-	 *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	 *				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 	 * Returns: bool - whether the leave occured
 	* 
 	* Attributes: virtual; message
 	 */
-	afx_msg bool OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg bool OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr);
 
 	/*
 	* Method: TControl::OnLButtonDblClk
@@ -1289,12 +1214,12 @@ public:
 	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
 	* 
 	* Attributes: virtual; message
 	*/
-	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr);
 
 	/*
 	* Method: TControl::OnLButtonUp
@@ -1302,12 +1227,12 @@ public:
 	* Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 	*				TPoint point - the point on screen where the event occured
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
 	* 
 	* Attributes: virtual; message
 	*/
-	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr);
 
 	/*
 	* Method: TControl::OnChar
@@ -1317,12 +1242,12 @@ public:
 	*				UINT nRepCnt - how many times the character was processed for this event
 	*				UINT nFlags - flags provided by MFC's Message system, not used
 	*				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-	*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+	*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 	* Returns: void
 	* 
 	* Attributes: virtual; message
 	*/
-	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput *mOut, TDataArray<EventID_Cred>& eventAr);
+	afx_msg virtual bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput *mOut, TDataArray<TPage::EventID_Cred>& eventAr);
 
 	/**
 	 * Method: TControl::OnScroll

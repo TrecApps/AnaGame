@@ -1,11 +1,11 @@
 #pragma once
-#include "D:\DX Projects\AnaGame\TrecLib\TObject.h"
-
+#include <TObject.h>
+#include "VideoGraphics.h"
 /**
  * Class: TTextIntercepter
  * Purpose: Retrieves a character from the message infrastructure and directs it towards some Text-based object
  */
-class TTextIntercepter : public TObject
+class _VIDEO_GRAPHICS  TTextIntercepter : public TObject
 {
 public:
     /**

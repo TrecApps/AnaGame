@@ -117,7 +117,7 @@ public:
  * Class: TVObject
  * Purpose: Adds TVariable integration to the TObject
  */
-class TVObject : public TObject
+class _TREC_LIB_DLL TVObject : public TObject
 {
 public:
 

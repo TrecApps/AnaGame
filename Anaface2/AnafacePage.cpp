@@ -1,5 +1,6 @@
 #include "AnafacePage.h"
 #include <TFormatReader.h>
+#include <TScrollerPage.h>
 
 TString objectTypes[] = {
 	L"TControl",		// Basic Control
@@ -189,11 +190,29 @@ bool AnafacePage::OnDestroy()
 	return true;
 }
 
-bool AnafacePage::OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&)
+bool AnafacePage::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&)
 {
 	return false;
 }
 
 void AnafacePage::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& needs, TrecPointer<TPage> page)
 {
+	if (page.Get() == rootPage.Get())
+	{
+		TrecPointer<TPage> scroller = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TScrollerPage>(drawingBoard, page);
+		TDataArray<EventID_Cred> cred;
+		TDataArray<EventArgs> args;
+		auto b = bounds;
+		scroller->OnResize(b, 0, cred, args);
+		rootPage = scroller;
+	}
+}
+
+void AnafacePage::HandleNode(const TString& name, TString& result, TrecPointer<TVariable> var, TrecPointer<TPage> curPage)
+{
+}
+
+TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& result, TrecPointer<TVariable> var)
+{
+	return TrecPointer<TPage>();
 }

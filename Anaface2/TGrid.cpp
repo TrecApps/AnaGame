@@ -71,9 +71,9 @@ void TGrid::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>&
     }
 }
 
-bool TGrid::OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+bool TGrid::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
 {
-    return TRandomLayout::OnScroll(point, direction, args);
+    return TRandomLayout::OnScroll(false, point, direction, args);
 }
 
 bool TGrid::AddPage(TrecPointer<TPage> page, UINT row, UINT col, bool doOverride)

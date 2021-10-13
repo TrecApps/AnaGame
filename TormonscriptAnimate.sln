@@ -102,6 +102,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SocketTester", "SocketTeste
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Anaface2", "Anaface2\Anaface2.vcxproj", "{2C627FE2-FF3A-4344-B538-A06BF0936439}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4E953C1F-DA8F-418D-95BC-7E9E5019F929} = {4E953C1F-DA8F-418D-95BC-7E9E5019F929}
+		{0A481E2C-4124-4B2F-8A85-F182C1F09214} = {0A481E2C-4124-4B2F-8A85-F182C1F09214}
+		{D51F30ED-A597-4CB8-9BEB-7EC42AECE350} = {D51F30ED-A597-4CB8-9BEB-7EC42AECE350}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

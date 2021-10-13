@@ -1,7 +1,17 @@
 
 #include "TControl.h"
 
+EventTypeID::EventTypeID(const EventTypeID& copy)
+{
+	eventType = copy.eventType;
+	eventID = copy.eventID;
+}
 
+EventTypeID::EventTypeID()
+{
+	eventType = R_Message_Type::On_Click;
+	eventID = -1;
+}
 
 /**
  * Method: TControlComponent::GetType
@@ -1023,7 +1033,7 @@ bool TControl::OnDestroy()
 	return true;
 }
 
-bool TControl::OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+bool TControl::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
 {
 	location.bottom += direction.y;
 	location.top += direction.y;
@@ -1136,8 +1146,8 @@ void TControl::SetSize()
 	}
 
 
-	UINT maxDime = GetDimension(dimension_spec::ds_height_max),
-		minDime = GetDimension(dimension_spec::ds_height_min);
+	maxDime = GetDimension(dimension_spec::ds_height_max);
+	minDime = GetDimension(dimension_spec::ds_height_min);
 
 	if (maxDime && curHeight > maxDime)
 	{

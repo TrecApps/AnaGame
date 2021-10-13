@@ -23,10 +23,11 @@ typedef enum class dimension_spec
  * Class: EventTypeId
  * Purpose: Stored by Controls for checking whether or not they actually have a message handler
  */
-class _ANAFACE_DLL2 EventTypeID
+class EventTypeID
 {
 public:
 	EventTypeID();
+	EventTypeID(const EventTypeID& copy);
 
 	R_Message_Type eventType;
 	int eventID;
@@ -53,6 +54,7 @@ class _ANAFACE_DLL2 TControlComponent : TObject
 {
 	friend class TControl;
 	friend class TControlComponent;
+	friend class TrecPointerKey;
 public:
 
 	/**
@@ -63,14 +65,6 @@ public:
 	 */
 	virtual TString GetType() override;
 
-	/*
-	* Method:  TControlComponent::TControlComponent
-	* Purpose: Constructor
-	* Parameters: TrecPointer<DrawingBoard> dbp - Smart Pointer to the Render target to draw against
-	*				TControl* tc - the TControl to which the TControlComponent is a party to
-	* Returns: New TControlComponent Object
-	*/
-	TControlComponent(TrecPointer<DrawingBoard>, TrecPointer<TPage> parent);
 	/*
 	* Method: TControlComponent::TControlComponent
 	* Purpose: Constructor
@@ -493,19 +487,6 @@ public:
 
 
 	/**
-	 * Method: TControl::OnLButtonDown
-	 * Purpose: Responds to the Left Button Down Message
-	 * Parameters: UINT nFlags - flags associated with the message
-	 *				const TPoint& point - the point included in the message
-	 *				message_output& mOut -  the result of the message
-	 *				TDataArray<EventID_Cred>& - list of events to be handled
-	 * Returns: void
-	 *
-	 * Attributes: message; override
-	 */
-	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
-
-	/**
 	 * Method: TControl::OnMouseMove
 	 * Purpose: Responds to the Mouse Move Message
 	 * Parameters: UINT nFlags - flags associated with the message
@@ -577,7 +558,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
+	ag_msg virtual bool OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
 
 
 

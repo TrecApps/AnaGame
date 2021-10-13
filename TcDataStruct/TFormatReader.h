@@ -3,14 +3,14 @@
 #include <TFileShell.h>
 #include <TVariable.h>
 
-
+#include "TcDataStruct.h"
 
 
 /**
  * Class: TFormatReader
  * Purpose: Provides means for reading Certain Text File type, such as JSON, XML, TML (currently exclusive to Anagame) 
  */
-class TFormatReader :
+class TC_DATA_STRUCT TFormatReader :
     public TObject
 {
 public:
@@ -19,7 +19,7 @@ public:
      * Class: TFormatReaderBuilder
      * Purpose: Enables third Parties to provide their own Builders and Readers for formats not directly supported by Anagame
      */
-    class TFormatReaderBuilder
+    class TC_DATA_STRUCT TFormatReaderBuilder
     {
     public:
         /**

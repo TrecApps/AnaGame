@@ -98,20 +98,6 @@ public:
 	 */
 	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
 
-
-	/**
-	 * Method: TControl::OnLButtonDown
-	 * Purpose: Responds to the Left Button Down Message
-	 * Parameters: UINT nFlags - flags associated with the message
-	 *				const TPoint& point - the point included in the message
-	 *				message_output& mOut -  the result of the message
-	 *				TDataArray<EventID_Cred>& - list of events to be handled
-	 * Returns: void
-	 *
-	 * Attributes: message; override
-	 */
-	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
-
 	/**
 	 * Method: TControl::OnMouseMove
 	 * Purpose: Responds to the Mouse Move Message
@@ -173,7 +159,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
+	ag_msg virtual bool OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
 
 	/**
 	 * Method: TRandomLayout::AddPage

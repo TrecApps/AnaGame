@@ -7,17 +7,16 @@ int value = 255;
 
 
 /**
- * Function: IsContained
- * Purpose: Checks of a point is within a given Direct2D Rectangle
- * Parameters: const TPoint* - the point to check 
- *				const D2D1_RECT_F* - the rectangle to check
- * Returns: bool - whether the point is withing the bounds
+ * Function: GetScrollbarBoxSize
+ * Purpose: Reports the with/height of the vertical/horzontal scroll bar
+ * Parameters: void
+ * Returns: UINT - the size used in the creation of the box
  */
-bool IsContained(const TPoint& cp, const D2D1_RECT_F& r)
+UINT GetScrollbarBoxSize()
 {
-	return cp.x >= r.left && cp.x <= r.right &&
-		cp.y >= r.top && cp.y <= r.bottom;
+	return BOX_SIZE;
 }
+
 
 /**
  * Method: TScrollBar::GetType
@@ -171,7 +170,7 @@ void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& m
 			point.x = body_rect.left + BOX_SIZE;
 
 		float move = -MovedContent(point.x - prevPoint.x);
-		parent.Get()->OnScroll(point, TPoint(move / widthFactor, 0), args);
+		parent.Get()->OnScroll(true ,point, TPoint(move / widthFactor, 0), args);
 	}
 	else
 	{
@@ -182,7 +181,7 @@ void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& m
 			point.y = body_rect.top + BOX_SIZE;
 
 		float move = -MovedContent(point.y - prevPoint.y);
-		parent.Get()->OnScroll(point, TPoint(0, move / widthFactor),args);
+		parent.Get()->OnScroll(true, point, TPoint(0, move / widthFactor),args);
 	}
 	prevPoint = point;
 }
@@ -251,7 +250,7 @@ void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& 
 			scroll_rect.left += diff;
 			scroll_rect.right += diff;
 
-			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(diff / widthFactor, 0),args);
+			parent.Get()->OnScroll(true, TPoint(-1,-1), TPoint(diff / widthFactor, 0),args);
 		}
 		else if (scroll_rect.right > (body_rect.right - BOX_SIZE))
 		{
@@ -259,7 +258,7 @@ void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& 
 			scroll_rect.left += diff;
 			scroll_rect.right += diff;
 
-			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(diff / widthFactor, 0),args);
+			parent.Get()->OnScroll(true, TPoint(-1,-1), TPoint(diff / widthFactor, 0),args);
 		}
 
 	}
@@ -289,7 +288,7 @@ void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& 
 			scroll_rect.top += diff;
 			scroll_rect.bottom += diff;
 
-			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(0, -(diff / widthFactor)),args);
+			parent.Get()->OnScroll(true,TPoint(-1,-1), TPoint(0, -(diff / widthFactor)),args);
 		}
 		else if (scroll_rect.bottom > (body_rect.bottom - BOX_SIZE))
 		{
@@ -297,7 +296,7 @@ void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& 
 			scroll_rect.top += diff;
 			scroll_rect.bottom += diff;
 
-			parent.Get()->OnScroll(TPoint(-1,-1), TPoint(0, -(diff / widthFactor)),args);
+			parent.Get()->OnScroll(true, TPoint(-1,-1), TPoint(0, -(diff / widthFactor)),args);
 		}
 	}
 }
@@ -370,6 +369,21 @@ void TPage::RotateRadians(float radians)
 void TPage::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& needs, TrecPointer<TPage> page)
 {
 	// If no children, do nothing
+}
+
+bool TPage::GetVariable(const TString& name, TrecPointer<TVariable>& var)
+{
+	return false;
+}
+
+bool TPage::SetVariable(const TString& name, TrecPointer<TVariable> var)
+{
+	return false;
+}
+
+bool TPage::IsScroller()
+{
+	return false;
 }
 
 TPage::TPage(TrecPointer<DrawingBoard> board)

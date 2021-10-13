@@ -140,16 +140,16 @@ void TRandomLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventI
     TControl::OnResize(newLoc, nFlags, eventAr, args);
 }
 
-bool TRandomLayout::OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+bool TRandomLayout::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
 {
-    if(TControl::OnScroll(point, direction, args))
+    if(TControl::OnScroll(false, point, direction, args))
         return false;
 
     for (UINT Rust = 0; Rust < childControls.Size(); Rust++)
     {
         auto page = childControls[Rust].control;
         if (page.Get())
-            page->OnScroll(point, direction, args);
+            page->OnScroll(false, point, direction, args);
     }
     return true;
 }
