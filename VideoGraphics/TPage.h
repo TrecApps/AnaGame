@@ -542,8 +542,10 @@ public:
      * Purpose: Retrieves the Area held by the Page
      * Parameters: void
      * Returns: D2D1_RECT_F -  the Region the Page claims it is drawing to
+	 * 
+	 * Attributes: virtual
      */
-    D2D1_RECT_F GetArea();
+    virtual D2D1_RECT_F GetArea();
 
 
 	/**

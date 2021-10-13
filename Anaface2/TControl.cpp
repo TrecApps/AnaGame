@@ -775,12 +775,12 @@ void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 
 		if (isRightClicked)
 		{
-			int index = HasEvent(R_Message_Type::On_Click);
+			int index = HasEvent(R_Message_Type::On_Right_Click);
 			if (index != -1)
 			{
 				this->args.Reset();
 				this->args.arrayLabel = this->arrayID;
-				this->args.eventType = R_Message_Type::On_Click;
+				this->args.eventType = R_Message_Type::On_Right_Click;
 				this->args.isClick = true;
 				this->args.isLeftClick = false;
 				this->args.methodID = index;
@@ -792,12 +792,12 @@ void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 		}
 		else
 		{
-			int index = HasEvent(R_Message_Type::On_L_Button_Up);
+			int index = HasEvent(R_Message_Type::On_R_Button_Up);
 			if (index != -1)
 			{
 				this->args.Reset();
 				this->args.arrayLabel = this->arrayID;
-				this->args.eventType = R_Message_Type::On_L_Button_Up;
+				this->args.eventType = R_Message_Type::On_R_Button_Up;
 				this->args.isClick = true;
 				this->args.isLeftClick = false;
 				this->args.methodID = index;
@@ -808,7 +808,7 @@ void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 			}
 		}
 	}
-	isLeftClicked = false;
+	isRightClicked = false;
 }
 
 void TControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& pages, TDataArray<EventArgs>& args)
