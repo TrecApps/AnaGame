@@ -6,29 +6,129 @@
 #include <mfidl.h>
 #include <TLinkedList.h>
 
+class TransformBuilder
+{
+public:
+	TransformBuilder(REFCLSID id):id(id) {
+		transformer = nullptr;
 
 
+
+		HRESULT ret = CoCreateInstance(id, nullptr, CLSCTX_INPROC_SERVER, __uuidof(IMFTransform), (void**)&transformer);
+		if (FAILED(ret))
+			transformer = nullptr;
+	}
+
+
+	~TransformBuilder() {
+		if (transformer)
+			transformer->Release();
+		transformer = nullptr;
+	}
+
+	bool TransformerAvailable() {
+		return transformer != nullptr;
+	}
+
+	IMFMediaType* GetOutputType(MediaTopologyLink link, IMFMediaType* input) {
+		if (!input || (id != link.transformer) || !transformer)
+			return nullptr;
+		IMFMediaType* output = nullptr, * newInput = nullptr;
+		assert(SUCCEEDED(MFCreateMediaType(&output)));
+
+		assert(SUCCEEDED(input->CopyAllItems(output)));
+		assert(SUCCEEDED(MFCreateMediaType(&newInput)));
+
+		assert(SUCCEEDED(input->CopyAllItems(newInput)));
+
+		assert(SUCCEEDED(output->SetGUID(MF_MT_SUBTYPE, link.output)));
+		assert(SUCCEEDED(newInput->SetGUID(MF_MT_SUBTYPE, link.input)));
+
+
+		IMFMediaType* ret = nullptr;
+
+
+		if (id == CLSID_CMSH264DecoderMFT)
+		{
+			assert(SUCCEEDED(transformer->SetInputType(0, newInput, 0)));
+			if (SUCCEEDED(transformer->SetOutputType(0, output, 0)))
+			{
+				ret = output;
+				ret->AddRef();
+			}
+		}
+		else if (id == CLSID_CMSH264EncoderMFT)
+		{
+			output->SetUINT32(MF_MT_AVG_BITRATE, 10);
+			HRESULT hret = transformer->SetOutputType(0, output, 0);
+			assert(SUCCEEDED(hret));
+
+			//
+			//MFSetAttributeRatio(output, MF_MT_FRAME_RATE, 30, 1);
+
+
+			if (SUCCEEDED(transformer->SetInputType(0, newInput, 0)))
+			{
+				ret = output;
+				ret->AddRef();
+			}
+		}
+		else if (id == CLSID_CMpeg4DecMediaObject)
+		{
+			assert(SUCCEEDED(transformer->SetInputType(0, newInput, 0)));
+			if (SUCCEEDED(transformer->SetOutputType(0, output, 0)))
+			{
+				ret = output;
+				ret->AddRef();
+			}
+		}
+		else if (id == CLSID_VideoProcessorMFT)
+		{
+			assert(SUCCEEDED(transformer->SetInputType(0, newInput, 0)));
+			if (SUCCEEDED(transformer->SetOutputType(0, output, 0)))
+			{
+				ret = output;
+				ret->AddRef();
+			}
+		}
+
+		newInput->Release();
+		newInput = nullptr;
+		output->Release();
+		output = nullptr;
+		return ret;
+
+	}
+
+	TrecComPointer<IMFTransform> GetTransform()
+	{
+		TrecComPointer<IMFTransform> ret;
+
+		if (transformer)
+		{
+			TrecComPointer<IMFTransform>::TrecComHolder holder;
+
+			*holder.GetPointerAddress() = transformer;
+			transformer->AddRef();
+			ret = holder.Extract();
+		}
+
+
+		return ret;
+	}
+
+
+private:
+	REFCLSID id;
+	IMFTransform* transformer;
+};
+
+
+/// <summary>
+/// List of supported video Conversions. Note: Commented out options were converstions that were unable to actually provide the Transform and thus
+/// are assumed to be unsupported.
+/// </summary>
 MediaTopologyLink links[] = {
-	//// CLSID_CMSAACDecMFT - the AAC Decoder
-	//{MFAudioFormat_AAC, MFAudioFormat_Float, CLSID_CMSAACDecMFT},
-	//{MFAudioFormat_AAC, MFAudioFormat_PCM, CLSID_CMSAACDecMFT},
-	//{MEDIASUBTYPE_RAW_AAC1, MFAudioFormat_Float, CLSID_CMSAACDecMFT},
-	//{MEDIASUBTYPE_RAW_AAC1, MFAudioFormat_PCM, CLSID_CMSAACDecMFT},
-	//// CLSID_AACMFTEncoder - the AAC Encoder
-	//{MFAudioFormat_PCM, MFAudioFormat_AAC, CLSID_AACMFTEncoder},
-
-	// To-Do: create mapping for DV VIdeo, once CLSID for it is found
-
-	//// CLSID_CMSDDPlusDecMFT - the Dolby Audio Decoder
-	//{MEDIASUBTYPE_DOLBY_AC3, MFAudioFormat_Dolby_AC3_SPDIF, CLSID_CMSDDPlusDecMFT},
-	//{MEDIASUBTYPE_DOLBY_AC3, KSDATAFORMAT_SUBTYPE_IEC61937_DOLBY_DIGITAL_PLUS, CLSID_CMSDDPlusDecMFT},
-	//{MEDIASUBTYPE_DOLBY_AC3, MFAudioFormat_Dolby_AC3_SPDIF, CLSID_CMSDDPlusDecMFT},
-	//{MEDIASUBTYPE_DOLBY_AC3, MFAudioFormat_Dolby_AC3_SPDIF, CLSID_CMSDDPlusDecMFT},
-	//{MFAudioFormat_Dolby_Digital_Plus, MFAudioFormat_Dolby_AC3_SPDIF, CLSID_CMSDDPlusDecMFT},
-	//{MFAudioFormat_Dolby_Digital_Plus, KSDATAFORMAT_SUBTYPE_IEC61937_DOLBY_DIGITAL_PLUS, CLSID_CMSDDPlusDecMFT},
-	//{MFAudioFormat_Dolby_Digital_Plus, MFAudioFormat_Dolby_AC3_SPDIF, CLSID_CMSDDPlusDecMFT},
-	//{MFAudioFormat_Dolby_Digital_Plus, MFAudioFormat_Dolby_AC3_SPDIF, CLSID_CMSDDPlusDecMFT},
-
 	// CLSID_CMSH264DecoderMFT - Video Decoder for H.264 (Needs Testing)
 	{MFVideoFormat_H264_ES, MFVideoFormat_I420, CLSID_CMSH264DecoderMFT},
 	{MFVideoFormat_H264_ES, MFVideoFormat_IYUV, CLSID_CMSH264DecoderMFT},
@@ -40,14 +140,14 @@ MediaTopologyLink links[] = {
 	{MFVideoFormat_H264, MFVideoFormat_NV12, CLSID_CMSH264DecoderMFT},
 	{MFVideoFormat_H264, MFVideoFormat_YUY2, CLSID_CMSH264DecoderMFT},
 	{MFVideoFormat_H264, MFVideoFormat_YV12, CLSID_CMSH264DecoderMFT},
-	
+
 	// CLSID_CMSH264EncoderMFT - Video Encoder for H.264 (Needs Testing)
-	{MFVideoFormat_I420, MFVideoFormat_H264, CLSID_CMSH264EncoderMFT},
+	//{MFVideoFormat_I420, MFVideoFormat_H264, CLSID_CMSH264EncoderMFT},
 	{MFVideoFormat_IYUV, MFVideoFormat_H264, CLSID_CMSH264EncoderMFT},
 	{MFVideoFormat_NV12, MFVideoFormat_H264, CLSID_CMSH264EncoderMFT},
 	{MFVideoFormat_YUY2, MFVideoFormat_H264, CLSID_CMSH264EncoderMFT},
 	{MFVideoFormat_YV12, MFVideoFormat_H264, CLSID_CMSH264EncoderMFT},
-	
+
 	// To-Do: Create Mapping for H.265 / HEVC Encoder/Decoder once CLSID for them is found
 
 	// CLSID_CMpeg4DecMediaObject - Decoder for MPEG4 V1/2
@@ -56,7 +156,7 @@ MediaTopologyLink links[] = {
 	{MEDIASUBTYPE_MPG4, MFVideoFormat_RGB32, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_MPG4, MFVideoFormat_RGB24, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_MPG4, MFVideoFormat_RGB565, CLSID_CMpeg4DecMediaObject},
-	{MEDIASUBTYPE_MPG4, MFVideoFormat_RGB8, CLSID_CMpeg4DecMediaObject},
+	//{MEDIASUBTYPE_MPG4, MFVideoFormat_RGB8, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_MPG4, MFVideoFormat_RGB555, CLSID_CMpeg4DecMediaObject},
 
 	{MEDIASUBTYPE_mpg4, MFVideoFormat_YUY2, CLSID_CMpeg4DecMediaObject},
@@ -64,7 +164,7 @@ MediaTopologyLink links[] = {
 	{MEDIASUBTYPE_mpg4, MFVideoFormat_RGB32, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_mpg4, MFVideoFormat_RGB24, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_mpg4, MFVideoFormat_RGB565, CLSID_CMpeg4DecMediaObject},
-	{MEDIASUBTYPE_mpg4, MFVideoFormat_RGB8, CLSID_CMpeg4DecMediaObject},
+	//{MEDIASUBTYPE_mpg4, MFVideoFormat_RGB8, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_mpg4, MFVideoFormat_RGB555, CLSID_CMpeg4DecMediaObject},
 
 	{MEDIASUBTYPE_MP42, MFVideoFormat_YUY2, CLSID_CMpeg4DecMediaObject},
@@ -72,7 +172,7 @@ MediaTopologyLink links[] = {
 	{MEDIASUBTYPE_MP42, MFVideoFormat_RGB32, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_MP42, MFVideoFormat_RGB24, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_MP42, MFVideoFormat_RGB565, CLSID_CMpeg4DecMediaObject},
-	{MEDIASUBTYPE_MP42, MFVideoFormat_RGB8, CLSID_CMpeg4DecMediaObject},
+	//{MEDIASUBTYPE_MP42, MFVideoFormat_RGB8, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_MP42, MFVideoFormat_RGB555, CLSID_CMpeg4DecMediaObject},
 
 	{MEDIASUBTYPE_mp42, MFVideoFormat_YUY2, CLSID_CMpeg4DecMediaObject},
@@ -80,14 +180,14 @@ MediaTopologyLink links[] = {
 	{MEDIASUBTYPE_mp42, MFVideoFormat_RGB32, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_mp42, MFVideoFormat_RGB24, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_mp42, MFVideoFormat_RGB565, CLSID_CMpeg4DecMediaObject},
-	{MEDIASUBTYPE_mp42, MFVideoFormat_RGB8, CLSID_CMpeg4DecMediaObject},
+	//{MEDIASUBTYPE_mp42, MFVideoFormat_RGB8, CLSID_CMpeg4DecMediaObject},
 	{MEDIASUBTYPE_mp42, MFVideoFormat_RGB555, CLSID_CMpeg4DecMediaObject},
 
 	// CLSID_CMpeg4sDecMFT - Decoder for the MPEG-4 P2 Format (Needs Testing)
-	{MEDIASUBTYPE_M4S2, MFVideoFormat_NV12, CLSID_CMpeg4sDecMFT},
-	{MEDIASUBTYPE_m4s2, MFVideoFormat_NV12, CLSID_CMpeg4sDecMFT},
-	{MEDIASUBTYPE_M4S2, MFVideoFormat_YV12, CLSID_CMpeg4sDecMFT},
-	{MEDIASUBTYPE_m4s2, MFVideoFormat_YV12, CLSID_CMpeg4sDecMFT},
+	//{MEDIASUBTYPE_M4S2, MFVideoFormat_NV12, CLSID_CMpeg4sDecMFT},
+	//{MEDIASUBTYPE_m4s2, MFVideoFormat_NV12, CLSID_CMpeg4sDecMFT},
+	//{MEDIASUBTYPE_M4S2, MFVideoFormat_YV12, CLSID_CMpeg4sDecMFT},
+	//{MEDIASUBTYPE_m4s2, MFVideoFormat_YV12, CLSID_CMpeg4sDecMFT},
 
 	// CLSID_VideoProcessorMFT - Processor of Video Frames
 	{ MFVideoFormat_ARGB32, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT}, // Same
@@ -99,8 +199,8 @@ MediaTopologyLink links[] = {
 	{ MFVideoFormat_ARGB32, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_ARGB32, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_ARGB32, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT},
-	{ MFVideoFormat_ARGB32, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT},
-	{ MFVideoFormat_ARGB32, MFVideoFormat_Y216, CLSID_VideoProcessorMFT},
+	//{ MFVideoFormat_ARGB32, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT},
+	//{ MFVideoFormat_ARGB32, MFVideoFormat_Y216, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_ARGB32, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_ARGB32, MFVideoFormat_YV12, CLSID_VideoProcessorMFT},
 
@@ -109,68 +209,68 @@ MediaTopologyLink links[] = {
 	{ MFVideoFormat_AYUV, MFVideoFormat_I420, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_AYUV, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_AYUV, MFVideoFormat_NV12, CLSID_VideoProcessorMFT},
-	{ MFVideoFormat_AYUV, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT},
+	//{ MFVideoFormat_AYUV, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_AYUV, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT},
-	{ MFVideoFormat_AYUV, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT},
-	{ MFVideoFormat_AYUV, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT},
+	//{ MFVideoFormat_AYUV, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT},
+	//{ MFVideoFormat_AYUV, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_AYUV, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT},
-	{ MFVideoFormat_AYUV, MFVideoFormat_Y216, CLSID_VideoProcessorMFT},
+	//{ MFVideoFormat_AYUV, MFVideoFormat_Y216, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_AYUV, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT},
 	{ MFVideoFormat_AYUV, MFVideoFormat_YV12, CLSID_VideoProcessorMFT},
 
 	{ MFVideoFormat_I420, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_I420, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_I420, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_I420, MFVideoFormat_I420, CLSID_VideoProcessorMFT }, // Same
-	{ MFVideoFormat_I420, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_I420, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_I420, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_I420, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_I420, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_I420, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_I420, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_I420, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_I420, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_I420, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_I420, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_I420, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_I420, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_I420, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_I420, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
 	{ MFVideoFormat_IYUV, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_IYUV, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_IYUV, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_IYUV, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_IYUV, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT }, // Same
 	{ MFVideoFormat_IYUV, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_IYUV, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_IYUV, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_IYUV, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_IYUV, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_IYUV, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_IYUV, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_IYUV, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_IYUV, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_IYUV, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_IYUV, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_IYUV, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_IYUV, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
 	{ MFVideoFormat_NV11, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV11, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV11, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_NV11, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_NV11, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_NV11, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV11, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV11, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_NV11, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV11, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV11, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV11, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV11, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV11, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV11, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV11, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV11, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV11, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV11, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_NV11, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
 	{ MFVideoFormat_RGB24, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB24, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB24, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB24, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB24, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB24, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB24, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT }, // Same
+	//{ MFVideoFormat_RGB24, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT }, // Same
 	{ MFVideoFormat_RGB24, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB24, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB24, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB24, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB24, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB24, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB24, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB24, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB24, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB24, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB24, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
@@ -181,10 +281,10 @@ MediaTopologyLink links[] = {
 	{ MFVideoFormat_NV12, MFVideoFormat_NV12, CLSID_VideoProcessorMFT }, // Same
 	{ MFVideoFormat_NV12, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_NV12, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV12, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV12, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV12, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_NV12, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV12, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV12, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV12, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_NV12, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_NV12, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_NV12, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
@@ -197,51 +297,51 @@ MediaTopologyLink links[] = {
 	{ MFVideoFormat_RGB32, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT }, // Same
 	{ MFVideoFormat_RGB32, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB32, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB32, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB32, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB32, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB32, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB32, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB32, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
 	{ MFVideoFormat_RGB555, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB555, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB555, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB555, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB555, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB555, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB555, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB555, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB555, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB555, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB555, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT }, // Same
-	{ MFVideoFormat_RGB555, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB555, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB555, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB555, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB555, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT }, // Same
+	//{ MFVideoFormat_RGB555, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB555, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB555, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB555, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB555, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
 	{ MFVideoFormat_RGB565, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB565, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB565, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB565, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB565, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB565, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB565, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB565, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB565, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB565, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB565, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB565, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT }, // Same
-	{ MFVideoFormat_RGB565, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB565, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB565, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB565, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB565, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT }, // Same
+	//{ MFVideoFormat_RGB565, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB565, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB565, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB565, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
 	{ MFVideoFormat_RGB8, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB8, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB8, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB8, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB8, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB8, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB8, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB8, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB8, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB8, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB8, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB8, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB8, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB8, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_RGB8, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB8, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB8, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB8, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB8, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_RGB8, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_RGB8, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
 	{ MFVideoFormat_UYVY, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
@@ -249,83 +349,83 @@ MediaTopologyLink links[] = {
 	{ MFVideoFormat_UYVY, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_UYVY, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_UYVY, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_UYVY, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_UYVY, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_UYVY, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_UYVY, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_UYVY, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_UYVY, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_UYVY, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_UYVY, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT }, // Same
 	{ MFVideoFormat_UYVY, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_UYVY, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_UYVY, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_UYVY, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
-	{ MFVideoFormat_v410, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_v410, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_v410, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_v410, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_v410, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_v410, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_v410, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_v410, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_v410, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_v410, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_v410, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_v410, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_v410, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_v410, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_v410, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_v410, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_v410, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_v410, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_v410, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_v410, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_v410, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_v410, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
-	{ MFVideoFormat_Y216, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y216, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y216, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y216, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y216, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y216, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y216, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y216, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y216, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y216, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y216, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y216, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y216, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y216, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y216, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y216, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y216, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y216, MFVideoFormat_Y216, CLSID_VideoProcessorMFT }, // Same
+	//{ MFVideoFormat_Y216, MFVideoFormat_Y216, CLSID_VideoProcessorMFT }, // Same
 	{ MFVideoFormat_Y216, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y216, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
-	{ MFVideoFormat_Y41P, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41P, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y41P, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y41P, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41P, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41P, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41P, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41P, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41P, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41P, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41P, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41P, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41P, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y41P, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
-	{ MFVideoFormat_Y41T, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41T, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y41T, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y41T, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41T, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41T, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41T, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41T, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41T, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41T, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41T, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y41T, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y41T, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y41T, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
-	{ MFVideoFormat_Y42T, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y42T, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_AYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y42T, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y42T, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y42T, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y42T, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y42T, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y42T, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y42T, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y42T, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y42T, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_Y42T, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_Y42T, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_Y42T, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
 
 	{ MFVideoFormat_YUY2, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT },
@@ -335,9 +435,9 @@ MediaTopologyLink links[] = {
 	{ MFVideoFormat_YUY2, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YUY2, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YUY2, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YUY2, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YUY2, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YUY2, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YUY2, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YUY2, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YUY2, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YUY2, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YUY2, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT }, // Same
 	{ MFVideoFormat_YUY2, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
@@ -349,10 +449,10 @@ MediaTopologyLink links[] = {
 	{ MFVideoFormat_YV12, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YV12, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YV12, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YV12, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YV12, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YV12, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YV12, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YV12, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YV12, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YV12, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YV12, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YV12, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YV12, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },  // Same
 
@@ -361,16 +461,14 @@ MediaTopologyLink links[] = {
 	{ MFVideoFormat_YVYU, MFVideoFormat_I420, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YVYU, MFVideoFormat_IYUV, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YVYU, MFVideoFormat_NV12, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YVYU, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YVYU, MFVideoFormat_RGB24, CLSID_VideoProcessorMFT },
 	{ MFVideoFormat_YVYU, MFVideoFormat_RGB32, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YVYU, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YVYU, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YVYU, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YVYU, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YVYU, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
-	{ MFVideoFormat_YVYU, MFVideoFormat_YV12, CLSID_VideoProcessorMFT },
-
-
+	//{ MFVideoFormat_YVYU, MFVideoFormat_RGB555, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YVYU, MFVideoFormat_RGB565, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YVYU, MFVideoFormat_UYVY, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YVYU, MFVideoFormat_Y216, CLSID_VideoProcessorMFT },
+	//{ MFVideoFormat_YVYU, MFVideoFormat_YUY2, CLSID_VideoProcessorMFT },
+	{ MFVideoFormat_YVYU, MFVideoFormat_YV12, CLSID_VideoProcessorMFT }
 };
 
 int ExamineLink(UINT baseIndex, TDataArray<TLinkedList< MediaTopologyLink>>& options, TDataArray<bool>& viableOptions, GUID targetOutput)
@@ -490,4 +588,23 @@ TDataArray<MediaTopologyLink> GetLink(GUID input, GUID output)
 		} while (options[foundable].Next());
 	}
 	return ret;
+}
+
+void ConvertTopologyLinkToTransforms(IMFMediaType* type, TDataArray<MediaTopologyLink>& links, TDataArray<TrecComPointer<IMFTransform>>& transforms)
+{
+	assert(type);
+
+	for (UINT Rust = 0; Rust < links.Size(); Rust++)
+	{
+		MediaTopologyLink link = links[Rust];
+		TransformBuilder builder(link.transformer);
+
+		IMFMediaType* outputType = builder.GetOutputType(link, type);
+
+		type->Release();
+		type = outputType;
+
+		transforms.push_back(builder.GetTransform());
+	}
+	type->Release();
 }
