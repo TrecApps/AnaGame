@@ -161,6 +161,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="TControl.h" />
     <ClInclude Include="TDataLayout.h" />
+    <ClInclude Include="TGadget.h" />
     <ClInclude Include="TGrid.h" />
     <ClInclude Include="TLayout.h" />
     <ClInclude Include="TRandomLayout.h" />
@@ -176,6 +177,7 @@
     </ClCompile>
     <ClCompile Include="TControl.cpp" />
     <ClCompile Include="TDataLayout.cpp" />
+    <ClCompile Include="TGadget.cpp" />
     <ClCompile Include="TGrid.cpp" />
     <ClCompile Include="TLayout.cpp" />
     <ClCompile Include="TRandomLayout.cpp" />
