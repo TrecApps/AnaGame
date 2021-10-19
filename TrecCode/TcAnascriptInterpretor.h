@@ -3,7 +3,9 @@
 class TcAnascriptInterpretor :
     public TcInterpretor
 {
+    friend class TcAnascriptInterpretor;
 public:
+
 
     /**
      * Method: TcAnascriptInterpretor::TcAnascriptInterpretor
@@ -91,7 +93,21 @@ public:
      */
     virtual void ProcessIndividualStatement(const TString& statement, ReturnObject& ret) override;
 
+    static bool IsTruthful(TrecPointer<TVariable> var);
+
 protected:
+
+    void ProcessLet(TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    void ProcessFunction(TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    bool ProcessIf(TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    void ProcessFor(TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT startIndex);
+    void ProcessDeclare(TrecPointer<CodeStatement> statement, ReturnObject& ret);
+    
+
+    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT& pStack, UINT& sStack, UINT startIndex);
+    
+
     /**
      * List of statements generated
      */

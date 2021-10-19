@@ -1,4 +1,5 @@
 #include "TcAnascriptInterpretor.h"
+#include <TStringVariable.h>
 
 TcAnascriptInterpretor::TcAnascriptInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env): TcInterpretor(parentInterpretor, env)
 {
@@ -139,11 +140,79 @@ void TcAnascriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObj
 
 ReturnObject TcAnascriptInterpretor::Run()
 {
-	return ReturnObject();
+    TObjectLocker lock(&this->thread);
+    ReturnObject ret;
+    if (!preProcessed)
+    {
+        ret.errorMessage.Set(L"Interpretor not ready to run. Make sure you are successful in calling 'SetFile' and 'PreProcess' before calling this method");
+        ret.returnCode = ReturnObject::ERR_UNSUPPORTED_OP;
+        return ret;
+    }
+
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    {
+        TrecPointer<CodeStatement> state = statements[Rust];
+
+        switch (state->statementType)
+        {
+        case code_statement_type::cst_function:
+            ProcessFunction(state, ret);
+            break;
+        case code_statement_type::cst_let:
+
+            break;
+        case code_statement_type::cst_for:
+            ProcessFor(state, ret);
+            break;
+        case code_statement_type::cst_if:
+
+            break;
+        case code_statement_type::cst_else:
+        case code_statement_type::cst_else_if:
+            ret.errorMessage.Set(L"Detected 'else' statement without an 'if' statement preceeding it!");
+            ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
+            return;
+        case code_statement_type::cst_break:
+            ret.mode = return_mode::rm_break;
+            return;
+        case code_statement_type::cst_continue:
+            ret.mode = return_mode::rm_continue;
+            return;
+
+        case code_statement_type::cst_declare:
+            ProcessDeclare(state, ret);
+            break;
+        case code_statement_type::cst_regular:
+            ProcessExpression(state, ret, 0);
+        }
+    }
+
+
+	return ret;
 }
+
+
 
 void TcAnascriptInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
 {
+    variables.clear();
+    UINT paramCount = paramNames.Size();
+    for (UINT Rust = 0; Rust < params.Size(); Rust++)
+    {
+        TcVariableHolder holder;
+        holder.mut = true;
+        holder.value = params[Rust];
+
+        TString n;
+        if (Rust < paramCount)
+            n.Set(paramNames[Rust]);
+        else
+        {
+            n.Format(L"_as_arg_%d", Rust - paramCount);
+        }
+
+        variables.addEntry(n, holder);
+    }
 }
 
 void TcAnascriptInterpretor::PreProcess(ReturnObject& ret)
@@ -203,6 +272,17 @@ void TcAnascriptInterpretor::PreProcess(ReturnObject& ret)
 
 
         }
+        else if (statements[Rust]->statement.StartsWith(L"break", true, true))
+        {
+            statements[Rust]->statementType = code_statement_type::cst_break;
+            statements[Rust]->statement.Delete(0, 5);
+        }
+        else if (statements[Rust]->statement.StartsWith(L"continue", true, true))
+        {
+            statements[Rust]->statementType = code_statement_type::cst_continue;
+            statements[Rust]->statement.Delete(0, 8);
+        }
+        else statements[Rust]->statementType = code_statement_type::cst_regular;
 
         statements[Rust]->statement.Trim();
     }
@@ -212,6 +292,220 @@ void TcAnascriptInterpretor::PreProcess(ReturnObject& ret)
 }
 
 void TcAnascriptInterpretor::ProcessIndividualStatement(const TString& statement, ReturnObject& ret)
+{
+    TrecPointer<CodeStatement> state = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
+    state->statement.Set(statement);
+
+    ProcessExpression(state, ret, 0);
+}
+
+bool TcAnascriptInterpretor::IsTruthful(TrecPointer<TVariable> var)
+{
+    if (!var.Get())
+        return false;
+
+    switch (var->GetVarType())
+    {
+    case var_type::string:
+        // If a String, then only the Empty String is considered Falsy
+        return dynamic_cast<TStringVariable*>(var.Get())->GetSize() > 0;
+    case var_type::primitive:
+        // If a Primitive value, boolean false, 
+        return var->Get8Value() > 0;
+    }
+
+
+    return true;
+}
+
+void TcAnascriptInterpretor::ProcessLet(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+}
+
+void TcAnascriptInterpretor::ProcessFunction(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+    auto parentSplit = statement->statement.splitn(L' ', 2);
+
+    if (parentSplit->Size() != 2)
+    {
+        ret.returnCode = ret.ERR_INCOMPLETE_STATEMENT;
+        ret.errorMessage.Set(L"Function Declaration has an incomplete Statement!");
+        return;
+    }
+
+    TString name(parentSplit->at(0));
+    TString params(parentSplit->at(1));
+
+    CheckVarName(name, ret);
+    if (ret.returnCode)
+        return;
+
+    if (params.StartsWith(L"takes", true, true))
+        params.Delete(0, 6);
+    params.Trim();
+
+    if (!params.StartsWith(L'('))
+    {
+        ret.returnCode = ret.ERR_UNEXPECTED_TOK;
+        ret.errorMessage.Set(L"Function Declaration has an incomplete Statement! Could not find '(' token to indicate Parameter List");
+        return;
+    }
+
+    TDataArray<TString> pNames, pTypes;
+
+    if (params.CountFinds(L'(') != 1 && params.CountFinds(L')' != 1))
+    {
+        ret.returnCode = ret.ERR_BRACKET_MISMATCH;
+        ret.errorMessage.Set(L"Function Declaration needs 1 '(' and 1 ')' to specify parameter names");
+        return;
+    }
+    params.Delete(0, 1);
+
+    parentSplit = params.split(L')');
+
+    TString returnInfo(parentSplit->Size() ? parentSplit->at(1) : L"");
+
+    // Return Type Info might be utilized later. Right now, leave it here
+
+    parentSplit = parentSplit->at(0).split(L',');
+
+    for (UINT Rust = 0; Rust < parentSplit->Size(); Rust++)
+    {
+        auto paramSplit = parentSplit->at(Rust).splitn(L':', 2);
+        CheckVarName(paramSplit->at(0), ret);
+        if (ret.returnCode)
+            return;
+
+        pNames.push_back(paramSplit->at(0));
+        pTypes.push_back(paramSplit->Size() > 1 ? paramSplit->at(1) : L'');
+    }
+
+    TrecSubPointer<TVariable, TcAnascriptInterpretor> anaVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcAnascriptInterpretor>(TrecPointerKey::GetSubPointerFromSoft<>(this->self), environment);
+
+    anaVar->statements = statement->block;
+    anaVar->SetParamNames(pNames);
+    anaVar->SetParamTypes(pTypes);
+
+
+    TcVariableHolder holder;
+    holder.mut = true;
+    holder.type.Set(L"function");
+    holder.value = TrecPointerKey::GetTrecPointerFromSub<>(anaVar);
+    variables.addEntry(name, holder);
+}
+
+bool TcAnascriptInterpretor::ProcessIf(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+    ProcessExpression(statement, ret, 0);
+    if(ret.returnCode)
+        return false;
+
+    bool bRet = IsTruthful(ret.errorObject);
+    if (bRet)
+    {
+        TrecSubPointer<TVariable, TcAnascriptInterpretor> anaVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcAnascriptInterpretor>(TrecPointerKey::GetSubPointerFromSoft<>(this->self), environment);
+
+        anaVar->statements = statement->block;
+        ret = anaVar->Run();
+    }
+    return bRet;
+}
+
+void TcAnascriptInterpretor::ProcessFor(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+    auto tokens = statement->statement.splitn(L' ', 2);
+
+    UINT tSize = tokens->Size();
+
+    if (tSize != 2 || tokens->at(0).CompareNoCase(L"through"))
+    {
+        ret.returnCode = ret.ERR_INCOMPLETE_STATEMENT;
+        ret.errorMessage.Set(L"Loop statement comes in the form of 'loop through <expression> with element name <name>'");
+        return;
+    }
+
+    int withLoc = tokens->at(1).FindOutOfQuotes(L"with");
+
+    if (withLoc == -1)
+    {
+        ret.returnCode = ret.ERR_INCOMPLETE_STATEMENT;
+        ret.errorMessage.Set(L"Loop statement comes in the form of 'loop through <expression> with element name <name>'");
+        return;
+    }
+
+    TString exp(tokens->at(1).SubString(0, withLoc));
+
+    TString restOfExp(tokens->at(1).SubString(withLoc));
+
+    tokens = restOfExp.split(L' ');
+
+    if(tokens->Size() < 4)
+    {
+        ret.returnCode = ret.ERR_INCOMPLETE_STATEMENT;
+        ret.errorMessage.Set(L"Loop statement comes in the form of 'loop through <expression> with element name <name>'");
+        return;
+    }
+
+    if(tokens->at(0).CompareNoCase(L"with") || tokens->at(1).CompareNoCase(L"element") || tokens->at(2).CompareNoCase(L"name"))
+    {
+        ret.returnCode = ret.ERR_INCOMPLETE_STATEMENT;
+        ret.errorMessage.Set(L"Loop statement comes in the form of 'loop through <expression> with element name <name>'");
+        return;
+    }
+
+    CheckVarName(tokens->at(3), ret);
+    if (ret.returnCode)
+        return;
+
+    ProcessIndividualStatement(exp, ret);
+    if (ret.returnCode)
+        return;
+    TrecSubPointer<TVariable, TVariableIterator> iterator = ret.errorObject.Get() ? 
+        TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TVariableIterator>(ret.errorObject->GetIterator())
+        : TrecSubPointer<TVariable, TVariableIterator>();
+
+    if (!iterator.Get())
+    {
+        ret.returnCode = ret.ERR_BROKEN_REF;
+        ret.errorMessage.Format("Expression '%ws' in loop did not yeild an iterable variable!", exp.GetConstantBuffer().getBuffer());
+        return;
+    }
+    UINT i = 0;
+    TString n;
+    TrecPointer<TVariable> v;
+    while (!ret.returnCode && iterator->Traverse(i, n, v))
+    {
+        TrecSubPointer<TVariable, TcAnascriptInterpretor> anaVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcAnascriptInterpretor>(TrecPointerKey::GetSubPointerFromSoft<>(this->self), environment);
+
+        anaVar->statements = statement->block;
+        anaVar->variables.addEntry(tokens->at(3), TcVariableHolder(true, L"", v));
+        ret = anaVar->Run();
+    }
+}
+
+void TcAnascriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT startIndex)
+{
+}
+
+void TcAnascriptInterpretor::ProcessDeclare(TrecPointer<CodeStatement> statement, ReturnObject& ret)
+{
+    if (statement->statement.StartsWith(L"print", true, true))
+    {
+        ProcessExpression(statement, ret, 5);
+        if (ret.returnCode)
+            return;
+        environment->Print(ret.errorObject.Get() ? ret.errorObject->GetString() : L"null");
+    }
+    else if (statement->statement.StartsWith(L"print_line", true, true))
+    {
+        ProcessExpression(statement, ret, 10);
+        if (ret.returnCode)
+            return;
+        environment->PrintLine(ret.errorObject.Get() ? ret.errorObject->GetString() : L"null");
+    }
+}
+
+void TcAnascriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT& pStack, UINT& sStack, UINT startIndex)
 {
 }
 
