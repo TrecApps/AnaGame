@@ -149,6 +149,8 @@ ReturnObject TcAnascriptInterpretor::Run()
         return ret;
     }
 
+    bool ifDone = false;
+
     for (UINT Rust = 0; Rust < statements.Size(); Rust++)
     {
         TrecPointer<CodeStatement> state = statements[Rust];
@@ -165,7 +167,51 @@ ReturnObject TcAnascriptInterpretor::Run()
             ProcessFor(state, ret);
             break;
         case code_statement_type::cst_if:
+            ifDone =  ProcessIf(state, ret);
+            if (ret.returnCode)
+                return;
 
+            afterIf:
+            if (ifDone)
+            {
+                while ((Rust + 1) < statements.Size() && ifDone)
+                {
+                    switch (statements[Rust + 1]->statementType)
+                    {
+                    case code_statement_type::cst_else:
+                    case code_statement_type::cst_else_if:
+                        Rust++;
+                        break;
+                    default:
+                        ifDone = false;
+                    }
+                }
+            }
+            else
+            {
+                while (!ifDone && (Rust + 1) < statements.Size())
+                {
+                    switch (statements[Rust + 1]->statementType)
+                    {
+                    case code_statement_type::cst_else_if:
+                        ifDone = ProcessIf(state, ret);
+                        Rust++;
+                        goto afterIf;
+                    case code_statement_type::cst_else:
+                        Rust++;
+                        if (true)
+                        {
+                            TrecSubPointer<TVariable, TcAnascriptInterpretor> anaVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcAnascriptInterpretor>(TrecPointerKey::GetSubPointerFromSoft<>(this->self), environment);
+
+                            anaVar->statements = statements[Rust]->block;
+                            ret = anaVar->Run();
+                        }
+                    default:
+                        ifDone = true;
+                        
+                    }
+                }
+            }
             break;
         case code_statement_type::cst_else:
         case code_statement_type::cst_else_if:
@@ -185,6 +231,9 @@ ReturnObject TcAnascriptInterpretor::Run()
         case code_statement_type::cst_regular:
             ProcessExpression(state, ret, 0);
         }
+
+        if (ret.returnCode || ret.mode != return_mode::rm_regular)
+            break;
     }
 
 
