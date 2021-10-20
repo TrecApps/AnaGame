@@ -48,6 +48,9 @@
     <ClInclude Include="TCheckbox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TRadiobutton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -78,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TCheckbox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TRadiobutton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
