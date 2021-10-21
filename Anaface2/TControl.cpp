@@ -839,7 +839,7 @@ void TControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& m
 	}
 }
 
-void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>& args)
+void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
 {
 	if (!isActive)
 		return;
@@ -863,6 +863,9 @@ void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 				this->args.type = L'\0';
 				args.push_back(this->args);
 			}
+			if(text.Get())
+			eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self), text->GetTextInterceptor()));
+
 		}
 		else
 		{
