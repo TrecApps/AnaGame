@@ -49,6 +49,7 @@ TcAnascriptInterpretor::TcAnascriptInterpretor(TrecSubPointer<TVariable, TcInter
 
     if (!standardAOperators.Size())
     {
+        standardAOperators.push_back(L"equals");
         standardAOperators.push_back(L">>>=");
         standardAOperators.push_back(L"===");
         standardAOperators.push_back(L"!==");
@@ -888,7 +889,7 @@ void TcAnascriptInterpretor::ProcessExpression(TrecPointer<CodeStatement> statem
         bool foundOp = false;
         for (UINT Rust = 0; Rust < standardAOperators.Size(); Rust++)
         {
-            if (exp.StartsWith(standardAOperators[Rust]))
+            if (exp.StartsWith(standardAOperators[Rust], true))
             {
                 ops.push_back(standardAOperators[Rust]);
                 foundOp = true;
@@ -1985,7 +1986,7 @@ void TcAnascriptInterpretor::HandleEquality(TDataArray<AnascriptExpression2>& ex
             found = true;
             result = IsEqual(left, right, true, false);
         }
-        else if (!ops[Rust].Compare(L"=="))
+        else if (!ops[Rust].Compare(L"==") || !ops[Rust].CompareNoCase(L"equals"))
         {
             found = true;
             result = IsEqual(left, right, true, true);
