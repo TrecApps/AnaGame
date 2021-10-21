@@ -1,6 +1,7 @@
 #include "TPlayer.h"
 #include <mfreadwrite.h>
 #include <atltrace.h>
+#include "MediaTopologyBuilder.h"
 
 #define SafeRelease(value) if(value){ value->Release(); value = nullptr;}
 
@@ -767,6 +768,7 @@ done:
 	return hr;
 }
 
+
 HRESULT AddBranchToPartialTopology(
 	IMFTopology* pTopology,         // Topology.
 	IMFMediaSource* pSource,        // Media source.
@@ -844,103 +846,52 @@ HRESULT AddBranchToPartialTopology(
 			assert(SUCCEEDED(typeHand->GetMediaTypeCount(&typeCount)));
 
 			IMFMediaType* sourceType = nullptr;
+			TDataArray<TrecComPointer<IMFTransform>> transforms;
 			for (UINT Rust = 0; SUCCEEDED(typeHand->GetMediaTypeByIndex(Rust, &sourceType)); Rust++)
 			{
-				GUID subType = GUID_NULL;
-				assert(SUCCEEDED(sourceType->GetGUID(MF_MT_SUBTYPE, &subType)));
-
-				if (subType == MFVideoFormat_ARGB32)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_ARGB32\n");
-
-				if (subType == MFVideoFormat_AYUV)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_AYUV\n");
-				if (subType == MFVideoFormat_I420)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_I420\n");
-				if (subType == MFVideoFormat_IYUV)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_IYUV\n");
-				if (subType == MFVideoFormat_NV11)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_NV11\n");
-				if (subType == MFVideoFormat_NV12)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_NV12\n");
-				if (subType == MFVideoFormat_RGB24)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB24\n");
-				if (subType == MFVideoFormat_RGB32)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB32\n");
-				if (subType == MFVideoFormat_RGB555)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB555\n");
-				if (subType == MFVideoFormat_RGB565)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB565\n");
-				if (subType == MFVideoFormat_RGB8)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_RGB8\n");
-
-				if (subType == MFVideoFormat_UYVY)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_UYVY\n");
-				if (subType == MFVideoFormat_v410)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_v410\n");
-				if (subType == MFVideoFormat_Y216)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_Y216\n");
-				if (subType == MFVideoFormat_Y41P)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_Y41P\n");
-				if (subType == MFVideoFormat_Y41T)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_Y41T\n");
-
-				if (subType == MFVideoFormat_Y42T)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_Y42T\n");
-				if (subType == MFVideoFormat_YVYU)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_YVYU\n");
-				if (subType == MFVideoFormat_YUY2)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_YUY2\n");
-				if (subType == MFVideoFormat_YV12)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_YV12\n");
-
-				if (subType == MFVideoFormat_AV1)
-					ATLTRACE(L"Source SupportedType: MFVideoFormat_AV1\n");
-			}
-			
-			/*UINT transformFlags = MFT_ENUM_FLAG_HARDWARE | MFT_ENUM_FLAG_LOCALMFT | MFT_ENUM_FLAG_SORTANDFILTER;
-			
-			HRESULT hr2 = CoCreateInstance(CLSID_VideoProcessorMFT, nullptr, CLSCTX_INPROC_SERVER, __uuidof(IMFTransform), (void**)&toRgba);
-			if (SUCCEEDED(hr2))
-			{
-				DWORD typeCount = 0;
-				assert(SUCCEEDED(typeHand->GetMediaTypeCount(&typeCount)));
-
-				bool found = false;
-
-				for (UINT Rust = 0; Rust < typeCount && !found; Rust++)
+				// Can only Take The  RGBA type so seek it out
+				GUID sourceTypeGuid = GUID_NULL;
+				assert(SUCCEEDED(sourceType->GetGUID(MF_MT_SUBTYPE, &sourceTypeGuid)));
+				TDataArray<MediaTopologyLink> topLinks = GetLink(sourceTypeGuid, MFVideoFormat_ARGB32);
+				if (topLinks.Size())
 				{
-					IMFMediaType* mType = nullptr;
-					assert(SUCCEEDED(typeHand->GetMediaTypeByIndex(Rust, &mType)));
-					hr2 = toRgba->SetInputType(0, mType, 0);
-					mType->Release();
-					if (FAILED(hr2))
-						continue;
-
-					for (UINT C = 0; SUCCEEDED(toRgba->GetOutputAvailableType(0, C, &mType)); C++)
-					{
-						GUID subType = GUID_NULL;
-						assert(SUCCEEDED(mType->GetGUID(MF_MT_SUBTYPE, &subType)));
-						mType->Release();
-						if (subType == MFVideoFormat_ARGB32)
-						{
-							found = true;
-							break;
-						}
-					}
+					ConvertTopologyLinkToTransforms(sourceType, topLinks, transforms);
+					break;
 				}
-
-				assert(found);
-
-				assert(SUCCEEDED(MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, &node)));
-				pTopology->AddNode(node);
-				node->SetObject(toRgba);
-
-				pSourceNode->ConnectOutput(0, node, 0);
-				hr = node->ConnectOutput(0, pOutputNode, 0);
-				assert(SUCCEEDED(hr));
 			}
-			else*/
-				hr = pSourceNode->ConnectOutput(0, pOutputNode, 0);
+
+			if (!transforms.Size())
+			{
+				hr = E_FAIL;
+				goto done;
+			}
+
+
+			TrecComPointer<IMFTopologyNode> lastNode;
+			TrecComPointer<IMFTopologyNode> firstNode;;
+			TrecComPointer<IMFTopologyNode>::TrecComHolder firstNodeHolder;
+
+			*(firstNodeHolder.GetPointerAddress()) = pSourceNode;
+			firstNode = firstNodeHolder.Extract();
+			firstNode->AddRef();
+
+			for (UINT Rust = 0; Rust < transforms.Size(); Rust++)
+			{
+				auto tTransforms = transforms[Rust];
+				assert(tTransforms.Get());
+				TrecComPointer<IMFTopologyNode>::TrecComHolder lastNodeHolder;
+				assert(SUCCEEDED(MFCreateTopologyNode(MF_TOPOLOGY_TRANSFORM_NODE, lastNodeHolder.GetPointerAddress())));
+				lastNode = lastNodeHolder.Extract();
+				assert(SUCCEEDED(lastNode->SetObject(lastNode.Get())));
+				assert(SUCCEEDED(firstNode->ConnectOutput(0, lastNode.Get(), 0)));
+				firstNode = lastNode;
+				pTopology->AddNode(lastNode.Get());
+			}
+
+
+
+
+			hr = lastNode->ConnectOutput(0, pOutputNode, 0);
 		}
 	}
 	// else: If not selected, don't add the branch. 
