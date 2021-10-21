@@ -564,6 +564,17 @@ public:
 
 protected:
 
+
+	/**
+	 * Method: TControl::SetUpTextElement
+	 * Purpose: Sets up Text Elements in case Some attributes support it
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: virtual - allows sub classes to create more complex Text Elements than what the standard TControl uses
+	 */
+	virtual void SetUpTextElement();
+
 	/**
 	 * Attributes for creation
 	 */
@@ -698,3 +709,29 @@ protected:
 	void OnCreateStyle(TDataMap<TString>& atts);
 };
 
+
+/**
+ * Function: convertStringToTextAlignment
+ * Purpose: Reads the String and returns whether the Text should be right, left, center, or justified
+ * Parameters: TString* t - the string to parse
+ * Returns: DWRITE_TEXT_ALIGNMENT - the Text position (Center if string is invalid)
+ */
+DWRITE_TEXT_ALIGNMENT convertStringToTextAlignment(const TString& t);
+
+/**
+ * Function: convertStringToParagraphAlignment
+ * Purpose: Reads the String and returns whether the Text should be top, bottom, or center
+ * Parameters: TString* t - the string to parse
+ * Returns: DWRITE_PARAGRAPH_ALIGNMENT - the text alignment (Center if string is invalid)
+ */
+DWRITE_PARAGRAPH_ALIGNMENT convertStringToParagraphAlignment(const TString& t);
+
+
+/**
+ * Function: isContained
+ * Purpose: Checks of a point is within a given Direct2D Rectangle
+ * Parameters: const TPoint& - the point to check
+ *				const D2D1_RECT_F& - the rectangle to check
+ * Returns: bool - whether the point is withing the bounds
+ */
+bool IsContained(const TPoint& p, const D2D1_ELLIPSE& e);

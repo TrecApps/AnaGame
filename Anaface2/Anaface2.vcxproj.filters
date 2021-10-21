@@ -51,6 +51,9 @@
     <ClInclude Include="TRadiobutton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TTextInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -84,6 +87,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TRadiobutton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TTextInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

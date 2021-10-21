@@ -544,7 +544,7 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 	}
 
 	OnCreateStyle(attributes);
-
+	this->SetUpTextElement();
 
 	if (attributes.retrieveEntry(TString(L"|FixedHeight"),valpoint))
 	{
@@ -1169,6 +1169,96 @@ void TControl::SetSize()
 	}
 }
 
+
+void TControl::SetUpTextElement()
+{
+	TextFormattingDetails details;
+
+	TString locale(L"en-us"), font(L"ariel");
+
+	TString actText;
+
+	DWRITE_TEXT_ALIGNMENT hAlign = DWRITE_TEXT_ALIGNMENT_CENTER;
+	DWRITE_PARAGRAPH_ALIGNMENT vAlign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER;
+
+	TString valpoint;
+
+	TColor fontColor;
+	if (attributes.retrieveEntry(TString(L"|Caption"), valpoint))
+	{
+		actText.Set(valpoint);
+	}
+
+	if (attributes.retrieveEntry(TString(L"|CaptionLocale"), valpoint))
+	{
+		locale.Set(valpoint);
+	}
+
+	if (attributes.retrieveEntry(TString(L"|Font"), valpoint))
+	{
+		font.Set(valpoint);
+	}
+	if (attributes.retrieveEntry(TString(L"|FontSize"), valpoint))
+	{
+		valpoint.ConvertToFloat(details.fontSize);
+	}
+	if (attributes.retrieveEntry(TString(L"|HorizontalAlignment"), valpoint))
+	{
+		hAlign = convertStringToTextAlignment(valpoint);
+	}
+	if (attributes.retrieveEntry(TString(L"|VerticalAlignment"), valpoint))
+	{
+		vAlign = convertStringToParagraphAlignment(valpoint);
+	}
+
+	if (attributes.retrieveEntry(TString(L"|FontColor"), valpoint))
+	{
+		bool b = false;
+		fontColor.SetColor(TColor::GetColorFromString(valpoint,b));
+	}
+	else
+		fontColor.SetColor(drawingBoard->GetDefaultTextColor());
+
+	// Commented out code (in case gradient colors should be added
+
+	//valpoint = att->retrieveEntry(TString(L"|TextGrad"));
+	//if (valpoint.Get())
+	//{
+	//	if (!text1.Get())
+	//		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
+	//	float entry = 0.0f;
+	//	valpoint->ConvertToFloat(entry);
+	//	//text1->secondColor = true;
+	//	UINT gradCount = 0;
+	//	if (gradCount = text1->stopCollection.GetGradientCount())
+	//		text1->stopCollection.SetPositionAt(entry, gradCount - 1);
+	//}
+
+
+	//valpoint = att->retrieveEntry(TString(L"|TextGradMode"));
+	//if (valpoint.Get())
+	//{
+	//	if (!text1.Get())
+	//		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
+	//	if (valpoint->Compare(L"Radial"))
+	//		text1->useRadial = true;
+	//}
+
+	// See if have text. If we do, then set up text element
+	if (actText.GetSize())
+	{
+		details.color = drawingBoard->GetBrush(fontColor);
+
+		text = TrecPointerKey::GetNewSelfTrecPointer<TTextElement>(drawingBoard);
+
+		text->SetLocation(location);
+		text->SetBasicFormatting(details);
+		text->SetHorizontallignment(hAlign);
+		text->SetVerticalAlignment(vAlign);
+		text->SetText(actText);
+	}
+}
+
 void TControl::OnCreateStyle(TDataMap<TString>& atts)
 {
 	TString valpoint;
@@ -1262,3 +1352,50 @@ void TControl::OnCreateStyle(TDataMap<TString>& atts)
 
 }
 
+/**
+ * Function: convertStringToTextAlignment
+ * Purpose: Reads the String and returns whether the Text should be right, left, center, or justified
+ * Parameters: TString* t - the string to parse
+ * Returns: DWRITE_TEXT_ALIGNMENT - the Text position (Center if string is invalid)
+ */
+DWRITE_TEXT_ALIGNMENT convertStringToTextAlignment(const TString& t)
+{
+
+	if (!t.CompareNoCase(L"left"))
+		return DWRITE_TEXT_ALIGNMENT_TRAILING;
+	if (!t.CompareNoCase(L"right"))
+		return DWRITE_TEXT_ALIGNMENT_LEADING;
+	if (!t.CompareNoCase(L"justified"))
+		return DWRITE_TEXT_ALIGNMENT_JUSTIFIED;
+	return DWRITE_TEXT_ALIGNMENT_CENTER;
+}
+
+
+/**
+ * Function: convertStringToParagraphAlignment
+ * Purpose: Reads the String and returns whether the Text should be top, bottom, or center
+ * Parameters: TString* t - the string to parse
+ * Returns: DWRITE_PARAGRAPH_ALIGNMENT - the text alignment (Center if string is invalid)
+ */
+DWRITE_PARAGRAPH_ALIGNMENT convertStringToParagraphAlignment(const TString& t)
+{
+	if (!t.Compare(L"Top"))
+		return DWRITE_PARAGRAPH_ALIGNMENT_NEAR;
+	if (!t.Compare(L"Bottom"))
+		return DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+	return DWRITE_PARAGRAPH_ALIGNMENT_CENTER;
+}
+
+
+/*
+ * Function: isContained
+ * Purpose: Checks of a point is within a given Direct2D Rectangle
+ * Parameters: const TPoint& - the point to check
+ *				const D2D1_RECT_F& - the rectangle to check
+ * Returns: bool - whether the point is withing the bounds
+ */
+bool IsContained(const TPoint& cp, const D2D1_ELLIPSE& el)
+{
+	return (pow((cp.x - el.point.x), 2) / pow(el.radiusX, 2)
+		+ pow((cp.y - el.point.y), 2) / pow(el.radiusY, 2)) <= 1;
+}
