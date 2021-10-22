@@ -298,6 +298,7 @@ class _ANAFACE_DLL2 TControl :
 {
 public:
 
+	void AddAttribute(const TString& att, const TString& value);
 
 	/**
 	 * Method: TControl::GetType

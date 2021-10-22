@@ -236,10 +236,10 @@ void TDataLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_output
 	}
 }
 
-void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
 {
 	bool isCurClick = this->isLeftClicked;
-	TControl::OnRButtonUp(nFlags, point, mOut, cred, args);
+	TControl::OnRButtonUp(nFlags, point, mOut, eventAr, args);
 
 	if (mOut == message_output::mo_negative)
 		return;
@@ -252,6 +252,13 @@ void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& 
 		if (GetIndex(point, r, c))
 		{
 			index = ConvertCoordinates(r, c);
+
+			if (isCurClick && dynamic_cast<TContainerVariable*>(var.Get()))
+			{
+				EventID_Cred cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+				cred.data = dynamic_cast<TContainerVariable*>(this->var.Get())->GetValueAt(index);
+				eventAr.push_back(cred);
+			}
 		}
 		args.at(args.Size() - 1).arrayLabel = index;
 	}

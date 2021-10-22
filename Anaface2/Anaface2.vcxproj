@@ -160,6 +160,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TCheckbox.h" />
+    <ClInclude Include="TCombobox.h" />
     <ClInclude Include="TControl.h" />
     <ClInclude Include="TDataLayout.h" />
     <ClInclude Include="TGadget.h" />
@@ -179,6 +180,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TCheckbox.cpp" />
+    <ClCompile Include="TCombobox.cpp" />
     <ClCompile Include="TControl.cpp" />
     <ClCompile Include="TDataLayout.cpp" />
     <ClCompile Include="TGadget.cpp" />

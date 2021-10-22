@@ -312,6 +312,7 @@ TPage::EventID_Cred::EventID_Cred(const EventID_Cred& copy)
 	this->eventType = copy.eventType;
 	this->scroll = copy.scroll;
 	this->textIntercepter = copy.textIntercepter;
+	this->data = copy.data;
 }
 
 TPage::EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TPage> c)

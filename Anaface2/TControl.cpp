@@ -393,6 +393,11 @@ void TControlComponent::ResetBrush()
 
 }
 
+void TControl::AddAttribute(const TString& att, const TString& value)
+{
+	this->attributes.addEntry(att, value);
+}
+
 
 /**
  * Method: TControl::GetType
