@@ -168,6 +168,7 @@
     <ClInclude Include="TLayout.h" />
     <ClInclude Include="TRadiobutton.h" />
     <ClInclude Include="TRandomLayout.h" />
+    <ClInclude Include="TTextCombobox.h" />
     <ClInclude Include="TTextInput.h" />
   </ItemGroup>
   <ItemGroup>
@@ -188,6 +189,7 @@
     <ClCompile Include="TLayout.cpp" />
     <ClCompile Include="TRadiobutton.cpp" />
     <ClCompile Include="TRandomLayout.cpp" />
+    <ClCompile Include="TTextCombobox.cpp" />
     <ClCompile Include="TTextInput.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -1327,6 +1327,23 @@ public:
 	}
 
 	/**
+	 * Method: static TrecPointerKey::GetSoftSubPointerFromSoft
+	 * Purpose: Retrieves a soft-sub pointer from a soft Pointer
+	 * Parameters:  TrecPointerSoft<T>& soft - the weak pointer with the counter
+	 * Returns: TrecSubPointerSoft<T, U> - a soft pointer that narrows down the type held
+	 */
+	template <class T, class U> TrecSubPointerSoft<T, U> GetSoftSubPointerFromSoft(TrecPointerSoft<T>& soft)
+	{
+		TrecSubPointerSoft<T, U> ret;
+		if (dynamic_cast<U*>(soft.Get()))
+		{
+			ret.pointer = soft.pointer;
+			ret.pointer->IncrementSoft();
+		}
+		return ret;
+	}
+
+	/**
 	 * Method: static TrecPointerKey::GetSoftPointerFromTrec
 	 * Purpose: Retrieves a Soft pointer from a regular TrecPointer
 	 * Parameters: TrecPointer<T>& trec -  the TrecPointer to get a Soft pointer from

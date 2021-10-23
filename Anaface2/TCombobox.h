@@ -13,13 +13,13 @@ class TCombobox :
 	friend class TComboBoxUpdater;
 public:
 	/**
- * Method: TGadget::TGadget
- * Purpose: Constructor
- * Parameters: TrecPointer<DrawingBoard> rt - the Render Target to use
- *				TrecPointer<TArray<styleTable>> ta - List of Styles for the TControl
- *				bool isGadgetBase - the gadget base
- * Return: new Gadget Control object
- */
+	 * Method: TGadget::TGadget
+	 * Purpose: Constructor
+	 * Parameters: TrecPointer<DrawingBoard> rt - the Render Target to use
+	 *				TrecPointer<TArray<styleTable>> ta - List of Styles for the TControl
+	 *				bool isGadgetBase - the gadget base
+	 * Return: new Gadget Control object
+	 */
 	TCombobox(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta);
 
 	/**
