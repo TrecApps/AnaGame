@@ -170,6 +170,7 @@
     <ClInclude Include="TRandomLayout.h" />
     <ClInclude Include="TTextCombobox.h" />
     <ClInclude Include="TTextInput.h" />
+    <ClInclude Include="TVideoPlayer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnafacePage.cpp" />
@@ -191,6 +192,7 @@
     <ClCompile Include="TRandomLayout.cpp" />
     <ClCompile Include="TTextCombobox.cpp" />
     <ClCompile Include="TTextInput.cpp" />
+    <ClCompile Include="TVideoPlayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
