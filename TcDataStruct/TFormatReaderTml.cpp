@@ -16,7 +16,7 @@ TString TFormatReaderTml::Read()
     TString lineStr;
     UINT line = 0;
 
-    variable = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+    variable = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TContainerVariable>(ContainerType::ct_multi_value);
     dynamic_cast<TContainerVariable*>(variable.Get())->SetValue(L"Format", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(L"TML"));
 
     TDataArray<TrecSubPointer<TVariable, TContainerVariable>> variableStack; // Allows us to keep track of variables
@@ -55,14 +55,11 @@ TString TFormatReaderTml::Read()
             {
                 dashCount++;
                 TrecSubPointer<TVariable, TContainerVariable> childVariable = 
-                    TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
-                currentVariable->SetValue(L"_children", TrecPointerKey::GetTrecPointerFromSub<>(childVariable));
-                variableStack.push_back(currentVariable);
+                    TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_multi_value);
+                currentVariable->SetValue(name, TrecPointerKey::GetTrecPointerFromSub<>(childVariable));
                 variableStack.push_back(childVariable);
 
-                currentVariable = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
-                currentVariable->SetValue(L"_title", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TString>(name));
-                childVariable->AppendValue(TrecPointerKey::GetTrecPointerFromSub<>(currentVariable));
+                currentVariable = childVariable;
                 continue;
             }
             else if (dashes < dashCount)
@@ -70,14 +67,13 @@ TString TFormatReaderTml::Read()
                 while (dashes < dashCount--)
                 {
                     UINT curStackSize = variableStack.Size();
-                    if (curStackSize < 2)
+                    if (curStackSize < 1)
                     {
                         TString ret;
                         ret.Format(L"Internal Error Detected on line %d!", line);
                         return ret;
                     }
                     variableStack.RemoveAt(curStackSize - 1);
-                    variableStack.RemoveAt(curStackSize - 2);
                 }
 
                 if (variableStack.Size())
