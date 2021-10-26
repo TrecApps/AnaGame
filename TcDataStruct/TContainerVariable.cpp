@@ -30,6 +30,20 @@ TrecPointer<TVariable> TContainerVariable::Clone()
     return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
 }
 
+bool TContainerVariable::SupportMultiValue()
+{
+    return type == ContainerType::ct_multi_value;
+}
+
+TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, UINT occurance, bool& present)
+{
+    ThreadLock();
+    auto ret = values.retrieveEntry(key, occurance);
+    present = ret.Get() != nullptr;
+    ThreadRelease();
+    return ret;
+}
+
 /**
  * Method: TContainerVariable::Clear
  * Purpose: Empties the container
@@ -143,11 +157,7 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
  */
 TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present)
 {
-    ThreadLock();
-    auto ret = values.retrieveEntry(key);
-    present = ret.Get() != nullptr;
-    ThreadRelease();
-    return ret;
+    return GetValue(key, 0, present);
     
 }
 
@@ -256,7 +266,9 @@ bool TContainerVariable::SetValue(const TString& key, TrecPointer<TVariable> val
     }
     TString sKey(key);
 
-    values.removeEntry(sKey);
+    // If multi-value is not set, remove existing occurance
+    if(type != ContainerType::ct_multi_value)
+        values.removeEntry(sKey);
     values.addEntry(key, value);
     ThreadRelease();
     return true;
