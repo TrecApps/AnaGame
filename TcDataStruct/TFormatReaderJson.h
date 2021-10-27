@@ -68,5 +68,13 @@ protected:
      * Returns: new Reader object
      */
     TFormatReaderJson(TrecPointer<TFileShell> file);
+
+    TrecPointer<TVariable> ProcessArray(TString& worked);
+
+    TrecPointer<TVariable> ProcessObject(TString& worked);
+
+    bool ProcessName(TString& name);
+
+    TrecPointer<TVariable> ProccessValue(const TString& v, bool& worked);
 };
 

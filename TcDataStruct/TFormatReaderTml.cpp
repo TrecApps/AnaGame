@@ -2,8 +2,10 @@
 #include "TContainerVariable.h"
 #include "TStringVariable.h"
 
-TrecPointer<TFormatReader> TFormatReaderTml::TFormatReaderBuilderTml::GetReader(TrecPointer<TFileShell>)
+TrecPointer<TFormatReader> TFormatReaderTml::TFormatReaderBuilderTml::GetReader(TrecPointer<TFileShell> file)
 {
+    if (file.Get() && file->GetName().EndsWith(L".tml", true))
+        return TrecPointerKey::GetNewTrecPointerAlt<TFormatReader, TFormatReaderTml>(file);
     return TrecPointer<TFormatReader>();
 }
 

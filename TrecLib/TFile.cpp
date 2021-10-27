@@ -449,7 +449,7 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
  * Flags variable values:
  *		0b00000001 - TFile::include_end - include the terminating character in the return String
  *      0b00000010 - TFile::out_of_quotes - makesure that when we do find the characters, they are outside of quotes
- *      0booooo100 - TFile::watch_backslash - factor backslashes in handling the other flags
+ *      0b00000100 - TFile::watch_backslash - factor backslashes in handling the other flags
  */
 UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags, UINT max)
 {
