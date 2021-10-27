@@ -37,8 +37,9 @@ typedef enum class R_Message_Type
 	On_Select_Scroller,// A Scroll bar is involved
 	On_Flyout,         // A control is to appear in a flyout
 	On_LDoubleClick,    // Double Click detected
-	On_Scrolled,			// Control was scrolled
-	On_Resized
+	On_Scrolled,		// Control was scrolled
+	On_Resized,
+	On_SubmitDrag		// Added to Event-Cred when a Page is being dragged around
 }R_Message_Type;
 
 /**

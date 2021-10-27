@@ -159,6 +159,7 @@
     <ClInclude Include="AnafacePage.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TabBar.h" />
     <ClInclude Include="TArenaView.h" />
     <ClInclude Include="TCheckbox.h" />
     <ClInclude Include="TCombobox.h" />
@@ -182,6 +183,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TabBar.cpp" />
     <ClCompile Include="TArenaView.cpp" />
     <ClCompile Include="TCheckbox.cpp" />
     <ClCompile Include="TCombobox.cpp" />
