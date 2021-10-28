@@ -234,6 +234,11 @@ public:
 
 protected:
 
+	/**
+	 * Brushes for painting the exit button
+	 */
+	TrecSubPointer<TBrush, TBitmapBrush> exitReg, exitHover;
+
 
 	typedef enum class tab_mode
 	{
@@ -290,8 +295,20 @@ protected:
 
 	void InjectTabAt(TrecPointer<TPage> page, UINT index);
 
+	/**
+	 * Allow tabs to be exited out
+	 */
+	bool exitSupport;
 
 public:
+	/**
+	 * Method: TabBar::SetConfigure
+	 * Purpose: Allows holders to configure the settings
+	 * Parameters: bool makeDraggable - whether the tabs can be dragged around
+	 *				bool doExit - whether tabs have an exit button
+	 * Returns: void
+	 */
+	void SetConfigure(bool makeDraggable = true, bool doExit = true);
 
 	/**
 	 * Method: TabBar::InjectTabAt

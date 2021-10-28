@@ -1,4 +1,5 @@
 #include "TabBar.h"
+#include <DirectoryInterface.h>
 
 void TabBar::Tab::SetBrush(TrecPointer<TBrush> brush, bool doIcon)
 {
@@ -166,6 +167,13 @@ TabBar::TabBar(TrecPointer<DrawingBoard> board): TPage(board), leftTab(board), r
     tabMode = tab_mode::tm_not_set;
 
     unknownCount = 0;
+
+    SetConfigure();
+
+    TString direct = GetDirectoryWithSlash(CentralDirectories::cd_Executable);
+    D2D1_RECT_F loc{0, 0, 20, 20};
+    exitReg = drawingBoard->GetBrush(TFileShell::GetFileInfo(direct + L"Resources\\DefaultImages\\RegularX.png"), loc);
+    exitHover = drawingBoard->GetBrush(TFileShell::GetFileInfo(direct + L"Resources\\DefaultImages\\HoverX.png"), loc);
 }
 
 bool TabBar::HandlesEvents()
@@ -224,6 +232,12 @@ bool TabBar::RemoveTab(TrecPointer<TPage> page)
     return false;
 }
 
+void TabBar::SetConfigure(bool makeDraggable, bool doExit)
+{
+    this->draggableTabs = makeDraggable;
+    this->exitSupport = doExit;
+}
+
 TrecPointer<TPage> TabBar::AddNewTab(const TString& name, TrecPointer<TPage> page, bool exit)
 {
     assert(page.Get());
@@ -260,6 +274,11 @@ TrecPointer<TPage> TabBar::AddNewTab(const TString& name, TrecPointer<TPage> pag
     textEle->SetText(newName);
 
     dynamic_cast<Tab*>(newTab.Get())->text = textEle;
+
+    if (exit)
+    {
+        dynamic_cast<Tab*>(newTab.Get())->exit = TrecPointerKey::GetTrecPointerFromSub<>(exitReg);
+    }
 
     tabs.push_back(newTab);
     SetTabSizes();
@@ -383,6 +402,13 @@ void TabBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataA
     {
         EventID_Cred credObj(R_Message_Type::On_SubmitDrag, currentTab);
         cred.push_back(credObj);
+    }
+
+    for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+    {
+        if (dynamic_cast<Tab*>(tabs[Rust].Get())->exit.Get())
+            dynamic_cast<Tab*>(tabs[Rust].Get())->exit = IsContained(point, dynamic_cast<Tab*>(tabs[Rust].Get())->xArea) ?
+            TrecPointerKey::GetTrecPointerFromSub<>(exitHover) : TrecPointerKey::GetTrecPointerFromSub<>(exitReg);
     }
 
 }
