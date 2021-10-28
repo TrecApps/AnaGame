@@ -127,7 +127,7 @@ TrecPointer<TVariable> TFormatReaderHtml::ProcessObject(TString& worked, TString
 				meta->SetValue(readable, htmlTrue);
 			}
 
-			file.ReadString(readable, L"=/>", 1);
+			file.ReadString(readable, L"=/>",0b00000111);
 			readable.Trim();
 
 			if (readable.EndsWith(L'='))
