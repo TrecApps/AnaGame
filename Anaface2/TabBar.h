@@ -17,6 +17,7 @@ public:
      */
     class TabBarHolder
     {
+	public:
         /**
          * Method: TabBarHolder::SetView
          * Purpose: Called by TabBar when a new Tab is selected
@@ -27,6 +28,16 @@ public:
          * Attributes: abstract
          */
         virtual void SetView(TrecPointer<TPage> page, bool onNew = false) = 0;
+
+		/**
+		 * Method: TabBarHolder::RemoveView
+		 * Purpose: Called by TabBar when a tab Requests to be deleted
+		 * Parameters: TrecPointer<TPage> page - the content to remove
+		 * Returns: void
+		 *
+		 * Attributes: abstract
+		 */
+		virtual void RemoveView(TrecPointer<TPage> page) = 0;
     };
 
 	/**
@@ -51,6 +62,11 @@ public:
 		 * Images to present (color will present a color under any text or other image, image will move text off to side, exit will present an 'X' option to close the tab
 		 */
 		TrecPointer<TBrush> color, image, exit;
+
+		/**
+		 * the sub Rectangles
+		 */
+		D2D1_RECT_F iArea, tArea, xArea;
 
 		/**
 		 * The Content to hold
@@ -218,6 +234,26 @@ public:
 
 protected:
 
+
+	typedef enum class tab_mode
+	{
+		tm_not_set,
+		tm_regular,
+		tm_left,
+		tm_right,
+		tm_exit
+	};
+
+	UINT unknownCount;
+
+	tab_mode tabMode;
+
+	/**
+	 * The currently selected tab having been clicked
+	 */
+	TrecPointer<TPage> currentTab;
+
+
     TrecPointer<TabBarHolder> holder;
 	/**
 	 * The first tab shown in the bar
@@ -226,7 +262,7 @@ protected:
 	/**
 	 * List of tabs
 	 */
-	TDataArray<TrecPointer<Tab>> tabs;
+	TDataArray<TrecPointer<TPage>> tabs;
 
 	/**
 	 * Special Tabs used for scrolling
@@ -246,7 +282,47 @@ protected:
 	 */
 	bool draggableTabs;
 
+	/**
+	 * Whether the tabs are overfowing the bar
+	 */
+	bool tabOverflow;
+
+
+	void InjectTabAt(TrecPointer<TPage> page, UINT index);
+
+
 public:
+
+	/**
+	 * Method: TabBar::InjectTabAt
+	 * Purpose: Adds a Tab via point
+	 * Parameters: const TPoint& point - the point to add
+	 *			TrecPointer<TPage> page - the tab to add (will assert that object is a tab)
+	 * Returns: bool - whether the tab was added or not
+	 */
+	bool InjectTabAt(const TPoint& point, TrecPointer<TPage> page);
+
+
+	/**
+	 * Method: TabBar::RemoveTab
+	 * Purpose: Adds a Tab via point
+	 * Parameters: TrecPointer<TPage> page - the tab to add (will assert that object is a tab)
+	 * Returns: bool - whether the tab was removed or not
+	 */
+	bool RemoveTab(TrecPointer<TPage> page);
+
+
+	/**
+	 * Method: TabBar::InjectTabAt
+	 * Purpose: Adds a Tab via point
+	 * Parameters: const TString& name - the name to call it (ignored if page param is a tab)
+	 *			TrecPointer<TPage> page - the tab to add (will assert that object is not null)
+	 *			bool exit - whether the exit should be enabled or not (ignored on actul tabs)
+	 * Returns: TrecPointer<TPage> - the tab that was added
+	 */
+	TrecPointer<TPage> AddNewTab(const TString& name, TrecPointer<TPage> page, bool exit);
+
+
 	/**
 	 * Method: TabBar::TabBar
 	 * Purpose: Constructor

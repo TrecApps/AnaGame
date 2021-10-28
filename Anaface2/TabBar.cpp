@@ -2,10 +2,15 @@
 
 void TabBar::Tab::SetBrush(TrecPointer<TBrush> brush, bool doIcon)
 {
+    if (doIcon)
+        this->image = brush;
+    else
+        this->color = brush;
 }
 
 TabBar::Tab::Tab(TrecPointer<DrawingBoard> board): TPage(board)
 {
+    iArea = tArea = xArea = { 0,0,0,0 };
 }
 
 bool TabBar::Tab::HandlesEvents()
@@ -15,6 +20,16 @@ bool TabBar::Tab::HandlesEvents()
 
 void TabBar::Tab::Draw(TrecPointer<TVariable> object)
 {
+    if (color.Get())
+        color->FillRectangle(area);
+    if (image.Get())
+        image->FillRectangle(iArea);
+   
+
+    if (text.Get())
+        text->OnDraw(object);
+    if (exit.Get())
+        exit->FillRectangle(xArea);
 }
 
 void TabBar::Tab::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
@@ -43,6 +58,50 @@ void TabBar::Tab::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOu
 
 void TabBar::Tab::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&)
 {
+    area = newLoc;
+    iArea = tArea = xArea = { 0,0,0,0 };
+    if (image.Get())
+    {
+        iArea = area;
+        iArea.right = iArea.left + (iArea.bottom - iArea.top);
+    }
+
+    if (text.Get())
+    {
+        bool w;
+        float f = text->GetMinWidth(w);
+        assert(w);
+        tArea = area;
+        if (iArea.right)
+            tArea.left = iArea.right;
+
+        tArea.right = f + 10 + tArea.left;
+
+        text->SetLocation(tArea);
+    }
+
+    if (exit.Get())
+    {
+        xArea = area;
+        float xSize = min(20, (xArea.bottom- xArea.top));
+
+        float vBuffer = ((xArea.bottom - xArea.top) - xSize) / 2;
+
+        xArea.left = tArea.right ? tArea.right : area.left;
+        xArea.right = xArea.left + xSize;
+        xArea.bottom -= vBuffer;
+        xArea.top += vBuffer;
+    }
+
+    if ((area.right < (xArea.right + 10)) || (area.right < tArea.right))
+        area = { 0,0,0,0 };
+    else
+    {
+        if (xArea.right)
+            area.right = xArea.right + 10;
+        else if (tArea.right)
+            area.right = tArea.right;
+    }
 }
 
 bool TabBar::Tab::OnDestroy()
@@ -57,12 +116,56 @@ bool TabBar::Tab::OnScroll(bool fromBars, const TPoint& point, const TPoint& dir
 
 void TabBar::SetTabSizes()
 {
+    auto tempArea = area;
+    // Assume no ovrflow occured
+
+    TDataArray<EventID_Cred> cred;
+    TDataArray<EventArgs> args;
+
+    tabOverflow = false;
+
+    for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+    {
+        tabs[Rust]->OnResize(tempArea, 0, cred, args);
+        tempArea.left = tabs[Rust]->GetArea().right;
+
+        if (!tempArea.left)
+            break;
+    }
+
+    if (tempArea.left)
+    {
+        startTab = 0;
+        return;
+    }
+    tabOverflow = true;
+
+    tempArea = area;
+    leftTab.OnResize(tempArea, 0, cred, args);
+    tempArea.left = leftTab.GetArea().right;
+    
+    rightTab.OnResize(tempArea, 0, cred, args);
+    tempArea.left = rightTab.GetArea().right;
+
+
+    for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
+    {
+        tabs[Rust]->OnResize(tempArea, 0, cred, args);
+        tempArea.left = tabs[Rust]->GetArea().right;
+
+        if (!tempArea.left)
+            break;
+    }
 }
 
 TabBar::TabBar(TrecPointer<DrawingBoard> board): TPage(board), leftTab(board), rightTab(board)
 {
-    draggableTabs = false;
+    draggableTabs = tabOverflow = false;
     startTab = 0;
+
+    tabMode = tab_mode::tm_not_set;
+
+    unknownCount = 0;
 }
 
 bool TabBar::HandlesEvents()
@@ -70,8 +173,127 @@ bool TabBar::HandlesEvents()
     return false;
 }
 
+void TabBar::InjectTabAt(TrecPointer<TPage> page, UINT index)
+{
+    assert(dynamic_cast<Tab*>(page.Get()));
+
+    for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+    {
+        if (tabs[Rust].Get() == page.Get())
+        {
+            if (Rust < index)
+                index--;
+            tabs.RemoveAt(Rust);
+            break;
+        }
+    }
+    tabs.InsertAt(page, index);
+    if (holder.Get()) holder->SetView(dynamic_cast<Tab*>(page.Get())->content);
+    SetTabSizes();
+}
+
 void TabBar::Draw(TrecPointer<TVariable> object)
 {
+    if (tabOverflow)
+    {
+        leftTab.Draw(object);
+        rightTab.Draw(object);
+    }
+    for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
+    {
+        if (!tabs[Rust]->GetArea().right)
+            break;
+        tabs[Rust]->Draw(object);
+    }
+}
+
+bool TabBar::RemoveTab(TrecPointer<TPage> page)
+{
+    if(!page.Get())
+        return false;
+
+    for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+    {
+        if (tabs[Rust].Get() == page.Get())
+        {
+            tabs.RemoveAt(Rust);
+            SetTabSizes();
+            return true;
+        }
+    }
+    return false;
+}
+
+TrecPointer<TPage> TabBar::AddNewTab(const TString& name, TrecPointer<TPage> page, bool exit)
+{
+    assert(page.Get());
+
+    if (dynamic_cast<Tab*>(page.Get()))
+    {
+        bool found = false;
+        for (UINT Rust = 0; !found && Rust < tabs.Size(); Rust++)
+        {
+            if (tabs[Rust].Get() == page.Get())
+            {
+                found = true;
+            }
+        }
+
+        if (!found)
+        {
+            tabs.push_back(page);
+            SetTabSizes();
+            return page;
+        }
+        return TrecPointer<TPage>();
+    }
+
+    TrecPointer<TTextElement> textEle = TrecPointerKey::GetNewTrecPointer<TTextElement>(drawingBoard);
+
+    TrecPointer<TPage> newTab = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, Tab>(drawingBoard);
+    
+    TString newName(name);
+
+    if (!newName.GetSize())
+        newName.Format(L"Unknown%d", unknownCount++);
+
+    textEle->SetText(newName);
+
+    dynamic_cast<Tab*>(newTab.Get())->text = textEle;
+
+    tabs.push_back(newTab);
+    SetTabSizes();
+    return newTab;
+
+}
+
+bool TabBar::InjectTabAt(const TPoint& point, TrecPointer<TPage> page)
+{
+    assert(dynamic_cast<Tab*>(page.Get()));
+    if(!IsContained(point, area))
+        return false;
+
+    if (tabOverflow && (IsContained(point, leftTab.area) || IsContained(point, rightTab.area)))
+        return false;
+
+    for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
+    {
+        auto cArea = dynamic_cast<Tab*>(tabs[Rust].Get())->area;
+        auto halfWidth = ((cArea.right - cArea.left) / 2);
+        cArea.right = cArea.left + halfWidth;
+        if (IsContained(point, cArea))
+        {
+            InjectTabAt(page, Rust);
+            break;
+        }
+        cArea.left += halfWidth;
+        cArea.right += halfWidth;
+        if (IsContained(point, cArea))
+        {
+            InjectTabAt(page, Rust + 1);
+            break;
+        }
+    }
 }
 
 void TabBar::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
@@ -84,14 +306,85 @@ void TabBar::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOu
 
 void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
 {
+    if (tabMode == tab_mode::tm_exit)
+    {
+        if (currentTab.Get() && IsContained(point, dynamic_cast<Tab*>(currentTab.Get())->xArea))
+        {
+            for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+            {
+                if (currentTab.Get() == tabs[Rust].Get())
+                {
+                    tabs.RemoveAt(Rust);
+                    if (holder.Get()) holder->RemoveView(currentTab);
+                    break;
+                }
+            }
+        }
+    }
+    else if (tabMode == tab_mode::tm_regular && currentTab.Get())
+    {
+        if (IsContained(point, dynamic_cast<Tab*>(currentTab.Get())->area))
+        {
+            if (this->holder.Get())
+                holder->SetView(dynamic_cast<Tab*>(currentTab.Get())->content);
+        }
+        else if (currentTab.Get() && draggableTabs)
+        {
+            InjectTabAt(point, currentTab);
+        }
+    }
+    else if (tabMode == tab_mode::tm_left)
+    {
+        if (startTab && IsContained(point, leftTab.area))
+            startTab--;
+    }
+    else if (tabMode == tab_mode::tm_right)
+    {
+        if (IsContained(point, rightTab.area))
+            startTab++;
+    }
+
+    currentTab.Nullify();
+    tabMode = tab_mode::tm_not_set;
 }
 
 void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
 {
+    tabMode = tab_mode::tm_not_set;
+
+    if (IsContained(point, area))
+        return;
+
+    if (tabOverflow)
+    {
+        if (IsContained(point, leftTab.area))
+            tabMode = tab_mode::tm_left;
+        else if (IsContained(point, rightTab.area))
+            tabMode = tab_mode::tm_right;
+
+        if (tabMode != tab_mode::tm_not_set)
+            return;
+    }
+
+    for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
+    {
+        if (IsContained(point, dynamic_cast<Tab*>(tabs[Rust].Get())->area))
+        {
+            tabMode = IsContained(point, dynamic_cast<Tab*>(tabs[Rust].Get())->xArea) ? tab_mode::tm_exit : tab_mode::tm_regular;
+            currentTab = tabs[Rust];
+            break;
+        }
+    }
 }
 
-void TabBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>&)
 {
+    if (currentTab.Get() && !IsContained(point, area) && draggableTabs)
+    {
+        EventID_Cred credObj(R_Message_Type::On_SubmitDrag, currentTab);
+        cred.push_back(credObj);
+    }
+
 }
 
 void TabBar::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&)
@@ -100,6 +393,8 @@ void TabBar::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TD
 
 void TabBar::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&)
 {
+    this->area = newLoc;
+    SetTabSizes();
 }
 
 bool TabBar::OnDestroy()
@@ -109,5 +404,12 @@ bool TabBar::OnDestroy()
 
 bool TabBar::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&)
 {
-    return false;
+    area.bottom += direction.y;
+    area.right += direction.x;
+    area.left += direction.x;
+    area.top += direction.y;
+    
+    SetTabSizes();
+
+    return true;
 }
