@@ -5,7 +5,7 @@ TString TFormatReaderXml::Read()
 {
 	file.Open(fileShell->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
 	if (!file.IsOpen())
-		return L"Failed to Open TML file!";
+		return L"Failed to Open XML file!";
 
 	TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_multi_value);
 	TString readable;
@@ -26,7 +26,7 @@ TString TFormatReaderXml::Read()
 
 TrecPointer<TVariable> TFormatReaderXml::GetData()
 {
-	return TrecPointer<TVariable>();
+	return variable;
 }
 
 TFormatReaderXml::TFormatReaderXml(TrecPointer<TFileShell> file)
