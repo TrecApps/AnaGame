@@ -244,6 +244,9 @@ TrecPointer<TPage> TabBar::AddNewTab(const TString& name, TrecPointer<TPage> pag
 
     if (dynamic_cast<Tab*>(page.Get()))
     {
+        if(!draggableTabs)
+            return TrecPointer<TPage>();
+
         bool found = false;
         for (UINT Rust = 0; !found && Rust < tabs.Size(); Rust++)
         {
@@ -288,6 +291,8 @@ TrecPointer<TPage> TabBar::AddNewTab(const TString& name, TrecPointer<TPage> pag
 
 bool TabBar::InjectTabAt(const TPoint& point, TrecPointer<TPage> page)
 {
+    if (!draggableTabs)
+        return false;
     assert(dynamic_cast<Tab*>(page.Get()));
     if(!IsContained(point, area))
         return false;
