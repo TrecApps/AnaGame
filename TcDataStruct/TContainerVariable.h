@@ -13,7 +13,8 @@ typedef enum class ContainerType
     ct_set,         // unindex, anytype
     ct_array,       // indexed, same type
     ct_tuple,        // immutable, indexed
-    ct_multi_value  // mapped, index, any type, but allows for multiple types of the same key
+    ct_multi_value,  // mapped, index, any type, but allows for multiple types of the same key
+    ct_properties   // Adds support for property mamagement
 } ContainerType;
 
 

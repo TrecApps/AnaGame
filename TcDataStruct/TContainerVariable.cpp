@@ -157,7 +157,24 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
  */
 TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present)
 {
-    return GetValue(key, 0, present);
+    if (this->type == ContainerType::ct_properties && key.Find(L'.') == -1)
+    {
+        TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_properties);
+        for (UINT Rust = 0; Rust < values.count(); Rust++)
+        {
+            auto ent = values.GetEntryAt(Rust);
+            if (!ent.Get())
+                continue;
+            auto pieces = ent->key.splitn(L'.', 2);
+
+            if (key.Compare(pieces->at(0)))continue;
+
+            ret->SetValue(pieces->Size() > 1 ? pieces->at(1) : L"", ent->object);
+        }
+        return TrecPointerKey::GetTrecPointerFromSub<>(ret);
+    }
+    else
+        return GetValue(key, 0, present);
     
 }
 
@@ -269,6 +286,17 @@ bool TContainerVariable::SetValue(const TString& key, TrecPointer<TVariable> val
     // If multi-value is not set, remove existing occurance
     if(type != ContainerType::ct_multi_value)
         values.removeEntry(sKey);
+
+    // Normalize the dividers between properties
+    if (type == ContainerType::ct_properties)
+    {
+        sKey.Replace(L':', L'.');
+        sKey.Replace(L'/', L'.');
+        sKey.Replace(L'\\', L'.');
+        sKey.Replace(L',', L'.');
+        while (sKey.Replace(L"..", L"."));
+    }
+
     values.addEntry(key, value);
     ThreadRelease();
     return true;
