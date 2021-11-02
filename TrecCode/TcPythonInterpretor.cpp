@@ -92,6 +92,24 @@ ReturnObject TcPythonInterpretor::Run()
     }
 
     bool ifDone = false;
+
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    {
+        switch (statements[Rust]->statementType) {
+        case code_statement_type::cst_if:
+            ProcessIf(Rust, ret);
+            break;
+        case code_statement_type::cst_else:
+        case code_statement_type::cst_else_if:
+            // Set up error
+            break;
+        case code_statement_type::cst_while:
+            ProcessWhile(Rust, ret);
+            break;
+        case code_statement_type::cst_for:
+            ProcessFor(Rust, ret);
+        }
+    }
 }
 
 void TcPythonInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
@@ -145,7 +163,116 @@ void TcPythonInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>&
 
 void TcPythonInterpretor::PreProcess(ReturnObject& ret)
 {
+    PythonPreProcess(statements, false, ret);
+    if (!ret.returnCode)
+        preProcessed = true;
 }
+
+void PythonPreProcess(TDataArray<TrecPointer<CodeStatement>>& statements, bool indentationExpected, ReturnObject& ret)
+{
+    if (!statements.Size())
+    {
+        ret.returnCode = ret.ERR_BROKEN_REF;
+        ret.errorMessage.Set(indentationExpected ? L"IndentationError: expected an indented block" : L"No Code in File");
+        return;
+    }
+
+    for (UINT Rust = 0; Rust < statements.Size() && !ret.returnCode; Rust++)
+    {
+        PythonPreProcess(statements[Rust], ret);
+    }
+}
+
+void PythonPreProcess(TrecPointer<CodeStatement>& statement, ReturnObject& ret)
+{
+    if (!statement.Get())
+    {
+        ret.returnCode = ret.ERR_BROKEN_REF;
+        return;
+    }
+    UINT deleteCount = 0;
+
+    if (statement->statement.StartsWith(L"if", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 2;
+        statement->statementType = code_statement_type::cst_if;
+    }
+    else if (statement->statement.StartsWith(L"elif", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 4;
+        statement->statementType = code_statement_type::cst_else_if;
+    }
+    else if (statement->statement.StartsWith(L"else", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 4;
+        statement->statementType = code_statement_type::cst_else;
+    }
+    else if (statement->statement.StartsWith(L"while", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 5;
+        statement->statementType = code_statement_type::cst_while;
+    }
+    else if (statement->statement.StartsWith(L"for", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 3;
+        statement->statementType = code_statement_type::cst_for;
+    }
+    else if (statement->statement.StartsWith(L"def", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 3;
+        statement->statementType = code_statement_type::cst_function;
+    }
+    else if (statement->statement.StartsWith(L"class", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 5;
+        statement->statementType = code_statement_type::cst_class;
+    }
+    else if (statement->statement.StartsWith(L"del", false, true))
+    {
+        deleteCount = 3;
+        statement->statementType = code_statement_type::cst_delete;
+    }
+    else if (statement->statement.StartsWith(L"try", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 3;
+        statement->statementType = code_statement_type::cst_try;
+    }
+    else if (statement->statement.StartsWith(L"except", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 6;
+        statement->statementType = code_statement_type::cst_catch;
+    }
+    else if (statement->statement.StartsWith(L"finally", false, true))
+    {
+        PythonPreProcess(statement->block, true, ret);
+        deleteCount = 7;
+        statement->statementType = code_statement_type::cst_finally;
+    }
+    else if (statement->statement.StartsWith(L"", false, true))
+    {
+
+    }
+    else if (statement->statement.StartsWith(L"", false, true))
+    {
+
+    }
+
+    if (!ret.returnCode && deleteCount)
+    {
+        statement->statement.Delete(0, deleteCount);
+        statement->statement.Trim();
+    }
+}
+
 
 void TcPythonInterpretor::ProcessIndividualStatement(const TString& statement, ReturnObject& ret)
 {
@@ -153,4 +280,16 @@ void TcPythonInterpretor::ProcessIndividualStatement(const TString& statement, R
     state->statement.Set(statement);
 
     //ProcessExpression(state, ret, 0);
+}
+
+void TcPythonInterpretor::ProcessIf(UINT& index, ReturnObject& ret)
+{
+}
+
+void TcPythonInterpretor::ProcessWhile(UINT index, ReturnObject& ret)
+{
+}
+
+void TcPythonInterpretor::ProcessFor(UINT index, ReturnObject& ret)
+{
 }

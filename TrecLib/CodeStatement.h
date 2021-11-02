@@ -70,6 +70,7 @@ typedef enum class code_statement_type
     cst_class,          // Class declaraion
     cst_union,          // Union declaration
     cst_enum,           // enum declaration
+    cst_delete,         // Delete statements
 
     // Other statement types
 

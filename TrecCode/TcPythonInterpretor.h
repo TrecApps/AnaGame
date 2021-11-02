@@ -89,6 +89,9 @@ public:
 
 protected:
 
+    void ProcessIf(UINT& index, ReturnObject& ret);
+    void ProcessWhile(UINT index, ReturnObject& ret);
+    void ProcessFor(UINT index, ReturnObject& ret);
 
     /**
      * List of statements generated
