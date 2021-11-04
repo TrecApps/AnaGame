@@ -168,7 +168,7 @@ void TcPythonInterpretor::PreProcess(ReturnObject& ret)
         preProcessed = true;
 }
 
-void PythonPreProcess(TDataArray<TrecPointer<CodeStatement>>& statements, bool indentationExpected, ReturnObject& ret)
+void TcPythonInterpretor::PythonPreProcess(TDataArray<TrecPointer<CodeStatement>>& statements, bool indentationExpected, ReturnObject& ret)
 {
     if (!statements.Size())
     {
@@ -183,7 +183,7 @@ void PythonPreProcess(TDataArray<TrecPointer<CodeStatement>>& statements, bool i
     }
 }
 
-void PythonPreProcess(TrecPointer<CodeStatement>& statement, ReturnObject& ret)
+void TcPythonInterpretor::PythonPreProcess(TrecPointer<CodeStatement>& statement, ReturnObject& ret)
 {
     if (!statement.Get())
     {
@@ -197,36 +197,42 @@ void PythonPreProcess(TrecPointer<CodeStatement>& statement, ReturnObject& ret)
         PythonPreProcess(statement->block, true, ret);
         deleteCount = 2;
         statement->statementType = code_statement_type::cst_if;
+        PrepSubInterpretor(statement);
     }
     else if (statement->statement.StartsWith(L"elif", false, true))
     {
         PythonPreProcess(statement->block, true, ret);
         deleteCount = 4;
         statement->statementType = code_statement_type::cst_else_if;
+        PrepSubInterpretor(statement);
     }
     else if (statement->statement.StartsWith(L"else", false, true))
     {
         PythonPreProcess(statement->block, true, ret);
         deleteCount = 4;
         statement->statementType = code_statement_type::cst_else;
+        PrepSubInterpretor(statement);
     }
     else if (statement->statement.StartsWith(L"while", false, true))
     {
         PythonPreProcess(statement->block, true, ret);
         deleteCount = 5;
         statement->statementType = code_statement_type::cst_while;
+        PrepSubInterpretor(statement);
     }
     else if (statement->statement.StartsWith(L"for", false, true))
     {
         PythonPreProcess(statement->block, true, ret);
         deleteCount = 3;
         statement->statementType = code_statement_type::cst_for;
+        PrepSubInterpretor(statement);
     }
     else if (statement->statement.StartsWith(L"def", false, true))
     {
         PythonPreProcess(statement->block, true, ret);
         deleteCount = 3;
         statement->statementType = code_statement_type::cst_function;
+        PrepSubInterpretor(statement);
     }
     else if (statement->statement.StartsWith(L"class", false, true))
     {
@@ -244,18 +250,21 @@ void PythonPreProcess(TrecPointer<CodeStatement>& statement, ReturnObject& ret)
         PythonPreProcess(statement->block, true, ret);
         deleteCount = 3;
         statement->statementType = code_statement_type::cst_try;
+        PrepSubInterpretor(statement);
     }
     else if (statement->statement.StartsWith(L"except", false, true))
     {
         PythonPreProcess(statement->block, true, ret);
         deleteCount = 6;
         statement->statementType = code_statement_type::cst_catch;
+        PrepSubInterpretor(statement);
     }
     else if (statement->statement.StartsWith(L"finally", false, true))
     {
         PythonPreProcess(statement->block, true, ret);
         deleteCount = 7;
         statement->statementType = code_statement_type::cst_finally;
+        PrepSubInterpretor(statement);
     }
     else if (statement->statement.StartsWith(L"", false, true))
     {
@@ -284,12 +293,176 @@ void TcPythonInterpretor::ProcessIndividualStatement(const TString& statement, R
 
 void TcPythonInterpretor::ProcessIf(UINT& index, ReturnObject& ret)
 {
+    bool doContinue = false;
+    bool done = false;
+    bool onElse = false;
+    do
+    {
+        doContinue = false;
+        if (!done && statements[index]->statementType != code_statement_type::cst_else)
+        {
+            ProcessExpression(statements[index], ret, 0);
+            if (ret.returnCode)
+                return;
+
+            if (IsTruthful(ret.errorObject))
+            {
+                assert(dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get()));
+                ret = dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get())->Run();
+
+                if (ret.returnCode)
+                    return;
+                done = true;
+            }
+
+
+        }
+        else if (!done && statements[index]->statementType != code_statement_type::cst_else)
+        {
+            assert(dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get()));
+            ret = dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get())->Run();
+
+            if (ret.returnCode)
+                return;
+        }
+
+        if (index + 1 < statements.Size())
+        {
+            bool doOnElse = false;
+            switch (statements[index + 1]->statementType)
+            {
+            case code_statement_type::cst_else:
+                doOnElse = true;
+            case code_statement_type::cst_else_if:
+                if (onElse)
+                {
+                    ret.returnCode = ret.ERR_UNEXPECTED_TOK;
+                    ret.errorMessage.Set(L"'else' or 'elif' cannot follow an 'else' statement!");
+                    return;
+                }
+                onElse = doOnElse;
+                index++;
+                doContinue = true;
+            }
+        }
+
+    } while (doContinue);
 }
 
 void TcPythonInterpretor::ProcessWhile(UINT index, ReturnObject& ret)
 {
+    bool doContinue = false;
+    do
+    {
+        ProcessExpression(statements[index], ret, 0);
+        if (ret.returnCode)
+            return;
+
+        if (doContinue = IsTruthful(ret.errorObject))
+        {
+            assert(dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get()));
+            ret = dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get())->Run();
+
+            if (ret.returnCode)
+                return;
+        }
+    } while (doContinue);
 }
 
-void TcPythonInterpretor::ProcessFor(UINT index, ReturnObject& ret)
+void TcPythonInterpretor::ProcessFor(UINT& index, ReturnObject& ret)
 {
+    TString exp(statements[index]->statement);
+
+    auto toks = exp.splitn(L' \t', 3);
+
+    if (toks->Size() < 3)
+    {
+        ret.returnCode = ret.ERR_INCOMPLETE_STATEMENT;
+        ret.errorMessage.Set("Expected at least 3 tokens '<name> in <exp>' after 'for' declaration!");
+        return;
+    }
+
+    CheckVarName(toks->at(0), ret);
+    if (ret.returnCode)
+        return;
+
+    if (toks->at(1).Compare(L"in"))
+    {
+        ret.returnCode = ret.ERR_INCOMPLETE_STATEMENT;
+        ret.errorMessage.Set("Expected at least 3 tokens '<name> in <exp>' after 'for' declaration!");
+        return;
+    }
+
+    ProcessExpression(statements[index], ret, statements[index]->statement.Find(L"in") + 3);
+
+    if (ret.returnCode || !ret.errorObject.Get())
+        return;
+
+    auto iterator = ret.errorObject->GetIterator();
+
+    // If there is an else statement after for, prepare to do it
+    bool doElse = true;
+
+    if (iterator.Get())
+    {
+        UINT elementIndex = 0;
+        TString elementName;
+        TrecPointer<TVariable> elementValue;
+
+        TDataArray<TString> paramNames;
+        paramNames.push_back(toks->at(0));
+
+        while (dynamic_cast<TVariableIterator*>(iterator.Get())->Traverse(elementIndex, elementName, elementValue))
+        {
+            assert(dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get()));
+            TDataArray<TrecPointer<TVariable>> vars;
+            vars.push_back(elementValue);
+            dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get())->SetIntialVariables(vars);
+            ret = dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get())->Run();
+
+            if (ret.returnCode)
+                return;
+            if (ret.mode == return_mode::rm_break)
+            {
+                doElse = false;
+                break;
+            }
+        }
+    }
+
+    ret.mode = return_mode::rm_regular;
+
+
+    // Python supports an else statement
+    if (index + 1 < statements.Size() && statements[index+1]->statementType == code_statement_type::cst_else)
+    {
+        index++;
+        if (doElse)
+        {
+            assert(dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get()));
+            ret = dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get())->Run();
+        }
+    }
+}
+
+void TcPythonInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT index)
+{
+    UINT parenth = 0, square = 0;
+    ProcessExpression(statement, ret, index, parenth, square);
+}
+
+void TcPythonInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT index, UINT parenth, UINT square)
+{
+}
+
+bool TcPythonInterpretor::IsTruthful(TrecPointer<TVariable>)
+{
+    return false;
+}
+
+void TcPythonInterpretor::PrepSubInterpretor(TrecPointer<CodeStatement> statement)
+{
+    statement->statementVar = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcPythonInterpretor>(TrecPointerKey::GetSubPointerFromSoft<>(self), environment);
+    dynamic_cast<TcPythonInterpretor*>(statement->statementVar.Get())->statements = statement->block;
+    dynamic_cast<TcPythonInterpretor*>(statement->statementVar.Get())->preProcessed = true;
 }

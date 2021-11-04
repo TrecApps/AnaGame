@@ -91,7 +91,17 @@ protected:
 
     void ProcessIf(UINT& index, ReturnObject& ret);
     void ProcessWhile(UINT index, ReturnObject& ret);
-    void ProcessFor(UINT index, ReturnObject& ret);
+    void ProcessFor(UINT& index, ReturnObject& ret);
+
+    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT index);
+    void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT index, UINT parenth, UINT square);
+
+
+
+    bool IsTruthful(TrecPointer<TVariable>);
+    void PrepSubInterpretor(TrecPointer<CodeStatement> statement);
+    void PythonPreProcess(TrecPointer<CodeStatement>& statement, ReturnObject& ret);
+    void PythonPreProcess(TDataArray<TrecPointer<CodeStatement>>& statements, bool indentationExpected, ReturnObject& ret);
 
     /**
      * List of statements generated
