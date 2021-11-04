@@ -103,6 +103,8 @@ protected:
     void PythonPreProcess(TrecPointer<CodeStatement>& statement, ReturnObject& ret);
     void PythonPreProcess(TDataArray<TrecPointer<CodeStatement>>& statements, bool indentationExpected, ReturnObject& ret);
 
+    void PrintStatement(UINT indent);
+
     /**
      * List of statements generated
      */

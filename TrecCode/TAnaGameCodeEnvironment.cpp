@@ -4,6 +4,7 @@
 #include <TFileNode.h>
 #include <TPromptControl.h>
 #include "TcJavaScriptInterpretor.h"
+#include "TcPythonInterpretor.h"
 #include <TStringVariable.h>
 #include <TBlankNode.h>
 
@@ -218,6 +219,29 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 			this->PrintLine(message);
 		}
 		int e = 3;
+	}
+	else if (path.GetSize() > 3 && path.EndsWith(L".py"))
+	{
+		auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcPythonInterpretor>(TrecSubPointer<TVariable, TcInterpretor>(),
+			TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+		ReturnObject ret;
+		javaScriptInterpretor->SetFile(file, ret);
+
+		javaScriptInterpretor->PreProcess(ret);
+		if (ret.returnCode)
+		{
+			TString message;
+			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", path.GetConstantBuffer().getBuffer(), ret.returnCode);
+			this->PrintLine(message);
+			this->PrintLine(ret.errorMessage);
+
+			for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+			{
+				this->Print(L'\t');
+				this->PrintLine(ret.stackTrace[Rust]);
+			}
+			return;
+		}
 	}
 }
 

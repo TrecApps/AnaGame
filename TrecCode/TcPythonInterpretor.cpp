@@ -1,4 +1,5 @@
 #include "TcPythonInterpretor.h"
+#include <atltrace.h>
 
 TcPythonInterpretor::TcPythonInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env): 
 	TcTypeInterpretor(parentInterpretor, env)
@@ -166,6 +167,7 @@ void TcPythonInterpretor::PreProcess(ReturnObject& ret)
     PythonPreProcess(statements, false, ret);
     if (!ret.returnCode)
         preProcessed = true;
+    PrintStatement(0);
 }
 
 void TcPythonInterpretor::PythonPreProcess(TDataArray<TrecPointer<CodeStatement>>& statements, bool indentationExpected, ReturnObject& ret)
@@ -180,6 +182,42 @@ void TcPythonInterpretor::PythonPreProcess(TDataArray<TrecPointer<CodeStatement>
     for (UINT Rust = 0; Rust < statements.Size() && !ret.returnCode; Rust++)
     {
         PythonPreProcess(statements[Rust], ret);
+    }
+}
+
+void TcPythonInterpretor::PrintStatement(UINT indent)
+{
+    TString printer;
+    
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    {
+        printer.Format(L"%d ", indent);
+        printer += GetPyStringFromStatementType(statements[Rust]->statementType);
+        printer += statements[Rust]->statement + L'\n';
+        ATLTRACE(printer.GetConstantBuffer().getBuffer());
+        if (dynamic_cast<TcPythonInterpretor*>(statements[Rust]->statementVar.Get()))
+            dynamic_cast<TcPythonInterpretor*>(statements[Rust]->statementVar.Get())->PrintStatement(indent + 1);
+    }
+}
+
+TString GetPyStringFromStatementType(code_statement_type cst)
+{
+    switch (cst)
+    {
+    case code_statement_type::cst_if:
+        return L"if    ";
+    case code_statement_type::cst_else:
+        return L"else  ";
+    case code_statement_type::cst_else_if:
+        return L"elif  ";
+    case code_statement_type::cst_for:
+        return L"for   ";
+    case code_statement_type::cst_while:
+        return L"while ";
+    case code_statement_type::cst_function:
+        return L"def   ";
+    default:
+        return L"reg   ";
     }
 }
 
@@ -288,7 +326,7 @@ void TcPythonInterpretor::ProcessIndividualStatement(const TString& statement, R
     TrecPointer<CodeStatement> state = TrecPointerKey::GetNewTrecPointer<CodeStatement>();
     state->statement.Set(statement);
 
-    //ProcessExpression(state, ret, 0);
+    ProcessExpression(state, ret, 0);
 }
 
 void TcPythonInterpretor::ProcessIf(UINT& index, ReturnObject& ret)
