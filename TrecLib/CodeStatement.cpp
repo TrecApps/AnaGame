@@ -891,6 +891,10 @@ bool StatementCollector::StartAsSingleLine(const TString& statement)
 	if (nextLineStatement && (slashCount % 2))
 		return false;
 
+	// If there is nothing indicting the start of a block, then make sure that it is time to set a new statement
+	if (!blockStart.Size())
+		return slashCount % 2 == 0;
+
 	// If the statement might end, check for a marker that indicates it should
 	for (UINT Rust = 0; Rust < oneLineStatement.Size(); Rust++)
 	{
@@ -982,4 +986,5 @@ UINT StatementCollector::HandlePythonBlocks()
 			parent = current;
 		}
 	}
+	return 0;
 }

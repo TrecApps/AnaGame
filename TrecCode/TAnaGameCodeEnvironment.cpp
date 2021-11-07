@@ -107,6 +107,29 @@ UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 			Run(jsFile);
 
 		}
+		else if (task.GetSize() > 3 && task.EndsWith(L".py"))
+		{
+			auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcPythonInterpretor>(TrecSubPointer<TVariable, TcInterpretor>(),
+				TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+			ReturnObject ret;
+			javaScriptInterpretor->SetFile(TFileShell::GetFileInfo(task), ret);
+
+			javaScriptInterpretor->PreProcess(ret);
+			if (ret.returnCode)
+			{
+				TString message;
+				message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", task.GetConstantBuffer().getBuffer(), ret.returnCode);
+				this->PrintLine(message);
+				this->PrintLine(ret.errorMessage);
+
+				for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+				{
+					this->Print(L'\t');
+					this->PrintLine(ret.stackTrace[Rust]);
+				}
+				return ret.returnCode;
+			}
+		}
 	}
 	return 0;
 }

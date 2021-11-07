@@ -7,7 +7,7 @@
  * Class: TFileHandler
  * Purpose: Allows Files to be Modified before they are actually used (Can be used to clean up)
  */
-class TFileModifier :
+class _TREC_LIB_DLL TFileModifier :
     public TObject
 {
 public:

@@ -92,6 +92,16 @@ public:
 
 
 	/**
+	 * Method: TVariable::GetSize
+	 * Purpose: Returns the estimated size of the value held
+	 * Parameters: void
+	 * Returns: UINT - The estimated size in bytes of the data
+	 *
+	 * Attributes: abstract
+	 */
+	virtual UINT GetSize() override;
+
+	/**
 	 * Method: TcInterpretorIterator::Traverse
 	 * Purpose: Goues through the variable
 	 * Parameters: UINT& currentIndex - the index of the retrieved variable
@@ -518,3 +528,7 @@ void ReturnObject::operator=(const ReturnObject& copy)
 	nextCount = copy.nextCount;
 }
 
+UINT TcInterpretorIterator::GetSize()
+{
+	return 0;
+}

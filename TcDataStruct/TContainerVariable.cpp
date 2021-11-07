@@ -30,6 +30,19 @@ public:
         currentIndex = 0;
     }
 
+    /**
+     * Method: TVariable::GetSize
+     * Purpose: Returns the estimated size of the value held
+     * Parameters: void
+     * Returns: UINT - The estimated size in bytes of the data
+     *
+     * Attributes: abstract
+     */
+    virtual UINT GetSize() override
+    {
+        return targetVar->GetSize();
+    }
+
 
     /**
      * Method: TContainerIterator::SetReverse
@@ -47,6 +60,7 @@ public:
         {
             currentIndex = doReverse ? targetVar->GetSize() - 1 : 0;
         }
+        return true;
     }
 
 

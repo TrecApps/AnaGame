@@ -14,6 +14,9 @@ static TrecPointer<ObjectOperator> asOperators;
 
 static TrecPointer<TVariable> aOne;
 
+
+bool AsIsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEqual, bool castType);
+
 AnascriptExpression2::AnascriptExpression2()
 {
 }
@@ -246,7 +249,7 @@ ReturnObject TcAnascriptInterpretor::Run()
         case code_statement_type::cst_if:
             ifDone =  ProcessIf(state, ret);
             if (ret.returnCode)
-                return;
+                return ret;
 
             afterIf:
             if (ifDone)
@@ -294,13 +297,13 @@ ReturnObject TcAnascriptInterpretor::Run()
         case code_statement_type::cst_else_if:
             ret.errorMessage.Set(L"Detected 'else' statement without an 'if' statement preceeding it!");
             ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
-            return;
+            return ret;
         case code_statement_type::cst_break:
             ret.mode = return_mode::rm_break;
-            return;
+            return ret;
         case code_statement_type::cst_continue:
             ret.mode = return_mode::rm_continue;
-            return;
+            return ret;
 
         case code_statement_type::cst_declare:
             ProcessDeclare(state, ret);
@@ -546,7 +549,7 @@ void TcAnascriptInterpretor::ProcessFunction(TrecPointer<CodeStatement> statemen
             return;
 
         pNames.push_back(paramSplit->at(0));
-        pTypes.push_back(paramSplit->Size() > 1 ? paramSplit->at(1) : L'');
+        pTypes.push_back(paramSplit->Size() > 1 ? paramSplit->at(1) : L"");
     }
 
     TrecSubPointer<TVariable, TcAnascriptInterpretor> anaVar = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcAnascriptInterpretor>(TrecPointerKey::GetSubPointerFromSoft<>(this->self), environment);
@@ -1536,6 +1539,15 @@ void TcAnascriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& square
     ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(theString);
 }
 
+UINT TcAnascriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object, TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, ReturnObject& ret, bool doAwait)
+{
+    return 0;
+}
+
+void TcAnascriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatement> statement, ReturnObject& obj)
+{
+}
+
 void TcAnascriptInterpretor::PreProcess(ReturnObject& ret, TDataArray<TrecPointer<CodeStatement>>& statements, UINT stack)
 {
     UINT curStack = 0;
@@ -1984,22 +1996,22 @@ void TcAnascriptInterpretor::HandleEquality(TDataArray<AnascriptExpression2>& ex
         if (!ops[Rust].Compare(L"==="))
         {
             found = true;
-            result = IsEqual(left, right, true, false);
+            result = AsIsEqual(left, right, true, false);
         }
         else if (!ops[Rust].Compare(L"==") || !ops[Rust].CompareNoCase(L"equals"))
         {
             found = true;
-            result = IsEqual(left, right, true, true);
+            result = AsIsEqual(left, right, true, true);
         }
         else if (!ops[Rust].Compare(L"!=="))
         {
             found = true;
-            result = IsEqual(left, right, false, false);
+            result = AsIsEqual(left, right, false, false);
         }
         else if (!ops[Rust].Compare(L"!="))
         {
             found = true;
-            result = IsEqual(left, right, false, true);
+            result = AsIsEqual(left, right, false, true);
         }
 
         if (found)
@@ -2270,7 +2282,6 @@ void TcAnascriptInterpretor::HandleAssignment(TDataArray<AnascriptExpression2>& 
                         }
                     } while (false);
                     break;
-                default:
                 }
             }
         }
@@ -2504,7 +2515,7 @@ TrecSubPointer<TVariable, TContainerVariable> TcAnascriptInterpretor::ConstructO
     return vThis;
 }
 
-bool IsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEqual, bool castType)
+bool AsIsEqual(TrecPointer<TVariable> var1, TrecPointer<TVariable> var2, bool isEqual, bool castType)
 {
     bool eqVal = false, eqType;
 

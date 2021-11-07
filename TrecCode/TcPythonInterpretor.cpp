@@ -1,6 +1,8 @@
 #include "TcPythonInterpretor.h"
 #include <atltrace.h>
 
+TString GetPyStringFromStatementType(code_statement_type cst);
+
 TcPythonInterpretor::TcPythonInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env): 
 	TcTypeInterpretor(parentInterpretor, env)
 {

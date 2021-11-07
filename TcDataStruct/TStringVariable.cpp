@@ -32,6 +32,20 @@ public:
 
 
     /**
+     * Method: TVariable::GetSize
+     * Purpose: Returns the estimated size of the value held
+     * Parameters: void
+     * Returns: UINT - The estimated size in bytes of the data
+     *
+     * Attributes: abstract
+     */
+    virtual UINT GetSize() override
+    {
+        return targetVar->GetSize();
+    }
+
+
+    /**
      * Method: TVariableIterator::SetReverse
      * Purpose: enables iterators to go through backwards
      * Parameters: bool doReverse - if true, the iterator will now go in reverse (if supported)

@@ -317,7 +317,7 @@ void FileDialogHandler::RefreshFavoriteToggle()
 		ThreadRelease();
 		return;
 	}
-	if (favoritesControl.Get())
+	if (favoritesControl.Get() && favoritesControl->GetNode().Get())
 	{
 		auto mainNode = favoritesControl->GetNode();
 
