@@ -2,6 +2,7 @@
 #include <mfreadwrite.h>
 #include <atltrace.h>
 #include "MediaTopologyBuilder.h"
+#include <wmcodecdsp.h>
 
 #define SafeRelease(value) if(value){ value->Release(); value = nullptr;}
 
@@ -768,6 +769,79 @@ done:
 	return hr;
 }
 
+TString GetTypeInStringForm(GUID type)
+{
+	if (type == MFVideoFormat_H264_ES) return "MFVideoFormat_H264_ES";
+	if (type == MFVideoFormat_H264) return "MFVideoFormat_H264";
+	if (type == MFVideoFormat_I420) return "MFVideoFormat_I420";
+	if (type == MFVideoFormat_IYUV) return "MFVideoFormat_IYUV";
+	if (type == MFVideoFormat_NV12) return "MFVideoFormat_NV12";
+	if (type == MFVideoFormat_YUY2) return "MFVideoFormat_YUY2";
+	if (type == MFVideoFormat_YV12) return "MFVideoFormat_YV12";
+	if (type == MEDIASUBTYPE_MPG4) return "MEDIASUBTYPE_MPG4";
+	if (type == MEDIASUBTYPE_mpg4) return "MEDIASUBTYPE_mpg4";
+	if (type == MEDIASUBTYPE_MP42) return "MEDIASUBTYPE_MP42";
+	if (type == MEDIASUBTYPE_M4S2) return "MEDIASUBTYPE_M4S2";
+	if (type == MEDIASUBTYPE_m4s2) return "MEDIASUBTYPE_m4s2";
+	if (type == MFVideoFormat_ARGB32) return "MFVideoFormat_ARGB32";
+	if (type == MFVideoFormat_AYUV) return "MFVideoFormat_AYUV";
+	if (type == MFVideoFormat_I420) return "MFVideoFormat_I420";
+	if (type == MFVideoFormat_NV11) return "MFVideoFormat_NV11";
+	if (type == MFVideoFormat_RGB24) return "MFVideoFormat_RGB24";
+	if (type == MFVideoFormat_RGB32) return "MFVideoFormat_RGB32";
+	if (type == MFVideoFormat_RGB555) return "MFVideoFormat_RGB555";
+	if (type == MFVideoFormat_RGB565) return "MFVideoFormat_RGB565";
+	if (type == MFVideoFormat_RGB8) return "MFVideoFormat_RGB8";
+	if (type == MFVideoFormat_UYVY) return "MFVideoFormat_UYVY";
+	if (type == MFVideoFormat_v410) return "MFVideoFormat_v410";
+	if (type == MFVideoFormat_Y216) return "MFVideoFormat_Y216";
+	if (type == MFVideoFormat_Y41P) return "MFVideoFormat_Y41P";
+	if (type == MFVideoFormat_Y41T) return "MFVideoFormat_Y41T";
+	if (type == MFVideoFormat_Y42T) return "MFVideoFormat_Y42T";
+	if (type == MFVideoFormat_YVYU) return "MFVideoFormat_YVYU";
+
+	// output type must be MFVideoFormat_YUY2
+	if (type == MFVideoFormat_DVC) return "MFVideoFormat_DVC";
+	if (type == MFVideoFormat_DVHD) return "MFVideoFormat_DVHD";
+	if (type == MFVideoFormat_DVSD) return "MFVideoFormat_DVSD";
+	if (type == MFVideoFormat_DVSL) return "MFVideoFormat_DVSL";
+
+	if (type == MEDIASUBTYPE_MP43) return "MEDIASUBTYPE_MP43";
+	if (type == MEDIASUBTYPE_mp43) return "MEDIASUBTYPE_mp43";
+
+	if (type == MFVideoFormat_DV25) return "MFVideoFormat_DV25";
+	if (type == MFVideoFormat_DV50) return "MFVideoFormat_DV50";
+	if (type == MFVideoFormat_DVH1) return "MFVideoFormat_DVH1";
+	if (type == MFVideoFormat_H263) return "MFVideoFormat_H263";
+
+	if (type == MFVideoFormat_H265) return "MFVideoFormat_H265";
+	if (type == MFVideoFormat_HEVC_ES) return "MFVideoFormat_HEVC_ES";
+	if (type == MFVideoFormat_M4S2) return "MFVideoFormat_M4S2";
+	if (type == MFVideoFormat_MJPG) return "MFVideoFormat_MJPG";
+
+	if (type == MFVideoFormat_MP43) return "MFVideoFormat_MP43";
+	if (type == MFVideoFormat_MP4S) return "MFVideoFormat_MP4S";
+	if (type == MFVideoFormat_MP4V) return "MFVideoFormat_MP4V";    // Focus
+	if (type == MFVideoFormat_MPEG2) return "MFVideoFormat_MPEG2";
+
+	if (type == MFVideoFormat_VP80) return "MFVideoFormat_VP80";
+	if (type == MFVideoFormat_VP90) return "MFVideoFormat_VP90";
+	if (type == MFVideoFormat_MPG1) return "MFVideoFormat_MPG1";
+	if (type == MFVideoFormat_MSS1) return "MFVideoFormat_MSS1";
+
+
+	if (type == MFVideoFormat_MSS2) return "MFVideoFormat_MSS2";
+	if (type == MFVideoFormat_WMV1) return "MFVideoFormat_WMV1";
+	if (type == MFVideoFormat_WMV2) return "MFVideoFormat_WMV2";
+	if (type == MFVideoFormat_WMV3) return "MFVideoFormat_WMV3";
+
+	if (type == MFVideoFormat_WVC1) return "MFVideoFormat_WVC1";
+	if (type == MFVideoFormat_420O) return "MFVideoFormat_420O";
+	if (type == MFVideoFormat_AV1) return "MFVideoFormat_AV1";
+	if (type == MFVideoFormat_MSS1) return "MFVideoFormat_MSS1";
+	return "";
+}
+
 
 HRESULT AddBranchToPartialTopology(
 	IMFTopology* pTopology,         // Topology.
@@ -849,9 +923,18 @@ HRESULT AddBranchToPartialTopology(
 			TDataArray<TrecComPointer<IMFTransform>> transforms;
 			for (UINT Rust = 0; SUCCEEDED(typeHand->GetMediaTypeByIndex(Rust, &sourceType)); Rust++)
 			{
+				
+
 				// Can only Take The  RGBA type so seek it out
 				GUID sourceTypeGuid = GUID_NULL;
 				assert(SUCCEEDED(sourceType->GetGUID(MF_MT_SUBTYPE, &sourceTypeGuid)));
+
+				TString tracer;
+				TString typeSString(GetTypeInStringForm(sourceTypeGuid));
+				tracer.Format(L"Input Format type is %s\n", typeSString.GetConstantBuffer().getBuffer());
+
+				ATLTRACE(tracer.GetConstantBuffer().getBuffer());
+
 				TDataArray<MediaTopologyLink> topLinks = GetLink(sourceTypeGuid, MFVideoFormat_ARGB32);
 				if (topLinks.Size())
 				{

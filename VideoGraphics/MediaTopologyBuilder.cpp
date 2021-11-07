@@ -123,6 +123,8 @@ private:
 	IMFTransform* transformer;
 };
 
+bool isOutoutInputToAnotherNode(TDataArray<TLinkedList< MediaTopologyLink>>& options, GUID output);
+
 
 /// <summary>
 /// List of supported video Conversions. Note: Commented out options were converstions that were unable to actually provide the Transform and thus
@@ -607,4 +609,11 @@ void ConvertTopologyLinkToTransforms(IMFMediaType* type, TDataArray<MediaTopolog
 		transforms.push_back(builder.GetTransform());
 	}
 	type->Release();
+}
+
+void MediaTopologyLink::operator=(const MediaTopologyLink& source)
+{
+	this->input = source.input;
+	this->output = source.output;
+	this->transformer = source.transformer;
 }
