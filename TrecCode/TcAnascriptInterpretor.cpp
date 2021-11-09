@@ -7,7 +7,7 @@
 #include <TAsyncVariable.h>
 #include <TObjectVariable.h>
 
-static TDataArray<TString> standardAOperators;
+
 
 
 static TrecPointer<ObjectOperator> asOperators;

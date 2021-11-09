@@ -1,10 +1,11 @@
 #include "TcPythonInterpretor.h"
 #include <atltrace.h>
+#include <TPrimitiveVariable.h>
 
 TString GetPyStringFromStatementType(code_statement_type cst);
 
 TcPythonInterpretor::TcPythonInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env): 
-	TcTypeInterpretor(parentInterpretor, env)
+    TcAnascriptInterpretor(parentInterpretor, env)
 {
     preProcessed = true;
 }
@@ -493,6 +494,343 @@ void TcPythonInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement
 
 void TcPythonInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT index, UINT parenth, UINT square)
 {
+    if (!statement->statement.GetSize() || !statement->statement.GetTrim().Compare(L';'))
+        return;
+
+    TDataArray<AnascriptExpression2> expressions;
+    TDataArray<TString> ops;
+    bool processed = false; // False, we are looking for an expression, true, look for operator or end
+    for (; index < statement->statement.GetSize(); index++)
+    {
+        bool processed = false; // Did we process some expression upon hitting a certain character
+        ret.errorObject.Nullify();
+
+        WCHAR ch = statement->statement[index];
+        switch (ch)
+        {
+        case L'(':
+            if (processed)
+            {
+                PrepReturn(ret, L"Unexpected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return;
+            }
+            processed = true;
+            parenth++;
+            ProcessExpression(statement, ret, parenth, square, ++index);
+            break;
+        case L'[':
+            if (processed)
+            {
+                PrepReturn(ret, L"Unexpected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return;
+            }
+            processed = true;
+            square++;
+            ProcessArrayExpression(parenth, square, ++index, statement, ret);
+            break;
+        case L'\'':
+        case L'\"':
+        case L'`':
+            if (processed)
+            {
+                PrepReturn(ret, L"Unexpected '(' token detected!", L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return;
+            }
+            processed = true;
+            ProcessStringExpression(parenth, square, index, statement, ret);
+            break;
+        case L'.':
+        case L'0':
+        case L'1':
+        case L'2':
+        case L'3':
+        case L'4':
+        case L'5':
+        case L'6':
+        case L'7':
+        case L'8':
+        case L'9':
+            if (processed)
+            {
+                TString message;
+                message.Format(L"Unexpected '%c' character detected", ch);
+                PrepReturn(ret, message, L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return;
+            }
+            processed = true;
+            ProcessNumberExpression(parenth, square, index, statement, ret);
+
+        }
+
+
+        if ((ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z') || ch == L'_')
+        {
+            if (processed)
+            {
+                TString message;
+                message.Format(L"Unexpected '%c' character detected", ch);
+                PrepReturn(ret, message, L"", ReturnObject::ERR_UNEXPECTED_TOK, statement->lineStart);
+                return;
+            }
+            processed = true;
+            ProcessVariableExpression(parenth, square, index, statement, ret);
+        }
+
+        if (processed)
+        {
+            if (ret.returnCode)
+                return;
+            AnascriptExpression2 exp;
+            exp.value = ret.errorObject;
+            ret.errorObject.Nullify();
+            exp.varName.Set(ret.errorMessage);
+            expressions.push_back(exp);
+        }
+        TString exp(statement->statement.SubString(index));
+
+        // Handle Post-Increment/Decrement
+        if (expressions.Size() && expressions[expressions.Size() - 1].varName.GetSize() && ((exp.StartsWith(L"++") || exp.StartsWith(L"--"))))
+        {
+            index += 2;
+            bool inc = exp.StartsWith(L"++");
+
+            AnascriptExpression2 jExp(expressions[expressions.Size() - 1]);
+
+            if (GetVarStatus(jExp.varName) == 2)
+            {
+                TString message;
+                message.Format(L"Error! Cannot %ws on const variable %ws!", inc ? L"increment" : L"decrement", jExp.varName.GetConstantBuffer().getBuffer());
+                PrepReturn(ret, message, L"", ReturnObject::ERR_UNSUPPORTED_OP, statement->lineStart);
+                return;
+            }
+
+
+            // Now handle the increment or decrement step
+
+            ProcessIndividualStatement(jExp.varName, ret);
+
+            TrecSubPointer<TVariable, TPrimitiveVariable> tempValue = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TPrimitiveVariable>(ret.errorObject);
+
+            if (!tempValue.Get())
+            {
+                ret.returnCode = ret.ERR_BROKEN_REF;
+
+                ret.errorMessage.Format(L"Post-%ws attempt encountered %ws variable: Could not convert to Primitive Variable!",
+                    inc ? L"Increment" : L"Decrement", L"Null");
+                return;
+            }
+
+
+
+            UINT primType = tempValue->GetVType();
+            ULONG64 data = 0;
+            if (primType & TPrimitiveVariable::bit_float)
+            {
+                if (primType & TPrimitiveVariable::type_eight)
+                {
+                    data = tempValue->Get8Value();
+                    double dData = 0.0;
+                    memcpy_s(&dData, sizeof(dData), &data, sizeof(data));
+                    dData += inc ? 1 : -1;
+                    tempValue->Set(dData);
+                }
+                else
+                {
+                    primType = tempValue->Get4Value();
+                    float fData = 0.0f;
+                    memcpy_s(&fData, sizeof(fData), &primType, sizeof(primType));
+                    fData += inc ? 1 : -1;
+                    tempValue->Set(fData);
+                }
+            }
+            else if (primType & TPrimitiveVariable::type_unsigned)
+            {
+                if (primType & TPrimitiveVariable::type_eight)
+                {
+                    data = tempValue->Get8Value();
+                    if (!data && !inc)
+                        tempValue->Set(static_cast<LONG64>(-1));
+                    else
+                    {
+                        data += inc ? 1 : -1;
+                        tempValue->Set(data);
+                    }
+                }
+                else
+                {
+                    primType = tempValue->Get4Value();
+                    if (!primType && !inc)
+                        tempValue->Set(static_cast<int>(-1));
+                    else
+                    {
+                        primType += inc ? 1 : -1;
+                        tempValue->Set(primType);
+                    }
+                }
+            }
+            else if (primType & TPrimitiveVariable::type_bool || primType & TPrimitiveVariable::type_char)
+            {
+                TString message;
+                message.Format(L"Invalid type found for variable '%ws' in pre-%ws operation!",
+                    jExp.varName.GetConstantBuffer().getBuffer(), inc ? L"increment" : L"decrement");
+                PrepReturn(ret, message, L"", ReturnObject::ERR_IMPROPER_TYPE, statement->lineStart);
+                return;
+            }
+            else
+            {
+                if (primType & TPrimitiveVariable::type_eight)
+                {
+                    data = tempValue->Get8Value();
+                    LONG64 iData = 0;
+                    memcpy_s(&iData, sizeof(iData), &data, sizeof(data));
+                    iData += inc ? 1 : -1;
+                    tempValue->Set(iData);
+                }
+                else
+                {
+                    primType = tempValue->Get8Value();
+                    int iData = 0;
+                    memcpy_s(&iData, sizeof(iData), &primType, sizeof(primType));
+                    iData += inc ? 1 : -1;
+                    tempValue->Set(iData);
+                }
+            }
+
+            exp.Delete(0, 2);
+            exp.Trim();
+        }
+
+
+        bool foundOp = false;
+        for (UINT Rust = 0; Rust < standardAOperators.Size(); Rust++)
+        {
+            if (exp.StartsWith(standardAOperators[Rust], true))
+            {
+                ops.push_back(standardAOperators[Rust]);
+                foundOp = true;
+                exp.Delete(0, standardAOperators[Rust].GetSize());
+                break;
+            }
+        }
+
+        if (!foundOp)
+        {
+            if (!exp.FindOneOf(L"+-*/%^&|<>?=~!"))
+            {
+                ops.push_back(TString(exp[0]));
+                exp.Delete(0, 1);
+                foundOp = true;
+            }
+        }
+
+        if (foundOp)
+        {
+            index += (ops.at(ops.Size() - 1).GetSize() - 1);
+            processed = false;
+            continue;
+        }
+
+        if (index < statement->statement.GetSize())
+            ch = statement->statement[index];
+
+        switch (ch)
+        {
+        case L'.':
+            if (expressions.Size())
+            {
+                AnascriptExpression2 exp = expressions[expressions.Size() - 1];
+                if (exp.varName.IsEmpty() && exp.value.Get())
+                {
+                    switch (exp.value->GetVarType())
+                    {
+                    case var_type::string:
+                    case var_type::collection:
+                        ret.errorObject2 = exp.value;
+                    }
+                }
+            }
+            break;
+        case L']':
+            if (!square)
+            {
+                PrepReturn(ret, L"Unexpected ']' token detected!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
+                return;
+            }
+            square--;
+            index++;
+            goto crunch;
+        case L')':
+            if (!parenth)
+                if (!square)
+                {
+                    PrepReturn(ret, L"Unexpected ')' token detected!", L"", ReturnObject::ERR_PARENTH_MISMATCH, statement->lineStart);
+                    return;
+                }
+            parenth--;
+        case L',':
+        case L';':
+            index++;
+
+            if (!expressions.Size() && !ops.Size())
+                return;
+            goto crunch;
+        }
+
+    }
+
+
+crunch:
+
+    HandlePreExpr(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleExponents(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleMultDiv(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleAddSub(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleBitwiseShift(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleLogicalComparison(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleEquality(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleBitwiseAnd(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleBitwiseXor(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleBitwiseOr(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleLogicalAnd(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleLogicalOr(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleNullish(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleConditional(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+    HandleAssignment(expressions, ops, ret);
+    if (ret.returnCode) return;
+
+
+    if (expressions.Size() == 1)
+        ret.errorObject = expressions[0].value;
+
+    ret.errorObject2.Nullify();
 }
 
 bool TcPythonInterpretor::IsTruthful(TrecPointer<TVariable>)

@@ -169,5 +169,8 @@ protected:
     void HandleConditional(TDataArray<AnascriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
     void HandleAssignment(TDataArray<AnascriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
     TrecSubPointer<TVariable, TContainerVariable> ConstructObject(const TString& type);
+
+    // Other resources
+    static TDataArray<TString> standardAOperators;
 };
 

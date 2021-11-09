@@ -1,9 +1,9 @@
 #pragma once
-#include <TcTypeInterpretor.h>
+#include "TcAnascriptInterpretor.h"
 
 
 class TcPythonInterpretor :
-    public TcTypeInterpretor
+    public TcAnascriptInterpretor
 {
 public:
 
@@ -105,11 +105,5 @@ protected:
 
     void PrintStatement(UINT indent);
 
-    /**
-     * List of statements generated
-     */
-    TDataArray<TrecPointer<CodeStatement>> statements;
-
-    bool preProcessed;
 };
 
