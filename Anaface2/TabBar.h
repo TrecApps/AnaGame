@@ -301,6 +301,13 @@ protected:
 	bool exitSupport;
 
 public:
+
+	void SetHolder(TrecPointer<TabBarHolder> holder);
+
+	UINT GetTabCount();
+
+	TrecPointer<TPage> GetTabAt(UINT index, bool content = false);
+
 	/**
 	 * Method: TabBar::SetConfigure
 	 * Purpose: Allows holders to configure the settings

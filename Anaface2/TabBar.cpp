@@ -200,6 +200,30 @@ void TabBar::InjectTabAt(TrecPointer<TPage> page, UINT index)
     SetTabSizes();
 }
 
+void TabBar::SetHolder(TrecPointer<TabBarHolder> holder)
+{
+    this->holder = holder;
+}
+
+UINT TabBar::GetTabCount()
+{
+    return tabs.Size();
+}
+
+TrecPointer<TPage> TabBar::GetTabAt(UINT index, bool content)
+{
+    if(index < tabs.Size())
+        return TrecPointer<TPage>();
+
+    TrecPointer<TPage> ret = tabs[index];
+
+    if (content)
+    {
+        return dynamic_cast<Tab*>(ret.Get())->content;
+    }
+    return ret;
+}
+
 void TabBar::Draw(TrecPointer<TVariable> object)
 {
     if (tabOverflow)
