@@ -1,14 +1,18 @@
 #include "AnafacePage.h"
 #include <TFormatReader.h>
 #include <TScrollerPage.h>
+#include <TContainerVariable.h>
+#include "TRadiobutton.h"
+#include "TCheckbox.h"
+#include "TTextInput.h"
+#include "TArenaView.h"
+#include "TVideoPlayer.h"
+#include "TDataLayout.h"
+#include "TLayout.h"
+#include "TGrid.h"
 
 TString objectTypes[] = {
 	L"TControl",		// Basic Control
-	L"TRandomLayout",	// Control that does not organize child layouts
-	L"TLayout",			// Control that organizes child layouts in one dimension
-	L"TGrid",			// Control that organizes child layouts in a grid
-	L"TDataLayout",		// TLayout that adds data-binding
-	L"TDataGrid",		// TGrid that supports data-binding
 	L"TRadioButton",	// Control that acts as a radio button
 	L"TCheckBox",		// Control that acts as a Checkbox
 	L"TInput",			// Control that acts as a basic input element
@@ -18,10 +22,206 @@ TString objectTypes[] = {
 	L"TVideo",			// Provides support for video playback
 	L"TCanvas",			// Allows for drawing custom items
 	L"TImage",			// Provides advanged image manipulation options
-	
+	L"TRandomLayout",	// Control that does not organize child layouts
+	L"TLayout",			// Control that organizes child layouts in one dimension
+	L"TGrid",			// Control that organizes child layouts in a grid
+	L"TDataLayout",		// TLayout that adds data-binding
+	L"TDataGrid",		// TGrid that supports data-binding
+	L"TSwitchControl"	// Layout that presents one child at a time and supports tabbing
 };
 
+UINT minLayoutIndex = 10;
 
+
+void AnafacePage::HandleNode(const TString& name, TString& result, TrecPointer<TVariable> var, TrecPointer<TPage>& curPage, LayoutData& ld)
+{
+	if (!var.Get() || var->GetVarType() != var_type::collection)
+		return;
+
+	TString controlName;
+	TrecPointer<TVariable> childVar;
+
+	// We are in a children node, used by File Formats (such as JSON) that does not support Duplicate Key Values and as such are likely in an Array
+	if (name.StartsWith(L"children", true))
+	{
+		for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetSize(); Rust++)
+		{
+			childVar = dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust);
+			if (!childVar.Get())
+				continue;
+
+			HandleNode(L"", result, childVar, curPage, ld);
+			if (result.GetSize())
+				return;
+		}
+
+		return;
+
+	}
+
+	// This a Top Node,
+	if (!name.GetSize())
+	{
+		TString title;
+		for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, title, childVar); Rust++)
+		{
+			for (UINT C = 0; Rust < ARRAYSIZE(objectTypes); C++)
+			{
+				if (title.StartsWith(objectTypes[C], true))
+				{
+					controlName.Set(title);
+
+				}
+			}
+		}
+	}
+	else controlName.Set(name);
+
+	auto page = HandleControl(controlName, result, childVar, ld);
+
+	if (curPage.Get())
+	{
+		if (ld.isLayout)
+		{
+			dynamic_cast<TRandomLayout*>(curPage.Get())->AddPage(page, ld.row, ld.col);
+		}
+		else
+			result.Format(L"Control type %ws does not support Child Controls!", name.SubString(0, name.Find(L'(')).GetConstantBuffer().getBuffer());
+	}
+	else if(!result.GetSize())
+		curPage = page;
+}
+
+TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& result, TrecPointer<TVariable> var, LayoutData& ld)
+{
+	TrecPointer<TPage> ret;
+
+	LayoutData curLd{ false, -1,-1,-1,-1 };
+
+	if (name.StartsWith(L"TRadioButton", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
+	if (name.StartsWith(L"TCheckBox", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TCheckbox>(this->drawingBoard, styles);
+	if (name.StartsWith(L"TInput", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(this->drawingBoard, styles);
+	//if (name.StartsWith(L"TLongInput", true))
+	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
+	//if (name.StartsWith(L"TBasicPrompt", true))
+	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
+	if (name.StartsWith(L"TArena", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TArenaView>(this->drawingBoard, styles);
+	if (name.StartsWith(L"TVideo", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TVideoPlayer>(this->drawingBoard, styles);
+	//if (name.StartsWith(L"TCanvas", true))
+	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
+	//if (name.StartsWith(L"TImage", true))
+	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
+
+
+	if (name.StartsWith(L"TRandomLayout", true))
+	{
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRandomLayout>(this->drawingBoard, styles);
+		curLd.isLayout = true;
+	}
+	if (name.StartsWith(L"TLayout", true))
+	{
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TLayout>(this->drawingBoard, styles);
+		curLd.isLayout = true;
+	}
+	if (name.StartsWith(L"TGrid", true))
+	{
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TGrid>(this->drawingBoard, styles);
+		curLd.isLayout = true;
+	}
+	if (name.StartsWith(L"TDataLayout", true))
+	{
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TDataLayout>(this->drawingBoard, styles);
+		curLd.isLayout = true;
+	}
+	if(name.StartsWith(L"TSwitchControl"))
+	{
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TDataLayout>(this->drawingBoard, styles);
+		curLd.isLayout = true;
+	}
+
+	// Just a Basic TControl
+	if (name.StartsWith(L"TControl", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TControl>(this->drawingBoard, styles);
+
+	if (!ret.Get())
+	{
+		result.Format(L"Unsupported Control Name %ws detected!", name.GetConstantBuffer().getBuffer());
+		return;
+	}
+
+	if (!dynamic_cast<TContainerVariable*>(var.Get())) return;
+
+	TString attName;
+	TrecPointer<TVariable> chVar;
+
+	bool metaFound = false;
+
+	for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, attName, chVar); Rust)
+	{
+		if (result.GetSize())
+		{
+			ret.Nullify();
+			return ret;
+		}
+		// Check to see if we have a child Attribute
+		if (attName.StartsWith(L"children", true))
+		{
+			if (curLd.isLayout)
+				HandleNode(attName, result, chVar, ret, curLd);
+			else
+				result.Format(L"Control type %ws does not support Child Controls!", name.SubString(0, name.Find(L'(')).GetConstantBuffer().getBuffer());
+			continue;
+		}
+
+		for (UINT C = 0; C < ARRAYSIZE(objectTypes); C++)
+		{
+			if (attName.StartsWith(objectTypes[C], true))
+			{
+				if (curLd.isLayout)
+				{
+					auto p = HandleControl(attName, result, chVar, curLd);
+
+					if (p.Get() && !result.GetSize())
+						dynamic_cast<TRandomLayout*>(ret.Get())->AddPage(p, curLd.row, curLd.col);
+				}
+				else
+					result.Format(L"Control type %ws does not support Child Controls!", name.SubString(0, name.Find(L'(')).GetConstantBuffer().getBuffer());
+				continue;
+			}
+		}
+
+		// In the Event that Our format uses a _metadata attribute to hold other metadata (like XML)
+		if (attName.StartsWith(L"_metadata"))
+		{
+			HandleAttributes(result, ret, chVar, ld);
+			metaFound = true;
+		}
+	}
+
+	if (result.GetSize())
+	{
+		ret.Nullify();
+		return ret;
+	}
+
+	if (!metaFound)
+		HandleAttributes(result, ret, var, ld);
+
+	if (result.GetSize())
+		ret.Nullify();
+
+	return ret;
+}
+
+void AnafacePage::HandleAttributes(TString& result, TrecPointer<TPage>& curPage, TrecPointer<TVariable> var, LayoutData& ld)
+{
+
+}
 
 AnafacePage::AnafacePage(TrecPointer<DrawingBoard> board): TPage(board)
 {
@@ -65,7 +265,9 @@ TString AnafacePage::PrepPage(TrecPointer<TFileShell> file, TrecPointer<EventHan
 
 	TrecPointer<TVariable> uiData = reader->GetData();
 
-	HandleNode(L"", ret, uiData, rootPage);
+	LayoutData ld{ false, -1,-1,-1,-1 };
+
+	HandleNode(L"", ret, uiData, rootPage,ld);
 
 
 	return ret;
@@ -206,13 +408,4 @@ void AnafacePage::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_
 		scroller->OnResize(b, 0, cred, args);
 		rootPage = scroller;
 	}
-}
-
-void AnafacePage::HandleNode(const TString& name, TString& result, TrecPointer<TVariable> var, TrecPointer<TPage> curPage)
-{
-}
-
-TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& result, TrecPointer<TVariable> var)
-{
-	return TrecPointer<TPage>();
 }

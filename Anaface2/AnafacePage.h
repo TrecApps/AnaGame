@@ -1,6 +1,12 @@
 #pragma once
 #include <TPage.h>
 
+typedef struct LayoutData
+{
+	bool isLayout;
+	int col, row, endCol, endRow;
+}LayoutData;
+
 /**
  * Class: AnafacePage
  * Purpose: Serves as the root page for Anaface 2 - UIs and holds an Event Handler
@@ -189,13 +195,20 @@ protected:
 	 */
 	TrecPointer<EventHandler> handler;
 
+	/**
+	 * List of Styles
+	 */
+	TrecPointer<TArray<styleTable>> styles;
+
 
 protected:
 	// Methods used for construction
 
-	void HandleNode(const TString& name, TString& result, TrecPointer<TVariable> var, TrecPointer<TPage> curPage);
+	void HandleNode(const TString& name, TString& result, TrecPointer<TVariable> var, TrecPointer<TPage>& curPage, LayoutData& ld);
 
-	TrecPointer<TPage> HandleControl(const TString& name, TString& result, TrecPointer<TVariable> var);
+	TrecPointer<TPage> HandleControl(const TString& name, TString& result, TrecPointer<TVariable> var, LayoutData& ld);
+
+	void HandleAttributes(TString& result, TrecPointer<TPage>& curPage, TrecPointer<TVariable> var, LayoutData& ld);
 
 	//void 
 };
