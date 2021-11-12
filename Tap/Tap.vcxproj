@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\AnaWeb;..\Anaface;..\VideoGraphics;..\TcDataStruct;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\AnaWeb;..\Anaface2;..\VideoGraphics;..\TcDataStruct;..\TrecLib;$(IncludePath)</IncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -100,7 +100,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;d2d1.lib;AnaWeb.lib;TcDataStruct.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface2.lib;d2d1.lib;AnaWeb.lib;TcDataStruct.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -178,6 +178,7 @@
     <ClInclude Include="OkayHandler.h" />
     <ClInclude Include="Page.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TabPage.h" />
     <ClInclude Include="TAnimationManager.h" />
     <ClInclude Include="Tap_dll.h" />
     <ClInclude Include="TByteCode.h" />
@@ -224,6 +225,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TabPage.cpp" />
     <ClCompile Include="TByteVirtualMachine.cpp" />
     <ClCompile Include="TAnimationManager.cpp" />
     <ClCompile Include="TCodeHandler.cpp" />

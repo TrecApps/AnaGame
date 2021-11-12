@@ -132,6 +132,9 @@
     <ClInclude Include="IDEPageManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TabPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -243,6 +246,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IDEPageManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
