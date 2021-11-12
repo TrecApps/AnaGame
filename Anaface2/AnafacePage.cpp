@@ -212,14 +212,124 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 	if (!metaFound)
 		HandleAttributes(result, ret, var, ld);
 
+	int parIndex = name.Find(L'(');
+
 	if (result.GetSize())
 		ret.Nullify();
+	else if (ld.isLayout && parIndex != -1)
+	{
+		TString details(name.SubString(parIndex + 1, name.Find(L')')));
 
+		auto splitDetails = details.splitn(L',', 4);
+
+		switch (splitDetails->Size())
+		{
+		case 4:
+			splitDetails->at(3).ConvertToInt(ld.endCol);
+		case 3:
+			splitDetails->at(2).ConvertToInt(ld.endRow);
+		case 2:
+			splitDetails->at(1).ConvertToInt(ld.col);
+		case 1:
+			splitDetails->at(0).ConvertToInt(ld.row);
+		}
+	}
 	return ret;
 }
 
 void AnafacePage::HandleAttributes(TString& result, TrecPointer<TPage>& curPage, TrecPointer<TVariable> var, LayoutData& ld)
 {
+	TString attName;
+	TrecPointer<TVariable> chVar;
+
+	for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, attName, chVar); Rust)
+	{
+		if (result.GetSize()) return;
+		if (!chVar.Get())
+			continue;
+
+		if (!attName.CompareNoCase(L"RowHeights"))
+		{
+			HandleDimensionList(true, result, curPage, var);
+		}
+		else if (!attName.CompareNoCase(L"ColumnWidths"))
+		{
+			HandleDimensionList(false, result, curPage, var);
+		}
+		else if (!attName.CompareNoCase(L"RowHeight") || !attName.CompareNoCase(L"ColumnWidth"))
+		{
+			bool row = !attName.CompareNoCase(L"RowHeight");
+			TString data(chVar->GetString());
+
+			bool isFlex = false;
+			if (data.EndsWith(L'*'))
+			{
+				isFlex = true;
+				data.Delete(data.GetSize() - 1);
+			}
+
+			UINT uValue = 0;
+			if (!TString::ConvertStringToUint(data, uValue))
+			{
+				result.Format(L"Failed to parse number for %ws attribute!", row ? L"Row Height" : L"Column Width");
+				return;
+			}
+			row ? dynamic_cast<TLayout*>(curPage.Get())->AddRow(uValue, isFlex) :
+				dynamic_cast<TLayout*>(curPage.Get())->AddCol(uValue, isFlex);
+		}
+		else if (!attName.CompareNoCase(L"RowPosition"))
+		{
+			auto details = chVar->GetString().splitn(L',', 2);
+			details->at(0).ConvertToInt(ld.row);
+			if(details->Size() > 1)
+				details->at(1).ConvertToInt(ld.endRow);
+		}
+		else if (!attName.CompareNoCase(L"ColPosition") || !attName.CompareNoCase(L"ColumnPosition"))
+		{
+			auto details = chVar->GetString().splitn(L',', 2);
+			details->at(0).ConvertToInt(ld.col);
+			if (details->Size() > 1)
+				details->at(1).ConvertToInt(ld.endCol);
+		}
+		else
+		{
+			dynamic_cast<TControl*>(curPage.Get())->AddAttribute(attName, chVar->GetString());
+		}
+	}
+}
+
+void AnafacePage::HandleDimensionList(bool row, TString& result, TrecPointer<TPage>& curPage, TrecPointer<TVariable> var)
+{
+	if (!dynamic_cast<TLayout*>(curPage.Get()) && !dynamic_cast<TContainerVariable*>(var.Get()))
+		return;
+
+	for (UINT Rust = 0; Rust < dynamic_cast<TContainerVariable*>(var.Get())->GetSize(); Rust++)
+	{
+		auto value = dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust);
+		if (!value.Get())
+		{
+			result.Format(L"Failed to parse number for %ws attribute!", row ? L"Row Height" : L"Column Width");
+			return;
+		}
+		TString data(value->GetString());
+
+		bool isFlex = false;
+		if (data.EndsWith(L'*'))
+		{
+			isFlex = true;
+			data.Delete(data.GetSize() - 1);
+		}
+
+		UINT uValue = 0;
+		if (!TString::ConvertStringToUint(data, uValue))
+		{
+			result.Format(L"Failed to parse number for %ws attribute!", row ? L"Row Height" : L"Column Width");
+			return;
+		}
+
+		row ? dynamic_cast<TLayout*>(curPage.Get())->AddRow(uValue, isFlex) :
+			dynamic_cast<TLayout*>(curPage.Get())->AddCol(uValue, isFlex);
+	}
 
 }
 

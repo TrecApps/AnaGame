@@ -210,6 +210,8 @@ protected:
 
 	void HandleAttributes(TString& result, TrecPointer<TPage>& curPage, TrecPointer<TVariable> var, LayoutData& ld);
 
+	void HandleDimensionList(bool row, TString& result, TrecPointer<TPage>& curPage, TrecPointer<TVariable> var);
+
 	//void 
 };
 
