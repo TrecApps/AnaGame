@@ -91,6 +91,16 @@ public:
 				ret->AddRef();
 			}
 		}
+		else if (id == CLSID_CMpeg4sDecMFT)
+		{
+			HRESULT inputHr = transformer->SetInputType(0, newInput, 0);
+			assert(SUCCEEDED(inputHr));
+			if (SUCCEEDED(transformer->SetOutputType(0, output, 0)))
+			{
+				ret = output;
+				ret->AddRef();
+			}
+		}
 
 		newInput->Release();
 		newInput = nullptr;
@@ -186,10 +196,8 @@ MediaTopologyLink links[] = {
 	{MEDIASUBTYPE_mp42, MFVideoFormat_RGB555, CLSID_CMpeg4DecMediaObject},
 
 	// CLSID_CMpeg4sDecMFT - Decoder for the MPEG-4 P2 Format (Needs Testing)
-	//{MEDIASUBTYPE_M4S2, MFVideoFormat_NV12, CLSID_CMpeg4sDecMFT},
-	//{MEDIASUBTYPE_m4s2, MFVideoFormat_NV12, CLSID_CMpeg4sDecMFT},
-	//{MEDIASUBTYPE_M4S2, MFVideoFormat_YV12, CLSID_CMpeg4sDecMFT},
-	//{MEDIASUBTYPE_m4s2, MFVideoFormat_YV12, CLSID_CMpeg4sDecMFT},
+	{MFVideoFormat_MP4V, MFVideoFormat_NV12, CLSID_CMpeg4sDecMFT},
+	{MFVideoFormat_MP4V, MFVideoFormat_NV12, CLSID_CMpeg4sDecMFT},
 
 	// CLSID_VideoProcessorMFT - Processor of Video Frames
 	{ MFVideoFormat_ARGB32, MFVideoFormat_ARGB32, CLSID_VideoProcessorMFT}, // Same

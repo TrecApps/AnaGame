@@ -1,6 +1,6 @@
 #include "TPlayer.h"
 #include <mfreadwrite.h>
-#include <atltrace.h>
+//#include <atltrace.h>
 #include "MediaTopologyBuilder.h"
 #include <wmcodecdsp.h>
 
@@ -933,7 +933,7 @@ HRESULT AddBranchToPartialTopology(
 				TString typeSString(GetTypeInStringForm(sourceTypeGuid));
 				tracer.Format(L"Input Format type is %s\n", typeSString.GetConstantBuffer().getBuffer());
 
-				ATLTRACE(tracer.GetConstantBuffer().getBuffer());
+				// ATLTRACE(tracer.GetConstantBuffer().getBuffer());
 
 				TDataArray<MediaTopologyLink> topLinks = GetLink(sourceTypeGuid, MFVideoFormat_ARGB32);
 				if (topLinks.Size())
