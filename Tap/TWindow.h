@@ -1,23 +1,12 @@
 #pragma once
-#include "Page.h"
+#include <TPage.h>
 #include <TWindowEngine.h>
 #include <TControl.h>
+#include <TArenaEngine.h>
 
-bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference);
 #include "TAnimationManager.h"
 
-
-
-class _TAP_DLL MediaControlLoc
-{
-public:
-	MediaControlLoc();
-	MediaControlLoc(const MediaControlLoc& copy);
-
-	TrecPointer<TControl> control;
-	RECT loc;
-};
-
+bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference);
 
 /**
  * Class: TWindow
@@ -84,15 +73,6 @@ public:
 	virtual int CompileView(TString& file, TrecPointer<TPage::EventHandler> eh);
 
 
-	/**
-	 * Method: TWindow::MovePageToTop
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Attributes: deprecated
-	 */
-	bool MovePageToTop(TrecPointer<Page> p);
 
 	/**
 	 * Method: TWindow::GetWinClass
@@ -123,17 +103,6 @@ public:
 	 */
 	virtual void Draw();
 
-	/**
-	 * Method: TWindow::Draw
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Attributes: deprecated
-	 */
-	void Draw(Page& draw);
-
-	virtual void RefreshMediaControls();
 
 
 	/**
@@ -261,47 +230,6 @@ public:
 	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
 
 
-	/**
-	 * Method: TWindow::GetHandlePage
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 */
-	TrecPointer<Page> GetHandlePage(bool singleton);
-
-	/**
-	 * Method: TWindow::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 */
-	TrecPointer<Page> GetHandlePage(const TString& name);
-
-	/**
-	 * Method: TWindow::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 * Attributes: deprecated
-	 */
-	TrecPointer<Page> Get3DPage(bool singleton, TString& engineId);
-
-	/**
-	 * Method: TWindow::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 * Attributes: deprecated
-	 */
-	TrecPointer<Page> Get3DPage(bool singleton, TrecPointer<TArenaEngine> engine);
 
 
 	/**
@@ -328,17 +256,6 @@ public:
 	 * Returns: void
 	 */
 	void SetSelf(TrecPointer<TWindow> win);
-
-
-	/**
-	 * Method: TWindow::GetPageByArea
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 */
-	TrecPointer<Page> GetPageByArea(D2D1_RECT_F r);
 
 	/**
 	 * Method: TWindow::GetInstance
@@ -406,7 +323,7 @@ public:
 	 * Parameters: TrecPointer<Page> page - the page to prepare the animations for
 	 * Returns: bool - whether the page was set and the Window matched
 	 */
-	bool PrepAnimations(TrecPointer<Page> page);
+	bool PrepAnimations(TrecPointer<TPage> page);
 
 	/**
 	 * Method:: TWindow::SetFlyout
@@ -416,7 +333,7 @@ public:
 	 *
 	 * Note: This method is intended to be called by the Page Class. The Page looks for TFlyouts to draw and the Window takes it from there
 	 */
-	void SetFlyout(TrecPointer<TFlyout> fly);
+	void SetFlyout(TrecPointer<TPage> fly);
 
 
 	/**
@@ -435,7 +352,6 @@ public:
 	 */
 	TrecComPointer<ID2D1Factory1> GetFactory();
 
-	void submitPlayer(TrecPointer<TControl> play);
 
 	HDC GetTWindowDc();
 
@@ -443,7 +359,6 @@ public:
 
 
 protected:
-	TDataArray<MediaControlLoc> mediaControls;
 
 
 	// Draw Other pages that are special to the Window
@@ -497,17 +412,7 @@ protected:
 	 * Names used by Windows
 	 */
 	TString name, winClass;
-	
 
-	/**
-	 * Used when multiple objects might want to access the same page by ID
-	 */
-	TMap<Page> keyPages;
-	// Singleton Pages
-	/**
-	 * deprecated
-	 */
-	TrecPointer<Page> _3DPage, handlePage;
 
 
 	/**
@@ -528,10 +433,7 @@ protected:
 	 */
 	TrecPointerSoft<TWindow> self;
 
-	/**
-	 * Page to delete
-	 */
-	TrecPointer<Page> deletePage;
+
 
 
 	// 3D Resource
@@ -570,7 +472,7 @@ protected:
 	/**
 	 * Holds any flyout that needs to be drawn after everything else is
 	 */
-	TrecPointer<TFlyout> flyout;
+	TrecPointer<TPage> flyout;
 
 
 };

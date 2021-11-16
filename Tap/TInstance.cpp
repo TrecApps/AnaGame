@@ -159,7 +159,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		if (charHandler.Get())
 		{
-			messageOutput mo = messageOutput::negative;
+			message_output mo = message_output::mo_negative;
 			if (charHandler->OnChar(message == WM_CHAR, wParam, lParam & 0x0000FFFF, 0, &mo))
 				win->Draw();
 		}

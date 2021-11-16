@@ -601,7 +601,14 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 	TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(uiFile->GetFilePath());
 	uiFile->Close();
 	uiFile.Nullify();
-	newPage->PrepPage(uisFile, pageHandler);
+	TString prepRes(newPage->PrepPage(uisFile, pageHandler));
+
+	if (prepRes.GetSize())
+	{
+		MessageBox(this->currentWindow, prepRes.GetConstantBuffer().getBuffer(), L"Error Constructing UI!", 0);
+		ThreadRelease();
+		return TrecPointer<TPage>();
+	}
 
 	targetPage->SetView(newPage.GetTrecPointer());
 	
