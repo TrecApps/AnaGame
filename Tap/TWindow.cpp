@@ -157,13 +157,17 @@ int TWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	aFile.Nullify();
 	TString prepRes(newPage->PrepPage(uisFile, eh));
 
-
 	if (prepRes.GetSize())
 	{
 		MessageBox(this->currentWindow, prepRes.GetConstantBuffer().getBuffer(), L"Error Constructing UI!", 0);
 		ThreadRelease();
 		return 2;
 	}
+
+	TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
+
+	if (control.Get())
+		control->onCreate(newPage->GetArea(), d3dEngine);
 
 	mainPage = newPage.GetTrecPointer();
 	RECT loc;

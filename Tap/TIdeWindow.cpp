@@ -610,6 +610,11 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 		return TrecPointer<TPage>();
 	}
 
+	TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
+
+	if (control.Get())
+		control->onCreate(newPage->GetArea(), d3dEngine);
+
 	targetPage->SetView(newPage.GetTrecPointer());
 	
 
@@ -704,7 +709,19 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(aFile->GetFilePath());
 	aFile->Close();
 	aFile.Nullify();
-	newPage->PrepPage(uisFile, eh);
+	TString prepRes(newPage->PrepPage(uisFile, eh));
+
+	if (prepRes.GetSize())
+	{
+		MessageBox(this->currentWindow, prepRes.GetConstantBuffer().getBuffer(), L"Error Constructing UI!", 0);
+		ThreadRelease();
+		return 2;
+	}
+
+	TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
+
+	if (control.Get())
+		control->onCreate(newPage->GetArea(), d3dEngine);
 
 
 

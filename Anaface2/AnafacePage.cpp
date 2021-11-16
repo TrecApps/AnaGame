@@ -519,3 +519,8 @@ void AnafacePage::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_
 		rootPage = scroller;
 	}
 }
+
+TrecPointer<TPage> AnafacePage::GetRootControl()
+{
+	return rootPage;
+}

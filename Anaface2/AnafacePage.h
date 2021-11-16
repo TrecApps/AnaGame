@@ -184,6 +184,14 @@ public:
 	 */
 	virtual void InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& needs, TrecPointer<TPage> page) override;
 
+	/**
+	 * Method: AnafacePage::GetRootControl
+	 * Purpose: Retrieves the Root Control for operations
+	 * Parameters: void
+	 * Returns: TrecPointer<TPage> page - the page generated
+	 */
+	TrecPointer<TPage> GetRootControl();
+
 protected:
 	/**
 	 * The root Page (TControl)
