@@ -1,6 +1,12 @@
 #include "TabBar.h"
 #include <DirectoryInterface.h>
 
+
+TrecPointer<TPage> TabBar::Tab::GetContent()
+{
+    return content;
+}
+
 void TabBar::Tab::SetBrush(TrecPointer<TBrush> brush, bool doIcon)
 {
     if (doIcon)

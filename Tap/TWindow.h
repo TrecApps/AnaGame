@@ -5,7 +5,6 @@
 
 bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference);
 #include "TAnimationManager.h"
-#include <TVideo.h>
 
 
 
@@ -82,7 +81,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual int CompileView(TString& file, TrecPointer<EventHandler> eh);
+	virtual int CompileView(TString& file, TrecPointer<TPage::EventHandler> eh);
 
 
 	/**
@@ -147,7 +146,7 @@ public:
 	 */
 	void InduceDraw();
 	
-	afx_msg void OnVideoEvent(WPARAM param);
+	ag_msg void OnVideoEvent(WPARAM param);
 
 	/**
 	 * Method: TWindow::OnRButtonUp
@@ -158,7 +157,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg void OnRButtonUp(UINT nFlags, TPoint point);
+	ag_msg void OnRButtonUp(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnLButtonDown
@@ -169,7 +168,7 @@ public:
 	 * 
 	 * Attributes: message; virtual
 	 */
-	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point);
+	ag_msg virtual void OnLButtonDown(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnRButtonDown
@@ -180,7 +179,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg void OnRButtonDown(UINT nFlags, TPoint);
+	ag_msg void OnRButtonDown(UINT nFlags, TPoint);
 
 	/**
 	 * Method: TWindow::OnMouseMove
@@ -191,7 +190,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point);
+	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnLButtonDblClk
@@ -202,7 +201,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg void OnLButtonDblClk(UINT nFlags, TPoint point);
+	ag_msg void OnLButtonDblClk(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnLButtonUp
@@ -213,7 +212,7 @@ public:
 	 * 
 	 * Attributes: message; virtual
 	 */
-	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point);
+	ag_msg virtual void OnLButtonUp(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnChar
@@ -226,7 +225,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags);
+	ag_msg bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags);
 
 	/**
 	 * Method: TWindow::OnWindowResize
@@ -237,7 +236,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg virtual void OnWindowResize(UINT width, UINT height);
+	ag_msg virtual void OnWindowResize(UINT width, UINT height);
 
 	/**
 	 * Method: TWindow::OnDestroy
@@ -247,7 +246,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg virtual bool OnDestroy();
+	ag_msg virtual bool OnDestroy();
 
 
 	/**
@@ -259,7 +258,7 @@ public:
 	 *
 	 * Attributes: virtual
 	 */
-	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
+	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
 
 
 	/**
@@ -446,7 +445,6 @@ public:
 protected:
 	TDataArray<MediaControlLoc> mediaControls;
 
-	TrecSubPointer<TControl, TVideo> videoPlayer;
 
 	// Draw Other pages that are special to the Window
 	/**
@@ -490,11 +488,11 @@ protected:
 	/**
 	 * Main content of the window
 	 */
-	TrecPointer<Page> mainPage;
+	TrecPointer<TPage> mainPage;
 	/**
 	 * List of Pages
 	 */
-	TDataArray<TrecPointer<Page>> pages;
+	TDataArray<TrecPointer<TPage>> pages;
 	/**
 	 * Names used by Windows
 	 */
@@ -564,7 +562,7 @@ protected:
 	/**
 	 * Scroll Bar currently focusing on
 	 */
-	TrecPointer<TScrollBar> currentScrollBar;
+	TrecPointer<TPage::TScrollBar> currentScrollBar;
 
 
 	// Manage Flyouts

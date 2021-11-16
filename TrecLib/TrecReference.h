@@ -655,6 +655,17 @@ protected:
 public:
 
 	/**
+	 * Method: TrecSubPointer::GetTrecPointer
+	 * Purpose: Retrieves a Regular Trc Pointer Representation
+	 * Parameters: void
+	 * Returns: TrecPointer<t> - the trec pointer 
+	 */
+	TrecPointer<t> GetTrecPointer()
+	{
+		return TrecPointerKey::GetTrecPointerFromSub(*this);
+	}
+
+	/**
 	 * Method: TrecSubPointer::TrecSubPointer
 	 * Purpose: Default Constructor
 	 * Parameters: void

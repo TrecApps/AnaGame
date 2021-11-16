@@ -603,4 +603,8 @@ protected:
 
 D2D1_RECT_F _VIDEO_GRAPHICS ConvertStringToD2D1Rect(const TString& str);
 
+D2D1_RECT_F _VIDEO_GRAPHICS ConvertRectToD2D1Rect(const RECT& rec);
+
+RECT _VIDEO_GRAPHICS ConvertD2D1RectToRect(const D2D1_RECT_F& rec);
+
 UINT GetScrollbarBoxSize();

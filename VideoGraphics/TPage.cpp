@@ -477,3 +477,24 @@ D2D1_RECT_F ConvertStringToD2D1Rect(const TString& str)
 	return returnable; LONG i;
 }
 
+
+D2D1_RECT_F _VIDEO_GRAPHICS ConvertRectToD2D1Rect(const RECT& rec)
+{
+	D2D1_RECT_F ret;
+	ret.bottom = rec.bottom;
+	ret.right = rec.right;
+	ret.left = rec.left;
+	ret.top = rec.top;
+	return ret;
+}
+
+
+RECT _VIDEO_GRAPHICS ConvertD2D1RectToRect(const D2D1_RECT_F& rec)
+{
+	RECT ret;
+	ret.bottom = rec.bottom;
+	ret.right = rec.right;
+	ret.left = rec.left;
+	ret.top = rec.top;
+	return ret;
+}

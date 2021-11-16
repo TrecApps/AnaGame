@@ -7,6 +7,13 @@ bool IsSnipZero(D2D1_RECT_F& loc)
 }
 
 
+D2D1_RECT_F TabPage::GetChildSpace()
+{
+	D2D1_RECT_F ret = area;
+	ret.top += tabHeight;
+	return ret;
+}
+
 TabPage::TabPage(TrecPointer<DrawingBoard> board, UCHAR tabHeight): TPage(board), tabBar(board)
 {
 	this->tabHeight = tabHeight;
@@ -63,6 +70,11 @@ void TabPage::SetView(TrecPointer<TPage> page)
 
 void TabPage::RemovePage(TrecPointer<TPage> page)
 {
+}
+
+void TabPage::SetView(TrecPointer<TPage> page, const TString& name)
+{
+
 }
 
 

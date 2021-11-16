@@ -74,6 +74,8 @@ public:
 		TrecPointer<TPage> content;
 	public:
 
+		TrecPointer<TPage> GetContent();
+
 		/**
 		 * Method: Tab::SetBrush
 		 * Purpose: allows users to set either the color, or the icon associated with the tab

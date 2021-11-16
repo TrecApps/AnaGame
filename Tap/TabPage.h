@@ -1,7 +1,23 @@
 #pragma once
 #include <TabBar.h>
-#include "TIdeWindow.h"
+#include "TWindow.h"
 
+
+/**
+ * Enum Class: ide_page_type
+ * Purpose: Specifies the IDE Page's location in an IDE Window
+ */
+typedef enum class ide_page_type
+{
+	ide_page_type_body,           // represents the main body of the Window
+	ide_page_type_basic_console,  // represents the lower console, that fits between the side panels
+	ide_page_type_deep_console,   // represents the deep lower console region
+	ide_page_type_upper_right,    // represents the upper section of the right panel
+	ide_page_type_lower_right,    // represents the lower section of the right panel
+	ide_page_type_upper_left,     // represents the upper section of the left panel
+	ide_page_type_lower_left,     // represents the lower section of the left panel
+	ide_page_type_drag            // represents a Page that is held by the other pages and can be dragged around
+}ide_page_type;
 
 /**
  * Enum Class: page_move_mode
@@ -25,6 +41,7 @@ typedef enum class tab_page_move_mode
  */
 class TabPage : public TPage
 {
+	friend class TIdeWindow;
 protected:
 	/**
 	 * Tab Bar holding the child Pages
@@ -54,7 +71,7 @@ protected:
 	/**
 	 * Window hoding this page
 	 */
-	TrecSubPointerSoft<TWindow, TIdeWindow> parentWindow;
+	TrecPointerSoft<TWindow> parentWindow;
 
 	/**
 	 * Type of IDE Page this object is
@@ -66,6 +83,8 @@ protected:
 	tab_page_move_mode moveMode;
 
 public:
+
+	D2D1_RECT_F GetChildSpace();
 
 	///
 	/// Mandatory Methods in order to make this Class Non-abstract
@@ -226,6 +245,8 @@ public:
 	void SetView(TrecPointer<TPage> page);
 
 	void RemovePage(TrecPointer<TPage> page);
+
+	void SetView(TrecPointer<TPage> page, const TString& name);
 
 	///
 	///	Methods Borrowed from IDEPage Class
