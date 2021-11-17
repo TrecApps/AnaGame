@@ -58,7 +58,7 @@ class _TAP_DLL TInstance : public TObject
 	friend class TDialog;
 	friend class Page;
 	friend class IDEPage;
-	friend class EventHandler;
+	friend class TapEventHandler;
 public:
 
 	/**
@@ -111,7 +111,7 @@ public:
 	 *				t_window_type winType - type of window desired (default provides a regular TWindow)
 	 * Returns: int - error code
 	 */
-	int SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<EventHandler> eh, t_window_type winType = t_window_type::t_window_type_plain);
+	int SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<TPage::EventHandler> eh, t_window_type winType = t_window_type::t_window_type_plain);
 
 	/**
 	 * Method: TInstance::GetWindowByName
@@ -205,7 +205,7 @@ public:
 	 *				anagame_page pageType - the type of handler
 	 * Returns: TrecPointer<EventHandler> - the handler specified (null if not found)
 	 */
-	TrecPointer<EventHandler> GetHandler(const TString& name, anagame_page pageType);
+	TrecPointer<TPage::EventHandler> GetHandler(const TString& name, anagame_page pageType);
 
 	/**
 	 * Method: TInstance::SetCharIntercepter
@@ -214,14 +214,14 @@ public:
 	 *				TrecPointer<TTextIntercepter> the intercepter to recieve characters
 	 * Returns: void
 	 */
-	void SetCharIntercepter(TrecPointer<EventHandler> handler, TrecPointer<TTextIntercepter> intercepter);
+	void SetCharIntercepter(TrecPointer<TPage::EventHandler> handler, TrecPointer<TTextIntercepter> intercepter);
 
 protected:
 
 	/*
 	 * The handler that is set to handle character input
 	 */
-	TrecPointer<EventHandler> charHandler;
+	TrecPointer<TPage::EventHandler> charHandler;
 
 	/**
 	 * Method: TInstance::AssertDialogRegistered
@@ -325,7 +325,7 @@ protected:
 	/**
 	 * List of Handlers that a message could be dispatched to 
 	 */
-	TTrecPointerSoftArray<EventHandler> registeredHandlers;
+	TTrecPointerSoftArray<TPage::EventHandler> registeredHandlers;
 
 
 	/**
@@ -334,7 +334,7 @@ protected:
 	 * Parameters:TrecPointer<EventHandler> handler - the handler to remove
 	 * Returns: void
 	 */
-	void UnregisterHandler(TrecPointer<EventHandler>);
+	void UnregisterHandler(TrecPointer<TPage::EventHandler>);
 
 
 	/**
@@ -343,7 +343,7 @@ protected:
 	 * Parameters: TrecPointer<EventHandler> handler - the handler to add
 	 * Returns: bool whether the handler was added or not
 	 */
-	bool RegisterHandler(TrecPointer<EventHandler> handler);
+	bool RegisterHandler(TrecPointer<TPage::EventHandler> handler);
 
 
 	/**

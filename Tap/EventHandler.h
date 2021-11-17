@@ -13,7 +13,7 @@ class MiniApp;
  * 
  * SuperClass: TObject
  */
-class _TAP_DLL EventHandler: public TObject
+class _TAP_DLL TapEventHandler: public TPage::EventHandler
 {
 	friend class TInstance;
 	friend class IDEPage;
@@ -25,7 +25,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New EventHandler Object
 	 */
-    EventHandler(TrecPointer<TInstance> instance);
+    TapEventHandler(TrecPointer<TInstance> instance);
 	/**
 	 * Method: EventHandler::EventHandler
 	 * Purpose: Constructor
@@ -33,14 +33,14 @@ public:
 	 *				const TString& name - the Name to give this handler
 	 * Returns: New EventHandler Object
 	 */
-	EventHandler(TrecPointer<TInstance> instance, const TString& name);
+	TapEventHandler(TrecPointer<TInstance> instance, const TString& name);
 	/**
 	 * Method: EventHandler::~EventHandler
 	 * Purpose: Destructor
 	 * Parameters: void
 	 * Returns: void
 	 */
-    virtual ~EventHandler();
+    virtual ~TapEventHandler();
 
 	/**
 	 * Method: EventHandler::GetType
@@ -54,16 +54,6 @@ public:
 
 
 	/**
-	 * Method: EventHandler::Initialize
-	 * Purpose: Initializes the Handler so that it has direct Access to certain Controls held by the page
-	 * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
-	 * Returns: void
-	 * 
-	 * Attributes: abstract
-	 */
-    virtual void Initialize(TrecPointer<Page> page) = 0;
-
-	/**
 	 * Method: EventHandler::OnFirstDraw
 	 * Purpose: Allows Handlers to perform some task after the first draw
 	 * Parameter: void
@@ -73,15 +63,6 @@ public:
 	 */
 	virtual void OnFirstDraw();
 
-	/**
-	 * Method: EventHandler::HandleEvents
-	 * Purpose: Handles Events produced from the set of TControls
-	 * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
-	 * Returns: void
-	 * 
-	 * Attributes: abstract
-	 */
-    virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr) = 0;
 	/**
 	 * Method: EventHandler::ShouldProcessMessage
 	 * Purpose: Reports whether the Message is to be processed by this handler
@@ -112,97 +93,6 @@ public:
     virtual bool OnDestroy();
 
 	/**
-	 * Method: EventHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
-	 */
-	afx_msg virtual void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut);
-	/**
-	 * Method: EventHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
-	 */
-	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut);
-	/**
-	 * Method: EventHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
-	 */
-	afx_msg virtual void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut);
-	/**
-	 * Method: EventHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
-	 */
-	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut);
-	/**
-	 * Method: EventHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
-	 */
-	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut);
-	/**
-	 * Method: EventHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
-	 */
-	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut);
-	/**
-	 * Method: EventHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
-	 */
-	afx_msg virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut);
-	/**
-	 * Method: EventHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
-	 */
-	afx_msg virtual void OnResize(D2D1_RECT_F newSize);
-
-	/**
-	 * Method: EventHandler::GetEventNameList
-	 * Purpose: Provides the list of event names and their associated IDs
-	 * Parameters: void 
-	 * Returns: TDataArray<eventNameID>& - list of event names and ids
-	 */
-	TDataArray<eventNameID>& GetEventNameList();
-
-	/**
-	 * Method: EventHandler::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
-	 */
-	virtual void Draw();
-
-	/**
 	 * Method: EventHandler::SetSelf
 	 * Purpose: Allows the Event Handler to supply a reference to itself
 	 * Parameters: TrecPointer<EventHandler> handleSelf - the reference generated by the TrecPointerKey
@@ -226,6 +116,8 @@ public:
 	 * Returns: TrecPointer<Page> - the page provided when Initialize was called
 	 */
 	TrecPointer<Page> GetPage();
+
+	virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut)override;
 
 	// Mini App related methods
 
@@ -305,14 +197,14 @@ protected:
 	TrecPointerSoft<TInstance> app;
 
 	/**
-	 * list of Events organized by Name and id
-	 */
-	TDataArray<eventNameID> events;
-
-	/**
 	 * The Page that the Handler is attached to
 	 */
-	TrecPointer<Page> page;
+	TrecPointer<TPage> page;
+
+	/**
+	 * The Window this is pointing to
+	 */
+	TrecPointer<TWindow>
 
 	/**
 	 * The MiniApp that generated this handler (not always used
