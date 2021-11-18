@@ -6,6 +6,7 @@
 #include <TSpecialVariable.h>
 #include <TAsyncVariable.h>
 #include <TObjectVariable.h>
+#include <TFunctionGen.h>
 
 
 
@@ -1541,7 +1542,135 @@ void TcAnascriptInterpretor::ProcessStringExpression(UINT& parenth, UINT& square
 
 UINT TcAnascriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, UINT& index, TrecPointer<TVariable> object, TrecPointer<TVariable> proc, TrecPointer<CodeStatement> statement, ReturnObject& ret, bool doAwait)
 {
-    return 0;
+    UINT curParenth = parenth;
+
+    TDataArray<TrecPointer<TVariable>> params;
+
+    // Retrieve the Parent Object if Super is being called
+    if (statement->statement.StartsWith(L"super", false, true) || statement->statement.StartsWith(L"super("))
+    {
+        if (dynamic_cast<TContainerVariable*>(methodObject.Get()))
+        {
+            bool present;
+            object = dynamic_cast<TContainerVariable*>(methodObject.Get())->GetValue(L"__proto__", present);
+        }
+    }
+
+
+    while (parenth >= curParenth)
+    {
+        // First check to see if the net token is a close parenthesis
+        TString left(statement->statement.SubString(index));
+        left.Trim();
+
+        if (left.StartsWith(L')'))
+        {
+            index = statement->statement.Find(L')', index) + 1;
+            parenth--;
+            continue;
+        }
+
+        // Get the Parameter
+        ProcessExpression(statement, ret, parenth, square, index);
+
+
+        // If an error was detected, return
+        if (ret.returnCode)
+            return;
+
+        // If blocks were detected, go through and retrieve the current statement we are on
+        bool jumped = false;
+
+        // If we jumped, check to see if we start with a comma. If we do, it is likely that the block was the expression and we need to jump over it 
+        //  otherwise, Process Expression will fail to pick up the next variable properly
+        if (statement->statement.GetTrim().StartsWith(L','))
+            index = statement->statement.Find(L',') + 1;
+        // Add the parameter
+        params.push_back(ret.errorObject);
+    }
+
+    // Convert to a function we can call
+    TrecSubPointer<TVariable, TcInterpretor> function;
+    // Check to see if we have an accessor variable, if we do, then assess variable count and choose the function within
+
+    if (proc->GetVarType() == var_type::accessor)
+    {
+        TrecSubPointer<TVariable, TAccessorVariable> accProc = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TAccessorVariable>(proc);
+        assert(accProc.Get());
+        if (!params.Size())
+        {
+            function = accProc->GetCGetter();
+            if (!function.Get())
+                function = accProc->GetCSetter();
+        }
+        else
+        {
+            function = accProc->GetCSetter();
+            if (!function.Get())
+                function = accProc->GetCGetter();
+        }
+    }
+    else if (proc->GetVarType() == var_type::interpretor)
+    {
+        function = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(proc);
+    }
+    else if (proc->GetVarType() == var_type::interpretor_gen)
+    {
+        function = dynamic_cast<TFunctionGen*>(proc.Get())->Generate(params);
+        assert(function.Get());
+        ret.errorObject = function->GetIterator();
+        return;
+    }
+
+    if (!function.Get())
+    {
+        PrepReturn(ret, L"found Null or Undefined Getter/Setter!", L"", ReturnObject::ERR_BROKEN_REF, statement->lineStart);
+        return;
+    }
+
+    assert(function.Get());
+
+
+    TrecSubPointer<TVariable, TcTypeInterpretor> typeFunction = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcTypeInterpretor>(proc);
+    if (typeFunction.Get() && typeFunction->IsAsync() && !doAwait)
+    {
+        auto asyncObj = typeFunction->PrepAsyncCall();
+
+        // To-Do: Respond to async Object once one is Fleshed out
+    }
+    else if (doAwait)
+    {
+        // Calling 'await' on a non async function is an error
+        ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
+        ret.errorMessage.Set(L"Cannot call await on non-async function");
+        return;
+    }
+
+    // This is a method if object is valid
+    function->SetActiveObject(object);
+    // Set the parameters
+    function->SetIntialVariables(params);
+
+    // Run the function and get the results
+    ret = function->Run();
+
+    // Inspect the results
+    if (ret.returnCode)
+    {
+        // Add Stack info
+    }
+    else
+    {
+        if (ret.errorObject.Get() && ret.errorObject->GetVarType() == var_type::async)
+        {
+
+            dynamic_cast<TAsyncVariable*>(ret.errorObject.Get())->SetParent(TrecPointerKey::GetSubPointerFromSoft<>(self), false);
+        }
+
+
+        ret.mode = (ret.mode == return_mode::rm_super_return) ? return_mode::rm_return : return_mode::rm_regular;
+    }
+
 }
 
 void TcAnascriptInterpretor::ProcessFunctionExpression(TrecPointer<CodeStatement> statement, ReturnObject& obj)
