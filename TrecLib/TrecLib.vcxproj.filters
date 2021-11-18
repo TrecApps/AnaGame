@@ -1,268 +1,94 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="CodeStatement.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectOperator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TBlankNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TLinkedList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TSliceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TStringSlice.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TVariable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TcBashInterpretor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TcInterpretor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TEnvironment.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Configuration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectoryInterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Dragable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ParseReader_.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Parser_.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PathConfiguration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TArrayBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TClientSocket.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TControlComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TDataArrayBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TDirectory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TFileNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TFileShell.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TMapBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TML_Reader_.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TObjectNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TPoint.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TrecLib.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TrecReference.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TServerSocket.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TSocket.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TShell.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TFileModifier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="CodeStatement.cpp" />
+    <ClCompile Include="ObjectOperator.cpp" />
+    <ClCompile Include="TBlankNode.cpp" />
+    <ClCompile Include="TLinkedList.cpp" />
+    <ClCompile Include="TSliceManager.cpp" />
+    <ClCompile Include="TStringSlice.cpp" />
+    <ClCompile Include="TThread.cpp" />
+    <ClCompile Include="TVariable.cpp" />
+    <ClCompile Include="TcBashInterpretor.cpp" />
+    <ClCompile Include="TcInterpretor.cpp" />
+    <ClCompile Include="TEnvironment.cpp" />
+    <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="Configuration.cpp" />
+    <ClCompile Include="DirectoryInterface.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Dragable.cpp" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="ParseReader_.cpp" />
+    <ClCompile Include="Parser_.cpp" />
+    <ClCompile Include="PathConfiguration.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="TArrayBase.cpp" />
+    <ClCompile Include="TClientSocket.cpp" />
+    <ClCompile Include="TControlComponent.cpp" />
+    <ClCompile Include="TDataArrayBase.cpp" />
+    <ClCompile Include="TDirectory.cpp" />
+    <ClCompile Include="TFile.cpp" />
+    <ClCompile Include="TFileNode.cpp" />
+    <ClCompile Include="TFileShell.cpp" />
+    <ClCompile Include="TFileModifier.cpp" />
+    <ClCompile Include="TMapBase.cpp" />
+    <ClCompile Include="TML_Reader_.cpp" />
+    <ClCompile Include="TObject.cpp" />
+    <ClCompile Include="TObjectNode.cpp" />
+    <ClCompile Include="TPoint.cpp" />
+    <ClCompile Include="TrecLib.cpp" />
+    <ClCompile Include="TrecReference.cpp" />
+    <ClCompile Include="TServerSocket.cpp" />
+    <ClCompile Include="TSocket.cpp" />
+    <ClCompile Include="TShell.cpp" />
+    <ClCompile Include="TString.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CodeStatement.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectOperator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TBlankNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TcBashInterpretor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TcInterpretor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TDataMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TLinkedList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TSliceManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TStringSlice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TEnvironment.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AnagameDef.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Animation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Configuration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectoryInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Dragable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="framework.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParseReader_.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Parser_.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PathConfiguration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TArrayBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TClientSocket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TDataArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TDataArrayBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TDirectory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TFileNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TFileShell.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TMapBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TML_Reader_.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TObjectNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TPoint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TrecLib.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TrecReference.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TServerSocket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TSocket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TShell.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TString.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TTrecPointerArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TTrecSoftPointerArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TVariable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TFileModifier.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClInclude Include="CodeStatement.h" />
+    <ClInclude Include="ObjectOperator.h" />
+    <ClInclude Include="TBlankNode.h" />
+    <ClInclude Include="TcBashInterpretor.h" />
+    <ClInclude Include="TcInterpretor.h" />
+    <ClInclude Include="TDataMap.h" />
+    <ClInclude Include="TLinkedList.h" />
+    <ClInclude Include="TSliceManager.h" />
+    <ClInclude Include="TStringSlice.h" />
+    <ClInclude Include="TEnvironment.h" />
+    <ClInclude Include="AnagameDef.h" />
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="Configuration.h" />
+    <ClInclude Include="DirectoryInterface.h" />
+    <ClInclude Include="Dragable.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="ParseReader_.h" />
+    <ClInclude Include="Parser_.h" />
+    <ClInclude Include="PathConfiguration.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="TArray.h" />
+    <ClInclude Include="TArrayBase.h" />
+    <ClInclude Include="TClientSocket.h" />
+    <ClInclude Include="TDataArray.h" />
+    <ClInclude Include="TDataArrayBase.h" />
+    <ClInclude Include="TDirectory.h" />
+    <ClInclude Include="TFile.h" />
+    <ClInclude Include="TFileNode.h" />
+    <ClInclude Include="TFileShell.h" />
+    <ClInclude Include="TFileModifier.h" />
+    <ClInclude Include="TMap.h" />
+    <ClInclude Include="TMapBase.h" />
+    <ClInclude Include="TML_Reader_.h" />
+    <ClInclude Include="TObject.h" />
+    <ClInclude Include="TObjectNode.h" />
+    <ClInclude Include="TPoint.h" />
+    <ClInclude Include="TrecLib.h" />
+    <ClInclude Include="TrecReference.h" />
+    <ClInclude Include="TServerSocket.h" />
+    <ClInclude Include="TSocket.h" />
+    <ClInclude Include="TShell.h" />
+    <ClInclude Include="TString.h" />
+    <ClInclude Include="TTrecPointerArray.h" />
+    <ClInclude Include="TTrecSoftPointerArray.h" />
+    <ClInclude Include="TVariable.h" />
   </ItemGroup>
 </Project>
