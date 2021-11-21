@@ -288,6 +288,7 @@ public:
 		// TrecPointer<TFlyout> flyout; // To-Do: Re add later
 		TrecPointer<TTextIntercepter> textIntercepter;
 		TrecPointer<TVariable> data;		// Holds either a variable, or an interpretor to handle an event
+		TString expression;
 	};
 
 	/**
@@ -331,6 +332,12 @@ public:
 		virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut) = 0;
 
 		virtual void SetSelf(TrecPointer<TPage::EventHandler> handleSelf) = 0;
+
+		virtual TrecPointer<TPage> GetPage() = 0;
+
+		virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr) = 0;
+
+		virtual TrecPointer<TTextIntercepter> GetTextIntercepter() = 0;
 	};
 
 

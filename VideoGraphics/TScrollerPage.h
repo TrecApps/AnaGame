@@ -23,6 +23,8 @@ protected:
 	void RefreshScroll();
 public:
 
+	TrecPointer<TPage> GetChildPage();
+
 	/**
 	 * Method: TScrollerPage::TScrollerPage
 	 * Purpose: Constructor

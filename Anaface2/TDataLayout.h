@@ -8,7 +8,7 @@ typedef enum class data_org
 	do_limit_by_item_count	// Limit by number of items per row/col
 };
 
-class TDataLayout :
+class _ANAFACE_DLL2 TDataLayout :
     public TRandomLayout
 {
 public:

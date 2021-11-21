@@ -43,7 +43,7 @@ UINT TWebInput::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
 {
     childNodes.RemoveAll();
 
-    TrecPointer<TControl> control;
+    TrecPointer<TPage> control;
 
     switch (inputType)
     {
@@ -56,11 +56,11 @@ UINT TWebInput::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
     case web_input_type::wit_datetime_local:
     case web_input_type::wit_file:
     case web_input_type::wit_image:
-        control = TrecPointerKey::GetNewSelfTrecPointer<TControl>(board, TrecPointer<TArray<styleTable>>());
+        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TControl>(board, TrecPointer<TArray<styleTable>>());
         break;
         // Requires a Checkbox
     case web_input_type::wit_checkbox:
-        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TCheckBox>(board, TrecPointer<TArray<styleTable>>());
+        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TCheckbox>(board, TrecPointer<TArray<styleTable>>());
         break;
         // Requires Text Controls
     case web_input_type::wit_email:
@@ -68,27 +68,27 @@ UINT TWebInput::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
     case web_input_type::wit_password:
     case web_input_type::wit_tel:
     case web_input_type::wit_text:
-        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), window);
+        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(board, TrecPointer<TArray<styleTable>>(), window);
 
         if (inputType == web_input_type::wit_number)
         {
-            control->addAttribute(L"|IsNumberControl", TrecPointerKey::GetNewTrecPointer<TString>(L"true"));
+            dynamic_cast<TControl*>(control.Get())->AddAttribute(L"|IsNumberControl", L"true");
         }
         else if (inputType == web_input_type::wit_password)
         {
-            control->addAttribute(L"|IsPassword", TrecPointerKey::GetNewTrecPointer<TString>(L"true"));
+            dynamic_cast<TControl*>(control.Get())->AddAttribute(L"|IsPassword", L"true");
         }
 
         break;
         // Requires Radio Button
     case web_input_type::wit_radio:
-        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TControl, TRadioButton>(board, TrecPointer<TArray<styleTable>>());
+        control = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(board, TrecPointer<TArray<styleTable>>());
         if (name.GetSize())
-            control->addAttribute(L"|RadioClass", TrecPointerKey::GetNewTrecPointer<TString>(name));
+            dynamic_cast<TControl*>(control.Get())->AddAttribute(L"|RadioClass", name);
     }
     if (control.Get())
     {
-        control->addAttribute(L"|caption", TrecPointerKey::GetNewTrecPointer<TString>(value));
+        dynamic_cast<TControl*>(control.Get())->AddAttribute(L"|caption", value);
 
 
         childNodes.push_back(TrecPointerKey::GetNewTrecPointer<TWebNodeContainer>(control));

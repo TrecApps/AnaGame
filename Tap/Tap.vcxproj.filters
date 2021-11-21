@@ -24,9 +24,6 @@
     <ClInclude Include="AnagameAsm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Page.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Tap_dll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,13 +51,7 @@
     <ClInclude Include="NameDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MiniHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TIdeWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IDEPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TerminalHandler.h">
@@ -129,9 +120,6 @@
     <ClInclude Include="WebHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IDEPageManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TabPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,9 +132,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AnagameAsm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Page.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TDialog.cpp">
@@ -170,13 +155,7 @@
     <ClCompile Include="NameDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MiniHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TIdeWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IDEPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TerminalHandler.cpp">
@@ -243,9 +222,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WebHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IDEPageManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TabPage.cpp">

@@ -66,7 +66,7 @@ protected:
 	/**
 	 * Current Page to draw
 	 */
-	TrecPointer<Page> currentPage;
+	TrecPointer<TPage> currentPage;
 
 	/**
 	 * Window hoding this page
@@ -284,7 +284,6 @@ public:
 
 private:
 
-	bool IsDrawing();
 
 	/**
 	 * Method: TabPage::MouseMoveBody

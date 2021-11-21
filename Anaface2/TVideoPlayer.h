@@ -1,7 +1,7 @@
 #pragma once
 #include "TControl.h"
 #include <TPlayer.h>
-class TVideoPlayer :
+class _ANAFACE_DLL2 TVideoPlayer :
     public TControl
 {
 public:

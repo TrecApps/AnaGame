@@ -233,7 +233,6 @@
     </ClCompile>
     <ClCompile Include="TArrayBase.cpp" />
     <ClCompile Include="TClientSocket.cpp" />
-    <ClCompile Include="TControlComponent.cpp" />
     <ClCompile Include="TDataArrayBase.cpp" />
     <ClCompile Include="TDirectory.cpp" />
     <ClCompile Include="TFile.cpp" />

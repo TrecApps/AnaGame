@@ -1,13 +1,16 @@
 #include "TCodeHandler.h"
-#include "Page.h"
-#include <AnafaceUI.h>
-#include <TScrollerControl.h>
-TCodeHandler::TCodeHandler(TrecPointer<TInstance> in) : DocumentHandler(in)
+#include <AnafacePage.h>
+#include <TScrollerPage.h>
+#include <TLayout.h>
+
+
+
+TCodeHandler::TCodeHandler(TrecPointer<TProcess> in) : DocumentHandler(in)
 {
 	onFocusString.Set(L"Focus CodeHandler");
 }
 
-TCodeHandler::TCodeHandler(TrecPointer<TInstance> in, const TString& name) : DocumentHandler(in, name)
+TCodeHandler::TCodeHandler(TrecPointer<TProcess> in, const TString& name) : DocumentHandler(in, name)
 {
 	onFocusString.Set(L"Focus CodeHandler");
 }
@@ -23,7 +26,7 @@ TString TCodeHandler::GetType()
 	return TString(L"TCodeHandler;") + EventHandler::GetType();
 }
 
-void TCodeHandler::Initialize(TrecPointer<Page> page)
+void TCodeHandler::Initialize(TrecPointer<TPage> page)
 {
 	ThreadLock();
 	if (!page.Get())
@@ -31,15 +34,15 @@ void TCodeHandler::Initialize(TrecPointer<Page> page)
 		ThreadRelease();
 		return;
 	}
-	auto control = page->GetRootControl();
+	auto control = dynamic_cast<AnafacePage*>(page.Get())->GetRootControl();
 
 	if (!control.Get())
 	{
 		ThreadRelease();
 		return;
 	}
-	if(dynamic_cast<TScrollerControl*>(control.Get()))
-		control = dynamic_cast<TScrollerControl*>(control.Get())->GetChildControl();
+	if(dynamic_cast<TScrollerPage*>(control.Get()))
+		control = dynamic_cast<TScrollerPage*>(control.Get())->GetChildPage();
 
 	TLayout* lay = dynamic_cast<TLayout*>(control.Get());
 	if (!lay)
@@ -47,8 +50,8 @@ void TCodeHandler::Initialize(TrecPointer<Page> page)
 		ThreadRelease();
 		return;
 	}
-	lines = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(lay->GetLayoutChild(0, 0));
-	code = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(lay->GetLayoutChild(1, 0));
+	lines = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(lay->GetPage(0, 0));
+	code = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(lay->GetPage(1, 0));
 
 	this->page = page;
 
@@ -76,7 +79,7 @@ void TCodeHandler::Initialize(TrecPointer<Page> page)
 	ThreadRelease();
 }
 
-void TCodeHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void TCodeHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 }
 

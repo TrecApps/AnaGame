@@ -7,7 +7,7 @@ typedef enum class ThreadType
     tt_regular,
     tt_interpretor,
     tt_animaion
-};
+}ThreadType;
 
 typedef struct ThreadDetails
 {

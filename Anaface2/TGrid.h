@@ -5,7 +5,7 @@
  * Class: TGrid
  * Purpose: Adds a second dimension for layout to the TLayout control
  */
-class TGrid :
+class _ANAFACE_DLL2 TGrid :
     public TLayout
 {
 public:

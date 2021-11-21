@@ -171,12 +171,9 @@
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HandlerMessage.h" />
-    <ClInclude Include="IDEPage.h" />
-    <ClInclude Include="IDEPageManager.h" />
     <ClInclude Include="MiniApp.h" />
     <ClInclude Include="NameDialog.h" />
     <ClInclude Include="OkayHandler.h" />
-    <ClInclude Include="Page.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TabPage.h" />
     <ClInclude Include="TAnimationManager.h" />
@@ -198,7 +195,6 @@
     <ClInclude Include="TWebWindow.h" />
     <ClInclude Include="TWindow.h" />
     <ClInclude Include="EventHandler.h" />
-    <ClInclude Include="MiniHandler.h" />
     <ClInclude Include="WebHandler.h" />
     <ClInclude Include="WebPage.h" />
   </ItemGroup>
@@ -213,12 +209,9 @@
     <ClCompile Include="FileDialogHandler.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="HandlerMessage.cpp" />
-    <ClCompile Include="IDEPage.cpp" />
-    <ClCompile Include="IDEPageManager.cpp" />
     <ClCompile Include="MiniApp.cpp" />
     <ClCompile Include="NameDialog.cpp" />
     <ClCompile Include="OkayHandler.cpp" />
-    <ClCompile Include="Page.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -243,7 +236,6 @@
     <ClCompile Include="TWebWindow.cpp" />
     <ClCompile Include="TWindow.cpp" />
     <ClCompile Include="EventHandler.cpp" />
-    <ClCompile Include="MiniHandler.cpp" />
     <ClCompile Include="WebHandler.cpp" />
     <ClCompile Include="WebPage.cpp" />
   </ItemGroup>

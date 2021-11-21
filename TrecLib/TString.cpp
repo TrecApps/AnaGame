@@ -221,6 +221,20 @@ TString::~TString()
 	return;
 }
 
+TString::TString(UINT num)
+{
+	this->capacity = this->size = 0;
+	this->string = nullptr;
+	Format(L"%d", num);
+}
+
+TString::TString(float num)
+{
+	this->capacity = this->size = 0;
+	this->string = nullptr;
+	Format(L"%f", num);
+}
+
 
 /*
 * Method: TString::Constructor 
@@ -375,7 +389,7 @@ short TString::ConvertToInt(int& value)
 	int hold;
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
@@ -417,7 +431,7 @@ short TString::ConvertToInt(long& value)
 	int hold;
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
@@ -460,7 +474,7 @@ short TString::ConvertToLong(long long& value)
 
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
@@ -506,7 +520,7 @@ short TString::ConvertToDouble(double& value)
 
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (fullInt && convertToNumber(this->GetAt(c), &hold))
 		{
@@ -561,7 +575,7 @@ short TString::ConvertToFloat(float& value)
 	int hold;
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (fullInt && convertToNumber(this->GetAt(c), &hold))
 		{
@@ -668,7 +682,6 @@ TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCH
 				tok.Set(this->SubString(begPos, pos));
 			}
 		}
-		WCHAR q = L'\0';
 
 		for (UINT Rust = 0; Rust < str.size; Rust++)
 		{
@@ -2117,7 +2130,7 @@ int TString::Compare(const TString& str1, const TString& str2)
  *				int count - the number of characters to remove
  * Returns: int - the new size of the string
  */
-int TString::Delete(int index, int count)
+int TString::Delete(UINT index, int count)
 {
 	TObjectLocker threadLock(&thread);
 	if (count < 1)
@@ -2131,7 +2144,7 @@ int TString::Delete(int index, int count)
 	WCHAR* newString = new WCHAR[capacity];
 	for (int c = 0; c < index; c++)
 	{
-		newString[c] = string[c];
+		newString[c] = static_cast<WCHAR>(string[c]);
 	}
 
 	for (int c = index, rust = index + count; rust < capacity; c++, rust++)

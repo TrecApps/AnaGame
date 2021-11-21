@@ -47,7 +47,7 @@ public:
 	 *				UINT pageBarSpace - how much tab space to allow the tab bars in the IDE-Pages
 	 * Returns: New IDE Window
 	 */
-	TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, UINT mainViewSpace, UINT pageBarSpace);
+	TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, UINT mainViewSpace, UINT pageBarSpace);
 
 	/**
 	 * Method: TIdeWindow::~TIdeWindow

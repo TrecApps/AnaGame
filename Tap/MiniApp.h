@@ -2,6 +2,7 @@
 #include <TObject.h>
 #include "HandlerMessage.h"
 #include "TIdeWindow.h"
+#include <TPage.h>
 
 /**
  * Class: MiniApp
@@ -88,7 +89,7 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual TrecPointer<EventHandler> GetMainHandler();
+	virtual TrecPointer<TPage::EventHandler> GetMainHandler();
 
 protected:
 	/**
@@ -99,12 +100,12 @@ protected:
 	/**
 	 * the Main page and therefore reson for the MiniApp object to be created
 	 */
-	TrecPointer<Page> mainPage;
+	TrecPointer<TPage> mainPage;
 
 	/**
 	 * The TInstance underwhich this miniApp is created
 	 */
-	TrecPointerSoft<TInstance> instance;
+	TrecPointerSoft<TProcess> instance;
 	
 	/**
 	 * The Self reference that allows the MiniApp to provide references to itself

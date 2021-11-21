@@ -7,7 +7,7 @@
  * Class: TCombobox
  * Purpose: References a Combobox in Anagame
  */
-class TCombobox :
+class _ANAFACE_DLL2 TCombobox :
     public TGadget
 {
 	friend class TComboBoxUpdater;

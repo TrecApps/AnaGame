@@ -13,7 +13,7 @@ typedef enum class env_var_type
 {
 	evt_any,
 	evt_interpretor
-};
+}env_var_type;
 
 class _TREC_LIB_DLL EnvironmentEntry
 {

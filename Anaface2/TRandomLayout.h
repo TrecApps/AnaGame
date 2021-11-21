@@ -18,7 +18,7 @@ public:
  * Class: TRandomLayout
  * Purpose: Extends Anaface 2's TControls to support Child Controls
  */
-class TRandomLayout :
+class _ANAFACE_DLL2 TRandomLayout :
     public TControl
 {
 public:

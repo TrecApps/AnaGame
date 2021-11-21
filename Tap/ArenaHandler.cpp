@@ -1,6 +1,6 @@
 #include "ArenaHandler.h"
-#include "Page.h"
 #include "TInstance.h"
+#include <AnafacePage.h>
 
 /**
  * Method: ArenaHandler::ArenaHandler
@@ -9,7 +9,7 @@
  *				TString& name - name of the handler, used for identifying the Camera Handler
  * Returns: New ArenaHandler instance
  */
-ArenaHandler::ArenaHandler(TrecPointer<TInstance> instance, TString& name): EventHandler(instance, name)
+ArenaHandler::ArenaHandler(TrecPointer<TProcess> instance, TString& name): TapEventHandler(instance, name)
 {
 	this->name.Set(name);
 }
@@ -40,23 +40,23 @@ ArenaHandler::~ArenaHandler()
  * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
  * Returns: void
  */
-void ArenaHandler::Initialize(TrecPointer<Page> page)
+void ArenaHandler::Initialize(TrecPointer<TPage> page)
 {
 	ThreadLock();
-	if (!page.Get() || !app.Get() || !page->GetWindowHandle().Get())
+	if (!page.Get() || !app.Get() || !window.Get())
 	{
 		ThreadRelease();
 		return;
 	}
-	auto control = page->GetRootControl();
+	auto control = dynamic_cast<AnafacePage*>(page.Get())->GetRootControl();
 	if (!control.Get())
 	{
 		ThreadRelease();
 		return;
 	}
-	arenaControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TArena>(control);
+	arenaControl = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TArenaView>(control);
 
-	this->engine = page->GetWindowHandle()->GetNewArenaEngine(name);
+	this->engine = window->GetNewArenaEngine(name);
 
 	assert(arenaControl.Get());
 	arenaControl->setEngine(this->engine);
@@ -70,24 +70,22 @@ void ArenaHandler::Initialize(TrecPointer<Page> page)
  * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
  * Returns: void
  */
-void ArenaHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void ArenaHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	int e_id = -1;
 	EventArgs ea;
 	ThreadLock();
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		auto tc = eventAr.at(c).control;
-		if (!tc.Get())
+		auto tc = eventAr.at(c).expression;
+		if (tc.ConvertToInt(e_id))
 			continue;
-		ea = tc->getEventArgs();
-		e_id = ea.methodID;
 		// At this point, call the appropriate method
 		if (e_id > -1 && e_id < arenaHandlers.Size())
 		{
 			// call method
 			if (arenaHandlers[e_id])
-				(this->*arenaHandlers[e_id])(tc, ea);
+				(this->*arenaHandlers[e_id])(eventAr.at(c).control, ea);
 		}
 	}
 
@@ -166,7 +164,7 @@ void ArenaHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 		messageStr.Format(L"Camera Location %f;%f;%f Direction %f;%f;%f", loc.x, loc.y, loc.z, dir.x, dir.y, dir.z);
 
 		TrecPointer<HandlerMessage> newMessage = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name, handler_type::handler_type_camera, 0, message_transmission::message_transmission_name_type, 0, messageStr);
-		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->DispatchAnagameMessage(newMessage);
+		dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<>(app).Get())->DispatchAnagameMessage(newMessage);
 	}
 	ThreadRelease();
 }

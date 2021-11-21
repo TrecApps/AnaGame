@@ -40,6 +40,11 @@ void TScrollerPage::RefreshScroll()
 	ThreadRelease();
 }
 
+TrecPointer<TPage> TScrollerPage::GetChildPage()
+{
+	return childPage;
+}
+
 TScrollerPage::TScrollerPage(TrecPointer<DrawingBoard> board, TrecPointer<TPage> cPage) :TPage(board)
 {
 	if (!cPage.Get())

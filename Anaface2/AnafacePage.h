@@ -1,5 +1,6 @@
 #pragma once
 #include <TPage.h>
+#include "Anaface2.h"
 
 typedef struct LayoutData
 {
@@ -11,7 +12,7 @@ typedef struct LayoutData
  * Class: AnafacePage
  * Purpose: Serves as the root page for Anaface 2 - UIs and holds an Event Handler
  */
-class AnafacePage : public TPage
+class _ANAFACE_DLL2 AnafacePage : public TPage
 {
 public:
 	/**

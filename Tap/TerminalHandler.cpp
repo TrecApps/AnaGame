@@ -1,12 +1,12 @@
 #include "TerminalHandler.h"
-#include "Page.h"
+#include <AnafacePage.h>
 /**
  * Method: TerminalHandler::TerminalHandler
  * Purpose: Constructor
  * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
  * Returns: New Terminal Handler Object
  */
-TerminalHandler::TerminalHandler(TrecPointer<TInstance> instance): EventHandler(instance)
+TerminalHandler::TerminalHandler(TrecPointer<TProcess> instance): TapEventHandler(instance)
 {
 }
 
@@ -37,7 +37,7 @@ TString TerminalHandler::GetType()
  * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
  * Returns: void
  */
-void TerminalHandler::Initialize(TrecPointer<Page> page)
+void TerminalHandler::Initialize(TrecPointer<TPage> page)
 {
 	ThreadLock();
 	if (!page.Get())
@@ -45,10 +45,10 @@ void TerminalHandler::Initialize(TrecPointer<Page> page)
 		ThreadRelease();
 		return;
 	}
-	auto root = page->GetRootControl();
+	auto root = dynamic_cast<AnafacePage*>(page.Get())->GetRootControl();
 
-	if (root.Get())
-		currentTerminal = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TPromptControl>(root);
+	//if (root.Get())
+		//currentTerminal = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TPromptControl>(root);
 	ThreadRelease();
 }
 
@@ -58,7 +58,7 @@ void TerminalHandler::Initialize(TrecPointer<Page> page)
  * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
  * Returns: void
  */
-void TerminalHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void TerminalHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 }
 
@@ -78,7 +78,7 @@ void TerminalHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
  * Parameters: void
  * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
  */
-TrecSubPointer<TControl, TPromptControl> TerminalHandler::GetTerminal()
+TrecPointer<TConsoleHolder> TerminalHandler::GetTerminal()
 {
 	ThreadLock();
 	auto ret = currentTerminal;

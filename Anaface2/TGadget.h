@@ -2,7 +2,7 @@
 #include "TControl.h"
 
 
-class TGadget :
+class _ANAFACE_DLL2 TGadget :
     public TControl
 {
 public:

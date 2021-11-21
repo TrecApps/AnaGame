@@ -60,10 +60,10 @@ TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present, en
  * Parameters: TrecPointer<TEnvironment> self - reference to itself
  * Returns: void
  */
-void TEnvironment::SetSelf(TrecPointer<TEnvironment> self)
+void TEnvironment::SetSelf(TrecPointer<TEnvironment> self_)
 {
-	if (self.Get() != this) throw L"Error";
-	this->self = TrecPointerKey::GetSoftPointerFromTrec<TEnvironment>(self);
+	if (self_.Get() != this) throw L"Error";
+	this->self = TrecPointerKey::GetSoftPointerFromTrec<TEnvironment>(self_);
 }
 
 /**
@@ -74,10 +74,10 @@ void TEnvironment::SetSelf(TrecPointer<TEnvironment> self)
  * Returns: void
  *
  */
-void TEnvironment::AddVariable(const TString& name, TrecPointer<TVariable> var)
+void TEnvironment::AddVariable(const TString& name_, TrecPointer<TVariable> var)
 {
 	AG_THREAD_LOCK
-	envVariables.addEntry(name, var);
+	envVariables.addEntry(name_, var);
 	RETURN_THREAD_UNLOCK;
 }
 
@@ -100,7 +100,7 @@ TString TEnvironment::GetName()
  *				const TString& envType - the actual type of environment used
  * Returns: void
  */
-void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType, const TString& name)
+void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType, const TString& name_)
 {
 	if (!file.Get() || file->IsDirectory())
 		return;
@@ -131,7 +131,7 @@ void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString
 	curEntry.filePath.Set(file->GetPath());
 	curEntry.source.Set(envSource);
 	curEntry.type.Set(envType);
-	curEntry.name.Set(name);
+	curEntry.name.Set(name_);
 
 	bool doPush = true;
 	for (UINT Rust = 0; Rust < envEntries.Size(); Rust++)
@@ -252,9 +252,9 @@ TString TEnvironment::GetUrl()
  * Parameters: const TString& url
  * Returns: void
  */
-void TEnvironment::SetUrl(const TString& url)
+void TEnvironment::SetUrl(const TString& url_)
 {
-	this->url.Set(url);
+	this->url.Set(url_);
 }
 
 
@@ -402,7 +402,7 @@ void GetAnagameProvidedEnvironmentList(TrecPointer<TFileShell> directory, TDataA
 		// file.sln
 		// 012345678
 
-		if (fileName.Find(TString(L".snl")) == fileName.GetSize() - 4 || fileName.Find(TString(L".vcxproj")) == fileName.GetSize() - 8)
+		if (fileName.Find(TString(L".snl")) == static_cast<int>(fileName.GetSize()) - 4 || fileName.Find(TString(L".vcxproj")) == static_cast<int>(fileName.GetSize()) - 8)
 		{
 			environmentType.push_back(TString(L"VisualStudio"));
 			continue;
@@ -442,6 +442,8 @@ EnvironmentEntryParser::~EnvironmentEntryParser()
 
 bool EnvironmentEntryParser::Obj(TString& v)
 {
+	UNREFERENCED_PARAMETER(v);
+
 	if (entry.filePath.GetSize() && entry.source.GetSize() && entry.type.GetSize())
 		entries.push_back(entry);
 
@@ -505,14 +507,14 @@ void EnvironmentEntryParser::goParent()
 {
 }
 
-void EnvironmentEntryParser::GetEntries(TDataArray<EnvironmentEntry>& entries)
+void EnvironmentEntryParser::GetEntries(TDataArray<EnvironmentEntry>& entries_)
 {
 	TString v;
 	Obj(v);
 
 	for (UINT Rust = 0; Rust < this->entries.Size(); Rust++)
 	{
-		entries.push_back(this->entries[Rust]);
+		entries_.push_back(this->entries[Rust]);
 	}
 }
 
@@ -527,6 +529,8 @@ TConsoleHolder::~TConsoleHolder()
 
 UINT TConsoleHolder::Group(bool collapsed)
 {
+	UNREFERENCED_PARAMETER(collapsed);
+
 	tabs.AppendChar(L'\t');
 	return ++groupLevel;
 }

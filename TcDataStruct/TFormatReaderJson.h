@@ -9,6 +9,7 @@
 class TFormatReaderJson :
     public TFormatReader
 {
+    friend class TrecPointerKey;
 public:
     /**
      * Class: TFormatReaderBuilderJson

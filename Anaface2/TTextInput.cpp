@@ -225,6 +225,38 @@ void TTextInput::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_C
 	}
 }
 
+bool TTextInput::SetNumericText(float f)
+{
+	if (!useNumber)
+		return false;
+	numberControl.currentVal.f = f;
+	if (!numberControl.useFloat)
+	{
+		numberControl.useFloat = true;
+		numberControl.increment.f = static_cast<float>(numberControl.increment.i);
+	}
+}
+
+void TTextInput::SetText(const TString& text)
+{
+	if (useNumber)
+		return;
+	if (!this->text.Get())
+		SetUpTextElement();
+	if (!this->text.Get())
+		return;
+	this->text->SetText(text);
+}
+
+TString TTextInput::GetText()
+{
+	TString ret;
+	if (!text.Get())
+		return ret;
+	text->GetText(ret);
+	return ret;
+}
+
 void TTextInput::SetUpTextElement()
 {
 	TextFormattingDetails details;

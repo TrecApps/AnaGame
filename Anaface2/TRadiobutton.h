@@ -3,7 +3,7 @@
 
 
 
-class TRadiobutton :
+class _ANAFACE_DLL2 TRadiobutton :
     public TGadget
 {
 public:

@@ -8,6 +8,8 @@ public:
 	virtual void Insert(UINT start, UINT count) = 0;
 	virtual void Delete(UINT start, UINT count) = 0;
 
+	virtual ~TSliceManager();
+
 	void SetSelf(TrecPointer<TSliceManager> self);
 
 protected:

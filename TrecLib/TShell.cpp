@@ -73,8 +73,9 @@ void TShell::SubmitCommand(TString& command)
 
 	command.Trim();
 	if (!command.GetSize())
+	{
 		RETURN_THREAD_UNLOCK;
-
+	}
 	int firstSpace = command.Find(L' ');
 
 	TString com(command.SubString(0, firstSpace));

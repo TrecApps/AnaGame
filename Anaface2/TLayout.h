@@ -15,7 +15,7 @@ public:
  * Class: TLayout
  * Purpose: Adds one dimension of Structure to the TRandomLayout
  */
-class TLayout : public TRandomLayout
+class _ANAFACE_DLL2 TLayout : public TRandomLayout
 {
 public:
 

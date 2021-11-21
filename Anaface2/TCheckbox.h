@@ -1,6 +1,6 @@
 #pragma once
 #include "TGadget.h"
-class TCheckbox :
+class _ANAFACE_DLL2 TCheckbox :
     public TGadget
 {
 public:

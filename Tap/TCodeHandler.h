@@ -1,5 +1,6 @@
 #pragma once
 #include "DocumentHandler.h"
+#include <TTextInput.h>
 
 /**
  * Class: TCodeHandler
@@ -17,7 +18,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New EventHandler Object
 	 */
-	TCodeHandler(TrecPointer<TInstance> in);
+	TCodeHandler(TrecPointer<TProcess> in);
 
 	/**
 	 * Method: TCodeHandler::TCodeHandler
@@ -26,7 +27,7 @@ public:
 	 *				const TString& name - the Name to give this handler
 	 * Returns: New EventHandler Object
 	 */
-	TCodeHandler(TrecPointer<TInstance> in, const TString& name);
+	TCodeHandler(TrecPointer<TProcess> in, const TString& name);
 
 
 	/**
@@ -46,7 +47,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 
 	/**
 	 * Method: TCodeHandler::HandleEvents
@@ -56,7 +57,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr) override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr) override;
 
 
 	/**
@@ -94,7 +95,7 @@ protected:
 	 */
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 
-	TrecSubPointer<TControl, TTextField> code, lines;
+	TrecSubPointer<TPage, TTextInput> code, lines;
 
 
 	/**

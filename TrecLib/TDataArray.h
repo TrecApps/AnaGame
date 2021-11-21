@@ -238,6 +238,7 @@ public:
 
 	TObject* GetObjectAt(UINT loc)
 	{
+		UNREFERENCED_PARAMETER(loc);
 		return nullptr;
 	}
 };

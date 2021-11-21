@@ -655,17 +655,6 @@ protected:
 public:
 
 	/**
-	 * Method: TrecSubPointer::GetTrecPointer
-	 * Purpose: Retrieves a Regular Trc Pointer Representation
-	 * Parameters: void
-	 * Returns: TrecPointer<t> - the trec pointer 
-	 */
-	TrecPointer<t> GetTrecPointer()
-	{
-		return TrecPointerKey::GetTrecPointerFromSub(*this);
-	}
-
-	/**
 	 * Method: TrecSubPointer::TrecSubPointer
 	 * Purpose: Default Constructor
 	 * Parameters: void
@@ -1343,7 +1332,7 @@ public:
 	 * Parameters:  TrecPointerSoft<T>& soft - the weak pointer with the counter
 	 * Returns: TrecSubPointerSoft<T, U> - a soft pointer that narrows down the type held
 	 */
-	template <class T, class U> TrecSubPointerSoft<T, U> GetSoftSubPointerFromSoft(TrecPointerSoft<T>& soft)
+	template <class T, class U> static TrecSubPointerSoft<T, U> GetSoftSubPointerFromSoft(TrecPointerSoft<T>& soft)
 	{
 		TrecSubPointerSoft<T, U> ret;
 		if (dynamic_cast<U*>(soft.Get()))
@@ -1617,3 +1606,8 @@ public:
 		return TrecPointer<T>();
 	}
 };
+
+template<class T, class U> TrecPointer<T> TrecSubToTrec(TrecSubPointer<T, U> sub)
+{
+	return TrecPointerKey::GetTrecPointerFromSub<>(sub);
+}

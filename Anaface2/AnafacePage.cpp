@@ -103,13 +103,13 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 	if (name.StartsWith(L"TCheckBox", true))
 		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TCheckbox>(this->drawingBoard, styles);
 	if (name.StartsWith(L"TInput", true))
-		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(this->drawingBoard, styles);
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(this->drawingBoard, styles, this->drawingBoard->GetWindowHandle());
 	//if (name.StartsWith(L"TLongInput", true))
 	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
 	//if (name.StartsWith(L"TBasicPrompt", true))
 	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
 	if (name.StartsWith(L"TArena", true))
-		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TArenaView>(this->drawingBoard, styles);
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TArenaView>(this->drawingBoard, styles, this->drawingBoard->GetWindowHandle());
 	if (name.StartsWith(L"TVideo", true))
 		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TVideoPlayer>(this->drawingBoard, styles);
 	//if (name.StartsWith(L"TCanvas", true))
@@ -151,10 +151,10 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 	if (!ret.Get())
 	{
 		result.Format(L"Unsupported Control Name %ws detected!", name.GetConstantBuffer().getBuffer());
-		return;
+		return ret;
 	}
 
-	if (!dynamic_cast<TContainerVariable*>(var.Get())) return;
+	if (!dynamic_cast<TContainerVariable*>(var.Get())) return ret;
 
 	TString attName;
 	TrecPointer<TVariable> chVar;

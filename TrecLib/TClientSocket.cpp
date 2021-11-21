@@ -58,7 +58,7 @@ UINT TClientSocket::InitializeSocket(TString& address)
 
 	if (intResults != 0)
 	{
-		int e = WSAGetLastError();
+		//int e = WSAGetLastError();
 		return intResults;
 	}
 	sock = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
@@ -130,7 +130,7 @@ TString TClientSocket::Recieve(TDataArray<char>& bytes)
 		recRes = recv(sock, catchBytes, 512, 0);
 		if (recRes > 0)
 		{
-			for (UINT Rust = 0; Rust < recRes; Rust++)
+			for (int Rust = 0; Rust < recRes; Rust++)
 			{
 				bytes.push_back(catchBytes[Rust]);
 			}

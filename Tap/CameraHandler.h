@@ -1,10 +1,11 @@
 #pragma once
 #include "EventHandler.h"
+#include <TTextInput.h>
 
 class CameraHandler;
 
 
-typedef void (CameraHandler::* CameraHandlerEvents)(TrecPointer<TControl> tc, EventArgs ea);
+typedef void (CameraHandler::* CameraHandlerEvents)(TrecPointer<TPage> tc, EventArgs ea);
 
 /**
  * Class: CameraHandler
@@ -13,7 +14,7 @@ typedef void (CameraHandler::* CameraHandlerEvents)(TrecPointer<TControl> tc, Ev
  * SuperClass: EventHandler
  */
 class _TAP_DLL CameraHandler :
-	public EventHandler
+	public TapEventHandler
 {
 public:
 
@@ -24,7 +25,7 @@ public:
 	 *				TString& name - name of the handler, used for identifying the Arena Handler
 	 * Returns: New ArenaHandler instance
 	 */
-	CameraHandler(TrecPointer<TInstance> instance, TString& name);
+	CameraHandler(TrecPointer<TProcess> instance, TString& name);
 
 	/**
 	 * Method: CameraHandler::~CameraHandler
@@ -51,7 +52,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 
 	/**
 	 * Method: CameraHandler::HandleEvents
@@ -61,7 +62,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr)override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)override;
 
 	/**
 	 * Method: CameraHandler::ProcessMessage
@@ -80,6 +81,8 @@ public:
 
 
 protected:
+
+	TDataMap<UINT> events;
 
 	/**
 	 * Method: CameraHandler::ShouldProcessMessageByType
@@ -130,7 +133,7 @@ protected:
 	/**
 	 * Text Controls reporting the x-y-z location and direction of the camera
 	 */
-	TrecSubPointer<TControl, TTextField> d_x, d_y, d_z, l_x, l_y, l_z;
+	TrecSubPointer<TPage, TTextInput> d_x, d_y, d_z, l_x, l_y, l_z;
 
 	/**
 	 * Control used for toggling the camera model mode (not active right now)
@@ -162,7 +165,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextDirectionX(TrecPointer<TControl> tc, EventArgs ea);
+	void TextDirectionX(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextLocationX
@@ -171,7 +174,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextLocationX(TrecPointer<TControl> tc, EventArgs ea);
+	void TextLocationX(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextDirectionY
@@ -180,7 +183,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextDirectionY(TrecPointer<TControl> tc, EventArgs ea);
+	void TextDirectionY(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextLocationY
@@ -189,7 +192,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextLocationY(TrecPointer<TControl> tc, EventArgs ea);
+	void TextLocationY(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextDirectionZ
@@ -198,7 +201,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextDirectionZ(TrecPointer<TControl> tc, EventArgs ea);
+	void TextDirectionZ(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::TextLocationZ
@@ -207,7 +210,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void TextLocationZ(TrecPointer<TControl> tc, EventArgs ea);
+	void TextLocationZ(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnUp
@@ -216,7 +219,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnUp(TrecPointer<TControl> tc, EventArgs ea);
+	void OnUp(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnDown
@@ -225,7 +228,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnDown(TrecPointer<TControl> tc, EventArgs ea);
+	void OnDown(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnLeft
@@ -234,7 +237,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnLeft(TrecPointer<TControl> tc, EventArgs ea);
+	void OnLeft(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnRight
@@ -243,7 +246,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnRight(TrecPointer<TControl> tc, EventArgs ea);
+	void OnRight(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnNear
@@ -252,7 +255,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnNear(TrecPointer<TControl> tc, EventArgs ea);
+	void OnNear(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnFar
@@ -261,7 +264,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnFar(TrecPointer<TControl> tc, EventArgs ea);
+	void OnFar(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnSetCameraRotate
@@ -270,7 +273,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnSetCameraRotate(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSetCameraRotate(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnSetCameraTranslate
@@ -279,7 +282,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnSetCameraTranslate(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSetCameraTranslate(TrecPointer<TPage> tc, EventArgs ea);
 
 
 	/**
@@ -289,7 +292,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnSelectObject(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectObject(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnToggleObjectAndCamera
@@ -298,7 +301,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnToggleObjectAndCamera(TrecPointer<TControl> tc, EventArgs ea);
+	void OnToggleObjectAndCamera(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: CameraHandler::OnGetDefaultObject
@@ -307,7 +310,7 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnGetDefaultObject(TrecPointer<TControl> tc, EventArgs ea);
+	void OnGetDefaultObject(TrecPointer<TPage> tc, EventArgs ea);
 
 };
 

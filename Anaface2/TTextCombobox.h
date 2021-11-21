@@ -6,7 +6,7 @@
  * Class: TTextCombobox
  * Purpose: Extends the Combo-Box by adding Text Input Support
  */
-class TTextCombobox :
+class _ANAFACE_DLL2 TTextCombobox :
     public TCombobox
 {
 	friend class TTextComboElement;

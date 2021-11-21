@@ -2,6 +2,7 @@
 #include "TWindowEngine.h"
 #include "TShaderHost.h"
 #include <TTrecPointerArray.h>
+#include <TVariable.h>
 class ArenaModel;
 
 /*
@@ -262,7 +263,7 @@ public:
 	 * 
 	 * Note: Because this is a raw pointer, this should eventually be replaced
 	 */
-	TTrecPointerArray<ArenaModel>* GetModelList();
+	TrecPointer<TVariable> GetModelList();
 
 	/**
 	 * Method: TArenaEngine::GetInputInfo
@@ -299,7 +300,7 @@ protected:
 	/**
 	 * list of models held by the engine
 	 */
-	TTrecPointerArray<ArenaModel> models;
+	TDataArray<TrecPointer<ArenaModel>> models;
 	/**
 	 * Details of the rasterizer
 	 */

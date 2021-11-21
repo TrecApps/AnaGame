@@ -25,7 +25,7 @@
  * Returns: New IDE Window
  */
 TIdeWindow::TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, 
-	TrecPointer<TInstance> ins, UINT mainViewSpace, UINT pageBarSpace):
+	TrecPointer<TProcess> ins, UINT mainViewSpace, UINT pageBarSpace):
 	TWindow(name, winClass, style | WS_MAXIMIZE, parent, commandShow, ins)
 {
 	this->mainViewSpace = mainViewSpace;
@@ -215,8 +215,8 @@ void TIdeWindow::OnLButtonUp(UINT nFlags, TPoint point)
 
 		if (recievedPage.Get() && recievedPage.Get() != tabPage.Get() && tabPage.Get())
 		{
-			tabPage->RemovePage(currentHolder.GetTrecPointer());
-			recievedPage->SetView(currentHolder.GetTrecPointer());
+			tabPage->RemovePage(TrecSubToTrec(currentHolder));
+			recievedPage->SetView(TrecSubToTrec(currentHolder));
 		}
 
 		if (recievedPage.Get())
@@ -509,7 +509,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.txt", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
+			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 		else
 			pageHandler = handler;
 		break;
@@ -517,7 +517,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\IDEPrompt.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
+			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 		else
 			pageHandler = handler;
 		break;
@@ -525,7 +525,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\IDEPromptProgram.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
+			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 		else
 			pageHandler = handler;
 		break;
@@ -535,7 +535,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), dataSource);
+			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), dataSource);
 		else
 			pageHandler = handler;
 		break;
@@ -615,13 +615,13 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 	if (control.Get())
 		control->onCreate(newPage->GetArea(), d3dEngine);
 
-	targetPage->SetView(newPage.GetTrecPointer());
+	targetPage->SetView(TrecSubToTrec(newPage));
 	
 
-	targetPage->currentPage = newPage.GetTrecPointer();
+	targetPage->currentPage = TrecSubToTrec(newPage);
 
 	ThreadRelease();
-	return newPage.GetTrecPointer();;
+	return TrecSubToTrec(newPage);;
 }
 
 /**
@@ -641,7 +641,7 @@ TrecPointer<TPage> TIdeWindow::AddPage(anagame_page pageType, ide_page_type page
 		ThreadRelease();
 		return ret;
 	}
-	auto handler = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->GetHandler(name, pageType);
+	auto handler = dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance).Get())->GetHandler(name, pageType);
 
 	if (handler.Get())
 	{
@@ -655,12 +655,12 @@ TrecPointer<TPage> TIdeWindow::AddPage(anagame_page pageType, ide_page_type page
 	{
 	case anagame_page::anagame_page_command_prompt:
 	case anagame_page::anagame_page_console:
-		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)));
+		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance)));
 		break;
 	case anagame_page::anagame_page_project_explorer:
 		dataSource = handler_data_source::hds_project;
 	case anagame_page::anagame_page_file_node:
-		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), dataSource));
+		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), dataSource));
 		break;
 	}
 	ThreadRelease();
@@ -694,7 +694,7 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 		ThreadRelease();
 		return 1;
 	}
-	directFactory = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->GetFactory();
+	directFactory = TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance)->GetFactory();
 
 	TrecSubPointer<TPage, AnafacePage> newPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(drawingBoard);
 	auto space = ConvertRectToD2D1Rect(this->size);
@@ -725,7 +725,7 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 
 
 
-	mainPage = newPage.GetTrecPointer();
+	mainPage = TrecSubToTrec(newPage);
 
 	GetClientRect(GetWindowHandle(), &size);
 	auto curArea = ConvertRectToD2D1Rect(size);
@@ -881,7 +881,7 @@ void TIdeWindow::SetCurrentApp(TrecPointer<MiniApp> app)
 
 		auto hand = app->GetMainHandler();
 		if (hand.Get())
-			hand->OnFocus();
+			dynamic_cast<TapEventHandler*>(hand.Get())->OnFocus();
 	}
 	ThreadRelease();
 }

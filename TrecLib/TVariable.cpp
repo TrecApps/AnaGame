@@ -17,7 +17,7 @@ bool VarFunction::IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def)
 		if (def & 0b00000100)
 		{
 			TString v(var->GetString().GetTrim().GetLower());
-			result = v.Compare(L'false');
+			result = v.Compare(L"false");
 			break;
 		}
 		else return false;
@@ -104,10 +104,10 @@ void TVariableMarker::operator=(const TVariableMarker& orig)
  * Parameters: TrecPointer<TVariable> var - the new variable to assign to
  * Returns: bool - whether the new variable was set
  */
-bool TVariableMarker::SetVariable(TrecPointer<TVariable> var)
+bool TVariableMarker::SetVariable(TrecPointer<TVariable> var_)
 {
 	if (mutableVar)
-		this->var = var;
+		this->var = var_;
 	return mutableVar;
 }
 

@@ -1,12 +1,12 @@
 #pragma once
 #include <TPage.h>
-
+#include "Anaface2.h"
 
 /**
  * Class: TabBar
  * Purpose: Provides a means to manage tabs in Anagame
  */
-class TabBar :
+class _ANAFACE_DLL2 TabBar :
     public TPage
 {
 public:

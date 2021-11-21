@@ -106,9 +106,9 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
-	case WM_APP_PLAYER_EVENT:
-		win->OnVideoEvent(wParam);
-		break;
+	//case WM_APP_PLAYER_EVENT:
+	//	win->OnVideoEvent(wParam);
+	//	break;
 	case WM_PAINT:
 		win->Draw();
 		break;
@@ -197,7 +197,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
  *				t_window_type winType - type of window desired (default provides a regular TWindow)
  * Returns: int - error code
  */
-int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<EventHandler> eh, t_window_type winType)
+int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<TPage::EventHandler> eh, t_window_type winType)
 {
 	ThreadLock();
 	WORD regResult = RegisterClassExW(&wcex);
@@ -455,8 +455,8 @@ void TInstance::DispatchAnagameMessage(TrecPointer<HandlerMessage> message)
 	CleanHandlerList();
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
 	{
-		if (registeredHandlers[Rust].Get() && registeredHandlers[Rust]->ShouldProcessMessage(message))
-			registeredHandlers[Rust]->ProcessMessage(message);
+		if (registeredHandlers[Rust].Get() && dynamic_cast<TapEventHandler*>(registeredHandlers[Rust].Get())->ShouldProcessMessage(message))
+			dynamic_cast<TapEventHandler*>(registeredHandlers[Rust].Get())->ProcessMessage(message);
 	}
 	ThreadRelease();
 }
@@ -468,15 +468,15 @@ void TInstance::DispatchAnagameMessage(TrecPointer<HandlerMessage> message)
  *				anagame_page pageType - the type of handler
  * Returns: TrecPointer<EventHandler> - the handler specified (null if not found)
  */
-TrecPointer<EventHandler> TInstance::GetHandler(const TString& name, anagame_page pageType)
+TrecPointer<TPage::EventHandler> TInstance::GetHandler(const TString& name, anagame_page pageType)
 {
 	ThreadLock();
-	TrecPointer<EventHandler> ret;
+	TrecPointer<TPage::EventHandler> ret;
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
 	{
 		if (registeredHandlers[Rust].Get())
 		{
-			if (registeredHandlers[Rust]->name.Compare(name))
+			if (dynamic_cast<TapEventHandler*>(registeredHandlers[Rust].Get())->name.Compare(name))
 				continue;
 			switch (pageType)
 			{
@@ -508,21 +508,22 @@ TrecPointer<EventHandler> TInstance::GetHandler(const TString& name, anagame_pag
  *				TrecPointer<TTextIntercepter> the intercepter to recieve characters
  * Returns: void
  */
-void TInstance::SetCharIntercepter(TrecPointer<EventHandler> handler, TrecPointer<TTextIntercepter> intercepter)
+void TInstance::SetCharIntercepter(TrecPointer<TPage::EventHandler> handler, TrecPointer<TTextIntercepter> intercepter)
 {
 	if (handler.Get() && intercepter.Get())
 	{
 
-		if (charHandler.Get() && charHandler->textIntercepter.Get())
+		if (charHandler.Get() && charHandler->GetTextIntercepter().Get())
 		{
-			if (intercepter->GetTarget() == charHandler->textIntercepter->GetTarget())
+			auto oldInt = charHandler->GetTextIntercepter();
+			if (intercepter->GetTarget() == oldInt->GetTarget())
 				return;
 
-			charHandler->textIntercepter->OnLoseFocus();
-			charHandler->textIntercepter.Nullify();
+			oldInt->OnLoseFocus();
+			oldInt.Nullify();
 		}
 
-		handler->textIntercepter = intercepter;
+		dynamic_cast<TapEventHandler*>(handler.Get())->textIntercepter = intercepter;
 		charHandler = handler;
 	}
 }
@@ -570,7 +571,7 @@ void TInstance::CleanWindows()
  * Parameters:TrecPointer<EventHandler> handler - the handler to remove
  * Returns: void
  */
-void TInstance::UnregisterHandler(TrecPointer<EventHandler> handler)
+void TInstance::UnregisterHandler(TrecPointer<TPage::EventHandler> handler)
 {
 	ThreadLock();
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
@@ -590,7 +591,7 @@ void TInstance::UnregisterHandler(TrecPointer<EventHandler> handler)
  * Parameters: TrecPointer<EventHandler> handler - the handler to add
  * Returns: bool whether the handler was added or not
  */
-bool TInstance::RegisterHandler(TrecPointer<EventHandler> handler)
+bool TInstance::RegisterHandler(TrecPointer<TPage::EventHandler> handler)
 {
 	if(!handler.Get())
 		return false;
@@ -606,7 +607,7 @@ bool TInstance::RegisterHandler(TrecPointer<EventHandler> handler)
 	}
 
 	registeredHandlers.push_back(handler);
-	handler->id = handlerID++;
+	//handler->id = handlerID++;
 	ThreadRelease();
 	return true;
 }

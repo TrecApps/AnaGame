@@ -221,7 +221,8 @@ void TCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mO
         EventID_Cred cred;
         cred.eventType = R_Message_Type::On_Flyout;
         cred.control = TrecPointerKey::GetTrecPointerFromSub<>(dataLayout);
-        cred.data = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TComboBoxUpdater>(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+        cred.data = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TComboBoxUpdater>(
+            TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TCombobox>(TrecPointerKey::GetTrecPointerFromSoft<>(self)));
 
         eventAr.push_back(cred);
     }

@@ -9,7 +9,7 @@
  * 
  * Note: Based off of the "AnafaceUI" class from the original Anaface library
  */
-class TSwitchControl :
+class _ANAFACE_DLL2 TSwitchControl :
     public TRandomLayout
 {
 public:

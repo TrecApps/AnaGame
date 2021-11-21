@@ -39,7 +39,6 @@ TFormatReaderJson::TFormatReaderJson(TrecPointer<TFileShell> file)
 TrecPointer<TVariable> TFormatReaderJson::ProcessArray(TString& worked)
 {
     TString readable;
-    UINT read;
 
     TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
 
@@ -68,7 +67,7 @@ TrecPointer<TVariable> TFormatReaderJson::ProcessArray(TString& worked)
 
         // We have a Key/Value, add it to returned object
         ret->AppendValue(var);
-    }while(read && !readable.EndsWith(L']'));
+    }while(!readable.EndsWith(L']'));
 
     return TrecPointerKey::GetTrecPointerFromSub<>(ret);
 }

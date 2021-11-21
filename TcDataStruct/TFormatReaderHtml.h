@@ -10,6 +10,7 @@
 class TFormatReaderHtml :
     public TFormatReader
 {
+    friend class TrecPointerKey;
 public:
     /**
      * Class: TFormatReaderBuilderHtml

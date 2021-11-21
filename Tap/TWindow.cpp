@@ -32,7 +32,7 @@ static BLENDFUNCTION blendFunc = {
  *				TrecPointer ins - pointer to the TInstance involved (hence why TInstance has a SetSelf method)
  * Returns: New Window
  */
-TWindow::TWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins)
+TWindow::TWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins)
 {
 	currentWindow = CreateWindowW(winClass.GetConstantBuffer().getBuffer(),
 		name.GetConstantBuffer().getBuffer(), style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent, nullptr, ins->GetInstanceHandle(), nullptr);
@@ -45,7 +45,7 @@ TWindow::TWindow(TString& name, TString& winClass, UINT style, HWND parent, int 
 	this->name.Set(name);
 	this->parent = parent;
 	this->winClass.Set(winClass);
-	this->windowInstance = TrecPointerKey::GetSoftPointerFromTrec<TInstance>( ins);
+	this->windowInstance = TrecPointerKey::GetSoftPointerFromTrec<>( ins);
 	this->command = commandShow;
 
 	HDC dc = GetWindowDC(currentWindow);
@@ -104,7 +104,7 @@ int TWindow::PrepareWindow()
 	}
 	assert(windowInstance.Get());
 
-	TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->RegisterDialog(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
+	dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance).Get())->RegisterDialog(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
 
 	GetClientRect(currentWindow, &size);
 	ShowWindow(currentWindow, command);
@@ -169,7 +169,7 @@ int TWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	if (control.Get())
 		control->onCreate(newPage->GetArea(), d3dEngine);
 
-	mainPage = newPage.GetTrecPointer();
+	mainPage = TrecSubToTrec(newPage);
 	RECT loc;
 	GetClientRect(currentWindow, &loc);
 
@@ -605,10 +605,10 @@ void TWindow::SetSelf(TrecPointer<TWindow> win)
  * Parameters: void
  * Returns: TrecPointer<TInstance> - the Instance this window is under
  */
-TrecPointer<TInstance> TWindow::GetInstance()
+TrecPointer<TProcess> TWindow::GetInstance()
 {
 	ThreadLock();
-	auto ret = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance);
+	auto ret = TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance);
 	ThreadRelease();
 	return ret;
 }
@@ -629,7 +629,7 @@ bool TWindow::SetUp3D()
 	}
 	assert(windowInstance.Get());
 
-	d3dEngine = TrecPointerKey::GetNewTrecPointer<TWindowEngine>(currentWindow, TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->GetInstanceHandle());
+	d3dEngine = TrecPointerKey::GetNewTrecPointer<TWindowEngine>(currentWindow, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance)->GetInstanceHandle());
 
 	if (d3dEngine->Initialize() || !drawingBoard.Get())
 	{
@@ -744,7 +744,7 @@ bool TWindow::PrepAnimations(TrecPointer<TPage> page)
 	//animationCentral.StartBegin();
 	//animationCentral.StartNewPersistant();
 	//ThreadRelease();
-	//return true;
+	return true;
 }
 
 /**
@@ -815,5 +815,9 @@ void TWindow::FlushDc()
  * Returns: void
  */
 void TWindow::DrawOtherPages()
+{
+}
+
+TProcess::~TProcess()
 {
 }

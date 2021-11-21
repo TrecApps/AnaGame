@@ -24,7 +24,7 @@ public:
 };
 
 
-class TTextInput :
+class _ANAFACE_DLL2 TTextInput :
     public TGadget
 {
 public:
@@ -123,6 +123,12 @@ public:
 	 * Attributes: message; override
 	 */
 	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&) override;
+
+	bool SetNumericText(float f);
+
+	void SetText(const TString& text);
+
+	TString GetText();
 
 
 protected:

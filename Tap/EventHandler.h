@@ -1,11 +1,10 @@
 #pragma once
 #include "Tap_dll.h"
-#include <AnafaceParser.h>
 #include "HandlerMessage.h"
-
-class Page;
-class TInstance;
-class MiniApp;
+#include <TPage.h>
+#include "TWindow.h"
+#include <TFileShell.h>
+#include "MiniApp.h"
 
 /**
  * Class: EventHandler
@@ -16,24 +15,33 @@ class MiniApp;
 class _TAP_DLL TapEventHandler: public TPage::EventHandler
 {
 	friend class TInstance;
-	friend class IDEPage;
 public:
 
 	/**
 	 * Method: EventHandler::EventHandler
 	 * Purpose: Constructor
-	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
+	 * Parameters: TrecPointer<TProcess> instance - instance associated with this handler
 	 * Returns: New EventHandler Object
 	 */
-    TapEventHandler(TrecPointer<TInstance> instance);
+    TapEventHandler(TrecPointer<TProcess> instance);
 	/**
 	 * Method: EventHandler::EventHandler
 	 * Purpose: Constructor
-	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
+	 * Parameters: TrecPointer<TProcess> instance - instance associated with this handler
 	 *				const TString& name - the Name to give this handler
 	 * Returns: New EventHandler Object
 	 */
-	TapEventHandler(TrecPointer<TInstance> instance, const TString& name);
+	TapEventHandler(TrecPointer<TProcess> instance, const TString& name);
+
+	/**
+	 * Method: TapEventHandler::SetWindow
+	 * Purpose: Sets the Window of this Handler
+	 * Parameters: TrecPointer<TWindow> window - the window to set
+	 * Returns: void
+	 */
+	void SetWindow(TrecPointer<TWindow> window);
+
+
 	/**
 	 * Method: EventHandler::~EventHandler
 	 * Purpose: Destructor
@@ -115,7 +123,7 @@ public:
 	 * Parameters: void 
 	 * Returns: TrecPointer<Page> - the page provided when Initialize was called
 	 */
-	TrecPointer<Page> GetPage();
+	virtual TrecPointer<TPage> GetPage() override;
 
 	virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut)override;
 
@@ -159,7 +167,7 @@ public:
 
 	TrecPointer<TFileShell> GetFilePointer();
 
-
+	virtual TrecPointer<TTextIntercepter> GetTextIntercepter();
 
 protected:
 	/**
@@ -194,7 +202,7 @@ protected:
 	/**
 	 * The instance associated with the Handler
 	 */
-	TrecPointerSoft<TInstance> app;
+	TrecPointerSoft<TProcess> app;
 
 	/**
 	 * The Page that the Handler is attached to
@@ -204,7 +212,7 @@ protected:
 	/**
 	 * The Window this is pointing to
 	 */
-	TrecPointer<TWindow>
+	TrecPointer<TWindow> window;
 
 	/**
 	 * The MiniApp that generated this handler (not always used

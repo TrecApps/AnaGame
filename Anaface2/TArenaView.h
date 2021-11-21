@@ -9,7 +9,7 @@
  *
  * SuperClass: TControl, TCamera
  */
-class TArenaView :
+class _ANAFACE_DLL2 TArenaView :
     public TControl, public TCamera
 {
 public:

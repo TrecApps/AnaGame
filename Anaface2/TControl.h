@@ -23,7 +23,7 @@ typedef enum class dimension_spec
  * Class: EventTypeId
  * Purpose: Stored by Controls for checking whether or not they actually have a message handler
  */
-class EventTypeID
+class _ANAFACE_DLL2 EventTypeID
 {
 public:
 	EventTypeID();

@@ -1,15 +1,14 @@
 #include "DocumentHandler.h"
 #include <DirectoryInterface.h>
-#include "Page.h"
 #include "TWindow.h"
 #include "TInstance.h"
 #include <TFile.h>
 
-DocumentHandler::DocumentHandler(TrecPointer<TInstance> in): EventHandler(in)
+DocumentHandler::DocumentHandler(TrecPointer<TProcess> in): TapEventHandler(in)
 {
 }
 
-DocumentHandler::DocumentHandler(TrecPointer<TInstance> in, const TString& name): EventHandler(in, name)
+DocumentHandler::DocumentHandler(TrecPointer<TProcess> in, const TString& name): TapEventHandler(in, name)
 {
 }
 
@@ -27,18 +26,16 @@ TString DocumentHandler::GetType()
 void DocumentHandler::OnSave()
 {
 	ThreadLock();
-	TrecPointer<TWindow> win;
-	if (!file.Get() && page.Get() && (this->page->GetWindowHandle()).Get() && app.Get())
+	if (!file.Get() && page.Get() && (window).Get() && app.Get())
 	{
-		win = this->page->GetWindowHandle();
 		TString initialSearch(GetDirectory(CentralDirectories::cd_Documents));
 
 		OPENFILENAMEW fileInfo;
 		ZeroMemory(&fileInfo, sizeof(fileInfo));
 
 		fileInfo.lStructSize = sizeof(OPENFILENAMEW);
-		fileInfo.hwndOwner = win->GetWindowHandle();
-		fileInfo.hInstance = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->GetInstanceHandle();
+		fileInfo.hwndOwner = window->GetWindowHandle();
+		fileInfo.hInstance = TrecPointerKey::GetTrecPointerFromSoft<>(app)->GetInstanceHandle();
 		fileInfo.lpstrFilter = nullptr;
 		fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer().getBuffer();
 		fileInfo.lpstrFile = new WCHAR[255];

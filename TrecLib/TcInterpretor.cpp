@@ -71,11 +71,11 @@ UINT TcInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> v
 			}
 		}
 	}
-	UINT res = dynamic_cast<TcInterpretor*>(parent.Get()) ? dynamic_cast<TcInterpretor*>(parent.Get())->UpdateVariable(name, value) : 1;
+	UINT res = dynamic_cast<TcInterpretor*>(parent.Get()) ? dynamic_cast<TcInterpretor*>(parent.Get())->UpdateVariable(name, value, makeConst) : 1;
 	if (res == 1 && addLocally)
 	{
 		TcVariableHolder hold;
-		hold.mut = true;
+		hold.mut = !makeConst;
 		hold.type.Set(L"");
 		hold.value = value;
 		variables.addEntry(name, hold);
@@ -191,11 +191,11 @@ TcInterpretor::TcInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInte
  *
  * Attributes: override
  */
-void TcInterpretor::SetSelf(TrecPointer<TVariable> self)
+void TcInterpretor::SetSelf(TrecPointer<TVariable> self_)
 {
-	if (this != self.Get())
+	if (this != self_.Get())
 		throw L"Error! Not Properly called";
-	this->self = TrecPointerKey::GetSoftSubPointerFromSoft<TVariable, TcInterpretor>(TrecPointerKey::GetSoftPointerFromTrec<TVariable>(self));
+	this->self = TrecPointerKey::GetSoftSubPointerFromSoft<TVariable, TcInterpretor>(TrecPointerKey::GetSoftPointerFromTrec<TVariable>(self_));
 }
 
 /**
@@ -280,13 +280,13 @@ void TcInterpretor::PrepReturn(ReturnObject& ret, const TString& mess, const TSt
 	}
 }
 
-bool TcInterpretor::SetParent(TrecSubPointer<TVariable, TcInterpretor> parent, bool replace)
+bool TcInterpretor::SetParent(TrecSubPointer<TVariable, TcInterpretor> parent_, bool replace)
 {
-	if (!parent.Get())
+	if (!parent_.Get())
 		return false;
 	if (!this->parent.Get() || replace)
 	{
-		auto p = TrecPointerKey::GetTrecPointerFromSub<>(parent);
+		auto p = TrecPointerKey::GetTrecPointerFromSub<>(parent_);
 		this->parent = TrecPointerKey::GetSoftPointerFromTrec<TVariable>(p);
 		return true;
 	}
@@ -323,12 +323,12 @@ UCHAR TcInterpretor::GetVarStatus(TString& varName)
  * Parameters: TDataArray<TString>& paramNames - the Names of Initial parameters
  * Returns: void
  */
-void TcInterpretor::SetParamNames(TDataArray<TString>& paramNames)
+void TcInterpretor::SetParamNames(TDataArray<TString>& paramNames_)
 {
 	this->paramNames.RemoveAll();
-	for (UINT Rust = 0; Rust < paramNames.Size(); Rust++)
+	for (UINT Rust = 0; Rust < paramNames_.Size(); Rust++)
 	{
-		this->paramNames.push_back(paramNames[Rust]);
+		this->paramNames.push_back(paramNames_[Rust]);
 	}
 }
 
@@ -338,12 +338,12 @@ void TcInterpretor::SetParamNames(TDataArray<TString>& paramNames)
  * Parameters: TDataArray<TString>& paramTypes - the Types of Initial parameters
  * Returns: void
  */
-void TcInterpretor::SetParamTypes(TDataArray<TString>& paramTypes)
+void TcInterpretor::SetParamTypes(TDataArray<TString>& paramTypes_)
 {
 	this->paramTypes.RemoveAll();
-	for (UINT Rust = 0; Rust < paramTypes.Size(); Rust++)
+	for (UINT Rust = 0; Rust < paramTypes_.Size(); Rust++)
 	{
-		this->paramTypes.push_back(paramTypes[Rust]);
+		this->paramTypes.push_back(paramTypes_[Rust]);
 	}
 }
 

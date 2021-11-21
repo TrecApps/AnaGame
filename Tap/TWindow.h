@@ -3,10 +3,48 @@
 #include <TWindowEngine.h>
 #include <TControl.h>
 #include <TArenaEngine.h>
+#include <TPage.h>
 
 #include "TAnimationManager.h"
 
 bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference);
+
+
+/**
+ * Class: TProcess
+ * Purpose: Serves as the Interface for the TInstance Class for the TWindow to Access
+ */
+class _TAP_DLL TProcess : public TObject
+{
+public:
+
+	/**
+	 * Method: TInstance::~TInstance
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	virtual ~TProcess();
+
+
+	/**
+	 * Method: TInstance::GetInstanceHandle
+	 * Purpose: Retrievs the raw instance handle
+	 * Parameters: void
+	 * Returns: HINSTANCE - instance provided during construction
+	 */
+	virtual HINSTANCE GetInstanceHandle() = 0;
+
+	/**
+	 * Method: TInstance::GetFactory
+	 * Purpose: retirevs the factory used for Direct2D
+	 * Parameters: void
+	 * Returns: TrecComPointer<ID2D1Factory1> - the factory used for Direct 2D drawing
+	 */
+	virtual TrecComPointer<ID2D1Factory1> GetFactory() = 0;
+};
+
+
 
 /**
  * Class: TWindow
@@ -16,7 +54,6 @@ bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float differ
  */
 class _TAP_DLL TWindow : public TObject
 {
-	friend class Page;
 public:
 
 	/**
@@ -30,7 +67,7 @@ public:
 	 *				TrecPointer ins - pointer to the TInstance involved (hence why TInstance has a SetSelf method)
 	 * Returns: New Window
 	 */
-	TWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins);
+	TWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins);
 
 	/**
 	 * Method: TWindow::~TWindow
@@ -263,7 +300,7 @@ public:
 	 * Parameters: void 
 	 * Returns: TrecPointer<TInstance> - the Instance this window is under
 	 */
-	TrecPointer<TInstance> GetInstance();
+	TrecPointer<TProcess> GetInstance();
 
 
 	/**
@@ -386,7 +423,7 @@ protected:
 	/**
 	 * instance managing the window
 	 */
-	TrecPointerSoft<TInstance> windowInstance;
+	TrecPointerSoft<TProcess> windowInstance;
 
 	/**
 	 * command used by Windows

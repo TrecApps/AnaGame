@@ -1,8 +1,9 @@
 #pragma once
 #include "EventHandler.h"
+#include <TArenaView.h>
 
 class ArenaHandler;
-typedef void (ArenaHandler::* ArenaHandlerEvents)(TrecPointer<TControl> tc, EventArgs ea);
+typedef void (ArenaHandler::* ArenaHandlerEvents)(TrecPointer<TPage> tc, EventArgs ea);
 
 /**
  * Class: ArenaHandler
@@ -11,7 +12,7 @@ typedef void (ArenaHandler::* ArenaHandlerEvents)(TrecPointer<TControl> tc, Even
  * SuperClass: EventHandler
  */
 class _TAP_DLL ArenaHandler :
-	public EventHandler
+	public TapEventHandler
 {
 public:
 
@@ -22,7 +23,7 @@ public:
 	 *				TString& name - name of the handler, used for identifying the Camera Handler
 	 * Returns: New ArenaHandler instance
 	 */
-	ArenaHandler(TrecPointer<TInstance> instance, TString& name);
+	ArenaHandler(TrecPointer<TProcess> instance, TString& name);
 	/**
 	 * Method: ArenaHandler::~ArenaHandler
 	 * Purpose: Destructor
@@ -48,7 +49,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 	/**
 	 * Method: ArenaHandler::HandleEvents
 	 * Purpose: Handles Events produced from the set of TControls
@@ -57,7 +58,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr)override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)override;
 
 	/**
 	 * Method: ArenaHandler::ProcessMessage
@@ -79,7 +80,7 @@ private:
 	/**
 	 * The Dedicated Arena to show and control
 	 */
-	TrecSubPointer<TControl, TArena> arenaControl;
+	TrecSubPointer<TPage, TArenaView> arenaControl;
 
 	/**
 	 * The Engine held by the arena control

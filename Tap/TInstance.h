@@ -56,8 +56,6 @@ class _TAP_DLL TInstance : public TObject
 {
 	friend class TWindow;
 	friend class TDialog;
-	friend class Page;
-	friend class IDEPage;
 	friend class TapEventHandler;
 public:
 
@@ -90,7 +88,7 @@ public:
 	 * Parameters: void
 	 * Returns: void
 	 */
-	~TInstance();
+	virtual ~TInstance();
 
 	/**
 	 * Method: TInstance::Proc

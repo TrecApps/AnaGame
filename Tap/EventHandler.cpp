@@ -1,29 +1,34 @@
 #include "EventHandler.h"
-#include "TInstance.h"
 #include <DirectoryInterface.h>
+#include "TInstance.h"
 
 /**
  * Method: TapEventHandler::TapEventHandler
  * Purpose: Constructor
- * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
+ * Parameters: TrecPointer<TProcess> instance - instance associated with this handler
  * Returns: New EventHandler Object
  */
-TapEventHandler::TapEventHandler(TrecPointer<TInstance> instance)
+TapEventHandler::TapEventHandler(TrecPointer<TProcess> instance)
 {
-	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(instance);
+	app = TrecPointerKey::GetSoftPointerFromTrec<TProcess>(instance);
 }
 
 /**
  * Method: TapEventHandler::TapEventHandler
  * Purpose: Constructor
- * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
+ * Parameters: TrecPointer<TProcess> instance - instance associated with this handler
  *				const TString& name - the Name to give this handler
  * Returns: New EventHandler Object
  */
-TapEventHandler::TapEventHandler(TrecPointer<TInstance> instance, const TString& name)
+TapEventHandler::TapEventHandler(TrecPointer<TProcess> instance, const TString& name)
 {
-	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(instance);
+	app = TrecPointerKey::GetSoftPointerFromTrec<TProcess>(instance);
 	this->name.Set(name);
+}
+
+void TapEventHandler::SetWindow(TrecPointer<TWindow> window)
+{
+	this->window = window;
 }
 
 /**
@@ -154,7 +159,7 @@ void TapEventHandler::SetSelf(TrecPointer<TPage::EventHandler> handleSelf)
 	ThreadLock();
 	hSelf = TrecPointerKey::GetSoftPointerFromTrec<TPage::EventHandler>(handleSelf);
 	if (app.Get())
-		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->RegisterHandler(handleSelf);
+		dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<TProcess>(app).Get())->RegisterHandler(handleSelf);
 }
 
 /**
@@ -179,7 +184,7 @@ UINT TapEventHandler::GetId()
  * Parameters: void
  * Returns: TrecPointer<Page> - the page provided when Initialize was called
  */
-TrecPointer<Page> TapEventHandler::GetPage()
+TrecPointer<TPage> TapEventHandler::GetPage()
 {
 	ThreadLock();
 	auto ret = page;
@@ -210,7 +215,7 @@ void TapEventHandler::SetMiniApp(TrecPointer<MiniApp> mApp)
 void TapEventHandler::OnFocus()
 {
 	ThreadLock();
-	if (!page.Get() || !page->GetWindowHandle().Get())
+	if (!page.Get() || !window.Get())
 	{
 		ThreadRelease();
 		return;
@@ -218,7 +223,7 @@ void TapEventHandler::OnFocus()
 
 	if (miniApp.Get())
 	{
-		auto win = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(page->GetWindowHandle());
+		auto win = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(window);
 		if (win.Get())
 			win->SetCurrentApp(miniApp);
 	}
@@ -228,11 +233,11 @@ void TapEventHandler::OnFocus()
 
 	if (app.Get())
 	{
-		auto realApp = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app);
+		auto realApp = TrecPointerKey::GetTrecPointerFromSoft<TProcess>(app);
 
 		auto message = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name, handler_type::handler_type_main, 0, message_transmission::message_transmission_by_type, 0, onFocusString);
 
-		realApp->DispatchAnagameMessage(message);
+		dynamic_cast<TInstance*>(realApp.Get())->DispatchAnagameMessage(message);
 	}
 	ThreadRelease();
 }
@@ -268,6 +273,11 @@ TrecPointer<TFileShell> TapEventHandler::GetFilePointer()
 	return ret;
 }
 
+TrecPointer<TTextIntercepter> TapEventHandler::GetTextIntercepter()
+{
+	return textIntercepter;
+}
+
 /**
  * Method: TapEventHandler::SetSaveFile
  * Purpose: Sets up the file to save if OnSave is called
@@ -282,12 +292,11 @@ void TapEventHandler::SetSaveFile()
 		ThreadRelease();
 		return;
 	}
-	if (!page.Get() || !page->GetWindowHandle().Get())
+	if (!page.Get() || !window.Get())
 	{
 		ThreadRelease();
 		return;
 	}
-	auto win = page->GetWindowHandle();
 
 	TString initialSearch(GetDirectory(CentralDirectories::cd_Documents));
 
@@ -296,8 +305,8 @@ void TapEventHandler::SetSaveFile()
 	ZeroMemory(&fileInfo, sizeof(fileInfo));
 
 	fileInfo.lStructSize = sizeof(OPENFILENAMEW);
-	fileInfo.hwndOwner = win->GetWindowHandle();
-	fileInfo.hInstance = win->GetInstance()->GetInstanceHandle();
+	fileInfo.hwndOwner = window->GetWindowHandle();
+	fileInfo.hInstance = window->GetInstance()->GetInstanceHandle();
 	fileInfo.lpstrFilter = nullptr;
 	fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer().getBuffer();
 	fileInfo.lpstrFile = new WCHAR[255];

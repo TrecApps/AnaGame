@@ -9,6 +9,7 @@
 class TFormatReaderYaml :
     public TFormatReader
 {
+    friend class TrecPointerKey;
 public:
     /**
      * Class: TFormatReaderBuilderYaml

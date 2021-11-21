@@ -1,7 +1,7 @@
 #pragma once
 #include "TObject.h"
 #include "TrecReference.h"
-#include "TControlComponent.h"
+//#include "TControlComponent.h"
 
 /*
  * enum animation_phase

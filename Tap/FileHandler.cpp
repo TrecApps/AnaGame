@@ -1,8 +1,8 @@
 #include "FileHandler.h"
-#include "Page.h"
 #include "TIdeWindow.h"
 #include <TFileNode.h>
 #include <DirectoryInterface.h>
+#include <AnafacePage.h>
 
 TString on_OpenFile(L"OnOpenFile");
 
@@ -12,19 +12,13 @@ TString on_OpenFile(L"OnOpenFile");
  * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
  * Returns: New FileHandler Object
  */
-FileHandler::FileHandler(TrecPointer<TInstance> instance, handler_data_source dataSource) : EventHandler(instance)
+FileHandler::FileHandler(TrecPointer<TProcess> instance, handler_data_source dataSource) : TapEventHandler(instance)
 {
 	// First set up the Array list with our event handlers
 	fileHandlers.push_back(&FileHandler::OnOpenFile);
 
 	this->dataSource = dataSource;
 
-	// Now create the link between the name of the handler in TML with 
-	eventNameID enid;
-
-	enid.eventID = 0;
-	enid.name.Set(on_OpenFile);
-	events.push_back(enid);
 }
 
 /**
@@ -53,19 +47,19 @@ TString FileHandler::GetType()
  * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
  * Returns: void
  */
-void FileHandler::Initialize(TrecPointer<Page> page)
+void FileHandler::Initialize(TrecPointer<TPage> page)
 {
 	ThreadLock();
-	if (!page.Get() || !page->GetWindowHandle().Get())
+	if (!page.Get() || !window.Get())
 	{
 		ThreadRelease();
 		return;
 	}
 	this->page = page;
 
-	TIdeWindow* ideWin = dynamic_cast<TIdeWindow*>(page->GetWindowHandle().Get());
+	TIdeWindow* ideWin = dynamic_cast<TIdeWindow*>(window.Get());
 
-	browser = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(page->GetRootControl());
+	browser = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TDataLayout>(dynamic_cast<AnafacePage*>(page.Get())->GetRootControl());
 
 	if (browser.Get())
 	{
@@ -83,12 +77,12 @@ void FileHandler::Initialize(TrecPointer<Page> page)
 					rootFile = TFileShell::GetFileInfo(GetDirectory(CentralDirectories::cd_Documents));
 				dynamic_cast<TFileNode*>(node.Get())->SetFile(rootFile);
 
-				browser->SetNode(node);
+				//browser->SetNode(node);
 			}
 			else if (dataSource == handler_data_source::hds_project)
 			{
 				TrecPointer<TEnvironment> env = ideWin->GetEnvironment();
-				browser->SetNode(env->GetBrowsingNode());
+				//browser->SetNode(env->GetBrowsingNode());
 			}
 
 			
@@ -103,25 +97,16 @@ void FileHandler::Initialize(TrecPointer<Page> page)
  * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
  * Returns: void
  */
-void FileHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void FileHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	ThreadLock();
 	int e_id = -1;
 	EventArgs ea;
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		auto tc = eventAr.at(c).control;
-		if (!tc.Get())
-			continue;
-		ea = tc->getEventArgs();
-		e_id = ea.methodID;
-		// At this point, call the appropriate method
-		if (e_id > -1 && e_id < fileHandlers.Size())
-		{
-			// call method
-			if (fileHandlers[e_id])
-				(this->*fileHandlers[e_id])(tc, ea);
-		}
+		auto tc = eventAr.at(c).expression;
+		if (!tc.Compare(on_OpenFile))
+			OnOpenFile(eventAr[c].control, ea);
 	}
 
 	//onDraw();
@@ -162,24 +147,24 @@ bool FileHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void FileHandler::OnOpenFile(TrecPointer<TControl> tc, EventArgs ea)
+void FileHandler::OnOpenFile(TrecPointer<TPage> tc, EventArgs ea)
 {
 	if(!ea.object.Get())
 		return;
 
 	ThreadLock();
-	if (!page.Get() || !page->GetWindowHandle().Get())
+	if (!page.Get() || !window.Get())
 	{
 		ThreadRelease();
 		return;
 	}
-	if (dynamic_cast<TIdeWindow*>(page->GetWindowHandle().Get()))
+	if (dynamic_cast<TIdeWindow*>(window.Get()))
 	{
 		auto fileObject = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(ea.object);
 
 		if(fileObject.Get())
 		{
-			dynamic_cast<TIdeWindow*>(page->GetWindowHandle().Get())->OpenFile(fileObject->GetData());
+			dynamic_cast<TIdeWindow*>(window.Get())->OpenFile(fileObject->GetData());
 	    }
 	}
 	ThreadRelease();
