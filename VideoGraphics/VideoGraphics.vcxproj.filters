@@ -36,6 +36,7 @@
     <ClCompile Include="TVideoScheduler.cpp" />
     <ClCompile Include="TWindowEngine.cpp" />
     <ClCompile Include="TScrollerPage.cpp" />
+    <ClCompile Include="SSGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArenaModel.h" />
@@ -75,5 +76,6 @@
     <ClInclude Include="TVideoScheduler.h" />
     <ClInclude Include="TWindowEngine.h" />
     <ClInclude Include="TScrollerPage.h" />
+    <ClInclude Include="SSGenerator.h" />
   </ItemGroup>
 </Project>

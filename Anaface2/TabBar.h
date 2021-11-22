@@ -15,7 +15,7 @@ public:
      * Class: TabBar::TabBarHolder
      * Purpose: Provides the Tab Bar with the means to send the contents of the tab to which-ever control is in charge of hosting it
      */
-    class TabBarHolder
+    class _ANAFACE_DLL2 TabBarHolder
     {
 	public:
         /**
@@ -44,7 +44,7 @@ public:
 	 * Class: Tab
 	 * Purpose: Represents an Actual Tab
 	 */
-	class Tab : public TPage
+	class _ANAFACE_DLL2 Tab : public TPage
 	{
 		friend class TabBar;
 	protected:

@@ -96,7 +96,7 @@ public:
 	 * Parameters: TrecPointer<DrawingBoard> board - the drawing board to draw to
 	 * Returns: new Tab Bar
 	 */
-	TabPage(TrecPointer<DrawingBoard> board, UCHAR tabHeight = 0);
+	TabPage(ide_page_type t,TrecPointer<DrawingBoard> board, UCHAR tabHeight = 0);
 
 	/**
 	 * Method: TabPage::HandlesEvents

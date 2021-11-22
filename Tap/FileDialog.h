@@ -81,4 +81,4 @@ private:
 	TrecSubPointer<TPage::EventHandler, FileDialogHandler> handler;
 };
 
-_TAP_DLL TrecPointer<TFileShell> BrowseForFile(TrecPointer<TInstance> in, HWND parent, TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile = false, file_node_filter_mode filter_mode = file_node_filter_mode::fnfm_block_current);
+_TAP_DLL TrecPointer<TFileShell> BrowseForFile(TrecPointer<TProcess> in, HWND parent, TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile = false, file_node_filter_mode filter_mode = file_node_filter_mode::fnfm_block_current);

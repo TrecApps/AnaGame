@@ -1,5 +1,5 @@
 #include "MainLayoutHandler.h"
-#include <Page.h>
+#include <TPage.h>
 #include "ArenaApp.h"
 #include <TDialog.h>
 #include <DirectoryInterface.h>
@@ -29,68 +29,45 @@ TString on_NewCodeFile(L"OnNewCodeFile");
 TString on_ImportCode(L"OnImportCode");
 TString on_ProcessCode(L"OnProcessCode");
 
-MainLayoutHandler::MainLayoutHandler(TrecPointer<TInstance> ins) : EventHandler(ins)
+MainLayoutHandler::MainLayoutHandler(TrecPointer<TProcess> ins) : TapEventHandler(ins)
 {
-	eventNameID enid;
 
-	enid.eventID = 0;
-	enid.name.Set(on_LoadNewSolution);
-	events.push_back(enid);
+
+
+	events.addEntry(on_LoadNewSolution,0);
 	calls.push_back(&MainLayoutHandler::OnLoadNewSolution);
 
-	enid.eventID = 1;
-	enid.name.Set(on_SaveFile);
-	events.push_back(enid);
+	events.addEntry(on_SaveFile,1);
 	calls.push_back(&MainLayoutHandler::OnSaveFile);
 
-	enid.eventID = 2;
-	enid.name.Set(on_SaveAll);
-	events.push_back(enid);
+	events.addEntry(on_SaveAll,2);
 	calls.push_back(&MainLayoutHandler::OnSaveAllFiles);
 
-	enid.eventID = 3;
-	enid.name.Set(on_NewFile);
-	events.push_back(enid);
+	events.addEntry(on_NewFile,3);
 	calls.push_back(&MainLayoutHandler::OnNewFile);
 
-	enid.eventID = 4;
-	enid.name.Set(on_ImportFile);
-	events.push_back(enid);
+	events.addEntry(on_ImportFile,4);
 	calls.push_back(&MainLayoutHandler::OnImportFile);
 
-	enid.eventID = 5;
-	enid.name.Set(on_Print);
-	events.push_back(enid);
+	events.addEntry(on_Print,5);
 	calls.push_back(&MainLayoutHandler::OnPrint);
 
-	enid.eventID = 6;
-	enid.name.Set(on_NewArena);
-	events.push_back(enid);
+	events.addEntry(on_NewArena,6);
 	calls.push_back(&MainLayoutHandler::OnNewArena);
 
-	enid.eventID = 7;
-	enid.name.Set(on_Change3DColor);
-	events.push_back(enid);
+	events.addEntry(on_Change3DColor,7);
 	calls.push_back(&MainLayoutHandler::OnUpdateClearColor);
 
-	enid.eventID = 8;
-	enid.name.Set(on_NewModel);
-	events.push_back(enid);
+	events.addEntry(on_NewModel,8);
 	calls.push_back(&MainLayoutHandler::OnNewModel);
 
-	enid.eventID = 9;
-	enid.name.Set(on_NewCodeFile);
-	events.push_back(enid);
+	events.addEntry(on_NewCodeFile,9);
 	calls.push_back(&MainLayoutHandler::OnNewCodeFile);
 
-	enid.eventID = 10;
-	enid.name.Set(on_ImportCode);
-	events.push_back(enid);
+	events.addEntry(on_ImportCode,10);
 	calls.push_back(&MainLayoutHandler::OnImportCode);
 
-	enid.eventID = 11;
-	enid.name.Set(on_ProcessCode);
-	events.push_back(enid);
+	events.addEntry(on_ProcessCode,11);
 	calls.push_back(&MainLayoutHandler::OnProcessCode);
 
 
@@ -104,123 +81,82 @@ MainLayoutHandler::~MainLayoutHandler()
 	}
 }
 
-void MainLayoutHandler::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-	//if (currentDocument.Get())
-	//	currentDocument->OnRButtonUp(nFlags, point, mOut);
-}
 
-void MainLayoutHandler::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-	//if (currentDocument.Get())
-	//	currentDocument->OnLButtonDown(nFlags, point, mOut);
-}
 
-void MainLayoutHandler::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-	/*if (currentDocument.Get())
-		currentDocument->OnRButtonDown(nFlags, point, mOut);*/
-}
-
-void MainLayoutHandler::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-	//if (currentDocument.Get())
-	//	currentDocument->OnMouseMove(nFlags, point, mOut);
-}
-
-void MainLayoutHandler::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-	//if (currentDocument.Get())
-	//	currentDocument->OnLButtonDblClk(nFlags, point, mOut);
-}
-
-void MainLayoutHandler::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-	//if (currentDocument.Get())
-	//	currentDocument->OnLButtonUp(nFlags, point, mOut);
-}
-
-bool MainLayoutHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)
-{
-	//if (currentDocument.Get())
-	//	return currentDocument->OnChar(fromChar, nChar, nRepCnt, nFlags, mOut);
-	return false;
-}
-
-void MainLayoutHandler::Initialize(TrecPointer<Page> page)
+void MainLayoutHandler::Initialize(TrecPointer<TPage> page)
 {
 	if (!page.Get())
 		throw L"Error! Expected an actual Page Pointer to be provided!";
 
-	this->page = page;
-	auto tempApp = page->GetInstance();
-	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(tempApp);
+	//this->page = page;
+	//auto tempApp = page->GetInstance();
+	//app = TrecPointerKey::GetSoftPointerFromTrec<>(tempApp);
 
-	rootControl = page->GetRootControl();
+	//rootControl = page->GetRootControl();
 
-	window = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(page->GetWindowHandle());
-
-
-	// Setting up the main Ribbon
-	AnafaceUI* rib = dynamic_cast<AnafaceUI*>(rootControl.Get());
-	assert(rib);
-
-	// First Tab in ribbon
-	ribbon1 = rib->GetChildAt(0);
-
-	TLayout* subLayout = dynamic_cast<TLayout*>(ribbon1.Get());
-	assert(subLayout);
-	subLayout = dynamic_cast<TLayout*>(subLayout->GetLayoutChild(0, 0).Get());
-	assert(subLayout);
-	solutionName = subLayout->GetLayoutChild(0, 0);
-	assert(dynamic_cast<TTextField*>(solutionName.Get()));
+	//window = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(page->GetWindowHandle());
 
 
-	// Set up the Arena Tab
-	ribbon4 = rib->GetChildAt(3);
-	subLayout = dynamic_cast<TLayout*>(ribbon4.Get());
-	assert(subLayout);
-	arenaStack1 = subLayout->GetLayoutChild(0, 0);
-	arenaStack3 = subLayout->GetLayoutChild(2, 0);
-	assert(dynamic_cast<TLayout*>(arenaStack1.Get()));
-	assert(dynamic_cast<TLayout*>(arenaStack3.Get()));
-	arenaStack1->setActive(false);
-	arenaStack3->setActive(false);
+	//// Setting up the main Ribbon
+	//AnafaceUI* rib = dynamic_cast<AnafaceUI*>(rootControl.Get());
+	//assert(rib);
 
-	// Set up the Document Tab
-	ribbon5 = rib->GetChildAt(5);
-	subLayout = dynamic_cast<TLayout*>(ribbon5.Get());
-	docStack2 = subLayout->GetLayoutChild(1, 0);
-	assert(dynamic_cast<TLayout*>(docStack2.Get()));
-	docStack2->setActive(false);
+	//// First Tab in ribbon
+	//ribbon1 = rib->GetChildAt(0);
+
+	//TLayout* subLayout = dynamic_cast<TLayout*>(ribbon1.Get());
+	//assert(subLayout);
+	//subLayout = dynamic_cast<TLayout*>(subLayout->GetLayoutChild(0, 0).Get());
+	//assert(subLayout);
+	//solutionName = subLayout->GetLayoutChild(0, 0);
+	//assert(dynamic_cast<TTextField*>(solutionName.Get()));
+
+
+	//// Set up the Arena Tab
+	//ribbon4 = rib->GetChildAt(3);
+	//subLayout = dynamic_cast<TLayout*>(ribbon4.Get());
+	//assert(subLayout);
+	//arenaStack1 = subLayout->GetLayoutChild(0, 0);
+	//arenaStack3 = subLayout->GetLayoutChild(2, 0);
+	//assert(dynamic_cast<TLayout*>(arenaStack1.Get()));
+	//assert(dynamic_cast<TLayout*>(arenaStack3.Get()));
+	//arenaStack1->setActive(false);
+	//arenaStack3->setActive(false);
+
+	//// Set up the Document Tab
+	//ribbon5 = rib->GetChildAt(5);
+	//subLayout = dynamic_cast<TLayout*>(ribbon5.Get());
+	//docStack2 = subLayout->GetLayoutChild(1, 0);
+	//assert(dynamic_cast<TLayout*>(docStack2.Get()));
+	//docStack2->setActive(false);
 }
 
-void MainLayoutHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void MainLayoutHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 
-	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
-	{
-		auto cont = eventAr[Rust].control;
-		if (!cont.Get()) continue;
+	//for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
+	//{
+	//	auto cont = eventAr[Rust].control;
+	//	if (!cont.Get()) continue;
 
-		EventArgs ea = cont->getEventArgs();
+	//	EventArgs ea = cont->getEventArgs();
 
 
-		int ea_id = ea.methodID;
+	//	int ea_id = ea.methodID;
 
-		if (ea_id > -1 && ea_id < calls.Size())
-		{
-			(this->*calls[ea_id])(cont, ea);
-		}
-		/*else if (ea_id == -1 && ea.control == body.Get() && ea.eventType == On_sel_change)
-		{
-			OnSwitchTab(cont, ea);
-		}*/
-		cont->resetArgs();
-	}
+	//	if (ea_id > -1 && ea_id < calls.Size())
+	//	{
+	//		(this->*calls[ea_id])(cont, ea);
+	//	}
+	//	/*else if (ea_id == -1 && ea.control == body.Get() && ea.eventType == On_sel_change)
+	//	{
+	//		OnSwitchTab(cont, ea);
+	//	}*/
+	//	cont->resetArgs();
+	//}
 
-	if (page.Get() && page->GetWindowHandle().Get())
-		page->GetWindowHandle()->Draw();
+	//if (page.Get() && page->GetWindowHandle().Get())
+	//	page->GetWindowHandle()->Draw();
 }
 
 void MainLayoutHandler::Draw()
@@ -267,17 +203,16 @@ void MainLayoutHandler::OnFirstDraw()
 	if (!page.Get())
 		return;
 
-	auto ideWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(page->GetWindowHandle());
 
-	if (!ideWindow.Get() || ideWindow->GetEnvironment().Get())
+	if (!window.Get() || window->GetEnvironment().Get())
 		return;
 
-	TrecPointer<TEnvironment> env = ActivateEnvironmentDialog(ideWindow->GetInstance(), ideWindow->GetWindowHandle());
+	TrecPointer<TEnvironment> env = ActivateEnvironmentDialog(window->GetInstance(), window->GetWindowHandle());
 
 	if (env.Get())
 	{
-		ideWindow->SetEnvironment(env);
-		ideWindow->AddPage(anagame_page::anagame_page_project_explorer, ide_page_type::ide_page_type_upper_right, TString(L"Project"));
+		window->SetEnvironment(env);
+		window->AddPage(anagame_page::anagame_page_project_explorer, ide_page_type::ide_page_type_upper_right, TString(L"Project"));
 	}
 }
 
@@ -331,7 +266,7 @@ void MainLayoutHandler::OnPrint(TrecPointer<TControl> tc, EventArgs ea)
 void MainLayoutHandler::OnNewArena(TrecPointer<TControl> tc, EventArgs ea)
 {
 	TString dialog(L"Enter a name for your Arena!");
-	TString arenaName(ActivateNameDialog(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app), page->GetWindowHandle()->GetWindowHandle(), dialog));
+	TString arenaName(ActivateNameDialog(TrecPointerKey::GetTrecPointerFromSoft<>(app), window->GetWindowHandle(), dialog));
 
 	if (!arenaName.GetSize())
 		return;
@@ -340,7 +275,7 @@ void MainLayoutHandler::OnNewArena(TrecPointer<TControl> tc, EventArgs ea)
 	if (!window->SetUp3D())
 	{
 		TString errorMessage(L"Error! Failed to Initialize Window for 3D!");
-		ActivateAlertDialog(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app), page->GetWindowHandle()->GetWindowHandle(), errorMessage);
+		ActivateAlertDialog(TrecPointerKey::GetTrecPointerFromSoft<>(app),window->GetWindowHandle(), errorMessage);
 		return;
 	}
 
@@ -401,7 +336,7 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
 
 	caption.AppendFormat(L"%ws :", directory->GetPath().GetConstantBuffer().getBuffer());
 
-	TString fileName(ActivateNameDialog(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app), page->GetWindowHandle()->GetWindowHandle(), caption));
+	TString fileName(ActivateNameDialog(TrecPointerKey::GetTrecPointerFromSoft<>(app),window->GetWindowHandle(), caption));
 
 	if (!fileName.GetSize())
 		return;
@@ -436,7 +371,7 @@ void MainLayoutHandler::OnImportCode(TrecPointer<TControl> tc, EventArgs ea)
 	auto directory = window->GetEnvironmentDirectory();
 	if (directory.Get())
 	{
-		auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app),
+		auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<>(app),
 			window->GetWindowHandle(),
 			directory,
 			TString());
@@ -497,14 +432,14 @@ void MainLayoutHandler::OnProcessCode(TrecPointer<TControl> tc, EventArgs ea)
 	if (!dynamic_cast<TCodeHandler*>(curHandler.Get()))
 		return;
 
-	auto file = curHandler->GetFilePointer();
+	/*auto file = curHandler->GetFilePointer();
 	if (!file.Get())
 		return;
 	TString filePath(file->GetPath());
 	if (window->GetEnvironment().Get())
 	{
 		window->GetEnvironment()->RunTask(filePath);
-	}
+	}*/
 }
 
 bool MainLayoutHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)

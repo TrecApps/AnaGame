@@ -5,7 +5,7 @@
  * Class: ChildControl
  * Purpose: Holds a Control
  */
-class ChildControl
+class _ANAFACE_DLL2 ChildControl
 {
 public:
 	ChildControl();

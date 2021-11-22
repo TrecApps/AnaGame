@@ -72,7 +72,7 @@ int TIdeWindow::PrepareWindow()
 
 	for (UINT c = 0; c < ARRAYSIZE(pages); c++)
 	{
-		*pages[c] = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TabPage>(static_cast<ide_page_type>(c), pageBarSpace, drawingBoard);
+		*pages[c] = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TabPage>(static_cast<ide_page_type>(c),drawingBoard,pageBarSpace);
 		this->pages.push_back(TrecPointerKey::GetTrecPointerFromSub<TPage, TabPage>(*pages[c]));
 
 		(*pages[c])->parentWindow = (self);

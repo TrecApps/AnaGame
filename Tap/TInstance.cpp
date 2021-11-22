@@ -434,11 +434,11 @@ TrecComPointer<ID2D1Factory1> TInstance::GetFactory()
  * Parameters: TrecPointer<TInstance> i - the instance to hold
  * Returns: void
  */
-void TInstance::SetSelf(TrecPointer<TInstance> i)
+void TInstance::SetSelf(TrecPointer<TProcess> i)
 {
-	if (this != i.Get() || i.Get() != this)
+	if (this != (void*)i.Get() || i.Get() != (void*)this)
 		throw L"Error! Function expected to recieve a protected reference to 'this' Object!";
-	this->self = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(i);
+	this->self = TrecPointerKey::GetSoftPointerFromTrec<>(i);
 
 	AssertDialogRegistered();
 }

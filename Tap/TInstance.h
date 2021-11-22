@@ -184,7 +184,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> i - the instance to hold
 	 * Returns: void
 	 */
-	void SetSelf(TrecPointer<TInstance> i);
+	void SetSelf(TrecPointer<TProcess> i);
 
 
 	/**
@@ -305,7 +305,7 @@ protected:
 	/**
 	 * Self reference to this TInstance
 	 */
-	TrecPointerSoft<TInstance> self;
+	TrecPointerSoft<TProcess> self;
 
 
 	/**

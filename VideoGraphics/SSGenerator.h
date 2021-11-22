@@ -1,6 +1,7 @@
 #pragma once
 #include <TString.h>
-#include "AnafaceUI.h"
+#include "TPage.h"
+#include <TFile.h>
 
 /*
 * Class: CSSGenerator
@@ -8,7 +9,7 @@
 * 
 * SuperClass: TObject
 */
-class _ANAFACE_DLL CSSGenerator : public TObject
+class _VIDEO_GRAPHICS CSSGenerator : public TObject
 {
 public:
 	CSSGenerator(TFile&);

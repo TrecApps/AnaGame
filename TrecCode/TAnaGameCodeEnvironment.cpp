@@ -2,7 +2,6 @@
 #include "TAnascriptInterpretor.h"
 #include "TJavaScriptInterpretor.h"
 #include <TFileNode.h>
-#include <TPromptControl.h>
 #include "TcJavaScriptInterpretor.h"
 #include <TStringVariable.h>
 #include <TBlankNode.h>

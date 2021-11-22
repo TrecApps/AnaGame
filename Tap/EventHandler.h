@@ -169,6 +169,8 @@ public:
 
 	virtual TrecPointer<TTextIntercepter> GetTextIntercepter();
 
+	virtual void HandleEvents(TDataArray<EventArgs>&) override;
+
 protected:
 	/**
 	 * Reference to "this" Handler

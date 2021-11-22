@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\TrecCode;..\Tap;..\VideoGraphics;..\Anaface;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\TrecCode;..\Tap;..\VideoGraphics;..\Anaface2;..\TrecLib;$(IncludePath)</IncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -96,7 +96,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;Tap.lib;TrecCode.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface2.lib;Tap.lib;TrecCode.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

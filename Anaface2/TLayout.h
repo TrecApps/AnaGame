@@ -1,7 +1,7 @@
 #pragma once
 #include "TRandomLayout.h"
 
-class LayoutSpace
+class _ANAFACE_DLL2 LayoutSpace
 {
 public:
 	LayoutSpace();

@@ -60,7 +60,7 @@ TrecPointer<TFileShell> FileDialog::GetFile()
 	return ret;
 }
 
-TrecPointer<TFileShell> BrowseForFile(TrecPointer<TInstance> in, HWND parent, TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile, file_node_filter_mode filter_mode)
+TrecPointer<TFileShell> BrowseForFile(TrecPointer<TProcess> in, HWND parent, TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile, file_node_filter_mode filter_mode)
 {
 	if (!in.Get() || !parent)
 		return TrecPointer<TFileShell>();

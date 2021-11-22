@@ -14,9 +14,11 @@ D2D1_RECT_F TabPage::GetChildSpace()
 	return ret;
 }
 
-TabPage::TabPage(TrecPointer<DrawingBoard> board, UCHAR tabHeight): TPage(board), tabBar(board)
+TabPage::TabPage(ide_page_type t,TrecPointer<DrawingBoard> board, UCHAR tabHeight): TPage(board), tabBar(board)
 {
 	this->tabHeight = tabHeight;
+	type = t;
+	moveMode = tab_page_move_mode::normal;
 }
 
 bool TabPage::HandlesEvents()
@@ -58,10 +60,14 @@ ag_msg void TabPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<Event
 
 ag_msg bool TabPage::OnDestroy()
 {
+	return true;
 }
 
-ag_msg bool TabPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&)
+ag_msg bool TabPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&args)
 {
+	if (currentPage.Get())
+		return OnScroll(false, point, direction, args);
+	return false;
 }
 
 void TabPage::SetView(TrecPointer<TPage> page)

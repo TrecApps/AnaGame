@@ -1,28 +1,20 @@
 #pragma once
 #include <EventHandler.h>
-#include <MiniHandler.h>
 #include <MiniApp.h>
 
 class MainLayoutHandler;
 
 typedef void (MainLayoutHandler::* LayoutCall)(TrecPointer<TControl> tc, EventArgs ea);
 
-class MainLayoutHandler : public EventHandler
+class MainLayoutHandler : public TapEventHandler
 {
 public:
-	MainLayoutHandler(TrecPointer<TInstance> ins);
+	MainLayoutHandler(TrecPointer<TProcess> ins);
 	~MainLayoutHandler();
 
-	afx_msg void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut) override;
-	afx_msg void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut) override;
 
-	void Initialize(TrecPointer<Page> page)override;
-	void HandleEvents(TDataArray<EventID_Cred>& eventAr);
+	void Initialize(TrecPointer<TPage> page)override;
+	void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr);
 
 	void Draw();
 	void OnSwitchTab(TrecPointer<TControl> tc, EventArgs ea);
@@ -40,7 +32,7 @@ protected:
 	TrecPointer<TControl> rootControl;
 	bool init;
 	TString fileAnaface;
-	TDataArray<eventNameID> idMatch;
+	TDataMap<UINT> events;
 
 	D2D1_COLOR_F backColor;
 
