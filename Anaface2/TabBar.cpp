@@ -18,6 +18,7 @@ void TabBar::Tab::SetBrush(TrecPointer<TBrush> brush, bool doIcon)
 TabBar::Tab::Tab(TrecPointer<DrawingBoard> board): TPage(board)
 {
     iArea = tArea = xArea = { 0,0,0,0 };
+    isActive = true;
 }
 
 bool TabBar::Tab::HandlesEvents()
@@ -121,6 +122,13 @@ bool TabBar::Tab::OnScroll(bool fromBars, const TPoint& point, const TPoint& dir
     return false;
 }
 
+TString TabBar::Tab::GetName()
+{
+    TString ret;
+    if(text.Get()) text->GetText(ret);
+    return ret;
+}
+
 void TabBar::SetTabSizes()
 {
     auto tempArea = area;
@@ -133,6 +141,8 @@ void TabBar::SetTabSizes()
 
     for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
     {
+        if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+            continue;
         tabs[Rust]->OnResize(tempArea, 0, cred, args);
         tempArea.left = tabs[Rust]->GetArea().right;
 
@@ -206,6 +216,49 @@ void TabBar::InjectTabAt(TrecPointer<TPage> page, UINT index)
     SetTabSizes();
 }
 
+void TabBar::ActivateTabs(const TString& targets, const TString& exceptions, bool activate, bool doMatch)
+{
+    if (!draggableTabs)
+        return;
+
+    TrecPointer<TDataArray<TString>> targetList = targets.split(L';'),
+        exceptionList = exceptions.split(L';');
+
+    for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+    {
+        TString name(dynamic_cast<Tab*>(tabs[Rust].Get())->GetName());
+        name.Trim();
+
+        bool doContinue = false;
+
+        // Make sure tab is not in exception list
+        for (UINT C = 0; Rust < exceptionList->Size(); C++)
+        {
+            if (!name.Compare(exceptionList->at(C).GetTrim()))
+            {
+                doContinue = true;
+                break;
+            }
+        }
+        if (doContinue)continue;
+
+        // Now see if tab is in target list
+        for (UINT C = 0; Rust < exceptionList->Size(); C++)
+        {
+            if (!name.Compare(exceptionList->at(C).GetTrim()))
+            {
+                doContinue = true;
+                break;
+            }
+        }
+
+        if (doMatch == doContinue)
+            dynamic_cast<Tab*>(tabs[Rust].Get())->isActive = activate;
+    }
+
+    SetTabSizes();
+}
+
 void TabBar::SetHolder(TrecPointer<TabBarHolder> holder)
 {
     this->holder = holder;
@@ -239,6 +292,8 @@ void TabBar::Draw(TrecPointer<TVariable> object)
     }
     for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
     {
+        if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+            continue;
         if (!tabs[Rust]->GetArea().right)
             break;
         tabs[Rust]->Draw(object);
@@ -366,6 +421,8 @@ void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut,
         {
             for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
             {
+                if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+                    continue;
                 if (currentTab.Get() == tabs[Rust].Get())
                 {
                     tabs.RemoveAt(Rust);
@@ -422,6 +479,8 @@ void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOu
 
     for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
     {
+        if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+            continue;
         if (IsContained(point, dynamic_cast<Tab*>(tabs[Rust].Get())->area))
         {
             tabMode = IsContained(point, dynamic_cast<Tab*>(tabs[Rust].Get())->xArea) ? tab_mode::tm_exit : tab_mode::tm_regular;
@@ -441,6 +500,8 @@ void TabBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataA
 
     for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
     {
+        if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+            continue;
         if (dynamic_cast<Tab*>(tabs[Rust].Get())->exit.Get())
             dynamic_cast<Tab*>(tabs[Rust].Get())->exit = IsContained(point, dynamic_cast<Tab*>(tabs[Rust].Get())->xArea) ?
             TrecPointerKey::GetTrecPointerFromSub<>(exitHover) : TrecPointerKey::GetTrecPointerFromSub<>(exitReg);

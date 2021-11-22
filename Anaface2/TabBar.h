@@ -72,6 +72,11 @@ public:
 		 * The Content to hold
 		 */
 		TrecPointer<TPage> content;
+
+		/**
+		 * Whether the Tab should be Active or not
+		 */
+		bool isActive;
 	public:
 
 		TrecPointer<TPage> GetContent();
@@ -232,6 +237,8 @@ public:
 		 * Attributes: message; override
 		 */
 		ag_msg virtual bool OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
+
+		TString GetName();
 	};
 
 protected:
@@ -303,6 +310,20 @@ protected:
 	bool exitSupport;
 
 public:
+
+	/**
+	 * Method: TabBar::ActivateTabs
+	 * Purpose: Activates or deactivates tabs
+	 * Parameters: const TString& targets - semicolon separated names of the tabs to affect
+	 *				const TString& exceptions - tabs to not touch
+	 *				bool activate - whether the affected tags are being activated (or deactivated)
+	 *				bool doMatch = true - whether 'Targets' refer to the tabs with on of the names, or without one of the names
+	 * Returns: void
+	 * 
+	 * Note: Tab Bars that have 'draggable' set to off will return without doing anything
+	 */
+	void ActivateTabs(const TString& targets, const TString& exceptions, bool activate, bool doMatch = true);
+
 
 	void SetHolder(TrecPointer<TabBarHolder> holder);
 
