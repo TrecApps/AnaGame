@@ -165,6 +165,7 @@
     <ClInclude Include="TCombobox.h" />
     <ClInclude Include="TControl.h" />
     <ClInclude Include="TDataLayout.h" />
+    <ClInclude Include="TDataNodeControl.h" />
     <ClInclude Include="TGadget.h" />
     <ClInclude Include="TGrid.h" />
     <ClInclude Include="TLayout.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="TCombobox.cpp" />
     <ClCompile Include="TControl.cpp" />
     <ClCompile Include="TDataLayout.cpp" />
+    <ClCompile Include="TDataNodeControl.cpp" />
     <ClCompile Include="TGadget.cpp" />
     <ClCompile Include="TGrid.cpp" />
     <ClCompile Include="TLayout.cpp" />

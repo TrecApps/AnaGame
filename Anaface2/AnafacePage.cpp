@@ -10,6 +10,7 @@
 #include "TDataLayout.h"
 #include "TLayout.h"
 #include "TGrid.h"
+#include "TDataNodeControl.h"
 
 TString objectTypes[] = {
 	L"TControl",		// Basic Control
@@ -27,7 +28,8 @@ TString objectTypes[] = {
 	L"TGrid",			// Control that organizes child layouts in a grid
 	L"TDataLayout",		// TLayout that adds data-binding
 	L"TDataGrid",		// TGrid that supports data-binding
-	L"TSwitchControl"	// Layout that presents one child at a time and supports tabbing
+	L"TSwitchControl",	// Layout that presents one child at a time and supports tabbing
+	L"TDataNodeControl" // Emulates Trees
 };
 
 UINT minLayoutIndex = 10;
@@ -117,7 +119,11 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 	//if (name.StartsWith(L"TImage", true))
 	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
 
-
+	if (name.StartsWith(L"TDataNodeControl", true))
+	{
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TDataNodeControl>(this->drawingBoard, styles);
+		curLd.isLayout = true;
+	}
 	if (name.StartsWith(L"TRandomLayout", true))
 	{
 		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRandomLayout>(this->drawingBoard, styles);
