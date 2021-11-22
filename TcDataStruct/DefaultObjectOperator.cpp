@@ -188,6 +188,49 @@ DoubleLong DoubleLong::GetValueFromPrimitive(TrecPointer<TVariable> var)
 	return DoubleLong();
 }
 
+DoubleLong DoubleLong::GetValueFromString(const TString& str)
+{
+	DoubleLong ret;
+
+	double f = 0.0;
+	UINT u = 0;
+	int i = 0;
+
+	if (TString::ConvertStringToUint(str, u))
+	{
+		ret.type = double_long::dl_unsign;
+		ret.value.u = u;
+	}
+	else if (!str.ConvertToInt(i))
+	{
+		ret.type = double_long::dl_sign;
+		ret.value.s = i;
+	}
+	else if (!str.ConvertToDouble(f))
+	{
+		ret.type = double_long::dl_double;
+		ret.value.d = f;
+	}
+	return ret;
+}
+TString DoubleLong::ToString()
+{
+	TString ret;
+	switch (type)
+	{
+	case double_long::dl_double:
+		ret.Format(L"%f", value.d);
+		break;
+	case double_long::dl_sign:
+		ret.Format(L"%d", value.s);
+		break;
+	case double_long::dl_unsign:
+		ret.Format(L"%u", value.u);
+	}
+	return ret;
+}
+
+
 bool DoubleLong::operator<=(const DoubleLong& o)
 {
 	switch (type)

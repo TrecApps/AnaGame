@@ -164,9 +164,11 @@
     <ClInclude Include="JavaScriptFunc.h" />
     <ClInclude Include="Operator.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TcExpression.h" />
     <ClInclude Include="TClassStruct.h" />
     <ClInclude Include="TcNativeInterpretor.h" />
     <ClInclude Include="TContainerVariable.h" />
+    <ClInclude Include="TcOperator.h" />
     <ClInclude Include="TcTypeInterpretor.h" />
     <ClInclude Include="TFunctionGen.h" />
     <ClInclude Include="TInterpretor.h" />
@@ -198,6 +200,7 @@
     <ClCompile Include="TClassStruct.cpp" />
     <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
+    <ClCompile Include="TcOperator.cpp" />
     <ClCompile Include="TcTypeInterpretor.cpp" />
     <ClCompile Include="TFunctionGen.cpp" />
     <ClCompile Include="TInterpretor.cpp" />

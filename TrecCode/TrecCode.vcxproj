@@ -170,6 +170,7 @@
     <ClInclude Include="TAnagameEnvironmentBuilder.h" />
     <ClInclude Include="TAnascriptInterpretor.h" />
     <ClInclude Include="TcAnascriptInterpretor.h" />
+    <ClInclude Include="TcCodeObjectInterpretor.h" />
     <ClInclude Include="TcJavaScriptClassInterpretor.h" />
     <ClInclude Include="TcJavaScriptInterpretor.h" />
     <ClInclude Include="TcPythonInterpretor.h" />
@@ -199,6 +200,7 @@
     <ClCompile Include="TAnagameEnvironmentBuilder.cpp" />
     <ClCompile Include="TAnascriptInterpretor.cpp" />
     <ClCompile Include="TcAnascriptInterpretor.cpp" />
+    <ClCompile Include="TcCodeObjectInterpretor.cpp" />
     <ClCompile Include="TcJavaScriptClassInterpretor.cpp" />
     <ClCompile Include="TcJavaScriptInterpretor.cpp" />
     <ClCompile Include="TcPythonInterpretor.cpp" />

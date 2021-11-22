@@ -20,6 +20,59 @@ const COMPILE_TYPE USE_REGISTR = 0x0008;  // Code that can support Registers. Ma
 
 #endif // !TC_INTERPRETOR_COMPILE
 
+/**
+ * 
+ */
+typedef enum class tc_int_op
+{
+    none, // There is no special operation involved
+    // Basic Arithmetic
+    add,
+    sub,
+    mult,
+    div,
+    mod,
+    pow,
+    add_assign,
+    sub_assign,
+    mul_assign,
+    div_assign,
+    mod_assign,
+    pow_assign,
+    // Logical Operators
+    and_l,
+    or_l,
+    xor_l,
+    not_l,
+    and_assign,
+    or_assign,
+    xor_assign,
+    // equality
+    eq,
+    gt,
+    gte,
+    lt,
+    lte,
+    not_e,
+    // expansion
+    basic_exp,
+    point_exp,
+    // Bitwise
+    and_b,
+    or_b,
+    xor_b,
+    left_b,
+    right_b,
+    b_and_assign,
+    b_or_assign,
+    b_xor_assign,
+    b_left_assign,
+    b_right_assign,
+    // Misclanous
+    reg_assign,
+    conditional,
+    separator
+}tc_int_op;
 
 
 /**

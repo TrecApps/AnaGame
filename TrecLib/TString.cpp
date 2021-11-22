@@ -363,7 +363,7 @@ TString::TString(WCHAR c)
 * Parameters: int* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToInt(int& value)
+short TString::ConvertToInt(int& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)
@@ -404,7 +404,7 @@ short TString::ConvertToInt(int& value)
 * Parameters: long* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToInt(long& value)
+short TString::ConvertToInt(long& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)
@@ -446,7 +446,7 @@ short TString::ConvertToInt(long& value)
 * Parameters: long* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToLong(long long& value)
+short TString::ConvertToLong(long long& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)
@@ -490,7 +490,7 @@ short TString::ConvertToLong(long long& value)
 * Parameters: double* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToDouble(double& value)
+short TString::ConvertToDouble(double& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)
@@ -546,7 +546,7 @@ short TString::ConvertToDouble(double& value)
 * Parameters: float* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToFloat(float& value)
+short TString::ConvertToFloat(float& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)

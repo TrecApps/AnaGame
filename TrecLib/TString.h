@@ -168,7 +168,7 @@ public:
 	* Parameters: int* value - the value to store
 	* Returns: short - 0 if successful, error code otherwise
 	*/
-	short ConvertToInt(int&);
+	short ConvertToInt(int&)const;
 
 	/*
 	 * Method: TString::ConvertToInt
@@ -176,7 +176,7 @@ public:
 	 * Parameters: long* value - the value to store
 	 * Returns: short - 0 if successful, error code otherwise
 	 */
-	short ConvertToInt(long& value);
+	short ConvertToInt(long& value)const;
 
 	/*
 	* Method: TString::ConvertToDouble
@@ -184,7 +184,7 @@ public:
 	* Parameters: double* value - the value to store
 	* Returns: short - 0 if successful, error code otherwise
 	*/
-	short ConvertToDouble(double&);
+	short ConvertToDouble(double&)const;
 
 	/*
 	* Method: TString::ConvertToLong
@@ -192,7 +192,7 @@ public:
 	* Parameters: long* value - the value to store
 	* Returns: short - 0 if successful, error code otherwise
 	*/
-	short ConvertToLong(long long&);
+	short ConvertToLong(long long&)const;
 
 	/*
 	* Method: TString::ConvertToFloat
@@ -200,7 +200,7 @@ public:
 	* Parameters: float* value - the value to store
 	* Returns: short - 0 if successful, error code otherwise
 	*/
-	short ConvertToFloat(float&);
+	short ConvertToFloat(float&)const;
 
 	/*
 	* Method: TString::split
