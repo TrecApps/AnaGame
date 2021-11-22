@@ -18,12 +18,18 @@ void TInputTextElement::UpdateCarotPoisition(UINT loc)
 
 }
 
+void TInputTextElement::LockText(bool doLock)
+{
+	editAllowed = !doLock;
+}
+
 TInputTextElement::TInputTextElement(TrecPointer<DrawingBoard> drawingBoard, HWND window) : TTextElement(drawingBoard)
 {
 	carotLoc = 0;
 	carotActive = false;
 	grabbedRange = false;
 	this->window = window;
+	editAllowed = true;
 }
 
 bool TInputTextElement::OnCLickDown(const TPoint& point)
@@ -166,7 +172,7 @@ void TInputTextElement::OnCutCopyPaste(control_text_mode mode)
 bool TInputTextElement::OnInputChar(WCHAR ch, UINT count)
 {
 	UINT start = 0, end = 0;
-	if (carotActive)
+	if (carotActive && editAllowed)
 	{
 		bool didDelete = false;
 		if (this->highlightRange.GetHighlightRange(start, end))

@@ -158,6 +158,8 @@ public:
 	 */
 	TrecComPointer<IDWriteTextLayout> GetLayout();
 
+	UINT GetTextLength();
+
 	/**
 	 * Method: TTextElement::GetBrush
 	 * Purpose: Retrieves the brush
@@ -433,6 +435,8 @@ public:
 	  * Returns: bool - should be true under get, false if setting failed
 	  */
 	 bool GetSetFontSize(float& fontSize, bool doGet = true);
+
+	 virtual void LockText(bool doLock);
 };
 
 _VIDEO_GRAPHICS TrecComPointer<TTextRenderer> GetTTextRenderer();

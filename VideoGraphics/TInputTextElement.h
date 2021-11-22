@@ -28,6 +28,11 @@ protected:
 	HWND window;
 
 	/**
+	 * Whether to allow Editing
+	 */
+	bool editAllowed;
+
+	/**
 	 * Method: TInputTextElement::UpdateCarotByPosition
 	 * Purpose: Sets the carot position by text index
 	 * Parameters: UINT loc - the location to move the carot to
@@ -35,6 +40,8 @@ protected:
 	 */
 	void UpdateCarotPoisition(UINT loc);
 public:
+
+	virtual void LockText(bool doLock)override;
 	/**
 	 * Method: TInputTextElement::TInputTextElement
 	 * Purpose: Constructor

@@ -8,10 +8,6 @@
 class _VIDEO_GRAPHICS TComplexTextElement : public TInputTextElement
 {
 protected:
-	/**
-	 * Whether to allow Editing
-	 */
-	bool editAllowed;
 
 	/**
 	 * Formatting Details

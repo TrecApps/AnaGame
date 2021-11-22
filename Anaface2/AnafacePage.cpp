@@ -4,7 +4,7 @@
 #include <TContainerVariable.h>
 #include "TRadiobutton.h"
 #include "TCheckbox.h"
-#include "TTextInput.h"
+#include "TTextLayout.h"
 #include "TArenaView.h"
 #include "TVideoPlayer.h"
 #include "TDataLayout.h"
@@ -106,8 +106,8 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TCheckbox>(this->drawingBoard, styles);
 	if (name.StartsWith(L"TInput", true))
 		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(this->drawingBoard, styles, this->drawingBoard->GetWindowHandle());
-	//if (name.StartsWith(L"TLongInput", true))
-	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
+	if (name.StartsWith(L"TLongInput", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextLayout>(this->drawingBoard, styles, this->drawingBoard->GetWindowHandle());
 	//if (name.StartsWith(L"TBasicPrompt", true))
 	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
 	if (name.StartsWith(L"TArena", true))

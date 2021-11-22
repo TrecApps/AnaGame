@@ -249,6 +249,11 @@ TrecComPointer<IDWriteTextLayout> TTextElement::GetLayout()
 	return mainLayout;
 }
 
+UINT TTextElement::GetTextLength()
+{
+	return text.GetSize();
+}
+
 TrecPointer<TBrush> TTextElement::GetBrush()
 {
 	return this->basicDetails.color;
@@ -657,6 +662,10 @@ bool TTextElement::GetSetFontSize(float& fontSize, bool doGet)
 	basicDetails.fontSize = fontSize;
 	ReCreateLayout();
 	return true;
+}
+
+void TTextElement::LockText(bool doLock)
+{
 }
 
 

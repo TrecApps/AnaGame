@@ -33,7 +33,7 @@ TString TextIncrementControl::GetString()
 
 TTextInput::TTextInput(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta, HWND win) : TGadget(rt, ta)
 {
-	useNumber = usePassword = passwordPeek = useNumBoxes = showPassword = false;
+	useNumber = usePassword = passwordPeek = useNumBoxes = showPassword = textLock = false;
 	editEnabled = true;
 	windowHandle = win;
 }
@@ -51,6 +51,10 @@ bool TTextInput::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d
 		this->usePassword = true;
 		if (attributes.retrieveEntry(L"|PasswordPeek", valpoint) && !valpoint.CompareNoCase(L"true"))
 			this->passwordPeek = true;
+	}
+	if (attributes.retrieveEntry(L"|IsLocked", valpoint) && !valpoint.CompareNoCase(L"true"))
+	{
+		this->textLock = true;
 	}
 	if (attributes.retrieveEntry(L"|CanEdit", valpoint) && !valpoint.CompareNoCase(L"false"))
 		this->editEnabled = false;
@@ -255,6 +259,13 @@ TString TTextInput::GetText()
 		return ret;
 	text->GetText(ret);
 	return ret;
+}
+
+void TTextInput::LockText(bool doLock)
+{
+	textLock = doLock;
+	if (text.Get())
+		text->LockText(doLock);
 }
 
 void TTextInput::SetUpTextElement()

@@ -130,6 +130,8 @@ public:
 
 	TString GetText();
 
+	void LockText(bool doLock);
+
 
 protected:
 
@@ -145,6 +147,8 @@ protected:
 	virtual void SetUpTextElement() override;
 
 	bool useNumber, usePassword, passwordPeek, editEnabled, useNumBoxes, showPassword;
+
+	bool textLock;
 
 	TextIncrementControl numberControl;
 
