@@ -5,7 +5,7 @@
 #include <TDataMap.h>
 #include "AnaWeb.h"
 #include <TPage.h>
-#include <TTextInput.h>
+#include <TTextLayout.h>
 
 /**
  * Enum Class: WebSizeUnit
@@ -243,7 +243,7 @@ protected:
     class TWebNodeContainer : public TObject
     {
     public:
-        TWebNodeContainer(TrecSubPointer<TPage, TTextInput> text);
+        TWebNodeContainer(TrecSubPointer<TPage, TTextLayout> text);
         TWebNodeContainer(TrecPointer<TPage> control);
         TWebNodeContainer(TrecPointer<TWebNode> webNode);
 

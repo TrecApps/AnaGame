@@ -561,7 +561,25 @@ public:
 	 */
 	ag_msg virtual bool OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
 
+	/**
+	 * Method: TText::GetMinWidth
+	 * Purpose: Retirvees the minimum width needed before DirectWrtie has to add emergency breaks in line
+	 * Parameters: bool& worked - whether the value returned is truely the reported value
+	 * Returns: float - the min width needed. If inspection fails, this represents the width currently used
+	 */
+	virtual float GetMinWidth();
 
+
+	/*
+	* Method: TControl::ShrinkHeight
+	* Purpose: Reduces the height of the control down to what is needed --> just shrinks its children
+	*		some of whom might find ways to shrink themselves
+	* Parameters: void
+	* Returns: void
+	*
+	* Attributes: virtual
+	*/
+	virtual void ShrinkHeight();
 
 protected:
 

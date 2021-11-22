@@ -2008,7 +2008,7 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 
 
 
-	TTextInput* textField = dynamic_cast<TTextInput*>(textNode->control.Get());
+	TTextLayout* textField = dynamic_cast<TTextLayout*>(textNode->control.Get());
 	textField->AddAttribute(L"|CanEdit", falseString);
 	textField->AddAttribute(L"|VerticalAlignment", vertiString);
 	textField->AddAttribute(L"|AutoGenContent", falseString);
@@ -2054,7 +2054,7 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 
 
 		// End to-do
-		// textField->ApplyFormatting(det);
+		textField->ApplyFormatting(det);
 	}
 }
 
@@ -2167,9 +2167,9 @@ void TWebNode::ShrinkHeight()
 			continue;
 		}
 
-		if (childNodes[Rust]->control.Get())
+		if (dynamic_cast<TControl*>(childNodes[Rust]->control.Get()))
 		{
-			//childNodes[Rust]->control->ShrinkHeight();
+			dynamic_cast<TControl*>(childNodes[Rust]->control.Get())->ShrinkHeight();
 			float chBottom = childNodes[Rust]->control->GetArea().bottom;
 			if (chBottom > curBottom)
 				curBottom = chBottom;
@@ -2294,11 +2294,11 @@ float TWebNode::NeedsWidth(UINT column)
 
 			if (childNodes[Rust].Get())
 			{
-				TTextInput* field = dynamic_cast<TTextInput*>(childNodes[Rust]->control.Get());
+				TTextLayout* field = dynamic_cast<TTextLayout*>(childNodes[Rust]->control.Get());
 				TWebNode* node = childNodes[Rust]->webNode.Get();
 				if (field)
 				{
-					//ret = field->GetMinWidth();
+					ret = field->GetMinWidth();
 				}
 				else if(node)
 				{
@@ -2331,9 +2331,9 @@ float TWebNode::NeedsWidth(UINT column)
 				TWebNode* node = wnode->webNode.Get();
 				if (field)
 				{
-					//float needs = field->GetMinWidth();
-					//if (minNeeded < needs)
-					//	minNeeded = needs;
+					float needs = field->GetMinWidth();
+					if (minNeeded < needs)
+						minNeeded = needs;
 				}
 				else if (node && node->internalDisplay == WebNodeDisplayInternal::wndi_row)
 				{
@@ -2374,9 +2374,9 @@ float TWebNode::NeedsWidth(UINT column)
 			TWebNode* node = wnode->webNode.Get();
 			if (field)
 			{
-				//float needs = field->GetMinWidth();
-				//if (ret < needs)
-				//	ret = needs;
+				float needs = field->GetMinWidth();
+				if (ret < needs)
+				ret = needs;
 			}
 			else if (node)
 			{
@@ -2738,12 +2738,12 @@ EventPropagater::EventPropagater(const TString& e, bool useCapture)
 	this->useCapture = useCapture;
 }
 
-TWebNode::TWebNodeContainer::TWebNodeContainer(TrecSubPointer<TPage, TTextInput> text)
+TWebNode::TWebNodeContainer::TWebNodeContainer(TrecSubPointer<TPage, TTextLayout> text)
 {
 	if (text.Get())
 	{
 		type = NodeContainerType::nct_text;
-		this->control = TrecPointerKey::GetTrecPointerFromSub<TPage, TTextInput>(text);
+		this->control = TrecPointerKey::GetTrecPointerFromSub<TPage, TTextLayout>(text);
 	}
 	else
 		type = NodeContainerType::ntc_null;

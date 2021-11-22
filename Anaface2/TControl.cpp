@@ -1070,6 +1070,40 @@ bool TControl::OnScroll(bool, const TPoint& point, const TPoint& direction, TDat
 	return false;
 }
 
+float TControl::GetMinWidth()
+{
+	float limitMin = dimensions.Get() ? dimensions->minWidth : 1.0f;
+	bool w = true;
+	float textWidth = text.Get() ? text->GetMinWidth(w) : 1.0f;
+	assert(w);
+	return max(limitMin, textWidth);
+}
+
+
+/**
+ * Method: TControl::ShrinkHeight
+ * Purpose: Reduces the height of the control down to what is needed --> just shrinks its children
+ *		some of whom might find ways to shrink themselves
+ * Parameters: void
+ * Returns: void
+ */
+void TControl::ShrinkHeight()
+{
+	TObjectLocker threadLock(&thread);
+	float bottom = location.top;
+
+	if (text.Get())
+	{
+		bool w;
+		bottom += text->GetMinHeight(w);
+		assert(w);
+	}
+
+	if (bottom > location.top)
+		location.bottom = bottom;
+
+}
+
 int TControl::HasEvent(R_Message_Type mType)
 {
 	for (UINT Rust = 0; Rust < eventList.Size(); Rust++)
