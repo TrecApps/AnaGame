@@ -25,7 +25,7 @@ public:
 	UINT sizeNeeded;
 };
 
-class TTextLayout :
+class _ANAFACE_DLL2 TTextLayout :
     public TTextInput
 {
 protected:

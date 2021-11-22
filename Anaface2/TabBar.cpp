@@ -353,7 +353,7 @@ TrecPointer<TPage> TabBar::AddNewTab(const TString& name, TrecPointer<TPage> pag
     TrecPointer<TTextElement> textEle = TrecPointerKey::GetNewTrecPointer<TTextElement>(drawingBoard);
 
     TrecPointer<TPage> newTab = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, Tab>(drawingBoard);
-    
+    dynamic_cast<Tab*>(newTab.Get())->content = page;
     TString newName(name);
 
     if (!newName.GetSize())

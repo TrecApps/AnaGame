@@ -25,11 +25,12 @@
  * Returns: New IDE Window
  */
 TIdeWindow::TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, 
-	TrecPointer<TProcess> ins, UINT mainViewSpace, UINT pageBarSpace):
+	TrecPointer<TProcess> ins, UINT mainViewSpace, UINT pageBarSpace, const TString& pageName):
 	TWindow(name, winClass, style | WS_MAXIMIZE, parent, commandShow, ins)
 {
 	this->mainViewSpace = mainViewSpace;
 	this->pageBarSpace = pageBarSpace;
+	this->mainPageName.Set(pageName);
 }
 
 TIdeWindow::~TIdeWindow()
@@ -723,9 +724,17 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	if (control.Get())
 		control->onCreate(newPage->GetArea(), d3dEngine);
 
-
-
-	mainPage = TrecSubToTrec(newPage);
+	if (mainPageName.GetSize())
+	{
+		TrecSubPointer<TPage, TabPage> mainTabPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TabPage>(ide_page_type::ide_page_type_main, drawingBoard,30);
+		mainTabPage->OnResize(space, 0, cred, args);
+		mainPage = TrecSubToTrec(mainTabPage);
+		mainTabPage->tabBar.AddNewTab(mainPageName, TrecSubToTrec(newPage), false);
+		space.top += 30;
+		newPage->OnResize(space, 0, cred, args);
+	}
+	else
+		mainPage = TrecSubToTrec(newPage);
 
 	GetClientRect(GetWindowHandle(), &size);
 	auto curArea = ConvertRectToD2D1Rect(size);

@@ -109,7 +109,7 @@ public:
 	 *				t_window_type winType - type of window desired (default provides a regular TWindow)
 	 * Returns: int - error code
 	 */
-	int SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<TPage::EventHandler> eh, t_window_type winType = t_window_type::t_window_type_plain);
+	int SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<TPage::EventHandler> eh, const TString& mainPage, t_window_type winType = t_window_type::t_window_type_plain);
 
 	/**
 	 * Method: TInstance::GetWindowByName

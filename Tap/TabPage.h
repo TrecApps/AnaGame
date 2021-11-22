@@ -9,6 +9,7 @@
  */
 typedef enum class ide_page_type
 {
+	ide_page_type_main,				// This is the main Page
 	ide_page_type_body,           // represents the main body of the Window
 	ide_page_type_basic_console,  // represents the lower console, that fits between the side panels
 	ide_page_type_deep_console,   // represents the deep lower console region

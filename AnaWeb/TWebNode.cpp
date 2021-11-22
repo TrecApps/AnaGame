@@ -486,7 +486,7 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 			// printableText.Trim();
 			if (printableText.GetTrim().GetSize())
 			{
-				TrecSubPointer<TPage, TTextInput> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TTextInput>(board, TrecPointer<TArray<styleTable>>(), win);
+				TrecSubPointer<TPage, TTextLayout> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TTextLayout>(board, TrecPointer<TArray<styleTable>>(), win);
 				
 				textEle->SetText(printableText);
 				TrecPointer<TWebNode::TWebNodeContainer> newNode = TrecPointerKey::GetNewTrecPointer<TWebNode::TWebNodeContainer>(textEle);
@@ -905,7 +905,7 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 				}
 				if (!currentTextNode.Get())
 				{
-					TrecSubPointer<TPage, TTextInput> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TTextInput>(board, TrecPointer<TArray<styleTable>>(), win);
+					TrecSubPointer<TPage, TTextLayout> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TTextLayout>(board, TrecPointer<TArray<styleTable>>(), win);
 					currentTextNode = TrecPointerKey::GetNewTrecPointer<TWebNode::TWebNodeContainer>(textEle);
 				}
 

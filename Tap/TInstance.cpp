@@ -197,7 +197,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
  *				t_window_type winType - type of window desired (default provides a regular TWindow)
  * Returns: int - error code
  */
-int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<TPage::EventHandler> eh, t_window_type winType)
+int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<TPage::EventHandler> eh, const TString& mainPage, t_window_type winType)
 {
 	ThreadLock();
 	WORD regResult = RegisterClassExW(&wcex);
@@ -211,7 +211,7 @@ int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<TPage
 	{
 	case t_window_type::t_window_type_ide:
 		mainWindow = TrecPointerKey::GetNewSelfTrecPointerAlt<TWindow, TIdeWindow>(mainWindowName, mainWindowClass, mainStyle, mainWindowHandle, command,
-			TrecPointerKey::GetTrecPointerFromSoft(self), 150, 30);
+			TrecPointerKey::GetTrecPointerFromSoft(self), 150, 30, mainPage);
 		break;
 	case t_window_type::t_window_type_plain:
 		mainWindow = TrecPointerKey::GetNewSelfTrecPointer<TWindow>(mainWindowName, mainWindowClass, mainStyle, mainWindowHandle, command, 

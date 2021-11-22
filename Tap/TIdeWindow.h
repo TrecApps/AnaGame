@@ -45,9 +45,10 @@ public:
 	 *				TrecPointer ins - pointer to the TInstance involved (hence why TInstance has a SetSelf method)
 	 *				UINT mainViewSpace - how much drawing space to devote to the main Page
 	 *				UINT pageBarSpace - how much tab space to allow the tab bars in the IDE-Pages
+	 *				const TString& pageName - name of the main Page to enter in the top Tab Bar (if empty, main page will be a regular Anaface Page)
 	 * Returns: New IDE Window
 	 */
-	TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, UINT mainViewSpace, UINT pageBarSpace);
+	TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, UINT mainViewSpace, UINT pageBarSpace, const TString& pageName);
 
 	/**
 	 * Method: TIdeWindow::~TIdeWindow
@@ -248,6 +249,12 @@ public:
 	UINT OpenFile(TrecPointer<TFileShell> shell); 
 
 protected:
+
+	/**
+	 * Whether the main Page is a Tab Bar
+	 */
+	TString mainPageName;
+
 	/**
 	 * Space to offer the Tab Bars
 	 */

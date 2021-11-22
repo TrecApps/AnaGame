@@ -19,6 +19,10 @@ TabPage::TabPage(ide_page_type t,TrecPointer<DrawingBoard> board, UCHAR tabHeigh
 	this->tabHeight = tabHeight;
 	type = t;
 	moveMode = tab_page_move_mode::normal;
+	if (type == ide_page_type::ide_page_type_main)
+	{
+		tabBar.SetConfigure(false, false);
+	}
 }
 
 bool TabPage::HandlesEvents()
