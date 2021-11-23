@@ -68,4 +68,17 @@ public:
     virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret) = 0;
 };
 
+/**
+ * Class: TcOperatorGroup
+ * Purpose: Holds together Operators of the same precedence and details of expressions go from right to left
+ */
+class TcOperatorGroup : public TObject
+{
+public:
+    TDataArray<TcOperator> operators;
+    bool rightToLeft;
+};
+
+
+
 TrecPointer<TcOperator> TC_DATA_STRUCT GenerateDefaultOperator(tc_int_op op, bool treatNullAsZero, UCHAR stringAdd, UCHAR container = 0);

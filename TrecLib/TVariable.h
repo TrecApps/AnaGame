@@ -8,6 +8,7 @@
  */
 typedef enum class var_type
 {
+    expression,          // Can be Operated upon to generate a new variable
     primitive,           // Primitive variable is being held
     primitive_formatted, // Primitive variable with formatting data
     collection,          // A collection type variable is being held, whether an array, JavaScript style object, tuple, dictionary, etc.
