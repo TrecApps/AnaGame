@@ -197,6 +197,7 @@
     </ClCompile>
     <ClCompile Include="TAccessorVariable.cpp" />
     <ClCompile Include="TAsyncVariable.cpp" />
+    <ClCompile Include="TcExpression.cpp" />
     <ClCompile Include="TClassStruct.cpp" />
     <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
