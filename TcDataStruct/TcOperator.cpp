@@ -2,6 +2,8 @@
 #include "TPrimitiveVariable.h"
 #include "TStringVariable.h"
 #include "DefaultObjectOperator.h"
+#include "TSpecialVariable.h"
+#include "TObjectVariable.h"
 
 TcOperator::TcOperator()
 {
@@ -427,10 +429,285 @@ public:
 	}
 };
 
+bool IsOpVarTrue(UCHAR traits, TrecPointer<TVariable> v)
+{
+	if (!v.Get()) return false;
+
+	switch (v->GetVarType())
+	{
+	case var_type::special_value:
+		return false;
+	case var_type::collection:
+		return (traits & 0b00000010) || v->GetSize();
+	case var_type::string:
+		return (traits & 0b00000100) || v->GetSize();
+	case var_type::primitive:
+	case var_type::primitive_formatted:
+		return v->Get8Value() != 0;
+	case var_type::native_object:
+		return dynamic_cast<TObjectVariable*>(v.Get())->GetObjectW().Get() != nullptr;
+	default:
+		return true;
+	}
+}
+
+class TcLogicalAndOp : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcLogicalAndOp(UCHAR t = 0, bool isAssign = false) : TcOperator(isAssign ? tc_int_op::and_assign : tc_int_op::and_l, isAssign) { this->traits = t; }
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 2)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 2 Operands for Logical-And Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(IsOpVarTrue(traits, params[0]) && IsOpVarTrue(traits, params[1]));
+	}
+};
+
+class TcLogicalOrOp : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcLogicalOrOp(UCHAR t = 0, bool isAssign = false) : TcOperator(isAssign ? tc_int_op::or_assign : tc_int_op::or_l, isAssign) { this->traits = t; }
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 2)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 2 Operands for Logical-Or Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(IsOpVarTrue(traits, params[0]) || IsOpVarTrue(traits, params[1]));
+	}
+};
+
+
+class TcLogicalNotOp : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcLogicalNotOp(UCHAR t = 0) : TcOperator(tc_int_op::not_l, false) { this->traits = t; }
+
+	virtual UCHAR GetOperandCount()override
+	{
+		return 1;
+	}
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 1)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 1 Operands for Logical-Not Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(!IsOpVarTrue(traits, params[0]));
+	}
+};
+
+
+class TcLogicalXorOp : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcLogicalXorOp(UCHAR t = 0, bool isAssign = false) : TcOperator(isAssign ? tc_int_op::xor_assign : tc_int_op::xor_l, isAssign) { this->traits = t; }
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 2)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 2 Operands for Logical-Xor Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(IsOpVarTrue(traits, params[0]) && IsOpVarTrue(traits, params[1]));
+	}
+};
+
+
+class TcBitwiseAndOp : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcBitwiseAndOp(UCHAR t = 0, bool isAssign = false) : TcOperator(isAssign ? tc_int_op::b_and_assign : tc_int_op::and_b, isAssign) { this->traits = t; }
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 2)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 2 Operands for Bitwise-And Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>( params[0]->Get8Value() & params[1]->Get8Value());
+	}
+};
+
+
+class TcBitwiseOrOp : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcBitwiseOrOp(UCHAR t = 0, bool isAssign = false) : TcOperator(isAssign ? tc_int_op::b_or_assign : tc_int_op::and_b, isAssign) { this->traits = t; }
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 2)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 2 Operands for Bitwise-Or Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(params[0]->Get8Value() | params[1]->Get8Value());
+	}
+};
+
+class TcBitwiseXorOp : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcBitwiseXorOp(UCHAR t = 0, bool isAssign = false) : TcOperator(isAssign ? tc_int_op::b_xor_assign : tc_int_op::xor_b, isAssign) { this->traits = t; }
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 2)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 2 Operands for Bitwise-And Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(params[0]->Get8Value() & params[1]->Get8Value());
+	}
+};
+
+class TcBitwiseLeftOp : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcBitwiseLeftOp(UCHAR t = 0, bool isAssign = false) : TcOperator(isAssign ? tc_int_op::b_left_assign : tc_int_op::left_b, isAssign) { this->traits = t; }
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 2)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 2 Operands for Bitwise-Left Shift Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(params[0]->Get8Value() << params[1]->Get4Value());
+	}
+};
+
+class TcBitwiseRightOp : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcBitwiseRightOp(UCHAR t = 0, bool isAssign = false) : TcOperator(isAssign ? tc_int_op::b_right_assign : tc_int_op::right_b, isAssign) { this->traits = t; }
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 2)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 2 Operands for Bitwise-RIght Shift Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(params[0]->Get8Value() >> params[1]->Get4Value());
+	}
+};
+
 TrecPointer<TcOperator>TC_DATA_STRUCT GenerateDefaultOperator(tc_int_op op, bool treatNullAsZero, UCHAR stringAdd, UCHAR container)
 {
 	switch (op)
 	{
+		// Arithmetic
 	case tc_int_op::add:
 		return stringAdd ? TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcStringAddOp>(treatNullAsZero):
 			TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicAddOp>(stringAdd, treatNullAsZero);
@@ -453,6 +730,44 @@ TrecPointer<TcOperator>TC_DATA_STRUCT GenerateDefaultOperator(tc_int_op op, bool
 		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicModOp>(stringAdd, treatNullAsZero);
 	case tc_int_op::mod_assign:
 		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicModOp>(stringAdd, treatNullAsZero, true);
+
+		// Logical
+	case tc_int_op::and_l:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalAndOp>(stringAdd);
+	case tc_int_op::and_assign:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalAndOp>(stringAdd, true);
+	case tc_int_op::or_l:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalOrOp>(stringAdd);
+	case tc_int_op::or_assign:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalOrOp>(stringAdd, true);
+	case tc_int_op::xor_l:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalXorOp>(stringAdd);
+	case tc_int_op::xor_assign:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalXorOp>(stringAdd, true);
+	case tc_int_op::not_l:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalNotOp>(stringAdd);
+
+		// Bitwise
+	case tc_int_op::and_b:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseAndOp>(stringAdd);
+	case tc_int_op::b_and_assign:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseAndOp>(stringAdd, true);
+	case tc_int_op::or_b:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseOrOp>(stringAdd);
+	case tc_int_op::b_or_assign:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseOrOp>(stringAdd, true);
+	case tc_int_op::xor_b:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseXorOp>(stringAdd);
+	case tc_int_op::b_xor_assign:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseXorOp>(stringAdd, true);
+	case tc_int_op::left_b:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseLeftOp>(stringAdd);
+	case tc_int_op::b_left_assign:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseLeftOp>(stringAdd, true);
+	case tc_int_op::right_b:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseRightOp>(stringAdd);
+	case tc_int_op::b_right_assign:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseRightOp>(stringAdd, true);
 	}
 	return TrecPointer<TcOperator>();
 }
