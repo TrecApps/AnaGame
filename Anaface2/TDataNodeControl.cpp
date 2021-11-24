@@ -167,7 +167,7 @@ bool TDataNodeControl::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine>
 
 		TColor nodeColor( 1.0f,1.0f,1.0f, 0.0f );
 
-		if (attributes.retrieveEntry(L"|NodeHighlightColor", valpoint))
+		if (attributes.retrieveEntry(L"NodeHighlightColor", valpoint))
 		{
 			bool w;
 			nodeColor = TColor::GetColorFromString(valpoint, w);
@@ -175,7 +175,7 @@ bool TDataNodeControl::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine>
 
 		nodeBrush = drawingBoard->GetBrush(TColor(nodeColor));
 
-		if (attributes.retrieveEntry(L"|BlockExtension", valpoint) && !valpoint.CompareNoCase(L"true"))
+		if (attributes.retrieveEntry(L"BlockExtension", valpoint) && !valpoint.CompareNoCase(L"true"))
 		{
 			blockExpansion = true;
 		}

@@ -96,7 +96,7 @@ bool TRadiobutton::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d
 	TGadget::onCreate(loc, d3d);
 
 
-	if (attributes.retrieveEntry(L"|RadioClass", radioClass))
+	if (attributes.retrieveEntry(L"RadioClass", radioClass))
 	{
 		auto group = GetRadioClass(radioClass);
 		group->AddButton(TrecPointerKey::GetTrecPointerFromSoft<>(self));

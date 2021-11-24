@@ -468,12 +468,12 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 
 	OnCreateSize();
 
-	if (attributes.retrieveEntry(L"|ArrayID", valpoint))
+	if (attributes.retrieveEntry(L"ArrayID", valpoint))
 	{
 		valpoint.ConvertToInt(arrayID);
 	}
 
-	if (attributes.retrieveEntry(L"|Shape", valpoint))
+	if (attributes.retrieveEntry(L"Shape", valpoint))
 	{
 		if (valpoint.Compare(L"Ellipse"))
 		{
@@ -487,11 +487,11 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 			shape = TShape::T_Rounded_Rect;
 			float xRound = (location.left - location.right) / 10;
 			float yRound = (location.bottom - location.top) / 10;
-			if (attributes.retrieveEntry(L"|RoundedRectX", valpoint))
+			if (attributes.retrieveEntry(L"RoundedRectX", valpoint))
 			{
 				valpoint.ConvertToFloat(xRound);
 			}
-			if (attributes.retrieveEntry(L"|RoundedRectY", valpoint))
+			if (attributes.retrieveEntry(L"RoundedRectY", valpoint))
 			{
 				valpoint.ConvertToFloat(yRound);
 			}
@@ -505,12 +505,12 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 		}
 	}
 
-	if (attributes.retrieveEntry(L"|id", valpoint) || attributes.retrieveEntry(L"|ID", valpoint))
+	if (attributes.retrieveEntry(L"id", valpoint) || attributes.retrieveEntry(L"ID", valpoint))
 	{
 		ID.Set(valpoint);
 	}
 
-	if (attributes.retrieveEntry(L"|Class", valpoint))
+	if (attributes.retrieveEntry(L"Class", valpoint))
 	{
 		TrecPointer<styleTable> classy;
 
@@ -551,13 +551,13 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 	OnCreateStyle(attributes);
 	this->SetUpTextElement();
 
-	if (attributes.retrieveEntry(TString(L"|FixedHeight"),valpoint))
+	if (attributes.retrieveEntry(TString(L"FixedHeight"),valpoint))
 	{
 		if (!valpoint.Compare(L"true"))
 			fixedHeight = true;
 	}
 
-	if (attributes.retrieveEntry(TString(L"|FixedWidth"), valpoint))
+	if (attributes.retrieveEntry(TString(L"FixedWidth"), valpoint))
 	{
 		if (!valpoint.Compare(L"true"))
 			fixedWidth = true;
@@ -1120,35 +1120,35 @@ void TControl::OnCreateSize()
 
 	TString valpoint;
 	UINT dime = 0;
-	if (attributes.retrieveEntry(L"|Height", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	if (attributes.retrieveEntry(L"Height", valpoint) && TString::ConvertStringToUint(valpoint, dime))
 	{
 		SetDimension(dime, dimension_spec::ds_height);
 	}
-	if (attributes.retrieveEntry(L"|MaxHeight", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	if (attributes.retrieveEntry(L"MaxHeight", valpoint) && TString::ConvertStringToUint(valpoint, dime))
 	{
 		SetDimension(dime, dimension_spec::ds_height_max);
 	}
-	if (attributes.retrieveEntry(L"|MinHeight", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	if (attributes.retrieveEntry(L"MinHeight", valpoint) && TString::ConvertStringToUint(valpoint, dime))
 	{
 		SetDimension(dime, dimension_spec::ds_height_min);
 	}
 
 
-	if (attributes.retrieveEntry(L"|Width", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	if (attributes.retrieveEntry(L"Width", valpoint) && TString::ConvertStringToUint(valpoint, dime))
 	{
 		SetDimension(dime, dimension_spec::ds_width);
 	}
-	if (attributes.retrieveEntry(L"|MaxWidth", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	if (attributes.retrieveEntry(L"MaxWidth", valpoint) && TString::ConvertStringToUint(valpoint, dime))
 	{
 		SetDimension(dime, dimension_spec::ds_width_max);
 	}
-	if (attributes.retrieveEntry(L"|MinWidth", valpoint) && TString::ConvertStringToUint(valpoint, dime))
+	if (attributes.retrieveEntry(L"MinWidth", valpoint) && TString::ConvertStringToUint(valpoint, dime))
 	{
 		SetDimension(dime, dimension_spec::ds_width_min);
 	}
 
 
-	if (attributes.retrieveEntry(L"|Margin", valpoint))
+	if (attributes.retrieveEntry(L"Margin", valpoint))
 		SetMargin(ConvertStringToD2D1Rect(valpoint));
 
 	SetSize();
@@ -1226,34 +1226,34 @@ void TControl::SetUpTextElement()
 	TString valpoint;
 
 	TColor fontColor;
-	if (attributes.retrieveEntry(TString(L"|Caption"), valpoint))
+	if (attributes.retrieveEntry(TString(L"Caption"), valpoint))
 	{
 		actText.Set(valpoint);
 	}
 
-	if (attributes.retrieveEntry(TString(L"|CaptionLocale"), valpoint))
+	if (attributes.retrieveEntry(TString(L"CaptionLocale"), valpoint))
 	{
 		locale.Set(valpoint);
 	}
 
-	if (attributes.retrieveEntry(TString(L"|Font"), valpoint))
+	if (attributes.retrieveEntry(TString(L"Font"), valpoint))
 	{
 		font.Set(valpoint);
 	}
-	if (attributes.retrieveEntry(TString(L"|FontSize"), valpoint))
+	if (attributes.retrieveEntry(TString(L"FontSize"), valpoint))
 	{
 		valpoint.ConvertToFloat(details.fontSize);
 	}
-	if (attributes.retrieveEntry(TString(L"|HorizontalAlignment"), valpoint))
+	if (attributes.retrieveEntry(TString(L"HorizontalAlignment"), valpoint))
 	{
 		hAlign = convertStringToTextAlignment(valpoint);
 	}
-	if (attributes.retrieveEntry(TString(L"|VerticalAlignment"), valpoint))
+	if (attributes.retrieveEntry(TString(L"VerticalAlignment"), valpoint))
 	{
 		vAlign = convertStringToParagraphAlignment(valpoint);
 	}
 
-	if (attributes.retrieveEntry(TString(L"|FontColor"), valpoint))
+	if (attributes.retrieveEntry(TString(L"FontColor"), valpoint))
 	{
 		bool b = false;
 		fontColor.SetColor(TColor::GetColorFromString(valpoint,b));
@@ -1263,7 +1263,7 @@ void TControl::SetUpTextElement()
 
 	// Commented out code (in case gradient colors should be added
 
-	//valpoint = att->retrieveEntry(TString(L"|TextGrad"));
+	//valpoint = att->retrieveEntry(TString(L"TextGrad"));
 	//if (valpoint.Get())
 	//{
 	//	if (!text1.Get())
@@ -1277,7 +1277,7 @@ void TControl::SetUpTextElement()
 	//}
 
 
-	//valpoint = att->retrieveEntry(TString(L"|TextGradMode"));
+	//valpoint = att->retrieveEntry(TString(L"TextGradMode"));
 	//if (valpoint.Get())
 	//{
 	//	if (!text1.Get())
@@ -1305,7 +1305,7 @@ void TControl::OnCreateStyle(TDataMap<TString>& atts)
 {
 	TString valpoint;
 
-	if (atts.retrieveEntry(L"|BorderThickness", valpoint))
+	if (atts.retrieveEntry(L"BorderThickness", valpoint))
 	{
 		if (!border.Get())
 			border = TControlComponent::GetControlBorder(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));  //TrecPointerKey::GetNewTrecPointer<TControlComponent>(drawingBoard, (this));
@@ -1313,7 +1313,7 @@ void TControl::OnCreateStyle(TDataMap<TString>& atts)
 	}
 
 	bool worked;
-	if (atts.retrieveEntry(L"|BorderColor", valpoint))
+	if (atts.retrieveEntry(L"BorderColor", valpoint))
 	{
 		if (!border.Get())
 			border = TControlComponent::GetControlBorder(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
@@ -1323,21 +1323,21 @@ void TControl::OnCreateStyle(TDataMap<TString>& atts)
 	}
 
 
-	if (atts.retrieveEntry(L"|ContentThickness", valpoint))
+	if (atts.retrieveEntry(L"ContentThickness", valpoint))
 	{
 		if (!content.Get())
 			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 		valpoint.ConvertToFloat((content->thickness));
 	}
 
-	if (atts.retrieveEntry(L"|ContentColor", valpoint))
+	if (atts.retrieveEntry(L"ContentColor", valpoint))
 	{
 		if (!content.Get())
 			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 		content->stopCollection.AddGradient(TGradientStop(TColor::GetColorFromString(valpoint, worked), 0.0f));
 	}
 
-	if (atts.retrieveEntry(L"|ContentGrad", valpoint))
+	if (atts.retrieveEntry(L"ContentGrad", valpoint))
 	{
 		if (!content.Get())
 			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
@@ -1349,7 +1349,7 @@ void TControl::OnCreateStyle(TDataMap<TString>& atts)
 			content->stopCollection.SetPositionAt(entry, gradCount - 1);
 	}
 
-	if (atts.retrieveEntry(L"|BorderGrad", valpoint))
+	if (atts.retrieveEntry(L"BorderGrad", valpoint))
 	{
 		if (!border.Get())
 			border = TControlComponent::GetControlBorder(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
@@ -1361,14 +1361,14 @@ void TControl::OnCreateStyle(TDataMap<TString>& atts)
 			border->stopCollection.SetPositionAt(entry, gradCount - 1);
 	}
 
-	if (atts.retrieveEntry(L"|ContentGradMode", valpoint))
+	if (atts.retrieveEntry(L"ContentGradMode", valpoint))
 	{
 		if (!content.Get())
 			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 		if (valpoint.Compare(L"Radial"))
 			content->useRadial = true;
 	}
-	if (atts.retrieveEntry(L"|BorderGradMode", valpoint))
+	if (atts.retrieveEntry(L"BorderGradMode", valpoint))
 	{
 		if (!border.Get())
 			border = TControlComponent::GetControlBorder(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
@@ -1376,7 +1376,7 @@ void TControl::OnCreateStyle(TDataMap<TString>& atts)
 			border->useRadial = true;
 	}
 
-	if (atts.retrieveEntry(L"|ImageSource", valpoint))
+	if (atts.retrieveEntry(L"ImageSource", valpoint))
 	{
 		if (!content.Get())
 			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));

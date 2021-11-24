@@ -79,6 +79,14 @@ public:
 	 */
 	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
 
+	/**
+	 * Method: TCombobox::GetVariableList
+	 * Purpose: Allows external code to access the Variable List
+	 * Parameters: void
+	 * Returns: TrecSubPointer<TVariable, TContainerVariable> - the list requested 
+	 */
+	TrecSubPointer<TVariable, TContainerVariable> GetVariableList();
+
 protected:
 
 	void SetCurrentContent(TrecPointer<TVariable> v);

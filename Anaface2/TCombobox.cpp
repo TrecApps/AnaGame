@@ -141,15 +141,15 @@ bool TCombobox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 {
     TObjectLocker lock(&this->thread);
     TString valpoint;
-    if (attributes.retrieveEntry(L"|DefaultText", valpoint))
-        attributes.addEntry(L"|Caption", valpoint);
+    if (attributes.retrieveEntry(L"DefaultText", valpoint))
+        attributes.addEntry(L"Caption", valpoint);
 
-    if (attributes.retrieveEntry(L"|SubHeight", valpoint))
+    if (attributes.retrieveEntry(L"SubHeight", valpoint))
         TString::ConvertStringToUint(valpoint, childHeight);
 
     UINT Rust = 0;
     TString boxAtt;
-    for (boxAtt.Format(L"|BoxEntry%d", Rust); attributes.retrieveEntry(boxAtt, valpoint); boxAtt.Format(L"|BoxEntry%d", ++Rust))
+    for (boxAtt.Format(L"BoxEntry%d", Rust); attributes.retrieveEntry(boxAtt, valpoint); boxAtt.Format(L"BoxEntry%d", ++Rust))
     {
         vars->AppendValue(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TString>(valpoint));
     }
@@ -157,12 +157,12 @@ bool TCombobox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
     dataLayout->SetData(TrecPointerKey::GetTrecPointerFromSub<>(vars));
 
     valpoint.Format(L"%d", childHeight);
-    dataLayout->AddAttribute(L"|RowHeight", valpoint);
+    dataLayout->AddAttribute(L"RowHeight", valpoint);
 
     TDataEntry<TString> entry;
     for (UINT Rust = 0; attributes.GetEntryAt(Rust, entry); Rust++)
     {
-        if (entry.key.StartsWith(L"|Sub"))
+        if (entry.key.StartsWith(L"Sub"))
             dataLayout->AddAttribute(TString(L'|') + entry.key.SubString(4), entry.object);
     }
     D2D1_RECT_F subLoc = loc;
@@ -227,6 +227,11 @@ void TCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mO
         eventAr.push_back(cred);
     }
     TGadget::OnLButtonUp(nFlags, point, mOut, eventAr, args);
+}
+
+TrecSubPointer<TVariable, TContainerVariable> TCombobox::GetVariableList()
+{
+    return vars;
 }
 
 void TCombobox::SetCurrentContent(TrecPointer<TVariable> v)

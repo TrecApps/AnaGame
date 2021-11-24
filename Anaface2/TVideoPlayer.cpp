@@ -55,7 +55,7 @@ bool TVideoPlayer::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d
 
 	bool returnable = TControl::onCreate(loc, d3d);
 	TString valpoint;;
-	if (attributes.retrieveEntry(L"|MediaSource", valpoint))
+	if (attributes.retrieveEntry(L"MediaSource", valpoint))
 	{
 		if (!setVideo(valpoint))
 			returnable = false;

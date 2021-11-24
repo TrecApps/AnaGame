@@ -23,6 +23,8 @@ TString objectTypes[] = {
 	L"TVideo",			// Provides support for video playback
 	L"TCanvas",			// Allows for drawing custom items
 	L"TImage",			// Provides advanged image manipulation options
+	L"TComboBox",
+	L"TTextComboBox",
 	L"TRandomLayout",	// Control that does not organize child layouts
 	L"TLayout",			// Control that organizes child layouts in one dimension
 	L"TGrid",			// Control that organizes child layouts in a grid

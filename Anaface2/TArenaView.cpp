@@ -54,7 +54,7 @@ bool TArenaView::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d
 
 	TString valpoint;
 
-	if (attributes.retrieveEntry(TString(L"|EngineID"), valpoint) && d3d.Get())
+	if (attributes.retrieveEntry(TString(L"EngineID"), valpoint) && d3d.Get())
 	{
 		arenaEngine = TrecPointerKey::GetNewTrecPointer<TArenaEngine>(d3d, valpoint);//   ArenaEngine::GetArenaEngine(*(valpoint.Get()), windowHandle, GetModuleHandle(nullptr));
 		if (!arenaEngine.Get())
@@ -64,19 +64,19 @@ bool TArenaView::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d
 		}
 	}
 
-	if (attributes.retrieveEntry(TString(L"|CameraType"),valpoint))
+	if (attributes.retrieveEntry(TString(L"CameraType"),valpoint))
 	{
 		if (!valpoint.Compare(L"LookAt"))
 			lookTo = false;
 	}
 
-	if (attributes.retrieveEntry(TString(L"|LockLookAt"), valpoint))
+	if (attributes.retrieveEntry(TString(L"LockLookAt"), valpoint))
 	{
 		if (!valpoint.CompareNoCase(L"true"))
 			lockLookAt = true;
 	}
 
-	if (attributes.retrieveEntry(TString(L"|StartingDirection"), valpoint))
+	if (attributes.retrieveEntry(TString(L"StartingDirection"), valpoint))
 	{
 		TrecPointer<TDataArray<TString>> numbers = valpoint.split(TString(L","));
 		if (numbers.Get() && numbers->Size() > 2)
@@ -118,7 +118,7 @@ bool TArenaView::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d
 	}
 
 
-	if (attributes.retrieveEntry(TString(L"|StartingLocation"), valpoint))
+	if (attributes.retrieveEntry(TString(L"StartingLocation"), valpoint))
 	{
 		TrecPointer<TDataArray<TString>> numbers = valpoint.split(TString(L","));
 		if (numbers.Get() && numbers->Size() > 2)
@@ -147,7 +147,7 @@ bool TArenaView::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d
 		}
 	}
 
-	if (attributes.retrieveEntry(TString(L"|Up"), valpoint))
+	if (attributes.retrieveEntry(TString(L"Up"), valpoint))
 	{
 		TrecPointer<TDataArray<TString>> numbers = valpoint.split(TString(L","));
 		if (numbers.Get() && numbers->Size() > 2)

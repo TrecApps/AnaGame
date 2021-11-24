@@ -95,34 +95,34 @@ void TTextCombobox::SetUpTextElement()
 	TString valpoint;
 
 	TColor fontColor;
-	if (attributes.retrieveEntry(TString(L"|Caption"), valpoint))
+	if (attributes.retrieveEntry(TString(L"Caption"), valpoint))
 	{
 		actText.Set(valpoint);
 	}
 
-	if (attributes.retrieveEntry(TString(L"|CaptionLocale"), valpoint))
+	if (attributes.retrieveEntry(TString(L"CaptionLocale"), valpoint))
 	{
 		locale.Set(valpoint);
 	}
 
-	if (attributes.retrieveEntry(TString(L"|Font"), valpoint))
+	if (attributes.retrieveEntry(TString(L"Font"), valpoint))
 	{
 		font.Set(valpoint);
 	}
-	if (attributes.retrieveEntry(TString(L"|FontSize"), valpoint))
+	if (attributes.retrieveEntry(TString(L"FontSize"), valpoint))
 	{
 		valpoint.ConvertToFloat(details.fontSize);
 	}
-	if (attributes.retrieveEntry(TString(L"|HorizontalAlignment"), valpoint))
+	if (attributes.retrieveEntry(TString(L"HorizontalAlignment"), valpoint))
 	{
 		hAlign = convertStringToTextAlignment(valpoint);
 	}
-	if (attributes.retrieveEntry(TString(L"|VerticalAlignment"), valpoint))
+	if (attributes.retrieveEntry(TString(L"VerticalAlignment"), valpoint))
 	{
 		vAlign = convertStringToParagraphAlignment(valpoint);
 	}
 
-	if (attributes.retrieveEntry(TString(L"|FontColor"), valpoint))
+	if (attributes.retrieveEntry(TString(L"FontColor"), valpoint))
 	{
 		bool b = false;
 		fontColor.SetColor(TColor::GetColorFromString(valpoint, b));
@@ -132,7 +132,7 @@ void TTextCombobox::SetUpTextElement()
 
 	// Commented out code (in case gradient colors should be added
 
-	//valpoint = att->retrieveEntry(TString(L"|TextGrad"));
+	//valpoint = att->retrieveEntry(TString(L"TextGrad"));
 	//if (valpoint.Get())
 	//{
 	//	if (!text1.Get())
@@ -146,7 +146,7 @@ void TTextCombobox::SetUpTextElement()
 	//}
 
 
-	//valpoint = att->retrieveEntry(TString(L"|TextGradMode"));
+	//valpoint = att->retrieveEntry(TString(L"TextGradMode"));
 	//if (valpoint.Get())
 	//{
 	//	if (!text1.Get())

@@ -65,7 +65,7 @@ bool TSwitchControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
     tabBar->SetHolder(TrecPointerKey::GetTrecPointerFromSub<>(holder));
 
     TString valpoint;
-    if (attributes.retrieveEntry(L"|TabsPresent", valpoint))
+    if (attributes.retrieveEntry(L"TabsPresent", valpoint))
     {
         if (!valpoint.Compare(L"false"))
             this->tabShow = 0;
@@ -73,7 +73,7 @@ bool TSwitchControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
             this->tabShow = 2;
     }
 
-    if (attributes.retrieveEntry(L"|TabHeight", valpoint))
+    if (attributes.retrieveEntry(L"TabHeight", valpoint))
     {
         int v = 0;
         if (!valpoint.ConvertToInt(v))
@@ -81,7 +81,7 @@ bool TSwitchControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
 
     }// End of valpoint if statement for "TabHeight" and code for creating tabs
 
-    if (attributes.retrieveEntry(L"|StackLimit", valpoint))
+    if (attributes.retrieveEntry(L"StackLimit", valpoint))
     {
         int v = 0;
         if (!valpoint.ConvertToInt(v))
@@ -144,7 +144,7 @@ bool TSwitchControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
 
     UINT start = 0;
 
-    if (attributes.retrieveEntry(L"|InitialTab", valpoint))
+    if (attributes.retrieveEntry(L"InitialTab", valpoint))
     {
         TString::ConvertStringToUint(valpoint, start);
     }

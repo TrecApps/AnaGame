@@ -130,7 +130,7 @@ bool TDataLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3
 {
 	TString valpoint;
 	
-	if (attributes.retrieveEntry("|ColumnWidth", valpoint))
+	if (attributes.retrieveEntry("ColumnWidth", valpoint))
 	{
 		int value = 0;
 		if (!valpoint.ConvertToInt(value))
@@ -140,7 +140,7 @@ bool TDataLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3
 	}
 
 	;
-	if (attributes.retrieveEntry(L"|RowHeight", valpoint))
+	if (attributes.retrieveEntry(L"RowHeight", valpoint))
 	{
 		int value = 0;
 		if (!valpoint.ConvertToInt(value))
@@ -149,7 +149,7 @@ bool TDataLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3
 		}
 	}
 
-	if (attributes.retrieveEntry(L"|DefaultVertical", valpoint))
+	if (attributes.retrieveEntry(L"DefaultVertical", valpoint))
 	{
 		if (!valpoint.CompareNoCase(L"false") || !valpoint.CompareNoCase(L'0'))
 		{
@@ -157,7 +157,7 @@ bool TDataLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3
 		}
 	}
 
-	if (attributes.retrieveEntry(L"|LimitPrimaryDimension", valpoint))
+	if (attributes.retrieveEntry(L"LimitPrimaryDimension", valpoint))
 	{
 		if (!valpoint.CompareNoCase(L"true") || valpoint.CompareNoCase(L'0'))
 		{
@@ -166,7 +166,7 @@ bool TDataLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3
 	}
 
 
-	//if (attributes.retrieveEntry(L"|MaxItemCountPrim", valpoint))
+	//if (attributes.retrieveEntry(L"MaxItemCountPrim", valpoint))
 	//{
 	//	if (!valpoint.ConvertToInt(this->maxPrimaryCount))
 	//	{

@@ -32,7 +32,7 @@ bool TGadget::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d)
 
 	//TrecPointer<TString> valpoint = attributes.retrieveEntry();
 
-	bool setContent = (attributes.retrieveEntry(L"|AutoGenContent", valpoint) && !valpoint.CompareNoCase(L"false")) ? false : true;
+	bool setContent = (attributes.retrieveEntry(L"AutoGenContent", valpoint) && !valpoint.CompareNoCase(L"false")) ? false : true;
 
 	if (!this->content.Get() && setContent)
 	{
@@ -42,7 +42,7 @@ bool TGadget::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d)
 	}
 
 
-	if (attributes.retrieveEntry(L"|BoxSize", valpoint))
+	if (attributes.retrieveEntry(L"BoxSize", valpoint))
 	{
 
 		valpoint.ConvertToInt(bSize);
