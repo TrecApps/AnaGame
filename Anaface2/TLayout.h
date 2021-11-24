@@ -20,7 +20,7 @@ class _ANAFACE_DLL2 TLayout : public TRandomLayout
 public:
 
 	/**
-	 * Method: TControl::onCreate
+	 * Method: TLayout::onCreate
 	 * Purpose: Allows the Control To contstruct itself based off of the location it has and the
 	 *		screen space it is given
 	 * Parameters: const D2D1_RECT_F& loc- the location this control is bound by
@@ -32,7 +32,7 @@ public:
 	virtual bool onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d);
 
 	/**
-	 * Method: TRandomLayout::TRandomLayout
+	 * Method: TLayout::TRandomLayout
 	 * Purpose: Constructor
 	 * Parameters: TrecPointer<DrawingBoard> db - Smart Pointer to the Render Target to draw on
 	 *				TrecPointer<TArray<styleTable>> styTab - Smart Pointer to the list of styles to draw from
@@ -44,7 +44,7 @@ public:
 
 
 	/**
-	 * Method: TControl::Draw
+	 * Method: TLayout::Draw
 	 * Purpose: Draws the Page to the Window
 	 * Parameters: TrecPointer<TVariable> object - Memory Safe means of enabling Data-Binding, if the Page has to tailor it's drawing to data provided by this parameter
 	 * Returns: void
@@ -54,7 +54,7 @@ public:
 	virtual void Draw(TrecPointer<TVariable> object) override;
 
 	/**
-	 * Method: TControl::OnResize
+	 * Method: TLayout::OnResize
 	 * Purpose: Resizes the Page
 	 * Parameters: D2D1_RECT_F& newLoc - the new regoin of the Page
 	 *				UINT nFlags - flags associated with the move
@@ -69,7 +69,7 @@ public:
 	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&) override;
 
 	/**
-	 * Method: TControl::OnScroll
+	 * Method: TLayout::OnScroll
 	 * Purpose: Sends Scroll Command to controls
 	 * Parameters: const TPoint& point - point of the mouse
 	 *				const TPoint& direction - how far to send the scroll
@@ -80,7 +80,7 @@ public:
 	ag_msg virtual bool OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
 
 	/**
-	 * Method: TRandomLayout::AddPage
+	 * Method: TLayout::AddPage
 	 * Purpose: Adds a Page to the list of Child Controls
 	 * Parameters: TrecPointer<TPage> page - the page to add
 	 *			UINT row - the row value
@@ -96,7 +96,7 @@ public:
 
 
 	/**
-	 * Method: TRandomLayout::RemovePage
+	 * Method: TLayout::RemovePage
 	 * Purpose: Removes a page by index/coordinate
 	 * Parameters: UINT row - the row value (or index in the case of a base TRandomLayout)
 	 *				UINT col - the the column value (ignored by the base-TRandomLayout)
@@ -107,7 +107,7 @@ public:
 	virtual bool RemovePage(UINT row, UINT col)override;
 
 	/**
-	 * Method: TRandomLayout::GetControlCapacity
+	 * Method: TLayout::GetControlCapacity
 	 * Purpose: Gets Capacity of the Control
 	 * Parameters: UINT& row - holds the row (or index attribute)
 	 *				UINT& col - holds the col level
@@ -118,7 +118,7 @@ public:
 	virtual void GetControlCapacity(UINT& row, UINT& col) override;
 
 	/**
-	 * Method: TRandomLayout::GetPage
+	 * Method: TLayout::GetPage
 	 * Purpose: Gets the Control at the specified coordinates (or index for the TRandomLayout)
 	 * Parameters: UINT row
 	 *				UINT col

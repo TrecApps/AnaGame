@@ -132,6 +132,8 @@ public:
 
 	void LockText(bool doLock);
 
+	void SetPasswordMode(bool b);
+
 
 protected:
 

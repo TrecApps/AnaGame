@@ -268,6 +268,11 @@ void TTextInput::LockText(bool doLock)
 		text->LockText(doLock);
 }
 
+void TTextInput::SetPasswordMode(bool b)
+{
+	usePassword = b;
+}
+
 void TTextInput::SetUpTextElement()
 {
 	TextFormattingDetails details;

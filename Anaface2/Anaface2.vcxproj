@@ -163,6 +163,7 @@
     <ClInclude Include="TArenaView.h" />
     <ClInclude Include="TCheckbox.h" />
     <ClInclude Include="TCombobox.h" />
+    <ClInclude Include="TConsoleLayout.h" />
     <ClInclude Include="TControl.h" />
     <ClInclude Include="TDataLayout.h" />
     <ClInclude Include="TDataNodeControl.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="TArenaView.cpp" />
     <ClCompile Include="TCheckbox.cpp" />
     <ClCompile Include="TCombobox.cpp" />
+    <ClCompile Include="TConsoleLayout.cpp" />
     <ClCompile Include="TControl.cpp" />
     <ClCompile Include="TDataLayout.cpp" />
     <ClCompile Include="TDataNodeControl.cpp" />

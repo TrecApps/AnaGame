@@ -101,6 +101,18 @@ void TTextLayout::SetUpTextElement()
 	text->SetText(actText);
 }
 
+UINT TTextLayout::AppendText(const TString& str)
+{
+	// To Do: Add means of deleting characters at the beggining if a limit was set
+	TString t;
+
+	// End to to
+	this->text->GetText(t);
+	this->text->SetText(t + str);
+
+	return 0;
+}
+
 void TTextLayout::AddColorEffect(D2D1_COLOR_F col, UINT start, UINT length)
 {
 	TObjectLocker threadLock(&thread);

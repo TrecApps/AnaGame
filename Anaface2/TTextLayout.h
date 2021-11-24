@@ -52,6 +52,14 @@ protected:
 	TDataArray<TextFormattingDetails> details;
 public:
 
+	/**
+	 * Method: TTextayout::AppendText
+	 * Purpose: Adds text to the End
+	 * Parameters: const TString& str - the text to append
+	 * Returns: UINT - the number of characters deleted at the beginning
+	 */
+	UINT AppendText(const TString& str);
+
 
 	/*
 	 * Method: TTextField::AddColorEffect
