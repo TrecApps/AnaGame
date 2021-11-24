@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\TrecCode;..\Tap;..\VideoGraphics;..\Anaface2;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\TcDataStruct;..\TrecCode;..\Tap;..\VideoGraphics;..\Anaface2;..\TrecLib;$(IncludePath)</IncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -96,7 +96,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface2.lib;Tap.lib;TrecCode.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface2.lib;Tap.lib;TrecCode.lib;TcDataStruct.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -151,24 +151,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AnimateBuilder.h" />
-    <ClInclude Include="ArenaApp.h" />
     <ClInclude Include="ArenaApp2.h" />
     <ClInclude Include="EnvironmentHandler.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainLayoutHandler.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="SourceCodeApp.h" />
     <ClInclude Include="SourceCodeApp2.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TEnvironmentDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimateBuilder.cpp" />
-    <ClCompile Include="ArenaApp.cpp" />
     <ClCompile Include="ArenaApp2.cpp" />
     <ClCompile Include="EnvironmentHandler.cpp" />
     <ClCompile Include="MainLayoutHandler.cpp" />
-    <ClCompile Include="SourceCodeApp.cpp" />
     <ClCompile Include="SourceCodeApp2.cpp" />
     <ClCompile Include="TEnvironmentDialog.cpp" />
   </ItemGroup>

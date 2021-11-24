@@ -1,9 +1,7 @@
 #include "MainLayoutHandler.h"
 #include <TPage.h>
-#include "ArenaApp.h"
 #include <TDialog.h>
 #include <DirectoryInterface.h>
-#include "SourceCodeApp.h"
 #include "SourceCodeApp2.h"
 #include "ArenaApp2.h"
 #include "TEnvironmentDialog.h"
@@ -291,25 +289,7 @@ void MainLayoutHandler::OnNewArena(TrecPointer<TControl> tc, EventArgs ea)
 
 void MainLayoutHandler::OnUpdateClearColor(TrecPointer<TControl> tc, EventArgs ea)
 {
-	ArenaApp* arApp = nullptr;
-	if (currentDocument.Get())
-		arApp = dynamic_cast<ArenaApp*>(currentDocument.Get());
 
-	if (!arApp) return;
-
-	CHOOSECOLORW colorPicker;
-	ZeroMemory(&colorPicker, sizeof(colorPicker));
-
-	if (!ChooseColorW(&colorPicker)) return;
-
-	COLORREF co = colorPicker.rgbResult;
-	D2D1_COLOR_F color;
-
-	color.b = static_cast<float>(GetBValue(co)) / 255.0f;
-	color.r = static_cast<float>(GetRValue(co)) / 255.0f;
-	color.g = static_cast<float>(GetGValue(co)) / 255.0f;
-	color.a = 1.0f;
-	arApp->SetColor(color);
 }
 
 void MainLayoutHandler::OnNewModel(TrecPointer<TControl> tc, EventArgs ea)

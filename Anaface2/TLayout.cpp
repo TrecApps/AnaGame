@@ -15,6 +15,9 @@ LayoutSpace::LayoutSpace(const LayoutSpace& copy)
 
 bool TLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 {
+	TString valpoint;
+	if ((attributes.retrieveEntry(L"IsGallery", valpoint) && !valpoint.CompareNoCase(L"true")) || (attributes.retrieveEntry(L"IsStack", valpoint) && !valpoint.CompareNoCase(L"false")))
+		primaryStack = false;
 	return TRandomLayout::onCreate(loc, d3d);
 }
 

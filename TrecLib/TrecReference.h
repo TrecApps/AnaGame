@@ -1581,6 +1581,27 @@ public:
 	}
 
 	/**
+	 * Method: static TrecPointerKey::GetTrecPointerFromObject<T>
+	 * Purpose: Retrieves a TrecObjectPointer that just sees a TObject
+	 * Parameters: TrecPointer<T> - the TrecPointer to convert
+	 * Returns: TrecObjectPointer - Smart Pointer that holds the object as a TObject, without regard for the specifc type held
+	 *
+	 * Note: this can be useful for Interpretors that don't need to track multiple Anagame Object types but just care about whether they are a TObject or not
+	 */
+	template <class T> static TrecPointer<T> GetTrecPointerFromObject(TrecObjectPointer obj)
+	{
+		TObject* tObj = obj.Get();
+		TrecPointer<T> ret;
+		if (dynamic_cast<T*>(tObj))
+		{
+			ret.pointer = reinterpret_cast<TrecBoxPointer<T>*>(obj.basePointer);
+			ret.pointer->Increment();
+		}
+		
+		return ret;
+	}
+
+	/**
 	 * Method: static TrecPointerKey::GetNewTrecBox<T>
 	 * Purpose: Retrieves a New TrecBox from the provided parameters
 	 * Parameters: types&& ... args - the arguments that get passed to the constructor of the object

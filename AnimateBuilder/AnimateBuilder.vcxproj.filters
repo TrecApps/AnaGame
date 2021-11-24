@@ -30,12 +30,6 @@
     <ClInclude Include="MainLayoutHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ArenaApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceCodeApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SourceCodeApp2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,12 +48,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MainLayoutHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ArenaApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceCodeApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SourceCodeApp2.cpp">

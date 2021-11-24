@@ -17,7 +17,7 @@
  *				TString& caption - The message to present to the User once the Dialog is drawn
  * Returns: New TEnvironmentDialog instance
  */
-TEnvironmentDialog::TEnvironmentDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode):
+TEnvironmentDialog::TEnvironmentDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode):
 	TDialog(name, winClass, style, parent, commandShow, ins, mode)
 {
 
@@ -46,7 +46,7 @@ int TEnvironmentDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	file.Append(L"Resources\\Environments_Dialog.tml");
 
-	TrecPointer<EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<EventHandler, EnvironmentHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
+	TrecPointer<TPage::EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<TPage::EventHandler, EnvironmentHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 
 	int returnable = TWindow::CompileView(file, eh);
 
@@ -67,15 +67,6 @@ bool TEnvironmentDialog::OnDestroy()
 {
 	bool ret = TDialog::OnDestroy();
 
-	if (!mainPage.Get() || !mainPage->GetHandler().Get())
-		return false;
-
-	auto handler = mainPage->GetHandler();
-
-	assert(dynamic_cast<EnvironmentHandler*>(handler.Get()));
-
-	env = dynamic_cast<EnvironmentHandler*>(handler.Get())->GetEnvironment();
-
 	return ret;
 }
 
@@ -90,7 +81,7 @@ TrecPointer<TEnvironment> TEnvironmentDialog::GetEnvironment()
 	return env;
 }
 
-TrecPointer<TEnvironment> ActivateEnvironmentDialog(TrecPointer<TInstance> ins, HWND parent)
+TrecPointer<TEnvironment> ActivateEnvironmentDialog(TrecPointer<TProcess> ins, HWND parent)
 {
 	if (!ins.Get() || !parent)
 		return TrecPointer<TEnvironment>();
