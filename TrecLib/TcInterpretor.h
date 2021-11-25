@@ -49,11 +49,17 @@ typedef enum class tc_int_op
     xor_assign,
     // equality
     eq,
+    eq_t,
     gt,
+    //gt_t,
     gte,
+    //gte_t,
     lt,
+    //lt_t,
     lte,
+    //lte_t,
     not_e,
+    not_e_t,
     // expansion
     basic_exp,
     point_exp,

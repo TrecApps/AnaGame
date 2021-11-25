@@ -703,6 +703,185 @@ public:
 	}
 };
 
+class TcEqualityOperator : public TcOperator
+{
+protected:
+	tc_int_op operatorType;
+	UCHAR strHandle;
+public:
+	TcEqualityOperator(tc_int_op op, UCHAR t = 0)
+	{
+		if (op > tc_int_op::not_e_t || op < tc_int_op::eq)
+			throw L"Not Equality Operator provided!";
+		operatorType = op;
+	}
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret) override
+	{
+		if (params.Size() != 2)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 2 Operands for Bitwise-RIght Shift Operation: found %d", params.Size());
+			return;
+		}
+
+		if (!(strHandle & 1) && (!params[0].Get() || !params[1].Get()))
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Set(L"Expected 2 NON-NULL Operands for Equality Operation");
+			return;
+		}
+
+		if (!(strHandle & 0b11111100) && ((params[0].Get() && params[0]->GetVarType() == var_type::string) || (params[1].Get() && params[1]->GetVarType() == var_type::string)))
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Set(L"Equality Operation does not support String Operations");
+			return;
+		}
+
+		// For Now, only allow Primitive Types and String types
+		if ((params[0].Get() && (params[0]->GetVarType() != var_type::string && params[0]->GetVarType() != var_type::primitive)) ||
+			(params[1].Get() && (params[1]->GetVarType() != var_type::string && params[1]->GetVarType() != var_type::primitive)))
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Set(L"Equality Operation Currently only supports Primitive and String types!");
+			return;
+		}
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret) override
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		int eqResult = 0;
+		bool eqType = false;
+
+		// 0 means both params are equal
+		// 1 means that the second param is greater
+		// -1 means that the first param is greater
+
+		if (!params[0].Get() && !params[0].Get())
+		{
+			// They are equal (and we support null)
+			eqType = true;
+		}
+		else if (!params[0].Get())
+		{
+			eqResult = (0b00000010 & strHandle) && params[1]->GetVarType() == var_type::special_value &&
+				dynamic_cast<TSpecialVariable*>(params[1].Get())->GetSpecialValue() == SpecialVar::sp_undefined ? -1 : 1;
+		}
+		else if (!params[1].Get())
+		{
+			eqResult = (0b00000010 & strHandle) && params[0]->GetVarType() == var_type::special_value && 
+				dynamic_cast<TSpecialVariable*>(params[0].Get())->GetSpecialValue() == SpecialVar::sp_undefined ? 1 : -1;
+		}
+		else if (params[0]->GetVarType() == var_type::primitive && params[1]->GetVarType() == var_type::primitive)
+		{
+			DoubleLong dl1 = DoubleLong::GetValueFromPrimitive(params[0]);
+			DoubleLong dl2 = DoubleLong::GetValueFromPrimitive(params[1]);
+
+			bool eqType = dl1.type == dl2.type && params[0]->GetVType() == params[1]->GetVType();
+
+			if (dl1 > dl2)
+				eqResult = -1;
+			else if (dl1 < dl2)
+				eqResult = 1;
+		}
+		else if (params[0]->GetVarType() == var_type::string && params[1]->GetVarType() == var_type::string)
+		{
+			UCHAR pStringHandle = 0b00001100 & strHandle;
+			eqType = true;
+			switch (pStringHandle)
+			{
+			case 0b00001000:
+				eqResult = params[0]->GetString().Compare(params[1]->GetString());
+				break;
+			case 0b00001100: // This mode uses String Compare (no Case Mode)
+				eqResult = params[0]->GetString().CompareNoCase(params[1]->GetString());
+				break;
+			case 0b00000100: // This mode uses the Length of Strings
+				if (params[0]->GetSize() > params[1]->GetSize())
+					eqResult = -1;
+				else if (params[0]->GetSize() < params[1]->GetSize())
+					eqResult = 1;
+				break;
+			case 0:
+				if (params[0].Get() > params[1].Get())
+					eqResult = -1;
+				else if (params[0].Get() < params[1].Get())
+					eqResult = 1;
+			}
+		}
+		else if (params[0]->GetVarType() == var_type::string && params[1]->GetVarType() == var_type::primitive)
+		{
+			eqResult = 1;
+			if (strHandle & 0b00010000)
+			{
+				DoubleLong d1 = DoubleLong::GetValueFromString(params[0]->GetString());
+				DoubleLong d2 = DoubleLong::GetValueFromPrimitive(params[1]);
+
+				if (d1.type != double_long::dl_invalid &&
+					d2.type != double_long::dl_invalid)
+				{
+					if (d1 == d2)
+						eqResult = 0;
+					else if (d1 > d2)
+						eqResult = -1;
+				}
+			}
+		}
+		else if (params[1]->GetVarType() == var_type::string && params[0]->GetVarType() == var_type::primitive)
+		{
+			eqResult = -1;
+			if (strHandle & 0b00010000)
+			{
+				DoubleLong d2 = DoubleLong::GetValueFromString(params[1]->GetString());
+				DoubleLong d1 = DoubleLong::GetValueFromPrimitive(params[0]);
+
+				if (d1.type != double_long::dl_invalid &&
+					d2.type != double_long::dl_invalid)
+				{
+					if (d1 == d2)
+						eqResult = 0;
+					else if (d1 > d2)
+						eqResult = 1;
+				}
+			}
+		}
+
+
+		switch (operatorType)
+		{
+		case tc_int_op::not_e_t: // If the tye is not the same OR if the value is not the same, then return true
+			ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(eqResult || !eqType);
+			return;
+		case tc_int_op::eq:
+			eqType = true;
+		case tc_int_op::eq_t:
+			ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(!eqResult && eqType);
+			return;
+		case tc_int_op::not_e: // If the tye is not the same OR if the value is not the same, then return true
+			ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(eqResult != 0);
+			return;
+
+		case tc_int_op::gt:
+			ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(eqResult < 0);
+			return;
+		case tc_int_op::gte:
+			ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(eqResult <= 0);
+			return;
+		case tc_int_op::lt:
+			ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(eqResult > 0);
+			return;
+		case tc_int_op::lte:
+			ret.errorObject = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(eqResult >= 0);
+			return;
+		}
+
+	}
+};
+
 TrecPointer<TcOperator>TC_DATA_STRUCT GenerateDefaultOperator(tc_int_op op, bool treatNullAsZero, UCHAR stringAdd, UCHAR container)
 {
 	switch (op)
@@ -768,6 +947,17 @@ TrecPointer<TcOperator>TC_DATA_STRUCT GenerateDefaultOperator(tc_int_op op, bool
 		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseRightOp>(stringAdd);
 	case tc_int_op::b_right_assign:
 		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseRightOp>(stringAdd, true);
+
+		// Equality
+	case tc_int_op::eq:
+	case tc_int_op::eq_t:
+	case tc_int_op::gt:
+	case tc_int_op::gte:
+	case tc_int_op::lt:
+	case tc_int_op::lte:
+	case tc_int_op::not_e:
+	case tc_int_op::not_e_t:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcEqualityOperator>(op, stringAdd);
 	}
 	return TrecPointer<TcOperator>();
 }
