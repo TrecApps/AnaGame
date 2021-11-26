@@ -859,18 +859,20 @@ public:
 	 * Purpose: Applies the Replace operation via TStrings as parameters
 	 * Parameters: const TString& oldStr - the String to replace
 	 *				const TString& newStr - the String to replace the old string with
+	 *				bool doAll - if true, replaces all instances - otherwise, just replaces the first instance
 	 * Returns: int - the number of instances where the replacement operaiton was applied
 	 */
-	int Replace(const TString& oldStr, const TString& newStr);
+	int Replace(const TString& oldStr, const TString& newStr, bool doAll = true);
 	/**
 	 * Method: TString::GetReplace
 	 * Purpose: Returns a copy of the TString with the old String replaced by the new one
 	 * Parameters: int& ret - reference of the replacemnt counter
 	 *				const TString& oldStr - the String to replace
 	 *				const TString& newStr - the String to replace the old string with
+	 *				bool doAll - if true, replaces all instances - otherwise, just replaces the first instance
 	 * Returns: TString::The Copy with the Replace operation applied
 	 */
-	TString GetReplace(int& ret, const TString& oldStr, const TString& newStr) const;
+	TString GetReplace(int& ret, const TString& oldStr, const TString& newStr, bool doAll = true) const;
 	/**
 	 * Method: TString::Replace
 	 * Purpose: In-place character replacement operation

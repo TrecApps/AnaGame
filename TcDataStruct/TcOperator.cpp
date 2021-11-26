@@ -451,6 +451,33 @@ bool IsOpVarTrue(UCHAR traits, TrecPointer<TVariable> v)
 	}
 }
 
+class TcTernaryOperator : public TcOperator
+{
+protected:
+	UCHAR traits;
+public:
+	TcTernaryOperator(UCHAR t = 0) : TcOperator(tc_int_op::conditional) { traits = t; }
+
+	virtual void Inspect(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		if (params.Size() != 3)
+		{
+			ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+			ret.errorMessage.Format(L"Expected 3 Operands for Ternary Operation: found %d", params.Size());
+			return;
+		}
+
+	}
+
+	virtual void PerformOperation(TDataArray<TrecPointer<TVariable>>& params, ReturnObject& ret)
+	{
+		Inspect(params, ret);
+		if (ret.returnCode) return;
+
+		ret.errorObject =IsOpVarTrue(traits, params[0]) ? params[1] : params[2];
+	}
+};
+
 class TcLogicalAndOp : public TcOperator
 {
 protected:
@@ -958,6 +985,19 @@ TrecPointer<TcOperator>TC_DATA_STRUCT GenerateDefaultOperator(tc_int_op op, bool
 	case tc_int_op::not_e:
 	case tc_int_op::not_e_t:
 		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcEqualityOperator>(op, stringAdd);
+	case tc_int_op::conditional:
+		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcTernaryOperator>(stringAdd);
 	}
 	return TrecPointer<TcOperator>();
+}
+
+TcOperatorGroup::TcOperatorGroup()
+{
+	rightToLeft = true;
+}
+
+TcOperatorGroup::TcOperatorGroup(const TcOperatorGroup& copy)
+{
+	operators = copy.operators;
+	rightToLeft = copy.rightToLeft;
 }

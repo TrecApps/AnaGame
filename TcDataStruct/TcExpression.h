@@ -54,6 +54,21 @@ protected:
      */
     tc_exp_type type;
 
+    void ProcessExpression(TrecSubPointer<TVariable, TcInterpretor> processor, TDataArray<TcOperatorGroup>& operators,
+        ReturnObject& ret, const TDataArray<ExpressionComponent>& comp);
+
+    void ProcessOperators(TrecSubPointer<TVariable, TcInterpretor> processor, TDataArray<TcOperatorGroup>& operators,
+        ReturnObject& ret, TDataArray<ExpressionComponent>& comp, UINT opIndex);
+
+    void ProcessOperator(TrecSubPointer<TVariable, TcInterpretor> processor, TDataArray<TcOperatorGroup>& operators,
+        ReturnObject& ret, TDataArray<ExpressionComponent>& comp, UINT expIndex, TrecPointer<TcOperator> op);
+
+    bool InspectContainers(TrecSubPointer<TVariable, TcInterpretor> processor, TDataArray<TcOperatorGroup>& operators,
+        ReturnObject& ret, TDataArray<TrecSubPointer<TVariable, TcExpression>>& comps, TDataArray<tc_int_op>& opList);
+
+    static TrecSubPointer<TVariable, TcExpression> GenerateNumberExpression(TrecPointer<TVariable> v);
+    static TrecSubPointer<TVariable, TcExpression> GenerateExpression(TrecPointer<TVariable> v);
+
 
 public:
 
@@ -74,7 +89,7 @@ public:
      *              bool ex - whether the string contians expressions that need to be processed
      * Returns: bool - whether a string could be added
      */
-    bool AppendString(const TString& str, bool ex);
+    TrecSubPointer<TVariable, TcExpression> AppendString(const TString& str, bool ex);
 
 
     /**

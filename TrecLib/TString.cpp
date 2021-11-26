@@ -2826,7 +2826,7 @@ TString TString::GetRemove(int& ret, WCHAR c, bool outOfQuotes)
  *				const TString& newStr - the String to replace the old string with
  * Returns: int - the number of instances where the replacement operaiton was applied
  */
-int TString::Replace(const TString& oldStr, const TString& newStr)
+int TString::Replace(const TString& oldStr, const TString& newStr, bool doAll)
 {
 	TObjectLocker threadLock(&thread);
 	TDataArray<int> indices;
@@ -2839,6 +2839,8 @@ int TString::Replace(const TString& oldStr, const TString& newStr)
 			break;
 		indices.push_back(index);
 		index++;
+		if (!doAll)
+			break;
 	}
 
 	// If the old string does not appear, make no changes
@@ -2894,11 +2896,11 @@ int TString::Replace(const TString& oldStr, const TString& newStr)
  *				const TString& newStr - the String to replace the old string with
  * Returns: TString::The Copy with the Replace operation applied
  */
-TString TString::GetReplace(int& ret, const TString& oldStr, const TString& newStr) const 
+TString TString::GetReplace(int& ret, const TString& oldStr, const TString& newStr, bool doAll) const
 {
 	TObjectLocker threadLock(&thread);
 	TString retStr(this);
-	ret = retStr.Replace(oldStr, newStr);
+	ret = retStr.Replace(oldStr, newStr, doAll);
 	return retStr;
 }
 

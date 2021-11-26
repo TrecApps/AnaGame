@@ -75,7 +75,9 @@ public:
 class TcOperatorGroup : public TObject
 {
 public:
-    TDataArray<TcOperator> operators;
+    TcOperatorGroup();
+    TcOperatorGroup(const TcOperatorGroup& copy);
+    TDataArray<TrecPointer<TcOperator>> operators;
     bool rightToLeft;
 };
 

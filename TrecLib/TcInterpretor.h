@@ -39,6 +39,10 @@ typedef enum class tc_int_op
     div_assign,
     mod_assign,
     pow_assign,
+    pre_inc,
+    post_inc,
+    pre_dec,
+    post_dec,
     // Logical Operators
     and_l,
     or_l,
