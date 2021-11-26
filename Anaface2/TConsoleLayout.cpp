@@ -1,5 +1,123 @@
 #include "TConsoleLayout.h"
 #include "TTextLayout.h"
+#include <TTextElement.h>
+
+class TConsoleTextInterceptor : public TTextIntercepter
+{
+protected:
+
+    TrecPointer<TTextIntercepter> baseInterceptor;
+    TrecSubPointerSoft<TPage, TConsoleLayout> layout;
+
+public:
+
+    TConsoleTextInterceptor(TrecPointer<TTextIntercepter> baseInterceptor,
+        TrecSubPointerSoft<TPage, TConsoleLayout> layout)
+    {
+        assert(baseInterceptor.Get());
+        assert(layout.Get());
+
+        this->layout = layout;
+        this->baseInterceptor = baseInterceptor;
+    }
+
+    virtual void OnChar(UINT ch, UINT count, UINT flags) override
+    {
+        if (ch == 13)
+        {
+            auto real = TrecPointerKey::GetSubPointerFromSoft<>(layout);
+            if (real.Get() && real->SubmitInput())
+                return;
+            ch = L'\n';
+        }
+        baseInterceptor->OnChar(ch, count, 0);
+    }
+
+    virtual void OnKey(UINT ch, UINT count, UINT flags) override
+    {
+        if (ch == 13)
+        {
+            auto real = TrecPointerKey::GetSubPointerFromSoft<>(layout);
+            if (real.Get() && real->SubmitInput())
+                return;
+            ch = L'\n';
+        }
+        baseInterceptor->OnKey(ch, count, flags);
+    }
+
+
+    virtual void OnLoseFocus()
+    {
+        baseInterceptor->OnLoseFocus();
+    }
+
+    virtual void OnCopy()
+    {
+        baseInterceptor->OnCopy();
+    }
+
+    virtual void OnCut()
+    {
+        baseInterceptor->OnCut();
+    }
+    virtual void* GetTarget() override
+    {
+        return baseInterceptor.Get();
+    }
+};
+
+
+
+
+bool TConsoleLayout::SubmitInput()
+{
+    TString str(dynamic_cast<TTextLayout*>(GetPage(0, 0).Get())->GetText());
+
+    bool doSubmit = true;
+    UINT slashCount = 0;
+    for (UINT Rust = str.GetSize() - 1; Rust < str.GetSize(); Rust--)
+    {
+        if (str[Rust] == L'\\')
+            slashCount++;
+        else break;
+    }
+
+    if (slashCount % 2) return false;
+
+    WCHAR quote = L'\0';
+    slashCount = 0;
+    for (UINT Rust = 0; Rust < str.GetSize(); Rust++)
+    {
+        WCHAR curQuote = str[Rust];
+
+
+        switch (curQuote)
+        {
+        case L'\\':
+            slashCount++;
+        case L'\'':
+        case L'\"':
+            if (!(slashCount % 2))
+            {
+                if (quote == curQuote)
+                    quote = L'\0';
+                else if (!quote)
+                    quote = curQuote;
+            }
+        default:
+            slashCount = 0;
+        }
+    }
+
+    if (!quote)
+    {
+        shell.SubmitCommand(str);
+        dynamic_cast<TTextLayout*>(GetPage(0, 0).Get())->SetText(L"");
+        return true;
+    }
+
+    return false;
+}
 
 void TConsoleLayout::ProcessShellOutput(TString& output)
 {

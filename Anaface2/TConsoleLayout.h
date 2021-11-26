@@ -9,6 +9,7 @@
 class _ANAFACE_DLL2 TConsoleLayout :
     public TLayout
 {
+	friend class TConsoleTextInterceptor;
 protected:
     TShell shell;
 
@@ -19,6 +20,14 @@ protected:
 	bool processRunning;
 
 	TrecPointer<TTextIntercepter> inputIntercepter;
+
+	/**
+	 * Method: TConsoleLayout::SubmitInput
+	 * Purpose: Attempts to Submit input to the shell
+	 * Parameters: void
+	 * Returns: bool - whether input was submitted or not
+	 */
+	bool SubmitInput();
 
 
 	/**

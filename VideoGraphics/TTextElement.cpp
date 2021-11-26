@@ -19,7 +19,7 @@ TrecComPointer<TTextRenderer> GetTTextRenderer()
  * Class: TTextElementInterceter
  * Purpose: Intercepts text from handlers to the TTextElements
  */
-class TTextElementIntercepter : public TTextIntercepter
+class _VIDEO_GRAPHICS TTextElementIntercepter : public TTextIntercepter
 {
 public:
 	/**
