@@ -104,6 +104,18 @@ public:
 		return element.Get();
 	}
 
+
+	/**
+	 * Method: TTextInterceptor::TakesInput
+	 * Purpose: Reports whather input will be added to the target
+	 * Parameters: void
+	 * Returns: bool - whether the target supports input or not
+	 */
+	virtual bool TakesInput() override
+	{
+		return element->TakesInput();
+	}
+
 	TTextElementIntercepter(TrecPointer<TTextElement> element)
 	{
 		this->element = element;
@@ -257,6 +269,11 @@ UINT TTextElement::GetTextLength()
 TrecPointer<TBrush> TTextElement::GetBrush()
 {
 	return this->basicDetails.color;
+}
+
+bool TTextElement::TakesInput()
+{
+	return false;
 }
 
 /*

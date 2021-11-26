@@ -71,6 +71,14 @@ public:
      */
     virtual void* GetTarget() = 0;
 
+    /**
+     * Method: TTextInterceptor::TakesInput
+     * Purpose: Reports whather input will be added to the target
+     * Parameters: void
+     * Returns: bool - whether the target supports input or not
+     */
+    virtual bool TakesInput() = 0;
+
 
     // virtual void OnPaste() = 0;
 };

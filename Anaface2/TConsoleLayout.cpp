@@ -64,6 +64,11 @@ public:
     {
         return baseInterceptor.Get();
     }
+
+    virtual bool TakesInput() override
+    {
+        return baseInterceptor->TakesInput();
+    }
 };
 
 
@@ -137,7 +142,9 @@ bool TConsoleLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
     this->childControls.RemoveAll();
 
     AddRow(1, true);
-    AddPage(TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextLayout>(drawingBoard, styles), 0, 0);
+    auto topText = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextLayout>(drawingBoard, styles);
+    dynamic_cast<TControl*>(topText.Get())->AddAttribute(L"IsLocked", L"true");
+    AddPage(topText, 0, 0);
 
     if (isInput)
     {
@@ -267,10 +274,18 @@ void TConsoleLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<Event
 }
 
 
-void TConsoleLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TConsoleLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&cred, TDataArray<EventArgs>&args)
 {
+    TLayout::OnLButtonUp(nFlags, point, mOut, cred, args);
+
+    if (cred.Size() && cred[cred.Size() - 1].textIntercepter.Get() && cred[cred.Size() - 1].textIntercepter->TakesInput())
+    {
+        cred[cred.Size() - 1].textIntercepter = TrecPointerKey::GetNewSelfTrecPointerAlt<TTextIntercepter, TConsoleTextInterceptor>(
+            cred[cred.Size() - 1].textIntercepter, TrecPointerKey::GetSoftSubPointerFromSoft<TPage, TConsoleLayout>(self));
+    }
 }
 
-void TConsoleLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>& args)
+void TConsoleLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
 {
+    TLayout::OnLButtonDown(nFlags, point, mOut, cred, args);
 }

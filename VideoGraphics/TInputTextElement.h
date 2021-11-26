@@ -41,6 +41,8 @@ protected:
 	void UpdateCarotPoisition(UINT loc);
 public:
 
+	virtual bool TakesInput() override;
+
 	virtual void LockText(bool doLock)override;
 	/**
 	 * Method: TInputTextElement::TInputTextElement

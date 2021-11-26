@@ -148,6 +148,9 @@ protected:
 	virtual void ReCreateLayout();
 
 public:
+
+	virtual bool TakesInput();
+
 	float GetMinWidth(bool& worked);
 	float GetMinHeight(bool& worked);
 	/**

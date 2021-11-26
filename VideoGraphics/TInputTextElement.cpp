@@ -18,6 +18,11 @@ void TInputTextElement::UpdateCarotPoisition(UINT loc)
 
 }
 
+bool TInputTextElement::TakesInput()
+{
+	return editAllowed;
+}
+
 void TInputTextElement::LockText(bool doLock)
 {
 	editAllowed = !doLock;
