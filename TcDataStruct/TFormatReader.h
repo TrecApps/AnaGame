@@ -53,6 +53,8 @@ public:
      */
     virtual TrecPointer<TVariable> GetData() = 0;
 
+    static void EstablishDefaultBuilders();
+
     /**
      * Method: TFormatReader::SubmitBuilder
      * Purpose: Adds a Builder to the List of builders held
@@ -83,4 +85,6 @@ public:
      */
     static bool RemoveBuilder(UINT index);
 };
+
+
 

@@ -42,6 +42,8 @@ public:
 	 * Returns: TrecComPointer<ID2D1Factory1> - the factory used for Direct 2D drawing
 	 */
 	virtual TrecComPointer<ID2D1Factory1> GetFactory() = 0;
+
+	virtual void SetSelf(TrecPointer<TProcess> s) = 0;
 };
 
 

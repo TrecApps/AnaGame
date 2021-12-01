@@ -142,7 +142,7 @@ bool TConsoleLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
     this->childControls.RemoveAll();
 
     AddRow(1, true);
-    auto topText = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextLayout>(drawingBoard, styles);
+    auto topText = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextLayout>(drawingBoard, styles, drawingBoard->GetWindowHandle());
     dynamic_cast<TControl*>(topText.Get())->AddAttribute(L"IsLocked", L"true");
     AddPage(topText, 0, 0);
 
@@ -150,10 +150,10 @@ bool TConsoleLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
     {
         AddRow(20, false);
         AddRow(30, false);
-        auto directoryInput = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(drawingBoard, styles);
+        auto directoryInput = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(drawingBoard, styles, drawingBoard->GetWindowHandle());
         dynamic_cast<TTextInput*>(directoryInput.Get())->LockText(true);
         AddPage(directoryInput, 1, 0);
-        AddPage(TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(drawingBoard, styles), 2, 0);
+        AddPage(TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(drawingBoard, styles, drawingBoard->GetWindowHandle()), 2, 0);
     }
 
     return TRandomLayout::onCreate(loc, d3d);
@@ -280,7 +280,7 @@ void TConsoleLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_outpu
 
     if (cred.Size() && cred[cred.Size() - 1].textIntercepter.Get() && cred[cred.Size() - 1].textIntercepter->TakesInput())
     {
-        cred[cred.Size() - 1].textIntercepter = TrecPointerKey::GetNewSelfTrecPointerAlt<TTextIntercepter, TConsoleTextInterceptor>(
+        cred[cred.Size() - 1].textIntercepter = TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter, TConsoleTextInterceptor>(
             cred[cred.Size() - 1].textIntercepter, TrecPointerKey::GetSoftSubPointerFromSoft<TPage, TConsoleLayout>(self));
     }
 }

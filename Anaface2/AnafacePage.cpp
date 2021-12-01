@@ -69,7 +69,7 @@ void AnafacePage::HandleNode(const TString& name, TString& result, TrecPointer<T
 		TString title;
 		for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, title, childVar); Rust++)
 		{
-			for (UINT C = 0; Rust < ARRAYSIZE(objectTypes); C++)
+			for (UINT C = 0; C < ARRAYSIZE(objectTypes); C++)
 			{
 				if (title.StartsWith(objectTypes[C], true))
 				{

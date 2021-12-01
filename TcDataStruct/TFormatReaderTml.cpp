@@ -66,8 +66,9 @@ TString TFormatReaderTml::Read()
             }
             else if (dashes < dashCount)
             {
-                while (dashes < dashCount--)
+                while (dashes < dashCount)
                 {
+                    dashCount--;
                     UINT curStackSize = variableStack.Size();
                     if (curStackSize < 1)
                     {
@@ -78,6 +79,8 @@ TString TFormatReaderTml::Read()
                     variableStack.RemoveAt(curStackSize - 1);
                 }
 
+
+
                 if (variableStack.Size())
                     currentVariable = variableStack[variableStack.Size() - 1];
                 else
@@ -86,7 +89,7 @@ TString TFormatReaderTml::Read()
 
             TrecSubPointer<TVariable, TContainerVariable> childVariable = 
                 TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
-            childVariable->SetValue(L"_title", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TString>(name));
+            childVariable->SetValue(L"_title", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(name));
             if (currentVariable.Get() == variable.Get())
                 currentVariable->SetValue(name, TrecPointerKey::GetTrecPointerFromSub<>(childVariable));
             else

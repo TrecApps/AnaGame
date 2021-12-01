@@ -2,6 +2,7 @@
 #include <windowsx.h>
 #include "TDialog.h"
 #include "TIdeWindow.h"
+#include <TFormatReader.h>
 
 // Various Built-in handlers Anagame offers
 #include "TCodeHandler.h"
@@ -25,6 +26,10 @@ static TString dialogClassName(L"TDialog");
  */
 TInstance::TInstance(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, HINSTANCE ins, WNDPROC wp)
 {
+	// Set up Format Readers
+	TFormatReader::EstablishDefaultBuilders();
+
+
 	handlerID = 1;
 	messageStack = 0;
 	if (!wp)

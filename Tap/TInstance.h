@@ -52,7 +52,7 @@ typedef enum class t_window_type
  * 
  * SuperClass: TObject
  */
-class _TAP_DLL TInstance : public TObject
+class _TAP_DLL TInstance : public TProcess
 {
 	friend class TWindow;
 	friend class TDialog;
@@ -168,7 +168,7 @@ public:
 	 * Parameters: void
 	 * Returns: HINSTANCE - instance provided during construction
 	 */
-	HINSTANCE GetInstanceHandle();
+	virtual HINSTANCE GetInstanceHandle() override;
 
 	/**
 	 * Method: TInstance::GetFactory
@@ -176,7 +176,7 @@ public:
 	 * Parameters: void
 	 * Returns: TrecComPointer<ID2D1Factory1> - the factory used for Direct 2D drawing
 	 */
-	TrecComPointer<ID2D1Factory1> GetFactory();
+	virtual TrecComPointer<ID2D1Factory1> GetFactory() override;
 
 	/**
 	 * Method: TInstance::SetSelf
@@ -184,7 +184,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> i - the instance to hold
 	 * Returns: void
 	 */
-	void SetSelf(TrecPointer<TProcess> i);
+	void SetSelf(TrecPointer<TProcess> i) override;
 
 
 	/**
