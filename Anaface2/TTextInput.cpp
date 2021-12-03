@@ -185,8 +185,8 @@ parentCall:
 			numberControl.Decrement();
 		}
 
-		int methodId = -1;
-		if (textChange && (methodId = HasEvent(R_Message_Type::On_Text_Change)) != -1)
+		TString methodId(HasEvent(R_Message_Type::On_Text_Change));
+		if (textChange && (methodId.GetSize() ))
 		{
 			this->args.Reset();
 			this->args.eventType = R_Message_Type::On_Text_Change;

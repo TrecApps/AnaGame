@@ -206,8 +206,8 @@ void TCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mO
 {
     if (IsContained(point, area) && this->isLeftClicked)
     {
-        int flyOut = HasEvent(R_Message_Type::On_Flyout);
-        if (flyOut != -1)
+        TString flyOut = HasEvent(R_Message_Type::On_Flyout);
+        if (flyOut.GetSize())
         {
             this->args.Reset();
             this->args.isClick = true;

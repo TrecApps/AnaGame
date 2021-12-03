@@ -57,8 +57,8 @@ void TCheckbox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mO
 	{
 		isChecked = !isChecked;
 		EventID_Cred cred(R_Message_Type::On_check, TrecPointerKey::GetTrecPointerFromSoft<>(self));
-		int checkIndex = HasEvent(R_Message_Type::On_check);
-		if (checkIndex != -1)
+		TString checkIndex = HasEvent(R_Message_Type::On_check);
+		if (checkIndex.GetSize())
 		{
 			this->args.Reset();
 			this->args.point = point;

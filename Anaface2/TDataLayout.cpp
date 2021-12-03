@@ -202,16 +202,16 @@ void TDataLayout::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& 
 	if (mOut == message_output::mo_negative)
 		return;
 
-	int index = HasEvent(isCurClick ? R_Message_Type::On_Right_Click : R_Message_Type::On_R_Button_Up);
-	if (index != -1)
+	TString index = HasEvent(isCurClick ? R_Message_Type::On_Right_Click : R_Message_Type::On_R_Button_Up);
+	if (index.GetSize())
 	{
 		int r = 0; int c = 0;
-		index = -1;
+		int iindex = -1;
 		if (GetIndex(point, r, c))
 		{
-			index = ConvertCoordinates(r, c);
+			iindex = ConvertCoordinates(r, c);
 		}
-		cred.at(cred.Size() - 1).args->arrayLabel = index;
+		cred.at(cred.Size() - 1).args->arrayLabel = iindex;
 	}
 }
 
@@ -222,16 +222,16 @@ void TDataLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_output
 	if (mOut == message_output::mo_negative)
 		return;
 
-	int index = HasEvent(R_Message_Type::On_R_Button_Down);
-	if (index != -1)
+	TString index = HasEvent(R_Message_Type::On_R_Button_Down);
+	if (index.GetSize())
 	{
 		int r = 0; int c = 0;
-		index = -1;
+		int iindex = -1;
 		if (GetIndex(point, r, c))
 		{
-			index = ConvertCoordinates(r, c);
+			iindex = ConvertCoordinates(r, c);
 		}
-		cred.at(cred.Size() - 1).args->arrayLabel = index;
+		cred.at(cred.Size() - 1).args->arrayLabel = iindex;
 	}
 }
 
@@ -243,23 +243,23 @@ void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& 
 	if (mOut == message_output::mo_negative)
 		return;
 
-	int index = HasEvent(isCurClick ? R_Message_Type::On_Click : R_Message_Type::On_L_Button_Up);
-	if (index != -1)
+	TString index = HasEvent(isCurClick ? R_Message_Type::On_Click : R_Message_Type::On_L_Button_Up);
+	if (index.GetSize())
 	{
 		int r = 0; int c = 0;
-		index = -1;
+		int iindex = -1;
 		if (GetIndex(point, r, c))
 		{
-			index = ConvertCoordinates(r, c);
+			iindex = ConvertCoordinates(r, c);
 
 			if (isCurClick && dynamic_cast<TContainerVariable*>(var.Get()))
 			{
 				EventID_Cred cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self));
-				cred.data = dynamic_cast<TContainerVariable*>(this->var.Get())->GetValueAt(index);
+				cred.data = dynamic_cast<TContainerVariable*>(this->var.Get())->GetValueAt(iindex);
 				eventAr.push_back(cred);
 			}
 		}
-		eventAr.at(eventAr.Size() - 1).args->arrayLabel = index;
+		eventAr.at(eventAr.Size() - 1).args->arrayLabel = iindex;
 	}
 }
 
@@ -270,16 +270,16 @@ void TDataLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output
 	if (mOut == message_output::mo_negative)
 		return;
 
-	int index = HasEvent(R_Message_Type::On_L_Button_Down);
-	if (index != -1)
+	TString index = HasEvent(R_Message_Type::On_L_Button_Down);
+	if (index.GetSize())
 	{
 		int r = 0; int c = 0;
-		index = -1;
+		int iindex = -1;
 		if (GetIndex(point, r, c))
 		{
-			index = ConvertCoordinates(r, c);
+			iindex = ConvertCoordinates(r, c);
 		}
-		cred.at(cred.Size() - 1).args->arrayLabel = index;
+		cred.at(cred.Size() - 1).args->arrayLabel = iindex;
 	}
 }
 
@@ -291,16 +291,16 @@ void TDataLayout::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, T
 	if (mOut == message_output::mo_negative)
 		return;
 
-	int index = HasEvent(isCurClick ? R_Message_Type::On_Hover : R_Message_Type::On_Hover_Enter);
-	if (index != -1)
+	TString index = HasEvent(isCurClick ? R_Message_Type::On_Hover : R_Message_Type::On_Hover_Enter);
+	if (index.GetSize())
 	{
 		int r = 0; int c = 0;
-		index = -1;
+		int iindex = -1;
 		if (GetIndex(point, r, c))
 		{
-			index = ConvertCoordinates(r, c);
+			iindex = ConvertCoordinates(r, c);
 		}
-		cred.at(cred.Size() - 1).args->arrayLabel = index;
+		cred.at(cred.Size() - 1).args->arrayLabel = iindex;
 	}
 }
 
@@ -311,16 +311,16 @@ void TDataLayout::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOu
 	if (mOut == message_output::mo_negative)
 		return;
 
-	int index = HasEvent(R_Message_Type::On_LDoubleClick);
-	if (index != -1)
+	TString index = HasEvent(R_Message_Type::On_LDoubleClick);
+	if (index.GetSize())
 	{
 		int r = 0; int c = 0;
-		index = -1;
+		int iindex = -1;
 		if (GetIndex(point, r, c))
 		{
-			index = ConvertCoordinates(r, c);
+			iindex = ConvertCoordinates(r, c);
 		}
-		args.at(args.Size() - 1).args->arrayLabel = index;
+		args.at(args.Size() - 1).args->arrayLabel = iindex;
 	}
 }
 

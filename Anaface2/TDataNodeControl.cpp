@@ -95,8 +95,8 @@ void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_out
 					}
 					else
 					{
-						int eIndex = HasEvent(R_Message_Type::On_sel_change);
-						if (eIndex != -1)
+						TString eIndex = HasEvent(R_Message_Type::On_sel_change);
+						if (eIndex.GetSize())
 						{
 							this->args.eventType = R_Message_Type::On_sel_change;
 							this->args.point = point;

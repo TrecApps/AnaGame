@@ -61,7 +61,7 @@ public:
 	bool isLeftClick;
 	R_Message_Type eventType;
 	// TrecPointer<TPage> control;
-	int methodID;
+	TString methodID;
 	int arrayLabel;
 	WCHAR type;
 	TrecPointer<TObjectNode> object;

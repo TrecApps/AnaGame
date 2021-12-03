@@ -1,16 +1,63 @@
 
 #include "TControl.h"
 
+
+typedef struct EventInString
+{
+	R_Message_Type type;
+	TString str;
+}EventInString;
+
+
+EventInString eventsInStringForm[] = {
+	{R_Message_Type::On_Char, L"EventOnChar"},
+	{R_Message_Type::On_check, L"EventOnCheck"},
+	{R_Message_Type::On_Click, L"EventOnClick"},
+	{R_Message_Type::On_Click_Release, L"EventOnRelease"},
+	{R_Message_Type::On_Click_Release, L"EventOnLeftRelease"},
+	{R_Message_Type::On_Flyout, L"EventOnFlyout"},
+	{R_Message_Type::On_Focus, L"OnFocus"},
+	{R_Message_Type::On_Focus, L"EventOnFocus"},
+	{R_Message_Type::On_Hold_Click, L"EventOnHoldClick"},
+	{R_Message_Type::On_Hover, L"EventOnHover"},
+	{R_Message_Type::On_Hover_Enter, L"EventOnHoverEnter"},
+	{R_Message_Type::On_Hover_Leave, L"EventOnHoverLeave"},
+	{R_Message_Type::On_LDoubleClick, L"EventOnDblClick"},
+	{R_Message_Type::On_Lose_Focus, L"OnLoseFocus"},
+	{R_Message_Type::On_Lose_Focus, L"EventOnLoseFocus"},
+	{R_Message_Type::On_L_Button_Down, L"EventOnLButtonDown"},
+	{R_Message_Type::On_L_Button_Up, L"EventOnLButtonUp"},
+	{R_Message_Type::On_radio_change, L"EventOnRadioChange"},
+	{R_Message_Type::On_Resized, L"EventOnResize"},
+	{R_Message_Type::On_Right_Click, L"EventOnRightClick"},
+	{R_Message_Type::On_Right_Release, L"EventOnRightRelease"},
+	{R_Message_Type::On_R_Button_Down, L"EventOnRButtonDown"},
+	{R_Message_Type::On_R_Button_Up, L"EventOnRButtonUp"},
+	{R_Message_Type::On_Scrolled, L"EventOnScrolled"},
+	{R_Message_Type::On_Select_Scroller, L"EventOnScrollerSelect"},
+	{R_Message_Type::On_sel_change, L"EventOnSelectionChange"},
+	{R_Message_Type::On_SubmitDrag, L"EventOnSubmitDrag"},
+	{R_Message_Type::On_Text_Change, L"EventOnTextChange"},
+
+};
+
+
 EventTypeID::EventTypeID(const EventTypeID& copy)
 {
 	eventType = copy.eventType;
-	eventID = copy.eventID;
+	eventID.Set(copy.eventID);
 }
 
 EventTypeID::EventTypeID()
 {
 	eventType = R_Message_Type::On_Click;
 	eventID = -1;
+}
+
+EventTypeID::EventTypeID(R_Message_Type type, const TString& id)
+{
+	eventType = type;
+	eventID.Set(id);
 }
 
 /**
@@ -463,6 +510,8 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 {
 	TObjectLocker threadLock(&thread);
 
+	InspectEventAttributes();
+
 	bounds = loc;
 	TString valpoint;
 
@@ -780,8 +829,8 @@ void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 
 		if (isRightClicked)
 		{
-			int index = HasEvent(R_Message_Type::On_Right_Click);
-			if (index != -1)
+			TString index = HasEvent(R_Message_Type::On_Right_Click);
+			if (index.GetSize())
 			{
 				this->args.Reset();
 				this->args.arrayLabel = this->arrayID;
@@ -800,8 +849,8 @@ void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 		}
 		else
 		{
-			int index = HasEvent(R_Message_Type::On_R_Button_Up);
-			if (index != -1)
+			TString index = HasEvent(R_Message_Type::On_R_Button_Up);
+			if (index.GetSize())
 			{
 				this->args.Reset();
 				this->args.arrayLabel = this->arrayID;
@@ -830,8 +879,8 @@ void TControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& m
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 
-		int index = HasEvent(R_Message_Type::On_R_Button_Down);
-		if (index != -1)
+		TString index =HasEvent(R_Message_Type::On_R_Button_Down);
+		if (index.GetSize())
 		{
 			this->args.Reset();
 			this->args.arrayLabel = this->arrayID;
@@ -862,11 +911,11 @@ void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 
 		if (isLeftClicked)
 		{
-			int index = HasEvent(R_Message_Type::On_Click);
+			TString index =HasEvent(R_Message_Type::On_Click);
 
 			EventID_Cred cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self), text.Get() ? text->GetTextInterceptor() : TrecPointer<TTextIntercepter>());
 
-			if (index != -1)
+			if (index.GetSize())
 			{
 				this->args.Reset();
 				this->args.arrayLabel = this->arrayID;
@@ -880,14 +929,14 @@ void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 
 				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
 			}
-			if(text.Get() || index != -1)
+			if(text.Get() || index.GetSize())
 				eventAr.push_back(cred);
 
 		}
 		else
 		{
-			int index = HasEvent(R_Message_Type::On_L_Button_Up);
-			if (index != -1)
+			TString index =HasEvent(R_Message_Type::On_L_Button_Up);
+			if (index.GetSize())
 			{
 				this->args.Reset();
 				this->args.arrayLabel = this->arrayID;
@@ -917,8 +966,8 @@ void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDat
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 		if (!isMouseIn)
 		{
-			int index = HasEvent(R_Message_Type::On_Hover_Enter);
-			if (index != -1)
+			TString index =HasEvent(R_Message_Type::On_Hover_Enter);
+			if (index.GetSize())
 			{
 				this->args.Reset();
 				this->args.arrayLabel = this->arrayID;
@@ -936,8 +985,8 @@ void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDat
 			}
 		}
 		isMouseIn = true;
-		int index = HasEvent(R_Message_Type::On_Hover);
-		if (index != -1)
+		TString index =HasEvent(R_Message_Type::On_Hover);
+		if (index.GetSize())
 		{
 			this->args.Reset();
 			this->args.arrayLabel = this->arrayID;
@@ -959,8 +1008,8 @@ void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDat
 	{
 		if (isMouseIn)
 		{
-			int index = HasEvent(R_Message_Type::On_Hover_Leave);
-			if (index != -1)
+			TString index =HasEvent(R_Message_Type::On_Hover_Leave);
+			if (index.GetSize())
 			{
 				this->args.Reset();
 				this->args.arrayLabel = this->arrayID;
@@ -989,8 +1038,8 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, 
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 
-		int index = HasEvent(R_Message_Type::On_LDoubleClick);
-		if (index != -1)
+		TString index =HasEvent(R_Message_Type::On_LDoubleClick);
+		if (index.GetSize())
 		{
 			this->args.Reset();
 			this->args.arrayLabel = this->arrayID;
@@ -1018,8 +1067,8 @@ void TControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& m
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 
-		int index = HasEvent(R_Message_Type::On_L_Button_Down);
-		if (index != -1)
+		TString index =HasEvent(R_Message_Type::On_L_Button_Down);
+		if (index.GetSize())
 		{
 			this->args.Reset();
 			this->args.arrayLabel = this->arrayID;
@@ -1046,8 +1095,8 @@ void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cre
 	auto curLoc = location;
 	SetSize();
 
-	int index = HasEvent(R_Message_Type::On_Resized);
-	if (index != -1)
+	TString index =HasEvent(R_Message_Type::On_Resized);
+	if (index.GetSize())
 	{
 		this->args.Reset();
 		this->args.arrayLabel = this->arrayID;
@@ -1083,8 +1132,8 @@ bool TControl::OnScroll(bool, const TPoint& point, const TPoint& direction, TDat
 
 	if (point.x > 0 && point.y > 0)
 	{
-		int index = HasEvent(R_Message_Type::On_Scrolled);
-		if (index != -1)
+		TString index =HasEvent(R_Message_Type::On_Scrolled);
+		if (index.GetSize())
 		{
 			this->args.Reset();
 			this->args.arrayLabel = this->arrayID;
@@ -1140,14 +1189,24 @@ void TControl::ShrinkHeight()
 
 }
 
-int TControl::HasEvent(R_Message_Type mType)
+void TControl::InspectEventAttributes()
+{
+	TString valpoint;
+	for (UINT Rust = 0; Rust < ARRAYSIZE(eventsInStringForm); Rust++)
+	{
+		if (attributes.retrieveEntry(eventsInStringForm[Rust].str, valpoint))
+			eventList.push_back(EventTypeID(eventsInStringForm[Rust].type, valpoint));
+	}
+}
+
+TString TControl::HasEvent(R_Message_Type mType)
 {
 	for (UINT Rust = 0; Rust < eventList.Size(); Rust++)
 	{
 		if (eventList[Rust].eventType == mType)
 			return eventList[Rust].eventID;
 	}
-	return -1;
+	return L"";
 }
 
 void TControl::OnCreateSize()

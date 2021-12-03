@@ -27,10 +27,11 @@ class _ANAFACE_DLL2 EventTypeID
 {
 public:
 	EventTypeID();
+	EventTypeID(R_Message_Type type, const TString& id);
 	EventTypeID(const EventTypeID& copy);
 
 	R_Message_Type eventType;
-	int eventID;
+	TString eventID;
 };
 
 
@@ -698,13 +699,22 @@ protected:
 	bool isRightClicked, isLeftClicked, isMouseIn;
 
 protected:
+
+	/**
+	 * Method: TControl::InspectEventAttributes
+	 * Purpose: Derive Event Attributres from list of Regular Attributes
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void InspectEventAttributes();
+
 	/**
 	 * Method: TControl::HasEvent
 	 * Purpose: Whether the TControl Possesses the Event type specified
 	 * Parameters: R_Message_Type mType - the message Type to check for
-	 * Returns: int - the index of the event method (or -1)
+	 * Returns: TString - the name of the event method (or empty string)
 	 */
-	int HasEvent(R_Message_Type mType);
+	TString HasEvent(R_Message_Type mType);
 
 	/**
 	 * Method: TControl::OnCreateSize
