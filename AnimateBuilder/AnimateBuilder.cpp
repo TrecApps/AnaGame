@@ -34,7 +34,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // TODO: Place code here.
     TString tmlFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable));
-    tmlFile.Append(L"Resources\\AnagameBuilderRibbon.tml");
+    tmlFile.Append(L"Resources\\MainIdeRibbon.json");
 
     TString title(L"Anagame Builder");
     TString winClass(L"BuilderWindow");
