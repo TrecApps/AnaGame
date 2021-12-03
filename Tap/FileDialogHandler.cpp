@@ -237,10 +237,17 @@ void FileDialogHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 	ThreadLock();
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		auto tc = eventAr.at(c).expression;
-		UINT u_id = 0;
-		if (!events.retrieveEntry(tc, u_id))
+		auto tc = eventAr.at(c).args;
+		if (!tc.Get())
 			continue;
+
+
+		UINT u_id = 0;
+		if (!events.retrieveEntry(tc->methodID, u_id))
+		{
+			eventAr[c].args.Nullify();
+			continue;
+		}
 		e_id = u_id;
 		// At this point, call the appropriate method
 		if (e_id > -1 && e_id < fileEvents.Size())
@@ -249,11 +256,11 @@ void FileDialogHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 			if (fileEvents[e_id])
 				(this->*fileEvents[e_id])(eventAr[c].control, ea);
 		}
+		eventAr[c].args.Nullify();
 	}
 
 	if (window.Get())
 		window->Draw();
-	eventAr.RemoveAll();
 	ThreadRelease();
 }
 

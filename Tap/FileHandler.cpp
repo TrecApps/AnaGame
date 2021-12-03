@@ -104,13 +104,16 @@ void FileHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 	EventArgs ea;
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		auto tc = eventAr.at(c).expression;
-		if (!tc.Compare(on_OpenFile))
+		auto tc = eventAr.at(c).args;
+		if (!tc.Get())
+			continue;
+		if (!tc->methodID.Compare(on_OpenFile))
 			OnOpenFile(eventAr[c].control, ea);
+
+		eventAr.at(c).args.Nullify();
 	}
 
-	//onDraw();
-	eventAr.RemoveAll();
+
 	ThreadRelease();
 }
 

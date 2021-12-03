@@ -132,29 +132,27 @@ void MainLayoutHandler::Initialize(TrecPointer<TPage> page)
 void MainLayoutHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 
-	//for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
-	//{
-	//	auto cont = eventAr[Rust].control;
-	//	if (!cont.Get()) continue;
+	int e_id = -1;
+	EventArgs ea;
+	for (UINT c = 0; c < eventAr.Size(); c++)
+	{
+		auto tc = eventAr.at(c).args;
 
-	//	EventArgs ea = cont->getEventArgs();
+		if (!tc.Get()) continue;
 
-
-	//	int ea_id = ea.methodID;
-
-	//	if (ea_id > -1 && ea_id < calls.Size())
-	//	{
-	//		(this->*calls[ea_id])(cont, ea);
-	//	}
-	//	/*else if (ea_id == -1 && ea.control == body.Get() && ea.eventType == On_sel_change)
-	//	{
-	//		OnSwitchTab(cont, ea);
-	//	}*/
-	//	cont->resetArgs();
-	//}
-
-	//if (page.Get() && page->GetWindowHandle().Get())
-	//	page->GetWindowHandle()->Draw();
+		UINT u_id = 0;
+		if (!events.retrieveEntry(tc->methodID, u_id))
+			continue;
+		e_id = u_id;
+		// At this point, call the appropriate method
+		if (e_id > -1 && e_id < calls.Size())
+		{
+			// call method
+			if (calls[e_id])
+				(this->*calls[e_id])(eventAr[c].control, ea);
+		}
+		eventAr[c].args.Nullify();
+	}
 }
 
 void MainLayoutHandler::Draw()
@@ -163,7 +161,7 @@ void MainLayoutHandler::Draw()
 	//	currentDocument->Draw();
 }
 
-void MainLayoutHandler::OnSwitchTab(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnSwitchTab(TrecPointer<TPage> tc, EventArgs ea)
 {
 	//if (ea.arrayLabel >= 0 && ea.arrayLabel < ActiveDocuments.Size())
 	//{
@@ -214,11 +212,11 @@ void MainLayoutHandler::OnFirstDraw()
 	}
 }
 
-void MainLayoutHandler::OnLoadNewSolution(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnLoadNewSolution(TrecPointer<TPage> tc, EventArgs ea)
 {
 }
 
-void MainLayoutHandler::OnSaveFile(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnSaveFile(TrecPointer<TPage> tc, EventArgs ea)
 {
 	if (currentDocument.Get())
 		currentDocument->OnSave();
@@ -232,7 +230,7 @@ void MainLayoutHandler::OnSaveFile(TrecPointer<TControl> tc, EventArgs ea)
 	}
 }
 
-void MainLayoutHandler::OnSaveAllFiles(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnSaveAllFiles(TrecPointer<TPage> tc, EventArgs ea)
 {
 	for (UINT Rust = 0; Rust < ActiveDocuments.Size(); Rust++)
 	{
@@ -249,19 +247,19 @@ void MainLayoutHandler::OnSaveAllFiles(TrecPointer<TControl> tc, EventArgs ea)
 	}
 }
 
-void MainLayoutHandler::OnNewFile(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnNewFile(TrecPointer<TPage> tc, EventArgs ea)
 {
 }
 
-void MainLayoutHandler::OnImportFile(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnImportFile(TrecPointer<TPage> tc, EventArgs ea)
 {
 }
 
-void MainLayoutHandler::OnPrint(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnPrint(TrecPointer<TPage> tc, EventArgs ea)
 {
 }
 
-void MainLayoutHandler::OnNewArena(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnNewArena(TrecPointer<TPage> tc, EventArgs ea)
 {
 	TString dialog(L"Enter a name for your Arena!");
 	TString arenaName(ActivateNameDialog(TrecPointerKey::GetTrecPointerFromSoft<>(app), window->GetWindowHandle(), dialog));
@@ -287,17 +285,17 @@ void MainLayoutHandler::OnNewArena(TrecPointer<TControl> tc, EventArgs ea)
 		arenaStack3->setActive(true);
 }
 
-void MainLayoutHandler::OnUpdateClearColor(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnUpdateClearColor(TrecPointer<TPage> tc, EventArgs ea)
 {
 
 }
 
-void MainLayoutHandler::OnNewModel(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnNewModel(TrecPointer<TPage> tc, EventArgs ea)
 {
 
 }
 
-void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnNewCodeFile(TrecPointer<TPage> tc, EventArgs ea)
 {
 	/*currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniHandler, SourceCodeApp>(body, outputPanel, classUI, app);
 	ActiveDocuments.push_back(currentDocument);
@@ -344,7 +342,7 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea)
 	window->SetCurrentApp(currentDocument);
 }
 
-void MainLayoutHandler::OnImportCode(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnImportCode(TrecPointer<TPage> tc, EventArgs ea)
 {
 	assert(window.Get());
 
@@ -402,7 +400,7 @@ void MainLayoutHandler::OnImportCode(TrecPointer<TControl> tc, EventArgs ea)
 	window->SetCurrentApp(currentDocument);
 }
 
-void MainLayoutHandler::OnProcessCode(TrecPointer<TControl> tc, EventArgs ea)
+void MainLayoutHandler::OnProcessCode(TrecPointer<TPage> tc, EventArgs ea)
 {
 	assert(window.Get());
 	if (!currentDocument.Get())

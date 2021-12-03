@@ -59,9 +59,12 @@ void OkayHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 	bool markDestroy = false; EventArgs ea;
 	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
 	{
-		auto cont = eventAr[Rust].expression;
-		if (!cont.Compare(L"OnOkay"))
+		auto cont = eventAr[Rust].args;
+		if (!cont.Get())
+			continue;
+		if (!cont->methodID.Compare(L"OnOkay"))
 			markDestroy = true;
+		eventAr[Rust].args.Nullify();
 	}
 
 	if (markDestroy)

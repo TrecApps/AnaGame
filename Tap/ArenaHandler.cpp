@@ -77,9 +77,18 @@ void ArenaHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 	ThreadLock();
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		auto tc = eventAr.at(c).expression;
+		auto tcArgs = eventAr.at(c).args;
+
+		if (!tcArgs.Get()) continue;
+
+		auto tc = tcArgs->methodID;
+
 		if (tc.ConvertToInt(e_id))
+		{
+
+			eventAr[c].args.Nullify();
 			continue;
+		}
 		// At this point, call the appropriate method
 		if (e_id > -1 && e_id < arenaHandlers.Size())
 		{
@@ -87,9 +96,9 @@ void ArenaHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 			if (arenaHandlers[e_id])
 				(this->*arenaHandlers[e_id])(eventAr.at(c).control, ea);
 		}
+		eventAr[c].args.Nullify();
 	}
 
-	eventAr.RemoveAll();
 	ThreadRelease();
 }
 

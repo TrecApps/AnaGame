@@ -146,10 +146,16 @@ void CameraHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 	ThreadLock();
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		auto tc = eventAr.at(c).expression;
-		UINT u_id = 0;
-		if (!events.retrieveEntry(tc, u_id))
+		auto tc = eventAr.at(c).args;
+		if (!tc.Get())
 			continue;
+
+		UINT u_id = 0;
+		if (!events.retrieveEntry(tc->methodID, u_id))
+		{
+			eventAr[c].args.Nullify();
+			continue;
+		}
 		e_id = u_id;
 		// At this point, call the appropriate method
 		if (e_id > -1 && e_id < arenaHandlers.Size())
@@ -158,10 +164,9 @@ void CameraHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 			if (arenaHandlers[e_id])
 				(this->*arenaHandlers[e_id])(eventAr[c].control, ea);
 		}
-	}
 
-	//onDraw();
-	eventAr.RemoveAll();
+		eventAr[c].args.Nullify();
+	}
 	ThreadRelease();
 }
 

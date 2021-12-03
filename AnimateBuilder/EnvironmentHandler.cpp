@@ -176,9 +176,12 @@ void EnvironmentHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
     EventArgs ea;
     for (UINT c = 0; c < eventAr.Size(); c++)
     {
-        auto tc = eventAr.at(c).expression;
+        auto tc = eventAr.at(c).args;
+
+        if (!tc.Get()) continue;
+
         UINT u_id = 0;
-        if (!events.retrieveEntry(tc, u_id))
+        if (!events.retrieveEntry(tc->methodID, u_id))
             continue;
         e_id = u_id;
         // At this point, call the appropriate method
@@ -188,10 +191,8 @@ void EnvironmentHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
             if (envEvents[e_id])
                 (this->*envEvents[e_id])(eventAr[c].control, ea);
         }
+        eventAr[c].args.Nullify();
     }
-
-    //onDraw();
-    eventAr.RemoveAll();
 }
 
 /**
