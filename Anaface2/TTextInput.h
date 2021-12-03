@@ -81,7 +81,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 	/**
 	 * Method: TControl::OnLButtonDown
@@ -94,7 +94,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>& args) override;
+	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& args) override;
 
 
 	/**
@@ -107,7 +107,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 	/**
 	 * Method: TControl::OnResize
@@ -122,7 +122,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr) override;
 
 	bool SetNumericText(float f);
 

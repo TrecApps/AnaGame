@@ -146,11 +146,11 @@ int TWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	assert(windowInstance.Get());
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 
 	TrecSubPointer<TPage, AnafacePage> newPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(drawingBoard);
 	auto space = ConvertRectToD2D1Rect(this->size);
-	newPage->OnResize(space, 0, cred, args);
+	newPage->OnResize(space, 0, cred);
 
 	TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(aFile->GetFilePath());
 	aFile->Close();
@@ -301,17 +301,17 @@ void TWindow::OnRButtonUp(UINT nFlags, TPoint point)
 	}
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 
 	message_output mOut = message_output::mo_negative;
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative ); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnRButtonUp(nFlags, point, mOut, cred, args);
+			pages[c]->OnRButtonUp(nFlags, point, mOut, cred);
 	}
 
 	if(mOut == message_output::mo_negative )
-		mainPage->OnRButtonUp(nFlags, point, mOut, cred,args);
+		mainPage->OnRButtonUp(nFlags, point, mOut, cred);
 	ThreadRelease();
 }
 
@@ -334,16 +334,16 @@ void TWindow::OnLButtonDown(UINT nFlags, TPoint point)
 	}
 	message_output mOut = message_output::mo_negative;
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnLButtonDown(nFlags, point, mOut, cred, args);
+			pages[c]->OnLButtonDown(nFlags, point, mOut, cred);
 	}
 
 	if(mOut == message_output::mo_negative)
-		mainPage->OnLButtonDown(nFlags, point, mOut, cred, args);
+		mainPage->OnLButtonDown(nFlags, point, mOut, cred);
 	ThreadRelease();
 }
 
@@ -365,15 +365,15 @@ void TWindow::OnRButtonDown(UINT nFlags, TPoint point)
 	message_output mOut = message_output::mo_negative;
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnRButtonDown(nFlags, point, mOut, cred, args);
+			pages[c]->OnRButtonDown(nFlags, point, mOut, cred);
 	}
 
 	if(mOut == message_output::mo_negative)
-		mainPage->OnRButtonDown(nFlags, point, mOut, cred, args);
+		mainPage->OnRButtonDown(nFlags, point, mOut, cred);
 	ThreadRelease();
 }
 
@@ -395,11 +395,10 @@ void TWindow::OnMouseMove(UINT nFlags, TPoint point)
 	message_output mOut = message_output::mo_negative;
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
 	if (currentScrollBar.Get())
 	{
 
-		currentScrollBar->OnMouseMove(nFlags, point, mOut, args);
+		currentScrollBar->OnMouseMove(nFlags, point, mOut);
 		
 		Draw();
 		ThreadRelease();
@@ -411,11 +410,11 @@ void TWindow::OnMouseMove(UINT nFlags, TPoint point)
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnMouseMove(nFlags, point, mOut, cred, args);
+			pages[c]->OnMouseMove(nFlags, point, mOut, cred);
 	}
 
 	if(mOut == message_output::mo_negative)
-		mainPage->OnMouseMove(nFlags, point, mOut, cred, args);
+		mainPage->OnMouseMove(nFlags, point, mOut, cred);
 	ThreadRelease();
 }
 
@@ -437,15 +436,15 @@ void TWindow::OnLButtonDblClk(UINT nFlags, TPoint point)
 	message_output mOut = message_output::mo_negative;
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnLButtonDblClk(nFlags, point, mOut, args);
+			pages[c]->OnLButtonDblClk(nFlags, point, mOut, cred);
 	}
 
 	if(mOut == message_output::mo_negative)
-		mainPage->OnLButtonDblClk(nFlags, point, mOut, args);
+		mainPage->OnLButtonDblClk(nFlags, point, mOut, cred);
 	ThreadRelease();
 }
 
@@ -475,15 +474,15 @@ void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
 	UINT c = 0;
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 	for(c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnLButtonUp(nFlags, point, mOut, cred, args);
+			pages[c]->OnLButtonUp(nFlags, point, mOut, cred);
 	}
 
 	if(mOut == message_output::mo_negative)
-		mainPage->OnLButtonUp(nFlags, point, mOut, cred, args);
+		mainPage->OnLButtonUp(nFlags, point, mOut, cred);
 	ThreadRelease();
 }
 
@@ -519,9 +518,9 @@ void TWindow::OnWindowResize(UINT width, UINT height)
 	size = ConvertD2D1RectToRect(newLoc);
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 	if (mainPage.Get())
-		mainPage->OnResize(newLoc, 0, cred, args);
+		mainPage->OnResize(newLoc, 0, cred);
 
 	if (d3dEngine.Get())
 	{
@@ -555,8 +554,8 @@ bool TWindow::OnScroll(const TPoint& point, const TPoint& direction)
 {
 	if(!mainPage.Get())
 	return false;
-	TDataArray<EventArgs> args;
-	return mainPage->OnScroll(false, point, direction, args);
+	TDataArray<TPage::EventID_Cred> cred;
+	return mainPage->OnScroll(false, point, direction, cred);
 }
 
 /**

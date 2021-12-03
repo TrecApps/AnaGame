@@ -66,10 +66,10 @@ bool TGadget::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d)
 	return false;
 }
 
-void TGadget::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TGadget::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	ThreadLock();
-	TControl::OnResize(newLoc, nFlags, eventAr, args);
+	TControl::OnResize(newLoc, nFlags, eventAr);
 	int height = location.bottom - location.top;
 	int offset = (height - bSize) / 2;
 	DxLocation.top = location.top + offset;

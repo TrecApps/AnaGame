@@ -770,7 +770,7 @@ void TControl::Draw(TrecPointer<TVariable> object)
 		border->onDraw(location);
 }
 
-void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>& args)
+void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& pages)
 {
 	if (!isActive)
 		return;
@@ -792,7 +792,10 @@ void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 				this->args.point = point;
 				this->args.positive = true;
 				this->args.type = L'\0';
-				args.push_back(this->args);
+				EventID_Cred cred(R_Message_Type::On_Right_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+				pages.push_back(cred);
 			}
 		}
 		else
@@ -809,14 +812,17 @@ void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 				this->args.point = point;
 				this->args.positive = true;
 				this->args.type = L'\0';
-				args.push_back(this->args);
+				EventID_Cred cred(R_Message_Type::On_R_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+				pages.push_back(cred);
 			}
 		}
 	}
 	isRightClicked = false;
 }
 
-void TControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& pages, TDataArray<EventArgs>& args)
+void TControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& pages)
 {
 	if (!isActive)
 		return;
@@ -836,15 +842,17 @@ void TControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& m
 			this->args.point = point;
 			this->args.positive = true;
 			this->args.type = L'\0';
-			args.push_back(this->args);
+			EventID_Cred cred(R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+			cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+			pages.push_back(cred);
 		}
 
-		pages.push_back(EventID_Cred(R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<>(self)));
 		isRightClicked = true;
 	}
 }
 
-void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	if (!isActive)
 		return;
@@ -855,6 +863,9 @@ void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 		if (isLeftClicked)
 		{
 			int index = HasEvent(R_Message_Type::On_Click);
+
+			EventID_Cred cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self), text.Get() ? text->GetTextInterceptor() : TrecPointer<TTextIntercepter>());
+
 			if (index != -1)
 			{
 				this->args.Reset();
@@ -866,10 +877,11 @@ void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 				this->args.point = point;
 				this->args.positive = true;
 				this->args.type = L'\0';
-				args.push_back(this->args);
+
+				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
 			}
-			if(text.Get())
-			eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self), text->GetTextInterceptor()));
+			if(text.Get() || index != -1)
+				eventAr.push_back(cred);
 
 		}
 		else
@@ -886,14 +898,17 @@ void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 				this->args.point = point;
 				this->args.positive = true;
 				this->args.type = L'\0';
-				args.push_back(this->args);
+				EventID_Cred cred(R_Message_Type::On_Resized, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+				eventAr.push_back(cred);
 			}
 		}
 	}
 	isLeftClicked = false;
 }
 
-void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& pages, TDataArray<EventArgs>& args)
+void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& pages)
 {
 	if (!isActive)
 		return;
@@ -914,7 +929,10 @@ void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDat
 				this->args.point = point;
 				this->args.positive = true;
 				this->args.type = L'\0';
-				args.push_back(this->args);
+				EventID_Cred cred(R_Message_Type::On_Hover_Enter, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+				pages.push_back(cred);
 			}
 		}
 		isMouseIn = true;
@@ -930,9 +948,12 @@ void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDat
 			this->args.point = point;
 			this->args.positive = true;
 			this->args.type = L'\0';
-			args.push_back(this->args);
+			EventID_Cred cred(R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+			cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+			pages.push_back(cred);
 		}
-		pages.push_back(EventID_Cred(R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<>(self)));
+
 	}
 	else
 	{
@@ -950,14 +971,17 @@ void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDat
 				this->args.point = point;
 				this->args.positive = true;
 				this->args.type = L'\0';
-				args.push_back(this->args);
+				EventID_Cred cred(R_Message_Type::On_Hover_Leave, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+				pages.push_back(cred);
 			}
 		}
 		isMouseIn = false;
 	}
 }
 
-void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args)
+void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& args)
 {
 	if (!isActive)
 		return;
@@ -977,13 +1001,16 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, 
 			this->args.point = point;
 			this->args.positive = true;
 			this->args.type = L'\0';
-			args.push_back(this->args);
+			EventID_Cred cred(R_Message_Type::On_LDoubleClick, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+			cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+			args.push_back(cred);
 		}
 
 	}
 }
 
-void TControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& pages , TDataArray<EventArgs>& args)
+void TControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& pages)
 {
 	if (!isActive)
 		return;
@@ -1003,15 +1030,17 @@ void TControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& m
 			this->args.point = point;
 			this->args.positive = true;
 			this->args.type = L'\0';
-			args.push_back(this->args);
+			EventID_Cred cred(R_Message_Type::On_L_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+			cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+			pages.push_back(cred);;
 		}
 
-		pages.push_back(EventID_Cred(R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<>(self)));
+		
 		isLeftClicked = true;
 	}
 }
 
-void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	bounds = newLoc;
 	auto curLoc = location;
@@ -1032,7 +1061,11 @@ void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cre
 		this->args.type = L'\0';
 		this->args.oldSize = curLoc;
 		this->args.newSize = location;
-		args.push_back(this->args);
+
+		EventID_Cred cred(R_Message_Type::On_Resized, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+		eventAr.push_back(cred);
 	}
 }
 
@@ -1041,7 +1074,7 @@ bool TControl::OnDestroy()
 	return true;
 }
 
-bool TControl::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+bool TControl::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
 	location.bottom += direction.y;
 	location.top += direction.y;
@@ -1062,7 +1095,10 @@ bool TControl::OnScroll(bool, const TPoint& point, const TPoint& direction, TDat
 			this->args.point = point;
 			this->args.positive = true;
 			this->args.type = L'\0';
-			args.push_back(this->args);
+			EventID_Cred cred(R_Message_Type::On_Scrolled, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+			cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+			args.push_back(cred);
 		}
 		return true;
 	}

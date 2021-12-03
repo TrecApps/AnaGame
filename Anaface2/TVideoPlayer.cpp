@@ -78,10 +78,10 @@ void TVideoPlayer::Draw(TrecPointer<TVariable> object)
 		player->Repaint();
 }
 
-void TVideoPlayer::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TVideoPlayer::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	TObjectLocker lock(&thread);
-	TControl::OnResize(newLoc, nFlags, eventAr, args);
+	TControl::OnResize(newLoc, nFlags, eventAr);
 	if (player.Get())
 	{
 		RECT rr;

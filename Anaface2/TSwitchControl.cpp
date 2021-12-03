@@ -100,13 +100,13 @@ bool TSwitchControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
         childSpace.top += tabHeight;
         tabsLoc.bottom = childSpace.top;
         TRandomLayout::onCreate(loc, d3d);
-        tabBar->OnResize(tabsLoc, 0, cred, args);
+        tabBar->OnResize(tabsLoc, 0, cred);
         break;
     case 2:
         childSpace.bottom -= tabHeight;
         tabsLoc.top = childSpace.bottom;
         TRandomLayout::onCreate(loc, d3d);
-        tabBar->OnResize(tabsLoc, 0, cred, args);
+        tabBar->OnResize(tabsLoc, 0, cred);
         break;
     default:
         TRandomLayout::onCreate(loc, d3d);
@@ -176,11 +176,11 @@ void TSwitchControl::Draw(TrecPointer<TVariable> object)
     }
 }
 
-void TSwitchControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TSwitchControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     if (tabBar.Get() && tabShow)
     {
-        tabBar->OnRButtonUp(nFlags, point, mOut, cred, args);
+        tabBar->OnRButtonUp(nFlags, point, mOut, cred);
     }
 
     if (mOut == message_output::mo_negative)
@@ -190,18 +190,18 @@ void TSwitchControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_outpu
         {
             auto top = pageStack[pss - 1];
             if (top.Get())
-                top->OnRButtonUp(nFlags, point, mOut, cred, args);
+                top->OnRButtonUp(nFlags, point, mOut, cred);
             else
                 pageStack.RemoveAt(pss - 1);
         }
     }
 }
 
-void TSwitchControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TSwitchControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     if (tabBar.Get() && tabShow)
     {
-        tabBar->OnRButtonDown(nFlags, point, mOut, cred, args);
+        tabBar->OnRButtonDown(nFlags, point, mOut, cred);
     }
 
     if (mOut == message_output::mo_negative)
@@ -211,18 +211,18 @@ void TSwitchControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_out
         {
             auto top = pageStack[pss - 1];
             if (top.Get())
-                top->OnRButtonDown(nFlags, point, mOut, cred, args);
+                top->OnRButtonDown(nFlags, point, mOut, cred);
             else
                 pageStack.RemoveAt(pss - 1);
         }
     }
 }
 
-void TSwitchControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TSwitchControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     if (tabBar.Get() && tabShow)
     {
-        tabBar->OnLButtonUp(nFlags, point, mOut, cred, args);
+        tabBar->OnLButtonUp(nFlags, point, mOut, cred);
     }
 
     if (mOut == message_output::mo_negative)
@@ -232,18 +232,18 @@ void TSwitchControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_outpu
         {
             auto top = pageStack[pss - 1];
             if (top.Get())
-                top->OnLButtonUp(nFlags, point, mOut, cred, args);
+                top->OnLButtonUp(nFlags, point, mOut, cred);
             else
                 pageStack.RemoveAt(pss - 1);
         }
     }
 }
 
-void TSwitchControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TSwitchControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     if (tabBar.Get() && tabShow)
     {
-        tabBar->OnMouseMove(nFlags, point, mOut, cred, args);
+        tabBar->OnMouseMove(nFlags, point, mOut, cred);
     }
 
     if (mOut == message_output::mo_negative)
@@ -253,14 +253,14 @@ void TSwitchControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut
         {
             auto top = pageStack[pss - 1];
             if (top.Get())
-                top->OnMouseMove(nFlags, point, mOut, cred, args);
+                top->OnMouseMove(nFlags, point, mOut, cred);
             else
                 pageStack.RemoveAt(pss - 1);
         }
     }
 }
 
-void TSwitchControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args)
+void TSwitchControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& args)
 {
 
     if (tabBar.Get() && tabShow)
@@ -282,11 +282,11 @@ void TSwitchControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& 
     }
 }
 
-void TSwitchControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TSwitchControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     if (tabBar.Get() && tabShow)
     {
-        tabBar->OnLButtonDown(nFlags, point, mOut, cred, args);
+        tabBar->OnLButtonDown(nFlags, point, mOut, cred);
     }
 
     if (mOut == message_output::mo_negative)
@@ -296,14 +296,14 @@ void TSwitchControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_out
         {
             auto top = pageStack[pss - 1];
             if (top.Get())
-                top->OnLButtonDown(nFlags, point, mOut, cred, args);
+                top->OnLButtonDown(nFlags, point, mOut, cred);
             else
                 pageStack.RemoveAt(pss - 1);
         }
     }
 }
 
-void TSwitchControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TSwitchControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& cred)
 {
     D2D1_RECT_F tabsLoc = newLoc;
 
@@ -313,21 +313,21 @@ void TSwitchControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<Event
     case 1:
         childSpace.top += tabHeight;
         tabsLoc.bottom = childSpace.top;
-        tabBar->OnResize(tabsLoc, 0, cred, args);
+        tabBar->OnResize(tabsLoc, 0, cred);
         break;
     case 2:
         childSpace.bottom -= tabHeight;
         tabsLoc.top = childSpace.bottom;
-        tabBar->OnResize(tabsLoc, 0, cred, args);
+        tabBar->OnResize(tabsLoc, 0, cred);
         break;
     }
 
-    TRandomLayout::OnResize(childSpace, nFlags, cred, args);
+    TRandomLayout::OnResize(childSpace, nFlags, cred);
 
     area = newLoc;
 }
 
-bool TSwitchControl::OnScroll(bool b, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+bool TSwitchControl::OnScroll(bool b, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
     bool ret = true;
     if (tabBar.Get() && tabShow)

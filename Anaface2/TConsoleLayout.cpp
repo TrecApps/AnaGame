@@ -210,9 +210,8 @@ void TConsoleLayout::Draw(TrecPointer<TVariable> object)
     }
 
     TDataArray<EventID_Cred> cred;
-    TDataArray<EventArgs> args;
 
-    OnResize(area, 0, cred, args);
+    OnResize(area, 0, cred);
 
     if (restrictDraw)
     {
@@ -225,7 +224,7 @@ void TConsoleLayout::Draw(TrecPointer<TVariable> object)
 
 }
 
-void TConsoleLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&args)
+void TConsoleLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& args)
 {
     restrictDraw = false;
 
@@ -248,7 +247,7 @@ void TConsoleLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<Event
 
         cArea.left = newLoc.left;
         cArea.right = newLoc.right;
-        page->OnResize(cArea, 0, eventAr, args);
+        page->OnResize(cArea, 0, args);
         float bottom = cArea.top;
 
         page = GetPage(1, 0);
@@ -270,13 +269,13 @@ void TConsoleLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<Event
     auto rec = newLoc;
     rec.bottom = cBottom;
 
-    page->OnResize(rec, 0, eventAr, args);
+    page->OnResize(rec, 0, args);
 }
 
 
-void TConsoleLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&cred, TDataArray<EventArgs>&args)
+void TConsoleLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&cred)
 {
-    TLayout::OnLButtonUp(nFlags, point, mOut, cred, args);
+    TLayout::OnLButtonUp(nFlags, point, mOut, cred);
 
     if (cred.Size() && cred[cred.Size() - 1].textIntercepter.Get() && cred[cred.Size() - 1].textIntercepter->TakesInput())
     {
@@ -285,7 +284,7 @@ void TConsoleLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_outpu
     }
 }
 
-void TConsoleLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TConsoleLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
-    TLayout::OnLButtonDown(nFlags, point, mOut, cred, args);
+    TLayout::OnLButtonDown(nFlags, point, mOut, cred);
 }

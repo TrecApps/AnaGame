@@ -28,10 +28,9 @@ void TDataLayout::Draw(TrecPointer<TVariable> object)
 	if (!tempPage.Get())return;
 
 	TDataArray<EventID_Cred> cred;
-	TDataArray<EventArgs> args;
 	TString varName;
 	TrecPointer<TVariable> varValue;
-	tempPage->OnResize(tempRec, 0, cred, args);
+	tempPage->OnResize(tempRec, 0, cred);
 
 	if (dynamic_cast<TContainerVariable*>(var.Get()))
 	{
@@ -51,7 +50,7 @@ void TDataLayout::Draw(TrecPointer<TVariable> object)
 							tempPage->Draw(varValue1);
 							tempRec.left += width;
 							tempRec.right += width;
-							tempPage->OnResize(tempRec, 0, cred, args);
+							tempPage->OnResize(tempRec, 0, cred);
 						}
 						tempRec.left = area.left;
 						tempRec.right = tempRec.left + width;
@@ -75,7 +74,7 @@ void TDataLayout::Draw(TrecPointer<TVariable> object)
 							tempPage->Draw(varValue1);
 							tempRec.top += height;
 							tempRec.bottom += height;
-							tempPage->OnResize(tempRec, 0, cred, args);
+							tempPage->OnResize(tempRec, 0, cred);
 						}
 						tempRec.top = area.top;
 						tempRec.bottom = tempRec.top + height;
@@ -195,10 +194,10 @@ D2D1_RECT_F TDataLayout::GetArea()
 
 }
 
-void TDataLayout::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TDataLayout::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	bool isCurClick = this->isRightClicked;
-	TControl::OnRButtonUp(nFlags, point, mOut, cred, args);
+	TControl::OnRButtonUp(nFlags, point, mOut, cred);
 
 	if (mOut == message_output::mo_negative)
 		return;
@@ -212,13 +211,13 @@ void TDataLayout::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& 
 		{
 			index = ConvertCoordinates(r, c);
 		}
-		args.at(args.Size() - 1).arrayLabel = index;
+		cred.at(cred.Size() - 1).args->arrayLabel = index;
 	}
 }
 
-void TDataLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TDataLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
-	TControl::OnRButtonUp(nFlags, point, mOut, cred, args);
+	TControl::OnRButtonUp(nFlags, point, mOut, cred);
 
 	if (mOut == message_output::mo_negative)
 		return;
@@ -232,14 +231,14 @@ void TDataLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_output
 		{
 			index = ConvertCoordinates(r, c);
 		}
-		args.at(args.Size() - 1).arrayLabel = index;
+		cred.at(cred.Size() - 1).args->arrayLabel = index;
 	}
 }
 
-void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	bool isCurClick = this->isLeftClicked;
-	TControl::OnRButtonUp(nFlags, point, mOut, eventAr, args);
+	TControl::OnRButtonUp(nFlags, point, mOut, eventAr);
 
 	if (mOut == message_output::mo_negative)
 		return;
@@ -260,13 +259,13 @@ void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& 
 				eventAr.push_back(cred);
 			}
 		}
-		args.at(args.Size() - 1).arrayLabel = index;
+		eventAr.at(eventAr.Size() - 1).args->arrayLabel = index;
 	}
 }
 
-void TDataLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TDataLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
-	TControl::OnRButtonUp(nFlags, point, mOut, cred, args);
+	TControl::OnRButtonUp(nFlags, point, mOut, cred);
 
 	if (mOut == message_output::mo_negative)
 		return;
@@ -280,14 +279,14 @@ void TDataLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output
 		{
 			index = ConvertCoordinates(r, c);
 		}
-		args.at(args.Size() - 1).arrayLabel = index;
+		cred.at(cred.Size() - 1).args->arrayLabel = index;
 	}
 }
 
-void TDataLayout::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TDataLayout::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	bool isCurClick = this->isMouseIn;
-	TControl::OnRButtonUp(nFlags, point, mOut, cred, args);
+	TControl::OnRButtonUp(nFlags, point, mOut, cred);
 
 	if (mOut == message_output::mo_negative)
 		return;
@@ -301,11 +300,11 @@ void TDataLayout::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, T
 		{
 			index = ConvertCoordinates(r, c);
 		}
-		args.at(args.Size() - 1).arrayLabel = index;
+		cred.at(cred.Size() - 1).args->arrayLabel = index;
 	}
 }
 
-void TDataLayout::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args)
+void TDataLayout::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut,TDataArray<EventID_Cred>& args)
 {
 	TControl::OnLButtonDblClk(nFlags, point, mOut, args);
 
@@ -321,22 +320,22 @@ void TDataLayout::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOu
 		{
 			index = ConvertCoordinates(r, c);
 		}
-		args.at(args.Size() - 1).arrayLabel = index;
+		args.at(args.Size() - 1).args->arrayLabel = index;
 	}
 }
 
-void TDataLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TDataLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	bounds = newLoc;
 	auto curLoc = GetArea();
 
 	if (curLoc.left > bounds.left)
 	{
-		OnScroll(false, TPoint(), TPoint(curLoc.left - bounds.left, 0.0f), args);
+		OnScroll(false, TPoint(), TPoint(curLoc.left - bounds.left, 0.0f), eventAr);
 	}
 	if (curLoc.top > bounds.top)
 	{
-		OnScroll(false, TPoint(), TPoint(0.0f, curLoc.top - bounds.top), args);
+		OnScroll(false, TPoint(), TPoint(0.0f, curLoc.top - bounds.top), eventAr);
 	}
 
 	bounds = newLoc;

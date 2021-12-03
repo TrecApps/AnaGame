@@ -278,9 +278,6 @@ TrecPointer<TTextIntercepter> TapEventHandler::GetTextIntercepter()
 	return textIntercepter;
 }
 
-void TapEventHandler::HandleEvents(TDataArray<EventArgs>&)
-{
-}
 
 /**
  * Method: TapEventHandler::SetSaveFile

@@ -197,10 +197,10 @@ void TArenaView::Draw(TrecPointer<TVariable> object)
 	TObject::ThreadRelease();
 }
 
-void TArenaView::OnResize(D2D1_RECT_F& r, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TArenaView::OnResize(D2D1_RECT_F& r, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	TObject::ThreadLock();
-	TControl::OnResize(r, nFlags, eventAr, args);
+	TControl::OnResize(r, nFlags, eventAr);
 	if (viewport)
 	{
 		viewport->TopLeftX = r.left;
@@ -211,7 +211,7 @@ void TArenaView::OnResize(D2D1_RECT_F& r, UINT nFlags, TDataArray<EventID_Cred>&
 	TObject::ThreadRelease();
 }
 
-bool TArenaView::OnScroll(bool b, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&args)
+bool TArenaView::OnScroll(bool b, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>&args)
 {
 	if (!IsContained(point, TControl::location))
 		return false;

@@ -99,25 +99,25 @@ bool TScrollerPage::HandlesEvents()
 	return false;
 }
 
-ag_msg void TScrollerPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+ag_msg void TScrollerPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	TObjectLocker lock(&this->thread);
-	childPage->OnRButtonUp(nFlags, point, mOut, cred, args);
+	childPage->OnRButtonUp(nFlags, point, mOut, cred);
 }
 
-ag_msg void TScrollerPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+ag_msg void TScrollerPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	TObjectLocker lock(&this->thread);
-	childPage->OnRButtonDown(nFlags, point, mOut, cred, args);
+	childPage->OnRButtonDown(nFlags, point, mOut, cred);
 }
 
-ag_msg void TScrollerPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+ag_msg void TScrollerPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	TObjectLocker lock(&this->thread);
-	childPage->OnLButtonUp(nFlags, point, mOut, cred, args);
+	childPage->OnLButtonUp(nFlags, point, mOut, cred);
 }
 
-ag_msg void TScrollerPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+ag_msg void TScrollerPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	TObjectLocker lock(&this->thread);
 		if (vScroll.Get() && vScroll->OnLButtonDown(nFlags, point, mOut))
@@ -129,8 +129,9 @@ ag_msg void TScrollerPage::OnLButtonDown(UINT nFlags, const TPoint& point, messa
 		args_.methodID = -1;
 		args_.isClick = args_.isLeftClick = true;
 
-		cred.push_back(EventID_Cred(R_Message_Type::On_Select_Scroller, TrecPointerKey::GetTrecPointerFromSoft<>(self), vScroll));
-		args.push_back(args_);
+		EventID_Cred _event(EventID_Cred(R_Message_Type::On_Select_Scroller, TrecPointerKey::GetTrecPointerFromSoft<>(self), vScroll));
+		_event.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(args_);
+		cred.push_back(_event);
 		return;
 	}
 
@@ -144,32 +145,33 @@ ag_msg void TScrollerPage::OnLButtonDown(UINT nFlags, const TPoint& point, messa
 		args_.methodID = -1;
 		args_.isClick = args_.isLeftClick = true;
 
-		cred.push_back(EventID_Cred(R_Message_Type::On_Select_Scroller, TrecPointerKey::GetTrecPointerFromSoft<>(self), hScroll));
-		args.push_back(args_);
+		EventID_Cred _event(EventID_Cred(R_Message_Type::On_Select_Scroller, TrecPointerKey::GetTrecPointerFromSoft<>(self), hScroll));
+		_event.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(args_);
+		cred.push_back(_event);
 		return;
 	}
 
 	if (childPage.Get())
-		childPage->OnLButtonDown(nFlags, point, mOut, cred, args);
+		childPage->OnLButtonDown(nFlags, point, mOut, cred);
 }
 
-ag_msg void TScrollerPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+ag_msg void TScrollerPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	TObjectLocker lock(&this->thread);
-	childPage->OnMouseMove(nFlags, point, mOut, cred, args);
+	childPage->OnMouseMove(nFlags, point, mOut, cred);
 }
 
-ag_msg void TScrollerPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args)
+ag_msg void TScrollerPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	TObjectLocker lock(&this->thread);
-	childPage->OnLButtonDblClk(nFlags, point, mOut, args);
+	childPage->OnLButtonDblClk(nFlags, point, mOut, eventAr);
 }
 
-ag_msg void TScrollerPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+ag_msg void TScrollerPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	TObjectLocker lock(&this->thread);
 	area = newLoc;
-	childPage->OnResize(newLoc, nFlags, eventAr, args);
+	childPage->OnResize(newLoc, nFlags, eventAr);
 
 	RefreshScroll();
 }
@@ -180,7 +182,7 @@ ag_msg bool TScrollerPage::OnDestroy()
 	return childPage->OnDestroy();
 }
 
-ag_msg bool TScrollerPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+ag_msg bool TScrollerPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& eventAr)
 {
 	TObjectLocker lock(&this->thread);
 	
@@ -191,7 +193,7 @@ ag_msg bool TScrollerPage::OnScroll(bool fromBars, const TPoint& point, const TP
 		area.left += direction.x;
 		area.right += direction.x;
 	}
-	return childPage->OnScroll(false, point, direction, args);
+	return childPage->OnScroll(false, point, direction, eventAr);
 
 
 }

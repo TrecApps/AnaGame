@@ -456,7 +456,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 
 	/**
@@ -470,7 +470,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 
 	/**
@@ -484,7 +484,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 
 	/**
@@ -497,7 +497,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 	/**
 	 * Method: TControl::OnLButtonDblClk
@@ -509,7 +509,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& eventAr) override;
 
 	/**
 	 * Method: TControl::OnLButtonDown
@@ -522,7 +522,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>& args) override;
+	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& args) override;
 
 	/**
 	 * Method: TControl::OnResize
@@ -537,7 +537,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr) override;
 
 	/**
 	 * Method: Page::OnDestroy
@@ -559,7 +559,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual bool OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
+	ag_msg virtual bool OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args) override;
 
 	/**
 	 * Method: TText::GetMinWidth

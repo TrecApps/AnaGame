@@ -40,31 +40,31 @@ void TabBar::Tab::Draw(TrecPointer<TVariable> object)
         exit->FillRectangle(xArea);
 }
 
-void TabBar::Tab::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::Tab::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-void TabBar::Tab::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::Tab::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-void TabBar::Tab::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::Tab::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-void TabBar::Tab::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::Tab::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-void TabBar::Tab::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::Tab::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-void TabBar::Tab::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&)
+void TabBar::Tab::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& args)
 {
 }
 
-void TabBar::Tab::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&)
+void TabBar::Tab::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
     area = newLoc;
     iArea = tArea = xArea = { 0,0,0,0 };
@@ -117,7 +117,7 @@ bool TabBar::Tab::OnDestroy()
     return false;
 }
 
-bool TabBar::Tab::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&)
+bool TabBar::Tab::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
     return false;
 }
@@ -143,7 +143,7 @@ void TabBar::SetTabSizes()
     {
         if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
             continue;
-        tabs[Rust]->OnResize(tempArea, 0, cred, args);
+        tabs[Rust]->OnResize(tempArea, 0, cred);
         tempArea.left = tabs[Rust]->GetArea().right;
 
         if (!tempArea.left)
@@ -158,16 +158,16 @@ void TabBar::SetTabSizes()
     tabOverflow = true;
 
     tempArea = area;
-    leftTab.OnResize(tempArea, 0, cred, args);
+    leftTab.OnResize(tempArea, 0, cred);
     tempArea.left = leftTab.GetArea().right;
     
-    rightTab.OnResize(tempArea, 0, cred, args);
+    rightTab.OnResize(tempArea, 0, cred);
     tempArea.left = rightTab.GetArea().right;
 
 
     for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
     {
-        tabs[Rust]->OnResize(tempArea, 0, cred, args);
+        tabs[Rust]->OnResize(tempArea, 0, cred);
         tempArea.left = tabs[Rust]->GetArea().right;
 
         if (!tempArea.left)
@@ -405,15 +405,15 @@ bool TabBar::InjectTabAt(const TPoint& point, TrecPointer<TPage> page)
     }
 }
 
-void TabBar::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-void TabBar::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
     if (tabMode == tab_mode::tm_exit)
     {
@@ -459,7 +459,7 @@ void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut,
     tabMode = tab_mode::tm_not_set;
 }
 
-void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
     tabMode = tab_mode::tm_not_set;
 
@@ -490,7 +490,7 @@ void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOu
     }
 }
 
-void TabBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>&)
+void TabBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     if (currentTab.Get() && !IsContained(point, area) && draggableTabs)
     {
@@ -509,11 +509,11 @@ void TabBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataA
 
 }
 
-void TabBar::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&)
+void TabBar::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& args)
 {
 }
 
-void TabBar::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&)
+void TabBar::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
     this->area = newLoc;
     SetTabSizes();
@@ -524,7 +524,7 @@ bool TabBar::OnDestroy()
     return false;
 }
 
-bool TabBar::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&)
+bool TabBar::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>&)
 {
     area.bottom += direction.y;
     area.right += direction.x;

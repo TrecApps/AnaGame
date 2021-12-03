@@ -21,12 +21,12 @@ void TDataNodeControl::SetNode(TrecPointer<TObjectNode> newNode)
 	mainNode = newNode;
 }
 
-bool TDataNodeControl::OnScroll(bool b, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+bool TDataNodeControl::OnScroll(bool b, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
     return TControl::OnScroll(b, point, direction, args);
 }
 
-void TDataNodeControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&eventAr)
+void TDataNodeControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&eventAr)
 {
 	if (IsContained(point, GetArea()) && mainNode.Get())
 	{
@@ -40,7 +40,7 @@ void TDataNodeControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output
 	}
 }
 
-void TDataNodeControl::OnResize(D2D1_RECT_F& r, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&)
+void TDataNodeControl::OnResize(D2D1_RECT_F& r, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	D2D1_RECT_F tempLoc = this->GetArea();
 	if ((tempLoc.bottom - tempLoc.top > r.bottom - r.top) ||
@@ -55,7 +55,7 @@ void TDataNodeControl::OnResize(D2D1_RECT_F& r, UINT nFlags, TDataArray<EventID_
 	location = r;
 }
 
-void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	if (IsContained(point, GetArea()))
 	{
@@ -88,7 +88,7 @@ void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_out
 						else if (tNode->IsExtendable())
 						{
 							tNode->Extend();
-							OnResize(location, 0, eventAr,args);
+							OnResize(location, 0, eventAr);
 						}
 
 
@@ -105,7 +105,10 @@ void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_out
 							this->args.isLeftClick = false;
 							this->args.object = tNode;
 
-							args.push_back(this->args);
+							EventID_Cred cred(R_Message_Type::On_sel_change, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+							cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+							eventAr.push_back(cred);
 						}
 					}
 
@@ -113,13 +116,13 @@ void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_out
 				}
 			}
 		}
-		TControl::OnLButtonUp(nFlags, point, mOut, eventAr, args);
+		TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
 	}
 	isTickSelected = isNodeSelected = false;
 	nodeSelected = 0;
 }
 
-void TDataNodeControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TDataNodeControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	if (IsContained(point, GetArea()))
 	{
@@ -150,7 +153,7 @@ void TDataNodeControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_o
 				nodeSelected = targetNode;
 			}
 		}
-		TControl::OnLButtonDown(nFlags, point, mOut, eventAr, args);
+		TControl::OnLButtonDown(nFlags, point, mOut, eventAr);
 	}
 }
 
@@ -249,7 +252,7 @@ void TDataNodeControl::Draw(TrecPointer<TVariable> object)
 		UINT r = triLoc.right;
 		triLoc = cLoc;
 		triLoc.left = r;
-		cont->OnResize(triLoc, 0, cred, args);
+		cont->OnResize(triLoc, 0, cred);
 		cont->Draw(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(curNode->GetContent()));
 
 		if (nodeBrush.Get() && c == highlightNodeSelected)

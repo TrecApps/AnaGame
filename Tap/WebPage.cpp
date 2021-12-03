@@ -122,17 +122,17 @@ void WebPage::Draw(TrecPointer<TVariable> object)
 		anafaceFallBack->Draw(object);
 }
 
-ag_msg void WebPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+ag_msg void WebPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 	return ag_msg void();
 }
 
-ag_msg void WebPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+ag_msg void WebPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 	return ag_msg void();
 }
 
-ag_msg void WebPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+ag_msg void WebPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 	if (rootNode.Get())
 	{
@@ -159,7 +159,7 @@ ag_msg void WebPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_outpu
 	}
 }
 
-ag_msg void WebPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+ag_msg void WebPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	if (rootNode.Get())
 	{
@@ -176,7 +176,7 @@ ag_msg void WebPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_out
 	}
 }
 
-ag_msg void WebPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+ag_msg void WebPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	if (rootNode.Get())
 	{
@@ -200,7 +200,7 @@ ag_msg void WebPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut
 	}
 }
 
-ag_msg void WebPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args)
+ag_msg void WebPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& args)
 {
 	if (rootNode.Get())
 	{
@@ -211,7 +211,7 @@ ag_msg void WebPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& 
 	}
 }
 
-ag_msg void WebPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+ag_msg void WebPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	return ag_msg void();
 }
@@ -221,7 +221,7 @@ ag_msg bool WebPage::OnDestroy()
 	return ag_msg bool();
 }
 
-ag_msg bool WebPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+ag_msg bool WebPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
 	return ag_msg bool();
 }

@@ -1068,8 +1068,8 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 		{
 			message_output mo = message_output::mo_negative;
 			TDataArray<TPage::EventID_Cred> cred;
-			TDataArray<EventArgs> cl;
-			control->OnLButtonDown(0, point, mo, cred, cl);
+			
+			control->OnLButtonDown(0, point, mo, cred);
 
 			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
 
@@ -1089,7 +1089,7 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonDown(0, point, mo,cred, cl);
+								childNodes[Rust]->control->OnLButtonDown(0, point, mo,cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonDown(script, thisCollection, nodeCollection, point);
@@ -1109,7 +1109,7 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonDown(0, point, mo, cred, cl);
+								childNodes[Rust]->control->OnLButtonDown(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonDown(script, thisCollection, nodeCollection, point);
@@ -1130,7 +1130,7 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 						{
 						case NodeContainerType::nct_control:
 						case NodeContainerType::nct_text:
-							childNodes[Rust]->control->OnLButtonDown(0, point, mo, cred, cl);
+							childNodes[Rust]->control->OnLButtonDown(0, point, mo, cred);
 							break;
 						case NodeContainerType::nct_web:
 							childNodes[Rust]->webNode->OnLButtonDown(script, thisCollection, nodeCollection, point);
@@ -1178,8 +1178,8 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 		{
 			message_output mo = message_output::mo_negative;
 			TDataArray<TPage::EventID_Cred> cred;
-			TDataArray<EventArgs> cl;
-			control->OnLButtonUp(0, point, mo, cred,cl);
+			
+			control->OnLButtonUp(0, point, mo, cred);
 
 			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
 
@@ -1209,7 +1209,7 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonUp(0, point, mo, cred,cl);
+								childNodes[Rust]->control->OnLButtonUp(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
@@ -1240,7 +1240,7 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonUp(0, point, mo, cred,cl);
+								childNodes[Rust]->control->OnLButtonUp(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
@@ -1267,7 +1267,7 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 						{
 						case NodeContainerType::nct_control:
 						case NodeContainerType::nct_text:
-							childNodes[Rust]->control->OnLButtonUp(0, point, mo, cred, cl);
+							childNodes[Rust]->control->OnLButtonUp(0, point, mo, cred);
 							break;
 						case NodeContainerType::nct_web:
 							childNodes[Rust]->webNode->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
@@ -1301,8 +1301,8 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 		{
 			message_output mo = message_output::mo_negative;
 			TDataArray<TPage::EventID_Cred> cred;
-			TDataArray<EventArgs> cl;
-			control->OnLButtonDblClk(0, point, mo, cl);
+			
+			control->OnLButtonDblClk(0, point, mo, cred);
 
 			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
 
@@ -1321,7 +1321,7 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonDblClk(0, point, mo, cl);
+								childNodes[Rust]->control->OnLButtonDblClk(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonDblClck(script, thisCollection, point);
@@ -1340,7 +1340,7 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonDblClk(0, point, mo, cl);
+								childNodes[Rust]->control->OnLButtonDblClk(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonDblClck(script, thisCollection, point);
@@ -1361,7 +1361,7 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 						{
 						case NodeContainerType::nct_control:
 						case NodeContainerType::nct_text:
-							childNodes[Rust]->control->OnLButtonDblClk(0, point, mo, cl);
+							childNodes[Rust]->control->OnLButtonDblClk(0, point, mo, cred);
 							break;
 						case NodeContainerType::nct_web:
 							childNodes[Rust]->webNode->OnLButtonDblClck(script, thisCollection, point);
@@ -1408,8 +1408,8 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 
 			message_output mo = message_output::mo_negative;
 			TDataArray<TPage::EventID_Cred> cred;
-			TDataArray<EventArgs> cl;
-			control->OnLButtonDblClk(0, point, mo, cl);
+			
+			control->OnLButtonDblClk(0, point, mo, cred);
 
 			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
 			if (found == -1)
@@ -1439,7 +1439,7 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnMouseMove(0, point, mo, cred, cl);
+								childNodes[Rust]->control->OnMouseMove(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnMouseMove(script, thisCollection, nodeCollection, point);
@@ -1468,7 +1468,7 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnMouseMove(0, point, mo, cred, cl);
+								childNodes[Rust]->control->OnMouseMove(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnMouseMove(script, thisCollection, nodeCollection, point);
@@ -1495,7 +1495,7 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 						{
 						case NodeContainerType::nct_control:
 						case NodeContainerType::nct_text:
-							childNodes[Rust]->control->OnMouseMove(0, point, mo, cred, cl);
+							childNodes[Rust]->control->OnMouseMove(0, point, mo, cred);
 							break;
 						case NodeContainerType::nct_web:
 							childNodes[Rust]->webNode->OnMouseMove(script, thisCollection, nodeCollection, point);
@@ -2214,8 +2214,8 @@ void TWebNode::ShrinkWidth(UINT minWidth)
 				auto fieldLoc = field->GetArea();
 				fieldLoc.right = fieldLoc.left + width;
 				TDataArray<TPage::EventID_Cred> cred;
-				TDataArray<EventArgs> args;
-				field->OnResize(fieldLoc, 0, cred, args);
+				
+				field->OnResize(fieldLoc, 0, cred);
 			}
 			else if (node)
 			{
@@ -2254,8 +2254,8 @@ void TWebNode::ShrinkWidth(UINT minWidth)
 			if (field)
 			{
 				TDataArray<TPage::EventID_Cred> cred;
-				TDataArray<EventArgs> args;
-				field->OnResize(tempLoc, 0, cred, args);
+				
+				field->OnResize(tempLoc, 0, cred);
 				Rust++;
 			}
 			else if (node)

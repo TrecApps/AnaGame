@@ -109,9 +109,9 @@ void TIdeWindow::OnWindowResize(UINT width, UINT height)
 	curArea.bottom = curArea.top + this->mainViewSpace;
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 
-	mainPage->OnResize(curArea, 0, cred, args);
+	mainPage->OnResize(curArea, 0, cred);
 
 
 	curArea.top += this->mainViewSpace;
@@ -134,13 +134,13 @@ void TIdeWindow::OnWindowResize(UINT width, UINT height)
 
 	D2D1_RECT_F zeroRec{ 0,0,0,0 };
 
-	body->OnResize(middle, 0, cred, args);
-	upperLeft->OnResize(left, 0, cred, args);
-	upperRight->OnResize(right, 0, cred, args);
-	basicConsole->OnResize(zeroRec, 0, cred, args);
-	lowerLeft->OnResize(zeroRec, 0, cred, args);
-	lowerRight->OnResize(zeroRec, 0, cred, args);
-	deepConsole->OnResize(bottom, 0, cred, args);
+	body->OnResize(middle, 0, cred);
+	upperLeft->OnResize(left, 0, cred);
+	upperRight->OnResize(right, 0, cred);
+	basicConsole->OnResize(zeroRec, 0, cred);
+	lowerLeft->OnResize(zeroRec, 0, cred);
+	lowerRight->OnResize(zeroRec, 0, cred);
+	deepConsole->OnResize(bottom, 0, cred);
 
 	if (d3dEngine.Get())
 	{
@@ -250,11 +250,11 @@ void TIdeWindow::OnMouseMove(UINT nFlags, TPoint point)
 	message_output output = message_output::mo_negative;
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 
 	if (currentScrollBar.Get())
 	{
-		currentScrollBar->OnMouseMove(nFlags, point, output, args);
+		currentScrollBar->OnMouseMove(nFlags, point, output);
 		
 		Draw();
 		ThreadRelease();
@@ -263,55 +263,55 @@ void TIdeWindow::OnMouseMove(UINT nFlags, TPoint point)
 
 	if (focusPage.Get())
 	{
-		focusPage.GetBase()->OnMouseMove(nFlags, point, output, cred, args);
+		focusPage.GetBase()->OnMouseMove(nFlags, point, output, cred);
 		goto finish;
 	}
 
 	if (IsContained(point, mainPage->GetArea()))
 	{
-		mainPage->OnMouseMove(nFlags, point, output, cred, args);
+		mainPage->OnMouseMove(nFlags, point, output, cred);
 		goto finish;
 	}
 
 	if (IsContained(point, body->GetArea()))
 	{
-		body.GetBase()->OnMouseMove(nFlags, point, output, cred, args);
+		body.GetBase()->OnMouseMove(nFlags, point, output, cred);
 		goto finish;
 	}
 
 	if (IsContained(point, upperLeft->GetArea()))
 	{
-		upperLeft.GetBase()->OnMouseMove(nFlags, point, output, cred, args);
+		upperLeft.GetBase()->OnMouseMove(nFlags, point, output, cred);
 		goto finish;
 	}
 
 	if (IsContained(point, upperRight->GetArea()))
 	{
-		upperRight.GetBase()->OnMouseMove(nFlags, point, output, cred, args);
+		upperRight.GetBase()->OnMouseMove(nFlags, point, output, cred);
 		goto finish;
 	}
 
 	if (IsContained(point, lowerLeft->GetArea()))
 	{
-		lowerLeft.GetBase()->OnMouseMove(nFlags, point, output, cred, args);
+		lowerLeft.GetBase()->OnMouseMove(nFlags, point, output, cred);
 		goto finish;
 	}
 
 	if (IsContained(point, lowerRight->GetArea()))
 	{
-		lowerRight.GetBase()->OnMouseMove(nFlags, point, output, cred, args);
+		lowerRight.GetBase()->OnMouseMove(nFlags, point, output, cred);
 		goto finish;
 	}
 
 	if (IsContained(point, basicConsole->GetArea()))
 	{
-		basicConsole.GetBase()->OnMouseMove(nFlags, point, output, cred, args);
+		basicConsole.GetBase()->OnMouseMove(nFlags, point, output, cred);
 		goto finish;
 	}
 
 	if (IsContained(point, deepConsole->GetArea()))
 	{
-		deepConsole.GetBase()->OnMouseMove(nFlags, point, output, cred, args);
+		deepConsole.GetBase()->OnMouseMove(nFlags, point, output, cred);
 		goto finish;
 	}
 	
@@ -328,7 +328,7 @@ finish:
 		curArea.top += dif.y;
 		curArea.bottom += dif.y;
 
-		currentHolder->OnResize(curArea, 0, cred, args);
+		currentHolder->OnResize(curArea, 0, cred);
 	}
 
 
@@ -354,61 +354,61 @@ void TIdeWindow::OnLButtonDown(UINT nFlags, TPoint point)
 	message_output output = message_output::mo_negative;
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 
 	auto curFocusPage = focusPage;
 
 	if (IsContained(point, mainPage->GetArea()))
 	{
-		mainPage->OnLButtonDown(nFlags, point, output, cred, args);
+		mainPage->OnLButtonDown(nFlags, point, output, cred);
 		goto finish;
 	}
 
 	if (IsContained(point, body->GetArea()))
 	{
-		body.GetBase()->OnLButtonDown(nFlags, point, output, cred, args);
+		body.GetBase()->OnLButtonDown(nFlags, point, output, cred);
 		focusPage = body;
 		goto finish;
 	}
 
 	if (IsContained(point, upperLeft->GetArea()))
 	{
-		upperLeft.GetBase()->OnLButtonDown(nFlags, point, output, cred, args);
+		upperLeft.GetBase()->OnLButtonDown(nFlags, point, output, cred);
 		focusPage = upperLeft;
 		goto finish;
 	}
 
 	if (IsContained(point, upperRight->GetArea()))
 	{
-		upperRight.GetBase()->OnLButtonDown(nFlags, point, output, cred, args);
+		upperRight.GetBase()->OnLButtonDown(nFlags, point, output, cred);
 		focusPage = upperRight;
 		goto finish;
 	}
 
 	if (IsContained(point, lowerLeft->GetArea()))
 	{
-		lowerLeft.GetBase()->OnLButtonDown(nFlags, point, output, cred, args);
+		lowerLeft.GetBase()->OnLButtonDown(nFlags, point, output, cred);
 		focusPage = lowerLeft;
 		goto finish;
 	}
 
 	if (IsContained(point, lowerRight->GetArea()))
 	{
-		lowerRight.GetBase()->OnLButtonDown(nFlags, point, output, cred, args);
+		lowerRight.GetBase()->OnLButtonDown(nFlags, point, output, cred);
 		focusPage = lowerRight;
 		goto finish;
 	}
 
 	if (IsContained(point, basicConsole->GetArea()))
 	{
-		basicConsole.GetBase()->OnLButtonDown(nFlags, point, output, cred, args);
+		basicConsole.GetBase()->OnLButtonDown(nFlags, point, output, cred);
 		focusPage = basicConsole;
 		goto finish;
 	}
 
 	if (IsContained(point, deepConsole->GetArea()))
 	{
-		deepConsole.GetBase()->OnLButtonDown(nFlags, point, output, cred, args);
+		deepConsole.GetBase()->OnLButtonDown(nFlags, point, output, cred);
 		focusPage = deepConsole;
 		goto finish;
 	}
@@ -436,21 +436,21 @@ bool TIdeWindow::OnScroll(const TPoint& point, const TPoint& direction)
 
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 
-	if (body->OnScroll(false, point, direction, args))
+	if (body->OnScroll(false, point, direction, cred))
 		return true;
-	if (basicConsole->OnScroll(false, point, direction, args))
+	if (basicConsole->OnScroll(false, point, direction, cred))
 		return true;
-	if (lowerLeft->OnScroll(false, point, direction, args))
+	if (lowerLeft->OnScroll(false, point, direction, cred))
 		return true;
-	if (lowerRight->OnScroll(false, point, direction, args))
+	if (lowerRight->OnScroll(false, point, direction, cred))
 		return true;
-	if (upperLeft->OnScroll(false, point, direction, args))
+	if (upperLeft->OnScroll(false, point, direction, cred))
 		return true;
-	if (upperRight->OnScroll(false, point, direction, args))
+	if (upperRight->OnScroll(false, point, direction, cred))
 		return true;
-	if (deepConsole->OnScroll(false, point, direction, args))
+	if (deepConsole->OnScroll(false, point, direction, cred))
 		return true;
 
 	return false;
@@ -499,7 +499,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
+	
 
 	switch (pageType)
 	{
@@ -597,7 +597,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 
 	TrecSubPointer<TPage, AnafacePage> newPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(drawingBoard);
 	auto space = targetPage->GetChildSpace();
-	newPage->OnResize(space, 0, cred, args);
+	newPage->OnResize(space, 0, cred);
 
 	TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(uiFile->GetFilePath());
 	uiFile->Close();
@@ -704,8 +704,8 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 
 
 	TDataArray<TPage::EventID_Cred> cred;
-	TDataArray<EventArgs> args;
-	newPage->OnResize(space, 0, cred, args);
+	
+	newPage->OnResize(space, 0, cred);
 
 	TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(aFile->GetFilePath());
 	aFile->Close();
@@ -727,11 +727,11 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	if (mainPageName.GetSize())
 	{
 		TrecSubPointer<TPage, TabPage> mainTabPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TabPage>(ide_page_type::ide_page_type_main, drawingBoard,30);
-		mainTabPage->OnResize(space, 0, cred, args);
+		mainTabPage->OnResize(space, 0, cred);
 		mainPage = TrecSubToTrec(mainTabPage);
 		mainTabPage->tabBar.AddNewTab(mainPageName, TrecSubToTrec(newPage), false);
 		space.top += 30;
-		newPage->OnResize(space, 0, cred, args);
+		newPage->OnResize(space, 0, cred);
 	}
 	else
 		mainPage = TrecSubToTrec(newPage);
@@ -760,13 +760,13 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 
 	D2D1_RECT_F zeroRec = { 0,0,0,0 };
 
-	body->OnResize(middle, 0, cred, args);
-	upperLeft->OnResize(left, 0, cred, args);
-	upperRight->OnResize(right, 0, cred, args);
-	basicConsole->OnResize(zeroRec, 0, cred, args);
-	lowerLeft->OnResize(zeroRec, 0, cred, args);
-	lowerRight->OnResize(zeroRec, 0, cred, args);
-	deepConsole->OnResize(bottom, 0, cred, args);
+	body->OnResize(middle, 0, cred);
+	upperLeft->OnResize(left, 0, cred);
+	upperRight->OnResize(right, 0, cred);
+	basicConsole->OnResize(zeroRec, 0, cred);
+	lowerLeft->OnResize(zeroRec, 0, cred);
+	lowerRight->OnResize(zeroRec, 0, cred);
+	deepConsole->OnResize(bottom, 0, cred);
 
 	panelbrush = drawingBoard->GetBrush(TColor(D2D1::ColorF::BlueViolet));
 

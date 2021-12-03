@@ -210,7 +210,7 @@ public:
 		 *
 		 * Attributes: virtual
 		 */
-		virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args);
+		virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut);
 
 		/**
 		 * Method: TScrollBar::MovedContent
@@ -282,6 +282,7 @@ public:
 		EventID_Cred(R_Message_Type t, TrecPointer<TPage> c, TrecPointer<TScrollBar> sb);
 		EventID_Cred(R_Message_Type t, TrecPointer<TPage> c, TrecPointer<TTextIntercepter> i);
 
+
 		R_Message_Type eventType;
 		TrecPointer<TPage> control;
 		TrecPointer<TScrollBar> scroll;
@@ -289,6 +290,8 @@ public:
 		TrecPointer<TTextIntercepter> textIntercepter;
 		TrecPointer<TVariable> data;		// Holds either a variable, or an interpretor to handle an event
 		TString expression;
+
+		TrecPointer<EventArgs> args;
 	};
 
 	/**
@@ -308,16 +311,6 @@ public:
 		 * Attributes: abstract
 		 */
 		virtual void Initialize(TrecPointer<TPage> page) = 0;
-
-		/**
-		 * Method: EventHandler::HandleEvents
-		 * Purpose: Handles Events produced from the set of TControls
-		 * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
-		 * Returns: void
-		 *
-		 * Attributes: abstract
-		 */
-		virtual void HandleEvents(TDataArray<EventArgs>& eventAr) = 0;
 
 		/**
 		 * Method: EventHandler::OnChar
@@ -430,7 +423,7 @@ public:
      *
      * Attributes: message; abstract
      */
-    ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
+    ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
 
 
 	/**
@@ -444,7 +437,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
+	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
 
 
 	/**
@@ -458,7 +451,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
+	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
 
 
 	/**
@@ -472,7 +465,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
+	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
 
 	/**
 	 * Method: TPage::OnMouseMove
@@ -484,7 +477,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) = 0;
+	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&) = 0;
 
 	/**
 	 * Method: TPage::OnLButtonDblClk
@@ -496,7 +489,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&) = 0;
+	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& eventAr) = 0;
 
 	/**
 	 * Method: TPage::OnResize
@@ -511,7 +504,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&) = 0;
+	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr) = 0;
 
 	/**
 	 * Method: Page::OnDestroy
@@ -533,7 +526,7 @@ public:
 	 *
 	 * Attributes: message; abstract
 	 */
-	ag_msg virtual bool OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) = 0;
+	ag_msg virtual bool OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>&) = 0;
 
 
 	/**

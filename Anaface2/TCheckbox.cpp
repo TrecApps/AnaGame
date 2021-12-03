@@ -51,13 +51,12 @@ bool TCheckbox::IsChecked()
 	return isChecked;
 }
 
-void TCheckbox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr , TDataArray<EventArgs>& args)
+void TCheckbox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	if (this->isLeftClicked && IsContained(point, area))
 	{
 		isChecked = !isChecked;
-
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_check, TrecPointerKey::GetTrecPointerFromSoft<>(self)));
+		EventID_Cred cred(R_Message_Type::On_check, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 		int checkIndex = HasEvent(R_Message_Type::On_check);
 		if (checkIndex != -1)
 		{
@@ -68,15 +67,18 @@ void TCheckbox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mO
 			if (text.Get())
 				text->GetText(this->args.text);
 			this->args.methodID = checkIndex;
+
+			cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
 		}
+		eventAr.push_back(cred);
 	}
 }
 
 
 
-void TCheckbox::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TCheckbox::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
-	TGadget::OnResize(newLoc, nFlags, eventAr, args);
+	TGadget::OnResize(newLoc, nFlags, eventAr);
 
 	if (text.Get())
 	{

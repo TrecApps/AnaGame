@@ -80,10 +80,10 @@ void TWebWindow::OnWindowResize(UINT width, UINT height)
 
 
     TDataArray<TPage::EventID_Cred> cred;
-    TDataArray<EventArgs> args;
+    
 
     if (mainPage.Get())
-        mainPage->OnResize(mainPageSpace, 0, cred, args);
+        mainPage->OnResize(mainPageSpace, 0, cred);
 
     if (d3dEngine.Get())
     {
@@ -111,7 +111,7 @@ void TWebWindow::AddNewTab(const TString& url, bool createTab)
     if (newWebPage.Get())
     {
         TDataArray<TPage::EventID_Cred> cred;
-        TDataArray<EventArgs> args;
+        
         TString title(newWebPage->GetTitle());
         if (!title.GetSize())
             title.Set(L"Untitled Tab");
@@ -155,8 +155,8 @@ int TWebWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
     }
 
     TDataArray<TPage::EventID_Cred> cred;
-    TDataArray<EventArgs> args;
-    newPage->OnResize(mainPageSpace, 0, cred, args);
+    
+    newPage->OnResize(mainPageSpace, 0, cred);
 
     TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(aFile->GetFilePath());
     aFile->Close();
@@ -199,8 +199,8 @@ void TWebWindow::OnLButtonDown(UINT nFlags, TPoint point)
         message_output mOut = message_output::mo_negative;
 
         TDataArray<TPage::EventID_Cred> cred;
-        TDataArray<EventArgs> args;
-        webPages->OnLButtonDown(nFlags, point, mOut, cred,args);
+        
+        webPages->OnLButtonDown(nFlags, point, mOut, cred);
 
         if (mOut != message_output::mo_negative)
         {
@@ -210,7 +210,7 @@ void TWebWindow::OnLButtonDown(UINT nFlags, TPoint point)
 
         if (currentPage.Get())
         {
-            currentPage->OnLButtonDown(nFlags, point, mOut, cred, args);
+            currentPage->OnLButtonDown(nFlags, point, mOut, cred);
         }
     }
 
@@ -226,8 +226,8 @@ void TWebWindow::OnMouseMove(UINT nFlags, TPoint point)
         message_output mOut = message_output::mo_negative;
 
         TDataArray<TPage::EventID_Cred> cred;
-        TDataArray<EventArgs> args;
-        webPages->OnMouseMove(nFlags, point, mOut, cred, args);
+        
+        webPages->OnMouseMove(nFlags, point, mOut, cred);
 
         if (mOut != message_output::mo_negative)
         {
@@ -237,7 +237,7 @@ void TWebWindow::OnMouseMove(UINT nFlags, TPoint point)
 
         if (currentPage.Get())
         {
-            currentPage->OnMouseMove(nFlags, point, mOut, cred, args);
+            currentPage->OnMouseMove(nFlags, point, mOut, cred);
         }
     }
 
@@ -253,8 +253,8 @@ void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
         message_output mOut = message_output::mo_negative;
 
         TDataArray<TPage::EventID_Cred> cred;
-        TDataArray<EventArgs> args;
-        webPages->OnLButtonUp(nFlags, point, mOut, cred,args);
+        
+        webPages->OnLButtonUp(nFlags, point, mOut, cred);
 
         if (mOut != message_output::mo_negative)
         {
@@ -266,7 +266,7 @@ void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
 
         if (currentPage.Get())
         {
-            currentPage->OnLButtonUp(nFlags, point, mOut, cred,args);
+            currentPage->OnLButtonUp(nFlags, point, mOut, cred);
         }
     }
 
@@ -280,12 +280,12 @@ bool TWebWindow::OnScroll(const TPoint& point, const TPoint& direction)
     if (TWindow::OnScroll(point, direction))
         return true;
 
-    
+    TDataArray<TPage::EventID_Cred> cred;
     if (currentPage.Get())
     {
         TDataArray<TPage::EventID_Cred> cred;
-        TDataArray<EventArgs> args;
-        return currentPage->OnScroll(false, point, direction, args);
+        
+        return currentPage->OnScroll(false, point, direction, cred);
     }
     return false;
 }
@@ -311,9 +311,9 @@ TrecSubPointer<TPage, WebPage> TWebWindow::GetWebPage(const TString& url)
 
 
     TDataArray<TPage::EventID_Cred> cred;
-    TDataArray<EventArgs> args;
+    
 
-    ret->OnResize(webPage, 0, cred, args);
+    ret->OnResize(webPage, 0, cred);
 
     // ret->SetEnvironment(envGenerator->GetEnvironment(TrecPointer<TFileShell>()));
 
@@ -342,7 +342,7 @@ TrecSubPointer<TPage, WebPage> TWebWindow::GetWebPage(const TString& url)
         // To-Do: Set up Web-Handler
 
         ret->SetEnvironment(envGenerator->GetEnvironment(TFileShell::GetFileInfo(index->GetParent()->GetPath())));
-        ret->OnResize(this->webPage, 0, cred, args);
+        ret->OnResize(this->webPage, 0, cred);
         ret->PrepPage(index, TrecPointer < TPage::EventHandler>());
 
     }

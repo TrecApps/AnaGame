@@ -157,9 +157,11 @@ void TPage::TScrollBar::OnLButtonUp(UINT nFlags, TPoint point, message_output& m
  *
  * Attributes: virtual
  */
-void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args)
+void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut)
 {
 	if (!onFocus) return;
+
+	TDataArray<EventID_Cred> events;
 
 	if (scrollAlignment == ScrollOrient::so_horizontal)
 	{
@@ -170,7 +172,7 @@ void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& m
 			point.x = body_rect.left + BOX_SIZE;
 
 		float move = -MovedContent(point.x - prevPoint.x);
-		parent.Get()->OnScroll(true ,point, TPoint(move / widthFactor, 0), args);
+		parent.Get()->OnScroll(true ,point, TPoint(move / widthFactor, 0), events);
 	}
 	else
 	{
@@ -181,7 +183,7 @@ void TPage::TScrollBar::OnMouseMove(UINT nFlags, TPoint point, message_output& m
 			point.y = body_rect.top + BOX_SIZE;
 
 		float move = -MovedContent(point.y - prevPoint.y);
-		parent.Get()->OnScroll(true, point, TPoint(0, move / widthFactor),args);
+		parent.Get()->OnScroll(true, point, TPoint(0, move / widthFactor),events);
 	}
 	prevPoint = point;
 }
@@ -224,7 +226,7 @@ float TPage::TScrollBar::MovedContent(float degree)
 void TPage::TScrollBar::Refresh(const D2D1_RECT_F& location, const D2D1_RECT_F& area)
 {
 	body_rect = location;
-	TDataArray<EventArgs> args;
+	TDataArray<EventID_Cred> args;
 
 	if (scrollAlignment == ScrollOrient::so_horizontal)
 	{

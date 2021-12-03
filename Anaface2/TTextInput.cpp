@@ -136,7 +136,7 @@ void TTextInput::Draw(TrecPointer<TVariable> object)
 		text->SetText(curText);
 }
 
-void TTextInput::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TTextInput::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (IsContained(point, location))
@@ -152,10 +152,10 @@ void TTextInput::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& m
 	showPassword = false;
 
 	text->OnCLickUp(point);
-	TControl::OnLButtonUp(nFlags, point, mOut, eventAr, args);
+	TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
 }
 
-void TTextInput::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TTextInput::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 
@@ -193,24 +193,26 @@ parentCall:
 			this->args.methodID = methodId;
 			this->args.isClick = true;
 			this->args.isLeftClick = true;
-			eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<>(self)));
-			args.push_back(this->args);
+			EventID_Cred cred(R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+			cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+			eventAr.push_back(cred);
 		}
 	}
-	TControl::OnLButtonDown(nFlags, point, mOut, eventAr, args);
+	TControl::OnLButtonDown(nFlags, point, mOut, eventAr);
 }
 
-void TTextInput::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TTextInput::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (text->OnMouseMove(point))
-		TControl::OnMouseMove(nFlags, point, mOut, eventAr, args);
+		TControl::OnMouseMove(nFlags, point, mOut, eventAr);
 }
 
-void TTextInput::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TTextInput::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
-	TGadget::OnResize(newLoc, nFlags, eventAr, args);
+	TGadget::OnResize(newLoc, nFlags, eventAr);
 	topBut = DxLocation;
 	topBut.bottom = topBut.bottom - (topBut.bottom - topBut.top) / 2;
 	botBut = DxLocation;

@@ -36,9 +36,9 @@ void TLayout::Draw(TrecPointer<TVariable> object)
 	TRandomLayout::Draw(object);
 }
 
-void TLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
-	TControl::OnResize(newLoc, nFlags, eventAr, args);
+	TControl::OnResize(newLoc, nFlags, eventAr);
 	UINT cSize = primaryStack ? (newLoc.bottom - newLoc.top) :
 		(newLoc.right - newLoc.left);
 
@@ -54,35 +54,35 @@ void TLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred
 		{
 			cLoc.bottom = cLoc.top + primDem[0].actualSpace;
 			if (childControls[0].control.Get())
-				childControls[0].control->OnResize(cLoc, nFlags, eventAr, args);
+				childControls[0].control->OnResize(cLoc, nFlags, eventAr);
 			for (UINT Rust = 1; Rust < childControls.Size() && Rust < primDem.Size(); Rust++)
 			{
 				cLoc.bottom += primDem[Rust].actualSpace;
 				cLoc.top += primDem[Rust].actualSpace;
 
 				if (childControls[Rust].control.Get())
-					childControls[Rust].control->OnResize(cLoc, nFlags, eventAr, args);
+					childControls[Rust].control->OnResize(cLoc, nFlags, eventAr);
 			}
 		}
 		else
 		{
 			cLoc.right = cLoc.left + primDem[0].actualSpace;
 			if (childControls[0].control.Get())
-				childControls[0].control->OnResize(cLoc, nFlags, eventAr, args);
+				childControls[0].control->OnResize(cLoc, nFlags, eventAr);
 			for (UINT Rust = 1; Rust < childControls.Size() && Rust < primDem.Size(); Rust++)
 			{
 				cLoc.right += primDem[Rust].actualSpace;
 				cLoc.left += primDem[Rust].actualSpace;
 
 				if (childControls[Rust].control.Get())
-					childControls[Rust].control->OnResize(cLoc, nFlags, eventAr, args);
+					childControls[Rust].control->OnResize(cLoc, nFlags, eventAr);
 			}
 		}
 	}
 
 }
 
-bool TLayout::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+bool TLayout::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
 	return TRandomLayout::OnScroll(false, point, direction, args);
 }

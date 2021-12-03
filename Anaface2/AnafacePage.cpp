@@ -397,111 +397,93 @@ void AnafacePage::Draw(TrecPointer<TVariable> object)
 		rootPage->Draw(object);
 }
 
-void AnafacePage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& events)
+void AnafacePage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	if (rootPage.Get())
-		rootPage->OnRButtonUp(nFlags, point, mOut, cred, events);
+		rootPage->OnRButtonUp(nFlags, point, mOut, cred);
+	if (mOut != message_output::mo_negative)
+	{
+		if (handler.Get())
+			handler->HandleEvents(cred);
+
+		mOut = message_output::mo_positive_handled;
+	}
+}
+
+void AnafacePage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (rootPage.Get())
+		rootPage->OnRButtonDown(nFlags, point, mOut, eventAr);
+	if (mOut != message_output::mo_negative)
+	{
+		if (handler.Get())
+			handler->HandleEvents(eventAr);
+
+		mOut = message_output::mo_positive_handled;
+	}
+}
+
+void AnafacePage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (rootPage.Get())
+		rootPage->OnLButtonUp(nFlags, point, mOut, eventAr);
+	if (mOut != message_output::mo_negative)
+	{
+		if (handler.Get())
+			handler->HandleEvents(eventAr);
+
+		mOut = message_output::mo_positive_handled;
+	}
+}
+
+void AnafacePage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (rootPage.Get())
+		rootPage->OnLButtonDown(nFlags, point, mOut, eventAr);
+	if (mOut != message_output::mo_negative)
+	{
+		if (handler.Get())
+			handler->HandleEvents(eventAr);
+
+		mOut = message_output::mo_positive_handled;
+	}
+}
+
+void AnafacePage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
+{
+	if (rootPage.Get())
+		rootPage->OnMouseMove(nFlags, point, mOut, eventAr);
+	if (mOut != message_output::mo_negative)
+	{
+		if (handler.Get())
+			handler->HandleEvents(eventAr);
+
+		mOut = message_output::mo_positive_handled;
+	}
+}
+
+void AnafacePage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& events)
+{
+	if (rootPage.Get())
+		rootPage->OnLButtonDblClk(nFlags, point, mOut,events);
 	if (mOut != message_output::mo_negative)
 	{
 		if (handler.Get())
 			handler->HandleEvents(events);
 
 		mOut = message_output::mo_positive_handled;
-
-		// We are handling events by Child element, so no need to keep them
-		events.RemoveAll();
 	}
 }
 
-void AnafacePage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& events)
+void AnafacePage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	if (rootPage.Get())
-		rootPage->OnRButtonDown(nFlags, point, mOut, eventAr, events);
-	if (mOut != message_output::mo_negative)
-	{
-		if (handler.Get())
-			handler->HandleEvents(events);
-
-		mOut = message_output::mo_positive_handled;
-
-		// We are handling events by Child element, so no need to keep them
-		events.RemoveAll();
-	}
-}
-
-void AnafacePage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& events)
-{
-	if (rootPage.Get())
-		rootPage->OnLButtonUp(nFlags, point, mOut, eventAr, events);
-	if (mOut != message_output::mo_negative)
-	{
-		if (handler.Get())
-			handler->HandleEvents(events);
-
-		mOut = message_output::mo_positive_handled;
-
-		// We are handling events by Child element, so no need to keep them
-		events.RemoveAll();
-	}
-}
-
-void AnafacePage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& events)
-{
-	if (rootPage.Get())
-		rootPage->OnLButtonDown(nFlags, point, mOut, eventAr, events);
-	if (mOut != message_output::mo_negative)
-	{
-		if (handler.Get())
-			handler->HandleEvents(events);
-
-		mOut = message_output::mo_positive_handled;
-
-		// We are handling events by Child element, so no need to keep them
-		events.RemoveAll();
-	}
-}
-
-void AnafacePage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& events)
-{
-	if (rootPage.Get())
-		rootPage->OnMouseMove(nFlags, point, mOut, eventAr, events);
-	if (mOut != message_output::mo_negative)
-	{
-		if (handler.Get())
-			handler->HandleEvents(events);
-
-		mOut = message_output::mo_positive_handled;
-
-		// We are handling events by Child element, so no need to keep them
-		events.RemoveAll();
-	}
-}
-
-void AnafacePage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& events)
-{
-	if (rootPage.Get())
-		rootPage->OnLButtonDblClk(nFlags, point, mOut, events);
-	if (mOut != message_output::mo_negative)
-	{
-		if (handler.Get())
-			handler->HandleEvents(events);
-
-		mOut = message_output::mo_positive_handled;
-
-		// We are handling events by Child element, so no need to keep them
-		events.RemoveAll();
-	}
-}
-
-void AnafacePage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& events)
-{
-	if (rootPage.Get())
-		rootPage->OnResize(newLoc, nFlags, eventAr, events);
+		rootPage->OnResize(newLoc, nFlags, eventAr);
 	if (handler.Get())
-		handler->HandleEvents(events);
+		handler->HandleEvents(eventAr);
 
 	// We are handling events by Child element, so no need to keep them
-	events.RemoveAll();
+	eventAr.RemoveAll();
 	this->area = newLoc;
 }
 
@@ -510,7 +492,7 @@ bool AnafacePage::OnDestroy()
 	return true;
 }
 
-bool AnafacePage::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&)
+bool AnafacePage::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>&)
 {
 	return false;
 }
@@ -521,9 +503,8 @@ void AnafacePage::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_
 	{
 		TrecPointer<TPage> scroller = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TScrollerPage>(drawingBoard, page);
 		TDataArray<EventID_Cred> cred;
-		TDataArray<EventArgs> args;
 		auto b = bounds;
-		scroller->OnResize(b, 0, cred, args);
+		scroller->OnResize(b, 0, cred);
 		rootPage = scroller;
 	}
 }

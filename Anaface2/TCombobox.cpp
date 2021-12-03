@@ -193,16 +193,16 @@ void TCombobox::Draw(TrecPointer<TVariable> object)
     brush->DrawLine(rightPoint, vertexPoint);
 }
 
-void TCombobox::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TCombobox::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
-    TGadget::OnResize(newLoc, nFlags, eventAr, args);
+    TGadget::OnResize(newLoc, nFlags, eventAr);
     D2D1_RECT_F subLoc = newLoc;
     subLoc.top = subLoc.bottom;
     subLoc.bottom = 1000.0f;
-    dataLayout->OnResize(subLoc, nFlags, eventAr, args);
+    dataLayout->OnResize(subLoc, nFlags, eventAr);
 }
 
-void TCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
     if (IsContained(point, area) && this->isLeftClicked)
     {
@@ -216,7 +216,10 @@ void TCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mO
             this->args.eventType = R_Message_Type::On_Flyout;
             this->args.text = currentVariable.Get() ? currentVariable->GetString() : L"null";
             this->args.methodID = flyOut;
-            args.push_back(this->args);
+            EventID_Cred cred(R_Message_Type::On_Flyout, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+            cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+
+            eventAr.push_back(cred);
         }
         EventID_Cred cred;
         cred.eventType = R_Message_Type::On_Flyout;
@@ -226,7 +229,7 @@ void TCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mO
 
         eventAr.push_back(cred);
     }
-    TGadget::OnLButtonUp(nFlags, point, mOut, eventAr, args);
+    TGadget::OnLButtonUp(nFlags, point, mOut, eventAr);
 }
 
 TrecSubPointer<TVariable, TContainerVariable> TCombobox::GetVariableList()

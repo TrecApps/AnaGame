@@ -34,31 +34,31 @@ void TabPage::Draw(TrecPointer<TVariable> object)
 {
 }
 
-ag_msg void TabPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+ag_msg void TabPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-ag_msg void TabPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+ag_msg void TabPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-ag_msg void TabPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+ag_msg void TabPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-ag_msg void TabPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+ag_msg void TabPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-ag_msg void TabPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&)
+ag_msg void TabPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-ag_msg void TabPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&)
+ag_msg void TabPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
 }
 
-ag_msg void TabPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&)
+ag_msg void TabPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 }
 
@@ -67,7 +67,7 @@ ag_msg bool TabPage::OnDestroy()
 	return true;
 }
 
-ag_msg bool TabPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&args)
+ag_msg bool TabPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
 	if (currentPage.Get())
 		return OnScroll(false, point, direction, args);
@@ -116,7 +116,6 @@ void TabPage::MouseMoveBody(TPoint& diff)
 	ThreadLock();
 
 	TDataArray<EventID_Cred> cred;
-	TDataArray<EventArgs> args;
 
 	switch (moveMode)
 	{
@@ -135,7 +134,7 @@ void TabPage::MouseMoveBody(TPoint& diff)
 				curRect = basicConsole.Get()->GetArea();
 				curRect.bottom += yDiff;
 				curRect.top += yDiff;
-				basicConsole.Get()->OnResize(curRect, 0, cred, args);
+				basicConsole.Get()->OnResize(curRect, 0, cred);
 
 
 			}
@@ -153,7 +152,7 @@ void TabPage::MouseMoveBody(TPoint& diff)
 				curRect = basicConsole.Get()->GetArea();
 				curRect.bottom += newDiff;
 				curRect.top += newDiff;
-				basicConsole.Get()->OnResize(curRect, 0, cred, args);
+				basicConsole.Get()->OnResize(curRect, 0, cred);
 				diff.y = yDiff;
 			}
 		}
@@ -171,7 +170,7 @@ void TabPage::MouseMoveBody(TPoint& diff)
 				curRect = basicConsole.Get()->GetArea();
 				curRect.bottom += newDiff;
 				curRect.top += newDiff;
-				basicConsole.Get()->OnResize(curRect, 0, cred, args);
+				basicConsole.Get()->OnResize(curRect, 0, cred);
 				diff.y = yDiff;
 			}
 		}
@@ -245,7 +244,6 @@ void TabPage::MouseMoveDeepConsole(TPoint& diff)
 	{
 
 		TDataArray<EventID_Cred> cred;
-		TDataArray<EventArgs> args;
 		D2D1_RECT_F curRect = { 0,0,0,0 };
 		float yDiff = diff.y;
 
@@ -262,7 +260,7 @@ void TabPage::MouseMoveDeepConsole(TPoint& diff)
 				curRect = basicConsole.Get()->GetArea();
 				curRect.bottom += newDiff;
 				curRect.top += newDiff;
-				basicConsole.Get()->OnResize(curRect, 0, cred, args);
+				basicConsole.Get()->OnResize(curRect, 0, cred);
 				diff.y = yDiff;
 			}
 		}
@@ -281,7 +279,7 @@ void TabPage::MouseMoveDeepConsole(TPoint& diff)
 				curRect = basicConsole.Get()->GetArea();
 				curRect.bottom += newDiff;
 				curRect.top += newDiff;
-				basicConsole.Get()->OnResize(curRect, 0, cred, args);
+				basicConsole.Get()->OnResize(curRect, 0, cred);
 				diff.y = yDiff;
 			}
 		}
@@ -299,7 +297,7 @@ void TabPage::MouseMoveDeepConsole(TPoint& diff)
 				curRect = basicConsole.Get()->GetArea();
 				curRect.bottom += newDiff;
 				curRect.top += newDiff;
-				basicConsole.Get()->OnResize(curRect, 0, cred, args);
+				basicConsole.Get()->OnResize(curRect, 0, cred);
 				diff.y = yDiff;
 			}
 		}
@@ -322,7 +320,6 @@ void TabPage::MouseMoveUpperRight(TPoint& diff)
 	ThreadLock();
 
 	TDataArray<EventID_Cred> cred;
-	TDataArray<EventArgs> args;
 	switch (moveMode)
 	{
 	case tab_page_move_mode::bottom:
@@ -336,7 +333,7 @@ void TabPage::MouseMoveUpperRight(TPoint& diff)
 			curRect = basicConsole.Get()->GetArea();
 			curRect.bottom += yDiff;
 			curRect.top += yDiff;
-			basicConsole.Get()->OnResize(curRect, 0, cred, args);
+			basicConsole.Get()->OnResize(curRect, 0, cred);
 
 			// Since the deep Console moved, we need to send the message to the lower side panels
 			dynamic_cast<TabPage*>(lowerLeft.Get())->MoveBorder(yDiff, tab_page_move_mode::bottom);
@@ -355,13 +352,13 @@ void TabPage::MouseMoveUpperRight(TPoint& diff)
 			curRect = body.Get()->GetArea();
 			curRect.left += yDiff;
 			curRect.right += yDiff;
-			body.Get()->OnResize(curRect, 0, cred, args);
+			body.Get()->OnResize(curRect, 0, cred);
 
 			dynamic_cast<TabPage*>(lowerLeft.Get())->MoveBorder(yDiff, tab_page_move_mode::right);
 			curRect = basicConsole.Get()->GetArea();
 			curRect.left += yDiff;
 			curRect.right += yDiff;
-			basicConsole.Get()->OnResize(curRect, 0, cred, args);
+			basicConsole.Get()->OnResize(curRect, 0, cred);
 
 			// Since the deep Console moved, we need to send the message to the lower side panels
 			//dynamic_cast<TabPage*>(lowerLeft.Get())->MoveBorder(yDiff, tab_page_move_mode::bottom);
@@ -387,7 +384,6 @@ void TabPage::MouseMoveLowerRight(TPoint& diff)
 	D2D1_RECT_F curRect = { 0,0,0,0 };
 
 	TDataArray<EventID_Cred> cred;
-	TDataArray<EventArgs> args;
 	switch (moveMode)
 	{
 	case tab_page_move_mode::top:
@@ -406,13 +402,13 @@ void TabPage::MouseMoveLowerRight(TPoint& diff)
 			curRect = body.Get()->GetArea();
 			curRect.left += yDiff;
 			curRect.right += yDiff;
-			body.Get()->OnResize(curRect, 0, cred, args);
+			body.Get()->OnResize(curRect, 0, cred);
 
 			dynamic_cast<TabPage*>(lowerLeft.Get())->MoveBorder(yDiff, tab_page_move_mode::right);
 			curRect = basicConsole.Get()->GetArea();
 			curRect.left += yDiff;
 			curRect.right += yDiff;
-			basicConsole.Get()->OnResize(curRect, 0, cred, args);
+			basicConsole.Get()->OnResize(curRect, 0, cred);
 
 			// Since the deep Console moved, we need to send the message to the lower side panels
 			//dynamic_cast<TabPage*>(lowerLeft.Get())->MoveBorder(yDiff, tab_page_move_mode::bottom);
@@ -444,7 +440,6 @@ void TabPage::MouseMoveUpperLeft(TPoint& diff)
 	ThreadLock();
 
 	TDataArray<EventID_Cred> cred;
-	TDataArray<EventArgs> args;
 	switch (moveMode)
 	{
 	case tab_page_move_mode::bottom:
@@ -458,7 +453,7 @@ void TabPage::MouseMoveUpperLeft(TPoint& diff)
 			curRect = basicConsole.Get()->GetArea();
 			curRect.bottom += yDiff;
 			curRect.top += yDiff;
-			basicConsole.Get()->OnResize(curRect, 0, cred, args);
+			basicConsole.Get()->OnResize(curRect, 0, cred);
 
 			// Since the deep Console moved, we need to send the message to the lower side panels
 			dynamic_cast<TabPage*>(lowerRight.Get())->MoveBorder(yDiff, tab_page_move_mode::bottom);
@@ -477,13 +472,13 @@ void TabPage::MouseMoveUpperLeft(TPoint& diff)
 			curRect = body.Get()->GetArea();
 			curRect.right += yDiff;
 			curRect.left += yDiff;
-			body.Get()->OnResize(curRect, 0, cred, args);
+			body.Get()->OnResize(curRect, 0, cred);
 
 			dynamic_cast<TabPage*>(lowerRight.Get())->MoveBorder(yDiff, tab_page_move_mode::left);
 			curRect = basicConsole.Get()->GetArea();
 			curRect.right += yDiff;
 			curRect.left += yDiff;
-			basicConsole.Get()->OnResize(curRect, 0, cred, args);
+			basicConsole.Get()->OnResize(curRect, 0, cred);
 
 			// Since the deep Console moved, we need to send the message to the lower side panels
 			//dynamic_cast<TabPage*>(lowerLeft.Get())->MoveBorder(yDiff, tab_page_move_mode::bottom);
@@ -509,7 +504,6 @@ void TabPage::MouseMoveLowerLeft(TPoint& diff)
 	ThreadLock();
 
 	TDataArray<EventID_Cred> cred;
-	TDataArray<EventArgs> args;
 	switch (moveMode)
 	{
 	case tab_page_move_mode::top:
@@ -528,13 +522,13 @@ void TabPage::MouseMoveLowerLeft(TPoint& diff)
 			curRect = body.Get()->GetArea();
 			curRect.left += yDiff;
 			curRect.right += yDiff;
-			body.Get()->OnResize(curRect, 0, cred, args);
+			body.Get()->OnResize(curRect, 0, cred);
 
 			dynamic_cast<TabPage*>(lowerRight.Get())->MoveBorder(yDiff, tab_page_move_mode::left);
 			curRect = basicConsole.Get()->GetArea();
 			curRect.right += yDiff;
 			curRect.left += yDiff;
-			basicConsole.Get()->OnResize(curRect, 0, cred, args);
+			basicConsole.Get()->OnResize(curRect, 0, cred);
 
 			// Since the deep Console moved, we need to send the message to the lower side panels
 			//dynamic_cast<TabPage*>(lowerLeft.Get())->MoveBorder(yDiff, tab_page_move_mode::bottom);
@@ -607,8 +601,7 @@ void TabPage::MoveBorder(float& magnitude, tab_page_move_mode mode)
 	}
 
 	TDataArray<EventID_Cred> cred;
-	TDataArray<EventArgs> args;
-	OnResize(newArea, 0, cred, args);
+	OnResize(newArea, 0, cred);
 	ThreadRelease();
 }
 

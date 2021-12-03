@@ -18,9 +18,9 @@ void TGrid::Draw(TrecPointer<TVariable> object)
     TRandomLayout::Draw(object);
 }
 
-void TGrid::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TGrid::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
-    TControl::OnResize(newLoc, nFlags, eventAr, args);
+    TControl::OnResize(newLoc, nFlags, eventAr);
     UINT height = newLoc.bottom - newLoc.top;
     UINT width = newLoc.right - newLoc.left;
 
@@ -46,12 +46,12 @@ void TGrid::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>&
 
 
         if (childControls[0].control.Get())
-            childControls[0].control->OnResize(cLoc, nFlags, eventAr, args);
+            childControls[0].control->OnResize(cLoc, nFlags, eventAr);
 
         for (UINT iRow = 0; iRow < rows->Size(); iRow++)
         {
             if (childControls[colNum * iRow].control.Get())
-                childControls[colNum * iRow].control->OnResize(cLoc, nFlags, eventAr, args);
+                childControls[colNum * iRow].control->OnResize(cLoc, nFlags, eventAr);
             for (UINT iCol = 1; iCol < cols->Size(); iCol++)
             {
                 cLoc.right += primDem[iCol].actualSpace;
@@ -59,7 +59,7 @@ void TGrid::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>&
 
 
                 if (childControls[colNum * iRow + iCol].control.Get())
-                    childControls[colNum * iRow + iCol].control->OnResize(cLoc, nFlags, eventAr, args);
+                    childControls[colNum * iRow + iCol].control->OnResize(cLoc, nFlags, eventAr);
             }
 
             cLoc.bottom += primDem[iRow].actualSpace;
@@ -71,7 +71,7 @@ void TGrid::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>&
     }
 }
 
-bool TGrid::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+bool TGrid::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
     return TRandomLayout::OnScroll(false, point, direction, args);
 }

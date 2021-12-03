@@ -56,29 +56,29 @@ void TTextCombobox::Draw(TrecPointer<TVariable> object)
 	TCombobox::Draw(object);
 }
 
-void TTextCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TTextCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	if (IsContained(point, TCombobox::area) && this->TCombobox::isLeftClicked)
 	{
 		dataLayout->SetData(TrecPointerKey::GetTrecPointerFromSub<>(vars));
 		text->OnCLickUp(point);
 	}
-	TCombobox::OnLButtonUp(nFlags, point, mOut, eventAr, args);
+	TCombobox::OnLButtonUp(nFlags, point, mOut, eventAr);
 
 }
 
-void TTextCombobox::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TTextCombobox::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	if (!text->OnCLickDown(point))
 		return;
 
-	TGadget::OnLButtonDown(nFlags, point, mOut, eventAr, args);
+	TGadget::OnLButtonDown(nFlags, point, mOut, eventAr);
 }
 
-void TTextCombobox::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&eventAr, TDataArray<EventArgs>&args)
+void TTextCombobox::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&eventAr)
 {
 	if (text->OnMouseMove(point))
-		TControl::OnMouseMove(nFlags, point, mOut, eventAr, args);
+		TControl::OnMouseMove(nFlags, point, mOut, eventAr);
 }
 
 void TTextCombobox::SetUpTextElement()

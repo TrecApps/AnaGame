@@ -438,9 +438,8 @@ void EnvironmentHandler::RefreshEnvironmentList()
         TrecPointer<TPage> rect = grid->GetPage(1, 1);
 
         TDataArray<TPage::EventID_Cred> cred;
-        TDataArray<EventArgs> args;
         auto r = rect->GetArea();
-        newBinder->OnResize(r, 0, cred, args);
+        newBinder->OnResize(r, 0, cred);
     }
 }
 

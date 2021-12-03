@@ -35,74 +35,74 @@ void TRandomLayout::Draw(TrecPointer<TVariable> object)
     }
 }
 
-void TRandomLayout::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TRandomLayout::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     if (isRightClicked)
-        TControl::OnRButtonUp(nFlags, point, mOut, cred, args);
+        TControl::OnRButtonUp(nFlags, point, mOut, cred);
     else
     {
         for (UINT Rust = 0; Rust < childControls.Size() && mOut == message_output::mo_negative; Rust++)
         {
             auto page = childControls[Rust].control;
             if (page.Get())
-                page->OnRButtonUp(nFlags, point, mOut, cred, args);
+                page->OnRButtonUp(nFlags, point, mOut, cred);
         }
 
         if (mOut != message_output::mo_positive_override)
-            TControl::OnRButtonUp(nFlags, point, mOut, cred, args);
+            TControl::OnRButtonUp(nFlags, point, mOut, cred);
     }
 }
 
-void TRandomLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TRandomLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     for (UINT Rust = 0; Rust < childControls.Size() && mOut == message_output::mo_negative; Rust++)
     {
         auto page = childControls[Rust].control;
         if (page.Get())
-            page->OnRButtonDown(nFlags, point, mOut, cred, args);
+            page->OnRButtonDown(nFlags, point, mOut, cred);
     }
 
     if (mOut != message_output::mo_positive_override)
-        TControl::OnRButtonDown(nFlags, point, mOut, cred, args);
+        TControl::OnRButtonDown(nFlags, point, mOut, cred);
 }
 
-void TRandomLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TRandomLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     if(isLeftClicked)
-        TControl::OnLButtonUp(nFlags, point, mOut, cred, args);
+        TControl::OnLButtonUp(nFlags, point, mOut, cred);
     else
     {
         for (UINT Rust = 0; Rust < childControls.Size() && mOut == message_output::mo_negative; Rust++)
         {
             auto page = childControls[Rust].control;
             if (page.Get())
-                page->OnLButtonUp(nFlags, point, mOut, cred, args);
+                page->OnLButtonUp(nFlags, point, mOut, cred);
         }
 
         if (mOut != message_output::mo_positive_override)
-            TControl::OnLButtonUp(nFlags, point, mOut, cred, args);
+            TControl::OnLButtonUp(nFlags, point, mOut, cred);
     }
 }
 
-void TRandomLayout::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TRandomLayout::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     if (isMouseIn)
-        TControl::OnMouseMove(nFlags, point, mOut, cred, args);
+        TControl::OnMouseMove(nFlags, point, mOut, cred);
     else
     {
         for (UINT Rust = 0; Rust < childControls.Size() && mOut == message_output::mo_negative; Rust++)
         {
             auto page = childControls[Rust].control;
             if (page.Get())
-                page->OnMouseMove(nFlags, point, mOut, cred, args);
+                page->OnMouseMove(nFlags, point, mOut, cred);
         }
 
         if (mOut != message_output::mo_positive_override)
-            TControl::OnMouseMove(nFlags, point, mOut, cred, args);
+            TControl::OnMouseMove(nFlags, point, mOut, cred);
     }
 }
 
-void TRandomLayout::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>& args)
+void TRandomLayout::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& args)
 {
     for (UINT Rust = 0; Rust < childControls.Size() && mOut == message_output::mo_negative; Rust++)
     {
@@ -115,32 +115,32 @@ void TRandomLayout::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& m
         TControl::OnLButtonDblClk(nFlags, point, mOut, args);
 }
 
-void TRandomLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred, TDataArray<EventArgs>& args)
+void TRandomLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     for (UINT Rust = 0; Rust < childControls.Size() && mOut == message_output::mo_negative; Rust++)
     {
         auto page = childControls[Rust].control;
         if (page.Get())
-            page->OnLButtonDown(nFlags, point, mOut, cred, args);
+            page->OnLButtonDown(nFlags, point, mOut, cred);
     }
 
     if (mOut != message_output::mo_positive_override)
-        TControl::OnLButtonDown(nFlags, point, mOut, cred, args);
+        TControl::OnLButtonDown(nFlags, point, mOut, cred);
 }
 
-void TRandomLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>& args)
+void TRandomLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
     for (UINT Rust = 0; Rust < childControls.Size(); Rust++)
     {
         auto page = childControls[Rust].control;
         if (page.Get())
-            page->OnResize(newLoc, nFlags, eventAr, args);
+            page->OnResize(newLoc, nFlags, eventAr);
     }
 
-    TControl::OnResize(newLoc, nFlags, eventAr, args);
+    TControl::OnResize(newLoc, nFlags, eventAr);
 }
 
-bool TRandomLayout::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventArgs>& args)
+bool TRandomLayout::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
     if(TControl::OnScroll(false, point, direction, args))
         return false;
