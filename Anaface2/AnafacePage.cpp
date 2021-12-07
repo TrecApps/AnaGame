@@ -48,7 +48,7 @@ void AnafacePage::HandleNode(const TString& name, TString& result, TrecPointer<T
 	// We are in a children node, used by File Formats (such as JSON) that does not support Duplicate Key Values and as such are likely in an Array
 	if (name.StartsWith(L"children", true))
 	{
-		for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetSize(); Rust++)
+		for (UINT Rust = 0; Rust < dynamic_cast<TContainerVariable*>(var.Get())->GetSize(); Rust++)
 		{
 			childVar = dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust);
 			if (!childVar.Get())
@@ -169,7 +169,7 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 
 	bool metaFound = false;
 
-	for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, attName, chVar); Rust)
+	for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, attName, chVar); Rust++)
 	{
 		if (result.GetSize())
 		{
@@ -250,7 +250,7 @@ void AnafacePage::HandleAttributes(TString& result, TrecPointer<TPage>& curPage,
 	TString attName;
 	TrecPointer<TVariable> chVar;
 
-	for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, attName, chVar); Rust)
+	for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, attName, chVar); Rust++)
 	{
 		if (result.GetSize()) return;
 		if (!chVar.Get())

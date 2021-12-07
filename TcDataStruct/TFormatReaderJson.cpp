@@ -44,14 +44,17 @@ TrecPointer<TVariable> TFormatReaderJson::ProcessArray(TString& worked)
 
     do
     {
-        file.ReadString(readable, L"[{,}", 0b00000111); // We Can actually expect a String at this point, so make sure terminating character is out of quotes and not backslashed
+        file.ReadString(readable, L"[{,}]", 0b00000111); // We Can actually expect a String at this point, so make sure terminating character is out of quotes and not backslashed
 
+        readable.Trim();
+        if (!readable.Compare(L',') || !readable.Compare(L']'))
+            continue;
         TrecPointer<TVariable> var;
         if (readable.EndsWith(L'['))
             var = ProcessArray(worked);
         else if (readable.EndsWith(L'{'))
             var = ProcessObject(worked);
-        else if (readable.EndsWith(L','))
+        else if (readable.EndsWith(L',') || readable.EndsWith(L']'))
         {
             bool bWorked = true;
             var = ProccessValue(readable.SubString(0, readable.GetSize() - 1), bWorked);
@@ -82,6 +85,8 @@ TrecPointer<TVariable> TFormatReaderJson::ProcessObject(TString& worked)
     do
     {
         read = file.ReadString(readable, L"}\"", 1);
+        if (readable.StartsWith(L','))
+            readable.Delete(0);
         readable.Trim();
         if (readable.GetSize() > 1)
             worked.Format(L"Unexpected Tokens detected when assessing attribute %d", loopCount);
@@ -99,12 +104,12 @@ TrecPointer<TVariable> TFormatReaderJson::ProcessObject(TString& worked)
                 return TrecPointer<TVariable>();
             }
 
-            read = file.ReadString(readable, L":", 0); // Just looking for one character, no need to stor it
+            read = file.ReadString(readable, L":", 1); // Just looking for one character, no need to stor it
 
             if(!read)
                 worked.Format(L"Unexpected End of File detected when assessing attribute %d", loopCount);
             readable.Trim();
-            if(readable.GetSize())
+            if(readable.GetSize() != 1)
                 worked.Format(L"Unexpected Tokens detected when assessing attribute %d, expected ':'!", loopCount);
 
             if (worked.GetSize())
@@ -117,7 +122,7 @@ TrecPointer<TVariable> TFormatReaderJson::ProcessObject(TString& worked)
                 var = ProcessArray(worked);
             else if (readable.EndsWith(L'{'))
                 var = ProcessObject(worked);
-            else if (readable.EndsWith(L','))
+            else if (readable.EndsWith(L',') || readable.EndsWith(L'}'))
             {
                 bool bWorked = true;
                 var = ProccessValue(readable.SubString(0, readable.GetSize() - 1), bWorked);
@@ -168,7 +173,7 @@ TrecPointer<TVariable> TFormatReaderJson::ProccessValue(const TString& v, bool& 
         return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(true);
 
     if (!val.CompareNoCase(L"false"))
-        return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(true);
+        return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(false);
 
     if (!val.CompareNoCase(L"null"))
         return TrecPointer<TVariable>();

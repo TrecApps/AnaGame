@@ -445,7 +445,7 @@ bool TContainerVariable::GetValueAt(UINT index, TString& key, TrecPointer<TVaria
     if (entry.Get())
     {
         key.Set(entry->key);
-        value = entry->object->Clone();
+        value = entry->object.Get() ? entry->object->Clone(): entry->object;
         ThreadRelease();
         return true;
     }
