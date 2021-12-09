@@ -23,7 +23,7 @@
     <ProjectGuid>{E59B0FB5-7859-4B78-87AC-D83C60B3CE21}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AnagameCentral</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

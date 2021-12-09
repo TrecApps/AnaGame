@@ -12,11 +12,13 @@
 				"Children" : [
 				{
 					"TInput" : {
+						"RowPosition" : 0,
 						"CanEdit": false
 					}
 				},
 				{
 					"TControl" : {
+						"RowPosition" : 1,
 						"Caption": "Load Environment",
 						"EventOnClick": "LoadNewSolution",
 						"Margin" : "5,5,5,5",
@@ -25,6 +27,7 @@
 				},
 				{
 					"TControl" : {
+						"RowPosition" : 2,
 						"Caption": "Close Environment",
 						"EventOnClick": "CloseEnvironment",
 						"Margin" : "5,5,5,5",
@@ -33,6 +36,7 @@
 				},
 				{
 					"TControl" : {
+						"RowPosition" : 3,
 						"Caption": "Environment"
 					}
 				}
@@ -46,6 +50,7 @@
 				"Children" : [
 				{
 					"TControl" : {
+						"RowPosition" : 0,
 						"Caption": "New Resource",
 						"EventOnClick": "OnNewResource",
 						"Margin" : "5,5,5,5",
@@ -54,6 +59,7 @@
 				},
 				{
 					"TControl" : {
+						"RowPosition" : 1,
 						"Caption": "Save",
 						"EventOnClick": "OnSave",
 						"Margin" : "5,5,5,5",
@@ -62,6 +68,7 @@
 				},
 				{
 					"TControl" : {
+						"RowPosition" : 2,
 						"Caption": "Save All",
 						"EventOnClick": "OnSaveAll",
 						"Margin" : "5,5,5,5",
@@ -70,6 +77,7 @@
 				},
 				{
 					"TControl" : {
+						"RowPosition" : 3,
 						"Caption": "File Management"
 					}
 				}

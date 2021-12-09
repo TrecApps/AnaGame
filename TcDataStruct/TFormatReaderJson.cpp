@@ -40,7 +40,7 @@ TrecPointer<TVariable> TFormatReaderJson::ProcessArray(TString& worked)
 {
     TString readable;
 
-    TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_json_obj);
+    TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
 
     do
     {

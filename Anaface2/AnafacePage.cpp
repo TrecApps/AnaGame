@@ -258,11 +258,11 @@ void AnafacePage::HandleAttributes(TString& result, TrecPointer<TPage>& curPage,
 
 		if (!attName.CompareNoCase(L"RowHeights"))
 		{
-			HandleDimensionList(true, result, curPage, var);
+			HandleDimensionList(true, result, curPage, chVar);
 		}
 		else if (!attName.CompareNoCase(L"ColumnWidths"))
 		{
-			HandleDimensionList(false, result, curPage, var);
+			HandleDimensionList(false, result, curPage, chVar);
 		}
 		else if (!attName.CompareNoCase(L"RowHeight") || !attName.CompareNoCase(L"ColumnWidth"))
 		{

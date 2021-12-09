@@ -23,7 +23,7 @@
     <ProjectGuid>{4E953C1F-DA8F-418D-95BC-7E9E5019F929}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>VideoGraphics</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

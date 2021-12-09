@@ -746,6 +746,8 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	D2D1_RECT_F right = curArea;
 	D2D1_RECT_F bottom = curArea;
 
+	mainPage->OnResize(curArea, 0, cred);
+
 	int width = curArea.right - curArea.left;
 	int height = curArea.bottom - curArea.top;
 
