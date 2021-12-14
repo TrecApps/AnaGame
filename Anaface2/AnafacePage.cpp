@@ -168,6 +168,24 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 	TrecPointer<TVariable> chVar;
 
 	bool metaFound = false;
+	for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, attName, chVar); Rust++)
+	{
+		// In the Event that Our format uses a _metadata attribute to hold other metadata (like XML)
+		if (attName.StartsWith(L"_metadata"))
+		{
+			HandleAttributes(result, ret, chVar, ld);
+			metaFound = true;
+		}
+		if (result.GetSize())
+		{
+			ret.Nullify();
+			return ret;
+		}
+	}
+
+	if (!metaFound)
+		HandleAttributes(result, ret, var, ld);
+
 
 	for (UINT Rust = 0; dynamic_cast<TContainerVariable*>(var.Get())->GetValueAt(Rust, attName, chVar); Rust++)
 	{
@@ -202,13 +220,6 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 				continue;
 			}
 		}
-
-		// In the Event that Our format uses a _metadata attribute to hold other metadata (like XML)
-		if (attName.StartsWith(L"_metadata"))
-		{
-			HandleAttributes(result, ret, chVar, ld);
-			metaFound = true;
-		}
 	}
 
 	if (result.GetSize())
@@ -216,9 +227,6 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 		ret.Nullify();
 		return ret;
 	}
-
-	if (!metaFound)
-		HandleAttributes(result, ret, var, ld);
 
 	int parIndex = name.Find(L'(');
 
@@ -255,6 +263,12 @@ void AnafacePage::HandleAttributes(TString& result, TrecPointer<TPage>& curPage,
 		if (result.GetSize()) return;
 		if (!chVar.Get())
 			continue;
+
+		if (!attName.CompareNoCase(L"IsGallery") && (chVar->Get4Value() || chVar->GetString().GetTrim().CompareNoCase(L"true")))
+		{
+			if (dynamic_cast<TLayout*>(curPage.Get()))
+				dynamic_cast<TLayout*>(curPage.Get())->primaryStack = false;
+		}
 
 		if (!attName.CompareNoCase(L"RowHeights"))
 		{

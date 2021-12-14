@@ -17,6 +17,7 @@ public:
  */
 class _ANAFACE_DLL2 TLayout : public TRandomLayout
 {
+	friend class AnafacePage;
 public:
 
 	/**

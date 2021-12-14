@@ -91,6 +91,8 @@ bool TLayout::AddPage(TrecPointer<TPage> page, UINT row, UINT col, bool doOverri
 {
 	UINT index = primaryStack ? row : col;
 	UINT sIndex = primaryStack ? col : row;
+	if (sIndex & 0x80000000)
+		sIndex = 0;
 
 	if(sIndex || index >= childControls.Size())
 		return false;
