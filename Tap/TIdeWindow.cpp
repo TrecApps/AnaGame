@@ -729,9 +729,10 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 		TrecSubPointer<TPage, TabPage> mainTabPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TabPage>(ide_page_type::ide_page_type_main, drawingBoard,30);
 		mainTabPage->OnResize(space, 0, cred);
 		mainPage = TrecSubToTrec(mainTabPage);
-		mainTabPage->tabBar.AddNewTab(mainPageName, TrecSubToTrec(newPage), false);
+		auto tab = mainTabPage->tabBar.AddNewTab(mainPageName, TrecSubToTrec(newPage), false);
+		mainTabPage->SetView(TrecSubToTrec(newPage));
 		space.top += 30;
-		newPage->OnResize(space, 0, cred);
+		mainTabPage->OnResize(space, 0, cred);
 	}
 	else
 		mainPage = TrecSubToTrec(newPage);

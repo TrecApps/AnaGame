@@ -70,6 +70,11 @@ protected:
 	TrecPointer<TPage> currentPage;
 
 	/**
+	 * History of Tabs
+	 */
+	TDataArray<TrecPointer<TPage>> previousPages;
+
+	/**
 	 * Window hoding this page
 	 */
 	TrecPointerSoft<TWindow> parentWindow;

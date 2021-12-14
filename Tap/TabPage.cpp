@@ -32,34 +32,55 @@ bool TabPage::HandlesEvents()
 
 void TabPage::Draw(TrecPointer<TVariable> object)
 {
+	TrecPointer<TVariable> v;
+	tabBar.Draw(v);
+	if (currentPage.Get())
+		currentPage->Draw(v);
 }
 
-ag_msg void TabPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TabPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+	if (currentPage.Get())
+		currentPage->OnRButtonUp(nFlags, point, mOut, cred);
 }
 
-ag_msg void TabPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TabPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+	if (currentPage.Get())
+		currentPage->OnRButtonDown(nFlags, point, mOut, cred);
 }
 
-ag_msg void TabPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TabPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+	tabBar.OnLButtonUp(nFlags, point, mOut, cred);
+	if (currentPage.Get())
+		currentPage->OnLButtonUp(nFlags, point, mOut, cred);
 }
 
-ag_msg void TabPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TabPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+	tabBar.OnLButtonDown(nFlags, point, mOut, cred);
+	if (currentPage.Get())
+		currentPage->OnLButtonDown(nFlags, point, mOut, cred);
 }
 
-ag_msg void TabPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TabPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+	tabBar.OnMouseMove(nFlags, point, mOut, cred);
+	if (currentPage.Get())
+		currentPage->OnMouseMove(nFlags, point, mOut, cred);
 }
 
-ag_msg void TabPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TabPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+	if (currentPage.Get())
+		currentPage->OnLButtonDblClk(nFlags, point, mOut, cred);
 }
 
 ag_msg void TabPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
+	if (currentPage.Get())
+		currentPage->OnResize(newLoc, nFlags, eventAr);
 }
 
 ag_msg bool TabPage::OnDestroy()
@@ -76,10 +97,44 @@ ag_msg bool TabPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& 
 
 void TabPage::SetView(TrecPointer<TPage> page)
 {
+	bool shown = false;
+	if (page.Get())
+	{
+		shown = true;
+		currentPage = page;
+		previousPages.push_back(page);
+		
+	}
+	else if (previousPages.Size())
+	{
+		shown = true;
+		currentPage = previousPages[previousPages.Size() - 1];
+	}
+	
+	if (!shown)
+	{
+		// To-Do
+	}
 }
 
 void TabPage::RemovePage(TrecPointer<TPage> page)
 {
+	if (!page.Get())
+		return;
+	for (UINT Rust = previousPages.Size() -1; Rust < previousPages.Size(); Rust--)
+	{
+		if (previousPages[Rust].Get() == page.Get())
+			previousPages.RemoveAt(Rust);
+	}
+
+	if (previousPages.Size())
+	{
+		currentPage = previousPages[previousPages.Size() - 1];
+	}
+	else
+	{
+		// To-Do:
+	}
 }
 
 void TabPage::SetView(TrecPointer<TPage> page, const TString& name)
