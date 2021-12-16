@@ -731,7 +731,6 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 		mainPage = TrecSubToTrec(mainTabPage);
 		auto tab = mainTabPage->tabBar.AddNewTab(mainPageName, TrecSubToTrec(newPage), false);
 		mainTabPage->SetView(TrecSubToTrec(newPage));
-		space.top += 30;
 		mainTabPage->OnResize(space, 0, cred);
 	}
 	else

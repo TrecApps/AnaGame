@@ -1251,10 +1251,10 @@ void TControl::OnCreateSize()
 
 void TControl::SetSize()
 {
-	location.top += margin.top;
-	location.left += margin.left;
-	location.right -= margin.right;
-	location.bottom -= margin.bottom;
+	location.top = bounds.top + margin.top;
+	location.left = bounds.left + margin.left;
+	location.right = bounds.right - margin.right;
+	location.bottom = bounds.bottom - margin.bottom;
 
 
 	float curWidth = location.right - location.left;

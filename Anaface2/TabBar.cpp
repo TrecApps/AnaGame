@@ -141,7 +141,7 @@ void TabBar::SetTabSizes()
 
     for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
     {
-        if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+        if (!dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
             continue;
         tabs[Rust]->OnResize(tempArea, 0, cred);
         tempArea.left = tabs[Rust]->GetArea().right;
@@ -150,7 +150,7 @@ void TabBar::SetTabSizes()
             break;
     }
 
-    if (tempArea.left)
+    if (!tabs.Size() || tempArea.left)
     {
         startTab = 0;
         return;
@@ -292,7 +292,7 @@ void TabBar::Draw(TrecPointer<TVariable> object)
     }
     for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
     {
-        if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+        if (!dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
             continue;
         if (!tabs[Rust]->GetArea().right)
             break;

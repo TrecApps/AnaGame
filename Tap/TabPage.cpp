@@ -79,8 +79,15 @@ ag_msg void TabPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& 
 
 ag_msg void TabPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
+	D2D1_RECT_F tabSpace = newLoc, currentSpace = newLoc;
+	if (tabHeight)
+	{
+		tabSpace.bottom = tabSpace.top + tabHeight;
+		currentSpace.top = tabSpace.bottom;
+		tabBar.OnResize(tabSpace, nFlags, eventAr);
+	}
 	if (currentPage.Get())
-		currentPage->OnResize(newLoc, nFlags, eventAr);
+		currentPage->OnResize(currentSpace, nFlags, eventAr);
 }
 
 ag_msg bool TabPage::OnDestroy()
@@ -139,7 +146,7 @@ void TabPage::RemovePage(TrecPointer<TPage> page)
 
 void TabPage::SetView(TrecPointer<TPage> page, const TString& name)
 {
-
+	int e = 0;
 }
 
 
