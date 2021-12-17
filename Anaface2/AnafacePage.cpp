@@ -376,6 +376,8 @@ TString AnafacePage::PrepPage(TrecPointer<TFileShell> file, TrecPointer<EventHan
 		ret.Append(L"Null Handler");
 	}
 
+	this->handler = handler;
+
 	if (ret.GetSize())
 	{
 		ret.Append(L"provided!");
