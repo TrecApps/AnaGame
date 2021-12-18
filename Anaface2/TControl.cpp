@@ -599,6 +599,10 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 
 	OnCreateStyle(attributes);
 	this->SetUpTextElement();
+	if (border.Get())
+		border->onCreate(location);
+	if (content.Get())
+		content->onCreate(location);
 
 	if (attributes.retrieveEntry(TString(L"FixedHeight"),valpoint))
 	{
@@ -1116,6 +1120,7 @@ void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cre
 
 		eventAr.push_back(cred);
 	}
+	area = location;
 }
 
 bool TControl::OnDestroy()

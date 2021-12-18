@@ -738,16 +738,15 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 
 	GetClientRect(GetWindowHandle(), &size);
 	auto curArea = ConvertRectToD2D1Rect(size);
-	curArea.top += this->mainViewSpace;
 
+	mainPage->OnResize(curArea, 0, cred);
+
+	curArea.top += this->mainViewSpace;
 
 	D2D1_RECT_F left = curArea;
 	D2D1_RECT_F middle = curArea;
 	D2D1_RECT_F right = curArea;
 	D2D1_RECT_F bottom = curArea;
-
-	mainPage->OnResize(curArea, 0, cred);
-
 	int width = curArea.right - curArea.left;
 	int height = curArea.bottom - curArea.top;
 

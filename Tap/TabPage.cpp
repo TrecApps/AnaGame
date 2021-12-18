@@ -79,6 +79,7 @@ ag_msg void TabPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& 
 
 ag_msg void TabPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
+	this->area = newLoc;
 	D2D1_RECT_F tabSpace = newLoc, currentSpace = newLoc;
 	if (tabHeight)
 	{
