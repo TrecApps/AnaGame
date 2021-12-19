@@ -18,7 +18,50 @@ bool TLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 	TString valpoint;
 	if ((attributes.retrieveEntry(L"IsGallery", valpoint) && !valpoint.CompareNoCase(L"true")) || (attributes.retrieveEntry(L"IsStack", valpoint) && !valpoint.CompareNoCase(L"false")))
 		primaryStack = false;
-	return TRandomLayout::onCreate(loc, d3d);
+
+	bool res = TControl::onCreate(loc, d3d);
+
+	ParseDimensions(primDem, primaryStack ? (location.bottom - location.top) : (location.right - location.left));
+
+	D2D1_RECT_F chLoc = loc;
+
+	UINT Rust = 0;
+
+	if (!childControls.Size())
+		return false;
+
+	do
+	{
+		auto page = childControls[Rust].control;
+
+		if (Rust)
+		{
+			if (primaryStack)
+			{
+				chLoc.top = chLoc.bottom;
+				chLoc.bottom += primDem[Rust].actualSpace;
+			}
+			else
+			{
+				chLoc.left = chLoc.right;
+				chLoc.right += primDem[Rust].actualSpace;
+			}
+		}
+		else
+		{
+			if (primaryStack)
+				chLoc.bottom = chLoc.top + this->primDem[0].actualSpace;
+			else
+				chLoc.right = chLoc.left + this->primDem[0].actualSpace;
+		}
+
+		if (dynamic_cast<TControl*>(page.Get()))
+		{
+			res &= dynamic_cast<TControl*>(page.Get())->onCreate(chLoc, d3d);
+		}
+	} while (++Rust < childControls.Size() && Rust < primDem.Size() );
+
+	return res;
 }
 
 TLayout::TLayout(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles) : TRandomLayout(drawingBoard, styles)
