@@ -40,7 +40,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TString title(L"Anagame Builder");
 	TString winClass(L"BuilderWindow");
 
-	mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
+	mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPED  |
+        WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX, nullptr, nCmdShow, hInstance, WndProc);
 
 	WNDCLASSEXW wcex;
 

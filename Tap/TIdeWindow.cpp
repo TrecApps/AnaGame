@@ -103,7 +103,7 @@ void TIdeWindow::OnWindowResize(UINT width, UINT height)
 	}
 	size.top = size.left = 0;
 	size.right = width;
-	size.left = height;
+	size.bottom = height;
 
 	D2D1_RECT_F curArea = ConvertRectToD2D1Rect(size);
 	curArea.bottom = curArea.top + this->mainViewSpace;
@@ -736,8 +736,7 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	else
 		mainPage = TrecSubToTrec(newPage);
 
-	GetClientRect(GetWindowHandle(), &size);
-	auto curArea = ConvertRectToD2D1Rect(size);
+	auto curArea = space;
 
 	mainPage->OnResize(curArea, 0, cred);
 

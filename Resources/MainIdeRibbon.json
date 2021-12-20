@@ -45,7 +45,7 @@
 		},
 		{
 			"TLayout": {
-				"ColPosition": 0,
+				"ColPosition": 1,
 				"RowHeights" : ["3*","3*","3*","1*"],
 				"Children" : [
 				{

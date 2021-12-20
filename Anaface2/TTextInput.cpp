@@ -148,11 +148,12 @@ void TTextInput::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& m
 		//TPage::EventID_Cred cred(R_Message_Type::On_Focus, cThis, TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter,
 		//	TTextFieldIntercepter>(TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(cThis)));
 		//eventAr.push_back(cred);
+
+		TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
 	}
 	showPassword = false;
 
 	text->OnCLickUp(point);
-	TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
 }
 
 void TTextInput::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)

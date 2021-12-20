@@ -258,9 +258,9 @@ void TControlComponent::onDraw(D2D1_RECT_F& f_loc)
 			case TShape::T_Custom_shape:
 				break;
 			}
-			brush->FillRectangle(loci);
+			brush->FillRectangle(f_loc);
 			if (image.Get())
-				image->FillRectangle(loci);
+				image->FillRectangle(f_loc);
 
 			if (isLayered)
 				drawingBoard->PopLayer();
@@ -271,7 +271,7 @@ void TControlComponent::onDraw(D2D1_RECT_F& f_loc)
 			switch (shape)
 			{
 			case TShape::T_Rect:
-				brush->DrawRectangle(loci, thickness);
+				brush->DrawRectangle(f_loc, thickness);
 				break;
 			case TShape::T_Rounded_Rect:
 				brush->DrawRoundedRectangle(roundedRect, thickness);
@@ -1120,6 +1120,12 @@ void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cre
 
 		eventAr.push_back(cred);
 	}
+	if (border.Get())
+		border->loci = location;
+	if (content.Get())
+		content->loci = location;
+	if (text.Get())
+		text->SetLocation(location);
 	area = location;
 }
 
