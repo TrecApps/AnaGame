@@ -1,6 +1,7 @@
 #include "TWindow.h"
 #include "TInstance.h"
 #include <AnafacePage.h>
+#include "EventHandler.h"
 
 bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference)
 {
@@ -177,6 +178,9 @@ int TWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	animationCentral.StartNewPersistant();
 	safeToDraw = 1;
 	Draw();
+
+	if (dynamic_cast<TapEventHandler*>(mainPage.Get()))
+		dynamic_cast<TapEventHandler*>(mainPage.Get())->OnFirstDraw();
 
 	ThreadRelease();
 	return 0;

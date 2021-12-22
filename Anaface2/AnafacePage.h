@@ -193,6 +193,18 @@ public:
 	 */
 	TrecPointer<TPage> GetRootControl();
 
+
+	/**
+	 * Method: TPage::GetHandler
+	 * Purpose: Retrieves the Handler he page holds (if the page is holding a handler)
+	 * Parameters: void
+	 * Returns: TrecPointer<EventHandler> - the handler the page holds
+	 *
+	 * Attributes: override
+
+	 */
+	virtual TrecPointer<EventHandler> GetHandler() override;
+
 protected:
 	/**
 	 * The root Page (TControl)

@@ -773,6 +773,11 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	safeToDraw = 1;
 	Draw();
 
+	if (dynamic_cast<TapEventHandler*>(eh.Get()))
+	{
+		dynamic_cast<TapEventHandler*>(eh.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		dynamic_cast<TapEventHandler*>(eh.Get())->OnFirstDraw();
+	}
 	ThreadRelease();
 	return 0;
 }

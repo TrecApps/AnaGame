@@ -375,6 +375,11 @@ void TPage::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& nee
 	// If no children, do nothing
 }
 
+TrecPointer<TPage::EventHandler> TPage::GetHandler()
+{
+	return TrecPointer<TPage::EventHandler>();
+}
+
 bool TPage::GetVariable(const TString& name, TrecPointer<TVariable>& var)
 {
 	return false;

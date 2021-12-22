@@ -76,7 +76,7 @@ protected:
 	TDataArray<TrecPointer<MiniApp>> ActiveDocuments;
 	TrecPointer<MiniApp> currentDocument;
 
-	TrecSubPointer<TWindow, TIdeWindow> window;
+	TrecSubPointer<TWindow, TIdeWindow> ideWindow;
 
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 };

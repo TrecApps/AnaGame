@@ -44,7 +44,7 @@ int TEnvironmentDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 {
 	TString file = GetDirectoryWithSlash(CentralDirectories::cd_Executable);
 
-	file.Append(L"Resources\\Environments_Dialog.tml");
+	file.Append(L"Resources\\Environments_Dialog.json");
 
 	TrecPointer<TPage::EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<TPage::EventHandler, EnvironmentHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 

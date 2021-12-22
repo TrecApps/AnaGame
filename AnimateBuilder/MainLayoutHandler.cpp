@@ -86,7 +86,7 @@ void MainLayoutHandler::Initialize(TrecPointer<TPage> page)
 	if (!page.Get())
 		throw L"Error! Expected an actual Page Pointer to be provided!";
 
-	//this->page = page;
+	this->page = page;
 	//auto tempApp = page->GetInstance();
 	//app = TrecPointerKey::GetSoftPointerFromTrec<>(tempApp);
 
@@ -199,16 +199,19 @@ void MainLayoutHandler::OnFirstDraw()
 	if (!page.Get())
 		return;
 
+	if (!ideWindow.Get())
+		ideWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(window);
 
-	if (!window.Get() || window->GetEnvironment().Get())
+
+	if (!ideWindow.Get() || ideWindow->GetEnvironment().Get())
 		return;
 
 	TrecPointer<TEnvironment> env = ActivateEnvironmentDialog(window->GetInstance(), window->GetWindowHandle());
 
 	if (env.Get())
 	{
-		window->SetEnvironment(env);
-		window->AddPage(anagame_page::anagame_page_project_explorer, ide_page_type::ide_page_type_upper_right, TString(L"Project"));
+		ideWindow->SetEnvironment(env);
+		ideWindow->AddPage(anagame_page::anagame_page_project_explorer, ide_page_type::ide_page_type_upper_right, TString(L"Project"));
 	}
 }
 
@@ -221,9 +224,9 @@ void MainLayoutHandler::OnSaveFile(TrecPointer<TPage> tc, EventArgs ea)
 	if (currentDocument.Get())
 		currentDocument->OnSave();
 
-	if (window.Get())
+	if (ideWindow.Get())
 	{
-		TrecPointer<TEnvironment> env = window->GetEnvironment();
+		TrecPointer<TEnvironment> env = ideWindow->GetEnvironment();
 
 		if (env.Get())
 			env->SaveEnv();
@@ -238,9 +241,9 @@ void MainLayoutHandler::OnSaveAllFiles(TrecPointer<TPage> tc, EventArgs ea)
 			ActiveDocuments[Rust]->OnSave();
 	}
 
-	if (window.Get())
+	if (ideWindow.Get())
 	{
-		TrecPointer<TEnvironment> env = window->GetEnvironment();
+		TrecPointer<TEnvironment> env = ideWindow->GetEnvironment();
 
 		if (env.Get())
 			env->SaveEnv();
@@ -275,7 +278,7 @@ void MainLayoutHandler::OnNewArena(TrecPointer<TPage> tc, EventArgs ea)
 		return;
 	}
 
-	currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, ArenaApp2>(window, arenaName);
+	currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, ArenaApp2>(ideWindow, arenaName);
 	ActiveDocuments.push_back(currentDocument);
 	currentDocument->Initialize(TrecPointer<TFileShell>());
 
@@ -302,11 +305,11 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TPage> tc, EventArgs ea)
 	currentDocument->InitializeControls();
 	currentDocument->OnShow();*/
 
-	assert(window.Get());
+	assert(ideWindow.Get());
 
 	TString caption("Enter a name for the file going in ");
 
-	auto directory = window->GetEnvironmentDirectory();
+	auto directory = ideWindow->GetEnvironmentDirectory();
 
 	if (!directory.Get())
 		directory = TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Documents));
@@ -326,7 +329,7 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TPage> tc, EventArgs ea)
 
 	// To-Do: Figure out what to do with the fie entered by the user
 
-	currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, SourceCodeApp2>(window);
+	currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, SourceCodeApp2>(ideWindow);
 
 	ActiveDocuments.push_back(currentDocument);
 	currentDocument->Initialize(TFileShell::GetFileInfo(fileName));
@@ -334,19 +337,19 @@ void MainLayoutHandler::OnNewCodeFile(TrecPointer<TPage> tc, EventArgs ea)
 	// Add File to the environment
 	auto targetFile = TFileShell::GetFileInfo(fileName);
 
-	TrecPointer<TEnvironment> env = window->GetEnvironment();
+	TrecPointer<TEnvironment> env = ideWindow->GetEnvironment();
 	if (env.Get())
 		env->AddResource(targetFile);
 
 
-	window->SetCurrentApp(currentDocument);
+	ideWindow->SetCurrentApp(currentDocument);
 }
 
 void MainLayoutHandler::OnImportCode(TrecPointer<TPage> tc, EventArgs ea)
 {
 	assert(window.Get());
 
-	auto directory = window->GetEnvironmentDirectory();
+	auto directory = ideWindow->GetEnvironmentDirectory();
 	if (directory.Get())
 	{
 		auto targetFile = BrowseForFile(TrecPointerKey::GetTrecPointerFromSoft<>(app),
@@ -383,11 +386,11 @@ void MainLayoutHandler::OnImportCode(TrecPointer<TPage> tc, EventArgs ea)
 			targetFile = TFileShell::GetFileInfo(writeFileStr);
 			writeFile.Close();
 
-			TrecPointer<TEnvironment> env = window->GetEnvironment();
+			TrecPointer<TEnvironment> env = ideWindow->GetEnvironment();
 			if(env.Get())
 				env->AddResource(targetFile);
 			
-			currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, SourceCodeApp2>(window);
+			currentDocument = TrecPointerKey::GetNewSelfTrecPointerAlt<MiniApp, SourceCodeApp2>(ideWindow);
 
 			ActiveDocuments.push_back(currentDocument);
 			currentDocument->Initialize(TFileShell::GetFileInfo(writeFileStr));
@@ -397,7 +400,7 @@ void MainLayoutHandler::OnImportCode(TrecPointer<TPage> tc, EventArgs ea)
 	}
 
 
-	window->SetCurrentApp(currentDocument);
+	ideWindow->SetCurrentApp(currentDocument);
 }
 
 void MainLayoutHandler::OnProcessCode(TrecPointer<TPage> tc, EventArgs ea)

@@ -591,6 +591,19 @@ public:
 	 */
 	virtual void InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& needs, TrecPointer<TPage> page);
 
+	/**
+	 * Method: TPage::GetHandler
+	 * Purpose: Retrieves the Handler he page holds (if the page is holding a handler)
+	 * Parameters: void
+	 * Returns: TrecPointer<EventHandler> - the handler the page holds
+	 * 
+	 * Attributes: virtual
+	 * 
+	 * Note: Not all page types are capable of holding an event Handler. A proper implementation of a page that does would return true
+	 *		upon a call to 'HandlesEvents' and return the attribute it has
+	 */
+	virtual TrecPointer<EventHandler> GetHandler();
+
 protected:
 
 

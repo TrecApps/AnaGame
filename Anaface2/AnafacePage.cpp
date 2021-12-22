@@ -403,6 +403,8 @@ TString AnafacePage::PrepPage(TrecPointer<TFileShell> file, TrecPointer<EventHan
 
 	HandleNode(L"", ret, uiData, rootPage,ld);
 
+	if (!ret.GetSize() && this->handler.Get())
+		handler->Initialize(TrecPointerKey::GetTrecPointerFromSoft<>(self));
 
 	return ret;
 }
@@ -528,4 +530,9 @@ void AnafacePage::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_
 TrecPointer<TPage> AnafacePage::GetRootControl()
 {
 	return rootPage;
+}
+
+TrecPointer<TPage::EventHandler> AnafacePage::GetHandler()
+{
+	return handler;
 }
