@@ -18,7 +18,7 @@
 				"ColumnWidths": ["1*","1*","1*"],
 				"RowHeights": [50, "1*"],
 				"InternalBorderColor":"0.0,0.0,0.0,1.0",
-				"InternalBorderThickness":2
+				"InternalBorderThickness":2,
 				"Children" : [
 				{
 					"TControl": {
@@ -128,7 +128,7 @@
 				},
 				{
 					"TLayout" : {
-						"RowPosition": 0,
+						"RowPosition": 1,
 						"ColumnPosition": 2,
 						"RowHeights": ["1*","1*"],
 						"Children" : [

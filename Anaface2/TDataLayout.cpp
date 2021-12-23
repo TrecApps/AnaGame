@@ -2,7 +2,7 @@
 
 #include <TContainerVariable.h>
 
-TDataLayout::TDataLayout(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles): TRandomLayout(drawingBoard, styles)
+TDataLayout::TDataLayout(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles): TLayout(drawingBoard, styles)
 {
 	width = 120;
 	height = 60;

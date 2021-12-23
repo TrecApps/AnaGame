@@ -130,6 +130,33 @@ public:
 	 * Attributes: virtual
 	 */
 	virtual int AddCol(UINT space, bool isFlex);
+
+
+	/**
+	 * Method: TGrid::GetPage
+	 * Purpose: Gets the Control at the specified coordinates (or index for the TRandomLayout)
+	 * Parameters: UINT row
+	 *				UINT col
+	 * Returns: TrecPointer<TPage> - the page held t the location
+	 *
+	 * Attributes: override
+	 */
+	virtual TrecPointer<TPage> GetPage(UINT row, UINT col) override;
+
+	/**
+	 * Method: TLayout::GetLocationBySection
+	 * Purpose: Returns the location of the specific row and column
+	 * Parameters: UINT row - the row specified
+	 *				UINT col - the column Specified
+	 * Returns: D2D1_RECT_F - the location of that section of the grid 
+	 * 
+	 * Note: if the parameters are out of bounds, the return value will be 4 zeros. Also, if no rows
+	 *	or columns are specified and 0's are provided, the return value draws upon the location of the grid.
+	 *  For instance, if no rows are specified and the row parameter is 0, then the return value will reflect
+	 *  the height of the whole grid.
+	 */
+	D2D1_RECT_F GetLocationBySection(UINT row, UINT col);
+
 protected:
 
 	void RefreshChildControls(bool newRow);

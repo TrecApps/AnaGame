@@ -1,5 +1,5 @@
 #pragma once
-#include "TRandomLayout.h"
+#include "TLayout.h"
 
 typedef enum class data_org
 {
@@ -9,7 +9,7 @@ typedef enum class data_org
 };
 
 class _ANAFACE_DLL2 TDataLayout :
-    public TRandomLayout
+    public TLayout
 {
 public:
 

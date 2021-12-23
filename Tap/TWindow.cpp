@@ -150,6 +150,7 @@ int TWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	
 
 	TrecSubPointer<TPage, AnafacePage> newPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(drawingBoard);
+	GetClientRect(currentWindow, &size);
 	auto space = ConvertRectToD2D1Rect(this->size);
 	newPage->OnResize(space, 0, cred);
 

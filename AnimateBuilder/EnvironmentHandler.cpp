@@ -123,28 +123,28 @@ void EnvironmentHandler::Initialize(TrecPointer<TPage> page)
 
     assert(rootStack.Get());
 
-    grid = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(rootStack->GetPage(0,1));
+    grid = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(rootStack->GetPage(1, 0));
 
-    recentBinder = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TDataLayout>(grid->GetPage(0, 1));
+    recentBinder = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TDataLayout>(grid->GetPage(1, 0));
     newBinder = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TDataLayout>(grid->GetPage(1, 1));
 
     assert(recentBinder.Get() && newBinder.Get());
 
-    selectReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(0, 2));
+    selectReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(2, 0));
     assert(selectReport.Get());
-    builderReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(0, 3));
+    builderReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(3, 0));
     assert(builderReport.Get());
-    environmentReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(0, 4));
+    environmentReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(4, 0));
     assert(environmentReport.Get());
-    directoryReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(0, 5));
+    directoryReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(5, 0));
     assert(directoryReport.Get());
 
-    auto nameGallery = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(rootStack->GetPage(0, 6));
+    auto nameGallery = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(rootStack->GetPage(6, 0));
     assert(nameGallery.Get());
 
-    nameEntry = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(nameGallery->GetPage(1, 0));
+    nameEntry = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(nameGallery->GetPage(0, 1));
 
-    confirmButton = rootStack->GetPage(0, 7);
+    confirmButton = rootStack->GetPage(7, 0);
     assert(confirmButton.Get());
 
 

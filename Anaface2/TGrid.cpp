@@ -1,8 +1,31 @@
 #include "TGrid.h"
 
+
 bool TGrid::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 {
-    return TRandomLayout::onCreate(loc, d3d);
+    bool res = TControl::onCreate(loc, d3d);
+
+    ParseDimensions(primDem, primaryStack ? (location.bottom - location.top) : (location.right - location.left));
+    ParseDimensions(secDem, primaryStack ? (location.right - location.left) : (location.bottom - location.top));
+
+    D2D1_RECT_F chLoc = loc;
+
+    UINT Rust = 0;
+
+    if (!childControls.Size())
+        return false;
+
+    for (UINT Rust = 0; Rust < childControls.Size(); Rust++)
+    {
+        chLoc = GetLocationBySection(childControls[Rust].row, childControls[Rust].col);
+        auto page = childControls[Rust].control;
+        if (dynamic_cast<TControl*>(page.Get()))
+        {
+            res &= dynamic_cast<TControl*>(page.Get())->onCreate(chLoc, d3d);
+        }
+    }
+
+    return res;
 }
 
 TGrid::TGrid(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles): TLayout(drawingBoard, styles)
@@ -32,41 +55,13 @@ void TGrid::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>&
         // To-Do: Handle
     }
 
-    D2D1_RECT_F cLoc = newLoc;
-
-    TDataArray<LayoutSpace>* rows = primaryStack ? &primDem : &secDem;
-    TDataArray<LayoutSpace>* cols = primaryStack ? &secDem : &primDem;
-
-    if (rows->Size() && cols->Size())
+    for (UINT Rust = 0; Rust < childControls.Size(); Rust++)
     {
-        cLoc.bottom = cLoc.top + rows->at(0).actualSpace;
-        cLoc.right = cLoc.left + cols->at(0).actualSpace;
-
-        UINT colNum = cols->Size();
-
-
-        if (childControls[0].control.Get())
-            childControls[0].control->OnResize(cLoc, nFlags, eventAr);
-
-        for (UINT iRow = 0; iRow < rows->Size(); iRow++)
+        D2D1_RECT_F chLoc = GetLocationBySection(childControls[Rust].row, childControls[Rust].col);
+        auto page = childControls[Rust].control;
+        if (dynamic_cast<TControl*>(page.Get()))
         {
-            if (childControls[colNum * iRow].control.Get())
-                childControls[colNum * iRow].control->OnResize(cLoc, nFlags, eventAr);
-            for (UINT iCol = 1; iCol < cols->Size(); iCol++)
-            {
-                cLoc.right += primDem[iCol].actualSpace;
-                cLoc.left += primDem[iCol].actualSpace;
-
-
-                if (childControls[colNum * iRow + iCol].control.Get())
-                    childControls[colNum * iRow + iCol].control->OnResize(cLoc, nFlags, eventAr);
-            }
-
-            cLoc.bottom += primDem[iRow].actualSpace;
-            cLoc.top += primDem[iRow].actualSpace;
-            cLoc.left = newLoc.left;
-            cLoc.right = cLoc.left + cols->at(0).actualSpace;
-
+            page->OnResize(chLoc, nFlags, eventAr);
         }
     }
 }
@@ -84,11 +79,21 @@ bool TGrid::AddPage(TrecPointer<TPage> page, UINT row, UINT col, bool doOverride
     if(row >= rows->Size() || col >= cols->Size())
         return false;
 
-    ChildControl& cc = childControls[rows->Size() * row + col];
-    if (cc.control.Get() || !doOverride)
-        return false;
-    childControls[rows->Size() * row + col].control = page;
-    return true;
+    
+    for (UINT Rust = 0; Rust < childControls.Size(); Rust++)
+    {
+        
+        ChildControl& cc = childControls[Rust];
+        if (cc.row == row && cc.col == col)
+        {
+            if (cc.control.Get() && !doOverride)
+                return false;
+            childControls[Rust].control = page;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool TGrid::RemovePage(UINT row, UINT col)
@@ -98,8 +103,17 @@ bool TGrid::RemovePage(UINT row, UINT col)
 
     if (row >= rows->Size() || col >= cols->Size())
         return false;
-    childControls[rows->Size() * row + col].control.Nullify();
-    return true;
+
+    for (UINT Rust = 0; Rust < childControls.Size(); Rust++)
+    {
+        if (childControls[Rust].col == col && childControls[Rust].row == row)
+        {
+            childControls[Rust].control.Nullify();
+            return true;
+        }
+    }
+    return false;
+
 }
 
 void TGrid::GetControlCapacity(UINT& row, UINT& col)
@@ -129,6 +143,43 @@ int TGrid::AddCol(UINT space, bool isFlex)
 
     int ret = primaryStack ? secDem.push_back(layoutSpace) : primDem.push_back(layoutSpace);
     RefreshChildControls(true);
+    return ret;
+}
+
+TrecPointer<TPage> TGrid::GetPage(UINT row, UINT col)
+{
+    for (UINT Rust = 0; Rust < childControls.Size(); Rust++)
+    {
+        auto childControl = childControls[Rust];
+        if (childControl.row == row && childControl.col == col)
+            return childControl.control;
+    }
+    return TrecPointer<TPage>();
+}
+
+D2D1_RECT_F TGrid::GetLocationBySection(UINT row, UINT col)
+{
+    TDataArray<LayoutSpace>* rowSpace = primaryStack ? &primDem : &secDem;
+    TDataArray<LayoutSpace>* colSpace = primaryStack ? &secDem : &primDem;
+
+    if((row && row >= rowSpace->Size()) || (col && col >= colSpace->Size()))
+    return D2D1_RECT_F();
+
+    D2D1_RECT_F ret = location;
+
+    if (rowSpace->Size())
+    {
+        for (UINT Rust = 0; Rust < row; Rust++)
+            ret.top += rowSpace->at(Rust).actualSpace;
+        ret.bottom = ret.top + rowSpace->at(row).actualSpace;
+    }
+
+    if (colSpace->Size())
+    {
+        for (UINT Rust = 0; Rust < col; Rust++)
+            ret.left += colSpace->at(Rust).actualSpace;
+        ret.right = ret.left + colSpace->at(col).actualSpace;
+    }
     return ret;
 }
 
