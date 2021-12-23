@@ -61,6 +61,19 @@ public:
      */
     virtual TString GetString()override;
 
+
+    /**
+     * Method: TVariable::GetString
+     * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
+     * Parameters: const TString& detail -
+     * Returns: TString - The TString referered by the variable (empty if not a string)
+     *
+     * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
+     *
+     * Attributes: abstract
+     */
+    virtual TString GetString(const TString& detail)override;
+
     /**
      * Method: TObjectVariable::Get4Value
      * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)

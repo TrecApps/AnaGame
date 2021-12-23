@@ -20,7 +20,7 @@ void TDataLayout::Draw(TrecPointer<TVariable> object)
 {
 	TControl::Draw(object);
 	
-	auto tempRec = area;
+	auto tempRec = location;
 	tempRec.bottom = tempRec.top + height;
 	tempRec.right = tempRec.left + width;
 

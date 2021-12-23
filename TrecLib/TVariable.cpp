@@ -40,6 +40,22 @@ bool VarFunction::IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def)
 	return true;
 }
 
+
+/**
+ * Method: TVariable::GetString
+ * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
+ * Parameters: const TString& detail -
+ * Returns: TString - The TString referered by the variable (empty if not a string)
+ *
+ * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
+ *
+ * Attributes: abstract
+ */
+TString TVariable::GetString(const TString& detail)
+{
+	return GetString();
+}
+
 /**
  * Method: TVariable::SetSelf
  * Purpose: Allows the Variable to have a reference to itself

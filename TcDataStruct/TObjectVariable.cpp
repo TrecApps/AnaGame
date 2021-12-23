@@ -78,6 +78,10 @@ TString TObjectVariable::GetString()
  * Parameters: void
  * Returns: UINT - The value held as a UINT (0 if not a primitive type
  */
+TString TObjectVariable::GetString(const TString& detail)
+{
+	return object.Get() ? object->getVariableValueStr(detail): GetString();
+}
 UINT TObjectVariable::Get4Value()
 {
 	return 0;

@@ -543,7 +543,7 @@ void TTextElement::OnDraw(TrecPointer<TVariable> dataText)
 	if (dataText.Get() && text.GetSize() > 0 && text.GetAt(0) == L'{' && text.GetAt(text.GetSize() - 1) == L'}')
 	{
 
-		text.Set(dataText->GetString(/*text.SubString(1, text.GetSize() - 1)*/));
+		text.Set(dataText->GetString(text.SubString(1, text.GetSize() - 1)));
 		ReCreateLayout();
 	}
 

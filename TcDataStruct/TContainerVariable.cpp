@@ -381,6 +381,24 @@ UINT TContainerVariable::Get4Value()
     return 0;
 }
 
+TString TContainerVariable::GetString(const TString& detail)
+{
+    auto pieces = detail.splitn(L".-:", 2);
+    bool present = false;
+    TrecPointer<TVariable> var = GetValue(pieces->at(0), present);
+
+    if (!var.Get())
+        return GetString();
+
+    if (var->GetVarType() == var_type::collection && pieces->Size() == 2)
+    {
+        return var->GetString(pieces->at(1));
+    }
+    else
+        return var->GetString();
+
+    return TString();
+}
 /**
  * Method: TContainerVariable::Get8Value
  * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
