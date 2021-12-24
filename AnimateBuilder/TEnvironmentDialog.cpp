@@ -48,6 +48,8 @@ int TEnvironmentDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	TrecPointer<TPage::EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<TPage::EventHandler, EnvironmentHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 
+	dynamic_cast<TapEventHandler*>(eh.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+
 	int returnable = TWindow::CompileView(file, eh);
 
 	if (returnable)return returnable;

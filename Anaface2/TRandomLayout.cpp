@@ -31,7 +31,7 @@ void TRandomLayout::Draw(TrecPointer<TVariable> object)
     {
         auto page = childControls[Rust].control;
         if (page.Get())
-            page->Draw(var);
+            page->Draw(object);
     }
 }
 

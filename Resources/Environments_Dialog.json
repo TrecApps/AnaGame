@@ -43,7 +43,7 @@
 								"RowPosition": 0,
 								"ColumnPosition": 0,
 								"RowHeights": [20,20,20,30],
-								"BorderColor": "1.0,1.0,0.5,1.0"
+								"BorderColor": "1.0,1.0,0.5,1.0",
 								"Children" : [
 								{
 									"TControl": {
@@ -97,7 +97,7 @@
 								"RowPosition": 0,
 								"ColumnPosition": 0,
 								"RowHeights": [25,25],
-								"BorderColor": "1.0,1.0,0.7,1.0"
+								"BorderColor": "1.0,1.0,0.7,1.0",
 								"Children" : [
 								{
 									"TControl": {
@@ -202,6 +202,7 @@
 				"Children" : [
 				{
 					"TControl" : {
+						"ColumnPosition": 0,
 						"VerticalAlignment":"Center",
 						"Caption":"Project Name",
 						"BorderColor":"1.0,0.0,0.0,1.0"
@@ -209,6 +210,7 @@
 				},
 				{
 					"TInput" : {
+						"ColumnPosition": 1,
 						"VerticalAlignment": "Center",
 						"BorderColor": "1.0,0.0,0.0,1.0",
 						"EventOnChar": "OnFileType"

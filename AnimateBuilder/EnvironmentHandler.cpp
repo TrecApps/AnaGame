@@ -145,8 +145,9 @@ void EnvironmentHandler::Initialize(TrecPointer<TPage> page)
     nameEntry = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(nameGallery->GetPage(0, 1));
 
     confirmButton = rootStack->GetPage(7, 0);
-    assert(confirmButton.Get());
+    assert(dynamic_cast<TControl*>(confirmButton.Get()));
 
+    dynamic_cast<TControl*>(confirmButton.Get())->setActive(false);
 
 
     newBinder->SetData(TrecSubToTrec(availableEnvironments));

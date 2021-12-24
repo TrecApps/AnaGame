@@ -115,11 +115,18 @@ TrecPointer<TVariable> TFormatReaderJson::ProcessObject(TString& worked)
             if (worked.GetSize())
                 return TrecPointer<TVariable>();
 
-            file.ReadString(readable, L"[{,}", 0b00000111); // We Can actually expect a String at this point, so make sure terminating character is out of quotes and not backslashed
+            file.ReadString(readable, L"[{,}", 0b00000111);
 
             TrecPointer<TVariable> var;
             if (readable.EndsWith(L'['))
                 var = ProcessArray(worked);
+         /*   else if (readable.EndsWith(L'\'') || readable.EndsWith(L'\"'))
+            {
+                WCHAR quoteChar = readable[readable.GetSize() - 1];
+                read = file.ReadString(readable, quoteChar, 0b00000101);
+                if(!readable.EndsWith(quoteChar))
+                    worked.Format("")
+            }*/
             else if (readable.EndsWith(L'{'))
                 var = ProcessObject(worked);
             else if (readable.EndsWith(L',') || readable.EndsWith(L'}'))

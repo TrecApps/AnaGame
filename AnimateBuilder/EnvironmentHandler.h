@@ -153,7 +153,6 @@ protected:
 
 	environment_handler_mode mode;
 
-	TrecPointer<TWindow> window;
 
 	TrecPointer<TEnvironment> environment;
 

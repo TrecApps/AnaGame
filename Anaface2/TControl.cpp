@@ -36,6 +36,7 @@ EventInString eventsInStringForm[] = {
 	{R_Message_Type::On_Scrolled, L"EventOnScrolled"},
 	{R_Message_Type::On_Select_Scroller, L"EventOnScrollerSelect"},
 	{R_Message_Type::On_sel_change, L"EventOnSelectionChange"},
+	{R_Message_Type::On_sel_change, L"EventSelectionChange"},
 	{R_Message_Type::On_SubmitDrag, L"EventOnSubmitDrag"},
 	{R_Message_Type::On_Text_Change, L"EventOnTextChange"},
 

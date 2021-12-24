@@ -317,6 +317,7 @@ void TWindow::OnRButtonUp(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative )
 		mainPage->OnRButtonUp(nFlags, point, mOut, cred);
+	Draw();
 	ThreadRelease();
 }
 
@@ -349,6 +350,7 @@ void TWindow::OnLButtonDown(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative)
 		mainPage->OnLButtonDown(nFlags, point, mOut, cred);
+	Draw();
 	ThreadRelease();
 }
 
@@ -379,6 +381,7 @@ void TWindow::OnRButtonDown(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative)
 		mainPage->OnRButtonDown(nFlags, point, mOut, cred);
+	Draw();
 	ThreadRelease();
 }
 
@@ -450,6 +453,7 @@ void TWindow::OnLButtonDblClk(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative)
 		mainPage->OnLButtonDblClk(nFlags, point, mOut, cred);
+	Draw();
 	ThreadRelease();
 }
 
@@ -488,6 +492,7 @@ void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative)
 		mainPage->OnLButtonUp(nFlags, point, mOut, cred);
+	Draw();
 	ThreadRelease();
 }
 

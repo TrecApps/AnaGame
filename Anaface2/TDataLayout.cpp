@@ -217,7 +217,7 @@ void TDataLayout::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& 
 
 void TDataLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
-	TControl::OnRButtonUp(nFlags, point, mOut, cred);
+	TControl::OnRButtonDown(nFlags, point, mOut, cred);
 
 	if (mOut == message_output::mo_negative)
 		return;
@@ -238,12 +238,12 @@ void TDataLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_output
 void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	bool isCurClick = this->isLeftClicked;
-	TControl::OnRButtonUp(nFlags, point, mOut, eventAr);
+	TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
 
 	if (mOut == message_output::mo_negative)
 		return;
 
-	TString index = HasEvent(isCurClick ? R_Message_Type::On_Click : R_Message_Type::On_L_Button_Up);
+	TString index(HasEvent(isCurClick ? R_Message_Type::On_Click : R_Message_Type::On_L_Button_Up));
 	if (index.GetSize())
 	{
 		int r = 0; int c = 0;
@@ -261,11 +261,41 @@ void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& 
 		}
 		eventAr.at(eventAr.Size() - 1).args->arrayLabel = iindex;
 	}
+
+	if (isCurClick)
+	{
+		index.Set(HasEvent(R_Message_Type::On_sel_change));
+		if (index.GetSize())
+		{
+			int r = 0; int c = 0;
+			int iindex = -1;
+			if (GetIndex(point, r, c))
+			{
+				iindex = ConvertCoordinates(r, c);
+
+				this->args.Reset();
+				this->args.arrayLabel = iindex;
+				this->args.eventType = R_Message_Type::On_sel_change;
+				this->args.isClick = true;
+				this->args.isLeftClick = true;
+				this->args.methodID = index;
+				this->args.point = point;
+				this->args.positive = true;
+				this->args.type = L'\0';
+				EventID_Cred cred(R_Message_Type::On_Right_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+				if(dynamic_cast<TContainerVariable*>(this->var.Get()))
+					cred.data =  dynamic_cast<TContainerVariable*>(this->var.Get())->GetValueAt(iindex);
+
+				eventAr.push_back(cred);
+			}
+		}
+	}
 }
 
 void TDataLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
-	TControl::OnRButtonUp(nFlags, point, mOut, cred);
+	TControl::OnLButtonDown(nFlags, point, mOut, cred);
 
 	if (mOut == message_output::mo_negative)
 		return;
@@ -286,7 +316,7 @@ void TDataLayout::OnLButtonDown(UINT nFlags, const TPoint& point, message_output
 void TDataLayout::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	bool isCurClick = this->isMouseIn;
-	TControl::OnRButtonUp(nFlags, point, mOut, cred);
+	TControl::OnMouseMove(nFlags, point, mOut, cred);
 
 	if (mOut == message_output::mo_negative)
 		return;
@@ -350,10 +380,10 @@ void TDataLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_
 
 bool TDataLayout::GetIndex(const TPoint& point, int& row, int& col)
 {
-	if (!IsContained(point, area))
+	if (!IsContained(point, location))
 		return false;
 
-	TPoint nPoint(point.x - area.left, point.y - area.top);
+	TPoint nPoint(point.x - location.left, point.y - location.top);
 
 	col = static_cast<int>(nPoint.x) / width;
 	row = static_cast<int>(nPoint.y) / height;

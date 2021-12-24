@@ -11,6 +11,10 @@ class TC_DATA_STRUCT TObjectVariable :
     public TVariable
 {
 public:
+    virtual TrecPointer<TVariable> Clone();
+
+    virtual void SetSelf(TrecPointer<TVariable> o)override;
+
     /**
      * Method: TObjectVariable::TObjectVariable
      * Purpose: Constructor
@@ -122,5 +126,10 @@ private:
      * The Object held
      */
     TrecObjectPointer object;
+
+    /**
+     * 
+     */
+    TrecPointerSoft<TVariable> oSelf;
 };
 
