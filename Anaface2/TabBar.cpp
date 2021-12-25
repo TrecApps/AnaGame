@@ -216,6 +216,14 @@ void TabBar::InjectTabAt(TrecPointer<TPage> page, UINT index)
     SetTabSizes();
 }
 
+bool TabBar::SetBackgroundColor(const TColor& color)
+{
+    if (!drawingBoard.Get())
+        return false;
+    this->backgroundColor = drawingBoard->GetBrush(color);
+    return backgroundColor.Get() != nullptr;
+}
+
 void TabBar::ActivateTabs(const TString& targets, const TString& exceptions, bool activate, bool doMatch)
 {
     if (!draggableTabs)
@@ -285,6 +293,8 @@ TrecPointer<TPage> TabBar::GetTabAt(UINT index, bool content)
 
 void TabBar::Draw(TrecPointer<TVariable> object)
 {
+    if (backgroundColor.Get())
+        backgroundColor->FillRectangle(this->area);
     if (tabOverflow)
     {
         leftTab.Draw(object);

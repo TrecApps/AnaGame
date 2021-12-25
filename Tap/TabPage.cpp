@@ -23,6 +23,10 @@ TabPage::TabPage(ide_page_type t,TrecPointer<DrawingBoard> board, UCHAR tabHeigh
 	{
 		tabBar.SetConfigure(false, false);
 	}
+	bool w;
+	TColor bColor(TColor::GetColorFromString(L"#a849c380",w));
+	tabBar.SetBackgroundColor(bColor);
+	borderBrush = board->GetBrush(bColor);
 }
 
 bool TabPage::HandlesEvents()
@@ -36,6 +40,7 @@ void TabPage::Draw(TrecPointer<TVariable> object)
 	tabBar.Draw(v);
 	if (currentPage.Get())
 		currentPage->Draw(v);
+	borderBrush->DrawRectangle(area);
 }
 
 ag_msg void TabPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)

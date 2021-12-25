@@ -734,11 +734,13 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 		mainTabPage->OnResize(space, 0, cred);
 	}
 	else
+	{
 		mainPage = TrecSubToTrec(newPage);
-
+		mainPage->OnResize(space, 0, cred);
+	}
+	space = ConvertRectToD2D1Rect(this->size);
 	auto curArea = space;
 
-	mainPage->OnResize(curArea, 0, cred);
 
 	curArea.top += this->mainViewSpace;
 

@@ -88,6 +88,11 @@ protected:
 	 */
 	tab_page_move_mode moveMode;
 
+	/**
+	 * Border Brush
+	 */
+	TrecPointer<TBrush> borderBrush;
+
 public:
 
 	D2D1_RECT_F GetChildSpace();

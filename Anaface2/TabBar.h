@@ -309,7 +309,19 @@ protected:
 	 */
 	bool exitSupport;
 
+	/**
+	 * Background color to draw
+	 */
+	TrecPointer<TBrush> backgroundColor;
+
 public:
+	/**
+	 * Method: TabBar::SetBackgroundColor
+	 * Purpose: Sets the background color of the tab
+	 * Parameters: const TColor& color - the color to set
+	 * Returns: bool - whether the brush was set (should be true unless tab was constructed with a null drawing board)
+	 */
+	bool SetBackgroundColor(const TColor& color);
 
 	/**
 	 * Method: TabBar::ActivateTabs
