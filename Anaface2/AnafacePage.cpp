@@ -11,6 +11,7 @@
 #include "TLayout.h"
 #include "TGrid.h"
 #include "TDataNodeControl.h"
+#include "TTextCombobox.h"
 
 TString objectTypes[] = {
 	L"TControl",		// Basic Control
@@ -120,6 +121,11 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
 	//if (name.StartsWith(L"TImage", true))
 	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
+
+	if (name.StartsWith(L"TComboBox", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TCombobox>(this->drawingBoard, styles);
+	if(name.StartsWith(L"TTextComboBox", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextCombobox>(this->drawingBoard, styles, this->drawingBoard->GetWindowHandle());
 
 	if (name.StartsWith(L"TDataNodeControl", true))
 	{

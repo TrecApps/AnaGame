@@ -236,3 +236,56 @@ protected:
 	 */
 	void SetSaveFile();
 };
+
+/**
+ * Class: TPageEnvironment
+ * Purpose: Extends the TEnvironment to Support TPage and Handler Generation
+ */
+class _VIDEO_GRAPHICS TPageEnvironment : public TEnvironment
+{
+public:
+	TPageEnvironment(TrecPointer<TFileShell> shell);
+
+	/**
+	 * Method: TPageEnvironment::GetPageAndHandler
+	 * Purpose: Retrieves the Pages by the Specified name
+	 * Parameters: const TString& name, TrecPointer<TPage> page, TrecPointer<TPage::EventHandler> handler
+	 * Returns: void
+	 *
+	 * Note: If successful, the page and handler params should be assigned once the method returns
+	 */
+	void GetPageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc);
+
+	/**
+	 * Method: TPageEnvironment::GetPageList
+	 * Purpose: Retrieves the available Page Names by extension
+	 * Parameters: const TString& ext, TDataArray<TString>& extensions
+	 * Returns: void
+	 *
+	 * Note: if ext is an empty String, then return all that the Environment has to offer
+	 */
+	void GetPageList(const TString& ext, TDataArray<TString>& extensions);
+
+protected:
+
+
+	/**
+	 * Method: TPageEnvironment::GetPageAndHandler
+	 * Purpose: Retrieves the Pages by the Specified name
+	 * Parameters: const TString& name, TrecPointer<TPage> page, TrecPointer<TPage::EventHandler> handler
+	 * Returns: void
+	 *
+	 * Note: If successful, the page and handler params should be assigned once the method returns
+	 */
+	virtual void GetPageAndHandler_(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc) = 0;
+
+	/**
+	 * Method: TPageEnvironment::GetPageList
+	 * Purpose: Retrieves the available Page Names by extension
+	 * Parameters: const TString& ext, TDataArray<TString>& extensions
+	 * Returns: void
+	 *
+	 * Note: if ext is an empty String, then return all that the Environment has to offer
+	 */
+	virtual void GetPageList_(const TString& ext, TDataArray<TString>& extensions) = 0;
+};

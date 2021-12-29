@@ -582,8 +582,9 @@ protected:
 	void SetUpLanguageExtensionMapping();
 
 	/**
-	 * 
+	 * Child Environments that a parent Environment can lean upon
 	 */
+	TDataArray<TrecPointer<TEnvironment>> environments;
 
 	/**
 	 * the Working directory of the Environment

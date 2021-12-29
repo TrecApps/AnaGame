@@ -5,8 +5,11 @@
 #include "TcJavaScriptInterpretor.h"
 #include <TStringVariable.h>
 #include <TBlankNode.h>
+#include <TCodeHandler.h>
+#include <AnafacePage.h>
+#include <DirectoryInterface.h>
 
-TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shell)
+TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TPageEnvironment(shell)
 {
 }
 
@@ -364,4 +367,29 @@ TString TAnaGameCodeEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
 	name.Set(file->GetDirectoryName());
 	actFile.Close();
 	return TString();
+}
+
+void TAnaGameCodeEnvironment::GetPageAndHandler_(const TString& name, TrecPointer<TPage>& page, 
+	TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc)
+{
+	if (!name.Compare(L"ag_ce_code"))
+	{
+		handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(proc);
+		TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+		aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.txt"), handler);
+		page = TrecSubToTrec(aPage);
+	}
+}
+
+void TAnaGameCodeEnvironment::GetPageList_(const TString& ext, TDataArray<TString>& extensions)
+{
+	if (!ext.CompareNoCase(L"js") ||
+		!ext.CompareNoCase(L"py") ||
+		!ext.CompareNoCase(L"ascrpt") ||
+		!ext.GetSize())
+	{
+		extensions.push_back(L"ag_ce_code");
+	}
 }

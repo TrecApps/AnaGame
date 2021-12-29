@@ -7,6 +7,7 @@
 #include <TMap.h>
 #include <TObjectNode.h>
 #include "TTextElement.h"
+#include <TEnvironment.h>
 #define ag_msg
 
 /**

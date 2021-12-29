@@ -322,3 +322,41 @@ void TapEventHandler::SetSaveFile()
 	delete[] fileInfo.lpstrFile;
 	ThreadRelease();
 }
+
+TPageEnvironment::TPageEnvironment(TrecPointer<TFileShell> shell) : TEnvironment(shell)
+{
+}
+
+void TPageEnvironment::GetPageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board,TrecPointer<TProcess> proc)
+{
+	GetPageAndHandler_(name, page, handler, board, proc);
+
+	if (page.Get() && handler.Get())
+		return;
+	page.Nullify();
+	handler.Nullify();
+
+	for (UINT Rust = 0; Rust < environments.Size(); Rust++)
+	{
+		if (dynamic_cast<TPageEnvironment*>(environments[Rust].Get()))
+		{
+			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageAndHandler_(name, page, handler, board, proc);
+			if (page.Get() && handler.Get())
+				return;
+			page.Nullify();
+			handler.Nullify();
+		}
+	}
+}
+
+void TPageEnvironment::GetPageList(const TString& ext, TDataArray<TString>& extensions)
+{
+	GetPageList_(ext, extensions);
+	for (UINT Rust = 0; Rust < environments.Size(); Rust++)
+	{
+		if (dynamic_cast<TPageEnvironment*>(environments[Rust].Get()))
+		{
+			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageList_(name, extensions);
+		}
+	}
+}
