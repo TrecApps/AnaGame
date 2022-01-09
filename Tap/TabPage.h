@@ -291,7 +291,7 @@ public:
 	 */
 	void SetLink(TrecSubPointer<TPage, TabPage> p, ide_page_type t);
 
-
+	void ClearPages();
 
 private:
 

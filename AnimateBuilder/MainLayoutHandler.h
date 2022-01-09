@@ -1,6 +1,7 @@
 #pragma once
 #include <EventHandler.h>
 #include <MiniApp.h>
+#include <TTextInput.h>
 
 class MainLayoutHandler;
 
@@ -36,6 +37,8 @@ protected:
 
 	D2D1_COLOR_F backColor;
 
+	TrecSubPointer<TPage, TTextInput> input;
+
 	TrecPointer<TControl> ribbon;					// AnafaceUI
 
 	// The first Ribbon Panel
@@ -49,6 +52,9 @@ protected:
 	// The Fifth Ribbon Panel (Document/Source)
 	TrecPointer<TControl> ribbon5;					// TLayout
 	TrecPointer<TControl> docStack2;					// TLayout
+
+	// New TPage Resources
+	TrecPointer<TEnvironment> environment;
 
 	
 	//TrecPointer<BuilderApp> currentDocument;

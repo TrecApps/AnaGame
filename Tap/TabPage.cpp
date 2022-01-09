@@ -709,3 +709,14 @@ void TabPage::SetLink(TrecSubPointer<TPage, TabPage> p, ide_page_type t)
 	}
 	ThreadRelease();
 }
+
+void TabPage::ClearPages()
+{
+	TDataArray<TrecPointer<TPage>> tabs;
+	for (UINT Rust = 0; Rust < tabBar.GetTabCount(); Rust++)
+	{
+		tabs.push_back(tabBar.GetTabAt(Rust));
+	}
+	for(UINT Rust = 0; Rust < tabs.Size(); Rust++)tabBar.RemoveTab(tabs[Rust]);
+
+}

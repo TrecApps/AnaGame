@@ -155,7 +155,9 @@
     <ClInclude Include="EnvironmentHandler.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainLayoutHandler.h" />
+    <ClInclude Include="NewResourceHandler.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ResourceDialog.h" />
     <ClInclude Include="SourceCodeApp2.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TEnvironmentDialog.h" />
@@ -165,6 +167,8 @@
     <ClCompile Include="ArenaApp2.cpp" />
     <ClCompile Include="EnvironmentHandler.cpp" />
     <ClCompile Include="MainLayoutHandler.cpp" />
+    <ClCompile Include="NewResourceHandler.cpp" />
+    <ClCompile Include="ResourceDialog.cpp" />
     <ClCompile Include="SourceCodeApp2.cpp" />
     <ClCompile Include="TEnvironmentDialog.cpp" />
   </ItemGroup>

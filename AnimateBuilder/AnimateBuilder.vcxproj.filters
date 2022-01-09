@@ -42,6 +42,12 @@
     <ClInclude Include="EnvironmentHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResourceDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NewResourceHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimateBuilder.cpp">
@@ -60,6 +66,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EnvironmentHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NewResourceHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

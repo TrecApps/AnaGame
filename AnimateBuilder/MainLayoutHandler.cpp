@@ -6,6 +6,8 @@
 #include "ArenaApp2.h"
 #include "TEnvironmentDialog.h"
 
+#include <AnafacePage.h>
+
 #include <FileDialog.h>
 
 
@@ -87,6 +89,14 @@ void MainLayoutHandler::Initialize(TrecPointer<TPage> page)
 		throw L"Error! Expected an actual Page Pointer to be provided!";
 
 	this->page = page;
+	TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, AnafacePage>(page);
+
+	TrecSubPointer<TPage, TLayout> lay = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(aPage->GetRootControl());
+
+	lay = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(lay->GetPage(0, 0));
+
+	input = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(lay->GetPage(0, 0));
+	
 	//auto tempApp = page->GetInstance();
 	//app = TrecPointerKey::GetSoftPointerFromTrec<>(tempApp);
 
@@ -212,11 +222,16 @@ void MainLayoutHandler::OnFirstDraw()
 	{
 		ideWindow->SetEnvironment(env);
 		ideWindow->AddPage(anagame_page::anagame_page_project_explorer, ide_page_type::ide_page_type_upper_right, TString(L"Project"));
+
+		if (input.Get())
+			input->SetText(env->GetName());
 	}
+	environment = env;
 }
 
 void MainLayoutHandler::OnLoadNewSolution(TrecPointer<TPage> tc, EventArgs ea)
 {
+	OnFirstDraw();
 }
 
 void MainLayoutHandler::OnSaveFile(TrecPointer<TPage> tc, EventArgs ea)

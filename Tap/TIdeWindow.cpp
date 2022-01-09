@@ -806,9 +806,20 @@ void TIdeWindow::SetCurrentHolder(TrecSubPointer<TPage, TabBar::Tab> holder, Tre
  */
 void TIdeWindow::SetEnvironment(TrecPointer<TEnvironment> env)
 {
-	ThreadLock();
+	TObjectLocker lock(&this->thread);
+	if (env.Get() != environment.Get())
+	{
+		body->ClearPages();
+		upperLeft->ClearPages();
+		upperRight->ClearPages();
+		lowerLeft->ClearPages();
+		lowerRight->ClearPages();
+		basicConsole->ClearPages();
+		deepConsole->ClearPages();
+	}
 	environment = env;
-	ThreadRelease();
+
+
 }
 
 

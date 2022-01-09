@@ -39,7 +39,7 @@ public:
 	 * Parameters: TrecPointer<TWindow> window - the window to set
 	 * Returns: void
 	 */
-	void SetWindow(TrecPointer<TWindow> window);
+	virtual void SetWindow(TrecPointer<TWindow> window);
 
 
 	/**
