@@ -68,10 +68,7 @@ void TRandomLayout::OnRButtonDown(UINT nFlags, const TPoint& point, message_outp
 
 void TRandomLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
-    if(isLeftClicked)
-        TControl::OnLButtonUp(nFlags, point, mOut, cred);
-    else
-    {
+
         for (UINT Rust = 0; Rust < childControls.Size() && mOut == message_output::mo_negative; Rust++)
         {
             auto page = childControls[Rust].control;
@@ -81,7 +78,7 @@ void TRandomLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output
 
         if (mOut != message_output::mo_positive_override)
             TControl::OnLButtonUp(nFlags, point, mOut, cred);
-    }
+    
 }
 
 void TRandomLayout::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)

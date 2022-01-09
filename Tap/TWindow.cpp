@@ -817,6 +817,10 @@ void TWindow::FlushDc()
 	ThreadRelease();
 }
 
+void TWindow::HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred)
+{
+}
+
 /**
  * Method: TWindow::DrawOtherPages
  * Purpose: Draws other pages registered in this window

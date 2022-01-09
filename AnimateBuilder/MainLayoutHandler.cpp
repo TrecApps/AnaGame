@@ -9,13 +9,15 @@
 #include <AnafacePage.h>
 
 #include <FileDialog.h>
+#include "ResourceDialog.h"
+#include "NewResourceHandler.h"
 
 
 // Found on the Home Tab
 TString on_LoadNewSolution(L"LoadNewSolution");
 TString on_SaveFile(L"SaveFile");
 TString on_SaveAll(L"SaveAllFiles");
-TString on_NewFile(L"OnNewFile");
+TString on_NewResource(L"OnNewResource");
 TString on_ImportFile(L"OnImportFile");
 TString on_Print(L"OnPrint");
 
@@ -43,8 +45,8 @@ MainLayoutHandler::MainLayoutHandler(TrecPointer<TProcess> ins) : TapEventHandle
 	events.addEntry(on_SaveAll,2);
 	calls.push_back(&MainLayoutHandler::OnSaveAllFiles);
 
-	events.addEntry(on_NewFile,3);
-	calls.push_back(&MainLayoutHandler::OnNewFile);
+	events.addEntry(on_NewResource,3);
+	calls.push_back(&MainLayoutHandler::OnNewResource);
 
 	events.addEntry(on_ImportFile,4);
 	calls.push_back(&MainLayoutHandler::OnImportFile);
@@ -265,8 +267,22 @@ void MainLayoutHandler::OnSaveAllFiles(TrecPointer<TPage> tc, EventArgs ea)
 	}
 }
 
-void MainLayoutHandler::OnNewFile(TrecPointer<TPage> tc, EventArgs ea)
+void MainLayoutHandler::OnNewResource(TrecPointer<TPage> tc, EventArgs ea)
 {
+	TString name(L"Alert");
+	TString winClass(L"Dialog");
+	UINT style = WS_OVERLAPPEDWINDOW;
+	// HWND parent
+	// 0
+	// ins
+	// dialog_mode_hard_modal
+	auto ins = TrecPointerKey::GetTrecPointerFromSoft<>(this->app);
+	TrecPointer<TWindow> dialog = TrecPointerKey::GetNewSelfTrecPointerAlt<TWindow, ResourceDialog>(name, winClass, style, ideWindow->GetWindowHandle(), 10, ins, TDialogMode::dialog_mode_hard_model);
+	dynamic_cast<ResourceDialog*>(dialog.Get())->CompileView(ins->GetFactory());
+
+	dialog->PrepareWindow();
+
+	dynamic_cast<ResourceDialog*>(dialog.Get())->Run();
 }
 
 void MainLayoutHandler::OnImportFile(TrecPointer<TPage> tc, EventArgs ea)

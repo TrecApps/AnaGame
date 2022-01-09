@@ -1,5 +1,6 @@
 #include "ResourceDialog.h"
 #include <DirectoryInterface.h>
+#include "NewResourceHandler.h"
 
 ResourceDialog::ResourceDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode) :
     TDialog(name, winClass, style, parent, commandShow, ins, mode)
@@ -23,7 +24,7 @@ int ResourceDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
     file.Append(L"Resources\\NewResource.json");
 
-    TrecPointer<TPage::EventHandler> eh;
+    TrecPointer<TPage::EventHandler> eh = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, NewResourceHandler>(this->GetInstance());
 
 	int returnable = TWindow::CompileView(file, eh);
 

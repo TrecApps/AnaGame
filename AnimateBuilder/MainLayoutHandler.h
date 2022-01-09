@@ -63,7 +63,7 @@ protected:
 	void OnLoadNewSolution(TrecPointer<TPage> tc, EventArgs ea);
 	void OnSaveFile(TrecPointer<TPage> tc, EventArgs ea);
 	void OnSaveAllFiles(TrecPointer<TPage> tc, EventArgs ea);
-	void OnNewFile(TrecPointer<TPage> tc, EventArgs ea);
+	void OnNewResource(TrecPointer<TPage> tc, EventArgs ea);
 	void OnImportFile(TrecPointer<TPage> tc, EventArgs ea);
 	void OnPrint(TrecPointer<TPage> tc, EventArgs ea);
 

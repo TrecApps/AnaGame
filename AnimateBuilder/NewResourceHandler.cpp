@@ -1,6 +1,7 @@
 #include "NewResourceHandler.h"
 #include <TGrid.h>
 #include <TStringVariable.h>
+#include <AnafacePage.h>
 
 NewResourceHandler::NewResourceHandler(TrecPointer<TProcess> instance): TapEventHandler(instance)
 {
@@ -17,7 +18,8 @@ TString NewResourceHandler::GetType()
 
 void NewResourceHandler::Initialize(TrecPointer<TPage> page)
 {
-	TrecSubPointer<TPage, TGrid> rootGrid = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TGrid>(page);
+	TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, AnafacePage>(page);
+	TrecSubPointer<TPage, TGrid> rootGrid = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TGrid>(aPage->GetRootControl());
 	this->envComboBox = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TCombobox>( rootGrid->GetPage(1, 1));
 	SetUpEnvironmentInCombobox();
 }
@@ -59,4 +61,9 @@ void NewResourceHandler::SetUpEnvironmentInCombobox()
 			varList->AppendValue(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(entries[Rust]));
 		}
 	}
+}
+
+bool NewResourceHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> message)
+{
+	return false;
 }

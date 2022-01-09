@@ -399,6 +399,8 @@ public:
 
 protected:
 
+	void HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred);
+
 
 	// Draw Other pages that are special to the Window
 	/**
