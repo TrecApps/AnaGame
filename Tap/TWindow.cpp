@@ -224,7 +224,7 @@ TString TWindow::GetWinName()
 void TWindow::Draw()
 {
 	LockDrawing();
-	ThreadLock();
+	TObjectLocker lock(&thread);
 	if (mainPage.Get() && safeToDraw)
 	{	UCHAR tempSafe = safeToDraw;
 		safeToDraw = 0;
@@ -259,7 +259,6 @@ void TWindow::Draw()
 			//mainPage->OnFirstDraw();
 		}
 	}
-	ThreadRelease();
 	UnlockDrawing();
 }
 
@@ -309,6 +308,12 @@ void TWindow::OnRButtonUp(UINT nFlags, TPoint point)
 	
 
 	message_output mOut = message_output::mo_negative;
+
+
+	if (flyout.Get())
+	{
+		flyout->OnRButtonUp(nFlags, point, mOut, cred);
+	}
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative ); c++)
 	{
 		if(pages[c].Get())
@@ -317,6 +322,7 @@ void TWindow::OnRButtonUp(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative )
 		mainPage->OnRButtonUp(nFlags, point, mOut, cred);
+	flyout.Nullify();
 	Draw();
 	ThreadRelease();
 }
@@ -340,7 +346,10 @@ void TWindow::OnLButtonDown(UINT nFlags, TPoint point)
 	}
 	message_output mOut = message_output::mo_negative;
 	TDataArray<TPage::EventID_Cred> cred;
-	
+	if (flyout.Get())
+	{
+		flyout->OnLButtonDown(nFlags, point, mOut, cred);
+	}
 
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
@@ -372,6 +381,10 @@ void TWindow::OnRButtonDown(UINT nFlags, TPoint point)
 	message_output mOut = message_output::mo_negative;
 
 	TDataArray<TPage::EventID_Cred> cred;
+	if (flyout.Get())
+	{
+		flyout->OnRButtonDown(nFlags, point, mOut, cred);
+	}
 	
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
@@ -413,7 +426,10 @@ void TWindow::OnMouseMove(UINT nFlags, TPoint point)
 		return;
 	}
 
-
+	if (flyout.Get())
+	{
+		flyout->OnMouseMove(nFlags, point, mOut, cred);
+	}
 
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
@@ -444,6 +460,10 @@ void TWindow::OnLButtonDblClk(UINT nFlags, TPoint point)
 	message_output mOut = message_output::mo_negative;
 
 	TDataArray<TPage::EventID_Cred> cred;
+	if (flyout.Get())
+	{
+		flyout->OnLButtonDblClk(nFlags, point, mOut, cred);
+	}
 	
 	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
@@ -476,13 +496,18 @@ void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
 		ThreadRelease();
 		return;
 	}
+	TDataArray<TPage::EventID_Cred> cred;
 	message_output mOut = message_output::mo_negative;
+	if (flyout.Get())
+	{
+		flyout->OnLButtonUp(nFlags, point, mOut, cred);
+	}
 
 	auto fly = flyout;
 	flyout.Nullify();
 	UINT c = 0;
 
-	TDataArray<TPage::EventID_Cred> cred;
+
 	
 	for(c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
@@ -819,6 +844,14 @@ void TWindow::FlushDc()
 
 void TWindow::HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred)
 {
+	for (UINT Rust = 0; Rust < cred.Size(); Rust++)
+	{
+		switch (cred[Rust].eventType)
+		{
+		case R_Message_Type::On_Flyout:
+			flyout = cred[Rust].control;
+		}
+	}
 }
 
 /**
