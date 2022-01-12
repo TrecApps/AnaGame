@@ -157,6 +157,7 @@ int TWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 	TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(aFile->GetFilePath());
 	aFile->Close();
 	aFile.Nullify();
+
 	TString prepRes(newPage->PrepPage(uisFile, eh));
 
 	if (prepRes.GetSize())
@@ -164,6 +165,11 @@ int TWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 		MessageBox(this->currentWindow, prepRes.GetConstantBuffer().getBuffer(), L"Error Constructing UI!", 0);
 		ThreadRelease();
 		return 2;
+	}
+
+	if (dynamic_cast<TapEventHandler*>(eh.Get()))
+	{
+		dynamic_cast<TapEventHandler*>(eh.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
 	}
 
 	TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
@@ -323,6 +329,7 @@ void TWindow::OnRButtonUp(UINT nFlags, TPoint point)
 	if(mOut == message_output::mo_negative )
 		mainPage->OnRButtonUp(nFlags, point, mOut, cred);
 	flyout.Nullify();
+	HandleWindowEvents(cred);
 	Draw();
 	ThreadRelease();
 }
@@ -359,6 +366,7 @@ void TWindow::OnLButtonDown(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative)
 		mainPage->OnLButtonDown(nFlags, point, mOut, cred);
+	HandleWindowEvents(cred);
 	Draw();
 	ThreadRelease();
 }
@@ -394,6 +402,7 @@ void TWindow::OnRButtonDown(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative)
 		mainPage->OnRButtonDown(nFlags, point, mOut, cred);
+	HandleWindowEvents(cred);
 	Draw();
 	ThreadRelease();
 }
@@ -439,6 +448,7 @@ void TWindow::OnMouseMove(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative)
 		mainPage->OnMouseMove(nFlags, point, mOut, cred);
+	HandleWindowEvents(cred);
 	ThreadRelease();
 }
 
@@ -473,6 +483,7 @@ void TWindow::OnLButtonDblClk(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative)
 		mainPage->OnLButtonDblClk(nFlags, point, mOut, cred);
+	HandleWindowEvents(cred);
 	Draw();
 	ThreadRelease();
 }
@@ -517,6 +528,9 @@ void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
 
 	if(mOut == message_output::mo_negative)
 		mainPage->OnLButtonUp(nFlags, point, mOut, cred);
+
+	HandleWindowEvents(cred);
+
 	Draw();
 	ThreadRelease();
 }
