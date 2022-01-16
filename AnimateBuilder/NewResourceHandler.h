@@ -1,6 +1,7 @@
 #pragma once
 #include <EventHandler.h>
 #include <TCombobox.h>
+#include <TTextInput.h>
 
 /**
  * Class: NewResourceHandler
@@ -11,6 +12,8 @@
 class NewResourceHandler :
     public TapEventHandler
 {
+    typedef void (NewResourceHandler::* ResourceCall)(TrecPointer<TPage> tc, EventArgs ea);
+
 public:
     NewResourceHandler(TrecPointer<TProcess> instance);
     virtual ~NewResourceHandler();
@@ -21,12 +24,20 @@ public:
 
     virtual void SetWindow(TrecPointer<TWindow> window)override;
 
+
+    bool IsReady();
+
+    bool GetSpecs(TString& name, TString& type);
+
 protected:
-    void OnOkay(TControl* control, EventArgs ea);
+    void OnOkay(TrecPointer<TPage> tc, EventArgs ea);
+
+    void OnCancel(TrecPointer<TPage> tc, EventArgs ea);
 
     void SetUpEnvironmentInCombobox();
 
     TrecSubPointer<TPage, TCombobox> envComboBox;
+    TrecSubPointer<TPage, TTextInput> nameInput;
 
     TDataArray<TString> entries;
     /**
@@ -38,6 +49,8 @@ protected:
      * Attributes: abstract
      */
     virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
+
+    bool ready, onDestroy;
     
 };
 

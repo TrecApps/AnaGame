@@ -343,6 +343,11 @@ bool TCombobox::SupportsChildTemplateInjection()
     return true;
 }
 
+TrecPointer<TVariable> TCombobox::GetCurrentVariable()
+{
+    return currentVariable;
+}
+
 void TCombobox::SetCurrentContent(TrecPointer<TVariable> v)
 {
     if (v.Get())

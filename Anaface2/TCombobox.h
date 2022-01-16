@@ -104,6 +104,8 @@ public:
 	 */
 	virtual bool SupportsChildTemplateInjection();
 
+	TrecPointer<TVariable> GetCurrentVariable();
+
 protected:
 
 	void SetCurrentContent(TrecPointer<TVariable> v);
