@@ -123,12 +123,103 @@ private:
     TrecSubPointer<TPage, TCombobox> comboBox;
 };
 
+class TComboBoxExtension : public TDataLayout
+{
+    friend class TCombobox;
+protected:
 
+    TrecSubPointerSoft<TPage, TCombobox> combobox;
+
+public:
+
+    TComboBoxExtension(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles) : TDataLayout(drawingBoard, styles)
+    {
+
+    }
+
+    virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
+    {
+        bool isCurClick = this->isLeftClicked;
+        TControl::OnLButtonUp(nFlags, point, mOut, eventAr);
+
+        if (mOut == message_output::mo_negative)
+            return;
+
+        TString index(HasEvent(isCurClick ? R_Message_Type::On_Click : R_Message_Type::On_L_Button_Up));
+        if (index.GetSize())
+        {
+            int r = 0; int c = 0;
+            int iindex = -1;
+            if (GetIndex(point, r, c))
+            {
+                iindex = ConvertCoordinates(r, c);
+
+                if (isCurClick && dynamic_cast<TContainerVariable*>(var.Get()))
+                {
+                    EventID_Cred cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+                    cred.data = dynamic_cast<TContainerVariable*>(this->var.Get())->GetValueAt(iindex);
+                    eventAr.push_back(cred);
+                }
+            }
+            eventAr.at(eventAr.Size() - 1).args->arrayLabel = iindex;
+        }
+        int r = 0; int c = 0;
+
+        if (isCurClick && GetIndex(point, r, c))
+        {
+            int iindex = ConvertCoordinates(r, c);
+
+            EventID_Cred cred(R_Message_Type::On_sel_change, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+            cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+            if (dynamic_cast<TContainerVariable*>(this->var.Get()))
+            {
+
+                auto updater = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TComboBoxUpdater>(TrecPointerKey::GetSubPointerFromSoft(combobox));
+                TDataArray<TrecPointer<TVariable>> vars;
+                vars.push_back(dynamic_cast<TContainerVariable*>(this->var.Get())->GetValueAt(iindex));
+                updater->SetIntialVariables(vars);
+
+                cred.data = TrecSubToTrec(updater);
+            }
+
+
+            index.Set(HasEvent(R_Message_Type::On_sel_change));
+            if (index.GetSize())
+            {
+
+                int iindex = ConvertCoordinates(r, c);
+
+                this->args.Reset();
+                this->args.arrayLabel = iindex;
+                this->args.eventType = R_Message_Type::On_sel_change;
+                this->args.isClick = true;
+                this->args.isLeftClick = true;
+                this->args.methodID = index;
+                this->args.point = point;
+                this->args.positive = true;
+                this->args.type = L'\0';
+
+                cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
+                
+            }
+
+
+            eventAr.push_back(cred);
+        }
+
+        if (isCurClick)
+        {
+            
+        }
+
+    }
+};
 
 TCombobox::TCombobox(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta) :TGadget(rt, ta)
 {
     vars = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
-    dataLayout = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TDataLayout>(rt, ta);
+    auto extPage = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TComboBoxExtension>(rt, ta);
+    dataLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TDataLayout>(extPage);
 
     childHeight = 30;
 }
@@ -140,6 +231,9 @@ TCombobox::~TCombobox()
 bool TCombobox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 {
     TObjectLocker lock(&this->thread);
+
+    dynamic_cast<TComboBoxExtension*>(dataLayout.Get())->combobox = TrecPointerKey::GetSoftSubPointerFromSoft<TPage, TCombobox>(self);
+
     TString valpoint;
     if (attributes.retrieveEntry(L"DefaultText", valpoint))
         attributes.addEntry(L"Caption", valpoint);

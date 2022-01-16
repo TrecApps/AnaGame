@@ -282,7 +282,7 @@ void TDataLayout::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& 
 				this->args.point = point;
 				this->args.positive = true;
 				this->args.type = L'\0';
-				EventID_Cred cred(R_Message_Type::On_Right_Click, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+				EventID_Cred cred(R_Message_Type::On_sel_change, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
 				if(dynamic_cast<TContainerVariable*>(this->var.Get()))
 					cred.data =  dynamic_cast<TContainerVariable*>(this->var.Get())->GetValueAt(iindex);

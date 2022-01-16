@@ -2,6 +2,7 @@
 #include "TInstance.h"
 #include <AnafacePage.h>
 #include "EventHandler.h"
+#include <TcInterpretor.h>
 
 bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference)
 {
@@ -884,6 +885,16 @@ void TWindow::HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred)
 		{
 		case R_Message_Type::On_Flyout:
 			flyout = cred[Rust].control;
+		}
+
+		TrecPointer<TVariable> eventVar = cred[Rust].data;
+		if (eventVar.Get())
+		{
+			switch (eventVar->GetVarType())
+			{
+			case var_type::interpretor:
+				dynamic_cast<TcInterpretor*>(eventVar.Get())->Run();
+			}
 		}
 	}
 }
