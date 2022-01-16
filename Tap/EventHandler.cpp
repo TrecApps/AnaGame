@@ -278,6 +278,27 @@ TrecPointer<TTextIntercepter> TapEventHandler::GetTextIntercepter()
 	return textIntercepter;
 }
 
+void TapEventHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
+{
+	bool assigned = false;
+	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
+	{
+		if (eventAr[Rust].textIntercepter.Get())
+		{
+			if (textIntercepter.Get() != eventAr[Rust].textIntercepter.Get())
+			{
+				assigned = true;
+				textIntercepter = eventAr[Rust].textIntercepter;
+			}
+		}
+	}
+
+	if (assigned && app.Get())
+	{
+		TrecPointer<TProcess> fullApp = TrecPointerKey::GetTrecPointerFromSoft<>(app);
+		dynamic_cast<TInstance*>(fullApp.Get())->SetCharIntercepter(TrecPointerKey::GetTrecPointerFromSoft<>(hSelf), textIntercepter);
+	}
+}
 
 /**
  * Method: TapEventHandler::SetSaveFile

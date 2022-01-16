@@ -236,8 +236,10 @@ bool TCombobox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 
     TString valpoint;
     if (attributes.retrieveEntry(L"DefaultText", valpoint))
+    {
         attributes.addEntry(L"Caption", valpoint);
-
+        defaultText.Set(valpoint);
+    }
     if (attributes.retrieveEntry(L"SubHeight", valpoint))
         TString::ConvertStringToUint(valpoint, childHeight);
 
@@ -344,5 +346,9 @@ bool TCombobox::SupportsChildTemplateInjection()
 void TCombobox::SetCurrentContent(TrecPointer<TVariable> v)
 {
     if (v.Get())
+    {
         currentVariable = v;
+    }
+    if (text.Get())
+        text->SetText(v.Get() ? v->GetString() : defaultText);
 }

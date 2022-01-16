@@ -116,6 +116,6 @@ protected:
 
 	UINT childHeight;
 
-	
+	TString defaultText;
 };
 

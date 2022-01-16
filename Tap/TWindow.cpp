@@ -896,6 +896,7 @@ void TWindow::HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred)
 				dynamic_cast<TcInterpretor*>(eventVar.Get())->Run();
 			}
 		}
+
 	}
 }
 

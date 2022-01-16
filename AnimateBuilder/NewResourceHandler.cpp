@@ -26,6 +26,7 @@ void NewResourceHandler::Initialize(TrecPointer<TPage> page)
 
 void NewResourceHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
+	TapEventHandler::HandleEvents(eventAr);
 }
 
 void NewResourceHandler::ProcessMessage(TrecPointer<HandlerMessage> message)

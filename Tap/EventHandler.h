@@ -169,6 +169,8 @@ public:
 
 	virtual TrecPointer<TTextIntercepter> GetTextIntercepter();
 
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr);
+
 
 protected:
 	/**
