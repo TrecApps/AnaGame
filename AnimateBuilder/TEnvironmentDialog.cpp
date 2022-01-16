@@ -72,16 +72,7 @@ bool TEnvironmentDialog::OnDestroy()
 	return ret;
 }
 
-/**
- * Method: TEnvironmentDialog::GetEnvironment
- * Purpose: PRetrieves the environment procured byt the Dialog
- * Parameters: void
- * Returns: TrecPointer<TEnvironment> - the environment selected by the user
- */
-TrecPointer<TEnvironment> TEnvironmentDialog::GetEnvironment()
-{
-	return env;
-}
+
 
 TrecPointer<TEnvironment> ActivateEnvironmentDialog(TrecPointer<TProcess> ins, HWND parent)
 {

@@ -49,13 +49,6 @@ public:
 	 */
 	bool OnDestroy() override;
 
-	/**
-	 * Method: TEnvironmentDialog::GetEnvironment
-	 * Purpose: PRetrieves the environment procured byt the Dialog
-	 * Parameters: void
-	 * Returns: TrecPointer<TEnvironment> - the environment selected by the user
-	 */
-	TrecPointer<TEnvironment> GetEnvironment();
 
 private:
 	TrecPointer<TEnvironment> env;

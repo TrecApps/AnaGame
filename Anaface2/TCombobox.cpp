@@ -237,6 +237,16 @@ TrecSubPointer<TVariable, TContainerVariable> TCombobox::GetVariableList()
     return vars;
 }
 
+bool TCombobox::InjectChildTemplate(TrecPointer<TPage> page)
+{
+    return dataLayout->InjectChildTemplate(page);
+}
+
+bool TCombobox::SupportsChildTemplateInjection()
+{
+    return true;
+}
+
 void TCombobox::SetCurrentContent(TrecPointer<TVariable> v)
 {
     if (v.Get())

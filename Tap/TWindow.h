@@ -396,8 +396,29 @@ public:
 
 	void FlushDc();
 
+	/**
+	 * Method: TIdeWindow::SetEnvironment
+	 * Purpose: Sets the Environment of the Window
+	 * Parameters: TrecPointer<TEnvironment> env - the Environment to manage
+	 * Returns: void
+	 */
+	virtual void SetEnvironment(TrecPointer<TEnvironment> env);
+
+	/**
+	 * Method: TIdeWindow::GetEnvironment
+	 * Purpose: Gets the Environment held by the Window
+	 * Parameters: void
+	 * Returns: TrecPointer<TEnvironment> - the Environment to manage
+	 */
+	TrecPointer<TEnvironment> GetEnvironment();
+
 
 protected:
+
+	/**
+	 * the Environment to manage a Project
+	 */
+	TrecPointer<TEnvironment> environment;
 
 	void HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred);
 

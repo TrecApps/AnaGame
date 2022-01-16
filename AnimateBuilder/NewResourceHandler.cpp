@@ -44,12 +44,11 @@ void NewResourceHandler::OnOkay(TControl* control, EventArgs ea)
 
 void NewResourceHandler::SetUpEnvironmentInCombobox()
 {
-	TrecSubPointer<TWindow, TIdeWindow> ideWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(this->window);
 
-	if (ideWindow.Get() && envComboBox.Get())
+	if (window.Get() && envComboBox.Get())
 	{
 		TrecSubPointer<TEnvironment, TPageEnvironment> pEnv = 
-			TrecPointerKey::GetTrecSubPointerFromTrec<TEnvironment, TPageEnvironment>(ideWindow->GetEnvironment());
+			TrecPointerKey::GetTrecSubPointerFromTrec<TEnvironment, TPageEnvironment>(window->GetEnvironment());
 
 		if (!pEnv.Get()) return;
 

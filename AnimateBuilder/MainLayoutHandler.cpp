@@ -278,6 +278,7 @@ void MainLayoutHandler::OnNewResource(TrecPointer<TPage> tc, EventArgs ea)
 	// dialog_mode_hard_modal
 	auto ins = TrecPointerKey::GetTrecPointerFromSoft<>(this->app);
 	TrecPointer<TWindow> dialog = TrecPointerKey::GetNewSelfTrecPointerAlt<TWindow, ResourceDialog>(name, winClass, style, ideWindow->GetWindowHandle(), 10, ins, TDialogMode::dialog_mode_hard_model);
+	dialog->SetEnvironment(this->environment);
 	dynamic_cast<ResourceDialog*>(dialog.Get())->CompileView(ins->GetFactory());
 
 	dialog->PrepareWindow();

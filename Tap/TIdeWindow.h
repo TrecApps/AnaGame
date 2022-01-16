@@ -189,21 +189,6 @@ public:
 	 */
 	void SetCurrentHolder(TrecSubPointer<TPage, TabBar::Tab> holder, TrecPointer<TPage> page);
 
-	/**
-	 * Method: TIdeWindow::SetEnvironment
-	 * Purpose: Sets the Environment of the Window
-	 * Parameters: TrecPointer<TEnvironment> env - the Environment to manage
-	 * Returns: void
-	 */
-	void SetEnvironment(TrecPointer<TEnvironment> env);
-
-	/**
-	 * Method: TIdeWindow::GetEnvironment
-	 * Purpose: Gets the Environment held by the Window
-	 * Parameters: void
-	 * Returns: TrecPointer<TEnvironment> - the Environment to manage
-	 */
-	TrecPointer<TEnvironment> GetEnvironment();
 
 	/**
 	 * Method: TIdeWindow::GetEnvironmentDirectory
@@ -214,7 +199,13 @@ public:
 	TrecPointer<TFileShell> GetEnvironmentDirectory();
 
 	
-
+	/**
+	 * Method: TIdeWindow::SetEnvironment
+	 * Purpose: Sets the Environment of the Window
+	 * Parameters: TrecPointer<TEnvironment> env - the Environment to manage
+	 * Returns: void
+	 */
+	virtual void SetEnvironment(TrecPointer<TEnvironment> env) override;
 
 	/**
 	 * Method: TIdeWindow::SaveAll
@@ -270,11 +261,6 @@ protected:
 	 * Holder being dragged
 	 */
 	TrecSubPointer<TPage, TabBar::Tab> currentHolder;
-
-	/**
-	 * the Environment to manage a Project
-	 */
-	TrecPointer<TEnvironment> environment;
 
 
 	/**

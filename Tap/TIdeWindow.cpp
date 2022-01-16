@@ -533,7 +533,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 	case anagame_page::anagame_page_project_explorer:
 		dataSource = handler_data_source::hds_project;
 	case anagame_page::anagame_page_file_node:
-		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
+		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.json", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 		fileShell = TFileShell::GetFileInfo(tmlLoc);
 		if (!handler.Get())
 			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), dataSource);
@@ -798,6 +798,7 @@ void TIdeWindow::SetCurrentHolder(TrecSubPointer<TPage, TabBar::Tab> holder, Tre
 	ThreadRelease();
 }
 
+
 /**
  * Method: TIdeWindow::SetEnvironment
  * Purpose: Sets the Environment of the Window
@@ -820,15 +821,6 @@ void TIdeWindow::SetEnvironment(TrecPointer<TEnvironment> env)
 	environment = env;
 
 
-}
-
-
-TrecPointer<TEnvironment> TIdeWindow::GetEnvironment()
-{
-	ThreadLock();
-	auto ret = environment;
-	ThreadRelease();
-	return ret;
 }
 
 /**

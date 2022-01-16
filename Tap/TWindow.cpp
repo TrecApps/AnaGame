@@ -268,6 +268,26 @@ void TWindow::Draw()
 	UnlockDrawing();
 }
 
+/**
+ * Method: TIdeWindow::SetEnvironment
+ * Purpose: Sets the Environment of the Window
+ * Parameters: TrecPointer<TEnvironment> env - the Environment to manage
+ * Returns: void
+ */
+void TWindow::SetEnvironment(TrecPointer<TEnvironment> env)
+{
+	TObjectLocker lock(&this->thread);
+	environment = env;
+}
+
+
+TrecPointer<TEnvironment> TWindow::GetEnvironment()
+{
+	TObjectLocker lock(&this->thread);
+	auto ret = environment;
+	return ret;
+}
+
 
 /**
  * Method: TWindow::InduceDraw

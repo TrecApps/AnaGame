@@ -1201,6 +1201,17 @@ void TControl::ShrinkHeight()
 
 }
 
+bool TControl::InjectChildTemplate(TrecPointer<TPage> page)
+{
+	// Regular TControls do not take in Children
+	return false;
+}
+
+bool TControl::SupportsChildTemplateInjection()
+{
+	return false;
+}
+
 void TControl::InspectEventAttributes()
 {
 	TString valpoint;

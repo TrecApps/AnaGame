@@ -90,7 +90,7 @@ void AnafacePage::HandleNode(const TString& name, TString& result, TrecPointer<T
 		{
 			dynamic_cast<TRandomLayout*>(curPage.Get())->AddPage(page, ld.row, ld.col);
 		}
-		else
+		else if (!dynamic_cast<TControl*>(curPage.Get()) || !dynamic_cast<TControl*>(curPage.Get())->InjectChildTemplate(page))
 			result.Format(L"Control type %ws does not support Child Controls!", name.SubString(0, name.Find(L'(')).GetConstantBuffer().getBuffer());
 	}
 	else if(!result.GetSize())
@@ -203,7 +203,7 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 		// Check to see if we have a child Attribute
 		if (attName.StartsWith(L"children", true))
 		{
-			if (curLd.isLayout)
+			if (curLd.isLayout || (dynamic_cast<TControl*>(ret.Get()) && dynamic_cast<TControl*>(ret.Get())->SupportsChildTemplateInjection()))
 				HandleNode(attName, result, chVar, ret, curLd);
 			else
 				result.Format(L"Control type %ws does not support Child Controls!", name.SubString(0, name.Find(L'(')).GetConstantBuffer().getBuffer());
@@ -221,8 +221,20 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 					if (p.Get() && !result.GetSize())
 						dynamic_cast<TRandomLayout*>(ret.Get())->AddPage(p, curLd.row, curLd.col);
 				}
+				else if (dynamic_cast<TControl*>(ret.Get()) && dynamic_cast<TControl*>(ret.Get())->SupportsChildTemplateInjection())
+				{
+					auto p = HandleControl(attName, result, chVar, curLd);
+
+					if (p.Get() && !result.GetSize())
+						dynamic_cast<TControl*>(ret.Get())->InjectChildTemplate(p);
+				}
 				else
 					result.Format(L"Control type %ws does not support Child Controls!", name.SubString(0, name.Find(L'(')).GetConstantBuffer().getBuffer());
+				if (result.GetSize())
+				{
+					ret.Nullify();
+					return ret;
+				}
 				continue;
 			}
 		}

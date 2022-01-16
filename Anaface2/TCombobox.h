@@ -87,6 +87,23 @@ public:
 	 */
 	TrecSubPointer<TVariable, TContainerVariable> GetVariableList();
 
+	/**
+	 * Method: TControl::InjectChildTemplate
+	 * Purpose: Some TControls can take in a single child page as a 'template', so this method allows this to happen
+	 * Parameters: TrecPointer<TPage> page - the page to inject
+	 * Returns: bool - whether the control takes in a ChildTemplate Or not
+	 */
+	virtual bool InjectChildTemplate(TrecPointer<TPage> page);
+
+
+	/**
+	 * Method: TControl::SupportsChildTemplateInjection
+	 * Purpose: Reports whether the Control supports TTemplate Injection before the Anaface-Page attempts to perform it
+	 * Parameters: void
+	 * Returns: bool - whether InjectChildTemplate could work on this control
+	 */
+	virtual bool SupportsChildTemplateInjection();
+
 protected:
 
 	void SetCurrentContent(TrecPointer<TVariable> v);

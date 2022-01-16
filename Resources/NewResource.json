@@ -30,7 +30,16 @@
 			"TComboBox" : {
 				"RowPosition": 1,
 				"ColumnPosition": 1,
-				"DefaultText": "[Select Resource Type]"
+				"DefaultText": "[Select Resource Type]",
+				"Children": [
+				{
+					"TInput" : {
+						"ContentColor": "0.5,0.5,0.2,0.9",
+						"CanEdit": false,
+						"Caption": "{}"
+					}
+				}
+				]
 			}
 		},
 		{

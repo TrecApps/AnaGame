@@ -378,6 +378,23 @@ void TDataLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_
 	area = curLoc;
 }
 
+bool TDataLayout::InjectChildTemplate(TrecPointer<TPage> page)
+{
+	childControls.RemoveAll();
+	if (!page.Get())
+		return false;
+	ChildControl element;
+	element.col = element.row = 0;
+	element.control = page;
+	childControls.push_back(element);
+	return true;
+}
+
+bool TDataLayout::SupportsChildTemplateInjection()
+{
+	return true;
+}
+
 bool TDataLayout::GetIndex(const TPoint& point, int& row, int& col)
 {
 	if (!IsContained(point, location))

@@ -324,6 +324,9 @@ void EnvironmentHandler::OnConfirm(TrecPointer<TPage> tc, EventArgs ea)
     if (envFile.Get())
         assert(!environment->SetLoadFile(envFile).GetSize());
 
+    if (window.Get())
+        window->SetEnvironment(environment);
+
     DestroyWindow(window->GetWindowHandle());
 }
 
