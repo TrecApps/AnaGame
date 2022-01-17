@@ -19,11 +19,11 @@ bool TGadget::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d)
 
 	TControl::onCreate(r, d3d);
 
-	bSize = location.bottom - location.top;
+	bSize = area.bottom - area.top;
 	int height = bSize;
 
-	if (bSize > location.right - location.left)
-		bSize = location.right - location.left;
+	if (bSize > area.right - area.left)
+		bSize = area.right - area.left;
 
 	if (bSize > 30)
 		bSize = 30;
@@ -37,7 +37,7 @@ bool TGadget::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d)
 	if (!this->content.Get() && setContent)
 	{
 		content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
-		content->onCreate(location);                         // this this isn't covered by the TControl
+		content->onCreate(area);                         // this this isn't covered by the TControl
 															// as it didn't exist yet
 	}
 
@@ -49,9 +49,9 @@ bool TGadget::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d)
 
 	}
 	int offset = (height - bSize) / 2;
-	DxLocation.top = location.top + offset;
-	DxLocation.bottom = location.bottom - offset;
-	DxLocation.left = location.left;
+	DxLocation.top = area.top + offset;
+	DxLocation.bottom = area.bottom - offset;
+	DxLocation.left = area.left;
 	DxLocation.right = DxLocation.left + bSize;
 
 
@@ -70,11 +70,11 @@ void TGadget::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred
 {
 	ThreadLock();
 	TControl::OnResize(newLoc, nFlags, eventAr);
-	int height = location.bottom - location.top;
+	int height = area.bottom - area.top;
 	int offset = (height - bSize) / 2;
-	DxLocation.top = location.top + offset;
-	DxLocation.bottom = location.bottom - offset;
-	DxLocation.left = location.left;
+	DxLocation.top = area.top + offset;
+	DxLocation.bottom = area.bottom - offset;
+	DxLocation.left = area.left;
 	DxLocation.right = DxLocation.left + bSize;
 
 	ThreadRelease();

@@ -94,7 +94,7 @@ void TTextLayout::SetUpTextElement()
 
 	text = TrecPointerKey::GetNewSelfTrecPointerAlt<TTextElement, TComplexTextElement>(drawingBoard, windowHandle);
 
-	text->SetLocation(location);
+	text->SetLocation(area);
 	text->SetBasicFormatting(details);
 	text->SetHorizontallignment(hAlign);
 	text->SetVerticalAlignment(vAlign);
@@ -184,8 +184,8 @@ void TTextLayout::ShrinkHeight()
 		bool worked;
 		float height = text->GetMinHeight(worked);
 		if (worked) {
-			location.bottom = location.top + height;
-			text->SetLocation(location);
+			area.bottom = area.top + height;
+			text->SetLocation(area);
 		}
 	}
 }

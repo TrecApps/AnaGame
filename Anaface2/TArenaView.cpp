@@ -182,7 +182,7 @@ void TArenaView::Draw(TrecPointer<TVariable> object)
 	TObject::ThreadLock();
 	//TControl::onDraw();
 	if (content.Get())
-		content->onDraw(TControl::location);
+		content->onDraw(area);
 
 	if (arenaEngine.Get() && viewport)
 	{
@@ -192,7 +192,7 @@ void TArenaView::Draw(TrecPointer<TVariable> object)
 	if (text.Get())
 		text->OnDraw(object);
 	if (border.Get())
-		border->onDraw(TControl::location);
+		border->onDraw(TControl::area);
 
 	TObject::ThreadRelease();
 }
@@ -213,7 +213,7 @@ void TArenaView::OnResize(D2D1_RECT_F& r, UINT nFlags, TDataArray<EventID_Cred>&
 
 bool TArenaView::OnScroll(bool b, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>&args)
 {
-	if (!IsContained(point, TControl::location))
+	if (!IsContained(point, TControl::area))
 		return false;
 
 	// DirectX::XMFLOAT3 movment = TCamera::di

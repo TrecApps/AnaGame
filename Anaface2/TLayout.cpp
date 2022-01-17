@@ -21,7 +21,7 @@ bool TLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 
 	bool res = TControl::onCreate(loc, d3d);
 
-	ParseDimensions(primDem, primaryStack ? (location.bottom - location.top) : (location.right - location.left));
+	ParseDimensions(primDem, primaryStack ? (area.bottom - area.top) : (area.right - area.left));
 
 	D2D1_RECT_F chLoc = loc;
 

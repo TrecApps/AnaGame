@@ -300,7 +300,7 @@ void TCombobox::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cr
 
 void TCombobox::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
-    if (IsContained(point, location) && this->isLeftClicked)
+    if (IsContained(point, area) && this->isLeftClicked)
     {
         TString flyOut = HasEvent(R_Message_Type::On_Flyout);
         if (flyOut.GetSize())

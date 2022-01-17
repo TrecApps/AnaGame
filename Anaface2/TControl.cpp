@@ -473,7 +473,7 @@ TControl::TControl(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<st
 	arrayID = -1;
 	controlTransform = D2D1::Matrix3x2F::Identity();
 	shape = TShape::T_Rect;
-	location = margin = bounds = { 0,0,0,0 };
+	area = margin = bounds = { 0,0,0,0 };
 	isRightClicked = isLeftClicked = isMouseIn = false;
 	fixedWidth = fixedHeight = false;
 
@@ -528,15 +528,15 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 		if (valpoint.Compare(L"Ellipse"))
 		{
 			shape = TShape::T_Ellipse;
-			ellipse.point = D2D1::Point2F((location.right + location.left) / 2, (location.top + location.bottom) / 2);
-			ellipse.radiusX = (location.right - location.left) / 2;
-			ellipse.radiusY = (location.bottom - location.top) / 2;
+			ellipse.point = D2D1::Point2F((area.right + area.left) / 2, (area.top + area.bottom) / 2);
+			ellipse.radiusX = (area.right - area.left) / 2;
+			ellipse.radiusY = (area.bottom - area.top) / 2;
 		}
 		else if (valpoint.Compare(L"RoundedRectangle"))
 		{
 			shape = TShape::T_Rounded_Rect;
-			float xRound = (location.left - location.right) / 10;
-			float yRound = (location.bottom - location.top) / 10;
+			float xRound = (area.left - area.right) / 10;
+			float yRound = (area.bottom - area.top) / 10;
 			if (attributes.retrieveEntry(L"RoundedRectX", valpoint))
 			{
 				valpoint.ConvertToFloat(xRound);
@@ -545,7 +545,7 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 			{
 				valpoint.ConvertToFloat(yRound);
 			}
-			roundedRect.rect = location;
+			roundedRect.rect = area;
 			roundedRect.radiusX = xRound;
 			roundedRect.radiusY = yRound;
 		}
@@ -601,9 +601,9 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 	OnCreateStyle(attributes);
 	this->SetUpTextElement();
 	if (border.Get())
-		border->onCreate(location);
+		border->onCreate(area);
 	if (content.Get())
-		content->onCreate(location);
+		content->onCreate(area);
 
 	if (attributes.retrieveEntry(TString(L"FixedHeight"),valpoint))
 	{
@@ -669,8 +669,8 @@ bool TControl::SetMargin(const D2D1_RECT_F& newMargin)
 void TControl::ShiftHorizontal(int degrees)
 {
 	TObjectLocker threadLock(&thread);
-	location.left += degrees;
-	location.right += degrees;
+	area.left += degrees;
+	area.right += degrees;
 
 	if (border.Get())
 		border->ShiftHorizontal(degrees);
@@ -687,8 +687,8 @@ void TControl::ShiftHorizontal(int degrees)
 void TControl::ShiftVertical(int degrees)
 {
 	TObjectLocker threadLock(&thread);
-	location.top += degrees;
-	location.bottom += degrees;
+	area.top += degrees;
+	area.bottom += degrees;
 
 	if (border.Get())
 		border->ShiftVertical(degrees);
@@ -817,18 +817,18 @@ void TControl::Draw(TrecPointer<TVariable> object)
 	if (!isActive)
 		return;
 	if (content.Get())
-		content->onDraw(location);
+		content->onDraw(area);
 	if (text.Get())
 		text->OnDraw(object);
 	if (border.Get())
-		border->onDraw(location);
+		border->onDraw(area);
 }
 
 void TControl::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& pages)
 {
 	if (!isActive)
 		return;
-	if (IsContained(point, location))
+	if (IsContained(point, area))
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 
@@ -880,7 +880,7 @@ void TControl::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& m
 {
 	if (!isActive)
 		return;
-	if (IsContained(point, location))
+	if (IsContained(point, area))
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 
@@ -910,7 +910,7 @@ void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 {
 	if (!isActive)
 		return;
-	if (IsContained(point, location))
+	if (IsContained(point, area))
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 
@@ -966,7 +966,7 @@ void TControl::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDat
 {
 	if (!isActive)
 		return;
-	if (IsContained(point, location))
+	if (IsContained(point, area))
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 		if (!isMouseIn)
@@ -1039,7 +1039,7 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, 
 {
 	if (!isActive)
 		return;
-	if (IsContained(point, location))
+	if (IsContained(point, area))
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 
@@ -1068,7 +1068,7 @@ void TControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& m
 {
 	if (!isActive)
 		return;
-	if (IsContained(point, location))
+	if (IsContained(point, area))
 	{
 		mOut = this->overrideParent ? message_output::mo_positive_override : message_output::mo_positive_continue;
 
@@ -1097,7 +1097,7 @@ void TControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& m
 void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
 	bounds = newLoc;
-	auto curLoc = location;
+	auto curLoc = area;
 	SetSize();
 
 	TString index =HasEvent(R_Message_Type::On_Resized);
@@ -1114,7 +1114,7 @@ void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cre
 		this->args.positive = true;
 		this->args.type = L'\0';
 		this->args.oldSize = curLoc;
-		this->args.newSize = location;
+		this->args.newSize = area;
 
 		EventID_Cred cred(R_Message_Type::On_Resized, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 		cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
@@ -1122,12 +1122,11 @@ void TControl::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cre
 		eventAr.push_back(cred);
 	}
 	if (border.Get())
-		border->loci = location;
+		border->loci = area;
 	if (content.Get())
-		content->loci = location;
+		content->loci = area;
 	if (text.Get())
-		text->SetLocation(location);
-	area = location;
+		text->SetLocation(area);
 }
 
 bool TControl::OnDestroy()
@@ -1137,10 +1136,10 @@ bool TControl::OnDestroy()
 
 bool TControl::OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
-	location.bottom += direction.y;
-	location.top += direction.y;
-	location.left += direction.x;
-	location.right += direction.x;
+	area.bottom += direction.y;
+	area.top += direction.y;
+	area.left += direction.x;
+	area.right += direction.x;
 
 	if (point.x > 0 && point.y > 0)
 	{
@@ -1187,7 +1186,7 @@ float TControl::GetMinWidth()
 void TControl::ShrinkHeight()
 {
 	TObjectLocker threadLock(&thread);
-	float bottom = location.top;
+	float bottom = area.top;
 
 	if (text.Get())
 	{
@@ -1196,8 +1195,8 @@ void TControl::ShrinkHeight()
 		assert(w);
 	}
 
-	if (bottom > location.top)
-		location.bottom = bottom;
+	if (bottom > area.top)
+		area.bottom = bottom;
 
 }
 
@@ -1234,7 +1233,7 @@ TString TControl::HasEvent(R_Message_Type mType)
 
 void TControl::OnCreateSize()
 {
-	location = bounds;
+	area = bounds;
 
 	TString valpoint;
 	UINT dime = 0;
@@ -1274,27 +1273,27 @@ void TControl::OnCreateSize()
 
 void TControl::SetSize()
 {
-	location.top = bounds.top + margin.top;
-	location.left = bounds.left + margin.left;
-	location.right = bounds.right - margin.right;
-	location.bottom = bounds.bottom - margin.bottom;
+	area.top = bounds.top + margin.top;
+	area.left = bounds.left + margin.left;
+	area.right = bounds.right - margin.right;
+	area.bottom = bounds.bottom - margin.bottom;
 
 
-	float curWidth = location.right - location.left;
-	float curHeight = location.bottom - location.top;
+	float curWidth = area.right - area.left;
+	float curHeight = area.bottom - area.top;
 
 	UINT maxDime = GetDimension(dimension_spec::ds_width_max),
 		minDime = GetDimension(dimension_spec::ds_width_min);
 
 	if (maxDime && curWidth > maxDime)
 	{
-		location.right = location.left + maxDime;
+		area.right = area.left + maxDime;
 	}
 	else if (minDime && curWidth < minDime)
 	{
 		D2D1_RECT_F newBounds = bounds;
 		UINT diff = curWidth - minDime;
-		location.right += diff;
+		area.right += diff;
 		newBounds.right += diff;
 
 		if (parent.Get())
@@ -1311,13 +1310,13 @@ void TControl::SetSize()
 
 	if (maxDime && curHeight > maxDime)
 	{
-		location.bottom = location.top + maxDime;
+		area.bottom = area.top + maxDime;
 	}
 	else if (minDime && curHeight < minDime)
 	{
 		D2D1_RECT_F newBounds = bounds;
 		UINT diff = curHeight - minDime;
-		location.bottom += diff;
+		area.bottom += diff;
 		newBounds.bottom += diff;
 
 		if (parent.Get())
@@ -1411,7 +1410,7 @@ void TControl::SetUpTextElement()
 
 		text = TrecPointerKey::GetNewSelfTrecPointer<TTextElement>(drawingBoard);
 
-		text->SetLocation(location);
+		text->SetLocation(area);
 		text->SetBasicFormatting(details);
 		text->SetHorizontallignment(hAlign);
 		text->SetVerticalAlignment(vAlign);
@@ -1505,7 +1504,7 @@ void TControl::OnCreateStyle(TDataMap<TString>& atts)
 		if (file.Get())
 		{
 			TObjectLocker threadLock(&thread);
-			content->image = drawingBoard->GetBrush(file, location);
+			content->image = drawingBoard->GetBrush(file, area);
 		}
 	}
 

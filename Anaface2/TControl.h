@@ -642,7 +642,7 @@ protected:
 	/**
 	 * Where the Control is to reside
 	 */
-	D2D1_RECT_F location, margin, bounds;
+	D2D1_RECT_F margin, bounds;
 
 
 	/**

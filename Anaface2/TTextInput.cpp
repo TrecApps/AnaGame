@@ -139,7 +139,7 @@ void TTextInput::Draw(TrecPointer<TVariable> object)
 void TTextInput::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
-	if (IsContained(point, location))
+	if (IsContained(point, area))
 	{
 		mOut = message_output::mo_positive_override;
 
@@ -167,7 +167,7 @@ void TTextInput::OnLButtonDown(UINT nFlags, const TPoint& point, message_output&
 		return;
 
 parentCall:
-	if (IsContained(point, location))
+	if (IsContained(point, area))
 	{
 		bool textChange = false;
 		if (passwordPeek && IsContained(point, passwordPeek_outer))
@@ -356,7 +356,7 @@ void TTextInput::SetUpTextElement()
 
 	text = TrecPointerKey::GetNewSelfTrecPointerAlt<TTextElement, TInputTextElement>(drawingBoard, windowHandle);
 
-	text->SetLocation(location);
+	text->SetLocation(area);
 	text->SetBasicFormatting(details);
 	text->SetHorizontallignment(hAlign);
 	text->SetVerticalAlignment(vAlign);

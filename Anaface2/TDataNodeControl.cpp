@@ -31,7 +31,7 @@ void TDataNodeControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output
 	if (IsContained(point, GetArea()) && mainNode.Get())
 	{
 		TControl::OnLButtonDblClk(nFlags, point, mOut, eventAr);
-		float dist = point.y - location.top;
+		float dist = point.y - area.top;
 		UINT targetNode = static_cast<UINT>(dist) / 30;
 		TrecPointer<TObjectNode> tNode = mainNode->GetNodeAt(targetNode, 0);
 
@@ -52,7 +52,7 @@ void TDataNodeControl::OnResize(D2D1_RECT_F& r, UINT nFlags, TDataArray<EventID_
 			activeParent->InjectScrollerPage(r, tempLoc, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 		}
 	}
-	location = r;
+	area = r;
 }
 
 void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
@@ -61,7 +61,7 @@ void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_out
 	{
 		if (mainNode.Get())
 		{
-			float dist = point.y - location.top;
+			float dist = point.y - area.top;
 
 			UINT targetNode = static_cast<UINT>(dist) / 30;
 
@@ -70,7 +70,7 @@ void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_out
 			if (tNode.Get())
 			{
 				UINT level = tNode->GetLevel();
-				D2D1_RECT_F cLoc = location;
+				D2D1_RECT_F cLoc = area;
 				cLoc.top = cLoc.top + 30 * targetNode;
 				cLoc.bottom = cLoc.top + 30;
 				D2D1_RECT_F triLoc = cLoc;
@@ -88,7 +88,7 @@ void TDataNodeControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_out
 						else if (tNode->IsExtendable())
 						{
 							tNode->Extend();
-							OnResize(location, 0, eventAr);
+							OnResize(area, 0, eventAr);
 						}
 
 
@@ -128,14 +128,14 @@ void TDataNodeControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_o
 	{
 		if (mainNode.Get())
 		{
-			float dist = point.y - location.top;
+			float dist = point.y - area.top;
 			UINT targetNode = static_cast<UINT>(dist) / 30;
 			TrecPointer<TObjectNode> tNode = mainNode->GetNodeAt(targetNode, 0);
 
 			if (tNode.Get())
 			{
 				UINT level = tNode->GetLevel();
-				D2D1_RECT_F cLoc = location;
+				D2D1_RECT_F cLoc = area;
 				cLoc.top = cLoc.top + 30 * targetNode;
 				cLoc.bottom = cLoc.top + 30;
 				D2D1_RECT_F triLoc = cLoc;
@@ -205,7 +205,7 @@ void TDataNodeControl::Draw(TrecPointer<TVariable> object)
 	}
 	TrecPointer<TObjectNode> curNode = mainNode;
 
-	D2D1_RECT_F cLoc = location;
+	D2D1_RECT_F cLoc = area;
 	cLoc.bottom = cLoc.top + 30;
 
 	TDataArray<TPage::EventID_Cred> cred;

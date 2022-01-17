@@ -5,8 +5,8 @@ bool TGrid::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 {
     bool res = TControl::onCreate(loc, d3d);
 
-    ParseDimensions(primDem, primaryStack ? (location.bottom - location.top) : (location.right - location.left));
-    ParseDimensions(secDem, primaryStack ? (location.right - location.left) : (location.bottom - location.top));
+    ParseDimensions(primDem, primaryStack ? (area.bottom - area.top) : (area.right - area.left));
+    ParseDimensions(secDem, primaryStack ? (area.right - area.left) : (area.bottom - area.top));
 
     D2D1_RECT_F chLoc = loc;
 
@@ -165,7 +165,7 @@ D2D1_RECT_F TGrid::GetLocationBySection(UINT row, UINT col)
     if((row && row >= rowSpace->Size()) || (col && col >= colSpace->Size()))
     return D2D1_RECT_F();
 
-    D2D1_RECT_F ret = location;
+    D2D1_RECT_F ret = area;
 
     if (rowSpace->Size())
     {

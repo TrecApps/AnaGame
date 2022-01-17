@@ -20,7 +20,7 @@ void TDataLayout::Draw(TrecPointer<TVariable> object)
 {
 	TControl::Draw(object);
 	
-	auto tempRec = location;
+	auto tempRec = area;
 	tempRec.bottom = tempRec.top + height;
 	tempRec.right = tempRec.left + width;
 
@@ -397,10 +397,10 @@ bool TDataLayout::SupportsChildTemplateInjection()
 
 bool TDataLayout::GetIndex(const TPoint& point, int& row, int& col)
 {
-	if (!IsContained(point, location))
+	if (!IsContained(point, area))
 		return false;
 
-	TPoint nPoint(point.x - location.left, point.y - location.top);
+	TPoint nPoint(point.x - area.left, point.y - area.top);
 
 	col = static_cast<int>(nPoint.x) / width;
 	row = static_cast<int>(nPoint.y) / height;

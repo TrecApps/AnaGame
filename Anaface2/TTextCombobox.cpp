@@ -161,7 +161,7 @@ void TTextCombobox::SetUpTextElement()
 
 	text = TrecPointerKey::GetNewSelfTrecPointerAlt<TTextElement, TTextComboElement>(TrecPointerKey::GetSoftSubPointerFromSoft<TPage, TTextCombobox>(self) ,drawingBoard, window);
 
-	text->SetLocation(location);
+	text->SetLocation(area);
 	text->SetBasicFormatting(details);
 	text->SetHorizontallignment(hAlign);
 	text->SetVerticalAlignment(vAlign);
