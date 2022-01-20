@@ -5,7 +5,7 @@ typedef union number_type_control
 {
 	int i;
 	float f;
-};
+}number_type_control;
 
 class TextIncrementControl
 {

@@ -108,7 +108,7 @@ void NewResourceHandler::SetUpEnvironmentInCombobox()
 
 		if (!pEnv.Get()) return;
 
-		pEnv->GetPageList(L"", entries);
+		pEnv->GetPageList(TPageEnvironment::handler_type::ht_file, L"", entries);
 
 		auto varList = envComboBox->GetVariableList();
 		for (UINT Rust = 0; Rust < entries.Size(); Rust++)

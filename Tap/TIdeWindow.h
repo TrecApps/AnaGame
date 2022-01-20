@@ -19,7 +19,7 @@ typedef enum class anagame_page
 	anagame_page_project_explorer,// Presents a Page that holds a node control that Explores the Project
 	anagame_page_arena,           // Presents a Page that holds a 3D arena control
 	anagame_page_camera           // Presents a Page that provides a Camera Panel
-};
+}anagame_page;
 
 class MiniApp;
 
@@ -245,7 +245,7 @@ protected:
 
 	TString GetTargetPageType(TDataArray<TString> handlerTypes);
 
-	TrecPointer<TPage> AddNewPage();
+	//TrecPointer<TPage> AddNewPage();
 
 	/**
 	 * Whether the main Page is a Tab Bar
