@@ -485,94 +485,26 @@ void TIdeWindow::AddNewMiniApp(TrecPointer<MiniApp> app)
  */
 TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<TPage::EventHandler> handler, bool pageTypeStrict)
 {
-	ThreadLock();
+	TObjectLocker lock(&thread);
+
+	// Only add new page if main page is set
 	if (!mainPage.Get())
 	{
-		ThreadRelease();
 		return TrecPointer<TPage>();
 	}
-	TrecPointer<TPage::EventHandler> pageHandler;
-	TrecPointer<TFile> uiFile = TrecPointerKey::GetNewTrecPointer<TFile>();
-	TrecPointer<TFileShell> fileShell;
 
-	handler_data_source dataSource = handler_data_source::hds_files;
-
-
-	TDataArray<TPage::EventID_Cred> cred;
-	
-
-	switch (pageType)
+	// Attempt to get a page through the Environment Mechanism
+	TrecPointer<TPage> ret;
+	if (!tmlLoc.GetSize() && !handler.Get() && dynamic_cast<TPageEnvironment*>(environment.Get()))
 	{
-	case anagame_page::anagame_page_code_explorer:
-
-		break;
-	case anagame_page::anagame_page_code_file:
-		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.txt", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
-		fileShell = TFileShell::GetFileInfo(tmlLoc);
-		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
-		else
-			pageHandler = handler;
-		break;
-	case anagame_page::anagame_page_command_prompt:
-		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\IDEPrompt.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
-		fileShell = TFileShell::GetFileInfo(tmlLoc);
-		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
-		else
-			pageHandler = handler;
-		break;
-	case anagame_page::anagame_page_console:
-		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\IDEPromptProgram.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
-		fileShell = TFileShell::GetFileInfo(tmlLoc);
-		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
-		else
-			pageHandler = handler;
-		break;
-	case anagame_page::anagame_page_project_explorer:
-		dataSource = handler_data_source::hds_project;
-	case anagame_page::anagame_page_file_node:
-		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.json", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
-		fileShell = TFileShell::GetFileInfo(tmlLoc);
-		if (!handler.Get())
-			pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), dataSource);
-		else
-			pageHandler = handler;
-		break;
-	
-
-		break;
-	case anagame_page::anagame_page_object_explorer:
-
-		break;
-	case anagame_page::anagame_page_arena:
-		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\ArenaView.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
-		fileShell = TFileShell::GetFileInfo(tmlLoc);
-		pageHandler = handler;
-		break;
-	case anagame_page::anagame_page_camera:
-		uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\ArenaViewPanel.txt", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
-		fileShell = TFileShell::GetFileInfo(tmlLoc);
-		pageHandler = handler;
-		break;
-	case anagame_page::anagame_page_custom:
-		if (!handler.Get())
+		switch (pageType)
 		{
-			ThreadRelease();
-			return TrecPointer<TPage>();
+		case anagame_page::anagame_page_file_node:
+			ret = AddNewPage(TPageEnvironment::handler_type::ht_singular, L"filebrowser");
 		}
-		pageHandler = handler;
-		uiFile->Open(tmlLoc, TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
-
 	}
 
-	if (!uiFile->IsOpen() || !pageHandler.Get() || !name.GetSize())
-	{
-		ThreadRelease();
-		return TrecPointer<TPage>();
-	}
-
+	// Prepare Resources for Page Construction
 	TrecSubPointer<TPage, TabPage> targetPage = body;
 	switch (pageLoc)
 	{
@@ -594,22 +526,119 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 	case ide_page_type::ide_page_type_upper_right:
 		targetPage = upperRight;
 	}
-
-	TrecSubPointer<TPage, AnafacePage> newPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(drawingBoard);
 	auto space = targetPage->GetChildSpace();
-	newPage->OnResize(space, 0, cred);
+	TDataArray<TPage::EventID_Cred> cred;
 
-	TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(uiFile->GetFilePath());
-	uiFile->Close();
-	uiFile.Nullify();
-	TString prepRes(newPage->PrepPage(uisFile, pageHandler));
 
-	if (prepRes.GetSize())
+	// Resources to manage specific Engines
+	TrecSubPointer<TPage, AnafacePage> newPage; // right now, just do Anaface
+
+
+	// Prepare a page assuming the environment did not yield one, here, we can just use Anaface
+	if (!ret.Get())
 	{
-		MessageBox(this->currentWindow, prepRes.GetConstantBuffer().getBuffer(), L"Error Constructing UI!", 0);
-		ThreadRelease();
-		return TrecPointer<TPage>();
+		TrecPointer<TPage::EventHandler> pageHandler;
+		TrecPointer<TFile> uiFile = TrecPointerKey::GetNewTrecPointer<TFile>();
+		TrecPointer<TFileShell> fileShell;
+
+		handler_data_source dataSource = handler_data_source::hds_files;
+
+
+
+		switch (pageType)
+		{
+		case anagame_page::anagame_page_code_explorer:
+
+			break;
+		case anagame_page::anagame_page_code_file:
+			uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.txt", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
+			fileShell = TFileShell::GetFileInfo(tmlLoc);
+			if (!handler.Get())
+				pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
+			else
+				pageHandler = handler;
+			break;
+		case anagame_page::anagame_page_command_prompt:
+			uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\IDEPrompt.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
+			fileShell = TFileShell::GetFileInfo(tmlLoc);
+			if (!handler.Get())
+				pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
+			else
+				pageHandler = handler;
+			break;
+		case anagame_page::anagame_page_console:
+			uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\IDEPromptProgram.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
+			fileShell = TFileShell::GetFileInfo(tmlLoc);
+			if (!handler.Get())
+				pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
+			else
+				pageHandler = handler;
+			break;
+		case anagame_page::anagame_page_project_explorer:
+			dataSource = handler_data_source::hds_project;
+		case anagame_page::anagame_page_file_node:
+			uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.json", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
+			fileShell = TFileShell::GetFileInfo(tmlLoc);
+			if (!handler.Get())
+				pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, FileHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), dataSource);
+			else
+				pageHandler = handler;
+			break;
+
+
+			break;
+		case anagame_page::anagame_page_object_explorer:
+
+			break;
+		case anagame_page::anagame_page_arena:
+			uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\ArenaView.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
+			fileShell = TFileShell::GetFileInfo(tmlLoc);
+			pageHandler = handler;
+			break;
+		case anagame_page::anagame_page_camera:
+			uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\ArenaViewPanel.txt", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
+			fileShell = TFileShell::GetFileInfo(tmlLoc);
+			pageHandler = handler;
+			break;
+		case anagame_page::anagame_page_custom:
+			if (!handler.Get())
+			{
+				return TrecPointer<TPage>();
+			}
+			pageHandler = handler;
+			uiFile->Open(tmlLoc, TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
+
+		}
+
+		if (!uiFile->IsOpen() || !pageHandler.Get() || !name.GetSize())
+		{
+			return TrecPointer<TPage>();
+		}
+
+		newPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(drawingBoard);
+		newPage->OnResize(space, 0, cred);
+
+		TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(uiFile->GetFilePath());
+		uiFile->Close();
+		uiFile.Nullify();
+		TString prepRes(newPage->PrepPage(uisFile, pageHandler));
+		if (prepRes.GetSize())
+		{
+			MessageBox(this->currentWindow, prepRes.GetConstantBuffer().getBuffer(), L"Error Constructing UI!", 0);
+			return TrecPointer<TPage>();
+		}
 	}
+	else
+	{
+		ret->OnResize(space, 0, cred);
+		newPage = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, AnafacePage>(ret);
+
+		// To-Do, Redesign mechanism so we don't ave to assume Anaface is being used
+		if (!newPage.Get())
+			return TrecPointer<TPage>();
+	}
+
+
 
 	TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
 
@@ -621,8 +650,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 
 	targetPage->currentPage = TrecSubToTrec(newPage);
 
-	ThreadRelease();
-	return TrecSubToTrec(newPage);;
+	return ret;
 }
 
 /**
@@ -925,6 +953,28 @@ UINT TIdeWindow::OpenFile(TrecPointer<TFileShell> shell)
 
 	ATLTRACE(printOut.GetConstantBuffer().getBuffer());
 	ThreadRelease();
+}
+
+TrecPointer<TPage> TIdeWindow::AddNewPage(TPageEnvironment::handler_type hType, TString name)
+{
+	if(!dynamic_cast<TPageEnvironment*>(environment.Get()))
+		return TrecPointer<TPage>();
+
+	TrecPointer<TPage> page;
+	TrecPointer<TPage::EventHandler> handler;
+
+	TDataArray<TString> pageTypes;
+
+	dynamic_cast<TPageEnvironment*>(environment.Get())->GetPageList(hType, name, pageTypes);
+
+	dynamic_cast<TPageEnvironment*>(environment.Get())->GetPageAndHandler(hType, GetTargetPageType(pageTypes), page, handler, drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
+	return page;
+}
+
+TString TIdeWindow::GetTargetPageType(TDataArray<TString> handlerTypes)
+{
+	// To-Do: Eventually need to figure out a way to decide which handler to use. For now, just return the first option if provided
+	return handlerTypes.Size() ? handlerTypes[0] :TString();
 }
 
 /**

@@ -26,6 +26,8 @@ class TAnaGameCodeEnvironment :
 	public TPageEnvironment
 {
 public:
+
+
 	TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell);
 
 
@@ -114,6 +116,8 @@ public:
 
 protected:
 
+	TDataMap<TrecPointer<TPage>> singularPages;
+
 
 	/**
 	 * Method: TPageEnvironment::GetPageAndHandler
@@ -123,7 +127,7 @@ protected:
 	 *
 	 * Note: If successful, the page and handler params should be assigned once the method returns
 	 */
-	virtual void GetPageAndHandler_(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc) override;
+	virtual void GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc) override;
 
 	/**
 	 * Method: TPageEnvironment::GetPageList
@@ -133,7 +137,7 @@ protected:
 	 *
 	 * Note: if ext is an empty String, then return all that the Environment has to offer
 	 */
-	virtual void GetPageList_(const TString& ext, TDataArray<TString>& extensions) override;
+	virtual void GetPageList_(handler_type hType, const TString& ext, TDataArray<TString>& extensions) override;
 
 	TString targetExtensions;	// Extensions to target for compilation
 

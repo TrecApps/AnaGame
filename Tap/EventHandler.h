@@ -246,6 +246,15 @@ protected:
 class _VIDEO_GRAPHICS TPageEnvironment : public TEnvironment
 {
 public:
+
+	typedef enum class handler_type {
+		ht_singular,
+		ht_multiple,
+		ht_ribbon,
+		ht_file
+	}handler_type;
+
+
 	TPageEnvironment(TrecPointer<TFileShell> shell);
 
 	/**
@@ -256,7 +265,7 @@ public:
 	 *
 	 * Note: If successful, the page and handler params should be assigned once the method returns
 	 */
-	void GetPageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc);
+	void GetPageAndHandler(handler_type hType, const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc);
 
 	/**
 	 * Method: TPageEnvironment::GetPageList
@@ -266,7 +275,7 @@ public:
 	 *
 	 * Note: if ext is an empty String, then return all that the Environment has to offer
 	 */
-	void GetPageList(const TString& ext, TDataArray<TString>& extensions);
+	void GetPageList(handler_type hType, const TString& ext, TDataArray<TString>& extensions);
 
 protected:
 
@@ -279,7 +288,7 @@ protected:
 	 *
 	 * Note: If successful, the page and handler params should be assigned once the method returns
 	 */
-	virtual void GetPageAndHandler_(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc) = 0;
+	virtual void GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc) = 0;
 
 	/**
 	 * Method: TPageEnvironment::GetPageList
@@ -289,5 +298,5 @@ protected:
 	 *
 	 * Note: if ext is an empty String, then return all that the Environment has to offer
 	 */
-	virtual void GetPageList_(const TString& ext, TDataArray<TString>& extensions) = 0;
+	virtual void GetPageList_(handler_type hType, const TString& ext, TDataArray<TString>& extensions) = 0;
 };

@@ -369,10 +369,10 @@ TString TAnaGameCodeEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
 	return TString();
 }
 
-void TAnaGameCodeEnvironment::GetPageAndHandler_(const TString& name, TrecPointer<TPage>& page, 
+void TAnaGameCodeEnvironment::GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<TPage>& page,
 	TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc)
 {
-	if (!name.Compare(L"ag_ce_code"))
+	if (hType == handler_type::ht_file && !name.Compare(L"ag_ce_code"))
 	{
 		handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(proc);
 		TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
@@ -380,16 +380,41 @@ void TAnaGameCodeEnvironment::GetPageAndHandler_(const TString& name, TrecPointe
 
 		aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.txt"), handler);
 		page = TrecSubToTrec(aPage);
+		return; 
+	}
+
+	if (hType == handler_type::ht_singular && !name.Compare(L"ag_ce_fBrowser"))
+	{
+		if (!singularPages.retrieveEntry(name, page))
+		{
+			handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(proc);
+			TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+			aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.json"), handler);
+			page = TrecSubToTrec(aPage);
+			singularPages.addEntry(name, page);
+		}
+		return;
 	}
 }
 
-void TAnaGameCodeEnvironment::GetPageList_(const TString& ext, TDataArray<TString>& extensions)
+void TAnaGameCodeEnvironment::GetPageList_(handler_type hType, const TString& ext, TDataArray<TString>& extensions)
 {
-	if (!ext.CompareNoCase(L"js") ||
-		!ext.CompareNoCase(L"py") ||
-		!ext.CompareNoCase(L"ascrpt") ||
-		!ext.GetSize())
+	switch (hType)
 	{
-		extensions.push_back(L"ag_ce_code");
+	case handler_type::ht_file:
+		if (!ext.CompareNoCase(L"js") ||
+			!ext.CompareNoCase(L"py") ||
+			!ext.CompareNoCase(L"ascrpt") ||
+			!ext.GetSize())
+		{
+			extensions.push_back(L"ag_ce_code");
+		}
+	case handler_type::ht_singular:
+		if (!ext.CompareNoCase(L"filebrowser"))
+		{
+			extensions.push_back(L"ag_ce_fBrowser");
+		}
 	}
 }

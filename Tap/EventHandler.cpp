@@ -348,9 +348,9 @@ TPageEnvironment::TPageEnvironment(TrecPointer<TFileShell> shell) : TEnvironment
 {
 }
 
-void TPageEnvironment::GetPageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board,TrecPointer<TProcess> proc)
+void TPageEnvironment::GetPageAndHandler(handler_type hType, const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board,TrecPointer<TProcess> proc)
 {
-	GetPageAndHandler_(name, page, handler, board, proc);
+	GetPageAndHandler_(hType, name, page, handler, board, proc);
 
 	if (page.Get() && handler.Get())
 		return;
@@ -361,7 +361,7 @@ void TPageEnvironment::GetPageAndHandler(const TString& name, TrecPointer<TPage>
 	{
 		if (dynamic_cast<TPageEnvironment*>(environments[Rust].Get()))
 		{
-			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageAndHandler_(name, page, handler, board, proc);
+			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageAndHandler_(hType, name, page, handler, board, proc);
 			if (page.Get() && handler.Get())
 				return;
 			page.Nullify();
@@ -370,14 +370,14 @@ void TPageEnvironment::GetPageAndHandler(const TString& name, TrecPointer<TPage>
 	}
 }
 
-void TPageEnvironment::GetPageList(const TString& ext, TDataArray<TString>& extensions)
+void TPageEnvironment::GetPageList(handler_type hType, const TString& ext, TDataArray<TString>& extensions)
 {
-	GetPageList_(ext, extensions);
+	GetPageList_(hType, ext, extensions);
 	for (UINT Rust = 0; Rust < environments.Size(); Rust++)
 	{
 		if (dynamic_cast<TPageEnvironment*>(environments[Rust].Get()))
 		{
-			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageList_(name, extensions);
+			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageList_(hType, name, extensions);
 		}
 	}
 }

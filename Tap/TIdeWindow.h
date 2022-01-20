@@ -237,9 +237,15 @@ public:
 	 * Parameters: TrecPointer<TFileShell> - representation of the file to open
 	 * Returns: UINT - error code (0 for success)
 	 */
-	UINT OpenFile(TrecPointer<TFileShell> shell); 
+	UINT OpenFile(TrecPointer<TFileShell> shell);
+	
+	TrecPointer<TPage> AddNewPage(TPageEnvironment::handler_type hType, TString name);
 
 protected:
+
+	TString GetTargetPageType(TDataArray<TString> handlerTypes);
+
+	TrecPointer<TPage> AddNewPage();
 
 	/**
 	 * Whether the main Page is a Tab Bar
