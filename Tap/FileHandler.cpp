@@ -3,6 +3,7 @@
 #include <TFileNode.h>
 #include <DirectoryInterface.h>
 #include <AnafacePage.h>
+#include <TDataNodeControl.h>
 
 TString on_OpenFile(L"OnOpenFile");
 
@@ -59,7 +60,7 @@ void FileHandler::Initialize(TrecPointer<TPage> page)
 
 	TIdeWindow* ideWin = dynamic_cast<TIdeWindow*>(window.Get());
 
-	browser = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TDataLayout>(dynamic_cast<AnafacePage*>(page.Get())->GetRootControl());
+	browser = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TDataNodeControl>(dynamic_cast<AnafacePage*>(page.Get())->GetRootControl());
 
 	if (browser.Get())
 	{
@@ -77,12 +78,12 @@ void FileHandler::Initialize(TrecPointer<TPage> page)
 					rootFile = TFileShell::GetFileInfo(GetDirectory(CentralDirectories::cd_Documents));
 				dynamic_cast<TFileNode*>(node.Get())->SetFile(rootFile);
 
-				//browser->SetNode(node);
+				browser->SetNode(node);
 			}
 			else if (dataSource == handler_data_source::hds_project)
 			{
 				TrecPointer<TEnvironment> env = ideWin->GetEnvironment();
-				//browser->SetNode(env->GetBrowsingNode());
+				browser->SetNode(env->GetBrowsingNode());
 			}
 
 			

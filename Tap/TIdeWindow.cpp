@@ -26,7 +26,7 @@
  */
 TIdeWindow::TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, 
 	TrecPointer<TProcess> ins, UINT mainViewSpace, UINT pageBarSpace, const TString& pageName):
-	TWindow(name, winClass, style | WS_MAXIMIZE, parent, commandShow, ins)
+	TWindow(name, winClass, style, parent, commandShow, ins)
 {
 	this->mainViewSpace = mainViewSpace;
 	this->pageBarSpace = pageBarSpace;
@@ -614,6 +614,9 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 		{
 			return TrecPointer<TPage>();
 		}
+
+		if (dynamic_cast<TapEventHandler*>(pageHandler.Get()))
+			dynamic_cast<TapEventHandler*>(pageHandler.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
 
 		newPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(drawingBoard);
 		newPage->OnResize(space, 0, cred);

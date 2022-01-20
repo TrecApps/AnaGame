@@ -41,7 +41,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     TThread::SetMainThread();
 
-    mainInstance = TrecPointerKey::GetNewSelfTrecSubPointer<TProcess,TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
+    mainInstance = TrecPointerKey::GetNewSelfTrecSubPointer<TProcess,TInstance>(title, winClass, WS_OVERLAPPEDWINDOW, nullptr, nCmdShow, hInstance, WndProc);
 
     WNDCLASSEXW wcex;
 

@@ -539,12 +539,13 @@ void TTextElement::OnDraw(TObject* obj)
 void TTextElement::OnDraw(TrecPointer<TVariable> dataText)
 {
 	TString curText;
-	bool textReplaced = false;
 	if (dataText.Get() && text.GetSize() > 0 && text.GetAt(0) == L'{' && text.GetAt(text.GetSize() - 1) == L'}')
 	{
-
+		curText.Set(text);
 		text.Set(dataText->GetString(text.SubString(1, text.GetSize() - 1)));
 		ReCreateLayout();
+		text.Set(curText);
+		curText.Empty();
 	}
 
 
@@ -557,6 +558,7 @@ void TTextElement::OnDraw(TrecPointer<TVariable> dataText)
 		mainLayout->Draw(&tContext, GetTTextRenderer().Get(), bounds.left, bounds.top);
 		//drawingBoard->GetRenderer()->DrawTextLayout(D2D1::Point2F(), fontLayout.Get(), b);
 	}
+
 }
 
 bool TTextElement::GetColor(TColor& color, bool foreground)

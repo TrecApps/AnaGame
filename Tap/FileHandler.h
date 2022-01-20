@@ -1,6 +1,7 @@
 #pragma once
 #include "EventHandler.h"
 #include <TDataLayout.h>
+#include <TDataNodeControl.h>
 
 class FileHandler;
 
@@ -93,7 +94,7 @@ protected:
 	/**
 	 * The control that actualy browses the File System
 	 */
-	TrecSubPointer<TPage, TDataLayout> browser;
+	TrecSubPointer<TPage, TDataNodeControl> browser;
 
 	/**
 	 * Holds list of EventHandlers specific for this Handler type

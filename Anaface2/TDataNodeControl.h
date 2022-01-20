@@ -8,7 +8,7 @@
  * 
  * Note: Based heavily on the TTreeDataBind class in the original Anaface
  */
-class TDataNodeControl :
+class _ANAFACE_DLL2 TDataNodeControl :
     public TRandomLayout
 {
 protected:
