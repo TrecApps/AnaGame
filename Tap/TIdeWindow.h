@@ -245,6 +245,8 @@ protected:
 
 	TString GetTargetPageType(TDataArray<TString> handlerTypes);
 
+	virtual void RunWindowCommand(const TString& command) override;
+
 	//TrecPointer<TPage> AddNewPage();
 
 	/**

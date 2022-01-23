@@ -35,8 +35,22 @@ void TDataNodeControl::OnLButtonDblClk(UINT nFlags, TPoint point, message_output
 		UINT targetNode = static_cast<UINT>(dist) / 30;
 		TrecPointer<TObjectNode> tNode = mainNode->GetNodeAt(targetNode, 0);
 
-		if (tNode.Get())
-			args.object = tNode;
+		if (!tNode.Get())return;
+
+		TString index = HasEvent(R_Message_Type::On_LDoubleClick);
+		if (index.GetSize() && eventAr.Size() && eventAr[eventAr.Size() -1].eventType == R_Message_Type::On_LDoubleClick)
+		{
+			eventAr[eventAr.Size() - 1].args->object = tNode;
+			eventAr[eventAr.Size() - 1].data = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(tNode->GetCommand(L"dbl_ck"));
+		}
+		else
+		{
+			EventID_Cred cred(R_Message_Type::On_LDoubleClick, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+			cred.data = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(tNode->GetCommand(L"dbl_ck"));
+			eventAr.push_back(cred);
+		}
+
+		
 	}
 }
 

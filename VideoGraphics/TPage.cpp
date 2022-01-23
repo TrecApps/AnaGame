@@ -316,6 +316,7 @@ TPage::EventID_Cred::EventID_Cred(const EventID_Cred& copy)
 	this->textIntercepter = copy.textIntercepter;
 	this->data = copy.data;
 	this->args = copy.args;
+	this->expression.Set(copy.expression);
 }
 
 TPage::EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TPage> c)

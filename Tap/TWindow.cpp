@@ -894,10 +894,16 @@ void TWindow::HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred)
 			{
 			case var_type::interpretor:
 				dynamic_cast<TcInterpretor*>(eventVar.Get())->Run();
+			case var_type::string:
+				RunWindowCommand(eventVar->GetString());
 			}
 		}
 
 	}
+}
+
+void TWindow::RunWindowCommand(const TString& command)
+{
 }
 
 /**

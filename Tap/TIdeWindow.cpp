@@ -980,6 +980,54 @@ TString TIdeWindow::GetTargetPageType(TDataArray<TString> handlerTypes)
 	return handlerTypes.Size() ? handlerTypes[0] :TString();
 }
 
+void TIdeWindow::RunWindowCommand(const TString& command)
+{
+	auto args = command.split(L" \n\r\t", 0b00000011);
+
+	if (args->Size())
+	{
+		if (!args->at(0).Compare(L"win_OpenFile") && args->Size() > 1)
+		{
+			TrecPointer<TFileShell> fileToOpen = TFileShell::GetFileInfo(args->at(1));
+
+			if (!fileToOpen.Get())
+				return;
+
+			TrecSubPointer<TEnvironment, TPageEnvironment> tpEnv = TrecPointerKey::GetTrecSubPointerFromTrec<TEnvironment, TPageEnvironment>(environment);
+			if (!tpEnv.Get())
+				return;
+
+			TrecPointer<TPage> newPage;
+			TrecPointer<TPage::EventHandler> handler;
+			TString fileName(fileToOpen->GetName());
+
+			TDataArray<TString> handlers;
+			tpEnv->GetPageList(TPageEnvironment::handler_type::ht_file, fileName.SubString(fileName.FindLast(L'.') + 1), handlers);
+
+			tpEnv->GetPageAndHandler(TPageEnvironment::handler_type::ht_file, this->GetTargetPageType(handlers),
+				newPage, handler, drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
+
+			if (!newPage.Get())
+				return;
+
+			body->tabBar.AddNewTab(fileName, newPage, true);
+			D2D1_RECT_F space = body->GetChildSpace();
+			TDataArray<TPage::EventID_Cred> cred;
+			newPage->OnResize(space, 0, cred);
+
+			if (dynamic_cast<AnafacePage*>(newPage.Get()))
+			{
+				TrecPointer<TPage> root = dynamic_cast<AnafacePage*>(newPage.Get())->GetRootControl();
+				if (dynamic_cast<TControl*>(root.Get()))
+					dynamic_cast<TControl*>(root.Get())->onCreate(space, d3dEngine);
+			}
+
+			if (dynamic_cast<TapEventHandler*>(handler.Get()))
+				dynamic_cast<TapEventHandler*>(handler.Get())->SetSaveFile(fileToOpen);
+		}
+	}
+}
+
 /**
  * Method: TIdeWindow::DrawOtherPages
  * Purpose: Draws the other page it has set up

@@ -422,6 +422,8 @@ protected:
 
 	void HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred);
 
+	virtual void RunWindowCommand(const TString& command);
+
 
 	// Draw Other pages that are special to the Window
 	/**
