@@ -104,7 +104,7 @@ ag_msg bool TabPage::OnDestroy()
 ag_msg bool TabPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args)
 {
 	if (currentPage.Get())
-		return OnScroll(false, point, direction, args);
+		return currentPage->OnScroll(false, point, direction, args);
 	return false;
 }
 

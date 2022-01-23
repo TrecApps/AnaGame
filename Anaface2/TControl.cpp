@@ -1521,9 +1521,9 @@ DWRITE_TEXT_ALIGNMENT convertStringToTextAlignment(const TString& t)
 {
 
 	if (!t.CompareNoCase(L"left"))
-		return DWRITE_TEXT_ALIGNMENT_TRAILING;
-	if (!t.CompareNoCase(L"right"))
 		return DWRITE_TEXT_ALIGNMENT_LEADING;
+	if (!t.CompareNoCase(L"right"))
+		return DWRITE_TEXT_ALIGNMENT_TRAILING;
 	if (!t.CompareNoCase(L"justified"))
 		return DWRITE_TEXT_ALIGNMENT_JUSTIFIED;
 	return DWRITE_TEXT_ALIGNMENT_CENTER;
