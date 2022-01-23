@@ -260,9 +260,8 @@ void TapEventHandler::OnSave()
  */
 void TapEventHandler::SetSaveFile(TrecPointer<TFileShell> file)
 {
-	ThreadLock();
+	TObjectLocker lock(&thread);
 	filePointer = file;
-	ThreadRelease();
 }
 
 TrecPointer<TFileShell> TapEventHandler::GetFilePointer()

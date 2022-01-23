@@ -378,7 +378,7 @@ void TAnaGameCodeEnvironment::GetPageAndHandler_(handler_type hType, const TStri
 		TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
 
 
-		aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.txt"), handler);
+		aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.json"), handler);
 		page = TrecSubToTrec(aPage);
 		return; 
 	}

@@ -163,7 +163,7 @@ public:
 	 * Parameters: TrecPointer<TFileShell> file - the file to focus on
 	 * Returns: void
 	 */
-	void SetSaveFile(TrecPointer<TFileShell> file);
+	virtual void SetSaveFile(TrecPointer<TFileShell> file);
 
 	TrecPointer<TFileShell> GetFilePointer();
 

@@ -51,11 +51,45 @@ void TCodeHandler::Initialize(TrecPointer<TPage> page)
 		return;
 	}
 	lines = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(lay->GetPage(0, 0));
-	code = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(lay->GetPage(1, 0));
+	code = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(lay->GetPage(0, 1));
 
 	this->page = page;
 
-	if (filePointer.Get())
+	PrepCodeText();
+	ThreadRelease();
+}
+
+void TCodeHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
+{
+}
+
+void TCodeHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
+{
+}
+
+void TCodeHandler::OnSave()
+{
+	ThreadLock();
+	TapEventHandler::SetSaveFile();
+
+	if (filePointer.Get() && !filePointer->IsDirectory())
+	{
+		TFile saver(filePointer->GetPath(), TFile::t_file_write | TFile::t_file_create_always);
+		OnSave(saver);
+	}
+	ThreadRelease();
+}
+
+void TCodeHandler::SetSaveFile(TrecPointer<TFileShell> file)
+{
+	TObjectLocker lock(&thread);
+	TapEventHandler::SetSaveFile(file);
+	PrepCodeText();
+}
+
+void TCodeHandler::PrepCodeText()
+{
+	if (filePointer.Get() && code.Get())
 	{
 		TFile realFile(filePointer->GetPath(), TFile::t_file_open_existing | TFile::t_file_read);
 
@@ -74,30 +108,11 @@ void TCodeHandler::Initialize(TrecPointer<TPage> page)
 			}
 
 			code->SetText(codeData);
+			TDataArray<TPage::EventID_Cred> cred;
+			auto space = page->GetArea();
+			page->OnResize(space, 0, cred);
 		}
 	}
-	ThreadRelease();
-}
-
-void TCodeHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
-{
-}
-
-void TCodeHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
-{
-}
-
-void TCodeHandler::OnSave()
-{
-	ThreadLock();
-	SetSaveFile();
-
-	if (filePointer.Get() && !filePointer->IsDirectory())
-	{
-		TFile saver(filePointer->GetPath(), TFile::t_file_write | TFile::t_file_create_always);
-		OnSave(saver);
-	}
-	ThreadRelease();
 }
 
 

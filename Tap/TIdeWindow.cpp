@@ -1024,6 +1024,9 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 
 			if (dynamic_cast<TapEventHandler*>(handler.Get()))
 				dynamic_cast<TapEventHandler*>(handler.Get())->SetSaveFile(fileToOpen);
+
+			// To-Do: Add mechanism for better automation
+			body->currentPage = newPage;
 		}
 	}
 }

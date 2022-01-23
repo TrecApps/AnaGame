@@ -81,9 +81,18 @@ public:
 	 */
 	virtual void OnSave()override;
 
-
+	/**
+	 * Method: EventHandler::SetSaveFile
+	 * Purpose: Sets up the file to save if OnSave is called
+	 * Parameters: TrecPointer<TFileShell> file - the file to focus on
+	 * Returns: void
+	 */
+	virtual void SetSaveFile(TrecPointer<TFileShell> file) override;
 
 protected:
+
+	void PrepCodeText();
+
 
 	/**
 	 * Method: TCodeHandler::ShouldProcessMessageByType
