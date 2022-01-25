@@ -110,7 +110,7 @@ void TCodeHandler::PrepCodeText()
 			code->SetText(codeData);
 			TDataArray<TPage::EventID_Cred> cred;
 			auto space = page->GetArea();
-			//page->OnResize(space, 0, cred);
+			page->OnResize(space, 0, cred);
 		}
 	}
 }

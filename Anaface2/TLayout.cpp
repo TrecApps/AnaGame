@@ -100,8 +100,9 @@ void TLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred
 				childControls[0].control->OnResize(cLoc, nFlags, eventAr);
 			for (UINT Rust = 1; Rust < childControls.Size() && Rust < primDem.Size(); Rust++)
 			{
+				cLoc.top = cLoc.bottom;
 				cLoc.bottom += primDem[Rust].actualSpace;
-				cLoc.top += primDem[Rust].actualSpace;
+				
 
 				if (childControls[Rust].control.Get())
 					childControls[Rust].control->OnResize(cLoc, nFlags, eventAr);
@@ -114,8 +115,8 @@ void TLayout::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred
 				childControls[0].control->OnResize(cLoc, nFlags, eventAr);
 			for (UINT Rust = 1; Rust < childControls.Size() && Rust < primDem.Size(); Rust++)
 			{
+				cLoc.left = cLoc.right;
 				cLoc.right += primDem[Rust].actualSpace;
-				cLoc.left += primDem[Rust].actualSpace;
 
 				if (childControls[Rust].control.Get())
 					childControls[Rust].control->OnResize(cLoc, nFlags, eventAr);
