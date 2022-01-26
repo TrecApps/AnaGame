@@ -11,6 +11,12 @@ public:
 	UINT space, actualSpace;
 };
 
+typedef enum class overflow_layout_approach
+{
+	ola_contain, // The layout will simply place a scroller between itself and the child control requesting more space (Default)
+	ola_vertical // The layout will expand Vertically upon encountering a child control that needs more space. 
+};
+
 /**
  * Class: TLayout
  * Purpose: Adds one dimension of Structure to the TRandomLayout
@@ -152,7 +158,21 @@ public:
 	 */
 	virtual int AddCol(UINT space, bool isFlex);
 
+
+	/**
+	 * Method: TLayout::InjectScrollerPage
+	 * Purpose: Inserts a Scrolling Page between the parent page and the calling Page
+	 * Parameters: const D2D1_RECT_F& bounds - the bounds of the calling page
+	 *				TrecPointer<TPage> page - the calling page
+	 * Returns: void
+	 *
+	 * Attributes: virtual
+	 */
+	virtual void InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& needs, TrecPointer<TPage> page)override;
+
 protected:
+
+	overflow_layout_approach overflowResponse;
 
 	/**
 	 * Method: TLayout::ParseDimensions

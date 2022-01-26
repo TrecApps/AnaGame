@@ -1,4 +1,5 @@
 #include "TLayout.h"
+#include <TScrollerPage.h>
 
 LayoutSpace::LayoutSpace()
 {
@@ -67,6 +68,7 @@ bool TLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 TLayout::TLayout(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles) : TRandomLayout(drawingBoard, styles)
 {
 	primaryStack = true;
+	overflowResponse = overflow_layout_approach::ola_contain;
 }
 
 TLayout::~TLayout()
@@ -211,6 +213,37 @@ int TLayout::AddCol(UINT space, bool isFlex)
 
 	this->childControls.push_back(cc);
 	return primDem.push_back(layoutSpace);
+}
+
+void TLayout::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& needs, TrecPointer<TPage> page)
+{
+	if (!page.Get())
+		return;
+
+	bool found = false;
+	UINT target = 0;
+	for (UINT Rust = 0; Rust < childControls.Size(); Rust++)
+	{
+		if (childControls[Rust].control.Get() == page.Get())
+		{
+			found = true;
+			target = Rust;
+		}
+	}
+	if (!found) return;
+
+	if (overflowResponse == overflow_layout_approach::ola_contain)
+	{
+		TrecPointer<TPage> scroller = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TScrollerPage>(drawingBoard, page);
+		TDataArray<EventID_Cred> cred;
+		auto b = bounds;
+		scroller->OnResize(b, 0, cred);
+		childControls[target].control = scroller;
+	}
+	else if (overflowResponse == overflow_layout_approach::ola_vertical)
+	{
+		//if(!this->primaryStack)
+	}
 }
 
 bool TLayout::ParseDimensions(TDataArray<LayoutSpace>& dimension, UINT totalSpace)

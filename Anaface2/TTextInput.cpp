@@ -230,6 +230,20 @@ void TTextInput::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_C
 		passwordPeek_inner.radiusX = passwordPeek_outer.radiusX / 3;
 		passwordPeek_inner.radiusY = passwordPeek_outer.radiusY / 3;
 	}
+	if (text.Get())
+	{
+		bool w;
+		float idealHeight = text->GetMinHeight(w);
+		assert(w);
+		float currentHeight = area.bottom - area.top;
+
+		if (idealHeight <= currentHeight || !parent.Get())
+			return;
+
+		auto actParent = TrecPointerKey::GetTrecPointerFromSoft<>(parent);
+
+		actParent->InjectScrollerPage(newLoc, { area.left, area.top, area.right, area.top + idealHeight }, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+	}
 }
 
 bool TTextInput::SetNumericText(float f)
