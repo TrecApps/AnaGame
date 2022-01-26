@@ -1,5 +1,15 @@
 #include "TInputTextElement.h"
 
+bool TInputTextElement::FindString(const TString& target, UINT& index, bool fromFront)
+{
+	int iindex = fromFront ? text.Find(target, 0) : text.FindLast(target);
+	if(iindex == -1)
+		return false;
+	index = static_cast<UINT>(iindex);
+
+	return true;
+}
+
 void TInputTextElement::UpdateCarotPoisition(UINT loc)
 {
 	DWRITE_HIT_TEST_METRICS mets;
@@ -16,6 +26,11 @@ void TInputTextElement::UpdateCarotPoisition(UINT loc)
 		carotLoc = loc;
 	}
 
+}
+
+UINT TInputTextElement::GetCarotLoc()
+{
+	return carotLoc;
 }
 
 bool TInputTextElement::TakesInput()

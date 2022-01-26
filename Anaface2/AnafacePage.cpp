@@ -4,7 +4,8 @@
 #include <TContainerVariable.h>
 #include "TRadiobutton.h"
 #include "TCheckbox.h"
-#include "TTextLayout.h"
+#include "TConsoleText.h"
+#include "TConsoleLayout.h"
 #include "TArenaView.h"
 #include "TVideoPlayer.h"
 #include "TDataLayout.h"
@@ -20,6 +21,7 @@ TString objectTypes[] = {
 	L"TInput",			// Control that acts as a basic input element
 	L"TLongInput",		// Control that provides more complex input
 	L"TBasicPrompt",	// Extends TLongInput to support Command Prompt-like interface
+	L"TComplexPrompt",	// Partitions components of a Prompt set-up
 	L"TArena",			// Supports a view for 3D content
 	L"TVideo",			// Provides support for video playback
 	L"TCanvas",			// Allows for drawing custom items
@@ -111,8 +113,10 @@ TrecPointer<TPage> AnafacePage::HandleControl(const TString& name, TString& resu
 		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(this->drawingBoard, styles, this->drawingBoard->GetWindowHandle());
 	if (name.StartsWith(L"TLongInput", true))
 		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextLayout>(this->drawingBoard, styles, this->drawingBoard->GetWindowHandle());
-	//if (name.StartsWith(L"TBasicPrompt", true))
-	//	ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TRadiobutton>(this->drawingBoard, styles);
+	if (name.StartsWith(L"TBasicPrompt", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TConsoleText>(this->drawingBoard, styles);
+	if (name.StartsWith(L"TComplexPrompt", true))
+		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TConsoleLayout>(this->drawingBoard, styles);
 	if (name.StartsWith(L"TArena", true))
 		ret = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TArenaView>(this->drawingBoard, styles, this->drawingBoard->GetWindowHandle());
 	if (name.StartsWith(L"TVideo", true))

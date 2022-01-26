@@ -32,6 +32,11 @@ protected:
 	 */
 	bool editAllowed;
 
+
+public:
+
+	bool FindString(const TString& target, UINT& index, bool fromFront = true);
+
 	/**
 	 * Method: TInputTextElement::UpdateCarotByPosition
 	 * Purpose: Sets the carot position by text index
@@ -39,7 +44,8 @@ protected:
 	 * Returns: void
 	 */
 	void UpdateCarotPoisition(UINT loc);
-public:
+
+	UINT GetCarotLoc();
 
 	virtual bool TakesInput() override;
 
