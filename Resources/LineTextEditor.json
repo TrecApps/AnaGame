@@ -8,7 +8,8 @@
 				"ColumnPosition": 0,
 				"CanEdit": false,
 				"BorderColor":"0.0,0.0,0.0,1.0",
-				"BorderThickness":2.0
+				"BorderThickness":2.0,
+				"VerticalAlignment" : "Top"
 			}
 		},
 		{
@@ -17,7 +18,8 @@
 				"BorderColor":"0.0,0.0,0.0,0.5",
 				"BorderThickness":1.0,
 				"FontColor" : "white",
-				"HorizontalAlignment" : "left"
+				"HorizontalAlignment" : "left",
+				"VerticalAlignment" : "Top"
 			}
 		}
 		]

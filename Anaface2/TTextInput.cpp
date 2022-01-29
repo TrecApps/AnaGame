@@ -242,8 +242,11 @@ void TTextInput::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_C
 			return;
 
 		auto actParent = TrecPointerKey::GetTrecPointerFromSoft<>(parent);
-		if(!dynamic_cast<TScrollerPage*>(actParent.Get()) && actParent.Get())
-			actParent->InjectScrollerPage(newLoc, { area.left, area.top, area.right, area.top + idealHeight }, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		if (!dynamic_cast<TScrollerPage*>(actParent.Get()) && actParent.Get())
+		{
+			area.bottom += idealHeight;
+			actParent->InjectScrollerPage(newLoc, area, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		}
 	}
 }
 
