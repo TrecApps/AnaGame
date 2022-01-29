@@ -186,7 +186,7 @@ ag_msg bool TScrollerPage::OnScroll(bool fromBars, const TPoint& point, const TP
 {
 	TObjectLocker lock(&this->thread);
 	
-	if (fromBars)
+	if (!fromBars)
 	{
 		area.bottom += direction.y;
 		area.top += direction.y;

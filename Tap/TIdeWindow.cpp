@@ -331,7 +331,7 @@ finish:
 		currentHolder->OnResize(curArea, 0, cred);
 	}
 
-
+	TWindow::HandleWindowEvents(cred);
 	
 	Draw();
 	ThreadRelease();
@@ -423,7 +423,7 @@ finish:
 			SetCurrentHolder(tabby, tabby->GetContent());
 		}
 	}
-	
+	TWindow::HandleWindowEvents(cred);
 
 	Draw();
 	ThreadRelease();

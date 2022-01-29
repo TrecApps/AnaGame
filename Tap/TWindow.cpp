@@ -885,6 +885,9 @@ void TWindow::HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred)
 		{
 		case R_Message_Type::On_Flyout:
 			flyout = cred[Rust].control;
+			break;
+		case R_Message_Type::On_Select_Scroller:
+			currentScrollBar = cred[Rust].scroll;
 		}
 
 		TrecPointer<TVariable> eventVar = cred[Rust].data;

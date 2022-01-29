@@ -1141,6 +1141,13 @@ bool TControl::OnScroll(bool, const TPoint& point, const TPoint& direction, TDat
 	area.left += direction.x;
 	area.right += direction.x;
 
+	if (border.Get())
+		border->loci = area;
+	if (content.Get())
+		content->loci = area;
+	if (text.Get())
+		text->SetLocation(area);
+
 	if (point.x > 0 && point.y > 0)
 	{
 		TString index =HasEvent(R_Message_Type::On_Scrolled);
