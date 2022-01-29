@@ -177,7 +177,7 @@ void TabBar::SetTabSizes()
 
 TabBar::TabBar(TrecPointer<DrawingBoard> board): TPage(board), leftTab(board), rightTab(board)
 {
-    draggableTabs = tabOverflow = false;
+    draggableTabs = tabOverflow = true;
     startTab = 0;
 
     tabMode = tab_mode::tm_not_set;

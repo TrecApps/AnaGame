@@ -29,6 +29,8 @@ TInstance::TInstance(TString& name, TString& winClass, UINT style, HWND parent, 
 	// Set up Format Readers
 	TFormatReader::EstablishDefaultBuilders();
 
+	assert(SUCCEEDED(CoInitialize(nullptr)));
+
 
 	handlerID = 1;
 	messageStack = 0;
@@ -63,6 +65,8 @@ TString TInstance::GetType()
 
 TInstance::~TInstance()
 {
+	CoUninitialize();
+
 	mainWindow.Delete();
 
 	for (UINT Rust = 0; Rust < windowList.Size(); Rust++)
