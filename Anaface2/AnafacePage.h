@@ -35,6 +35,8 @@ public:
 	 */
 	virtual bool HandlesEvents() override;
 
+	void Create(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> engine);
+
 	/**
 	 * Method: AnafacePage::PrepPage
 	 * Purpose: Allows top-level Pages to set up subordinate Pages and manage event handling

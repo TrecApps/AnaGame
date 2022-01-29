@@ -116,7 +116,7 @@ public:
 
 protected:
 
-	TDataMap<TrecPointer<TPage>> singularPages;
+	TrecPointer<PageHandlerBuilder> codePageBuilder;
 
 
 	/**
@@ -127,7 +127,7 @@ protected:
 	 *
 	 * Note: If successful, the page and handler params should be assigned once the method returns
 	 */
-	virtual void GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc) override;
+	virtual void GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<PageHandlerBuilder>& builder) override;
 
 	/**
 	 * Method: TPageEnvironment::GetPageList

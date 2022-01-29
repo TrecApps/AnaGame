@@ -556,6 +556,12 @@ public:
 		ht_file
 	}handler_type;
 
+	class PageHandlerBuilder {
+	public:
+		virtual void RetrievePageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler,
+			TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc, const D2D1_RECT_F& loc) = 0;
+	};
+
 
 	TPageEnvironment(TrecPointer<TFileShell> shell);
 
@@ -567,7 +573,7 @@ public:
 	 *
 	 * Note: If successful, the page and handler params should be assigned once the method returns
 	 */
-	void GetPageAndHandler(handler_type hType, const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc);
+	void GetPageAndHandler(handler_type hType, const TString& name, TrecPointer<PageHandlerBuilder>& builder);
 
 	/**
 	 * Method: TPageEnvironment::GetPageList
@@ -590,7 +596,7 @@ protected:
 	 *
 	 * Note: If successful, the page and handler params should be assigned once the method returns
 	 */
-	virtual void GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc) = 0;
+	virtual void GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<PageHandlerBuilder>& builder) = 0;
 
 	/**
 	 * Method: TPageEnvironment::GetPageList

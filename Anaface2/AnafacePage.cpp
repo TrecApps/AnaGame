@@ -386,6 +386,14 @@ bool AnafacePage::HandlesEvents()
 	return handler.Get() != nullptr;
 }
 
+void AnafacePage::Create(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> engine)
+{
+	if (!dynamic_cast<TControl*>(rootPage.Get()))
+		return;
+	dynamic_cast<TControl*>(rootPage.Get())->onCreate(loc, engine);
+	area = rootPage->GetArea();
+}
+
 TString AnafacePage::PrepPage(TrecPointer<TFileShell> file, TrecPointer<EventHandler> handler)
 {
 	TString ret;

@@ -299,6 +299,11 @@ void TapEventHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 	}
 }
 
+void TapEventHandler::SetCallerHandler(TrecPointer<EventHandler> caller)
+{
+
+}
+
 /**
  * Method: TapEventHandler::SetSaveFile
  * Purpose: Sets up the file to save if OnSave is called
@@ -347,24 +352,20 @@ TPageEnvironment::TPageEnvironment(TrecPointer<TFileShell> shell) : TEnvironment
 {
 }
 
-void TPageEnvironment::GetPageAndHandler(handler_type hType, const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board,TrecPointer<TProcess> proc)
+void TPageEnvironment::GetPageAndHandler(handler_type hType, const TString& name, TrecPointer<PageHandlerBuilder>& builder)
 {
-	GetPageAndHandler_(hType, name, page, handler, board, proc);
+	GetPageAndHandler_(hType, name, builder);
 
-	if (page.Get() && handler.Get())
+	if (builder.Get())
 		return;
-	page.Nullify();
-	handler.Nullify();
 
 	for (UINT Rust = 0; Rust < environments.Size(); Rust++)
 	{
 		if (dynamic_cast<TPageEnvironment*>(environments[Rust].Get()))
 		{
-			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageAndHandler_(hType, name, page, handler, board, proc);
-			if (page.Get() && handler.Get())
+			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageAndHandler_(hType, name, builder);
+			if (builder.Get())
 				return;
-			page.Nullify();
-			handler.Nullify();
 		}
 	}
 }

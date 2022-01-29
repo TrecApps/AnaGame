@@ -237,8 +237,8 @@ void TLayout::InjectScrollerPage(const D2D1_RECT_F& bounds, const D2D1_RECT_F& n
 		TrecPointer<TPage> scroller = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TScrollerPage>(drawingBoard, page);
 		TDataArray<EventID_Cred> cred;
 		auto b = bounds;
-		scroller->OnResize(b, 0, cred);
 		childControls[target].control = scroller;
+		scroller->OnResize(b, 0, cred);
 	}
 	else if (overflowResponse == overflow_layout_approach::ola_vertical)
 	{

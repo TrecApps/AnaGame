@@ -495,14 +495,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 
 	// Attempt to get a page through the Environment Mechanism
 	TrecPointer<TPage> ret;
-	if (!tmlLoc.GetSize() && !handler.Get() && dynamic_cast<TPageEnvironment*>(environment.Get()))
-	{
-		switch (pageType)
-		{
-		case anagame_page::anagame_page_file_node:
-			ret = AddNewPage(TPageEnvironment::handler_type::ht_singular, L"filebrowser");
-		}
-	}
+	
 
 	// Prepare Resources for Page Construction
 	TrecSubPointer<TPage, TabPage> targetPage = body;
@@ -527,6 +520,43 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 		targetPage = upperRight;
 	}
 	auto space = targetPage->GetChildSpace();
+
+
+	if (!tmlLoc.GetSize() && !handler.Get() && dynamic_cast<TPageEnvironment*>(environment.Get()))
+	{
+		TString target;
+		TPageEnvironment::handler_type hType = TPageEnvironment::handler_type::ht_file;
+		switch (pageType)
+		{
+		case anagame_page::anagame_page_file_node:
+			target.Set(L"filebrowser");
+			hType = TPageEnvironment::handler_type::ht_singular;
+			break;
+
+		}
+
+
+		if (target.GetSize())
+		{
+			TDataArray<TString> pageTypes;
+			dynamic_cast<TPageEnvironment*>(environment.Get())->GetPageList(hType, target, pageTypes);
+
+			TrecPointer<TPageEnvironment::PageHandlerBuilder> builder;
+			target.Set(GetTargetPageType(pageTypes));
+			dynamic_cast<TPageEnvironment*>(environment.Get())->GetPageAndHandler(hType, target, builder);
+
+			if (builder.Get())
+			{
+				builder->RetrievePageAndHandler(target, ret, handler, drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), space);
+				
+			}
+		}
+	}
+
+	if (ret.Get())
+		return ret;
+
+
 	TDataArray<TPage::EventID_Cred> cred;
 
 
@@ -958,21 +988,7 @@ UINT TIdeWindow::OpenFile(TrecPointer<TFileShell> shell)
 	ThreadRelease();
 }
 
-TrecPointer<TPage> TIdeWindow::AddNewPage(TPageEnvironment::handler_type hType, TString name)
-{
-	if(!dynamic_cast<TPageEnvironment*>(environment.Get()))
-		return TrecPointer<TPage>();
 
-	TrecPointer<TPage> page;
-	TrecPointer<TPage::EventHandler> handler;
-
-	TDataArray<TString> pageTypes;
-
-	dynamic_cast<TPageEnvironment*>(environment.Get())->GetPageList(hType, name, pageTypes);
-
-	dynamic_cast<TPageEnvironment*>(environment.Get())->GetPageAndHandler(hType, GetTargetPageType(pageTypes), page, handler, drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
-	return page;
-}
 
 TString TIdeWindow::GetTargetPageType(TDataArray<TString> handlerTypes)
 {
@@ -1004,24 +1020,20 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 			TDataArray<TString> handlers;
 			tpEnv->GetPageList(TPageEnvironment::handler_type::ht_file, fileName.SubString(fileName.FindLast(L'.') + 1), handlers);
 
-			tpEnv->GetPageAndHandler(TPageEnvironment::handler_type::ht_file, this->GetTargetPageType(handlers),
-				newPage, handler, drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
+			TString target(this->GetTargetPageType(handlers));
 
-			if (!newPage.Get())
+			TrecPointer<TPageEnvironment::PageHandlerBuilder> builder;
+
+			tpEnv->GetPageAndHandler(TPageEnvironment::handler_type::ht_file, target, builder);
+
+			if (!builder.Get())
 				return;
-
-			body->tabBar.AddNewTab(fileName, newPage, true);
+			
 			D2D1_RECT_F space = body->GetChildSpace();
-			TDataArray<TPage::EventID_Cred> cred;
-			newPage->OnResize(space, 0, cred);
-
-			if (dynamic_cast<AnafacePage*>(newPage.Get()))
-			{
-				TrecPointer<TPage> root = dynamic_cast<AnafacePage*>(newPage.Get())->GetRootControl();
-				if (dynamic_cast<TControl*>(root.Get()))
-					dynamic_cast<TControl*>(root.Get())->onCreate(space, d3dEngine);
-			}
-
+			
+			builder->RetrievePageAndHandler(target, newPage, handler, drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), space);
+			if (!newPage.Get()) return;
+			body->tabBar.AddNewTab(fileName, newPage, true);
 			if (dynamic_cast<TapEventHandler*>(handler.Get()))
 				dynamic_cast<TapEventHandler*>(handler.Get())->SetSaveFile(fileToOpen);
 

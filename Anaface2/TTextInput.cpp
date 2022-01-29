@@ -1,5 +1,6 @@
 #include "TTextInput.h"
 #include <TInputTextElement.h>
+#include <TScrollerPage.h>
 
 TextIncrementControl::TextIncrementControl()
 {
@@ -241,8 +242,8 @@ void TTextInput::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_C
 			return;
 
 		auto actParent = TrecPointerKey::GetTrecPointerFromSoft<>(parent);
-
-		actParent->InjectScrollerPage(newLoc, { area.left, area.top, area.right, area.top + idealHeight }, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+		if(!dynamic_cast<TScrollerPage*>(actParent.Get()) && actParent.Get())
+			actParent->InjectScrollerPage(newLoc, { area.left, area.top, area.right, area.top + idealHeight }, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 	}
 }
 

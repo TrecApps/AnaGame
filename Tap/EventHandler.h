@@ -171,6 +171,19 @@ public:
 
 	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr);
 
+	/**
+	 * Method: TapEventHandler::SetCallerHandler
+	 * Purpose: Alows certain handlers to know which handler it should focus on
+	 * Parameters: TrecPointer<EventHandler> caller - the handler requesting service and the handler to send messages to
+	 * Returns: void
+	 * 
+	 * Attributes: virtual
+	 * 
+	 * Note: To use this method, you should know the nature of the handler you're calling and know the types of messages the handler
+	 *		will send the caller-handler
+	 */
+	virtual void SetCallerHandler(TrecPointer<EventHandler> caller);
+
 
 protected:
 	/**

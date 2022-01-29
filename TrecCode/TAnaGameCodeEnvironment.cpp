@@ -9,8 +9,55 @@
 #include <AnafacePage.h>
 #include <DirectoryInterface.h>
 
+
+class AnagameCodePageHandlerBuilder : public TPageEnvironment::PageHandlerBuilder {
+private:
+	TDataMap<TrecPointer<TPage>> singularPages;
+
+public:
+	virtual void RetrievePageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler,
+		TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc, const D2D1_RECT_F& loc)
+	{
+		if (!name.Compare(L"ag_ce_code"))
+		{
+			handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(proc);
+			TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+			aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.json"), handler);
+			page = TrecSubToTrec(aPage);
+		}
+
+		if (!name.Compare(L"ag_ce_fBrowser"))
+		{
+			if (!singularPages.retrieveEntry(name, page))
+			{
+				handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(proc);
+				TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+				aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.json"), handler);
+				page = TrecSubToTrec(aPage);
+				singularPages.addEntry(name, page);
+			}
+			else handler = page->GetHandler();
+		}
+
+
+		// This object only uses Anaface Pages
+		dynamic_cast<AnafacePage*>(page.Get())->Create(loc, board->GetWindowEngine());
+		
+	}
+};
+
+
+
 TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TPageEnvironment(shell)
 {
+	targetMachine = TargetAnagameMachine::tam_object_register;
+	compileErrorHandling = CompileErrorHandling::ceh_stop;
+
+	codePageBuilder = TrecPointerKey::GetNewTrecPointerAlt<TPageEnvironment::PageHandlerBuilder, AnagameCodePageHandlerBuilder>();
 }
 
 TString TAnaGameCodeEnvironment::GetType()
@@ -369,32 +416,17 @@ TString TAnaGameCodeEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
 	return TString();
 }
 
-void TAnaGameCodeEnvironment::GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<TPage>& page,
-	TrecPointer<TPage::EventHandler>& handler, TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc)
+void TAnaGameCodeEnvironment::GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<PageHandlerBuilder>& builder)
 {
 	if (hType == handler_type::ht_file && !name.Compare(L"ag_ce_code"))
 	{
-		handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(proc);
-		TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
-
-
-		aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.json"), handler);
-		page = TrecSubToTrec(aPage);
+		builder = codePageBuilder;
 		return; 
 	}
 
 	if (hType == handler_type::ht_singular && !name.Compare(L"ag_ce_fBrowser"))
 	{
-		if (!singularPages.retrieveEntry(name, page))
-		{
-			handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(proc);
-			TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
-
-
-			aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.json"), handler);
-			page = TrecSubToTrec(aPage);
-			singularPages.addEntry(name, page);
-		}
+		builder = codePageBuilder;
 		return;
 	}
 }
@@ -411,10 +443,15 @@ void TAnaGameCodeEnvironment::GetPageList_(handler_type hType, const TString& ex
 		{
 			extensions.push_back(L"ag_ce_code");
 		}
+		break;
 	case handler_type::ht_singular:
 		if (!ext.CompareNoCase(L"filebrowser"))
 		{
 			extensions.push_back(L"ag_ce_fBrowser");
 		}
+		break;
+	case handler_type::ht_ribbon:
+		if (!ext.CompareNoCase(L"code"))
+			extensions.push_back(L"ag_ce_code_blade");
 	}
 }
