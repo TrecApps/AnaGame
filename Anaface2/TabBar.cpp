@@ -431,12 +431,37 @@ void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut,
         {
             for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
             {
-                if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+                if (!dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
                     continue;
                 if (currentTab.Get() == tabs[Rust].Get())
                 {
+                    
+                    if (holder.Get())
+                    {
+                        holder->RemoveView(currentTab);
+                        currentTab.Nullify();
+                        for (UINT C = Rust - 1; C < tabs.Size(); C--)
+                        {
+                            if (dynamic_cast<Tab*>(tabs[C].Get())->isActive)
+                            {
+                                currentTab = tabs[C];
+                                break;
+                            }
+                        }
+                        for (UINT C = Rust + 1; !currentTab.Get() && C < tabs.Size(); C++)
+                        {
+                            if (dynamic_cast<Tab*>(tabs[C].Get())->isActive)
+                            {
+                                currentTab = tabs[C];
+                                break;
+                            }
+                        }
+                        if(currentTab.Get())
+                            holder->SetView(dynamic_cast<Tab*>(currentTab.Get())->content);
+
+                    }
                     tabs.RemoveAt(Rust);
-                    if (holder.Get()) holder->RemoveView(currentTab);
+                    SetTabSizes();
                     break;
                 }
             }
@@ -473,7 +498,7 @@ void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOu
 {
     tabMode = tab_mode::tm_not_set;
 
-    if (IsContained(point, area))
+    if (!IsContained(point, area))
         return;
 
     if (tabOverflow)
@@ -489,7 +514,7 @@ void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOu
 
     for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
     {
-        if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+        if (!dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
             continue;
         if (IsContained(point, dynamic_cast<Tab*>(tabs[Rust].Get())->area))
         {
@@ -510,7 +535,7 @@ void TabBar::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataA
 
     for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
     {
-        if (dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
+        if (!dynamic_cast<Tab*>(tabs[Rust].Get())->isActive)
             continue;
         if (dynamic_cast<Tab*>(tabs[Rust].Get())->exit.Get())
             dynamic_cast<Tab*>(tabs[Rust].Get())->exit = IsContained(point, dynamic_cast<Tab*>(tabs[Rust].Get())->xArea) ?

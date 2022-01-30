@@ -293,6 +293,15 @@ public:
 
 	void ClearPages();
 
+
+	/**
+	 * Method: Page::SetSelf
+	 * Purpose: Allows TrecPointerKey to set a Trec Reference to itself
+	 * Parameters: TrecPointer<Page> - self reference to the page
+	 * Returns: void
+	 */
+	virtual void SetSelf(TrecPointer<TPage>)override;
+
 private:
 
 

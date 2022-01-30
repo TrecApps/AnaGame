@@ -536,7 +536,7 @@ public:
 	 * Parameters: TrecPointer<Page> - self reference to the page
 	 * Returns: void
 	 */
-	void SetSelf(TrecPointer<TPage>);
+	virtual void SetSelf(TrecPointer<TPage>);
 
     /**
      * Method: TPage::GetParentPage

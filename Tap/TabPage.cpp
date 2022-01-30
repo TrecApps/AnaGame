@@ -1,5 +1,49 @@
 #include "TabPage.h"
 
+
+class TabPageHolder : public TabBar::TabBarHolder {
+	friend class TabPage;
+private:
+	TrecSubPointerSoft<TPage, TabPage> targetHolder;
+public:
+	/**
+	 * Method: TabPageHolder::SetView
+	 * Purpose: Called by TabBar when a new Tab is selected
+	 * Parameters: TrecPointer<TPage> page - the content to display
+	 *              bool onNew - Relevent if first parameter is null, true if caaused by a click on the new Tab-Tab
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void SetView(TrecPointer<TPage> page, bool onNew)
+	{
+		TrecSubPointer<TPage, TabPage> actualTarget = TrecPointerKey::GetSubPointerFromSoft<>(targetHolder);
+		if (actualTarget.Get())
+		{
+			actualTarget->SetView(page);
+		}
+	}
+
+	/**
+	 * Method: TabPageHolder::RemoveView
+	 * Purpose: Called by TabBar when a tab Requests to be deleted
+	 * Parameters: TrecPointer<TPage> page - the content to remove
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void RemoveView(TrecPointer<TPage> page)
+	{
+		TrecSubPointer<TPage, TabPage> actualTarget = TrecPointerKey::GetSubPointerFromSoft<>(targetHolder);
+		if (actualTarget.Get())
+		{
+			actualTarget->RemovePage(page);
+		}
+	}
+};
+
+
+
 bool IsSnipZero(D2D1_RECT_F& loc)
 {
 	return !loc.bottom && !loc.left
@@ -134,10 +178,13 @@ void TabPage::RemovePage(TrecPointer<TPage> page)
 {
 	if (!page.Get())
 		return;
-	for (UINT Rust = previousPages.Size() -1; Rust < previousPages.Size(); Rust--)
+	TrecPointer<TPage> contentPage;
+	if (dynamic_cast<TabBar::Tab*>(page.Get()))
+		contentPage = dynamic_cast<TabBar::Tab*>(page.Get())->GetContent();
+	for (UINT Rust = 0; Rust < previousPages.Size(); Rust++)
 	{
-		if (previousPages[Rust].Get() == page.Get())
-			previousPages.RemoveAt(Rust);
+		if (previousPages[Rust].Get() == page.Get() || previousPages[Rust].Get() == contentPage.Get())
+			previousPages.RemoveAt(Rust--);
 	}
 
 	if (previousPages.Size())
@@ -147,6 +194,7 @@ void TabPage::RemovePage(TrecPointer<TPage> page)
 	else
 	{
 		// To-Do:
+		currentPage.Nullify();
 	}
 }
 
@@ -719,4 +767,16 @@ void TabPage::ClearPages()
 	}
 	for(UINT Rust = 0; Rust < tabs.Size(); Rust++)tabBar.RemoveTab(tabs[Rust]);
 
+}
+
+void TabPage::SetSelf(TrecPointer<TPage> p)
+{
+	TPage::SetSelf(p);
+
+	TrecSubPointerSoft<TPage, TabPage> tPage = TrecPointerKey::GetSoftSubPointerFromSoft<TPage, TabPage>(self);
+
+	TrecSubPointer<TabBar::TabBarHolder, TabPageHolder> holder = TrecPointerKey::GetNewTrecSubPointer<TabBar::TabBarHolder, TabPageHolder>();
+
+	holder->targetHolder = tPage;
+	tabBar.SetHolder(TrecSubToTrec<>(holder));
 }
