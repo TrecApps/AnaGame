@@ -233,12 +233,25 @@ TString retrieveLanguageByExtension(TString ext)
 	return TString();
 }
 
+void TEnvironment::AddEnvironment(TrecPointer<TEnvironment> env)
+{
+	if (!env.Get()) return;
+
+	for (UINT Rust = 0; Rust < environments.Size(); Rust++)
+	{
+		if (env.Get() == environments[Rust].Get())
+			return;
+	}
+	environments.push_back(env);
+}
+
 /**
  * Method: TEnvironment::GetUrl
  * Purpose: Returns The URL of the Srting
  * Parameters: void
  * Returns: TString - the URL of the environment
  */
+
 TString TEnvironment::GetUrl()
 {
 	AG_THREAD_LOCK

@@ -11,6 +11,7 @@
 #include <FileDialog.h>
 #include "ResourceDialog.h"
 #include "NewResourceHandler.h"
+#include "AGBuilderEnvironment.h"
 
 
 // Found on the Home Tab
@@ -222,6 +223,7 @@ void MainLayoutHandler::OnFirstDraw()
 
 	if (env.Get())
 	{
+		env->AddEnvironment(TrecPointerKey::GetNewSelfTrecPointerAlt<TEnvironment, AGBuilderEnvironment>(env->GetRootDirectory()));
 		ideWindow->SetEnvironment(env);
 		ideWindow->AddPage(anagame_page::anagame_page_project_explorer, ide_page_type::ide_page_type_upper_right, TString(L"Project"));
 

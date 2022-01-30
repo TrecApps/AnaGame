@@ -45,6 +45,7 @@ public:
 
 
 		// This object only uses Anaface Pages
+		if(page.Get())
 		dynamic_cast<AnafacePage*>(page.Get())->Create(loc, board->GetWindowEngine());
 		
 	}
@@ -450,8 +451,8 @@ void TAnaGameCodeEnvironment::GetPageList_(handler_type hType, const TString& ex
 			extensions.push_back(L"ag_ce_fBrowser");
 		}
 		break;
-	case handler_type::ht_ribbon:
-		if (!ext.CompareNoCase(L"code"))
-			extensions.push_back(L"ag_ce_code_blade");
+	//case handler_type::ht_ribbon:
+	//	if (!ext.CompareNoCase(L"code"))
+	//		extensions.push_back(L"ag_ce_code_blade");
 	}
 }

@@ -150,8 +150,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AGBuilderEnvironment.h" />
     <ClInclude Include="AnimateBuilder.h" />
     <ClInclude Include="ArenaApp2.h" />
+    <ClInclude Include="CodeRibbonHandler.h" />
     <ClInclude Include="EnvironmentHandler.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainLayoutHandler.h" />
@@ -163,8 +165,10 @@
     <ClInclude Include="TEnvironmentDialog.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AGBuilderEnvironment.cpp" />
     <ClCompile Include="AnimateBuilder.cpp" />
     <ClCompile Include="ArenaApp2.cpp" />
+    <ClCompile Include="CodeRibbonHandler.cpp" />
     <ClCompile Include="EnvironmentHandler.cpp" />
     <ClCompile Include="MainLayoutHandler.cpp" />
     <ClCompile Include="NewResourceHandler.cpp" />

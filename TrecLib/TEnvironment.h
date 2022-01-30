@@ -268,6 +268,8 @@ class _TREC_LIB_DLL TEnvironment :
 {
 public:
 
+	void AddEnvironment(TrecPointer<TEnvironment> env);
+
 	/**
 	 * Method: TEnvironment::GetProjectLayout
 	 * Purpose: Reports the Layout of the Project
