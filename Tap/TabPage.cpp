@@ -20,7 +20,7 @@ public:
 		TrecSubPointer<TPage, TabPage> actualTarget = TrecPointerKey::GetSubPointerFromSoft<>(targetHolder);
 		if (actualTarget.Get())
 		{
-			actualTarget->SetView(page);
+			actualTarget->SetView(page, TPoint());
 		}
 	}
 
@@ -152,7 +152,7 @@ ag_msg bool TabPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& 
 	return false;
 }
 
-void TabPage::SetView(TrecPointer<TPage> page)
+void TabPage::SetView(TrecPointer<TPage> page, const TPoint& point)
 {
 	bool shown = false;
 	if (page.Get())
@@ -172,6 +172,19 @@ void TabPage::SetView(TrecPointer<TPage> page)
 	{
 		// To-Do
 	}
+	else
+	{
+		if (dynamic_cast<TabBar::Tab*>(currentPage.Get()))
+		{
+			tabBar.InjectTabAt(point, page);
+		}
+		else if(currentPage.Get())
+		{
+			TDataArray<EventID_Cred> cred;
+			auto r = this->GetChildSpace();
+			currentPage->OnResize(r , 0, cred);
+		}
+	}
 }
 
 void TabPage::RemovePage(TrecPointer<TPage> page)
@@ -180,7 +193,10 @@ void TabPage::RemovePage(TrecPointer<TPage> page)
 		return;
 	TrecPointer<TPage> contentPage;
 	if (dynamic_cast<TabBar::Tab*>(page.Get()))
+	{
 		contentPage = dynamic_cast<TabBar::Tab*>(page.Get())->GetContent();
+		tabBar.RemoveTab(page);
+	}
 	for (UINT Rust = 0; Rust < previousPages.Size(); Rust++)
 	{
 		if (previousPages[Rust].Get() == page.Get() || previousPages[Rust].Get() == contentPage.Get())

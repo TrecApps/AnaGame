@@ -73,7 +73,7 @@ int TIdeWindow::PrepareWindow()
 
 	for (UINT c = 0; c < ARRAYSIZE(pages); c++)
 	{
-		*pages[c] = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TabPage>(static_cast<ide_page_type>(c),drawingBoard,pageBarSpace);
+		*pages[c] = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TabPage>(static_cast<ide_page_type>(c + 1),drawingBoard,pageBarSpace);
 		this->pages.push_back(TrecPointerKey::GetTrecPointerFromSub<TPage, TabPage>(*pages[c]));
 
 		(*pages[c])->parentWindow = (self);
@@ -214,10 +214,12 @@ void TIdeWindow::OnLButtonUp(UINT nFlags, TPoint point)
 			recievedPage = tabPage;
 		}
 
-		if (recievedPage.Get() && recievedPage.Get() != tabPage.Get() && tabPage.Get())
+		if (recievedPage.Get() 
+			&& recievedPage.Get() != tabPage.Get() 
+			&& tabPage.Get())
 		{
 			tabPage->RemovePage(TrecSubToTrec(currentHolder));
-			recievedPage->SetView(TrecSubToTrec(currentHolder));
+			recievedPage->SetView(TrecSubToTrec(currentHolder),point);
 		}
 
 		if (recievedPage.Get())
@@ -417,10 +419,10 @@ finish:
 
 	for (UINT Rust = 0; Rust < cred.Size(); Rust++)
 	{
-		if (!currentHolder.Get() && dynamic_cast<TabBar::Tab*>(cred[0].control.Get()) && cred[0].eventType == R_Message_Type::On_SubmitDrag)
+		if (!currentHolder.Get() && dynamic_cast<TabBar::Tab*>(cred[Rust].control.Get()) && cred[Rust].eventType == R_Message_Type::On_SubmitDrag)
 		{
-			auto tabby = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TabBar::Tab>(cred[0].control);
-			SetCurrentHolder(tabby, tabby->GetContent());
+			auto tabby = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TabBar::Tab>(cred[Rust].control);
+			SetCurrentHolder(tabby, TrecSubToTrec<>(focusPage));
 		}
 	}
 	TWindow::HandleWindowEvents(cred);
@@ -678,7 +680,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 	if (control.Get())
 		control->onCreate(newPage->GetArea(), d3dEngine);
 
-	targetPage->SetView(TrecSubToTrec(newPage));
+	targetPage->SetView(TrecSubToTrec(newPage), TPoint());
 	
 
 	targetPage->currentPage = TrecSubToTrec(newPage);
@@ -791,7 +793,7 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 		mainTabPage->OnResize(space, 0, cred);
 		mainPage = TrecSubToTrec(mainTabPage);
 		auto tab = mainTabPage->tabBar.AddNewTab(mainPageName, TrecSubToTrec(newPage), false);
-		mainTabPage->SetView(TrecSubToTrec(newPage));
+		mainTabPage->SetView(TrecSubToTrec(newPage), TPoint());
 		mainTabPage->OnResize(space, 0, cred);
 	}
 	else

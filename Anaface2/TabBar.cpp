@@ -54,6 +54,7 @@ void TabBar::Tab::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& 
 
 void TabBar::Tab::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
+
 }
 
 void TabBar::Tab::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&)
@@ -395,6 +396,8 @@ bool TabBar::InjectTabAt(const TPoint& point, TrecPointer<TPage> page)
     if (tabOverflow && (IsContained(point, leftTab.area) || IsContained(point, rightTab.area)))
         return false;
 
+    bool injected = false;
+
     for (UINT Rust = startTab; Rust < tabs.Size(); Rust++)
     {
         auto cArea = dynamic_cast<Tab*>(tabs[Rust].Get())->area;
@@ -403,6 +406,7 @@ bool TabBar::InjectTabAt(const TPoint& point, TrecPointer<TPage> page)
         if (IsContained(point, cArea))
         {
             InjectTabAt(page, Rust);
+            injected = true;
             break;
         }
         cArea.left += halfWidth;
@@ -410,9 +414,15 @@ bool TabBar::InjectTabAt(const TPoint& point, TrecPointer<TPage> page)
         if (IsContained(point, cArea))
         {
             InjectTabAt(page, Rust + 1);
+            injected = true;
             break;
         }
     }
+
+    if (!injected)
+        InjectTabAt(page, 0);
+
+    return true;
 }
 
 void TabBar::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
@@ -425,6 +435,7 @@ void TabBar::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOu
 
 void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
 {
+    TObjectLocker lock(&thread);
     if (tabMode == tab_mode::tm_exit)
     {
         if (currentTab.Get() && IsContained(point, dynamic_cast<Tab*>(currentTab.Get())->xArea))
@@ -435,7 +446,7 @@ void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut,
                     continue;
                 if (currentTab.Get() == tabs[Rust].Get())
                 {
-                    
+                    auto cTab = currentTab;
                     if (holder.Get())
                     {
                         holder->RemoveView(currentTab);
@@ -460,7 +471,13 @@ void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut,
                             holder->SetView(dynamic_cast<Tab*>(currentTab.Get())->content);
 
                     }
-                    tabs.RemoveAt(Rust);
+                    for (UINT C = 0; C < tabs.Size(); C++)
+                    {
+                        if (tabs[C].Get() == cTab.Get())
+                        {
+                            tabs.RemoveAt(C);
+                        }
+                    }
                     SetTabSizes();
                     break;
                 }
@@ -494,7 +511,7 @@ void TabBar::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut,
     tabMode = tab_mode::tm_not_set;
 }
 
-void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
     tabMode = tab_mode::tm_not_set;
 
@@ -522,6 +539,14 @@ void TabBar::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOu
             currentTab = tabs[Rust];
             break;
         }
+    }
+
+    if (this->draggableTabs && currentTab.Get() && tabMode == tab_mode::tm_regular)
+    {
+        EventID_Cred scred;
+        scred.control = currentTab;
+        scred.eventType = R_Message_Type::On_SubmitDrag;
+        cred.push_back(scred);
     }
 }
 

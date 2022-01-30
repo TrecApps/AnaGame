@@ -253,7 +253,7 @@ public:
 	///
 	/// Methods Borrowed from Anaface 2 TSwitchControl
 	/// 
-	void SetView(TrecPointer<TPage> page);
+	void SetView(TrecPointer<TPage> page, const TPoint& point);
 
 	void RemovePage(TrecPointer<TPage> page);
 
