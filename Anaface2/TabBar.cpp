@@ -1,5 +1,6 @@
 #include "TabBar.h"
 #include <DirectoryInterface.h>
+#include "AnafacePage.h"
 
 
 TrecPointer<TPage> TabBar::Tab::GetContent()
@@ -263,6 +264,25 @@ void TabBar::ActivateTabs(const TString& targets, const TString& exceptions, boo
 
         if (doMatch == doContinue)
             dynamic_cast<Tab*>(tabs[Rust].Get())->isActive = activate;
+    }
+
+    SetTabSizes();
+}
+
+void TabBar::ActivateTab(TrecPointer<TPage> tab, bool active)
+{
+    for (UINT Rust = 0; Rust < tabs.Size(); Rust++)
+    {
+        auto content = dynamic_cast<Tab*>(tabs[Rust].Get())->GetContent();
+        if (tabs[Rust].Get() == tab.Get() || content.Get() == tab.Get())
+        {
+            dynamic_cast<Tab*>(tabs[Rust].Get())->isActive = active;
+
+            if (!active && holder.Get())
+                holder->SetView(TrecPointer<TPage>());
+
+            break;
+        }
     }
 
     SetTabSizes();

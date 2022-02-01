@@ -336,6 +336,8 @@ public:
 	 */
 	void ActivateTabs(const TString& targets, const TString& exceptions, bool activate, bool doMatch = true);
 
+	void ActivateTab(TrecPointer<TPage> tab, bool active);
+
 
 	void SetHolder(TrecPointer<TabBarHolder> holder);
 

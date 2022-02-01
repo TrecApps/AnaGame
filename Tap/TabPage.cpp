@@ -1,4 +1,5 @@
 #include "TabPage.h"
+#include "TIdeWindow.h"
 
 
 class TabPageHolder : public TabBar::TabBarHolder {
@@ -183,6 +184,17 @@ void TabPage::SetView(TrecPointer<TPage> page, const TPoint& point)
 			TDataArray<EventID_Cred> cred;
 			auto r = this->GetChildSpace();
 			currentPage->OnResize(r , 0, cred);
+		}
+	}
+
+	if (currentPage.Get())
+	{
+		TrecPointer<TPage::EventHandler> newHand = currentPage->GetHandler();
+		if (newHand.Get() && parentWindow.Get())
+		{
+			auto actParentWindow = TrecPointerKey::GetTrecPointerFromSoft<>(parentWindow);
+			if (dynamic_cast<TIdeWindow*>(actParentWindow.Get()))
+				dynamic_cast<TIdeWindow*>(actParentWindow.Get())->SetActiveFileHandler(newHand);
 		}
 	}
 }
@@ -795,4 +807,19 @@ void TabPage::SetSelf(TrecPointer<TPage> p)
 
 	holder->targetHolder = tPage;
 	tabBar.SetHolder(TrecSubToTrec<>(holder));
+}
+
+void TabPage::SetTabActive(TrecPointer<TPage> page, bool active)
+{
+	if (!page.Get()) return;
+
+	for (UINT Rust = 0; Rust < tabBar.GetTabCount(); Rust++)
+	{
+		TrecPointer<TPage> tab = tabBar.GetTabAt(Rust);
+
+		if (dynamic_cast<TabBar::Tab*>(tab.Get()) && page.Get() == tab.Get() && page.Get() == dynamic_cast<TabBar::Tab*>(tab.Get())->GetContent().Get())
+		{
+			tabBar.ActivateTab(tab, active);
+		}
+	}
 }

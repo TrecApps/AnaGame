@@ -7,18 +7,29 @@ class AGBuilderPageHandlerBuilder : public TPageEnvironment::PageHandlerBuilder 
 private:
 	TDataMap<TrecPointer<TPage>> singularPages;
 
+	TrecPointer<TPage> codeRibbonPage;
+
 public:
 	virtual void RetrievePageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler,
 		TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc, const D2D1_RECT_F& loc)
 	{
 		if (!name.Compare(L"ag_builder_code"))
 		{
-			handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, CodeRibbonHandler>(proc);
-			TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+			if (codeRibbonPage.Get())
+			{
+				page = codeRibbonPage;
+				handler = page->GetHandler();
+			}
+			else
+			{
+				handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, CodeRibbonHandler>(proc);
+				TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
 
 
-			aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\CodeRibbon.json"), handler);
-			page = TrecSubToTrec(aPage);
+				aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\CodeRibbon.json"), handler);
+				page = TrecSubToTrec(aPage);
+				codeRibbonPage = page;
+			}
 		}
 
 

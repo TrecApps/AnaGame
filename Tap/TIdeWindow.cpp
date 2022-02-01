@@ -992,6 +992,44 @@ UINT TIdeWindow::OpenFile(TrecPointer<TFileShell> shell)
 
 
 
+void TIdeWindow::SetActiveFileHandler(TrecPointer<TPage::EventHandler> newHandler)
+{
+	if (!dynamic_cast<DocumentHandler*>(newHandler.Get()))return;
+
+	TDataArray<TString> currentRibbons;
+
+	if (dynamic_cast<TapEventHandler*>(currentFileHandler.Get()) && dynamic_cast<TabPage*>(mainPage.Get()))
+	{
+		dynamic_cast<TapEventHandler*>(currentFileHandler.Get())->GetSupPageCodes(currentRibbons);
+
+		for (UINT Rust = 0; Rust < currentRibbons.Size(); Rust++)
+		{
+			PageHandlerRegistry reg;
+			if (pageHandlerRegistry.retrieveEntry(currentRibbons[Rust], reg))
+			{
+				dynamic_cast<TabPage*>(mainPage.Get())->SetTabActive(reg.page, false);
+			}
+		}
+	}
+
+	dynamic_cast<DocumentHandler*>(newHandler.Get())->GetSupPageCodes(currentRibbons);
+
+	for (UINT Rust = 0; Rust < currentRibbons.Size(); Rust++)
+	{
+		PageHandlerRegistry reg;
+		if (pageHandlerRegistry.retrieveEntry(currentRibbons[Rust], reg))
+		{
+			if(dynamic_cast<TabPage*>(mainPage.Get()))
+				dynamic_cast<TabPage*>(mainPage.Get())->SetTabActive(reg.page, true);
+			if (dynamic_cast<TapEventHandler*>(reg.handler.Get()))
+				dynamic_cast<TapEventHandler*>(reg.handler.Get())->SetCallerHandler(newHandler);
+		}
+	}
+	currentFileHandler = newHandler;
+}
+
+
+
 TString TIdeWindow::GetTargetPageType(TDataArray<TString> handlerTypes)
 {
 	// To-Do: Eventually need to figure out a way to decide which handler to use. For now, just return the first option if provided
@@ -1019,7 +1057,7 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 			TrecPointer<TPage::EventHandler> handler;
 			TString fileName(fileToOpen->GetName());
 
-			TDataArray<TString> handlers;
+			TDataArray<TString> handlers, handlerCodes;
 			tpEnv->GetPageList(TPageEnvironment::handler_type::ht_file, fileName.SubString(fileName.FindLast(L'.') + 1), handlers);
 
 			TString target(this->GetTargetPageType(handlers));
@@ -1037,10 +1075,91 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 			if (!newPage.Get()) return;
 			body->tabBar.AddNewTab(fileName, newPage, true);
 			if (dynamic_cast<TapEventHandler*>(handler.Get()))
+			{
 				dynamic_cast<TapEventHandler*>(handler.Get())->SetSaveFile(fileToOpen);
 
+				TDataArray<TString> otherHandlers;
+				dynamic_cast<TapEventHandler*>(handler.Get())->ReportHelperPages(otherHandlers);
+
+
+
+				for (UINT Rust = 0; Rust < otherHandlers.Size(); Rust++)
+				{
+					auto handlerPieces = otherHandlers[Rust].splitn(L':', 2);
+
+					if (handlerPieces->Size() != 2)continue;
+					TPageEnvironment::handler_type ht;
+					if (handlerPieces->at(0).Compare(L"ribbon"))
+						ht = TPageEnvironment::handler_type::ht_ribbon;
+					else if (handlerPieces->at(0).Compare(L"singuar"))
+						ht = TPageEnvironment::handler_type::ht_singular;
+					else continue;
+
+					TDataArray<TString> codes;
+
+					tpEnv->GetPageList(ht, handlerPieces->at(1), codes);
+
+					TString code(GetTargetPageType(codes));
+
+					
+
+					if (!code.GetSize()) continue;
+
+					
+
+					PageHandlerRegistry reg;
+					if (pageHandlerRegistry.retrieveEntry(code, reg))
+					{
+						if (reg.ht == ht && dynamic_cast<TapEventHandler*>(reg.handler.Get()))
+							dynamic_cast<TapEventHandler*>(reg.handler.Get())->SetCallerHandler(handler);
+						continue;
+					}
+
+
+					builder.Nullify();
+					tpEnv->GetPageAndHandler(ht, code, builder);
+					if (!builder.Get())
+						continue;
+
+					TrecPointer<TPage> supPage;
+					TrecPointer<TPage::EventHandler> supHandler;
+
+					D2D1_RECT_F r;
+
+					if (ht == TPageEnvironment::handler_type::ht_ribbon && dynamic_cast<TabPage*>(mainPage.Get()))
+						r = dynamic_cast<TabPage*>(mainPage.Get())->GetChildSpace();
+					else if (ht == TPageEnvironment::handler_type::ht_singular)
+						r = upperLeft->GetChildSpace();
+					else continue;
+
+
+					builder->RetrievePageAndHandler(code, supPage, supHandler, drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), r);
+
+					if (ht == TPageEnvironment::handler_type::ht_ribbon)
+						code.Set(TString(L"ribbon:") + code);
+
+					handlerCodes.push_back(code);
+
+					if (dynamic_cast<TapEventHandler*>(supHandler.Get()) && supPage.Get())
+					{
+						dynamic_cast<TapEventHandler*>(supHandler.Get())->SetCallerHandler(handler);
+						if (ht == TPageEnvironment::handler_type::ht_ribbon)
+							dynamic_cast<TabPage*>(mainPage.Get())->tabBar.AddNewTab(handlerPieces->at(1), supPage, false);
+						else if (ht == TPageEnvironment::handler_type::ht_singular)
+							upperLeft->tabBar.AddNewTab(handlerPieces->at(1), supPage, true);
+
+						reg.handler = supHandler;
+						reg.page = supPage;
+						reg.ht = ht;
+						pageHandlerRegistry.addEntry(code, reg);
+					}
+				}
+			}
 			// To-Do: Add mechanism for better automation
 			body->currentPage = newPage;
+
+			if (handlerCodes.Size() && dynamic_cast<TapEventHandler*>(handler.Get()))
+				dynamic_cast<TapEventHandler*>(handler.Get())->SetSupPageCodes(handlerCodes);
 		}
 	}
 }
@@ -1067,4 +1186,16 @@ void TIdeWindow::DrawOtherPages()
 	if (currentHolder.Get())
 		currentHolder->Draw(var);
 	ThreadRelease();
+}
+
+TIdeWindow::PageHandlerRegistry::PageHandlerRegistry()
+{
+	ht = TPageEnvironment::handler_type::ht_multiple;
+}
+
+TIdeWindow::PageHandlerRegistry::PageHandlerRegistry(const PageHandlerRegistry& copy)
+{
+	ht = copy.ht;
+	page = copy.page;
+	handler = copy.handler;
 }

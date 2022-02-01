@@ -302,6 +302,8 @@ public:
 	 */
 	virtual void SetSelf(TrecPointer<TPage>)override;
 
+	void SetTabActive(TrecPointer<TPage> page, bool active);
+
 private:
 
 

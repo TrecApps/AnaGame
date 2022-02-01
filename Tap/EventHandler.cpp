@@ -304,12 +304,31 @@ void TapEventHandler::SetCallerHandler(TrecPointer<EventHandler> caller)
 
 }
 
-/**
- * Method: TapEventHandler::SetSaveFile
- * Purpose: Sets up the file to save if OnSave is called
- * Parameters: void
- * Returns: void
- */
+void TapEventHandler::ReportHelperPages(TDataArray<TString>& pages)
+{
+
+}
+
+
+void TapEventHandler::SetSupPageCodes(TDataArray<TString>& pageCodes)
+{
+	supPages.RemoveAll();
+	for (UINT Rust = 0; Rust < pageCodes.Size(); Rust++)
+	{
+		supPages.push_back(pageCodes[Rust]);
+	}
+}
+
+void TapEventHandler::GetSupPageCodes(TDataArray<TString>& pageCodes)
+{
+	pageCodes.RemoveAll();
+	for (UINT Rust = 0; Rust < supPages.Size(); Rust++)
+	{
+		pageCodes.push_back(supPages[Rust]);
+	}
+}
+
+
 void TapEventHandler::SetSaveFile()
 {
 	ThreadLock();

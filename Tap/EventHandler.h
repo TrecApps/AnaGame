@@ -171,6 +171,8 @@ public:
 
 	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr);
 
+	// Methods that enable the IDE Window to get other pages and handlers to supplement this page
+
 	/**
 	 * Method: TapEventHandler::SetCallerHandler
 	 * Purpose: Alows certain handlers to know which handler it should focus on
@@ -185,7 +187,40 @@ public:
 	virtual void SetCallerHandler(TrecPointer<EventHandler> caller);
 
 
+	/**
+	 * Method: TapEventHandler::ReportHelperPages
+	 * Purpose: Reports the Helper Page types that this Handler will use to hep supplement control
+	 * Parameters: TDataArray<TString>& pages - the pages this handler will use
+	 * Returns: void
+	 * 
+	 * Attributes: virtual
+	 * 
+	 * Notes: Each Entry should be in the form of '[type]:[name]' where 'type' is eiher 'ribbon', 'singular', or 'nultiple', Anagame will then check the attached Environments
+	 *		and provide codes for these pages if available in the 'SetSupPageCodes' method
+	 */
+	virtual void ReportHelperPages(TDataArray<TString>& pages);
+
+	/**
+	 * Method: TapEventHandler::SetSupPageCodes
+	 * Purpose: Set up the handler for the page codes it uses
+	 * Parameters: TDataArray<TString>& pageCodes - the page codes this Handler uses
+	 * Returns: void
+	 */
+	void SetSupPageCodes(TDataArray<TString>& pageCodes);
+
+	/**
+	 * Method: TapEventHandler::SetSupPageCodes
+	 * Purpose: Retrieves the page Code this handler uses
+	 * Parameters: TDataArray<TString>& pageCodes - the page codes this Handler uses
+	 * Returns: void
+	 */
+	void GetSupPageCodes(TDataArray<TString>& pageCodes);
+
+
 protected:
+
+	TDataArray<TString> supPages;
+
 	/**
 	 * Reference to "this" Handler
 	 */

@@ -87,6 +87,11 @@ void TCodeHandler::SetSaveFile(TrecPointer<TFileShell> file)
 	PrepCodeText();
 }
 
+void TCodeHandler::ReportHelperPages(TDataArray<TString>& pages)
+{
+	pages.push_back(L"ribbon:code");
+}
+
 void TCodeHandler::PrepCodeText()
 {
 	if (filePointer.Get() && code.Get())

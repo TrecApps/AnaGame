@@ -89,6 +89,20 @@ public:
 	 */
 	virtual void SetSaveFile(TrecPointer<TFileShell> file) override;
 
+
+	/**
+	 * Method: TapEventHandler::ReportHelperPages
+	 * Purpose: Reports the Helper Page types that this Handler will use to hep supplement control
+	 * Parameters: TDataArray<TString>& pages - the pages this handler will use
+	 * Returns: void
+	 *
+	 * Attributes: virtual
+	 *
+	 * Notes: Each Entry should be in the form of '[type]:[name]' where 'type' is eiher 'ribbon', 'singular', or 'nultiple', Anagame will then check the attached Environments
+	 *		and provide codes for these pages if available in the 'SetSupPageCodes' method
+	 */
+	virtual void ReportHelperPages(TDataArray<TString>& pages);
+
 protected:
 
 	void PrepCodeText();

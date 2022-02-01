@@ -239,9 +239,24 @@ public:
 	 */
 	UINT OpenFile(TrecPointer<TFileShell> shell);
 	
-	TrecPointer<TPage> AddNewPage(TPageEnvironment::handler_type hType, TString name);
+	//TrecPointer<TPage> AddNewPage(TPageEnvironment::handler_type hType, TString name);
+
+	void SetActiveFileHandler(TrecPointer<TPage::EventHandler> newHandler);
 
 protected:
+
+	class PageHandlerRegistry {
+	public:
+		TPageEnvironment::handler_type ht;
+		TrecPointer<TPage> page;
+		TrecPointer<TPage::EventHandler> handler;
+		PageHandlerRegistry();
+		PageHandlerRegistry(const PageHandlerRegistry& copy);
+	};
+
+	TDataMap<PageHandlerRegistry> pageHandlerRegistry;
+
+	TrecPointer<TPage::EventHandler> currentFileHandler;
 
 	TString GetTargetPageType(TDataArray<TString> handlerTypes);
 
