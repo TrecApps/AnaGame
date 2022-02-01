@@ -123,6 +123,10 @@ void CodeRibbonHandler::OnProcessCode(TrecPointer<TPage> tc, EventArgs ea)
 	}
 }
 
+void CodeRibbonHandler::ProcessMessage(TrecPointer<HandlerMessage>)
+{
+}
+
 CodeRibbonHandler::CodeRibbonHandler(TrecPointer<TProcess> ins): TapEventHandler(ins)
 {
 	events.addEntry(con_NewCodeFile, 0);
@@ -137,6 +141,11 @@ CodeRibbonHandler::CodeRibbonHandler(TrecPointer<TProcess> ins): TapEventHandler
 
 CodeRibbonHandler::~CodeRibbonHandler()
 {
+}
+
+bool CodeRibbonHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage>)
+{
+	return false;
 }
 
 void CodeRibbonHandler::Initialize(TrecPointer<TPage> page)

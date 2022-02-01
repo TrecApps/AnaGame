@@ -20,9 +20,13 @@ protected:
     TrecPointer<TPage::EventHandler> currentFocus;
     TDataMap<UINT> events;
 
+    void ProcessMessage(TrecPointer<HandlerMessage>);
+
 public:
     CodeRibbonHandler(TrecPointer<TProcess> ins);
     ~CodeRibbonHandler();
+
+    bool ShouldProcessMessageByType(TrecPointer<HandlerMessage>);
 
     void Initialize(TrecPointer<TPage> page)override;
     void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr);

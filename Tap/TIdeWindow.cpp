@@ -1089,9 +1089,9 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 
 					if (handlerPieces->Size() != 2)continue;
 					TPageEnvironment::handler_type ht;
-					if (handlerPieces->at(0).Compare(L"ribbon"))
+					if (!handlerPieces->at(0).Compare(L"ribbon"))
 						ht = TPageEnvironment::handler_type::ht_ribbon;
-					else if (handlerPieces->at(0).Compare(L"singuar"))
+					else if (!handlerPieces->at(0).Compare(L"singuar"))
 						ht = TPageEnvironment::handler_type::ht_singular;
 					else continue;
 
@@ -1105,10 +1105,10 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 
 					if (!code.GetSize()) continue;
 
-					
+					TString rCode(TString(ht == TPageEnvironment::handler_type::ht_ribbon ? L"ribbon:" : L"") + code);
 
 					PageHandlerRegistry reg;
-					if (pageHandlerRegistry.retrieveEntry(code, reg))
+					if (pageHandlerRegistry.retrieveEntry(rCode, reg))
 					{
 						if (reg.ht == ht && dynamic_cast<TapEventHandler*>(reg.handler.Get()))
 							dynamic_cast<TapEventHandler*>(reg.handler.Get())->SetCallerHandler(handler);
@@ -1135,10 +1135,7 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 
 					builder->RetrievePageAndHandler(code, supPage, supHandler, drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), r);
 
-					if (ht == TPageEnvironment::handler_type::ht_ribbon)
-						code.Set(TString(L"ribbon:") + code);
-
-					handlerCodes.push_back(code);
+					handlerCodes.push_back(rCode);
 
 					if (dynamic_cast<TapEventHandler*>(supHandler.Get()) && supPage.Get())
 					{
@@ -1151,7 +1148,7 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 						reg.handler = supHandler;
 						reg.page = supPage;
 						reg.ht = ht;
-						pageHandlerRegistry.addEntry(code, reg);
+						pageHandlerRegistry.addEntry(rCode, reg);
 					}
 				}
 			}

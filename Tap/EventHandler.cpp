@@ -396,7 +396,7 @@ void TPageEnvironment::GetPageList(handler_type hType, const TString& ext, TData
 	{
 		if (dynamic_cast<TPageEnvironment*>(environments[Rust].Get()))
 		{
-			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageList_(hType, name, extensions);
+			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageList_(hType, ext, extensions);
 		}
 	}
 }

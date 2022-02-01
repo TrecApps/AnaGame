@@ -245,7 +245,7 @@ public:
 
 protected:
 
-	class PageHandlerRegistry {
+	class _TAP_DLL PageHandlerRegistry {
 	public:
 		TPageEnvironment::handler_type ht;
 		TrecPointer<TPage> page;
