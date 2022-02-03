@@ -1,13 +1,16 @@
 #include "TerminalHandler.h"
 #include <AnafacePage.h>
+#include <TConsoleLayout.h>
+#include <TConsoleText.h>
 /**
  * Method: TerminalHandler::TerminalHandler
  * Purpose: Constructor
  * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
  * Returns: New Terminal Handler Object
  */
-TerminalHandler::TerminalHandler(TrecPointer<TProcess> instance): TapEventHandler(instance)
+TerminalHandler::TerminalHandler(TrecPointer<TProcess> instance, TrecPointer<TFileShell> wDirectory): TapEventHandler(instance)
 {
+	this->wDirectory = wDirectory;
 }
 
 /**
@@ -47,8 +50,16 @@ void TerminalHandler::Initialize(TrecPointer<TPage> page)
 	}
 	auto root = dynamic_cast<AnafacePage*>(page.Get())->GetRootControl();
 
-	//if (root.Get())
-		//currentTerminal = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TPromptControl>(root);
+	if (dynamic_cast<TConsoleLayout*>(root.Get()))
+	{
+		dynamic_cast<TConsoleLayout*>(root.Get())->SetDirectory(wDirectory);
+		this->currentTerminal = dynamic_cast<TConsoleLayout*>(root.Get())->GetConsoleHolder();
+	}
+	else if (dynamic_cast<TConsoleText*>(root.Get()))
+	{
+		dynamic_cast<TConsoleText*>(root.Get())->SetDirectory(wDirectory);
+		this->currentTerminal = dynamic_cast<TConsoleText*>(root.Get())->GetConsoleHolder();
+	}
 	ThreadRelease();
 }
 

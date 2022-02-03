@@ -576,6 +576,9 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 		handler_data_source dataSource = handler_data_source::hds_files;
 
 
+		TrecPointer<TFileShell> wDirectory = environment.Get() ? environment->GetRootDirectory(): TrecPointer<TFileShell>();
+
+		if (!wDirectory.Get()) wDirectory = TFileShell::GetFileInfo(GetDirectory( CentralDirectories::cd_Documents));
 
 		switch (pageType)
 		{
@@ -594,7 +597,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 			uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\IDEPrompt.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 			fileShell = TFileShell::GetFileInfo(tmlLoc);
 			if (!handler.Get())
-				pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
+				pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), wDirectory);
 			else
 				pageHandler = handler;
 			break;
@@ -602,7 +605,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 			uiFile->Open(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\IDEPromptProgram.tml", TFile::t_file_read | TFile::t_file_share_read | TFile::t_file_open_always);
 			fileShell = TFileShell::GetFileInfo(tmlLoc);
 			if (!handler.Get())
-				pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
+				pageHandler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), wDirectory);
 			else
 				pageHandler = handler;
 			break;
@@ -714,12 +717,15 @@ TrecPointer<TPage> TIdeWindow::AddPage(anagame_page pageType, ide_page_type page
 	}
 
 	handler_data_source dataSource = handler_data_source::hds_files;
+			TrecPointer<TFileShell> wDirectory = environment.Get() ? environment->GetRootDirectory(): TrecPointer<TFileShell>();
+
+		if (!wDirectory.Get()) wDirectory = TFileShell::GetFileInfo(GetDirectory( CentralDirectories::cd_Documents));
 
 	switch (pageType)
 	{
 	case anagame_page::anagame_page_command_prompt:
 	case anagame_page::anagame_page_console:
-		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance)));
+		ret = AddNewPage(pageType, pageLoc, name, TString(), TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), wDirectory));
 		break;
 	case anagame_page::anagame_page_project_explorer:
 		dataSource = handler_data_source::hds_project;
@@ -1093,6 +1099,10 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 						ht = TPageEnvironment::handler_type::ht_ribbon;
 					else if (!handlerPieces->at(0).Compare(L"singuar"))
 						ht = TPageEnvironment::handler_type::ht_singular;
+					else if (!handlerPieces->at(0).Compare(L"iOutput"))
+						ht = TPageEnvironment::handler_type::ht_i_console;
+					else if (!handlerPieces->at(0).Compare(L"oOutput"))
+						ht = TPageEnvironment::handler_type::ht_o_console;
 					else continue;
 
 					TDataArray<TString> codes;
@@ -1103,9 +1113,10 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 
 					
 
-					if (!code.GetSize()) continue;
+					if (!code.GetSize())
+						continue;
 
-					TString rCode(TString(ht == TPageEnvironment::handler_type::ht_ribbon ? L"ribbon:" : L"") + code);
+					TString rCode(TString(ht == TPageEnvironment::handler_type::ht_singular ? L"" : (handlerPieces->at(0) + L':')) + code);
 
 					PageHandlerRegistry reg;
 					if (pageHandlerRegistry.retrieveEntry(rCode, reg))
@@ -1130,6 +1141,8 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 						r = dynamic_cast<TabPage*>(mainPage.Get())->GetChildSpace();
 					else if (ht == TPageEnvironment::handler_type::ht_singular)
 						r = upperLeft->GetChildSpace();
+					else if (ht == TPageEnvironment::handler_type::ht_i_console || ht == TPageEnvironment::handler_type::ht_o_console)
+						r = deepConsole->GetChildSpace();
 					else continue;
 
 
@@ -1144,6 +1157,8 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 							dynamic_cast<TabPage*>(mainPage.Get())->tabBar.AddNewTab(handlerPieces->at(1), supPage, false);
 						else if (ht == TPageEnvironment::handler_type::ht_singular)
 							upperLeft->tabBar.AddNewTab(handlerPieces->at(1), supPage, true);
+						else if (ht == TPageEnvironment::handler_type::ht_i_console || ht == TPageEnvironment::handler_type::ht_o_console)
+							deepConsole->tabBar.AddNewTab(handlerPieces->at(1), supPage, true);
 
 						reg.handler = supHandler;
 						reg.page = supPage;

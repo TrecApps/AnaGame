@@ -1,6 +1,94 @@
 #include "TConsoleLayout.h"
 #include "TTextLayout.h"
 #include <TTextElement.h>
+#include <DirectoryInterface.h>
+
+class TConsoleLayoutHolder : public TConsoleHolder {
+    friend class TConsoleText;
+    friend class TrecPointerKey;
+public:
+    /**
+     * Method: TPromptHolder::Warn
+     * Purpose: A warning message is sent
+     * Parameters: TrecPointer<TVariable> var - the variable to output
+     * Returns: void
+     *
+     * Attributes: override
+     */
+    virtual void Warn(TrecPointer<TVariable> var) override {
+        LockDrawing();
+        TrecSubPointer<TPage, TConsoleLayout> lay = TrecPointerKey::GetSubPointerFromSoft<>(layout);
+        if (lay.Get())
+        {
+            TString out(TString(L"WARNING: ") + (var.Get() ? var->GetString() : L"null"));
+            lay->ProcessShellOutput(out);
+        }
+        UnlockDrawing();
+    }
+
+    /**
+     * Method: TPromptHolder::Error
+     * Purpose: An error message is sent
+     * Parameters: TrecPointer<TVariable> var - the variable to output
+     * Returns: void
+     *
+     * Attributes: override
+     */
+    virtual void Error(TrecPointer<TVariable> var) override {
+        LockDrawing();
+        TrecSubPointer<TPage, TConsoleLayout> lay = TrecPointerKey::GetSubPointerFromSoft<>(layout);
+        if (lay.Get())
+        {
+            TString out(TString(L"ERROR: ") + (var.Get() ? var->GetString() : L"null"));
+            lay->ProcessShellOutput(out);
+        }
+        UnlockDrawing();
+    }
+
+    /**
+     * Method: TPromptHolder::Info
+     * Purpose: An information message is sent
+     * Parameters: TrecPointer<TVariable> var - the variable to output
+     * Returns: void
+     *
+     * Attributes: override
+     */
+    virtual void Info(TrecPointer<TVariable> var) override {
+        LockDrawing();
+        TrecSubPointer<TPage, TConsoleLayout> lay = TrecPointerKey::GetSubPointerFromSoft<>(layout);
+        if (lay.Get())
+        {
+            TString out(TString(L"INFO: ") + (var.Get() ? var->GetString() : L"null"));
+            lay->ProcessShellOutput(out);
+        }
+        UnlockDrawing();
+    }
+
+    /**
+     * Method: TPromptHolder::Log
+     * Purpose: A regular message is sent
+     * Parameters: TrecPointer<TVariable> var - the variable to output
+     * Returns: void
+     *
+     * Attributes: override
+     */
+    virtual void Log(TrecPointer<TVariable> var) override {
+        LockDrawing();
+        TrecSubPointer<TPage, TConsoleLayout> lay = TrecPointerKey::GetSubPointerFromSoft<>(layout);
+        if (lay.Get())
+        {
+            TString out((var.Get() ? var->GetString() : L"null"));
+            lay->ProcessShellOutput(out);
+        }
+        UnlockDrawing();
+    }
+
+protected:
+    TConsoleLayoutHolder(TrecSubPointer<TPage, TConsoleLayout> layout) {
+        this -> layout = TrecPointerKey::GetSoftSubPointerFromSub<>(layout);
+    }
+    TrecSubPointerSoft<TPage, TConsoleLayout> layout;
+};
 
 class TConsoleTextInterceptor : public TTextIntercepter
 {
@@ -72,7 +160,13 @@ public:
 };
 
 
+TrecPointer<TConsoleHolder> TConsoleLayout::GetConsoleHolder()
+{
 
+    return TrecPointerKey::GetNewTrecPointerAlt<TConsoleHolder, TConsoleLayoutHolder>(
+        TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TConsoleLayout>(
+        TrecPointerKey::GetTrecPointerFromSoft<>(this->self)));
+}
 
 bool TConsoleLayout::SubmitInput()
 {
@@ -131,6 +225,15 @@ void TConsoleLayout::ProcessShellOutput(TString& output)
     // End to-do
 
     dynamic_cast<TTextLayout*>(GetPage(0, 0).Get())->AppendText(output);
+}
+
+void TConsoleLayout::SetDirectory(TrecPointer<TFileShell> directory)
+{
+    if (!directory.Get() || !directory->IsDirectory())
+        directory = TFileShell::GetFileInfo(GetDirectory(CentralDirectories::cd_Documents));
+
+    assert(directory.Get());
+    shell.SetWorkingDirectory(directory);
 }
 
 bool TConsoleLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)

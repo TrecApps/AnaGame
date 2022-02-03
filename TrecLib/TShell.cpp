@@ -334,6 +334,12 @@ TString TShell::GetWorkingDirectory()
 	return workingDirectory;
 }
 
+void TShell::SetWorkingDirectory(TrecPointer<TFileShell> directory)
+{
+	if (directory.Get() && directory->IsDirectory())
+		workingDirectory.Set(directory->GetPath());
+}
+
 /*
 * Method: TShell - Process_pwd
 * Purpose: processes the pwd command

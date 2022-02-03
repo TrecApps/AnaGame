@@ -553,6 +553,8 @@ public:
 		ht_singular,
 		ht_multiple,
 		ht_ribbon,
+		ht_i_console,
+		ht_o_console,
 		ht_file
 	}handler_type;
 

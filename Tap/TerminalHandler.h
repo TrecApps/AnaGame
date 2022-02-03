@@ -18,7 +18,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New Terminal Handler Object
 	 */
-	TerminalHandler(TrecPointer<TProcess> instance);
+	TerminalHandler(TrecPointer<TProcess> instance, TrecPointer<TFileShell> wDirectory);
 
 	/**
 	 * Method: TerminalHandler::~TerminalHandler
@@ -77,6 +77,8 @@ public:
 	TrecPointer<TConsoleHolder> GetTerminal();
 
 private:
+
+	TrecPointer<TFileShell> wDirectory;
 	
 	/**
 	 * The current Command Prompt to fucus on

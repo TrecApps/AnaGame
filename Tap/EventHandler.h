@@ -197,6 +197,13 @@ public:
 	 * 
 	 * Notes: Each Entry should be in the form of '[type]:[name]' where 'type' is eiher 'ribbon', 'singular', or 'nultiple', Anagame will then check the attached Environments
 	 *		and provide codes for these pages if available in the 'SetSupPageCodes' method
+	 * 
+	 * For Type:
+	 *		'ribbon' - page is to be set in the Ribbon Page at the top
+	 *		'singular' - there is to be only page of the specified type
+	 *		'iConsole' - sets a console page optimized for input; 'name' will litterally be assigned to it
+	 *		'oConsole' - sets a console page optimized for output; 'name' will literally be assigned to it
+	 * 
 	 */
 	virtual void ReportHelperPages(TDataArray<TString>& pages);
 

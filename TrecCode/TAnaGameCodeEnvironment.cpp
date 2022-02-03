@@ -8,13 +8,21 @@
 #include <TCodeHandler.h>
 #include <AnafacePage.h>
 #include <DirectoryInterface.h>
+#include <TerminalHandler.h>
 
 
 class AnagameCodePageHandlerBuilder : public TPageEnvironment::PageHandlerBuilder {
 private:
 	TDataMap<TrecPointer<TPage>> singularPages;
-
+	TrecPointer<TFileShell> directory;
 public:
+
+	AnagameCodePageHandlerBuilder(TrecPointer<TFileShell> directory)
+	{
+		assert(directory.Get() && directory->IsDirectory());
+		this->directory = directory;
+	}
+
 	virtual void RetrievePageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler,
 		TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc, const D2D1_RECT_F& loc)
 	{
@@ -43,6 +51,25 @@ public:
 			else handler = page->GetHandler();
 		}
 
+		if (!name.Compare(L"ag_ce_i_console"))
+		{
+			handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(proc, directory);
+			TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+			aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\InputConsole.json"), handler);
+			page = TrecSubToTrec(aPage);
+		}
+
+		if (!name.Compare(L"ag_ce_o_console"))
+		{
+			handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(proc, directory);
+			TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+			aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\OutputConsole.json"), handler);
+			page = TrecSubToTrec(aPage);
+		}
 
 		// This object only uses Anaface Pages
 		if(page.Get())
@@ -58,7 +85,7 @@ TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell):
 	targetMachine = TargetAnagameMachine::tam_object_register;
 	compileErrorHandling = CompileErrorHandling::ceh_stop;
 
-	codePageBuilder = TrecPointerKey::GetNewTrecPointerAlt<TPageEnvironment::PageHandlerBuilder, AnagameCodePageHandlerBuilder>();
+	codePageBuilder = TrecPointerKey::GetNewTrecPointerAlt<TPageEnvironment::PageHandlerBuilder, AnagameCodePageHandlerBuilder>(shell);
 }
 
 TString TAnaGameCodeEnvironment::GetType()
@@ -430,6 +457,12 @@ void TAnaGameCodeEnvironment::GetPageAndHandler_(handler_type hType, const TStri
 		builder = codePageBuilder;
 		return;
 	}
+
+	if (hType == handler_type::ht_i_console || hType == handler_type::ht_o_console)
+	{
+		builder = codePageBuilder;
+		return;
+	}
 }
 
 void TAnaGameCodeEnvironment::GetPageList_(handler_type hType, const TString& ext, TDataArray<TString>& extensions)
@@ -451,6 +484,12 @@ void TAnaGameCodeEnvironment::GetPageList_(handler_type hType, const TString& ex
 			extensions.push_back(L"ag_ce_fBrowser");
 		}
 		break;
+
+	case handler_type::ht_i_console:
+		extensions.push_back(L"ag_ce_i_console");
+		break;
+	case handler_type::ht_o_console:
+		extensions.push_back(L"ag_ce_o_console");
 	//case handler_type::ht_ribbon:
 	//	if (!ext.CompareNoCase(L"code"))
 	//		extensions.push_back(L"ag_ce_code_blade");

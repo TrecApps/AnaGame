@@ -10,6 +10,7 @@ class _ANAFACE_DLL2 TConsoleLayout :
     public TLayout
 {
 	friend class TConsoleTextInterceptor;
+	friend class TConsoleLayoutHolder;
 protected:
     TShell shell;
 
@@ -39,6 +40,24 @@ protected:
 	void ProcessShellOutput(TString& output);
 
 public:
+
+	/**
+	 * Method: TConsoleLayout::GetConsoleHolder
+	 * Purpose: Allows Control to return a Console Holder allowing input to be sent
+	 * Parameters: void
+	 * Returns: TrecPointer<TConsoleHolder> - the holder holding this object
+	 */
+	TrecPointer<TConsoleHolder> GetConsoleHolder();
+
+	/**
+	 * Method: TConsoleLayout::SetDirectory
+	 * Purpose: Sets the current Working Directory of the Control
+	 * Parameters: TrecPointer<TFileShell> directory - the directory to send
+	 * Returns: void
+	 * 
+	 * Note: if 'directory' is null or not a directory, then directory will default to the user's Documents directory
+	 */
+	void SetDirectory(TrecPointer<TFileShell> directory);
 
 	/**
 	 * Method: TConsoleLayout::onCreate

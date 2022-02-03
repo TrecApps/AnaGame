@@ -21,7 +21,7 @@ UINT SourceCodeApp2::Initialize(TrecPointer<TFileShell> file)
 
 	codeHandler->SetSaveFile(file);
 
-	commandHandler = TrecPointerKey::GetNewSelfTrecSubPointer<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(instance));
+	commandHandler = TrecPointerKey::GetNewSelfTrecSubPointer<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(instance), TrecPointer<TFileShell>());
 	if (!commandHandler.Get())
 		return 3;
 

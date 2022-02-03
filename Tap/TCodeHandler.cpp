@@ -90,6 +90,7 @@ void TCodeHandler::SetSaveFile(TrecPointer<TFileShell> file)
 void TCodeHandler::ReportHelperPages(TDataArray<TString>& pages)
 {
 	pages.push_back(L"ribbon:code");
+	pages.push_back(L"oOutput:Debug");
 }
 
 void TCodeHandler::PrepCodeText()
