@@ -1,5 +1,5 @@
 #include "WebToursHandler.h"
-#include <Page.h>
+#include <TPage.h>
 
 /**
  * Method: WebToursHandler::EventHandler
@@ -7,7 +7,7 @@
  * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
  * Returns: New EventHandler Object
  */
-WebToursHandler::WebToursHandler(TrecPointer<TInstance> instance) :EventHandler(instance)
+WebToursHandler::WebToursHandler(TrecPointer<TProcess> instance) :TapEventHandler(instance)
 {
 
 }
@@ -43,17 +43,17 @@ TString WebToursHandler::GetType()
  *
  * Attributes: override
  */
-void WebToursHandler::Initialize(TrecPointer<Page> page)
+void WebToursHandler::Initialize(TrecPointer<TPage> page)
 {
-	this->page = page;
+	//this->page = page;
 
-	window = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TWebWindow>(page->GetWindowHandle());
+	//window = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TWebWindow>(page->GetWindowHandle());
 
-	TrecSubPointer<TControl, TLayout> root = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(page->GetRootControl());
+	//TrecSubPointer<TaPge, TLayout> root = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(page->GetRootControl());
 
-	assert(root.Get() && window.Get());
+	//assert(root.Get() && window.Get());
 
-	urlBox = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(root->GetLayoutChild(3, 0));
+	//urlBox = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(root->GetLayoutChild(3, 0));
 }
 
 /**
@@ -64,7 +64,7 @@ void WebToursHandler::Initialize(TrecPointer<Page> page)
  *
  * Attributes: override
  */
-void WebToursHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void WebToursHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 }
 
@@ -80,9 +80,9 @@ void WebToursHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
 }
 
-bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)
+bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut)
 {
-	if (urlBox.Get() && urlBox->isOnFocus())
+	/*if (urlBox.Get() && urlBox->isOnFocus())
 	{
 		if (fromChar && nChar == VK_RETURN)
 		{
@@ -91,10 +91,12 @@ bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlag
 		}
 
 
-		
-	}
+
+	}*/
 	return false;
 }
+
+
 
 /**
  * Method: EventHandler::ShouldProcessMessageByType

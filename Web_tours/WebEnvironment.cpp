@@ -41,7 +41,7 @@ WebEnvironment::WebEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shel
 {
 }
 
-WebEnvironment::WebEnvironment(TrecSubPointer<TControl, TPromptControl> prompt):TEnvironment(prompt)
+WebEnvironment::WebEnvironment(TrecPointer<TConsoleHolder> prompt):TEnvironment(prompt)
 {
 }
 
@@ -113,7 +113,7 @@ TrecPointer<TWindow> WebEnvironment::GetWindow()
     return window;
 }
 
-TrecPointer<TInstance> WebEnvironment::GetInstance()
+TrecPointer<TProcess> WebEnvironment::GetInstance()
 {
     return instance;
 }
@@ -132,15 +132,34 @@ TrecPointer<TVariable> WebEnvironment::GetVariable(TString& var, bool& present, 
     return TEnvironment::GetVariable(var, present, evtType);
 }
 
+UINT WebEnvironment::SaveEnv()
+{
+    return 0;
+}
 
-void WebEnvironment::SetResources(TrecPointer<TInstance> instance, TrecPointer<TWindow> window)
+void WebEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
+{
+}
+
+TString WebEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
+{
+    return TString();
+}
+
+TrecPointer<TObjectNode> WebEnvironment::GetProjectLyout()
+{
+    return TrecPointer<TObjectNode>();
+}
+
+
+void WebEnvironment::SetResources(TrecPointer<TProcess> instance, TrecPointer<TWindow> window)
 {
     assert(instance.Get() && window.Get());
     this->instance = instance;
     this->window = window;
 }
 
-WebEnvGenerator::WebEnvGenerator(TrecPointer<TInstance> i, TrecPointer<TWindow> w)
+WebEnvGenerator::WebEnvGenerator(TrecPointer<TProcess> i, TrecPointer<TWindow> w)
 {
     assert(i.Get() && w.Get());
     this->window = w;

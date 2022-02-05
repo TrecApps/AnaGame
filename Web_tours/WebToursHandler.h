@@ -2,7 +2,7 @@
 #include <EventHandler.h>
 #include <TWebWindow.h>
 class WebToursHandler :
-    public EventHandler
+    public TapEventHandler
 {
 public:
 	/**
@@ -11,7 +11,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New EventHandler Object
 	 */
-	WebToursHandler(TrecPointer<TInstance> instance);
+	WebToursHandler(TrecPointer<TProcess> instance);
 
 	/**
 	 * Method: WebToursHandler::~WebToursHandler
@@ -41,7 +41,7 @@ public:
 	 *
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 
 
 	/**
@@ -52,7 +52,7 @@ public:
 	 *
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr) override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr) override;
 
 	/**
 	 * Method: WebToursHandler::ProcessMessage
@@ -64,7 +64,7 @@ public:
 	 */
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message) override;
 
-	virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)override;
+	virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut)override;
 
 protected:
 	/**
@@ -77,7 +77,7 @@ protected:
 	 */
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 
-	TrecSubPointer<TControl, TTextField> urlBox;
+	TrecSubPointer<TPage, TTextInput> urlBox;
 
 	TrecSubPointer<TWindow, TWebWindow> window;
 };
