@@ -22,6 +22,7 @@ protected:
 
     void ProcessMessage(TrecPointer<HandlerMessage>);
 
+
 public:
     CodeRibbonHandler(TrecPointer<TProcess> ins);
     ~CodeRibbonHandler();
@@ -31,6 +32,6 @@ public:
     void Initialize(TrecPointer<TPage> page)override;
     void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr);
 
-
+    virtual void SetCallerHandler(TrecPointer<EventHandler> caller);
 };
 

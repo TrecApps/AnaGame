@@ -241,7 +241,19 @@ bool TConsoleText::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d
     TString valpoint;
     if (attributes.retrieveEntry(L"IsInput", valpoint) && !valpoint.CompareNoCase(L"false"))
         isInput = false;
-    return TGadget::onCreate(loc, d3d);
+    bool ret = TGadget::onCreate(loc, d3d);
+	if (text.Get())
+	{
+		text->SetHorizontallignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+		text->SetVerticalAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+		TextFormattingDetails details;
+		if (text->GetBasicFormatting(details))
+		{
+			details.color = drawingBoard->GetBrush(TColor(L"white"));
+			text->SetBasicFormatting(details);
+		}
+	}
+	return ret;
 }
 
 TConsoleText::TConsoleText(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles)

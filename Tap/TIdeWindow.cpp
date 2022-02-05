@@ -550,7 +550,8 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 			if (builder.Get())
 			{
 				builder->RetrievePageAndHandler(target, ret, handler, drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance), space);
-				
+				if (dynamic_cast<TapEventHandler*>(handler.Get()))
+					dynamic_cast<TapEventHandler*>(handler.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
 			}
 		}
 	}
@@ -1029,6 +1030,8 @@ void TIdeWindow::SetActiveFileHandler(TrecPointer<TPage::EventHandler> newHandle
 				dynamic_cast<TabPage*>(mainPage.Get())->SetTabActive(reg.page, true);
 			if (dynamic_cast<TapEventHandler*>(reg.handler.Get()))
 				dynamic_cast<TapEventHandler*>(reg.handler.Get())->SetCallerHandler(newHandler);
+			if (dynamic_cast<TerminalHandler*>(reg.handler.Get()) && environment.Get())
+				environment->SetPrompt( dynamic_cast<TerminalHandler*>(reg.handler.Get())->GetTerminal() );
 		}
 	}
 	currentFileHandler = newHandler;
@@ -1082,6 +1085,7 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 			body->tabBar.AddNewTab(fileName, newPage, true);
 			if (dynamic_cast<TapEventHandler*>(handler.Get()))
 			{
+				dynamic_cast<TapEventHandler*>(handler.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
 				dynamic_cast<TapEventHandler*>(handler.Get())->SetSaveFile(fileToOpen);
 
 				TDataArray<TString> otherHandlers;
@@ -1153,6 +1157,8 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 					if (dynamic_cast<TapEventHandler*>(supHandler.Get()) && supPage.Get())
 					{
 						dynamic_cast<TapEventHandler*>(supHandler.Get())->SetCallerHandler(handler);
+						dynamic_cast<TapEventHandler*>(supHandler.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+
 						if (ht == TPageEnvironment::handler_type::ht_ribbon)
 							dynamic_cast<TabPage*>(mainPage.Get())->tabBar.AddNewTab(handlerPieces->at(1), supPage, false);
 						else if (ht == TPageEnvironment::handler_type::ht_singular)
@@ -1166,12 +1172,16 @@ void TIdeWindow::RunWindowCommand(const TString& command)
 						pageHandlerRegistry.addEntry(rCode, reg);
 					}
 				}
+
+				this->currentFileHandler = handler;
 			}
 			// To-Do: Add mechanism for better automation
 			body->currentPage = newPage;
 
 			if (handlerCodes.Size() && dynamic_cast<TapEventHandler*>(handler.Get()))
 				dynamic_cast<TapEventHandler*>(handler.Get())->SetSupPageCodes(handlerCodes);
+
+			this->SetActiveFileHandler(handler);
 		}
 	}
 }

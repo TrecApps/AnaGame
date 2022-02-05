@@ -376,6 +376,8 @@ TrecPointer<TPage> TabBar::AddNewTab(const TString& name, TrecPointer<TPage> pag
         {
             tabs.push_back(page);
             SetTabSizes();
+            if (holder.Get())
+                holder->SetView(page);
             return page;
         }
         return TrecPointer<TPage>();
@@ -401,6 +403,8 @@ TrecPointer<TPage> TabBar::AddNewTab(const TString& name, TrecPointer<TPage> pag
 
     tabs.push_back(newTab);
     SetTabSizes();
+    if (holder.Get())
+        holder->SetView(newTab);
     return newTab;
 
 }

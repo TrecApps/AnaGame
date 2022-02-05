@@ -347,7 +347,7 @@ bool TAnaGameCodeEnvironment::PrintLine(const TString& input)
 {
 	if (shellRunner.Get())
 	{
-		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input));
+		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input + L'\n'));
 		RedrawWindow(nullptr, nullptr, nullptr, 0);
 		return true;
 	}

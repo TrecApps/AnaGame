@@ -301,7 +301,7 @@ void TapEventHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 
 void TapEventHandler::SetCallerHandler(TrecPointer<EventHandler> caller)
 {
-
+	
 }
 
 void TapEventHandler::ReportHelperPages(TDataArray<TString>& pages)

@@ -176,3 +176,8 @@ void CodeRibbonHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 		eventAr[c].args.Nullify();
 	}
 }
+
+void CodeRibbonHandler::SetCallerHandler(TrecPointer<EventHandler> caller)
+{
+	currentFocus = caller;
+}

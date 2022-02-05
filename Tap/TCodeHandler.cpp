@@ -65,6 +65,17 @@ void TCodeHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 
 void TCodeHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
+	if (!message.Get()) return;
+
+	TString strMessage(message->GetMessage_());
+	if (strMessage.EndsWith(L"processcode", true))
+	{
+		this->OnSave();
+		if (window.Get() && window->GetEnvironment().Get())
+		{
+			window->GetEnvironment()->Run(filePointer);
+		}
+	}
 }
 
 void TCodeHandler::OnSave()

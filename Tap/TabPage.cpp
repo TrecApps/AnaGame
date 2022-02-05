@@ -156,6 +156,11 @@ ag_msg bool TabPage::OnScroll(bool fromBars, const TPoint& point, const TPoint& 
 void TabPage::SetView(TrecPointer<TPage> page, const TPoint& point)
 {
 	bool shown = false;
+
+	if (dynamic_cast<TabBar::Tab*>(page.Get()))
+		page = dynamic_cast<TabBar::Tab*>(page.Get())->GetContent();
+
+
 	if (page.Get())
 	{
 		shown = true;
