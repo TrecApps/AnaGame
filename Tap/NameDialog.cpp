@@ -1,6 +1,9 @@
 #include "NameDialog.h"
 #include <DirectoryInterface.h>
 #include "OkayHandler.h"
+#include <AnafacePage.h>
+#include <TLayout.h>
+#include <TTextInput.h>
 
 
 /**
@@ -16,7 +19,7 @@
  *				TString& caption - The message to present to the User once the Dialog is drawn
  * Returns: New Name Dialog Object
  */
-NameDialog::NameDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode, TString& caption):
+NameDialog::NameDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode, TString& caption):
 	TDialog(name, winClass, style, parent, commandShow, ins, mode)
 {
 	this->caption.Set(caption);
@@ -56,7 +59,7 @@ int NameDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 	file.Append(L"Resources\\TextDialog.tml");
 
 	ThreadLock();
-	TrecPointer<EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<EventHandler, OkayHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
+	TrecPointer<TPage::EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<TPage::EventHandler, OkayHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 
 	int returnable = TWindow::CompileView(file, eh);
 
@@ -70,28 +73,28 @@ int NameDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 		ThreadRelease();
 		return 10;
 	}
-	TrecPointer<TControl> control = mainPage->GetRootControl();
+	TrecPointer<TPage> control = dynamic_cast<AnafacePage*>(mainPage.Get())->GetRootControl();
 	TLayout* layout = dynamic_cast<TLayout*>(control.Get());
 
 	assert(layout);
 
-	textField = layout->GetLayoutChild(0, 0);
+	textField = layout->GetPage(0, 0);
 
-	TTextField* tf = dynamic_cast<TTextField*>(textField.Get());
+	TTextInput* tf = dynamic_cast<TTextInput*>(textField.Get());
 
 	assert(tf);
 
 	tf->SetText(caption);
-	tf->LockText();
+	//tf->LockText();
 
-	textField = layout->GetLayoutChild(0, 1);
+	textField = layout->GetPage(0, 1);
 
-	tf = dynamic_cast<TTextField*>(textField.Get());
+	tf = dynamic_cast<TTextInput*>(textField.Get());
 
 	assert(tf);
 
 	//tf->SetText(caption);
-	tf->UnlockText();
+	//tf->UnlockText();
 
 	userInput = TrecPointerKey::GetNewTrecPointer<TString>();
 
@@ -115,7 +118,7 @@ bool NameDialog::OnDestroy()
 		ThreadRelease();
 		return ret;
 	}
-	TTextField* tf = dynamic_cast<TTextField*>(textField.Get());
+	TTextInput* tf = dynamic_cast<TTextInput*>(textField.Get());
 
 	// Set the Pointer String so that clients of this dialog will still have the data collected
 	// even after this dialog is destroyed

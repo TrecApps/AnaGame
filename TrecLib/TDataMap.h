@@ -244,7 +244,7 @@ public:
 	* Parameters: void
 	* Returns: UINT - the count of entries in the TMap
 	*/
-	int count() const { return fields.Size(); }
+	UINT count() const { return fields.Size(); }
 
 	/*
 	* Method: TMap::operator=

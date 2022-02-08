@@ -144,7 +144,7 @@ void TPromptControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOu
 	if (!isEditable)
 		goto parentCall;
 
-	text1->fontLayout->HitTestPoint(point.x - location.left, point.y - location.top, &trailing, &isInside, &metrics);
+	text1->GetLayout()->HitTestPoint(point.x - location.left, point.y - location.top, &trailing, &isInside, &metrics);
 
 	if (isInside && isContained(&point, &location))
 	{
@@ -152,30 +152,12 @@ void TPromptControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOu
 
 		if (isInInput(tempCurLoc))
 		{
-			if (onFocus)
-				DestroyCaret();
-
-			CreateCaret(windowHandle, NULL, 1, metrics.height);
-
-			caretLoc = tempCurLoc;
-
-			if (trailing)
-			{
-				SetCaretPos(metrics.left + metrics.width + location.left, metrics.top + location.top);
-			}
-			else
-			{
-				SetCaretPos(metrics.left + location.left, metrics.top + location.top);
-			}
-
-			ShowCaret(windowHandle);
+			text1->OnCLickDown(point);
 			
 		}
 		TTextField::RemoveFocus();
 		onFocus = true;
 		clickedControl.push_back(this);
-		if (highlighter.Reset(caretLoc))
-			highlighter.SetFirstPosition(caretLoc);
 	}
 	else
 	{
@@ -189,7 +171,7 @@ void TPromptControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOu
 			// Here, he need to have the caret but we don't have a string to place it against
 			// Need to make educated guess on where it should go
 			TPoint caretPoint;
-			switch (text1->getHorizontalAlignment())
+			switch (text1->GetHorizontalAlignment())
 			{
 			case DWRITE_TEXT_ALIGNMENT_CENTER:
 				caretPoint.x = (location.left + location.right) / 2.0f;
@@ -204,7 +186,7 @@ void TPromptControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOu
 				break;
 			}
 
-			switch (text1->getVerticalAlignment())
+			switch (text1->GetVerticalAligment())
 			{
 			case DWRITE_PARAGRAPH_ALIGNMENT_NEAR:
 				caretPoint.y = location.top;
@@ -285,7 +267,7 @@ parentCall:
 
 	if (onFocus)
 	{
-		args.text.Set(text1->getCaption());
+		(text1->GetText(args.text));
 	}
 	ThreadRelease();
 }
@@ -363,12 +345,7 @@ bool TPromptControl::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags
 		args.control = this;
 		eventAr.push_back(EventID_Cred( R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 
-		if (text1.Get() && text1->text.GetSize())
-		{
-			args.text.Set(text1->text);
-			text1->reCreateLayout();
-			highlighter.SetLayout(text1->fontLayout);
-		}
+		text1->GetText(args.text);
 	}
 	bool ret = onFocus;
 	ThreadRelease();

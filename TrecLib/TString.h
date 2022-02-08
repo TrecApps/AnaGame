@@ -114,6 +114,22 @@ public:
 	*/
 	~TString();
 
+	/**
+	 * Method: TString::Constructor
+	 * Purpose: Generates a String from a Number
+	 * Parameters:
+	 * Returns: void
+	 */
+	TString(UINT num);
+
+	/**
+	 * Method: TString::Constructor
+	 * Purpose: Generates a String from a Number
+	 * Parameters:
+	 * Returns: void
+	 */
+	TString(float num);
+
 	/*
 	* Method: TString::Constructor
 	* Purpose: Uses a pointer to another TString to build this one
@@ -604,7 +620,7 @@ public:
 	 *				int count - the number of characters to remove
 	 * Returns: int - the new size of the string
 	 */
-	int Delete(int index, int count = 1);
+	int Delete(UINT index, int count = 1);
 	/**
 	 * Method: TString::GetDelete
 	 * Purpose: Retrieves a TString with a section deleted

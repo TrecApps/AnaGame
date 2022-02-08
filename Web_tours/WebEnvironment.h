@@ -1,6 +1,5 @@
 #pragma once
 #include <TEnvironment.h>
-#include <TPromptControl.h>
 #include <TJavaScriptInterpretor.h>
 #include <TAnascriptInterpretor.h>
 #include <TWebWindow.h>
@@ -9,7 +8,7 @@
 class WebEnvGenerator: public EnvironmentGenerator
 {
 public:
-	WebEnvGenerator(TrecPointer<TInstance> i, TrecPointer<TWindow> w);
+	WebEnvGenerator(TrecPointer<TProcess> i, TrecPointer<TWindow> w);
 
 	virtual TrecPointer<TEnvironment> GetEnvironment(TrecPointer<TFileShell> shell) override;
 
@@ -17,7 +16,7 @@ private:
 	/**
 	 * The TInstance holding this environment
 	 */
-	TrecPointer<TInstance> instance;
+	TrecPointer<TProcess> instance;
 
 	/**
 	 * The Window this is running in
@@ -54,7 +53,7 @@ public:
 	 * Parameters: TrecSubPointer<TControl, TPromptControl> prompt - the Command Prompt to work with
 	 * Returns: new Environment object
 	 */
-	WebEnvironment(TrecSubPointer<TControl, TPromptControl> prompt);
+	WebEnvironment(TrecPointer<TConsoleHolder> prompt);
 
 
 	/**
@@ -177,7 +176,7 @@ public:
 	 * Parameters: void
 	 * Returns: TrecPointer<TInstance> - the instance requested
 	 */
-	TrecPointer<TInstance> GetInstance();
+	TrecPointer<TProcess> GetInstance();
 	/**
 	 * Method: WebEnvironment::GetVariable
 	 * Purpose: Retrieves the variable requested by the interpretor
@@ -186,6 +185,48 @@ public:
 	 * Returns: TrecPointer<TVariable> - the variable requested
 	 */
 	virtual TrecPointer<TVariable> GetVariable(TString& var, bool& present, env_var_type evtType = env_var_type::evt_any) override;
+
+	/**
+	 * Method: WebEnvironment::SaveEnv
+	 * Purpose: Saves the Current Status of the Environment itself
+	 * Parameters: void
+	 * Returns: UINT - error code (0 for no error)
+	 *
+	 * Attributes: abstract
+	 */
+	virtual UINT SaveEnv() override;
+
+
+	/**
+	 * Method: WebEnvironment::AddResource
+	 * Purpose: Adds a file Resource to the Environment
+	 * Parameters: TrecPointer<TFileShell> fileResorce - the file to add
+	 * Returns: void
+	 *
+	 * Attributes: abstract
+	 */
+	virtual void AddResource(TrecPointer<TFileShell> fileResource) override;
+
+	/**
+	 * Method: WebEnvironment::SetLoadFile
+	 * Purpose: Allows Environment to load itself
+	 * Parameters: TrecPointer<TFileShell> file - the file to load from
+	 * Returns: TString - error information (blank means success)
+	 *
+	 * Attributes: abstract
+	 */
+	virtual TString SetLoadFile(TrecPointer<TFileShell> file) override;
+
+
+	/**
+	 * Method: WebEnvironment::GetProjectLayout
+	 * Purpose: Reports the Layout of the Project
+	 * Parameters: void
+	 * Returns: TrecPointer<TObjectNode> nodes - the nodes that represent the layout of the Project
+	 *
+	 * Attributes: abstract
+	 */
+	virtual TrecPointer<TObjectNode> GetProjectLyout() override;
 
 private:
 
@@ -202,7 +243,7 @@ private:
 	/**
 	 * The TInstance holding this environment
 	 */
-	TrecPointer<TInstance> instance;
+	TrecPointer<TProcess> instance;
 
 	/**
 	 * The Window this is running in
@@ -218,6 +259,6 @@ private:
 	 * 
 	 * Note: both parameters must have active objects. Otherwise, an exception will be thrown
 	 */
-	void SetResources(TrecPointer<TInstance> instance, TrecPointer<TWindow> window);
+	void SetResources(TrecPointer<TProcess> instance, TrecPointer<TWindow> window);
 };
 

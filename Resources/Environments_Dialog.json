@@ -1,0 +1,236 @@
+{
+	"TLayout": {
+		"RowHeights" : [ 50 , "1*", , 15, 15, 15, 15, 25, 25],
+		"Children" : [
+		{
+			"TControl" : {
+				"RowPosition":0,
+				"FontSize":42,
+				"HorizontalAlignment":"Center",
+				"VerticalAlignment":"Center",
+				"Caption":"Anagame Builder",
+				"BorderColor":"1.0,0.0,0.0,1.0"
+			}
+		},
+		{
+			"TGrid": {
+				"RowPosition": 1,
+				"ColumnWidths": ["1*","1*","1*"],
+				"RowHeights": [50, "1*"],
+				"InternalBorderColor":"0.0,0.0,0.0,1.0",
+				"InternalBorderThickness":2,
+				"Children" : [
+				{
+					"TControl": {
+						"RowPosition": 0,
+						"ColumnPosition": 0,
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Caption":"Recent Projects",
+						"BorderColor":"1.0,0.0,0.0,1.0"
+					}
+				},
+				{
+					"TDataLayout": {
+						"RowPosition": 1,
+						"ColumnPosition": 0,
+						"ID": "Models",
+						"RowHeight": 100,
+						"EventSelectionChange":"OnSelectRecent",
+						"Children" : [
+						{
+							"TLayout": {
+								"RowPosition": 0,
+								"ColumnPosition": 0,
+								"RowHeights": [20,20,20,30],
+								"BorderColor": "1.0,1.0,0.5,1.0",
+								"Children" : [
+								{
+									"TControl": {
+										"RowPosition": 0,
+										"Caption":"{Name}"
+									}
+								},
+								{
+									"TControl": {
+										"RowPosition": 1,
+										"Caption":"{Builder}"
+									}
+								},
+								{
+									"TControl": {
+										"RowPosition": 2,
+										"Caption":"{Environment}"
+									}
+								},
+								{
+									"TControl": {
+										"RowPosition": 3,
+										"Caption":"{Location}"
+									}
+								}
+								]
+							}
+						}]
+					}
+				},
+				{
+					"TControl": {
+						"RowPosition": 0,
+						"ColumnPosition": 1,
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Caption":"Available Projects",
+						"BorderColor":"1.0,0.0,0.0,1.0"
+					}
+				},
+				{
+					"TDataLayout": {
+						"RowPosition": 1,
+						"ColumnPosition": 1,
+						"ID": "Models",
+						"RowHeight": 100,
+						"EventSelectionChange":"OnSelectAvailable",
+						"Children" : [
+						{
+							"TLayout": {
+								"RowPosition": 0,
+								"ColumnPosition": 0,
+								"RowHeights": [25,25],
+								"BorderColor": "1.0,1.0,0.7,1.0",
+								"Children" : [
+								{
+									"TControl": {
+										"RowPosition": 0,
+										"Caption":"{Builder}"
+									}
+								},
+								{
+									"TControl": {
+										"RowPosition": 1,
+										"Caption":"{Environment}"
+									}
+								}
+								]
+							}
+						}]
+					}
+				},
+				{
+					"TControl" : {
+						"RowPosition": 0,
+						"ColumnPosition": 2,
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Caption":"Other Options",
+						"BorderColor":"1.0,0.0,0.0,1.0"
+					}
+				},
+				{
+					"TLayout" : {
+						"RowPosition": 1,
+						"ColumnPosition": 2,
+						"RowHeights": ["1*","1*"],
+						"Children" : [
+						{
+							"TControl" : {
+								"RowPosition": 0,	
+								"HorizontalAlignment":"Center",
+								"VerticalAlignment":"Center",
+								"Caption":"Import Project",
+								"BorderColor":"1.0,0.0,0.0,1.0",
+								"EventOnClick":"OnImportProject"
+							}
+						},
+						{
+							"TControl" : {
+								"RowPosition": 1,	
+								"HorizontalAlignment":"Center",
+								"VerticalAlignment":"Center",
+								"Caption":"Select Workspace",
+								"BorderColor":"1.0,0.0,0.0,1.0",
+								"EventOnClick":"OnSelectWorkspace"
+							}
+						}
+						]
+					}
+				}
+				]
+			}
+		},
+		{
+			"TInput": {
+				"RowPosition" : 2,
+				"VerticalAlignment":"Center",
+				"Caption":"Not Selected",
+				"BorderColor":"1.0,0.0,0.0,1.0",
+				"CanEdit": false
+			}
+		},
+		{
+			"TInput": {
+				"RowPosition" : 3,
+				"VerticalAlignment":"Center",
+				"Caption":"Not Selected",
+				"BorderColor":"1.0,0.0,0.0,1.0",
+				"CanEdit": false
+			}
+		},
+		{
+			"TInput": {
+				"RowPosition" : 4,
+				"VerticalAlignment":"Center",
+				"Caption":"Not Selected",
+				"BorderColor":"1.0,0.0,0.0,1.0",
+				"CanEdit": false
+			}
+		},
+		{
+			"TInput": {
+				"RowPosition" : 5,
+				"VerticalAlignment":"Center",
+				"Caption":"Not Selected",
+				"BorderColor":"1.0,0.0,0.0,1.0",
+				"CanEdit": false
+			}
+		},
+		{
+			"TLayout": {
+				"RowPosition": 6,
+				"IsGallery": true,
+				"ColumnWidths": [150, "1*"],
+				"Children" : [
+				{
+					"TControl" : {
+						"ColumnPosition": 0,
+						"VerticalAlignment":"Center",
+						"Caption":"Project Name",
+						"BorderColor":"1.0,0.0,0.0,1.0"
+					}
+				},
+				{
+					"TInput" : {
+						"ColumnPosition": 1,
+						"VerticalAlignment": "Center",
+						"BorderColor": "1.0,0.0,0.0,1.0",
+						"EventOnChar": "OnFileType"
+					}
+				}
+				]
+			}
+		},
+		{
+			"TControl" : {
+				"RowPosition": 7,
+				"VerticalAlignment":"Center",
+				"HorizontalAlignment":"Center",
+				"Caption":"Confirm",
+				"BorderColor":"1.0,0.0,0.0,1.0",
+				"ContentColor":"0.5,1.0,0.0,0.5",
+				"HoverContentColor":"0.2,1.0,0.0,1.0",
+				"EventOnClick":"OnConfirm"
+			}
+		}
+		]
+	}
+}

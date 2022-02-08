@@ -97,7 +97,7 @@ void TDirectory::GetFileListing(TDataArray<TrecPointer<TFileShell>>& files)
 
 	if (fileBrowser == INVALID_HANDLE_VALUE)
 	{
-		int e = GetLastError();
+		//int e = GetLastError();
 		RETURN_THREAD_UNLOCK;
 	}
 		
@@ -111,7 +111,7 @@ void TDirectory::GetFileListing(TDataArray<TrecPointer<TFileShell>>& files)
 		newPath.Set(this->path + L"\\" + data.cFileName);
 		files.push_back(TFileShell::GetFileInfo(newPath));
 	} while (FindNextFileW(fileBrowser, &data));
-	int e = GetLastError();
+	//int e = GetLastError();
 
 	FindClose(fileBrowser);
 	fileBrowser = 0;

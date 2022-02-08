@@ -1,5 +1,7 @@
 #include "TArenaEngine.h"
 #include "ArenaModel.h"
+#include <TContainerVariable.h>
+#include <TObjectVariable.h>
 
 /**
  * Method: TArenaEngine::GetType
@@ -458,9 +460,16 @@ TString TArenaEngine::GetName()
  *
  * Note: Because this is a raw pointer, this should eventually be replaced
  */
-TTrecPointerArray<ArenaModel>* TArenaEngine::GetModelList()
+TrecPointer<TVariable> TArenaEngine::GetModelList()
 {
-	return &models;
+	auto ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
+
+	for (UINT Rust = 0; Rust < models.Size(); Rust++)
+	{
+		ret->AppendValue(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(TrecPointerKey::GetTrecObjectPointer<>(models[Rust])));
+	}
+
+	return TrecSubToTrec(ret);
 }
 
 D3D11_INPUT_ELEMENT_DESC* TArenaEngine::GetInputInfo(int shaderId, UINT& count)

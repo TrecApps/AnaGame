@@ -1,0 +1,92 @@
+{
+	"TLayout" : {
+		"IsGallery": true,
+		"ColumnWidths": [ 150, 150 ],
+		"BorderColor": "1.0,0.0,0.0,1.0",
+		"ContentColor": "1.0,0.0,0.0,0.4",
+		"Children" : [
+		{
+			"TLayout": {
+				"ColPosition": 0,
+				"RowHeights" : ["3*","3*","3*","1*"],
+				"Children" : [
+				{
+					"TControl" : {
+						"RowPosition" : 0,
+						"Caption": "New code File",
+						"EventOnClick": "OnNewCodeFile",
+						"Margin" : "5,5,5,5",
+						"BorderColor": "0.0,0.0,1.0,0.9"
+					}
+				},
+				{
+					"TControl" : {
+						"RowPosition" : 1,
+						"Caption": "Import Code File",
+						"EventOnClick": "OnImportCode",
+						"Margin" : "5,5,5,5",
+						"BorderColor": "0.0,0.0,1.0,0.9"
+					}
+				},
+				{
+					"TControl" : {
+						"RowPosition" : 2,
+						"Caption": "New Class",
+						"EventOnClick": "OnNewCodeClass",
+						"Margin" : "5,5,5,5",
+						"BorderColor": "0.0,0.0,1.0,0.9"
+					}
+				},
+				{
+					"TControl" : {
+						"RowPosition" : 3,
+						"Caption": "Code Files"
+					}
+				}
+				]
+			}
+		},
+		{
+			"TLayout": {
+				"ColPosition": 1,
+				"RowHeights" : ["3*","3*","3*","1*"],
+				"Children" : [
+				{
+					"TControl" : {
+						"RowPosition" : 0,
+						"Caption": "Language Info",
+						"EventOnClick": "OnLangInfo",
+						"Margin" : "5,5,5,5",
+						"BorderColor": "0.0,0.0,1.0,0.9"
+					}
+				},
+				{
+					"TControl" : {
+						"RowPosition" : 1,
+						"Caption": "Syntax Settings",
+						"EventOnClick": "OnSyntaxSettings",
+						"Margin" : "5,5,5,5",
+						"BorderColor": "0.0,0.0,1.0,0.9"
+					}
+				},
+				{
+					"TControl" : {
+						"RowPosition" : 2,
+						"Caption": "Process",
+						"EventOnClick": "OnProcessCode",
+						"Margin" : "5,5,5,5",
+						"BorderColor": "0.0,0.0,1.0,0.9"
+					}
+				},
+				{
+					"TControl" : {
+						"RowPosition" : 3,
+						"Caption": "Language"
+					}
+				}
+				]
+			}
+		}
+		]
+	}
+}

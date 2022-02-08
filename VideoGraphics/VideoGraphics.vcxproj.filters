@@ -1,207 +1,81 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
+    <ClCompile Include="ArenaModel.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="DrawingBoard.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="T2DSpriteEngine.cpp" />
+    <ClCompile Include="T3DModelParser.cpp" />
+    <ClCompile Include="TActivate.cpp" />
+    <ClCompile Include="TArenaEngine.cpp" />
+    <ClCompile Include="TBitmapBrush.cpp" />
+    <ClCompile Include="TBrush.cpp" />
+    <ClCompile Include="TCamera.cpp" />
+    <ClCompile Include="TColor.cpp" />
+    <ClCompile Include="TComplexTextElement.cpp" />
+    <ClCompile Include="TFrameToSurfaceMFT.cpp" />
+    <ClCompile Include="TGeometry.cpp" />
+    <ClCompile Include="TGradientStop.cpp" />
+    <ClCompile Include="TGradientStopCollection.cpp" />
+    <ClCompile Include="TInputTextElement.cpp" />
+    <ClCompile Include="TMediaSink.cpp" />
+    <ClCompile Include="TObjModelParser.cpp" />
+    <ClCompile Include="TPage.cpp" />
+    <ClCompile Include="TPlayer.cpp" />
+    <ClCompile Include="TPresenter.cpp" />
+    <ClCompile Include="TSampleTexture.cpp" />
+    <ClCompile Include="TScheduler.cpp" />
+    <ClCompile Include="TShaderHost.cpp" />
+    <ClCompile Include="TShaderParser.cpp" />
+    <ClCompile Include="TStreamSink.cpp" />
+    <ClCompile Include="TTextElement.cpp" />
+    <ClCompile Include="TTextIntercepter.cpp" />
+    <ClCompile Include="TTextRenderer.cpp" />
+    <ClCompile Include="TVideoMarker.cpp" />
+    <ClCompile Include="TVideoScheduler.cpp" />
+    <ClCompile Include="TWindowEngine.cpp" />
+    <ClCompile Include="TScrollerPage.cpp" />
+    <ClCompile Include="SSGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ArenaModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TWindowEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TShaderHost.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TShaderParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TArenaEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TCamera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DrawingBoard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TColor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TBrush.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Structure2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TGradientStop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TGradientStopCollection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TGeometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TBitmapBrush.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="T2DSpriteEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TPlayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TMediaSink.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TStreamSink.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TVideoScheduler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TVideoMarker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TPresenter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TComCommon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TScheduler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TActivate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TFrameToSurfaceMFT.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TSampleTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TTextRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="T3DModelParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TObjModelParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TTextIntercepter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ArenaModel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TWindowEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TShaderHost.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TShaderParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TArenaEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TCamera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DrawingBoard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TColor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TBrush.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TGradientStop.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TGradientStopCollection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TGeometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TBitmapBrush.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="T2DSpriteEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TPlayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TMediaSink.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TStreamSink.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TVideoScheduler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TVideoMarker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TPresenter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TScheduler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TActivate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TFrameToSurfaceMFT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TSampleTexture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TTextRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="T3DModelParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TObjModelParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TTextIntercepter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="ArenaModel.h" />
+    <ClInclude Include="DrawingBoard.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Structure2D.h" />
+    <ClInclude Include="T2DSpriteEngine.h" />
+    <ClInclude Include="T3DModelParser.h" />
+    <ClInclude Include="TActivate.h" />
+    <ClInclude Include="TArenaEngine.h" />
+    <ClInclude Include="TBitmapBrush.h" />
+    <ClInclude Include="TBrush.h" />
+    <ClInclude Include="TCamera.h" />
+    <ClInclude Include="TColor.h" />
+    <ClInclude Include="TComCommon.h" />
+    <ClInclude Include="TComplexTextElement.h" />
+    <ClInclude Include="TFrameToSurfaceMFT.h" />
+    <ClInclude Include="TGeometry.h" />
+    <ClInclude Include="TGradientStop.h" />
+    <ClInclude Include="TGradientStopCollection.h" />
+    <ClInclude Include="TInputTextElement.h" />
+    <ClInclude Include="TMediaSink.h" />
+    <ClInclude Include="TObjModelParser.h" />
+    <ClInclude Include="TPage.h" />
+    <ClInclude Include="TPlayer.h" />
+    <ClInclude Include="TPresenter.h" />
+    <ClInclude Include="TSampleTexture.h" />
+    <ClInclude Include="TScheduler.h" />
+    <ClInclude Include="TShaderHost.h" />
+    <ClInclude Include="TShaderParser.h" />
+    <ClInclude Include="TStreamSink.h" />
+    <ClInclude Include="TTextElement.h" />
+    <ClInclude Include="TTextIntercepter.h" />
+    <ClInclude Include="TTextRenderer.h" />
+    <ClInclude Include="TVideoMarker.h" />
+    <ClInclude Include="TVideoScheduler.h" />
+    <ClInclude Include="TWindowEngine.h" />
+    <ClInclude Include="TScrollerPage.h" />
+    <ClInclude Include="SSGenerator.h" />
   </ItemGroup>
 </Project>

@@ -1,11 +1,11 @@
 #pragma once
 #include "EventHandler.h"
 class _TAP_DLL DocumentHandler :
-	public EventHandler
+	public TapEventHandler
 {
 public:
-	DocumentHandler(TrecPointer<TInstance> in);
-	DocumentHandler(TrecPointer<TInstance> in, const TString& name);
+	DocumentHandler(TrecPointer<TProcess> in);
+	DocumentHandler(TrecPointer<TProcess> in, const TString& name);
 
 
 	/**

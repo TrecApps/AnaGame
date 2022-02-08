@@ -23,7 +23,7 @@ public:
 	 *				TString& caption - The message to present to the User once the Dialog is drawn
 	 * Returns: New TEnvironmentDialog instance
 	 */
-	TEnvironmentDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode);
+	TEnvironmentDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode);
 
 	/**
 	 * Method: TEnvironmentDialog::~TEnvironmentDialog
@@ -49,16 +49,9 @@ public:
 	 */
 	bool OnDestroy() override;
 
-	/**
-	 * Method: TEnvironmentDialog::GetEnvironment
-	 * Purpose: PRetrieves the environment procured byt the Dialog
-	 * Parameters: void
-	 * Returns: TrecPointer<TEnvironment> - the environment selected by the user
-	 */
-	TrecPointer<TEnvironment> GetEnvironment();
 
 private:
 	TrecPointer<TEnvironment> env;
 };
 
-TrecPointer<TEnvironment> ActivateEnvironmentDialog(TrecPointer<TInstance> ins, HWND parent);
+TrecPointer<TEnvironment> ActivateEnvironmentDialog(TrecPointer<TProcess> ins, HWND parent);

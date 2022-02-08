@@ -125,6 +125,20 @@ TrecPointer<TVariable> TContainerVariable::Clone()
     return TrecPointerKey::GetTrecPointerFromSub<TVariable, TContainerVariable>(ret);
 }
 
+bool TContainerVariable::SupportMultiValue()
+{
+    return type == ContainerType::ct_multi_value;
+}
+
+TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, UINT occurance, bool& present)
+{
+    ThreadLock();
+    auto ret = values.retrieveEntry(key, occurance);
+    present = ret.Get() != nullptr;
+    ThreadRelease();
+    return ret;
+}
+
 /**
  * Method: TContainerVariable::Clear
  * Purpose: Empties the container
@@ -238,11 +252,24 @@ TrecPointer<TVariable> TContainerVariable::GetValue(UINT index, bool& present, b
  */
 TrecPointer<TVariable> TContainerVariable::GetValue(const TString& key, bool& present)
 {
-    ThreadLock();
-    auto ret = values.retrieveEntry(key);
-    present = ret.Get() != nullptr;
-    ThreadRelease();
-    return ret;
+    if (this->type == ContainerType::ct_properties && key.Find(L'.') == -1)
+    {
+        TrecSubPointer<TVariable, TContainerVariable> ret = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_properties);
+        for (UINT Rust = 0; Rust < values.count(); Rust++)
+        {
+            auto ent = values.GetEntryAt(Rust);
+            if (!ent.Get())
+                continue;
+            auto pieces = ent->key.splitn(L'.', 2);
+
+            if (key.Compare(pieces->at(0)))continue;
+
+            ret->SetValue(pieces->Size() > 1 ? pieces->at(1) : L"", ent->object);
+        }
+        return TrecPointerKey::GetTrecPointerFromSub<>(ret);
+    }
+    else
+        return GetValue(key, 0, present);
     
 }
 
@@ -351,7 +378,20 @@ bool TContainerVariable::SetValue(const TString& key, TrecPointer<TVariable> val
     }
     TString sKey(key);
 
-    values.removeEntry(sKey);
+    // If multi-value is not set, remove existing occurance
+    if(type != ContainerType::ct_multi_value)
+        values.removeEntry(sKey);
+
+    // Normalize the dividers between properties
+    if (type == ContainerType::ct_properties)
+    {
+        sKey.Replace(L':', L'.');
+        sKey.Replace(L'/', L'.');
+        sKey.Replace(L'\\', L'.');
+        sKey.Replace(L',', L'.');
+        while (sKey.Replace(L"..", L"."));
+    }
+
     values.addEntry(key, value);
     ThreadRelease();
     return true;
@@ -436,6 +476,24 @@ UINT TContainerVariable::Get4Value()
     return 0;
 }
 
+TString TContainerVariable::GetString(const TString& detail)
+{
+    auto pieces = detail.splitn(L".-:", 2);
+    bool present = false;
+    TrecPointer<TVariable> var = GetValue(pieces->at(0), present);
+
+    if (!var.Get())
+        return GetString();
+
+    if (var->GetVarType() == var_type::collection && pieces->Size() == 2)
+    {
+        return var->GetString(pieces->at(1));
+    }
+    else
+        return var->GetString();
+
+    return TString();
+}
 /**
  * Method: TContainerVariable::Get8Value
  * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
@@ -500,7 +558,7 @@ bool TContainerVariable::GetValueAt(UINT index, TString& key, TrecPointer<TVaria
     if (entry.Get())
     {
         key.Set(entry->key);
-        value = entry->object->Clone();
+        value = entry->object.Get() ? entry->object->Clone(): entry->object;
         ThreadRelease();
         return true;
     }

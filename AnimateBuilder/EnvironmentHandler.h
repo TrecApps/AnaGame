@@ -2,6 +2,10 @@
 #include <EventHandler.h>
 #include <ShlObj_core.h>
 #include <TEnvironment.h>
+#include <TDataLayout.h>
+#include <TLayout.h>
+#include <TTextInput.h>
+#include <TContainerVariable.h>
 
 class EnvironmentList : public TObject
 {
@@ -38,7 +42,7 @@ private:
 
 class EnvironmentHandler;
 
-typedef void (EnvironmentHandler::* EnvironmentHandlerEvents)(TrecPointer<TControl> tc, EventArgs ea);
+typedef void (EnvironmentHandler::* EnvironmentHandlerEvents)(TrecPointer<TPage> tc, EventArgs ea);
 
 typedef enum class environment_handler_mode
 {
@@ -53,7 +57,7 @@ typedef enum class environment_handler_mode
  * Purpose: Extends the EventHandler to handle Environment Dialog events
  */
 class EnvironmentHandler :
-    public EventHandler
+    public TapEventHandler
 {
 public:
 	/**
@@ -62,7 +66,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - the instance associated with this Handler
 	 * Returns: new EnvironmentHandler Object
 	 */
-	EnvironmentHandler(TrecPointer<TInstance> instance);
+	EnvironmentHandler(TrecPointer<TProcess> instance);
 
 	/**
 	 * Method: EnvironmentHandler::~EnvironmentHandler
@@ -79,7 +83,7 @@ public:
 	 * Parameters: TrecPointer<Page> page - the page the Handler is to associate with
 	 * Returns: void
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 
 	/**
 	 * Method: EnvironmentHandler::HandleEvents
@@ -87,7 +91,7 @@ public:
 	 * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
 	 * Returns: void
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr)override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)override;
 
 	/**
 	 * Method: EnvironmentHandler::ProcessMessage
@@ -107,12 +111,14 @@ public:
 
 protected:
 
-	void OnSelectRecent(TrecPointer<TControl> tc, EventArgs ea);
-	void OnSelectAvailable(TrecPointer<TControl> tc, EventArgs ea);
-	void OnImportProject(TrecPointer<TControl> tc, EventArgs ea);
-	void OnSelectWorkspace(TrecPointer<TControl> tc, EventArgs ea);
-	void OnConfirm(TrecPointer<TControl> tc, EventArgs ea);
-	void OnFileType(TrecPointer<TControl> tc, EventArgs ea);
+	TDataMap<UINT> events;
+
+	void OnSelectRecent(TrecPointer<TPage> tc, EventArgs ea);
+	void OnSelectAvailable(TrecPointer<TPage> tc, EventArgs ea);
+	void OnImportProject(TrecPointer<TPage> tc, EventArgs ea);
+	void OnSelectWorkspace(TrecPointer<TPage> tc, EventArgs ea);
+	void OnConfirm(TrecPointer<TPage> tc, EventArgs ea);
+	void OnFileType(TrecPointer<TPage> tc, EventArgs ea);
 
 	/**
 	 * Method: EnvironmentHandler::ShouldProcessMessageByType
@@ -129,25 +135,24 @@ protected:
 	PIDLIST_ABSOLUTE BrowseFolder(const TString& message);
 
 
-	TrecSubPointer<TControl, TDataBind> recentBinder, newBinder;
+	TrecSubPointer<TPage, TDataLayout> recentBinder, newBinder;
 
-	TTrecPointerArray<EnvironmentList> availableEnvironments;
-	TTrecPointerArray<SavedEnvironment> savedEnvironments;
+	TrecSubPointer<TVariable, TContainerVariable> availableEnvironments;
+	TrecSubPointer<TVariable, TContainerVariable> savedEnvironments;
 
 	TDataArray< EnvironmentHandlerEvents> envEvents;
 
 	TrecPointer<EnvironmentList> selectedEnvType;
-	TrecSubPointer<TControl, TLayout> grid;
+	TrecSubPointer<TPage, TLayout> grid;
 
-	TrecPointer<TControl> confirmButton;
+	TrecPointer<TPage> confirmButton;
 
-	TrecSubPointer<TControl, TTextField> selectReport, builderReport, environmentReport, directoryReport, nameEntry;
+	TrecSubPointer<TPage, TTextInput> selectReport, builderReport, environmentReport, directoryReport, nameEntry;
 
 	TrecPointer<TFileShell> currentWorkspace;
 
 	environment_handler_mode mode;
 
-	TrecPointer<TWindow> window;
 
 	TrecPointer<TEnvironment> environment;
 

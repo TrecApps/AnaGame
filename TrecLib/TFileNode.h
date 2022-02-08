@@ -57,6 +57,17 @@ public:
 	 */
 	TString GetContent() override;
 
+
+	/**
+	 * Method: TFileNode::GetCommand
+	 * Purpose: Retrieves a Variable tht can represent a command based off of the provided info
+	 * Parameters: const TString& info - the info enabing the node to know what needs to be done
+	 * Returns: TString - variable that can represent a command to the window or software utilizing this node
+	 *
+	 * Attributes: virtual
+	 */
+	virtual TString GetCommand(const TString& info)override;
+
 	/*
 	* Method: TFileNode::IsExtendable
 	* Purpose: Reports whether this node is extendable - in this case, whether the file is a directory or not

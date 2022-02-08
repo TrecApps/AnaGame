@@ -1,22 +1,7 @@
 #pragma once
-#include "TWindow.h"
+#include "TabPage.h"
 #include "TEnvironment.h"
 
-/**
- * Enum Class: ide_page_type
- * Purpose: Specifies the IDE Page's location in an IDE Window
- */
-typedef enum class ide_page_type
-{
-	ide_page_type_body,           // represents the main body of the Window
-	ide_page_type_basic_console,  // represents the lower console, that fits between the side panels
-	ide_page_type_deep_console,   // represents the deep lower console region
-	ide_page_type_upper_right,    // represents the upper section of the right panel
-	ide_page_type_lower_right,    // represents the lower section of the right panel
-	ide_page_type_upper_left,     // represents the upper section of the left panel
-	ide_page_type_lower_left,     // represents the lower section of the left panel
-	ide_page_type_drag            // represents a Page that is held by the other pages and can be dragged around
-}ide_page_type;
 
 /**
  * Enum Class: anagame_page
@@ -34,10 +19,8 @@ typedef enum class anagame_page
 	anagame_page_project_explorer,// Presents a Page that holds a node control that Explores the Project
 	anagame_page_arena,           // Presents a Page that holds a 3D arena control
 	anagame_page_camera           // Presents a Page that provides a Camera Panel
-};
+}anagame_page;
 
-class IDEPage;
-class IDEPageHolder;
 class MiniApp;
 
 /**
@@ -62,9 +45,10 @@ public:
 	 *				TrecPointer ins - pointer to the TInstance involved (hence why TInstance has a SetSelf method)
 	 *				UINT mainViewSpace - how much drawing space to devote to the main Page
 	 *				UINT pageBarSpace - how much tab space to allow the tab bars in the IDE-Pages
+	 *				const TString& pageName - name of the main Page to enter in the top Tab Bar (if empty, main page will be a regular Anaface Page)
 	 * Returns: New IDE Window
 	 */
-	TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, UINT mainViewSpace, UINT pageBarSpace);
+	TIdeWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, UINT mainViewSpace, UINT pageBarSpace, const TString& pageName);
 
 	/**
 	 * Method: TIdeWindow::~TIdeWindow
@@ -104,7 +88,7 @@ public:
 	 *
 	 * Attributes: message, override
 	 */
-	afx_msg virtual void OnWindowResize(UINT width, UINT height)override;
+	ag_msg virtual void OnWindowResize(UINT width, UINT height)override;
 
 	/**
 	 * Method: TIdeWindow::OnLButtonUp
@@ -149,7 +133,7 @@ public:
 	 *
 	 * Attributes: virtual
 	 */
-	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction)override;
+	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction)override;
 
 
 	/**
@@ -170,9 +154,9 @@ public:
 	 *				TString tmlLoc - the File location of the TML file (if the page type is built-in, this can be empty)
 	 *				TrecPointer<EventHandler> handler - the Handler to provide the Page
 	 *				bool pageTypeStrict - whether the caller is strict when it comes to the location of the Page
-	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
+	 * Returns: TrecSubPointer<TPage, TabPage> -  the Page generated
 	 */
-	TrecPointer<Page> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<EventHandler> handler, bool pageTypeStrict = false);
+	TrecPointer<TPage> AddNewPage(anagame_page pageType, ide_page_type pageLoc, TString name, TString tmlLoc, TrecPointer<TPage::EventHandler> handler, bool pageTypeStrict = false);
 
 	/**
 	 * Method: TIdeWindow::AddPage
@@ -180,9 +164,9 @@ public:
 	 * Parameters: anagame_page pageType - type of built-in page
 	 *				ide_page_type pageLoc - the location to place the new Page
 	 *				TString name - name of the page to write on the Tab
-	 * Returns: TrecSubPointer<Page, IDEPage> -  the Page generated
+	 * Returns: TrecSubPointer<TPage, TabPage> -  the Page generated
 	 */
-	TrecPointer<Page> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
+	TrecPointer<TPage> AddPage(anagame_page pageType, ide_page_type pageLoc, TString name);
 
 
 	/**
@@ -194,7 +178,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	int CompileView(TString& file, TrecPointer<EventHandler> eh)override;
+	int CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)override;
 
 
 	/**
@@ -203,23 +187,8 @@ public:
 	 * Parameters: TrecPointer<Tab> holder - the Page holder believed to be dragged
 	 * Returns: void
 	 */
-	void SetCurrentHolder(TrecPointer<Tab> holder, TrecPointer<Page> page);
+	void SetCurrentHolder(TrecSubPointer<TPage, TabBar::Tab> holder, TrecPointer<TPage> page);
 
-	/**
-	 * Method: TIdeWindow::SetEnvironment
-	 * Purpose: Sets the Environment of the Window
-	 * Parameters: TrecPointer<TEnvironment> env - the Environment to manage
-	 * Returns: void
-	 */
-	void SetEnvironment(TrecPointer<TEnvironment> env);
-
-	/**
-	 * Method: TIdeWindow::GetEnvironment
-	 * Purpose: Gets the Environment held by the Window
-	 * Parameters: void
-	 * Returns: TrecPointer<TEnvironment> - the Environment to manage
-	 */
-	TrecPointer<TEnvironment> GetEnvironment();
 
 	/**
 	 * Method: TIdeWindow::GetEnvironmentDirectory
@@ -230,7 +199,13 @@ public:
 	TrecPointer<TFileShell> GetEnvironmentDirectory();
 
 	
-
+	/**
+	 * Method: TIdeWindow::SetEnvironment
+	 * Purpose: Sets the Environment of the Window
+	 * Parameters: TrecPointer<TEnvironment> env - the Environment to manage
+	 * Returns: void
+	 */
+	virtual void SetEnvironment(TrecPointer<TEnvironment> env) override;
 
 	/**
 	 * Method: TIdeWindow::SaveAll
@@ -262,9 +237,38 @@ public:
 	 * Parameters: TrecPointer<TFileShell> - representation of the file to open
 	 * Returns: UINT - error code (0 for success)
 	 */
-	UINT OpenFile(TrecPointer<TFileShell> shell); 
+	UINT OpenFile(TrecPointer<TFileShell> shell);
+	
+	//TrecPointer<TPage> AddNewPage(TPageEnvironment::handler_type hType, TString name);
+
+	void SetActiveFileHandler(TrecPointer<TPage::EventHandler> newHandler);
 
 protected:
+
+	class _TAP_DLL PageHandlerRegistry {
+	public:
+		TPageEnvironment::handler_type ht;
+		TrecPointer<TPage> page;
+		TrecPointer<TPage::EventHandler> handler;
+		PageHandlerRegistry();
+		PageHandlerRegistry(const PageHandlerRegistry& copy);
+	};
+
+	TDataMap<PageHandlerRegistry> pageHandlerRegistry;
+
+	TrecPointer<TPage::EventHandler> currentFileHandler;
+
+	TString GetTargetPageType(TDataArray<TString> handlerTypes);
+
+	virtual void RunWindowCommand(const TString& command) override;
+
+	//TrecPointer<TPage> AddNewPage();
+
+	/**
+	 * Whether the main Page is a Tab Bar
+	 */
+	TString mainPageName;
+
 	/**
 	 * Space to offer the Tab Bars
 	 */
@@ -279,12 +283,7 @@ protected:
 	/**
 	 * Holder being dragged
 	 */
-	TrecPointer<Tab> currentHolder;
-
-	/**
-	 * the Environment to manage a Project
-	 */
-	TrecPointer<TEnvironment> environment;
+	TrecSubPointer<TPage, TabBar::Tab> currentHolder;
 
 
 	/**
@@ -301,42 +300,42 @@ protected:
 	/**
 	 * the main body Page
 	 */
-	TrecSubPointer<Page, IDEPage> body;
+	TrecSubPointer<TPage, TabPage> body;
 
 	/**
 	 * the basic console Page
 	 */
-	TrecSubPointer<Page, IDEPage> basicConsole;
+	TrecSubPointer<TPage, TabPage> basicConsole;
 
 	/**
 	 * the deep console Page
 	 */
-	TrecSubPointer<Page, IDEPage> deepConsole;
+	TrecSubPointer<TPage, TabPage> deepConsole;
 
 	/**
 	 * the upper right Panel Page
 	 */
-	TrecSubPointer<Page, IDEPage> upperRight;
+	TrecSubPointer<TPage, TabPage> upperRight;
 
 	/**
 	 * the Lower right Panel Page
 	 */
-	TrecSubPointer<Page, IDEPage> lowerRight;
+	TrecSubPointer<TPage, TabPage> lowerRight;
 
 	/**
 	 * the upper Left Panel Page
 	 */
-	TrecSubPointer<Page, IDEPage> upperLeft;
+	TrecSubPointer<TPage, TabPage> upperLeft;
 
 	/**
 	 * the Lower Left Panel Page
 	 */
-	TrecSubPointer<Page, IDEPage> lowerLeft;
+	TrecSubPointer<TPage, TabPage> lowerLeft;
 
 	/**
 	 * Page to focus on (used when shifting the boundaries between two or three pages)
 	 */
-	TrecSubPointer<Page, IDEPage> focusPage, tabPage;
+	TrecSubPointer<TPage, TabPage> focusPage, tabPage;
 
 
 	/**

@@ -182,8 +182,9 @@ void TColor::SetColor(t_color::Enum en)
  */
 void TColor::SetColor(const TString& colorStr)
 {
-	// To-Do - parse the String
-	color = t_color(t_color::Black);
+	bool worked;
+	TColor c = GetColorFromString(colorStr, worked);
+	color = c.GetColor();
 }
 
 /**
@@ -533,8 +534,52 @@ TColor TColor::GetColorFromString(const TString& color, bool& worked)
 		}
 	}
 
+	auto pieces = tempColor.split(L",;");
 
-	return TColor();
+	if(pieces->Size() < 3)
+		return TColor();
+
+	UINT uColors[4] = {0,0,0,1};
+	float fColors[4] = { 0.0f,0.0f,0.0f, 1.0f };
+
+	bool useFloat = false;
+
+	if (!(TString::ConvertStringToUint(pieces->at(0), uColors[0]) &&
+		TString::ConvertStringToUint(pieces->at(1), uColors[1]) &&
+		TString::ConvertStringToUint(pieces->at(2), uColors[2])))
+	{
+		useFloat = true;
+		if (pieces->at(0).ConvertToFloat(fColors[0]) || pieces->at(1).ConvertToFloat(fColors[1]) || pieces->at(2).ConvertToFloat(fColors[2]))
+			return TColor();
+	}
+
+	if (pieces->Size() > 3)
+	{
+		if (!TString::ConvertStringToUint(pieces->at(3), uColors[3]))
+		{
+			pieces->at(3).ConvertToFloat(fColors[3]);
+		}
+		else
+			fColors[3] = static_cast<float>(uColors[3]) / 255.0f;
+	}
+
+	if (!useFloat)
+	{
+		fColors[0] = static_cast<float>(uColors[0]) / 255.0f;
+		fColors[1] = static_cast<float>(uColors[1]) / 255.0f;
+		fColors[2] = static_cast<float>(uColors[2]) / 255.0f;
+	}
+
+	if (fColors[0] > 1.0f)
+		fColors[0] = 1.0f;
+	if (fColors[1] > 1.0f)
+		fColors[1] = 1.0f;
+	if (fColors[2] > 1.0f)
+		fColors[2] = 1.0f;
+	if (fColors[3] > 1.0f)
+		fColors[3] = 1.0f;
+
+	return TColor(fColors[0], fColors[1], fColors[2], fColors[3]);
 }
 
 TString TColor::toString()

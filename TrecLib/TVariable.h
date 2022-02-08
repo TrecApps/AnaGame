@@ -57,7 +57,7 @@ public:
 
 
     /**
-     * Method: TVariable::GetObject
+     * Method: TVariable::GetString
      * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
      * Parameters: void
      * Returns: TString - The TString referered by the variable (empty if not a string)
@@ -67,6 +67,19 @@ public:
      * Attributes: abstract
      */
     virtual TString GetString() = 0;
+
+
+    /**
+     * Method: TVariable::GetString
+     * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
+     * Parameters: const TString& detail - 
+     * Returns: TString - The TString referered by the variable (empty if not a string)
+     *
+     * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
+     *
+     * Attributes: abstract
+     */
+    virtual TString GetString(const TString& detail);
 
     /**
      * Method: TVariable::Get4Value

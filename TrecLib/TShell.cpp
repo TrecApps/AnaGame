@@ -73,8 +73,9 @@ void TShell::SubmitCommand(TString& command)
 
 	command.Trim();
 	if (!command.GetSize())
+	{
 		RETURN_THREAD_UNLOCK;
-
+	}
 	int firstSpace = command.Find(L' ');
 
 	TString com(command.SubString(0, firstSpace));
@@ -331,6 +332,12 @@ bool TShell::CheckProcess()
 TString TShell::GetWorkingDirectory()
 {
 	return workingDirectory;
+}
+
+void TShell::SetWorkingDirectory(TrecPointer<TFileShell> directory)
+{
+	if (directory.Get() && directory->IsDirectory())
+		workingDirectory.Set(directory->GetPath());
 }
 
 /*

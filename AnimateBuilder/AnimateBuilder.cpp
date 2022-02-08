@@ -22,7 +22,7 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 // AnaGame Globals
-TrecPointer<TInstance> mainInstance;
+TrecSubPointer<TProcess, TInstance> mainInstance;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -34,14 +34,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // TODO: Place code here.
     TString tmlFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable));
-    tmlFile.Append(L"Resources\\AnagameBuilderRibbon.tml");
+    tmlFile.Append(L"Resources\\MainIdeRibbon.json");
 
     TString title(L"Anagame Builder");
     TString winClass(L"BuilderWindow");
 
     TThread::SetMainThread();
 
-    mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
+    mainInstance = TrecPointerKey::GetNewSelfTrecSubPointer<TProcess,TInstance>(title, winClass, WS_OVERLAPPEDWINDOW, nullptr, nCmdShow, hInstance, WndProc);
 
     WNDCLASSEXW wcex;
 
@@ -59,7 +59,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.lpszClassName = winClass.GetConstantBuffer().getBuffer();
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < EventHandler, MainLayoutHandler>(mainInstance), t_window_type::t_window_type_ide);
+    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < TPage::EventHandler, MainLayoutHandler>(TrecSubToTrec( mainInstance)), L"Main", t_window_type::t_window_type_ide);
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ANIMATEBUILDER));
 

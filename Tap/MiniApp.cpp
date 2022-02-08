@@ -1,5 +1,5 @@
 #include "MiniApp.h"
-#include "IDEPage.h"
+#include "TabPage.h"
 
 MiniApp::MiniApp(TrecSubPointer<TWindow, TIdeWindow> win)
 {
@@ -7,7 +7,7 @@ MiniApp::MiniApp(TrecSubPointer<TWindow, TIdeWindow> win)
 	if (this->win.Get())
 	{
 		auto tempInstance = this->win->GetInstance();
-		instance = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(tempInstance);
+		instance = TrecPointerKey::GetSoftPointerFromTrec<TProcess>(tempInstance);
 	}
 }
 
@@ -44,7 +44,7 @@ void MiniApp::SetSelf(TrecPointer<MiniApp> s)
  * Parameters: void
  * Returns: TrecPointer<EventHandler> - the main handler associated with this app
  */
-TrecPointer<EventHandler> MiniApp::GetMainHandler()
+TrecPointer<TPage::EventHandler> MiniApp::GetMainHandler()
 {
-	return TrecPointer<EventHandler>();
+	return TrecPointer<TPage::EventHandler>();
 }

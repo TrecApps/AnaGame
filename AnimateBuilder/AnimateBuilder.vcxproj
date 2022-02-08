@@ -23,7 +23,7 @@
     <ProjectGuid>{918885B6-7790-452B-85D1-95C4109DB2AE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AnimateBuilder</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\TrecCode;..\Tap;..\VideoGraphics;..\Anaface;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\TcDataStruct;..\TrecCode;..\Tap;..\VideoGraphics;..\Anaface2;..\TrecLib;$(IncludePath)</IncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -96,7 +96,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;Tap.lib;TrecCode.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface2.lib;Tap.lib;TrecCode.lib;TcDataStruct.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -150,25 +150,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AGBuilderEnvironment.h" />
     <ClInclude Include="AnimateBuilder.h" />
-    <ClInclude Include="ArenaApp.h" />
     <ClInclude Include="ArenaApp2.h" />
+    <ClInclude Include="CodeRibbonHandler.h" />
     <ClInclude Include="EnvironmentHandler.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainLayoutHandler.h" />
+    <ClInclude Include="NewResourceHandler.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="SourceCodeApp.h" />
+    <ClInclude Include="ResourceDialog.h" />
     <ClInclude Include="SourceCodeApp2.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TEnvironmentDialog.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AGBuilderEnvironment.cpp" />
     <ClCompile Include="AnimateBuilder.cpp" />
-    <ClCompile Include="ArenaApp.cpp" />
     <ClCompile Include="ArenaApp2.cpp" />
+    <ClCompile Include="CodeRibbonHandler.cpp" />
     <ClCompile Include="EnvironmentHandler.cpp" />
     <ClCompile Include="MainLayoutHandler.cpp" />
-    <ClCompile Include="SourceCodeApp.cpp" />
+    <ClCompile Include="NewResourceHandler.cpp" />
+    <ClCompile Include="ResourceDialog.cpp" />
     <ClCompile Include="SourceCodeApp2.cpp" />
     <ClCompile Include="TEnvironmentDialog.cpp" />
   </ItemGroup>

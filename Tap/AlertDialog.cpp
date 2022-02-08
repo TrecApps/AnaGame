@@ -1,6 +1,9 @@
 #include "AlertDialog.h"
 #include <DirectoryInterface.h>
 #include "OkayHandler.h"
+#include <AnafacePage.h>
+#include <TLayout.h>
+#include <TTextInput.h>
 
 /**
  * Method: AlertDialog::AlertDialog
@@ -15,7 +18,7 @@
  *				TString& caption - The message to present to the User once the Dialog is drawn
  * Returns: New AlertDialog instance
  */
-AlertDialog::AlertDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode, TString& caption) :
+AlertDialog::AlertDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode, TString& caption) :
 	TDialog(name, winClass, style, parent, commandShow, ins, mode)
 {
 	this->caption.Set(caption);
@@ -54,7 +57,7 @@ int AlertDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	file.Append(L"Resources\\TextDialog.tml");
 
-	TrecPointer<EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<EventHandler, OkayHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance));
+	TrecPointer<TPage::EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<TPage::EventHandler, OkayHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 
 	int returnable = TWindow::CompileView(file, eh);
 
@@ -66,19 +69,19 @@ int AlertDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 	if (mainPage.Get())
 	{
 
-		TrecPointer<TControl> control = mainPage->GetRootControl();
+		TrecPointer<TPage> control = dynamic_cast<AnafacePage*> (mainPage.Get())->GetRootControl();
 		TLayout* layout = dynamic_cast<TLayout*>(control.Get());
 
 		assert(layout);
 
-		textField = layout->GetLayoutChild(0, 0);
+		textField = layout->GetPage(0, 0);
 
-		TTextField* tf = dynamic_cast<TTextField*>(textField.Get());
+		TTextInput* tf = dynamic_cast<TTextInput*>(textField.Get());
 
 		assert(tf);
 
 		tf->SetText(caption);
-		tf->LockText();
+		//tf->LockText();
 		ret = 0;
 	}
 	ThreadRelease();

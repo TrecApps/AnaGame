@@ -98,7 +98,7 @@ TrecPointer<TObjectNode> TBlankNode::GetNodeAt(UINT target, UINT current)
 
 	current++;
 	AG_THREAD_LOCK
-	for (UINT rust = 0; rust < nodes.Size(); rust++)
+	for (UINT rust = 0; isExtended &&  rust < nodes.Size(); rust++)
 	{
 		ret = nodes[rust]->GetNodeAt(target, current);
 		if (ret.Get())

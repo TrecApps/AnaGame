@@ -2,8 +2,6 @@
 #include "Tap_dll.h"
 #include "TObject.h"
 #include <TString.h>
-#include <AnafaceUI.h>
-#include "AnafaceParser.h"
 #include "TWindow.h"
 #include <TrecReference.h>
 
@@ -40,7 +38,7 @@ public:
 	 *				TDialogMode mode - How the Dialog should approach its parent
 	 * Returns: New Dialog Object
 	 */
-	TDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode);
+	TDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode);
 
 	/**
 	 * Method: TDialog::~TDialog
@@ -113,7 +111,7 @@ protected:
  *				 TString& caption - the Text to present to the User
  * Returns: void
  */
-_TAP_DLL void ActivateAlertDialog(TrecPointer<TInstance> ins, HWND parent, TString& caption);
+_TAP_DLL void ActivateAlertDialog(TrecPointer<TProcess> ins, HWND parent, TString& caption);
 
 /**
  * Function: ActivateNameDialog
@@ -123,4 +121,4 @@ _TAP_DLL void ActivateAlertDialog(TrecPointer<TInstance> ins, HWND parent, TStri
  *				 TString& caption - the Text to present to the User
  * Returns: TString - the Input the User entered
  */
-_TAP_DLL TString ActivateNameDialog(TrecPointer<TInstance> ins, HWND parent, TString& caption);
+_TAP_DLL TString ActivateNameDialog(TrecPointer<TProcess> ins, HWND parent, TString& caption);

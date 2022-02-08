@@ -1,5 +1,8 @@
 #include "TWindow.h"
 #include "TInstance.h"
+#include <AnafacePage.h>
+#include "EventHandler.h"
+#include <TcInterpretor.h>
 
 bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference)
 {
@@ -31,7 +34,7 @@ static BLENDFUNCTION blendFunc = {
  *				TrecPointer ins - pointer to the TInstance involved (hence why TInstance has a SetSelf method)
  * Returns: New Window
  */
-TWindow::TWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins)
+TWindow::TWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins)
 {
 	currentWindow = CreateWindowW(winClass.GetConstantBuffer().getBuffer(),
 		name.GetConstantBuffer().getBuffer(), style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent, nullptr, ins->GetInstanceHandle(), nullptr);
@@ -44,7 +47,7 @@ TWindow::TWindow(TString& name, TString& winClass, UINT style, HWND parent, int 
 	this->name.Set(name);
 	this->parent = parent;
 	this->winClass.Set(winClass);
-	this->windowInstance = TrecPointerKey::GetSoftPointerFromTrec<TInstance>( ins);
+	this->windowInstance = TrecPointerKey::GetSoftPointerFromTrec<>( ins);
 	this->command = commandShow;
 
 	HDC dc = GetWindowDC(currentWindow);
@@ -103,7 +106,7 @@ int TWindow::PrepareWindow()
 	}
 	assert(windowInstance.Get());
 
-	TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->RegisterDialog(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
+	dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance).Get())->RegisterDialog(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self));
 
 	GetClientRect(currentWindow, &size);
 	ShowWindow(currentWindow, command);
@@ -122,7 +125,7 @@ int TWindow::PrepareWindow()
  *				TrecPointer<EventHandler> eh - the Handler to the Main page
  * Returns: int - error (0 == success)
  */
-int TWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
+int TWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 {
 	ThreadLock();
 	if (!windowInstance.Get())
@@ -143,74 +146,49 @@ int TWindow::CompileView(TString& file, TrecPointer<EventHandler> eh)
 		return 1;
 	}
 	assert(windowInstance.Get());
-	mainPage = Page::GetWindowPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), eh);
 
-	if (!mainPage.Get())
+	TDataArray<TPage::EventID_Cred> cred;
+	
+
+	TrecSubPointer<TPage, AnafacePage> newPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(drawingBoard);
+	GetClientRect(currentWindow, &size);
+	auto space = ConvertRectToD2D1Rect(this->size);
+	newPage->OnResize(space, 0, cred);
+
+	TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(aFile->GetFilePath());
+	aFile->Close();
+	aFile.Nullify();
+
+	TString prepRes(newPage->PrepPage(uisFile, eh));
+
+	if (prepRes.GetSize())
 	{
+		MessageBox(this->currentWindow, prepRes.GetConstantBuffer().getBuffer(), L"Error Constructing UI!", 0);
 		ThreadRelease();
 		return 2;
 	}
+
+	if (dynamic_cast<TapEventHandler*>(eh.Get()))
+	{
+		dynamic_cast<TapEventHandler*>(eh.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+	}
+
+	newPage->Create(newPage->GetArea(), d3dEngine);
+
+	mainPage = TrecSubToTrec(newPage);
 	RECT loc;
 	GetClientRect(currentWindow, &loc);
-
-
-	mainPage->SetArea(convertRECTToD2DRectF(loc));
-
-	mainPage->SetAnaface(aFile, eh);
-
-	mainPage->PrepAnimations(animationCentral);
 
 	animationCentral.StartBegin();
 	animationCentral.StartNewPersistant();
 	safeToDraw = 1;
 	Draw();
 
+	if (dynamic_cast<TapEventHandler*>(mainPage.Get()))
+		dynamic_cast<TapEventHandler*>(mainPage.Get())->OnFirstDraw();
+
 	ThreadRelease();
 	return 0;
-}
-
-/**
- * Method: TWindow::MovePageToTop
- * Purpose:
- * Parameters:
- * Returns:
- *
- * DEPRECATED -
- */
-bool TWindow::MovePageToTop(TrecPointer<Page> p)
-{
-	ThreadLock();
-	if (!p.Get() || !pages.Size())
-	{
-		ThreadRelease();
-		return false;
-	}
-	if (pages[0].Get() == p.Get())
-	{
-		ThreadRelease();
-		return true;
-	}
-	UINT loc = 0;
-	for (UINT Rust = 0; Rust < pages.Size(); Rust++)
-	{
-		if (pages[Rust].Get() == p.Get())
-		{
-			loc = Rust;
-			break;
-		}
-	}
-	if (!loc)
-	{
-		ThreadRelease();
-		return false;
-	}
-	for (int assign = loc; assign - 1 > -1; assign--)
-	{
-		pages[assign] = pages[assign - 1];
-	}
-	pages[0] = p;
-	ThreadRelease();
-	return true;
 }
 
 /**
@@ -250,7 +228,7 @@ TString TWindow::GetWinName()
 void TWindow::Draw()
 {
 	LockDrawing();
-	ThreadLock();
+	TObjectLocker lock(&thread);
 	if (mainPage.Get() && safeToDraw)
 	{	UCHAR tempSafe = safeToDraw;
 		safeToDraw = 0;
@@ -261,11 +239,11 @@ void TWindow::Draw()
 
 		// New Mechanism tht uses bitmaps
 		drawingBoard->BeginDraw();
-		mainPage->Draw();
+		mainPage->Draw(TrecPointer<TVariable>());
 		DrawOtherPages();
 
 		if (flyout.Get())
-			flyout->AfterDraw();
+			flyout->Draw(TrecPointer<TVariable>());
 
 		drawingBoard->EndDraw();
 
@@ -282,49 +260,32 @@ void TWindow::Draw()
 		if (mainPage.Get())
 		{
 			hasDrawn = true;
-			mainPage->OnFirstDraw();
+			//mainPage->OnFirstDraw();
 		}
 	}
-	ThreadRelease();
 	UnlockDrawing();
 }
 
 /**
- * Method: TWindow::Draw
- * Purpose:
- * Parameters:
- * Returns:
- *
- * deprecated
+ * Method: TIdeWindow::SetEnvironment
+ * Purpose: Sets the Environment of the Window
+ * Parameters: TrecPointer<TEnvironment> env - the Environment to manage
+ * Returns: void
  */
-void TWindow::Draw(Page& draw)
+void TWindow::SetEnvironment(TrecPointer<TEnvironment> env)
 {
-	ThreadLock();
-	draw.Draw();
-	ThreadRelease();
+	TObjectLocker lock(&this->thread);
+	environment = env;
 }
 
-void TWindow::RefreshMediaControls()
+
+TrecPointer<TEnvironment> TWindow::GetEnvironment()
 {
-	ThreadLock();
-	mediaControls.RemoveAll();
-
-	TDataArray<TrecPointer<TControl>> controls;
-	if (mainPage.Get())
-		mainPage->QueryMediaControls(controls);
-
-	for (UINT Rust = 0; Rust < controls.Size(); Rust++)
-	{
-		MediaControlLoc mLoc;
-		mLoc.control = controls[Rust];
-		if (!mLoc.control.Get())
-			continue;
-		mLoc.loc = convertD2DRectToRECT(mLoc.control->getLocation());
-		mediaControls.push_back(mLoc);
-	}
-	ThreadRelease();
-
+	TObjectLocker lock(&this->thread);
+	auto ret = environment;
+	return ret;
 }
+
 
 /**
  * Method: TWindow::InduceDraw
@@ -341,14 +302,14 @@ void TWindow::InduceDraw()
 
 void TWindow::OnVideoEvent(WPARAM param)
 {
-	ThreadLock();
-	if (videoPlayer.Get())
-	{
-		TrecComPointer<TPlayer> p = videoPlayer->GetPlayer();
-		if (p.Get())
-			p->HandleEvent(param);
-	}
-	ThreadRelease();
+	//ThreadLock();
+	//if (videoPlayer.Get())
+	//{
+	//	TrecComPointer<TPlayer> p = videoPlayer->GetPlayer();
+	//	if (p.Get())
+	//		p->HandleEvent(param);
+	//}
+	//ThreadRelease();
 }
 
 /**
@@ -366,15 +327,28 @@ void TWindow::OnRButtonUp(UINT nFlags, TPoint point)
 		ThreadRelease();
 		return;
 	}
-	messageOutput mOut = messageOutput::negative;
-	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
+
+	TDataArray<TPage::EventID_Cred> cred;
+	
+
+	message_output mOut = message_output::mo_negative;
+
+
+	if (flyout.Get())
+	{
+		flyout->OnRButtonUp(nFlags, point, mOut, cred);
+	}
+	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative ); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnRButtonUp(nFlags, point, &mOut);
+			pages[c]->OnRButtonUp(nFlags, point, mOut, cred);
 	}
 
-	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
-		mainPage->OnRButtonUp(nFlags, point, &mOut);
+	if(mOut == message_output::mo_negative )
+		mainPage->OnRButtonUp(nFlags, point, mOut, cred);
+	flyout.Nullify();
+	HandleWindowEvents(cred);
+	Draw();
 	ThreadRelease();
 }
 
@@ -395,16 +369,23 @@ void TWindow::OnLButtonDown(UINT nFlags, TPoint point)
 		ThreadRelease();
 		return;
 	}
-	messageOutput mOut = messageOutput::negative;
-
-	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
+	message_output mOut = message_output::mo_negative;
+	TDataArray<TPage::EventID_Cred> cred;
+	if (flyout.Get())
 	{
-		if(pages[c].Get())
-			pages[c]->OnLButtonDown(nFlags, point, &mOut, flyout);
+		flyout->OnLButtonDown(nFlags, point, mOut, cred);
 	}
 
-	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
-		mainPage->OnLButtonDown(nFlags, point, &mOut, flyout);
+	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
+	{
+		if(pages[c].Get())
+			pages[c]->OnLButtonDown(nFlags, point, mOut, cred);
+	}
+
+	if(mOut == message_output::mo_negative)
+		mainPage->OnLButtonDown(nFlags, point, mOut, cred);
+	HandleWindowEvents(cred);
+	Draw();
 	ThreadRelease();
 }
 
@@ -423,15 +404,24 @@ void TWindow::OnRButtonDown(UINT nFlags, TPoint point)
 		ThreadRelease();
 		return;
 	}
-	messageOutput mOut = messageOutput::negative;
-	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
+	message_output mOut = message_output::mo_negative;
+
+	TDataArray<TPage::EventID_Cred> cred;
+	if (flyout.Get())
+	{
+		flyout->OnRButtonDown(nFlags, point, mOut, cred);
+	}
+	
+	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnRButtonDown(nFlags, point, &mOut);
+			pages[c]->OnRButtonDown(nFlags, point, mOut, cred);
 	}
 
-	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
-		mainPage->OnRButtonDown(nFlags, point, &mOut);
+	if(mOut == message_output::mo_negative)
+		mainPage->OnRButtonDown(nFlags, point, mOut, cred);
+	HandleWindowEvents(cred);
+	Draw();
 	ThreadRelease();
 }
 
@@ -450,27 +440,33 @@ void TWindow::OnMouseMove(UINT nFlags, TPoint point)
 		ThreadRelease();
 		return;
 	}
-	messageOutput mOut = messageOutput::negative;
+	message_output mOut = message_output::mo_negative;
+
+	TDataArray<TPage::EventID_Cred> cred;
 	if (currentScrollBar.Get())
 	{
 
-		currentScrollBar->OnMouseMove(nFlags, point, &mOut);
+		currentScrollBar->OnMouseMove(nFlags, point, mOut);
 		
 		Draw();
 		ThreadRelease();
 		return;
 	}
 
-
-
-	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
+	if (flyout.Get())
 	{
-		if(pages[c].Get())
-			pages[c]->OnMouseMove(nFlags, point, &mOut, flyout);
+		flyout->OnMouseMove(nFlags, point, mOut, cred);
 	}
 
-	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
-		mainPage->OnMouseMove(nFlags, point, &mOut, flyout);
+	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
+	{
+		if(pages[c].Get())
+			pages[c]->OnMouseMove(nFlags, point, mOut, cred);
+	}
+
+	if(mOut == message_output::mo_negative)
+		mainPage->OnMouseMove(nFlags, point, mOut, cred);
+	HandleWindowEvents(cred);
 	ThreadRelease();
 }
 
@@ -489,15 +485,24 @@ void TWindow::OnLButtonDblClk(UINT nFlags, TPoint point)
 		ThreadRelease();
 		return;
 	}
-	messageOutput mOut = messageOutput::negative;
-	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
+	message_output mOut = message_output::mo_negative;
+
+	TDataArray<TPage::EventID_Cred> cred;
+	if (flyout.Get())
+	{
+		flyout->OnLButtonDblClk(nFlags, point, mOut, cred);
+	}
+	
+	for(UINT c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnLButtonDblClk(nFlags, point, &mOut);
+			pages[c]->OnLButtonDblClk(nFlags, point, mOut, cred);
 	}
 
-	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
-		mainPage->OnLButtonDblClk(nFlags, point, &mOut);
+	if(mOut == message_output::mo_negative)
+		mainPage->OnLButtonDblClk(nFlags, point, mOut, cred);
+	HandleWindowEvents(cred);
+	Draw();
 	ThreadRelease();
 }
 
@@ -520,19 +525,31 @@ void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
 		ThreadRelease();
 		return;
 	}
-	messageOutput mOut = messageOutput::negative;
+	TDataArray<TPage::EventID_Cred> cred;
+	message_output mOut = message_output::mo_negative;
+	if (flyout.Get())
+	{
+		flyout->OnLButtonUp(nFlags, point, mOut, cred);
+	}
 
 	auto fly = flyout;
 	flyout.Nullify();
 	UINT c = 0;
-	for(c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
+
+
+	
+	for(c = 0; c < pages.Size() && (mOut == message_output::mo_negative); c++)
 	{
 		if(pages[c].Get())
-			pages[c]->OnLButtonUp(nFlags, point, &mOut, fly);
+			pages[c]->OnLButtonUp(nFlags, point, mOut, cred);
 	}
 
-	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
-		mainPage->OnLButtonUp(nFlags, point, &mOut, fly);
+	if(mOut == message_output::mo_negative)
+		mainPage->OnLButtonUp(nFlags, point, mOut, cred);
+
+	HandleWindowEvents(cred);
+
+	Draw();
 	ThreadRelease();
 }
 
@@ -547,26 +564,7 @@ void TWindow::OnLButtonUp(UINT nFlags, TPoint point)
  */
 bool TWindow::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	ThreadLock();
-	if (locked)
-	{
-		ThreadRelease();
-		return false;
-	}
-	messageOutput mOut = messageOutput::negative;
-
-	bool returnable = false;
-
-	for(UINT c = 0; c < pages.Size() && (mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate); c++)
-	{
-		if(pages[c].Get())
-			returnable = pages[c]->OnChar(fromChar, nChar, nRepCnt, nFlags, &mOut);
-	}
-
-	if(mOut == messageOutput::negative || mOut == messageOutput::negativeUpdate)
-		returnable = mainPage->OnChar(fromChar, nChar, nRepCnt, nFlags, &mOut);
-	ThreadRelease();
-	return returnable;
+	return false;
 }
 
 
@@ -584,9 +582,12 @@ void TWindow::OnWindowResize(UINT width, UINT height)
 	newLoc.top = newLoc.left = 0;
 	newLoc.bottom = height;
 	newLoc.right = width;
-	size = convertD2DRectToRECT(newLoc);
+	size = ConvertD2D1RectToRect(newLoc);
+
+	TDataArray<TPage::EventID_Cred> cred;
+	
 	if (mainPage.Get())
-		mainPage->OnResize(newLoc, 0, d3dEngine);
+		mainPage->OnResize(newLoc, 0, cred);
 
 	if (d3dEngine.Get())
 	{
@@ -600,7 +601,6 @@ void TWindow::OnWindowResize(UINT width, UINT height)
 	}
 	ThreadRelease();
 
-	//safeToDraw = safeToDraw & 0b11111101;
 }
 
 /**
@@ -621,115 +621,8 @@ bool TWindow::OnScroll(const TPoint& point, const TPoint& direction)
 {
 	if(!mainPage.Get())
 	return false;
-	return mainPage->OnScroll(point, direction);
-}
-
-/**
- * Method: TWindow::GetHandlePage
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated in favor of the Ide Window/IDE Page
- */
-TrecPointer<Page> TWindow::GetHandlePage(bool singleton)
-{
-	if (singleton && handlePage.Get())
-		return handlePage;
-
-	TrecPointer<Page> ret = Page::GetWindowPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), TrecPointer<EventHandler>());
-
-	if (!ret.Get())
-		return ret;
-
-	pages.push_back(ret);
-
-	if (singleton)
-		handlePage = ret;
-
-	return ret;
-}
-
-/**
- * Method: TWindow::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated in favor of the Ide Window/IDE Page
- */
-TrecPointer<Page> TWindow::GetHandlePage(const TString& name)
-{
-	TrecPointer<Page> ret = keyPages.retrieveEntry(name);
-	if (ret.Get())
-		return ret;
-
-	ret = GetHandlePage(false);
-
-	if (ret.Get())
-		keyPages.addEntry(name, ret);
-
-	return ret;
-}
-
-/**
- * Method: TWindow::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated in favor of the Ide Window/IDE Page
- */
-TrecPointer<Page> TWindow::Get3DPage(bool singleton, TString& engineId)
-{
-	if(!engineId.GetSize() && singleton)
-		return _3DPage;
-
-
-
-	if (!engineId.GetSize())
-		return TrecPointer<Page>();
-
-	if (!d3dEngine.Get())
-	{
-		if (!SetUp3D())return TrecPointer<Page>();
-	}
-	TrecPointer<TArenaEngine> engine = TrecPointerKey::GetNewTrecPointer<TArenaEngine>(d3dEngine, engineId);//  ArenaEngine::GetArenaEngine(engineId, currentWindow, windowInstance->GetInstanceHandle());
-
-	return Get3DPage(singleton, engine);
-}
-
-/**
- * Method: TWindow::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated in favor of the Ide Window/IDE Page
- */
-TrecPointer<Page> TWindow::Get3DPage(bool singleton, TrecPointer<TArenaEngine> engine)
-{
-	if (singleton)
-	{
-		if (!engine.Get())
-			return _3DPage;
-		if (_3DPage.Get()) {
-			if(_3DPage->GetArenaEngine().Get() == engine.Get())
-				return _3DPage;
-			return TrecPointer<Page>();
-		}
-	}
-
-	//TrecPointer<Page> ret = Page::Get3DPage(windowInstance, engine, TrecPointer<EventHandler>());
-
-	//pages.push_back(ret);
-
-	//if (singleton)
-	//{
-		//_3DPage = ret;
-	//}
-
-	return TrecPointer<Page>();//ret;
+	TDataArray<TPage::EventID_Cred> cred;
+	return mainPage->OnScroll(false, point, direction, cred);
 }
 
 /**
@@ -771,25 +664,6 @@ void TWindow::SetSelf(TrecPointer<TWindow> win)
 	this->self = TrecPointerKey::GetSoftPointerFromTrec<TWindow>(win);
 }
 
-/**
- * Method: TWindow::GetPageByArea
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated in favor of the Ide Window/IDE Page
- */
-TrecPointer<Page> TWindow::GetPageByArea(D2D1_RECT_F r)
-{
-	for (UINT Rust = 0; Rust < pages.Size(); Rust++)
-	{
-		if (pages[Rust].Get() && IsD2D1RectEqual(pages[Rust]->GetArea(), r, 1.0f))
-			return pages[Rust];
-	}
-	TrecPointer<Page> ret = Page::GetSmallPage(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance), TrecPointerKey::GetTrecPointerFromSoft<TWindow>(self), r);
-	pages.push_back(ret);
-	return ret;
-}
 
 /**
  * Method: TWindow::GetInstance
@@ -797,10 +671,10 @@ TrecPointer<Page> TWindow::GetPageByArea(D2D1_RECT_F r)
  * Parameters: void
  * Returns: TrecPointer<TInstance> - the Instance this window is under
  */
-TrecPointer<TInstance> TWindow::GetInstance()
+TrecPointer<TProcess> TWindow::GetInstance()
 {
 	ThreadLock();
-	auto ret = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance);
+	auto ret = TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance);
 	ThreadRelease();
 	return ret;
 }
@@ -821,7 +695,7 @@ bool TWindow::SetUp3D()
 	}
 	assert(windowInstance.Get());
 
-	d3dEngine = TrecPointerKey::GetNewTrecPointer<TWindowEngine>(currentWindow, TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->GetInstanceHandle());
+	d3dEngine = TrecPointerKey::GetNewTrecPointer<TWindowEngine>(currentWindow, TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance)->GetInstanceHandle());
 
 	if (d3dEngine->Initialize() || !drawingBoard.Get())
 	{
@@ -843,9 +717,9 @@ bool TWindow::SetUp3D()
  */
 void TWindow::CleanUp()
 {
-	ThreadLock();
-	deletePage.Delete();
-	ThreadRelease();
+	//ThreadLock();
+	//deletePage.Delete();
+	//ThreadRelease();
 }
 
 /**
@@ -924,18 +798,18 @@ TrecPointer<DrawingBoard> TWindow::GetDrawingBoard()
  * Parameters: TrecPointer<Page> page - the page to prepare the animations for
  * Returns: bool - whether the page was set and the Window matched
  */
-bool TWindow::PrepAnimations(TrecPointer<Page> page)
+bool TWindow::PrepAnimations(TrecPointer<TPage> page)
 {
-	ThreadLock();
-	if (!page.Get() || page->GetWindowHandle().Get() != this)
-	{
-		ThreadRelease();
-		return false;
-	}
-	page->PrepAnimations(animationCentral);
-	animationCentral.StartBegin();
-	animationCentral.StartNewPersistant();
-	ThreadRelease();
+	//ThreadLock();
+	//if (!page.Get() || page->GetWindowHandle().Get() != this)
+	//{
+	//	ThreadRelease();
+	//	return false;
+	//}
+	//page->PrepAnimations(animationCentral);
+	//animationCentral.StartBegin();
+	//animationCentral.StartNewPersistant();
+	//ThreadRelease();
 	return true;
 }
 
@@ -947,7 +821,7 @@ bool TWindow::PrepAnimations(TrecPointer<Page> page)
  *
  * Note: This method is intended to be called by the Page Class. The Page looks for TFlyouts to draw and the Window takes it from there
  */
-void TWindow::SetFlyout(TrecPointer<TFlyout> fly)
+void TWindow::SetFlyout(TrecPointer<TPage> fly)
 {
 	ThreadLock();
 	flyout = fly;
@@ -983,13 +857,6 @@ TrecComPointer<ID2D1Factory1> TWindow::GetFactory()
 	return ret;
 }
 
-void TWindow::submitPlayer(TrecPointer<TControl> play)
-{
-	ThreadLock();
-	videoPlayer = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TVideo>(play);
-	assert(videoPlayer.Get());
-	ThreadRelease();
-}
 
 HDC TWindow::GetTWindowDc()
 {
@@ -1007,6 +874,38 @@ void TWindow::FlushDc()
 	ThreadRelease();
 }
 
+void TWindow::HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred)
+{
+	for (UINT Rust = 0; Rust < cred.Size(); Rust++)
+	{
+		switch (cred[Rust].eventType)
+		{
+		case R_Message_Type::On_Flyout:
+			flyout = cred[Rust].control;
+			break;
+		case R_Message_Type::On_Select_Scroller:
+			currentScrollBar = cred[Rust].scroll;
+		}
+
+		TrecPointer<TVariable> eventVar = cred[Rust].data;
+		if (eventVar.Get())
+		{
+			switch (eventVar->GetVarType())
+			{
+			case var_type::interpretor:
+				dynamic_cast<TcInterpretor*>(eventVar.Get())->Run();
+			case var_type::string:
+				RunWindowCommand(eventVar->GetString());
+			}
+		}
+
+	}
+}
+
+void TWindow::RunWindowCommand(const TString& command)
+{
+}
+
 /**
  * Method: TWindow::DrawOtherPages
  * Purpose: Draws other pages registered in this window
@@ -1017,13 +916,6 @@ void TWindow::DrawOtherPages()
 {
 }
 
-MediaControlLoc::MediaControlLoc()
+TProcess::~TProcess()
 {
-	loc = { 0,0,0,0 };
-}
-
-MediaControlLoc::MediaControlLoc(const MediaControlLoc& copy)
-{
-	control = copy.control;
-	loc = copy.loc;
 }

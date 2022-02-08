@@ -24,7 +24,7 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 // AnaGame Globals
-TrecPointer<TInstance> mainInstance;
+TrecPointer<TProcess> mainInstance;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -36,14 +36,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // TODO: Place code here.
     TString tmlFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable));
-    tmlFile.Append(L"Resources\\Web-Tours\\BrowserInterface.tml.txt");
+    tmlFile.Append(L"Resources\\Web-Tours\\BrowserInterface.json");
 
     TString title(L"Web-Tours");
     TString winClass(L"WebToursWindow");
 
     TThread::SetMainThread();
 
-    mainInstance = TrecPointerKey::GetNewSelfTrecPointer<TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
+    mainInstance = TrecPointerKey::GetNewSelfTrecPointerAlt<TProcess, TInstance>(title, winClass, WS_OVERLAPPEDWINDOW | WS_MAXIMIZE, nullptr, nCmdShow, hInstance, WndProc);
 
     WNDCLASSEXW wcex;
 
@@ -61,14 +61,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.lpszClassName = winClass.GetConstantBuffer().getBuffer();
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < EventHandler, WebToursHandler>(mainInstance), t_window_type::t_window_type_web);
+    dynamic_cast<TInstance*>(mainInstance.Get())->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewSelfTrecPointerAlt < TPage::EventHandler, WebToursHandler>(mainInstance), L"", t_window_type::t_window_type_web);
 
-    TrecSubPointer<TWindow, TWebWindow> webWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TWebWindow>( mainInstance->GetMainWindow());
+    TrecSubPointer<TWindow, TWebWindow> webWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TWebWindow>(dynamic_cast<TInstance*>(mainInstance.Get())->GetMainWindow());
 
     if (webWindow.Get())
     {
         // Web Based Initialization here
-        webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>(mainInstance, mainInstance->GetMainWindow()));
+        webWindow->SetEnvironmentGenerator(TrecPointerKey::GetNewTrecPointerAlt<EnvironmentGenerator, WebEnvGenerator>(mainInstance, dynamic_cast<TInstance*>(mainInstance.Get())->GetMainWindow()));
         webWindow->AddNewTab();
     }
 
@@ -113,7 +113,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
 
     if (mainInstance.Get())
-        return mainInstance->Proc(hWnd, message, wParam, lParam);
+        return dynamic_cast<TInstance*>(mainInstance.Get())->Proc(hWnd, message, wParam, lParam);
 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }

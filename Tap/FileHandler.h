@@ -1,5 +1,7 @@
 #pragma once
 #include "EventHandler.h"
+#include <TDataLayout.h>
+#include <TDataNodeControl.h>
 
 class FileHandler;
 
@@ -12,7 +14,7 @@ typedef enum class handler_data_source {
 	hds_project
 }handler_data_source;
 
-typedef void (FileHandler::* FileHandlerEvents)(TrecPointer<TControl> tc, EventArgs ea);
+typedef void (FileHandler::* FileHandlerEvents)(TrecPointer<TPage> tc, EventArgs ea);
 
 /**
  * Class: FileHandler
@@ -20,7 +22,7 @@ typedef void (FileHandler::* FileHandlerEvents)(TrecPointer<TControl> tc, EventA
  * 
  * SuperClass: EventHandler
  */
-class _TAP_DLL FileHandler :	public EventHandler
+class _TAP_DLL FileHandler :	public TapEventHandler
 {
 public:
 
@@ -30,7 +32,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New FileHandler Object
 	 */
-	FileHandler(TrecPointer<TInstance> instance, handler_data_source dataSource = handler_data_source::hds_files);
+	FileHandler(TrecPointer<TProcess> instance, handler_data_source dataSource = handler_data_source::hds_files);
 	/**
 	 * Method: FileHandler::~FileHandler
 	 * Purpose: Destructor
@@ -56,7 +58,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 	/**
 	 * Method: FileHandler::HandleEvents
 	 * Purpose: Handles Events produced from the set of TControls
@@ -65,7 +67,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr)override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)override;
 
 	/**
 	 * Method: FileHandler::ProcessMessage
@@ -92,7 +94,7 @@ protected:
 	/**
 	 * The control that actualy browses the File System
 	 */
-	TrecSubPointer<TControl, TTreeDataBind> browser;
+	TrecSubPointer<TPage, TDataNodeControl> browser;
 
 	/**
 	 * Holds list of EventHandlers specific for this Handler type
@@ -111,6 +113,6 @@ protected:
 	 *				EventArgs ea - The parameters of the event
 	 * Returns: void
 	 */
-	void OnOpenFile(TrecPointer<TControl> tc, EventArgs ea);
+	void OnOpenFile(TrecPointer<TPage> tc, EventArgs ea);
 };
 

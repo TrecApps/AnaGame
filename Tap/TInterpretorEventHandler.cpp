@@ -1,14 +1,14 @@
 #include "TInterpretorEventHandler.h"
 
-TInterpretorEventHandler::TInterpretorEventHandler(TrecPointer<TInstance> instance): EventHandler(instance)
+TInterpretorEventHandler::TInterpretorEventHandler(TrecPointer<TProcess> instance): TapEventHandler(instance)
 {
 }
 
-void TInterpretorEventHandler::Initialize(TrecPointer<Page> page)
+void TInterpretorEventHandler::Initialize(TrecPointer<TPage> page)
 {
 }
 
-void TInterpretorEventHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void TInterpretorEventHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 }
 

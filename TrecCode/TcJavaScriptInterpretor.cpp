@@ -4632,6 +4632,7 @@ void TcJavaScriptInterpretor::HandleAssignment(TDataArray<JavaScriptExpression2>
                         }
                     } while (false);
                     break;
+                //default:
                 }
             }
         }

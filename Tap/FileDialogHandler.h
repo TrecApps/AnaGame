@@ -1,11 +1,13 @@
 #pragma once
 #include "EventHandler.h"
 #include <TFileNode.h>
+#include <TTextInput.h>
+#include <TLayout.h>
 
 class FileDialogHandler;
 
 
-typedef void (FileDialogHandler::* FileDialogEvents)(TrecPointer<TControl> tc, EventArgs ea);
+typedef void (FileDialogHandler::* FileDialogEvents)(TrecPointer<TPage> tc, EventArgs ea);
 
 
 /**
@@ -14,7 +16,7 @@ typedef void (FileDialogHandler::* FileDialogEvents)(TrecPointer<TControl> tc, E
  * 
  * SuperClass: EventHandler
  */
-class FileDialogHandler :  public EventHandler
+class FileDialogHandler :  public TapEventHandler
 {
 public:
 	/**
@@ -23,7 +25,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New EventHandler Object
 	 */
-	FileDialogHandler(TrecPointer<TInstance> instance);
+	FileDialogHandler(TrecPointer<TProcess> instance);
 
 
 	/**
@@ -54,7 +56,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 
 
 	/**
@@ -65,7 +67,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr) override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr) override;
 
 
 	/**
@@ -95,25 +97,28 @@ public:
 	void SetAttributes(TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile = false, file_node_filter_mode filter_mode = file_node_filter_mode::fnfm_block_current);
 
 protected:
+
+	TDataMap<UINT> events;
+
 	// Relevent controls once controls are generated from a TML file
 
 	TrecSubPointer<TObjectNode, TFileNode> fileNode;
 
-	TrecSubPointer<TControl, TTextField> directoryText;
+	TrecSubPointer<TPage, TTextInput> directoryText;
 
-	TrecSubPointer<TControl, TTreeDataBind> browserControl;
-	TrecSubPointer<TControl, TTreeDataBind> favoritesControl;
+	//TrecSubPointer<TPage, TTreeDataBind> browserControl;
+	//TrecSubPointer<TPage, TTreeDataBind> favoritesControl;
 
-	TrecSubPointer<TControl, TTextField> fileText;
+	TrecSubPointer<TPage, TTextInput> fileText;
 
-	TrecSubPointer<TControl, TLayout> browserLayout;
+	TrecSubPointer<TPage, TLayout> browserLayout;
 
-	TrecPointer<TControl> okayControl;
+	TrecPointer<TPage> okayControl;
 
 
 	TrecPointer<TFileShell> startDirectory;
 
-	TrecSubPointer<TControl, TTextField> toggleFavoriteDirectory;
+	TrecSubPointer<TPage, TTextInput> toggleFavoriteDirectory;
 
 
 
@@ -142,18 +147,18 @@ protected:
 
 	TDataArray<FileDialogEvents> fileEvents;
 
-	void OnSelectNode(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSelectNode(TrecPointer<TPage> tc, EventArgs ea);
 
-	void OnCancel(TrecPointer<TControl> tc, EventArgs ea);
+	void OnCancel(TrecPointer<TPage> tc, EventArgs ea);
 
-	void OnOkay(TrecPointer<TControl> tc, EventArgs ea);
+	void OnOkay(TrecPointer<TPage> tc, EventArgs ea);
 
-	void OnFileNameChange(TrecPointer<TControl> tc, EventArgs ea);
+	void OnFileNameChange(TrecPointer<TPage> tc, EventArgs ea);
 
-	void OnClickNode(TrecPointer<TControl> tc, EventArgs ea);
+	void OnClickNode(TrecPointer<TPage> tc, EventArgs ea);
 
-	void OnNewFolder(TrecPointer<TControl> tc, EventArgs ea);
+	void OnNewFolder(TrecPointer<TPage> tc, EventArgs ea);
 
-	void OnToggleFavoriteFolder(TrecPointer<TControl> tc, EventArgs ea);
+	void OnToggleFavoriteFolder(TrecPointer<TPage> tc, EventArgs ea);
 };
 

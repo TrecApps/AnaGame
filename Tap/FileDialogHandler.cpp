@@ -1,11 +1,11 @@
 #include "FileDialogHandler.h"
-#include "Page.h"
 #include "TIdeWindow.h"
 #include <DirectoryInterface.h>
 
 #include "TDialog.h"
 #include <TBlankNode.h>
-#include <TScrollerControl.h>
+#include <TScrollerPage.h>
+#include <AnafacePage.h>
 
 // Declare Handler Functions in String form
 TString on_SelectNode(L"OnSelectNode");
@@ -23,7 +23,7 @@ TString on_ToggleFavoriteFolder(L"OnToggleFavoriteFolder");
  * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
  * Returns: New EventHandler Object
  */
-FileDialogHandler::FileDialogHandler(TrecPointer<TInstance> instance): EventHandler(instance)
+FileDialogHandler::FileDialogHandler(TrecPointer<TProcess> instance): TapEventHandler(instance)
 {
 	// Set the filter mode
 	filter_mode = file_node_filter_mode::fnfm_block_current;
@@ -38,35 +38,14 @@ FileDialogHandler::FileDialogHandler(TrecPointer<TInstance> instance): EventHand
 	fileEvents.push_back(&FileDialogHandler::OnToggleFavoriteFolder);
 
 	// Now set the structure to link the listeners to their text name
-	eventNameID enid;
 
-	enid.eventID = 0;
-	enid.name.Set(on_SelectNode);
-	events.push_back(enid);
-
-	enid.eventID = 1;
-	enid.name.Set(on_Cancel);
-	events.push_back(enid);
-
-	enid.eventID = 2;
-	enid.name.Set(on_Okay);
-	events.push_back(enid);
-
-	enid.eventID = 3;
-	enid.name.Set(on_FileNameChange);
-	events.push_back(enid);
-
-	enid.eventID = 4;
-	enid.name.Set(on_ClickNode);
-	events.push_back(enid);
-
-	enid.eventID = 5;
-	enid.name.Set(on_NewFolder);
-	events.push_back(enid);
-
-	enid.eventID = 6;
-	enid.name.Set(on_ToggleFavoriteFolder);
-	events.push_back(enid);
+	events.addEntry(on_SelectNode, 0);
+	events.addEntry(on_Cancel,1);
+	events.addEntry(on_Okay,2);
+	events.addEntry(on_FileNameChange,3);
+	events.addEntry(on_ClickNode,4);
+	events.addEntry(on_NewFolder,5);
+	events.addEntry(on_ToggleFavoriteFolder,6);
 }
 
 /**
@@ -80,23 +59,23 @@ FileDialogHandler::~FileDialogHandler()
 	ForgeDirectory(GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"Local\\AnaGame\\");
 	TFile f(GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"Local\\AnaGame\\Common_Folders.txt", TFile::t_file_create_always | TFile::t_file_write);
 
-	if (favoritesControl.Get() && f.IsOpen())
-	{
-		auto mainNode = favoritesControl->GetNode();
+	//if (favoritesControl.Get() && f.IsOpen())
+	//{
+	//	auto mainNode = favoritesControl->GetNode();
 
-		assert(mainNode.Get());
+	//	assert(mainNode.Get());
 
-		UINT Rust = 0;
+	//	UINT Rust = 0;
 
-		TrecSubPointer<TObjectNode, TFileNode> fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+	//	TrecSubPointer<TObjectNode, TFileNode> fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
 
-		while (fileNode.Get())
-		{
-			f.WriteString(fileNode->GetData()->GetPath());
-			
-			fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
-		}
-	}
+	//	while (fileNode.Get())
+	//	{
+	//		f.WriteString(fileNode->GetData()->GetPath());
+	//		
+	//		fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+	//	}
+	//}
 
 	f.Close();
 }
@@ -112,15 +91,14 @@ TString FileDialogHandler::GetType()
 	return TString(L"FileDialogHandler;") + EventHandler::GetType();
 }
 
-void FileDialogHandler::Initialize(TrecPointer<Page> page)
+void FileDialogHandler::Initialize(TrecPointer<TPage> page)
 {
 	ThreadLock();
-	if (!page.Get() || !page->GetRootControl().Get() || !page->GetWindowHandle().Get())
+	if (!page.Get() || !dynamic_cast<AnafacePage*>(page.Get())->GetRootControl().Get() || !window.Get())
 	{
 		ThreadRelease();
 		return;
 	}
-	window = page->GetWindowHandle();
 	if (!startDirectory.Get())
 	{
 		
@@ -136,49 +114,49 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 	}
 
 
-	auto topStack = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(page->GetRootControl());
+	auto topStack = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(dynamic_cast<AnafacePage*>(page.Get())->GetRootControl());
 	assert(topStack.Get());
-	TrecSubPointer<TControl, TLayout> subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>( topStack->GetLayoutChild(0,0) );
+	TrecSubPointer<TPage, TLayout> subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>( topStack->GetPage(0,0) );
 	assert(subLayout.Get());
 
 
-	directoryText = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(1,0));
+	directoryText = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(subLayout->GetPage(1,0));
 	assert(directoryText.Get());
 
 	// Get Toggle Directory
 
-	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 1));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(topStack->GetPage(0, 1));
 	assert(subLayout.Get());
 
-	toggleFavoriteDirectory = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(0, 0));
-	TrecSubPointer<TControl, TScrollerControl> toggleScroller = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TScrollerControl>(subLayout->GetLayoutChild(0, 0));
+	toggleFavoriteDirectory = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(subLayout->GetPage(0, 0));
+	TrecSubPointer<TPage, TScrollerPage> toggleScroller = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TScrollerPage>(subLayout->GetPage(0, 0));
 	if (toggleScroller.Get())
-		toggleFavoriteDirectory = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField> (toggleScroller->GetChildControl());
+		toggleFavoriteDirectory = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput> (toggleScroller->GetChildPage());
 	assert(toggleFavoriteDirectory.Get());
 
 	// Get contents
 
-	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 2));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(topStack->GetPage(0, 2));
 	assert(subLayout.Get());
 
-	browserControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(subLayout->GetLayoutChild(1, 1));
-	assert(browserControl.Get());
-	favoritesControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(subLayout->GetLayoutChild(0, 1));
-	assert(favoritesControl.Get());
+	//browserControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(subLayout->GetLayoutChild(1, 1));
+	//assert(browserControl.Get());
+	//favoritesControl = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTreeDataBind>(subLayout->GetLayoutChild(0, 1));
+	//assert(favoritesControl.Get());
 
 	browserLayout = subLayout;
 
-	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 3));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(topStack->GetPage(0, 3));
 	assert(subLayout.Get());
 
 
-	fileText = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(subLayout->GetLayoutChild(1, 0));
+	fileText = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(subLayout->GetPage(1, 0));
 	assert(fileText.Get());
 
-	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(topStack->GetLayoutChild(0, 4));
+	subLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(topStack->GetPage(0, 4));
 	assert(subLayout.Get());
 
-	okayControl = subLayout->GetLayoutChild(1, 0);
+	okayControl = subLayout->GetPage(1, 0);
 	assert(okayControl.Get());
 
 	fileNode = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TFileNode>(0);
@@ -195,13 +173,13 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 	}
 
 
-	browserControl->SetNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(fileNode));
+	//browserControl->SetNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(fileNode));
 	fileNode->Extend();
 
 
 	// Now silence the Okay button as it will not be feasible yet
 
-	okayControl->setActive(false);
+	dynamic_cast<TControl*>(okayControl.Get())->setActive(false);
 
 	// Update the directory text
 	directoryText->SetText(fileNode->GetData()->GetPath());
@@ -237,7 +215,7 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 
 		}
 
-		favoritesControl->SetNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TBlankNode>(folders));
+		//favoritesControl->SetNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TBlankNode>(folders));
 		folders->Extend();
 	}
 	else
@@ -252,30 +230,37 @@ void FileDialogHandler::Initialize(TrecPointer<Page> page)
 	ThreadRelease();
 }
 
-void FileDialogHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void FileDialogHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	int e_id = -1;
 	EventArgs ea;
 	ThreadLock();
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		auto tc = eventAr.at(c).control;
+		auto tc = eventAr.at(c).args;
 		if (!tc.Get())
 			continue;
-		ea = tc->getEventArgs();
-		e_id = ea.methodID;
+
+
+		UINT u_id = 0;
+		if (!events.retrieveEntry(tc->methodID, u_id))
+		{
+			eventAr[c].args.Nullify();
+			continue;
+		}
+		e_id = u_id;
 		// At this point, call the appropriate method
 		if (e_id > -1 && e_id < fileEvents.Size())
 		{
 			// call method
 			if (fileEvents[e_id])
-				(this->*fileEvents[e_id])(tc, ea);
+				(this->*fileEvents[e_id])(eventAr[c].control, ea);
 		}
+		eventAr[c].args.Nullify();
 	}
 
 	if (window.Get())
 		window->Draw();
-	eventAr.RemoveAll();
 	ThreadRelease();
 }
 
@@ -317,7 +302,7 @@ void FileDialogHandler::RefreshFavoriteToggle()
 		ThreadRelease();
 		return;
 	}
-	if (favoritesControl.Get() && favoritesControl->GetNode().Get())
+	/*if (favoritesControl.Get())
 	{
 		auto mainNode = favoritesControl->GetNode();
 
@@ -338,7 +323,7 @@ void FileDialogHandler::RefreshFavoriteToggle()
 			}
 			fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
 		}
-	}
+	}*/
 	else
 	{
 		toggleFavoriteDirectory->setActive(false);
@@ -352,12 +337,12 @@ void FileDialogHandler::RefreshFavoriteToggle()
 	ThreadRelease();
 }
 
-void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
+void FileDialogHandler::OnSelectNode(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	auto fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(ea.object);
 
-	if (!fileNode.Get() || !browserControl.Get())
+	if (!fileNode.Get() /*|| !browserControl.Get()*/)
 	{
 		ThreadRelease();
 		return;
@@ -393,14 +378,14 @@ void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
 
 		newNode->Extend();
 
-		browserControl->SetNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(newNode));
+		//browserControl->SetNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(newNode));
 		fileNode->Extend();
 		
 
 
 		
 		fileText->SetText(L"");
-		okayControl->setActive(false);
+		dynamic_cast<TControl*>(okayControl.Get())->setActive(false);
 	}
 	else
 	{
@@ -412,19 +397,19 @@ void FileDialogHandler::OnSelectNode(TrecPointer<TControl> tc, EventArgs ea)
 
 		fileText->SetText(fileObj->GetName());
 
-		okayControl->setActive(true);
+		dynamic_cast<TControl*>(okayControl.Get())->setActive(true);
 	}
 	RefreshFavoriteToggle();
 
-	if (browserControl.Get() && browserLayout.Get())
+	if (/*browserControl.Get() &&*/ browserLayout.Get())
 	{
-		auto rect = browserLayout->getRawSectionLocation(1, 1);
-		browserControl->Resize(rect);
+		//auto rect = browserLayout->getRawSectionLocation(1, 1);
+		//browserControl->Resize(rect);
 	}
 	ThreadRelease();
 }
 
-void FileDialogHandler::OnCancel(TrecPointer<TControl> tc, EventArgs ea)
+void FileDialogHandler::OnCancel(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	chosenPath.Empty();
@@ -432,7 +417,7 @@ void FileDialogHandler::OnCancel(TrecPointer<TControl> tc, EventArgs ea)
 	ThreadRelease();
 }
 
-void FileDialogHandler::OnOkay(TrecPointer<TControl> tc, EventArgs ea)
+void FileDialogHandler::OnOkay(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	chosenPath.Set(directoryText->GetText() + L"\\" + fileText->GetText());
@@ -441,7 +426,7 @@ void FileDialogHandler::OnOkay(TrecPointer<TControl> tc, EventArgs ea)
 	ThreadRelease();
 }
 
-void FileDialogHandler::OnFileNameChange(TrecPointer<TControl> tc, EventArgs ea)
+void FileDialogHandler::OnFileNameChange(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	if (!directoryText.Get())
@@ -451,7 +436,7 @@ void FileDialogHandler::OnFileNameChange(TrecPointer<TControl> tc, EventArgs ea)
 	}
 	if (!ea.text.GetSize())
 	{
-		okayControl->setActive(false);
+		dynamic_cast<TControl*>(okayControl.Get())->setActive(false);
 		ThreadRelease();
 		return;
 	}
@@ -459,18 +444,18 @@ void FileDialogHandler::OnFileNameChange(TrecPointer<TControl> tc, EventArgs ea)
 
 	if (allowCreateFile)
 	{
-		okayControl->setActive(true);
+		dynamic_cast<TControl*>(okayControl.Get())->setActive(true);
 	}
 	else
 	{
-		okayControl->setActive( TFileShell::GetFileInfo(directoryText->GetText() + L"\\" + ea.text).Get()  );
+		dynamic_cast<TControl*>(okayControl.Get())->setActive( TFileShell::GetFileInfo(directoryText->GetText() + L"\\" + ea.text).Get()  );
 	}
 
 
 	ThreadRelease();
 }
 
-void FileDialogHandler::OnClickNode(TrecPointer<TControl> tc, EventArgs ea)
+void FileDialogHandler::OnClickNode(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	if (!ea.object.Get())
@@ -497,7 +482,7 @@ void FileDialogHandler::OnClickNode(TrecPointer<TControl> tc, EventArgs ea)
 		// Here, we are looking for Directories as our target
 		fileText->SetText(obj->GetName());
 
-		okayControl->setActive(true);
+		dynamic_cast<TControl*>(okayControl.Get())->setActive(true);
 		break;
 	default:
 		// Here, we filter out directories in favor of files
@@ -506,19 +491,19 @@ void FileDialogHandler::OnClickNode(TrecPointer<TControl> tc, EventArgs ea)
 		{
 			fileText->SetText(obj->GetName());
 
-			okayControl->setActive(true);
+			dynamic_cast<TControl*>(okayControl.Get())->setActive(true);
 		}
 	}
 
-	if (browserControl.Get() && browserLayout.Get())
-	{
-		auto rect = browserLayout->getRawSectionLocation(1, 1);
-		browserControl->Resize(rect);
-	}
+	//if (browserControl.Get() && browserLayout.Get())
+	//{
+	//	auto rect = browserLayout->getRawSectionLocation(1, 1);
+	//	browserControl->Resize(rect);
+	//}
 	ThreadRelease();
 }
 
-void FileDialogHandler::OnNewFolder(TrecPointer<TControl> tc, EventArgs ea)
+void FileDialogHandler::OnNewFolder(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	if (!fileNode.Get())
@@ -557,53 +542,53 @@ void FileDialogHandler::OnNewFolder(TrecPointer<TControl> tc, EventArgs ea)
 	ThreadRelease();
 }
 
-void FileDialogHandler::OnToggleFavoriteFolder(TrecPointer<TControl> tc, EventArgs ea)
+void FileDialogHandler::OnToggleFavoriteFolder(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
-	if (!favoritesControl.Get())
-	{
-		ThreadRelease();
-		return;
-	}
-	auto mainNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TBlankNode>(favoritesControl->GetNode());
-	if (!mainNode.Get() || !directoryText.Get())
-	{
-		ThreadRelease();
-		return;
-	}
-	if (isFavorite)
-	{
-		TString curDirectory = directoryText->GetText();
+	//if (!favoritesControl.Get())
+	//{
+	//	ThreadRelease();
+	//	return;
+	//}
+	//auto mainNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TBlankNode>(favoritesControl->GetNode());
+	//if (!mainNode.Get() || !directoryText.Get())
+	//{
+	//	ThreadRelease();
+	//	return;
+	//}
+	//if (isFavorite)
+	//{
+	//	TString curDirectory = directoryText->GetText();
 
-		UINT Rust = 0;
+	//	UINT Rust = 0;
 
-		TrecSubPointer<TObjectNode, TFileNode> fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+	//	TrecSubPointer<TObjectNode, TFileNode> fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
 
-		while (fileNode.Get())
-		{
-			if (!fileNode->GetData()->GetPath().Compare(directoryText->GetText()))
-			{
-				mainNode->RemoveNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(fileNode));
-				break;
-			}
-			fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
-		}
-	}
-	else
-	{
-		TrecPointer<TFileShell> commonFolder = TFileShell::GetFileInfo(directoryText->GetText());
+	//	while (fileNode.Get())
+	//	{
+	//		if (!fileNode->GetData()->GetPath().Compare(directoryText->GetText()))
+	//		{
+	//			mainNode->RemoveNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(fileNode));
+	//			break;
+	//		}
+	//		fileNode = TrecPointerKey::GetTrecSubPointerFromTrec<TObjectNode, TFileNode>(mainNode->GetChildNodes(Rust++));
+	//	}
+	//}
+	//else
+	//{
+	//	TrecPointer<TFileShell> commonFolder = TFileShell::GetFileInfo(directoryText->GetText());
 
-		assert(commonFolder.Get() && commonFolder->IsDirectory());
-		
+	//	assert(commonFolder.Get() && commonFolder->IsDirectory());
+	//	
 
-		TrecSubPointer<TObjectNode, TFileNode> folderNode = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TFileNode>(0);
+	//	TrecSubPointer<TObjectNode, TFileNode> folderNode = TrecPointerKey::GetNewSelfTrecSubPointer<TObjectNode, TFileNode>(0);
 
-		folderNode->SetFile(commonFolder);
+	//	folderNode->SetFile(commonFolder);
 
-		folderNode->SetFilterMode(file_node_filter_mode::fnfm_block_both_and_files);
+	//	folderNode->SetFilterMode(file_node_filter_mode::fnfm_block_both_and_files);
 
-		mainNode->AddNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(folderNode));
-	}
+	//	mainNode->AddNode(TrecPointerKey::GetTrecPointerFromSub<TObjectNode, TFileNode>(folderNode));
+	//}
 
 	RefreshFavoriteToggle();
 	ThreadRelease();

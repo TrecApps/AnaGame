@@ -1,7 +1,6 @@
 #include <Windows.h>
 #include "TDialog.h"
 #include "TML_Reader_.h"
-#include "AnafaceParser.h"
 #include <Windows.h>
 #include <d2d1.h>
 #include "TInstance.h"
@@ -24,7 +23,7 @@
  *				TDialogMode mode - How the Dialog should approach its parent
  * Returns: New Dialog Object
  */
-TDialog::TDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode) :
+TDialog::TDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode) :
 	TWindow(name, winClass, style | WS_POPUP | WS_DLGFRAME, parent, commandShow, ins)
 {
 	dialogMode = mode;
@@ -71,7 +70,7 @@ int TDialog::PrepareWindow()
 	{
 		if (windowInstance.Get() && dialogMode == TDialogMode::dialog_mode_soft_modal)
 		{
-			TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->LockWindow(parent);
+			dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance).Get())->LockWindow(parent);
 		}
 		else if (dialogMode == TDialogMode::dialog_mode_hard_model)
 		{
@@ -97,7 +96,7 @@ bool TDialog::OnDestroy()
 	{
 		if (windowInstance.Get() && dialogMode == TDialogMode::dialog_mode_soft_modal)
 		{
-			TrecPointerKey::GetTrecPointerFromSoft<TInstance>(windowInstance)->UnlockWindow(parent);
+			dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance).Get())->UnlockWindow(parent);
 		}
 		else if (dialogMode == TDialogMode::dialog_mode_hard_model)
 		{
@@ -135,7 +134,7 @@ void TDialog::Run()
  *				 TString& caption - the Text to present to the User
  * Returns: void
  */
-void ActivateAlertDialog(TrecPointer<TInstance> ins, HWND parent, TString& caption)
+void ActivateAlertDialog(TrecPointer<TProcess> ins, HWND parent, TString& caption)
 {
 	//  UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode, TString& caption;
 	TString name(L"Alert");
@@ -164,7 +163,7 @@ void ActivateAlertDialog(TrecPointer<TInstance> ins, HWND parent, TString& capti
  *				 TString& caption - the Text to present to the User
  * Returns: TString - the Input the User entered
  */
-TString ActivateNameDialog(TrecPointer<TInstance> ins, HWND parent, TString& caption)
+TString ActivateNameDialog(TrecPointer<TProcess> ins, HWND parent, TString& caption)
 {
 	TString name(L"Alert");
 	TString winClass(L"Dialog");

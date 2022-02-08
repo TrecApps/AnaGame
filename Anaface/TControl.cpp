@@ -1,3 +1,4 @@
+#include "..\Anaface2\TControl.h"
 //#include "stdafx.h"
 #include "AnafaceUI.h"
 #include <Logger.h>
@@ -110,12 +111,7 @@ TControl::TControl(TControl & rCont)
 		border2 = TrecPointerKey::GetNewTrecPointer<TBorder>((rCont.border2), (this));
 	if (rCont.border3.Get())
 		border3 = TrecPointerKey::GetNewTrecPointer<TBorder>((rCont.border3), (this));
-	if (rCont.text1.Get())
-		text1 = TrecPointerKey::GetNewTrecPointer<TText>((rCont.text1), (this));
-	if (rCont.text2.Get())
-		text2 = TrecPointerKey::GetNewTrecPointer<TText>((rCont.text2), (this));
-	if (rCont.text3.Get())
-		text3 = TrecPointerKey::GetNewTrecPointer<TText>((rCont.text3), (this));
+
 	if (rCont.content1.Get())
 		content1 = TrecPointerKey::GetNewTrecPointer<TContent>((rCont.content1), (this));
 	if(rCont.content2.Get())
@@ -170,6 +166,28 @@ TControl::TControl(TControl & rCont)
 	eventList = rCont.eventList;
 
 	controlTransform = D2D1::IdentityMatrix();
+
+	if (rCont.text1.Get())
+	{
+		text1 = TrecPointerKey::GetNewTrecPointer<TTextElement>(drawingBoard);
+		TString tDetails;
+
+		rCont.text1->GetSetFont(tDetails);
+		text1->GetSetFont(tDetails, false);
+
+		rCont.text1->GetText(tDetails);
+		text1->SetText(tDetails);
+
+		rCont.text1->GetSetLocale(tDetails);
+		text1->GetSetLocale(tDetails, false);
+
+		text1->SetHorizontallignment(rCont.text1->GetHorizontalAlignment());
+		text1->SetVerticalAlignment(rCont.text1->GetVerticalAligment());
+
+		TextFormattingDetails details;
+		rCont.text1->GetBasicFormatting(details);
+		text1->SetBasicFormatting(details);
+	}
 
 	TString logMessage;
 	logMessage.Format(L"CREATE %p TControl(TControl&)", this);
@@ -230,8 +248,6 @@ TControl::TControl()
 TControl::~TControl()
 {
 	text1.Delete();
-	text2.Delete();
-	text3.Delete();
 	border1.Delete();
 	border2.Delete();
 	border3.Delete();
@@ -418,16 +434,9 @@ void TControl::storeInTML(TFile * ar, int childLevel, bool overrideChildren)
 	}
 	if (border3.Get())
 		border3->storeInTML(ar, childLevel, messageState::mouseLClick);
-	if (text1.Get())
-	{
-		text1->storeInTML(ar, childLevel, messageState::normal);
-	}
-	if (text2.Get())
-	{
-		text2->storeInTML(ar, childLevel, messageState::mouseHover);
-	}
-	if (text3.Get())
-		text3->storeInTML(ar, childLevel, messageState::mouseLClick);
+
+	// To-Do: Handle Text Element
+
 	if (content1.Get())
 		content1->storeInTML(ar, childLevel, messageState::normal);
 	if (content2.Get())
@@ -609,6 +618,8 @@ TrecPointer<styleTable> classy;
 	onCreate2(&attributes, contain);
 	onCreate3(&attributes, contain);
 
+	SetUpTextElement();
+
 	if (border1.Get())
 	{
 		switch (shape)
@@ -685,8 +696,6 @@ TrecPointer<styleTable> classy;
 	}
 	if (text1.Get())
 	{
-		text1->onCreate(location);
-
 		TDataArray<TString> animators = GetMultiData(TString(L"|TextAnimation"));
 		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
 		{
@@ -1123,6 +1132,100 @@ void TControl::QueryMediaControl(TDataArray<TrecPointer<TControl>>& mediaControl
 	
 }
 
+void TControl::SetUpTextElement()
+{
+	TextFormattingDetails details;
+
+	TString locale(L"en-us"), font(L"ariel");
+
+	TString text;
+
+	DWRITE_TEXT_ALIGNMENT hAlign = DWRITE_TEXT_ALIGNMENT_CENTER;
+	DWRITE_PARAGRAPH_ALIGNMENT vAlign = DWRITE_PARAGRAPH_ALIGNMENT_CENTER;
+
+	TrecPointer<TString> valpoint = attributes.retrieveEntry(TString(L"|Caption"));
+
+	TColor fontColor;
+	if (valpoint.Get())
+	{
+		text.Set(*valpoint.Get());
+	}
+
+	valpoint = attributes.retrieveEntry(TString(L"|CaptionLocale"));
+	if (valpoint.Get())
+	{
+		locale.Set(valpoint.Get());
+	}
+
+	valpoint = attributes.retrieveEntry(TString(L"|Font"));
+	if (valpoint.Get())
+	{
+		font.Set(valpoint.Get());
+	}
+	valpoint = attributes.retrieveEntry(TString(L"|FontSize"));
+	if (valpoint.Get())
+	{
+		valpoint->ConvertToFloat(details.fontSize);
+	}
+	valpoint = attributes.retrieveEntry(TString(L"|HorizontalAlignment"));
+	if (valpoint.Get())
+	{
+		hAlign = convertStringToTextAlignment(valpoint.Get());
+	}
+	valpoint = attributes.retrieveEntry(TString(L"|VerticalAlignment"));
+	if (valpoint.Get())
+	{
+		vAlign = convertStringToParagraphAlignment(valpoint.Get());
+	}
+
+	valpoint = attributes.retrieveEntry(TString(L"|FontColor"));
+	if (valpoint.Get())
+	{
+		fontColor.SetColor(convertStringToD2DColor(valpoint.Get()));
+	}
+	else
+		fontColor.SetColor(drawingBoard->GetDefaultTextColor());
+
+	// Commented out code (in case gradient colors should be added
+
+	//valpoint = att->retrieveEntry(TString(L"|TextGrad"));
+	//if (valpoint.Get())
+	//{
+	//	if (!text1.Get())
+	//		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
+	//	float entry = 0.0f;
+	//	valpoint->ConvertToFloat(entry);
+	//	//text1->secondColor = true;
+	//	UINT gradCount = 0;
+	//	if (gradCount = text1->stopCollection.GetGradientCount())
+	//		text1->stopCollection.SetPositionAt(entry, gradCount - 1);
+	//}
+
+
+	//valpoint = att->retrieveEntry(TString(L"|TextGradMode"));
+	//if (valpoint.Get())
+	//{
+	//	if (!text1.Get())
+	//		text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
+	//	if (valpoint->Compare(L"Radial"))
+	//		text1->useRadial = true;
+	//}
+
+	// See if have text. If we do, then set up text element
+	if (text.GetSize())
+	{
+		details.color = drawingBoard->GetBrush(fontColor);
+
+		text1 = TrecPointerKey::GetNewSelfTrecPointer<TTextElement>(drawingBoard);
+
+		text1->SetLocation(location);
+		text1->SetBasicFormatting(details);
+		text1->SetHorizontallignment(hAlign);
+		text1->SetVerticalAlignment(vAlign);
+		text1->SetText(text);
+	}
+}
+
 /**
  * Method: TControl::GetMultiData
  * Purpose: Retireves the Attribute[s] of the Control by the key
@@ -1268,10 +1371,8 @@ void TControl::onDraw(TObject* obj)
 			border3->onDraw(location);
 		else if (border1.Get())
 			border1->onDraw(location);
-		if (text3.Get())
-			text3->onDraw(location, obj);
-		else if (text1.Get())
-			text1->onDraw(location, obj);
+		if (text1.Get())
+			text1->OnDraw(obj);
 	}
 	else if (mState == messageState::mouseHover)
 	{
@@ -1285,10 +1386,8 @@ void TControl::onDraw(TObject* obj)
 			border2->onDraw(location);
 		else if (border1.Get())
 			border1->onDraw(location);
-		if (text2.Get())
-			text2->onDraw(location, obj);
-		else if (text1.Get())
-			text1->onDraw(location, obj);
+		if (text1.Get())
+			text1->OnDraw(obj);
 	}
 	else
 	{
@@ -1299,7 +1398,7 @@ void TControl::onDraw(TObject* obj)
 		if (border1.Get())
 			border1->onDraw(location);
 		if (text1.Get())
-			text1->onDraw(location, obj);
+			text1->OnDraw(obj);
 	}
 
 	if (vScroll.Get())
@@ -1415,11 +1514,9 @@ void TControl::ShiftHorizontal(int degrees)
 	location.right += degrees;
 
 	if (text1.Get())
-		text1->ShiftHorizontal(degrees);
-	if (text2.Get())
-		text2->ShiftHorizontal(degrees);
-	if (text3.Get())
-		text3->ShiftHorizontal(degrees);
+	{
+		text1->SetLocation(location);
+	}
 
 	if (content1.Get())
 		content1->ShiftHorizontal(degrees);
@@ -1450,11 +1547,9 @@ void TControl::ShiftVertical(int degrees)
 	location.bottom += degrees;
 
 	if (text1.Get())
-		text1->ShiftVertical(degrees);
-	if (text2.Get())
-		text2->ShiftVertical(degrees);
-	if (text3.Get())
-		text3->ShiftVertical(degrees);
+	{
+		text1->SetLocation(location);
+	}
 
 	if (content1.Get())
 		content1->ShiftVertical(degrees);
@@ -1723,18 +1818,7 @@ void TControl::SetNewLocation(const D2D1_RECT_F& r)
 
 	if (text1.Get())
 	{
-		text1->bounds = r;
-		text1->reCreateLayout();
-	}
-	if (text2.Get())
-	{
-		text2->bounds = r;
-		text2->reCreateLayout();
-	}
-	if (text3.Get())
-	{
-		text3->bounds = r;
-		text3->reCreateLayout();
+		text1->SetLocation(location);
 	}
 	if (border1.Get())
 	{
@@ -1811,19 +1895,8 @@ void TControl::setParent(TrecPointer<TParentHolder> tcp)
 */
 TrecPointer<TText> TControl::getText(int n)
 {
-	TrecPointer<TText> ret;
-	TObjectLocker threadLock(&thread);
-	switch (n)
-	{
-	case 1:
-		ret = text1; break;
-	case 2:
-		ret = text2; break;
-	case 3:
-		ret = text3; break;
-	}
+	return TrecPointer<TText>();
 	
-	return ret;
 }
 
 /*
@@ -1961,69 +2034,20 @@ bool TControl::onCreate(TMap<TString>* att, D2D1_RECT_F loc)
 			content1 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, (this));
 		content1->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
 	}
-	/*else
-	{
-		valpoint = att->retrieveEntry(TString(L""));
-		goto contColor;
-	}*/
 
-	// 
-	valpoint = att->retrieveEntry(TString(L"|Caption"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
 
-		text1->text = valpoint.Get();
-
-	}
-
-	// 
-	valpoint = att->retrieveEntry(TString(L"|CaptionLocale"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		text1->locale = valpoint.Get();
-
-	}
-
-	// 
-	valpoint = att->retrieveEntry(TString(L"|Font"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		text1->font = valpoint.Get();
-
-	}
 
 	// 
 
 
 	// 
-	valpoint = att->retrieveEntry(TString(L"|FontSize"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		 valpoint->ConvertToFloat((text1->fontSize) );
-	}
 
-	valpoint = att->retrieveEntry(TString(L"|HorizontalAlignment"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		text1->setNewHorizontalAlignment(convertStringToTextAlignment(valpoint.Get()));
-	}
-	valpoint = att->retrieveEntry(TString(L"|VerticalAlignment"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		text1->setNewVerticalAlignment(convertStringToParagraphAlignment(valpoint.Get()));
-	}
+
+	// 
+
+
+
+
 
 
 	valpoint = att->retrieveEntry(TString(L"|ContentGrad"));
@@ -2054,40 +2078,6 @@ bool TControl::onCreate(TMap<TString>* att, D2D1_RECT_F loc)
 	}
 
 
-	// 
-	valpoint = att->retrieveEntry(TString(L"|Caption"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-
-		text1->text = valpoint.Get();
-		;
-	}
-
-
-	valpoint = att->retrieveEntry(TString(L"|TextGrad"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		float entry = 0.0f;
-		valpoint->ConvertToFloat(entry);
-		//text1->secondColor = true;
-		UINT gradCount = 0;
-		if (gradCount = text1->stopCollection.GetGradientCount())
-			text1->stopCollection.SetPositionAt(entry, gradCount - 1);
-	}
-
-
-	valpoint = att->retrieveEntry(TString(L"|TextGradMode"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		if (valpoint->Compare(L"Radial"))
-			text1->useRadial = true;
-	}
 	valpoint = att->retrieveEntry(TString(L"|ContentGradMode"));
 	if (valpoint.Get())
 	{
@@ -2112,18 +2102,6 @@ bool TControl::onCreate(TMap<TString>* att, D2D1_RECT_F loc)
 			content1 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, (this));
 		valpoint->Replace(L"/", L"\\");
 		int res = generateImage(content1, valpoint, loc);
-	}
-
-	valpoint = att->retrieveEntry(TString(L"|FontColor"));
-	if (valpoint.Get())
-	{
-		if (!text1.Get())
-			text1 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		text1->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
-	}
-	else if (text1.Get())
-	{
-		text1->stopCollection.AddGradient(TGradientStop(TColor(drawingBoard->GetDefaultTextColor()), 0.0f));
 	}
 
 	if (border1.Get())
@@ -2202,8 +2180,6 @@ bool TControl::onCreate(TMap<TString>* att, D2D1_RECT_F loc)
 	}
 	if (text1.Get())
 	{
-		text1->onCreate(location);
-
 		TDataArray<TString> animators = GetMultiData(TString(L"|TextAnimation"));
 		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
 		{
@@ -2300,88 +2276,6 @@ bool TControl::onCreate2(TMap<TString>* att, D2D1_RECT_F loc)
 		content2->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
 	}
 
-	// 
-	valpoint = att->retrieveEntry(TString(L"|HoverCaption"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text2->text = valpoint.Get();
-
-	}
-
-	// 
-	valpoint = att->retrieveEntry(TString(L"|HoverCaptionLocale"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text2->locale = valpoint.Get();
-		;
-	}
-
-	// 
-	valpoint = att->retrieveEntry(TString(L"|HoverFont"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text2->font = valpoint.Get();
-		;
-	}
-
-	// 
-	valpoint = att->retrieveEntry(TString(L"|HoverFontSize"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		valpoint->ConvertToFloat(text2->fontSize);
-	}
-	valpoint = att->retrieveEntry(TString(L"|HoverHorizontalAlignment"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text2->setNewHorizontalAlignment(convertStringToTextAlignment(valpoint.Get()));
-	}
-	valpoint = att->retrieveEntry(TString(L"|HoverVerticalAlignment"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text2->setNewVerticalAlignment(convertStringToParagraphAlignment(valpoint.Get()));
-	}
 
 
 	valpoint = att->retrieveEntry(TString(L"|HoverContentGrad"));
@@ -2421,56 +2315,6 @@ bool TControl::onCreate2(TMap<TString>* att, D2D1_RECT_F loc)
 			border2->stopCollection.SetPositionAt(entry, gradCount - 1);
 	}
 
-
-	// 
-	valpoint = att->retrieveEntry(TString(L"|HoverCaption"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text2->text = valpoint.Get();
-		;
-	}
-
-
-
-	valpoint = att->retrieveEntry(TString(L"|HoverTextGrad1"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		float entry = 0.0f;
-		valpoint->ConvertToFloat(entry);
-		//text2->secondColor = true;
-		UINT gradCount = 0;
-		if (gradCount = text2->stopCollection.GetGradientCount())
-			text2->stopCollection.SetPositionAt(entry, gradCount - 1);
-	}
-
-
-	valpoint = att->retrieveEntry(TString(L"|HoverTextGradMode"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-		{
-			if (text1.Get())
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		if (valpoint->Compare(L"Radial"))
-			text2->useRadial = true;
-	}
 	valpoint = att->retrieveEntry(TString(L"|HoverContentGradMode"));
 	if (valpoint.Get())
 	{
@@ -2511,18 +2355,6 @@ bool TControl::onCreate2(TMap<TString>* att, D2D1_RECT_F loc)
 		generateImage(content2, valpoint, loc);
 	}
 
-
-	valpoint = att->retrieveEntry(TString(L"|HoverFontColor"));
-	if (valpoint.Get())
-	{
-		if (!text2.Get())
-			text2 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		text2->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
-	}
-	else if (text2.Get())
-	{
-		text2->stopCollection.AddGradient(TGradientStop(TColor(drawingBoard->GetDefaultTextColor()), 0.0f));
-	}
 
 	if (border2.Get())
 	{
@@ -2594,27 +2426,7 @@ bool TControl::onCreate2(TMap<TString>* att, D2D1_RECT_F loc)
 		}
 
 	}
-	if (text2.Get())
-	{
-		text2->onCreate(location);
 
-		TDataArray<TString> animators = GetMultiData(TString(L"|HoverTextAnimation"));
-		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
-		{
-			TString name = animators[Rust];
-			auto names = name.split(TString(L";"));
-			if (!names->Size())
-				continue;
-			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
-			animate->control = tThis;
-			animate->name = names->at(0);
-			if (names->Size() > 1)
-				animate->storyName = names->at(1);
-			animate->brush = text2->GetBrush();
-
-			animateData.push_back(animate);
-		}
-	}
 	return false;
 }
 
@@ -2724,54 +2536,6 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 	}
 
 
-	// 
-	valpoint = att->retrieveEntry(TString(L"|ClickCaption"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-		{
-			if (text1.Get())
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text3->text = valpoint.Get();
-		;
-	}
-
-
-	valpoint = att->retrieveEntry(TString(L"|ClickTextGrad"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-		{
-			if (text1.Get())
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		float entry = 0.0f;
-		valpoint->ConvertToFloat(entry);
-		//text3->secondColor = true;
-		UINT gradCount = 0;
-		if (gradCount = text3->stopCollection.GetGradientCount())
-			text3->stopCollection.SetPositionAt(entry, gradCount - 1);
-	}
-
-
-	valpoint = att->retrieveEntry(TString(L"|ClickTextGradMode"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-		{
-			if (text1.Get())
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		if (valpoint->Compare(L"Radial"))
-			text3->useRadial = true;
-	}
 	valpoint = att->retrieveEntry(TString(L"|ClickContentGradMode"));
 	if (valpoint.Get())
 	{
@@ -2799,72 +2563,6 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 			border3->useRadial = true;
 	}
 
-	// 
-	valpoint = att->retrieveEntry(TString(L"|ClickCaptionLocale"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-		{
-			if (text1.Get())
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text3->locale = valpoint.Get();
-	}
-
-	// 
-	valpoint = att->retrieveEntry(TString(L"|ClickFont"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-		{
-			if (text1.Get())
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text3->font = valpoint.Get();
-	}
-
-
-	// 
-	valpoint = att->retrieveEntry(TString(L"|ClickFontSize"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-		{
-			if (text1.Get())
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		valpoint->ConvertToFloat(text3->fontSize);
-	}
-	valpoint = att->retrieveEntry(TString(L"|ClickHorizontalAlignment"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-		{
-			if (text1.Get())
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text3->setNewHorizontalAlignment(convertStringToTextAlignment(valpoint.Get()));
-	}
-	valpoint = att->retrieveEntry(TString(L"|ClickVerticalAlignment"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-		{
-			if (text1.Get())
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(text1, (this));
-			else
-				text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		}
-		text3->setNewVerticalAlignment(convertStringToParagraphAlignment(valpoint.Get()));
-	}
 
 	valpoint = att->retrieveEntry(TString(L"|ClickImageSource"));
 	if (valpoint.Get())
@@ -2877,18 +2575,6 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 				content3 = TrecPointerKey::GetNewTrecPointer<TContent>(drawingBoard, (this));
 		}
 		generateImage(content3, valpoint,loc);
-	}
-
-	valpoint = att->retrieveEntry(TString(L"|FontColor"));
-	if (valpoint.Get())
-	{
-		if (!text3.Get())
-			text3 = TrecPointerKey::GetNewTrecPointer<TText>(drawingBoard, (this));
-		text3->stopCollection.AddGradient(TGradientStop(TColor(convertStringToD2DColor(valpoint.Get())), 0.0f));
-	}
-	else if (text3.Get())
-	{
-		text3->stopCollection.AddGradient(TGradientStop(TColor(drawingBoard->GetDefaultTextColor()), 0.0f));
 	}
 
 	if (border3.Get())
@@ -2959,27 +2645,6 @@ bool TControl::onCreate3(TMap<TString>* att, D2D1_RECT_F loc)
 			animateData.push_back(animate);
 		}
 
-	}
-	if (text3.Get())
-	{
-		text3->onCreate(location);
-
-		TDataArray<TString> animators = GetMultiData(TString(L"|ClickTextAnimation"));
-		for (UINT Rust = 0; Rust < animators.Size(); Rust++)
-		{
-			TString name = animators[Rust];
-			auto names = name.split(TString(L";"));
-			if (!names->Size())
-				continue;
-			TrecPointer<AnimationData> animate = TrecPointerKey::GetNewTrecPointer<AnimationData>();
-			animate->control = tThis;
-			animate->name = names->at(0);
-			if (names->Size() > 1)
-				animate->storyName = names->at(1);
-			animate->brush = text3->GetBrush();
-
-			animateData.push_back(animate);
-		}
 	}
 	return false;
 }
@@ -3106,15 +2771,7 @@ void TControl::updateComponentLocation()
 	// Content
 	if (text1.Get())
 	{
-		text1->bounds = location;
-	}
-	if (text2.Get())
-	{
-		text2->bounds = location;
-	}
-	if (text3.Get())
-	{
-		text3->bounds = location;
+		text1->SetLocation(location);
 	}
 
 	// Content
@@ -3442,11 +3099,11 @@ void TControl::SetToRenderTarget()
 		content3->drawingBoard = drawingBoard;
 
 	if (text1.Get())
-		text1->drawingBoard = drawingBoard;
-	if (text2.Get())
-		text2->drawingBoard = drawingBoard;
-	if (text3.Get())
-		text3->drawingBoard = drawingBoard;
+	{
+		// Text Component has no means of replacing Drawing Board, create new Text Component
+		text1.Nullify();
+		SetUpTextElement();
+	}
 	
 }
 
@@ -3476,10 +3133,10 @@ void TControl::addEventID(R_Message_Type rmt, int e_id)
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3510,7 +3167,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isLeftClick = false;
 		args.control = this;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_R_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_R_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 
 	if (hasEvent(R_Message_Type::On_Right_Click) && isRClick)
@@ -3524,7 +3181,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isLeftClick = false;
 		args.control = this;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Right_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Right_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 
 	isRClick = false;
@@ -3545,7 +3202,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 				args.isLeftClick = false;
 				args.control = this;
 
-				eventAr.push_back(EventID_Cred( R_Message_Type::On_Right_Release, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+				eventAr.push_back(TPage::EventID_Cred( R_Message_Type::On_Right_Release, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 		}
 	}
@@ -3559,11 +3216,11 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
+afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3580,7 +3237,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.methodID = -1;
 		args.isClick = args.isLeftClick = true;
 		args.control = nullptr;;
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), vScroll));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), vScroll));
 		
 		return;
 	}
@@ -3596,7 +3253,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.isClick = args.isLeftClick = true;
 		args.control = nullptr;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), hScroll));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), hScroll));
 	}
 
 	if (!isContained(point, getLocation()))
@@ -3613,6 +3270,10 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 	}
 
 	isLClick = true;
+	if (text1.Get())
+	{
+		text1->OnCLickDown(point);
+	}
 
 	for (int c = 0; c < children.Count();c++)
 	{
@@ -3655,9 +3316,9 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.isLeftClick = true;
 		args.control = this;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_L_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_L_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
-	
+
 }
 
 /*
@@ -3666,11 +3327,11 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
+afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3718,7 +3379,7 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.isClick = true;
 		args.isLeftClick = false;
 		args.control = this;
-		eventAr.push_back(EventID_Cred( R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred( R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 	isRClick = true;
 	
@@ -3730,11 +3391,11 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
+afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3765,7 +3426,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 				args.isClick = false;
 				args.isLeftClick = false;
 				args.control = this;
-				eventAr.push_back(EventID_Cred(R_Message_Type::On_Lose_Focus, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+				eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Lose_Focus, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 
 			for (UINT Rust = 0; Rust < clickedControls.Size(); Rust++)
@@ -3826,7 +3487,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 			args.point = point;
 			args.methodID = getEventID(R_Message_Type::On_Hover);
 			args.control = this;
-			eventAr.push_back(EventID_Cred(R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+			eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 		}
 
 		
@@ -3843,11 +3504,11 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
  * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
  *				TPoint point - the point on screen where the event occured
  *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
- *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+ *				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
  *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
  * Returns: void
  */
-bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	bool ret = false;
@@ -3862,7 +3523,7 @@ bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 		args.isClick = true;
 		args.isLeftClick = false;
 		args.control = this;
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Hover_Leave, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Hover_Leave, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 		ret = true;
 	}
 	
@@ -3875,10 +3536,10 @@ bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3928,7 +3589,7 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 		args.isClick = true;
 		args.isLeftClick = false;
 		args.control = this;
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_LDoubleClick, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_LDoubleClick, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 	
 }
@@ -3939,10 +3600,10 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3984,10 +3645,10 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isClick = true;
 		args.isLeftClick = true;
 		args.control = this;
-		eventAr.push_back(EventID_Cred( R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 
-	if (hasEvent(R_Message_Type::On_Click) && isLClick)
+	if (hasEvent(R_Message_Type::On_Click) || isLClick)
 	{
 		// Set args
 		resetArgs();
@@ -3997,8 +3658,23 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isClick = true;
 		args.isLeftClick = true;
 		args.control = this;
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+
+		TPage::EventID_Cred cred(R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
+
+		if (text1.Get())
+			cred.textIntercepter = text1->GetTextInterceptor();
+
+		eventAr.push_back(cred);
+
+		
 	}
+
+	if (text1.Get())
+	{
+		text1->OnCLickUp(point);
+
+	}
+
 	isLClick = false;
 	
 }
@@ -4011,10 +3687,10 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 *				UINT nRepCnt - how many times the character was processed for this event
 *				UINT nFlags - flags provided by MFC's Message system, not used
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -4038,7 +3714,7 @@ afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlag
 				args.methodID = getEventID(R_Message_Type::On_Char);
 				args.type = static_cast<WCHAR>(LOWORD(nChar));
 				args.control = this;
-				eventAr.push_back(EventID_Cred( R_Message_Type::On_Char, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+				eventAr.push_back(TPage::EventID_Cred( R_Message_Type::On_Char, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 			
 			return true;
@@ -6678,12 +6354,12 @@ RECT convertD2DRectToRECT(D2D1_RECT_F f)
 	return ret;
 }
 
-EventID_Cred::EventID_Cred()
+TPage::EventID_Cred::TPage::EventID_Cred()
 {
 	eventType = R_Message_Type::On_Click;
 }
 
-EventID_Cred::EventID_Cred(const EventID_Cred& copy)
+TPage::EventID_Cred::TPage::EventID_Cred(const TPage::EventID_Cred& copy)
 {
 	eventType = copy.eventType;
 	control = copy.control;
@@ -6691,13 +6367,13 @@ EventID_Cred::EventID_Cred(const EventID_Cred& copy)
 	textIntercepter = copy.textIntercepter;
 }
 
-EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c)
+TPage::EventID_Cred::TPage::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c)
 {
 	eventType = t;
 	control = c;
 }
 
-EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TScrollBar> sb)
+TPage::EventID_Cred::TPage::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TScrollBar> sb)
 {
 	eventType = t;
 	control = c;
@@ -6705,14 +6381,14 @@ EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointe
 }
 
 
-EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TTextIntercepter> i)
+TPage::EventID_Cred::TPage::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TTextIntercepter> i)
 {
 	eventType = t;
 	control = c;
-	this->textIntercepter = i;
+	textIntercepter = i;
 }
 
-EventID_Cred::EventID_Cred(TrecPointer<TFlyout> fly)
+TPage::EventID_Cred::TPage::EventID_Cred(TrecPointer<TFlyout> fly)
 {
 	eventType = R_Message_Type::On_Flyout;
 	if (!fly.Get())
@@ -6796,6 +6472,7 @@ EventTypeID::EventTypeID()
 	eventType = R_Message_Type::On_Click;
 	eventID = -1;
 }
+
 
 EventArgs::EventArgs()
 {

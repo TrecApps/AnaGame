@@ -245,7 +245,7 @@ void TArena::onDraw(TObject* obj)
 	}
 
 	if (text1.Get())
-		text1->onDraw(TControl::location, obj);
+		text1->OnDraw(obj);
 	if (border1.Get())
 		border1->onDraw(TControl::location);
 	for (int c = 0; c < children.Count(); c++)

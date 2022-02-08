@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "TWebNode.h"
-#include <TPromptControl.h>
 
 #define WEB_EVENT_HANDLER_COUNT 71
 #define WEB_BORDER_STYLE_COUNT 8
@@ -346,8 +345,8 @@ void GetListPrepend(TString& str, list_style style, signed char mode)
 
 
 // False string
-TrecPointer<TString> falseString = TrecPointerKey::GetNewTrecPointer<TString>(L"false");
-TrecPointer<TString> vertiString = TrecPointerKey::GetNewTrecPointer<TString>(L"Center");
+TString falseString(L"false");
+TString vertiString(L"Center");
 
 
 /**
@@ -487,7 +486,7 @@ UINT TWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win
 			// printableText.Trim();
 			if (printableText.GetTrim().GetSize())
 			{
-				TrecSubPointer<TControl, TTextField> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), win);
+				TrecSubPointer<TPage, TTextLayout> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TTextLayout>(board, TrecPointer<TArray<styleTable>>(), win);
 				
 				textEle->SetText(printableText);
 				TrecPointer<TWebNode::TWebNodeContainer> newNode = TrecPointerKey::GetNewTrecPointer<TWebNode::TWebNodeContainer>(textEle);
@@ -906,7 +905,7 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 				}
 				if (!currentTextNode.Get())
 				{
-					TrecSubPointer<TControl, TTextField> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TControl, TTextField>(board, TrecPointer<TArray<styleTable>>(), win);
+					TrecSubPointer<TPage, TTextLayout> textEle = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TTextLayout>(board, TrecPointer<TArray<styleTable>>(), win);
 					currentTextNode = TrecPointerKey::GetNewTrecPointer<TWebNode::TWebNodeContainer>(textEle);
 				}
 
@@ -978,7 +977,7 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 
 		if (ch->type == TWebNode::NodeContainerType::nct_text)
 		{
-			TrecSubPointer<TControl, TTextField> t = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(ch->control);
+			TrecSubPointer<TPage, TTextLayout> t = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextLayout>(ch->control);
 			if(!t.Get())
 			{
 				// Take care of null elements
@@ -1063,14 +1062,14 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 	}
 	else
 	{
-		auto loc = control->getLocation();
+		auto loc = control->GetArea();
 
-		if (isContained(point, loc))
+		if (IsContained(point, loc))
 		{
-			messageOutput mo = messageOutput::negative;
-			TDataArray<EventID_Cred> cred;
-			TDataArray<TControl*> cl;
-			control->OnLButtonDown(0, point, &mo, cred, cl);
+			message_output mo = message_output::mo_negative;
+			TDataArray<TPage::EventID_Cred> cred;
+			
+			control->OnLButtonDown(0, point, mo, cred);
 
 			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
 
@@ -1090,7 +1089,7 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonDown(0, point, &mo,cred, cl);
+								childNodes[Rust]->control->OnLButtonDown(0, point, mo,cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonDown(script, thisCollection, nodeCollection, point);
@@ -1110,7 +1109,7 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonDown(0, point, &mo, cred, cl);
+								childNodes[Rust]->control->OnLButtonDown(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonDown(script, thisCollection, nodeCollection, point);
@@ -1131,7 +1130,7 @@ void TWebNode::OnLButtonDown(TDataArray<TString>& script, TDataArray<TrecObjectP
 						{
 						case NodeContainerType::nct_control:
 						case NodeContainerType::nct_text:
-							childNodes[Rust]->control->OnLButtonDown(0, point, &mo, cred, cl);
+							childNodes[Rust]->control->OnLButtonDown(0, point, mo, cred);
 							break;
 						case NodeContainerType::nct_web:
 							childNodes[Rust]->webNode->OnLButtonDown(script, thisCollection, nodeCollection, point);
@@ -1174,13 +1173,13 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 	}
 	else
 	{
-		auto loc = control->getLocation();
-		if (isContained(point, loc))
+		auto loc = control->GetArea();
+		if (IsContained(point, loc))
 		{
-			messageOutput mo = messageOutput::negative;
-			TDataArray<EventID_Cred> cred;
-			TDataArray<TControl*> cl;
-			control->OnLButtonUp(0, point, &mo, cred);
+			message_output mo = message_output::mo_negative;
+			TDataArray<TPage::EventID_Cred> cred;
+			
+			control->OnLButtonUp(0, point, mo, cred);
 
 			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
 
@@ -1210,7 +1209,7 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonUp(0, point, &mo, cred);
+								childNodes[Rust]->control->OnLButtonUp(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
@@ -1241,7 +1240,7 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonUp(0, point, &mo, cred);
+								childNodes[Rust]->control->OnLButtonUp(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
@@ -1268,7 +1267,7 @@ void TWebNode::OnLButtonUp(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 						{
 						case NodeContainerType::nct_control:
 						case NodeContainerType::nct_text:
-							childNodes[Rust]->control->OnLButtonUp(0, point, &mo, cred);
+							childNodes[Rust]->control->OnLButtonUp(0, point, mo, cred);
 							break;
 						case NodeContainerType::nct_web:
 							childNodes[Rust]->webNode->OnLButtonUp(script, thisCollection, nodeCollection, focusNode, point);
@@ -1297,13 +1296,13 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 	}
 	else
 	{
-		auto loc = control->getLocation();
-		if (isContained(point, loc))
+		auto loc = control->GetArea();
+		if (IsContained(point, loc))
 		{
-			messageOutput mo = messageOutput::negative;
-			TDataArray<EventID_Cred> cred;
-			TDataArray<TControl*> cl;
-			control->OnLButtonDblClk(0, point, &mo, cred);
+			message_output mo = message_output::mo_negative;
+			TDataArray<TPage::EventID_Cred> cred;
+			
+			control->OnLButtonDblClk(0, point, mo, cred);
 
 			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
 
@@ -1322,7 +1321,7 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonDblClk(0, point, &mo, cred);
+								childNodes[Rust]->control->OnLButtonDblClk(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonDblClck(script, thisCollection, point);
@@ -1341,7 +1340,7 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnLButtonDblClk(0, point, &mo, cred);
+								childNodes[Rust]->control->OnLButtonDblClk(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnLButtonDblClck(script, thisCollection, point);
@@ -1362,7 +1361,7 @@ void TWebNode::OnLButtonDblClck(TDataArray<TString>& script, TDataArray<TrecObje
 						{
 						case NodeContainerType::nct_control:
 						case NodeContainerType::nct_text:
-							childNodes[Rust]->control->OnLButtonDblClk(0, point, &mo, cred);
+							childNodes[Rust]->control->OnLButtonDblClk(0, point, mo, cred);
 							break;
 						case NodeContainerType::nct_web:
 							childNodes[Rust]->webNode->OnLButtonDblClck(script, thisCollection, point);
@@ -1402,15 +1401,15 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 	}
 	else
 	{
-		auto loc = control->getLocation();
-		if (isContained(point, loc))
+		auto loc = control->GetArea();
+		if (IsContained(point, loc))
 		{
 			
 
-			messageOutput mo = messageOutput::negative;
-			TDataArray<EventID_Cred> cred;
-			TDataArray<TControl*> cl;
-			control->OnLButtonDblClk(0, point, &mo, cred);
+			message_output mo = message_output::mo_negative;
+			TDataArray<TPage::EventID_Cred> cred;
+			
+			control->OnLButtonDblClk(0, point, mo, cred);
 
 			TrecPointer<TWebNode> activeSelf = TrecPointerKey::GetTrecPointerFromSoft<TWebNode>(self);
 			if (found == -1)
@@ -1440,7 +1439,7 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnMouseMove(0, point, &mo, cred, cl);
+								childNodes[Rust]->control->OnMouseMove(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnMouseMove(script, thisCollection, nodeCollection, point);
@@ -1469,7 +1468,7 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 							{
 							case NodeContainerType::nct_control:
 							case NodeContainerType::nct_text:
-								childNodes[Rust]->control->OnMouseMove(0, point, &mo, cred, cl);
+								childNodes[Rust]->control->OnMouseMove(0, point, mo, cred);
 								break;
 							case NodeContainerType::nct_web:
 								childNodes[Rust]->webNode->OnMouseMove(script, thisCollection, nodeCollection, point);
@@ -1496,7 +1495,7 @@ void TWebNode::OnMouseMove(TDataArray<TString>& script, TDataArray<TrecObjectPoi
 						{
 						case NodeContainerType::nct_control:
 						case NodeContainerType::nct_text:
-							childNodes[Rust]->control->OnMouseMove(0, point, &mo, cred, cl);
+							childNodes[Rust]->control->OnMouseMove(0, point, mo, cred);
 							break;
 						case NodeContainerType::nct_web:
 							childNodes[Rust]->webNode->OnMouseMove(script, thisCollection, nodeCollection, point);
@@ -1577,7 +1576,7 @@ void TWebNode::OnDraw()
 		if (childNodes[Rust]->webNode.Get())
 			childNodes[Rust]->webNode->OnDraw();
 		else if (childNodes[Rust]->control.Get())
-			childNodes[Rust]->control->onDraw();
+			childNodes[Rust]->control->Draw(TrecPointer<TVariable>());
 	}
 }
 
@@ -1933,7 +1932,7 @@ bool TWebNode::IsText()
 		switch (childNode->type)
 		{
 		case NodeContainerType::nct_text:
-			if (!dynamic_cast<TTextField*>(childNode->control.Get()))
+			if (!dynamic_cast<TTextInput*>(childNode->control.Get()))
 				throw L"Unexpected Null TextField detected in IsText Method Call";
 			continue;
 		case NodeContainerType::nct_control:
@@ -1972,7 +1971,7 @@ void TWebNode::RetrieveText(TDataArray<TextData>& textDataList)
 		{
 			// ThisTextData should be initialized in a create call prior to this method being called
 			TextData submitData(thisTextData);
-			submitData.text.Set(dynamic_cast<TTextField*>(childNode->control.Get())->GetText());
+			submitData.text.Set(dynamic_cast<TTextInput*>(childNode->control.Get())->GetText());
 			if(submitData.text.GetTrim().GetSize())
 				textDataList.push_back(submitData);
 		}
@@ -1999,7 +1998,7 @@ void TWebNode::RetrieveText(TDataArray<TextData>& textDataList)
  */
 void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2D1_RECT_F loc)
 {
-	if (!textNode.Get() || textNode->type != NodeContainerType::nct_text || !dynamic_cast<TTextField*>(textNode->control.Get()))
+	if (!textNode.Get() || textNode->type != NodeContainerType::nct_text || !dynamic_cast<TTextInput*>(textNode->control.Get()))
 		return;
 
 	// Limit the location based off of the margins and borders
@@ -2009,14 +2008,15 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 
 
 
-	TTextField* textField = dynamic_cast<TTextField*>(textNode->control.Get());
-	textField->addAttribute(L"|CanEdit", falseString);
-	textField->addAttribute(L"|VerticalAlignment", vertiString);
-	textField->addAttribute(L"|AutoGenContent", falseString);
+	TTextLayout* textField = dynamic_cast<TTextLayout*>(textNode->control.Get());
+	textField->AddAttribute(L"|CanEdit", falseString);
+	textField->AddAttribute(L"|VerticalAlignment", vertiString);
+	textField->AddAttribute(L"|AutoGenContent", falseString);
+	textField->AddAttribute(L"|HorizontalAlignment", L"left");
 	if (thisTextData.hasBackgroundColor)
-		textField->addAttribute(L"|ContentColor", TrecPointerKey::GetNewTrecPointer<TString>(thisTextData.backgroundColor.toString()));
-	textField->onCreate(loc, TrecPointer<TWindowEngine>());
-	FormattingDetails det;
+		textField->AddAttribute(L"|ContentColor", thisTextData.backgroundColor.toString());
+	textField->onCreate(loc, TrecPointer<TWindowEngine>(), TrecPointer<TFileShell>());
+	TextFormattingDetails det;
 	TString theText;
 	for (UINT Rust = 0; Rust < textNode->textDataList.Size(); Rust++)
 	{
@@ -2168,10 +2168,10 @@ void TWebNode::ShrinkHeight()
 			continue;
 		}
 
-		if (childNodes[Rust]->control.Get())
+		if (dynamic_cast<TControl*>(childNodes[Rust]->control.Get()))
 		{
-			childNodes[Rust]->control->ShrinkHeight();
-			float chBottom = childNodes[Rust]->control->getLocation().bottom;
+			dynamic_cast<TControl*>(childNodes[Rust]->control.Get())->ShrinkHeight();
+			float chBottom = childNodes[Rust]->control->GetArea().bottom;
 			if (chBottom > curBottom)
 				curBottom = chBottom;
 		}
@@ -2207,14 +2207,16 @@ void TWebNode::ShrinkWidth(UINT minWidth)
 				childNodes.RemoveAt(Rust--);
 				continue;
 			}
-			TTextField* field = dynamic_cast<TTextField*>(wnode->control.Get());
+			TTextInput* field = dynamic_cast<TTextInput*>(wnode->control.Get());
 			TWebNode* node = wnode->webNode.Get();
 
 			if (field)
 			{
-				auto fieldLoc = field->getLocation();
+				auto fieldLoc = field->GetArea();
 				fieldLoc.right = fieldLoc.left + width;
-				field->Resize(fieldLoc);
+				TDataArray<TPage::EventID_Cred> cred;
+				
+				field->OnResize(fieldLoc, 0, cred);
 			}
 			else if (node)
 			{
@@ -2247,12 +2249,14 @@ void TWebNode::ShrinkWidth(UINT minWidth)
 				childNodes.RemoveAt(Rust--);
 				continue;
 			}
-			TTextField* field = dynamic_cast<TTextField*>(wnode->control.Get());
+			TTextInput* field = dynamic_cast<TTextInput*>(wnode->control.Get());
 			TWebNode* node = wnode->webNode.Get();
 
 			if (field)
 			{
-				field->Resize(tempLoc);
+				TDataArray<TPage::EventID_Cred> cred;
+				
+				field->OnResize(tempLoc, 0, cred);
 				Rust++;
 			}
 			else if (node)
@@ -2291,7 +2295,7 @@ float TWebNode::NeedsWidth(UINT column)
 
 			if (childNodes[Rust].Get())
 			{
-				TTextField* field = dynamic_cast<TTextField*>(childNodes[Rust]->control.Get());
+				TTextLayout* field = dynamic_cast<TTextLayout*>(childNodes[Rust]->control.Get());
 				TWebNode* node = childNodes[Rust]->webNode.Get();
 				if (field)
 				{
@@ -2324,7 +2328,7 @@ float TWebNode::NeedsWidth(UINT column)
 					childNodes.RemoveAt(Rust--);
 					continue;
 				}
-				TTextField* field = dynamic_cast<TTextField*>(wnode->control.Get());
+				TTextInput* field = dynamic_cast<TTextInput*>(wnode->control.Get());
 				TWebNode* node = wnode->webNode.Get();
 				if (field)
 				{
@@ -2367,13 +2371,13 @@ float TWebNode::NeedsWidth(UINT column)
 				childNodes.RemoveAt(Rust--);
 				continue;
 			}
-			TTextField* field = dynamic_cast<TTextField*>(wnode->control.Get());
+			TTextInput* field = dynamic_cast<TTextInput*>(wnode->control.Get());
 			TWebNode* node = wnode->webNode.Get();
 			if (field)
 			{
 				float needs = field->GetMinWidth();
 				if (ret < needs)
-					ret = needs;
+				ret = needs;
 			}
 			else if (node)
 			{
@@ -2735,19 +2739,19 @@ EventPropagater::EventPropagater(const TString& e, bool useCapture)
 	this->useCapture = useCapture;
 }
 
-TWebNode::TWebNodeContainer::TWebNodeContainer(TrecSubPointer<TControl, TTextField> text)
+TWebNode::TWebNodeContainer::TWebNodeContainer(TrecSubPointer<TPage, TTextLayout> text)
 {
 	if (text.Get())
 	{
 		type = NodeContainerType::nct_text;
-		this->control = TrecPointerKey::GetTrecPointerFromSub<TControl, TTextField>(text);
+		this->control = TrecPointerKey::GetTrecPointerFromSub<TPage, TTextLayout>(text);
 	}
 	else
 		type = NodeContainerType::ntc_null;
 	initTextSize = 0;
 }
 
-TWebNode::TWebNodeContainer::TWebNodeContainer(TrecPointer<TControl> control)
+TWebNode::TWebNodeContainer::TWebNodeContainer(TrecPointer<TPage> control)
 {
 	if (control.Get())
 	{
@@ -2776,7 +2780,7 @@ D2D1_RECT_F TWebNode::TWebNodeContainer::GetLocation()
 	if (webNode.Get())
 		return webNode->GetLocation();
 	else if (control.Get())
-		return control->getLocation();
+		return control->GetArea();
 	return { 0,0,0,0 };
 }
 

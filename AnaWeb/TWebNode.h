@@ -1,10 +1,11 @@
 #pragma once
 #include <TObject.h>
 #include <DrawingBoard.h>
-#include <TPromptControl.h>
 #include <TStringSlice.h>
 #include <TDataMap.h>
 #include "AnaWeb.h"
+#include <TPage.h>
+#include <TTextLayout.h>
 
 /**
  * Enum Class: WebSizeUnit
@@ -242,13 +243,13 @@ protected:
     class TWebNodeContainer : public TObject
     {
     public:
-        TWebNodeContainer(TrecSubPointer<TControl, TTextField> text);
-        TWebNodeContainer(TrecPointer<TControl> control);
+        TWebNodeContainer(TrecSubPointer<TPage, TTextLayout> text);
+        TWebNodeContainer(TrecPointer<TPage> control);
         TWebNodeContainer(TrecPointer<TWebNode> webNode);
 
         D2D1_RECT_F GetLocation();
 
-        TrecPointer<TControl> control;
+        TrecPointer<TPage> control;
         TrecPointer<TWebNode> webNode;
         NodeContainerType type;
         UINT initTextSize;                  // Text From this Node
@@ -679,7 +680,7 @@ protected:
      */
     TrecPointerSoft<TWebNode> self, parent;
 
-    TDataArray<FormattingDetails> formattingDetails;
+    TDataArray<TextFormattingDetails> formattingDetails;
 
     TextData thisTextData;
 

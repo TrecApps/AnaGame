@@ -7,7 +7,7 @@
  * SuperClass: EventHandler
  */
 class OkayHandler :
-	public EventHandler
+	public TapEventHandler
 {
 public:
 
@@ -17,7 +17,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - the instance associated with this Handler
 	 * Returns: new OkayHandler Object
 	 */
-	OkayHandler(TrecPointer<TInstance> instance);
+	OkayHandler(TrecPointer<TProcess> instance);
 
 	/**
 	 * Method: OkayHandler::~OkayHandler
@@ -43,7 +43,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	void Initialize(TrecPointer<Page> page) override;
+	void Initialize(TrecPointer<TPage> page) override;
 
 	/**
 	 * Method: OkayHandler::HandleEvents
@@ -53,7 +53,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	void HandleEvents(TDataArray<EventID_Cred>& eventAr)override;
+	void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)override;
 
 	/**
 	 * Method: OkayHandler::ProcessMessage

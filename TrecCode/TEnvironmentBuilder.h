@@ -2,7 +2,7 @@
 #include <TObject.h>
 #include "TrecCode.h"
 #include <TEnvironment.h>
-#include <Page.h>
+#include <TPage.h>
 
 /**
  * Enum Class: page_type
@@ -181,6 +181,6 @@ public:
 	 *
 	 * Attributes: abstract
 	 */
-	virtual TrecPointer<Page> GetPage(const TString& type) = 0;
+	virtual TrecPointer<TPage> GetPage(const TString& type) = 0;
 };
 

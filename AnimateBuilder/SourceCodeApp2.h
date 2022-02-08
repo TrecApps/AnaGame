@@ -15,10 +15,10 @@ public:
 
 	virtual void OnSave() override;
 
-	virtual TrecPointer<EventHandler> GetMainHandler()override;
+	virtual TrecPointer<TPage::EventHandler> GetMainHandler()override;
 
 protected:
-	TrecSubPointer<EventHandler, TerminalHandler> commandHandler;
-	TrecSubPointer<EventHandler, TCodeHandler> codeHandler;
+	TrecSubPointer<TPage::EventHandler, TerminalHandler> commandHandler;
+	TrecSubPointer<TPage::EventHandler, TCodeHandler> codeHandler;
 };
 

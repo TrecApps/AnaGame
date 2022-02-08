@@ -84,6 +84,10 @@ TrecPointer<TFileShell> TFileShell::GetFileInfo(const TString& path)
 	newPath.Replace(L'/', L'\\');
 	while(newPath.Replace(L"\\\\", L"\\"));
 
+	while ((newPath.StartsWith(L"\"") && newPath.EndsWith(L"\""))
+		|| (newPath.StartsWith(L"\'") && newPath.EndsWith(L"\'")))
+		newPath.Set(newPath.SubString(1, newPath.GetSize() - 1));
+
 	// Make sure path is canonical
 	WCHAR newPathBuff[300];
 	for (UINT Rust = 0; Rust < 300; Rust++)

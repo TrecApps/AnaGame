@@ -1,0 +1,120 @@
+{
+	"TLayout" : {
+		"RowHeights": [
+			100,
+			100,
+			100,
+			100,
+			100
+		],
+		"children": [
+		{
+			"TControl" : {
+				"RowPosition": 0
+				"Caption":"New File",
+				"HorizontalAlignment":"Center",
+				"FontSize":36,
+				"BorderThickness":3.5,
+				"Margin":"5,5,5,5",
+				"BorderColor": "0.0,0.0,0.7,1.0"
+			}
+		},{
+			"TLayout" : {
+				"RowPosition": 1,
+				"ColumnWidths" : ["200", "1*"],
+				"IsGallery": true,
+				"children": [
+				{	
+					"TControl": {
+						"ColPosition": 0,
+						"Caption":"File Name",
+						"HorizontalAlignment":"Center"
+						"VerticalAlignment":"Center"
+					}
+				},{
+					"TTextField": {
+						"ColPosition": 1,
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Margin":"5,5,5,5"
+					}
+				}
+				]
+			}
+		},{
+			"TLayout": {
+				"IsGallery": true,
+				"RowPosition":2,
+				"ColumnWidths": [200,"1*"],
+				"children" : [
+				{
+					"TControl" : {
+						"ColPosition": 0,
+						"Caption":"File type",
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"BorderThickness":0.7
+					}
+				},{
+					"TComboBox" : {
+						"ColPosition": 1,
+						"DefaultText":"File Type"
+					}
+				}
+				]
+			}
+		},{
+			"TLayout" : {
+				"IsGallery": true,
+				"ColumnWidths: [200,"1*"],
+				"RowPosition": 3,
+				"children" : [
+				{
+					"TControl" : {
+						"ColPosition": 0,
+						"Caption":"Project to Add to",
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"BorderThickness":0.7
+					}
+				},{
+					"TComboBox": {
+						"ColPosition": 1,
+						"DefaultText":"File Type"
+					}
+				}
+				]
+			}
+		},{
+			"TLayout": {
+				"RowPosition": 4,
+				"IsGallery": true,
+				"ColumnWidths": ["1*", "1*" ],
+				"children" : [
+				{
+					"TControl" : {
+						"ColPosition": 0,
+						"Caption":"Cancel",
+						"EventOnClick":"onCancel",
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Margin":"5,5,5,5",
+						"BorderThickness":0.8
+					},
+				}, {
+					"TControl" : {
+						"ColPosition": 1,
+						"Caption":"Okay",
+						"EventOnClick":"onOkay",
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Margin":"5,5,5,5",
+						"BorderThickness":0.8
+					}
+				}
+				]
+			}
+		}
+		]
+	}
+}

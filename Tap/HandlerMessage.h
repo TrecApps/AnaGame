@@ -37,7 +37,7 @@ typedef enum class message_transmission
 	message_transmission_by_type,      // Search based off of type of handler solely
 	message_transmission_create_new,   // Create a New Handler
 	message_transmission_name_type     // Search based off of the name and type of handler
-};
+}message_transmission;
 
 /**
  * Class: HandlerMessage

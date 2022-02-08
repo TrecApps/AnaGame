@@ -116,9 +116,7 @@ bool TThread::Resume(DWORD id)
 	{
 		if (threadList[Rust].details.threadId == id)
 		{
-			DWORD res = ResumeThread(threadList[Rust].details.handle);
-			int e = GetLastError();
-			return true;
+			return ResumeThread(threadList[Rust].details.handle) != -1;
 		}
 	}
 	return false;

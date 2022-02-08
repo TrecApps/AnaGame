@@ -13,7 +13,7 @@ typedef enum class env_var_type
 {
 	evt_any,
 	evt_interpretor
-};
+}env_var_type;
 
 class _TREC_LIB_DLL EnvironmentEntry
 {
@@ -267,6 +267,8 @@ class _TREC_LIB_DLL TEnvironment :
 	public TObject
 {
 public:
+
+	void AddEnvironment(TrecPointer<TEnvironment> env);
 
 	/**
 	 * Method: TEnvironment::GetProjectLayout
@@ -582,8 +584,9 @@ protected:
 	void SetUpLanguageExtensionMapping();
 
 	/**
-	 * 
+	 * Child Environments that a parent Environment can lean upon
 	 */
+	TDataArray<TrecPointer<TEnvironment>> environments;
 
 	/**
 	 * the Working directory of the Environment

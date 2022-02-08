@@ -17,7 +17,7 @@ bool VarFunction::IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def)
 		if (def & 0b00000100)
 		{
 			TString v(var->GetString().GetTrim().GetLower());
-			result = v.Compare(L'false');
+			result = v.Compare(L"false");
 			break;
 		}
 		else return false;
@@ -38,6 +38,22 @@ bool VarFunction::IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def)
 	}
 
 	return true;
+}
+
+
+/**
+ * Method: TVariable::GetString
+ * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
+ * Parameters: const TString& detail -
+ * Returns: TString - The TString referered by the variable (empty if not a string)
+ *
+ * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
+ *
+ * Attributes: abstract
+ */
+TString TVariable::GetString(const TString& detail)
+{
+	return GetString();
 }
 
 /**
@@ -107,10 +123,10 @@ void TVariableMarker::operator=(const TVariableMarker& orig)
  * Parameters: TrecPointer<TVariable> var - the new variable to assign to
  * Returns: bool - whether the new variable was set
  */
-bool TVariableMarker::SetVariable(TrecPointer<TVariable> var)
+bool TVariableMarker::SetVariable(TrecPointer<TVariable> var_)
 {
 	if (mutableVar)
-		this->var = var;
+		this->var = var_;
 	return mutableVar;
 }
 

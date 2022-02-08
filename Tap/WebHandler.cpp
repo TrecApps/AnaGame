@@ -1,18 +1,20 @@
 #include "WebHandler.h"
 #include <TcInterpretor.h>
-void WebHandler::Initialize(TrecPointer<Page> page)
+void WebHandler::Initialize(TrecPointer<TPage> page)
 {
 }
 
-void WebHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void WebHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
+
+	TapEventHandler::HandleEvents(eventAr);
 }
 
 void WebHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
 }
 
-WebHandler::WebHandler(TrecPointer<TEnvironment> env, TrecPointer<TInstance> instance) : EventHandler(instance)
+WebHandler::WebHandler(TrecPointer<TEnvironment> env, TrecPointer<TProcess> instance) : TapEventHandler(instance)
 {
 	environment = env;
 }

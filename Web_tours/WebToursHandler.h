@@ -1,8 +1,9 @@
 #pragma once
 #include <EventHandler.h>
 #include <TWebWindow.h>
+#include <TSwitchControl.h>
 class WebToursHandler :
-    public EventHandler
+    public TapEventHandler
 {
 public:
 	/**
@@ -11,7 +12,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New EventHandler Object
 	 */
-	WebToursHandler(TrecPointer<TInstance> instance);
+	WebToursHandler(TrecPointer<TProcess> instance);
 
 	/**
 	 * Method: WebToursHandler::~WebToursHandler
@@ -41,7 +42,7 @@ public:
 	 *
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 
 
 	/**
@@ -52,7 +53,7 @@ public:
 	 *
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr) override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr) override;
 
 	/**
 	 * Method: WebToursHandler::ProcessMessage
@@ -64,9 +65,21 @@ public:
 	 */
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message) override;
 
-	virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)override;
+	/**
+	 * Method: TapEventHandler::SetWindow
+	 * Purpose: Sets the Window of this Handler
+	 * Parameters: TrecPointer<TWindow> window - the window to set
+	 * Returns: void
+	 */
+	virtual void SetWindow(TrecPointer<TWindow> window)override;
+
+
+	virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut)override;
 
 protected:
+
+	void PrepWindow();
+
 	/**
 	 * Method: EventHandler::ShouldProcessMessageByType
 	 * Purpose: Reports whether this Object is of the correct type to recieve the message
@@ -77,8 +90,7 @@ protected:
 	 */
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 
-	TrecSubPointer<TControl, TTextField> urlBox;
-
-	TrecSubPointer<TWindow, TWebWindow> window;
+	TrecSubPointer<TPage, TTextInput> urlBox;
+	TrecSubPointer<TPage, TSwitchControl> tabs;
 };
 

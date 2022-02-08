@@ -34,6 +34,11 @@ TObjectNode::~TObjectNode()
 {
 }
 
+TString TObjectNode::GetCommand(const TString& info)
+{
+	return L"";
+}
+
 /*
 * Method: TObjectNode::GetLevel
 * Purpose: Retrieves the Level of this particular node

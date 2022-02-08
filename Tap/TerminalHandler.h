@@ -8,7 +8,7 @@
  * SuperClass: EventHandler
  */
 class _TAP_DLL TerminalHandler :
-	public EventHandler
+	public TapEventHandler
 {
 public:
 
@@ -18,7 +18,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New Terminal Handler Object
 	 */
-	TerminalHandler(TrecPointer<TInstance> instance);
+	TerminalHandler(TrecPointer<TProcess> instance, TrecPointer<TFileShell> wDirectory);
 
 	/**
 	 * Method: TerminalHandler::~TerminalHandler
@@ -45,7 +45,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 
 	/**
 	 * Method: TerminalHandler::HandleEvents
@@ -55,7 +55,7 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr)override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)override;
 
 	/**
 	 * Method: TerminalHandler::ProcessMessage
@@ -74,14 +74,16 @@ public:
 	 * Parameters: void
 	 * Returns: TrecSubPointer<TControl, TPromptControl> - the Command Prompt to work with
 	 */
-	TrecSubPointer<TControl, TPromptControl> GetTerminal();
+	TrecPointer<TConsoleHolder> GetTerminal();
 
 private:
+
+	TrecPointer<TFileShell> wDirectory;
 	
 	/**
 	 * The current Command Prompt to fucus on
 	 */
-	TrecSubPointer<TControl, TPromptControl> currentTerminal;
+	TrecPointer<TConsoleHolder> currentTerminal;
 
 	/**
 	 * Method: TerminalHandler::ShouldProcessMessageByType
