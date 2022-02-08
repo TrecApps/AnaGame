@@ -76,6 +76,7 @@ void WebToursHandler::Initialize(TrecPointer<TPage> page)
  */
 void WebToursHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
+	TapEventHandler::HandleEvents(eventAr);
 }
 
 /**
@@ -102,9 +103,11 @@ bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlag
 	{
 		if (fromChar && nChar == VK_RETURN)
 		{
-			if(dynamic_cast<TWebWindow*>(window.Get()) && tabs.Get())
+			if (dynamic_cast<TWebWindow*>(window.Get()) && tabs.Get())
+			{
 				dynamic_cast<TWebWindow*>(window.Get())->AddNewTab(urlBox->GetText(), false);
-			
+				return true;
+			}
 		}
 	}
 
@@ -119,7 +122,7 @@ bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlag
 
 
 	}*/
-	return false;
+	return TapEventHandler::OnChar(fromChar, nChar, nRepCnt, nFlags, mOut);
 }
 
 void WebToursHandler::PrepWindow()

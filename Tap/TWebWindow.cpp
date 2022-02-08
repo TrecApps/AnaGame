@@ -288,7 +288,7 @@ void TWebWindow::OnLButtonUp(UINT nFlags, TPoint point)
         }
     }
 
-    TWindow::OnLButtonDown(nFlags, point);
+    TWindow::OnLButtonUp(nFlags, point);
     Draw();
     ThreadRelease();
 }

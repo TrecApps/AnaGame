@@ -61,7 +61,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.lpszClassName = winClass.GetConstantBuffer().getBuffer();
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    dynamic_cast<TInstance*>(mainInstance.Get())->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt < TPage::EventHandler, WebToursHandler>(mainInstance), L"", t_window_type::t_window_type_web);
+    dynamic_cast<TInstance*>(mainInstance.Get())->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewSelfTrecPointerAlt < TPage::EventHandler, WebToursHandler>(mainInstance), L"", t_window_type::t_window_type_web);
 
     TrecSubPointer<TWindow, TWebWindow> webWindow = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TWebWindow>(dynamic_cast<TInstance*>(mainInstance.Get())->GetMainWindow());
 

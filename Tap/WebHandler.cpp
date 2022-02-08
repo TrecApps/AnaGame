@@ -6,6 +6,8 @@ void WebHandler::Initialize(TrecPointer<TPage> page)
 
 void WebHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
+
+	TapEventHandler::HandleEvents(eventAr);
 }
 
 void WebHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
