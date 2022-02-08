@@ -13,11 +13,11 @@ TGadget::~TGadget()
 {
 }
 
-bool TGadget::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d)
+bool TGadget::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
 	ThreadLock();
 
-	TControl::onCreate(r, d3d);
+	TControl::onCreate(r, d3d,d);
 
 	bSize = area.bottom - area.top;
 	int height = bSize;

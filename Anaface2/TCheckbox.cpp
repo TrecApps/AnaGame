@@ -9,9 +9,9 @@ TCheckbox::~TCheckbox()
 {
 }
 
-bool TCheckbox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TCheckbox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
-	TGadget::onCreate(loc, d3d);
+	TGadget::onCreate(loc, d3d, d);
 
 	if (!text.Get())
 	{

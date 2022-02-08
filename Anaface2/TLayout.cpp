@@ -14,13 +14,13 @@ LayoutSpace::LayoutSpace(const LayoutSpace& copy)
 	actualSpace = copy.actualSpace;
 }
 
-bool TLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
 	TString valpoint;
 	if ((attributes.retrieveEntry(L"IsGallery", valpoint) && !valpoint.CompareNoCase(L"true")) || (attributes.retrieveEntry(L"IsStack", valpoint) && !valpoint.CompareNoCase(L"false")))
 		primaryStack = false;
 
-	bool res = TControl::onCreate(loc, d3d);
+	bool res = TControl::onCreate(loc, d3d, d);
 
 	ParseDimensions(primDem, primaryStack ? (area.bottom - area.top) : (area.right - area.left));
 
@@ -58,7 +58,7 @@ bool TLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 
 		if (dynamic_cast<TControl*>(page.Get()))
 		{
-			res &= dynamic_cast<TControl*>(page.Get())->onCreate(chLoc, d3d);
+			res &= dynamic_cast<TControl*>(page.Get())->onCreate(chLoc, d3d, d);
 		}
 	} while (++Rust < childControls.Size() && Rust < primDem.Size() );
 

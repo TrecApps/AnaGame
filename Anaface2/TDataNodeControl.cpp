@@ -172,9 +172,9 @@ void TDataNodeControl::OnLButtonDown(UINT nFlags, const TPoint& point, message_o
 }
 
 
-bool TDataNodeControl::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d)
+bool TDataNodeControl::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
-	TControl::onCreate(r, d3d);
+	TControl::onCreate(r, d3d, d);
 	if (drawingBoard.Get())
 	{
 		outerBrush = drawingBoard->GetBrush(TColor(D2D1::ColorF::Black));
@@ -200,7 +200,7 @@ bool TDataNodeControl::onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine>
 	}
 	if (childControls.Size() && dynamic_cast<TControl*>(childControls.at(0).control.Get()))
 	{
-		dynamic_cast<TControl*>(childControls.at(0).control.Get())->onCreate(r, d3d);
+		dynamic_cast<TControl*>(childControls.at(0).control.Get())->onCreate(r, d3d, d);
 	}
     return false;
 }

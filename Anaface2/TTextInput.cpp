@@ -48,7 +48,7 @@ TTextInput::~TTextInput()
 {
 }
 
-bool TTextInput::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TTextInput::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
 	TString valpoint;
 
@@ -90,7 +90,7 @@ bool TTextInput::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d
 	botBut = DxLocation;
 	botBut.top = botBut.top + (botBut.bottom - botBut.top) / 2;
 
-	TGadget::onCreate(loc, d3d);
+	TGadget::onCreate(loc, d3d, d);
 
 	if (this->passwordPeek)
 	{

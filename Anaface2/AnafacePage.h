@@ -223,6 +223,11 @@ protected:
 	 */
 	TrecPointer<TArray<styleTable>> styles;
 
+	/**
+	 * The directory where the source file originates
+	 */
+	TrecPointer<TFileShell> directory;
+
 
 protected:
 	// Methods used for construction

@@ -507,7 +507,7 @@ bool TControl::GetActive()
 	return ret;
 }
 
-bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
 	TObjectLocker threadLock(&thread);
 
@@ -589,7 +589,7 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 										dataClassy.addEntry(ent->key, ent->object.Get());
 								}
 
-								OnCreateStyle(dataClassy);
+								OnCreateStyle(dataClassy,d);
 							}//break;
 						}
 					}
@@ -598,7 +598,7 @@ bool TControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
 		}
 	}
 
-	OnCreateStyle(attributes);
+	OnCreateStyle(attributes,d);
 	this->SetUpTextElement();
 	if (border.Get())
 		border->onCreate(area);
@@ -1425,7 +1425,7 @@ void TControl::SetUpTextElement()
 	}
 }
 
-void TControl::OnCreateStyle(TDataMap<TString>& atts)
+void TControl::OnCreateStyle(TDataMap<TString>& atts, TrecPointer<TFileShell> d)
 {
 	TString valpoint;
 
@@ -1502,11 +1502,11 @@ void TControl::OnCreateStyle(TDataMap<TString>& atts)
 
 	if (atts.retrieveEntry(L"ImageSource", valpoint))
 	{
-		if (!content.Get())
+		if (!content.Get() || !d.Get())
 			content = TControlComponent::GetControlContent(drawingBoard, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 		valpoint.Replace(L"/", L"\\");
 
-		TrecPointer<TFileShell> file = TFileShell::GetFileInfo(valpoint);
+		TrecPointer<TFileShell> file = TFileShell::GetFileInfo(d->GetPath() + L"\\" + valpoint);
 
 		if (file.Get())
 		{

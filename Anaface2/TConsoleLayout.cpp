@@ -236,7 +236,7 @@ void TConsoleLayout::SetDirectory(TrecPointer<TFileShell> directory)
     shell.SetWorkingDirectory(directory);
 }
 
-bool TConsoleLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TConsoleLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
     TString valpoint;
     if (attributes.retrieveEntry(L"IsInput", valpoint) && !valpoint.CompareNoCase(L"false"))
@@ -259,7 +259,7 @@ bool TConsoleLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
         AddPage(TrecPointerKey::GetNewSelfTrecPointerAlt<TPage, TTextInput>(drawingBoard, styles, drawingBoard->GetWindowHandle()), 2, 0);
     }
 
-    return TRandomLayout::onCreate(loc, d3d);
+    return TRandomLayout::onCreate(loc, d3d, d);
 }
 
 TConsoleLayout::TConsoleLayout(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles) : TLayout(drawingBoard, styles)

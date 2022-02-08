@@ -228,7 +228,7 @@ TCombobox::~TCombobox()
 {
 }
 
-bool TCombobox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TCombobox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
     TObjectLocker lock(&this->thread);
 
@@ -264,8 +264,8 @@ bool TCombobox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
     D2D1_RECT_F subLoc = loc;
     subLoc.top = subLoc.bottom;
     subLoc.bottom = 1000.0f;
-    dataLayout->onCreate(subLoc, d3d);
-    TGadget::onCreate(loc, d3d);
+    dataLayout->onCreate(subLoc, d3d, d);
+    TGadget::onCreate(loc, d3d,d);
 
 
 

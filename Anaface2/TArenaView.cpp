@@ -33,11 +33,11 @@ TrecPointer<TArenaEngine> TArenaView::getEngine()
     return arenaEngine;
 }
 
-bool TArenaView::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TArenaView::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
 	TObject::ThreadLock();
 	// Don't want 3D content automatically overriden by 2D Background
-	TControl::onCreate(loc, d3d);
+	TControl::onCreate(loc, d3d,d);
 
 
 	float aspect = static_cast<float>(loc.right - loc.left) / static_cast<float>(loc.bottom - loc.top);

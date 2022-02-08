@@ -1,9 +1,9 @@
 #include "TGrid.h"
 
 
-bool TGrid::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TGrid::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
-    bool res = TControl::onCreate(loc, d3d);
+    bool res = TControl::onCreate(loc, d3d, d);
 
     ParseDimensions(primDem, primaryStack ? (area.bottom - area.top) : (area.right - area.left));
     ParseDimensions(secDem, primaryStack ? (area.right - area.left) : (area.bottom - area.top));
@@ -21,7 +21,7 @@ bool TGrid::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
         auto page = childControls[Rust].control;
         if (dynamic_cast<TControl*>(page.Get()))
         {
-            res &= dynamic_cast<TControl*>(page.Get())->onCreate(chLoc, d3d);
+            res &= dynamic_cast<TControl*>(page.Get())->onCreate(chLoc, d3d, d);
         }
     }
 

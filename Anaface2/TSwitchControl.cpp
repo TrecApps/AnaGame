@@ -59,7 +59,7 @@ TSwitchControl::TSwitchControl(TrecPointer<DrawingBoard> drawingBoard, TrecPoint
     tabHeight = 30;
 }
 
-bool TSwitchControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TSwitchControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
     TrecSubPointer<TabBar::TabBarHolder, TabBarSwitchControlHolder> holder =
         TrecPointerKey::GetNewTrecSubPointer<TabBar::TabBarHolder, TabBarSwitchControlHolder>();
@@ -104,20 +104,20 @@ bool TSwitchControl::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine>
     case 1:
         childSpace.top += tabHeight;
         tabsLoc.bottom = childSpace.top;
-        TRandomLayout::onCreate(loc, d3d);
+        TRandomLayout::onCreate(loc, d3d, d);
         tabBar->OnResize(tabsLoc, 0, cred);
         break;
     case 2:
         childSpace.bottom -= tabHeight;
         tabsLoc.top = childSpace.bottom;
-        TRandomLayout::onCreate(loc, d3d);
+        TRandomLayout::onCreate(loc, d3d, d);
         tabBar->OnResize(tabsLoc, 0, cred);
         break;
     default:
-        TRandomLayout::onCreate(loc, d3d);
+        TRandomLayout::onCreate(loc, d3d, d);
     }
 
-    TRandomLayout::onCreate(loc, d3d);
+    TRandomLayout::onCreate(loc, d3d, d);
 
     UINT unknownCount = 1;
     for (UINT Rust = 0; childControls.Size(); Rust++)
@@ -355,7 +355,7 @@ bool TSwitchControl::OnScroll(bool b, const TPoint& point, const TPoint& directi
 
 void TSwitchControl::SetView(TrecPointer<TPage> page)
 {
-    while (pageStack.Size() >= maxStack)
+    while (maxStack && pageStack.Size() >= maxStack)
     {
         bool removed = false;
         for (UINT Rust = 0; Rust < pageStack.Size(); Rust++)

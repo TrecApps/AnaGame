@@ -2014,7 +2014,7 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 	textField->AddAttribute(L"|AutoGenContent", falseString);
 	if (thisTextData.hasBackgroundColor)
 		textField->AddAttribute(L"|ContentColor", thisTextData.backgroundColor.toString());
-	textField->onCreate(loc, TrecPointer<TWindowEngine>());
+	textField->onCreate(loc, TrecPointer<TWindowEngine>(), TrecPointer<TFileShell>());
 	TextFormattingDetails det;
 	TString theText;
 	for (UINT Rust = 0; Rust < textNode->textDataList.Size(); Rust++)

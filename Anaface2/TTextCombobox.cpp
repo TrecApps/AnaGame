@@ -46,9 +46,9 @@ TTextCombobox::~TTextCombobox()
 {
 }
 
-bool TTextCombobox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TTextCombobox::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
-	return TCombobox::onCreate(loc, d3d);
+	return TCombobox::onCreate(loc, d3d, d);
 }
 
 void TTextCombobox::Draw(TrecPointer<TVariable> object)

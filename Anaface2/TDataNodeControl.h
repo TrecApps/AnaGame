@@ -135,7 +135,7 @@ public:
 	 * Parameters: RECT contain - the area it can use
 	 * Returns: bool - success
 	 */
-	bool onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d) override;
+	bool onCreate(const D2D1_RECT_F& r, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d) override;
 
 	/**
 	 * Method: AnafacePage::Draw

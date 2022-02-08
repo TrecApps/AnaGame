@@ -679,10 +679,7 @@ TrecPointer<TPage> TIdeWindow::AddNewPage(anagame_page pageType, ide_page_type p
 
 
 
-	TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
-
-	if (control.Get())
-		control->onCreate(newPage->GetArea(), d3dEngine);
+	newPage->Create(newPage->GetArea(), d3dEngine);
 
 	targetPage->SetView(TrecSubToTrec(newPage), TPoint());
 	
@@ -789,10 +786,7 @@ int TIdeWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 		return 2;
 	}
 
-	TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
-
-	if (control.Get())
-		control->onCreate(newPage->GetArea(), d3dEngine);
+	newPage->Create(newPage->GetArea(), d3dEngine);
 
 	if (mainPageName.GetSize())
 	{

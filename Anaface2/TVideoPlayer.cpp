@@ -42,7 +42,7 @@ bool TVideoPlayer::Speed(float)
 	return false;
 }
 
-bool TVideoPlayer::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TVideoPlayer::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
 	TObjectLocker lock(&thread);
 	if (!player.Get())
@@ -53,7 +53,7 @@ bool TVideoPlayer::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d
 
 	// Don't want to override non-direct 2D Content
 
-	bool returnable = TControl::onCreate(loc, d3d);
+	bool returnable = TControl::onCreate(loc, d3d, d);
 	TString valpoint;;
 	if (attributes.retrieveEntry(L"MediaSource", valpoint))
 	{

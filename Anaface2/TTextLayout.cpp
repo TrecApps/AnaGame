@@ -198,14 +198,14 @@ TTextLayout::~TTextLayout()
 {
 }
 
-bool TTextLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TTextLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
 	TString valpoint;
 	if (attributes.retrieveEntry(L"IsLocked", valpoint) && !valpoint.CompareNoCase(L"true"))
 	{
 		this->textLock = true;
 	}
-	return TGadget::onCreate(loc, d3d);
+	return TGadget::onCreate(loc, d3d, d);
 }
 
 LineMetrics2::LineMetrics2()

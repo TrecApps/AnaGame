@@ -2,15 +2,15 @@
 
 #define T_RANDOM_LAYOUT_LIMIT 10
 
-bool TRandomLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TRandomLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
-    bool res = TControl::onCreate(loc, d3d);
+    bool res = TControl::onCreate(loc, d3d, d);
 
     for (UINT Rust = 0; Rust < childControls.Size(); Rust++)
     {
         auto page = childControls[Rust].control;
         if (dynamic_cast<TControl*>(page.Get()))
-            res &= dynamic_cast<TControl*>(page.Get())->onCreate(loc, d3d);
+            res &= dynamic_cast<TControl*>(page.Get())->onCreate(loc, d3d,d);
     }
     return res;
 }

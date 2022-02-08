@@ -345,7 +345,7 @@ public:
 	 *
 	 * Attributes: virtual
 	 */
-	virtual bool onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d);
+	virtual bool onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d);
 
 	/**
 	 * Method:  TControl::updateArrayID
@@ -751,7 +751,7 @@ protected:
 	/**
 	 *
 	 */
-	void OnCreateStyle(TDataMap<TString>& atts);
+	void OnCreateStyle(TDataMap<TString>& atts, TrecPointer<TFileShell> d);
 };
 
 

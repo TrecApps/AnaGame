@@ -125,7 +125,7 @@ void TDataLayout::Draw(TrecPointer<TVariable> object)
 		tempPage->Draw(var);
 }
 
-bool TDataLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TDataLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
 	TString valpoint;
 	
@@ -177,7 +177,7 @@ bool TDataLayout::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3
 	//	}
 	//}
 
-	return TRandomLayout::onCreate(loc, d3d);
+	return TRandomLayout::onCreate(loc, d3d,d);
 }
 
 D2D1_RECT_F TDataLayout::GetArea()

@@ -391,7 +391,7 @@ void AnafacePage::Create(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> engi
 {
 	if (!dynamic_cast<TControl*>(rootPage.Get()))
 		return;
-	dynamic_cast<TControl*>(rootPage.Get())->onCreate(loc, engine);
+	dynamic_cast<TControl*>(rootPage.Get())->onCreate(loc, engine, directory);
 	area = rootPage->GetArea();
 }
 
@@ -436,6 +436,8 @@ TString AnafacePage::PrepPage(TrecPointer<TFileShell> file, TrecPointer<EventHan
 
 	if (!ret.GetSize() && this->handler.Get())
 		handler->Initialize(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+
+	directory = file->GetParent();
 
 	return ret;
 }

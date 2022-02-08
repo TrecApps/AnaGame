@@ -179,10 +179,7 @@ int TWebWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
         return 2;
     }
 
-    TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
-
-    if (control.Get())
-         control->onCreate (mainPageSpace, d3dEngine);
+    newPage->Create (mainPageSpace, d3dEngine);
 
 
     safeToDraw = 1;

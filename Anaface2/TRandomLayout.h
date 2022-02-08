@@ -33,7 +33,7 @@ public:
 	 *
 	 * Attributes: virtual
 	 */
-	virtual bool onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d);
+	virtual bool onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)override;
 
 	/**
 	 * Method: TRandomLayout::TRandomLayout

@@ -236,12 +236,12 @@ TrecPointer<TConsoleHolder> TConsoleText::GetConsoleHolder()
 			TrecPointerKey::GetTrecPointerFromSoft<>(this->self)));
 }
 
-bool TConsoleText::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d)
+bool TConsoleText::onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d)
 {
     TString valpoint;
     if (attributes.retrieveEntry(L"IsInput", valpoint) && !valpoint.CompareNoCase(L"false"))
         isInput = false;
-    bool ret = TGadget::onCreate(loc, d3d);
+    bool ret = TGadget::onCreate(loc, d3d, d);
 	if (text.Get())
 	{
 		text->SetHorizontallignment(DWRITE_TEXT_ALIGNMENT_LEADING);

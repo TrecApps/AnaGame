@@ -173,10 +173,7 @@ int TWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 		dynamic_cast<TapEventHandler*>(eh.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
 	}
 
-	TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
-
-	if (control.Get())
-		control->onCreate(newPage->GetArea(), d3dEngine);
+	newPage->Create(newPage->GetArea(), d3dEngine);
 
 	mainPage = TrecSubToTrec(newPage);
 	RECT loc;
