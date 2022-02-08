@@ -300,7 +300,7 @@ UINT TabBar::GetTabCount()
 
 TrecPointer<TPage> TabBar::GetTabAt(UINT index, bool content)
 {
-    if(index < tabs.Size())
+    if(index >= tabs.Size())
         return TrecPointer<TPage>();
 
     TrecPointer<TPage> ret = tabs[index];

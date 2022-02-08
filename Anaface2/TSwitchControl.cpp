@@ -368,8 +368,6 @@ void TSwitchControl::SetView(TrecPointer<TPage> page)
             }
         }
 
-        if (!removed)
-            pageStack.RemoveAt(0);
     }
 
     pageStack.push_back(page);

@@ -6,7 +6,7 @@
 			"TLayout" : {
 				"RowPosition": 0,
 				"IsGallery": true,
-				"ColumnWidths": [40,40,"10*, "1*"],
+				"ColumnWidths": [40,40,"10*", "1*"],
 				"ContentColor": "0.0,0.2,0.9,0.7",
 				"Children" : [
 				{

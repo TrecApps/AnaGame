@@ -1,5 +1,6 @@
 #include "TWebWindow.h"
 #include <DirectoryInterface.h>
+#include "EventHandler.h"
 
 TString TWebWindow::GetType()
 {
@@ -122,6 +123,12 @@ void TWebWindow::AddNewTab(const TString& url, bool createTab)
     ThreadRelease();
 }
 
+void TWebWindow::SetTabBar(TrecSubPointer<TPage, TabBar> tempTabs)
+{
+    if (tempTabs.Get())
+        this->webPages = tempTabs;
+}
+
 int TWebWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
 {
     ThreadLock();
@@ -161,7 +168,21 @@ int TWebWindow::CompileView(TString& file, TrecPointer<TPage::EventHandler> eh)
     TrecPointer<TFileShell> uisFile = TFileShell::GetFileInfo(aFile->GetFilePath());
     aFile->Close();
     aFile.Nullify();
+    if (dynamic_cast<TapEventHandler*>(eh.Get()))
+        dynamic_cast<TapEventHandler*>(eh.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
     TString prepRes(newPage->PrepPage(uisFile, eh));
+
+    if (prepRes.GetSize())
+    {
+        MessageBox(this->currentWindow, prepRes.GetConstantBuffer().getBuffer(), L"Error Constructing UI!", 0);
+        ThreadRelease();
+        return 2;
+    }
+
+    TrecSubPointer<TPage, TControl> control = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TControl>(newPage->GetRootControl());
+
+    if (control.Get())
+         control->onCreate (mainPageSpace, d3dEngine);
 
 
     safeToDraw = 1;

@@ -57,6 +57,7 @@ void WebToursHandler::Initialize(TrecPointer<TPage> page)
 	tabs = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TSwitchControl>(rootLayout->GetPage(1, 0));
 
 	assert(tabs.Get());
+	PrepWindow();
 
 	rootLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(rootLayout->GetPage(0, 0));
 
@@ -89,14 +90,20 @@ void WebToursHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 {
 }
 
+void WebToursHandler::SetWindow(TrecPointer<TWindow> window)
+{
+	TapEventHandler::SetWindow(window);
+	PrepWindow();
+}
+
 bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut)
 {
 	if (urlBox.Get() && textIntercepter.Get() && urlBox->GetInterceptor().Get() == textIntercepter.Get())
 	{
 		if (fromChar && nChar == VK_RETURN)
 		{
-			if(window.Get() && tabs.Get())
-				window->AddNewTab(urlBox->GetText(), false);
+			if(dynamic_cast<TWebWindow*>(window.Get()) && tabs.Get())
+				dynamic_cast<TWebWindow*>(window.Get())->AddNewTab(urlBox->GetText(), false);
 			
 		}
 	}
@@ -113,6 +120,12 @@ bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlag
 
 	}*/
 	return false;
+}
+
+void WebToursHandler::PrepWindow()
+{
+	if (dynamic_cast<TWebWindow*>(window.Get()) && tabs.Get())
+		dynamic_cast<TWebWindow*>(window.Get())->SetTabBar(tabs->GetTabBar());
 }
 
 

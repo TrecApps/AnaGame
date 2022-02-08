@@ -96,6 +96,14 @@ public:
 	 */
 	void AddNewTab(const TString& url, bool createTab = true);
 
+	/**
+	 * Method: TWebWindow::SetTabBar
+	 * Purpose: Allows main handler to set it's own tab bar
+	 * Parameters: TrecSubPointer<TPage, TabBar> tempTabs - the tabs to use
+	 * Returns: void
+	 */
+	void SetTabBar(TrecSubPointer<TPage, TabBar> tempTabs);
+
 
 	/**
 	 * Method: TWebWindow::CompileView

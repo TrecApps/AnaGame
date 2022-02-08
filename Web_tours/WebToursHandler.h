@@ -65,9 +65,21 @@ public:
 	 */
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message) override;
 
+	/**
+	 * Method: TapEventHandler::SetWindow
+	 * Purpose: Sets the Window of this Handler
+	 * Parameters: TrecPointer<TWindow> window - the window to set
+	 * Returns: void
+	 */
+	virtual void SetWindow(TrecPointer<TWindow> window)override;
+
+
 	virtual bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut)override;
 
 protected:
+
+	void PrepWindow();
+
 	/**
 	 * Method: EventHandler::ShouldProcessMessageByType
 	 * Purpose: Reports whether this Object is of the correct type to recieve the message
@@ -80,7 +92,5 @@ protected:
 
 	TrecSubPointer<TPage, TTextInput> urlBox;
 	TrecSubPointer<TPage, TSwitchControl> tabs;
-
-	TrecSubPointer<TWindow, TWebWindow> window;
 };
 
