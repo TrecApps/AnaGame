@@ -330,7 +330,7 @@ TrecSubPointer<TPage, WebPage> TWebWindow::GetWebPage(const TString& url)
 
     TDataArray<TPage::EventID_Cred> cred;
     
-
+    webPage = webPages->GetContentSpace();
     ret->OnResize(webPage, 0, cred);
 
     // ret->SetEnvironment(envGenerator->GetEnvironment(TrecPointer<TFileShell>()));

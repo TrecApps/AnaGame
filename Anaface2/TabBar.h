@@ -38,6 +38,16 @@ public:
 		 * Attributes: abstract
 		 */
 		virtual void RemoveView(TrecPointer<TPage> page) = 0;
+
+		/**
+		 * Method: TabBarHolder::GetContentSpace
+		 * Purpose: Retrieves the space where the content should go
+		 * Parameters: void
+		 * Returns: D2D1_RECT_F - the area of the content
+		 * 
+		 * Attributes: abstract
+		 */
+		virtual D2D1_RECT_F GetContentSpace() = 0;
     };
 
 	/**
@@ -315,6 +325,15 @@ protected:
 	TrecPointer<TBrush> backgroundColor;
 
 public:
+
+	/**
+	 * Method: TabBar::GetContentSpace
+	 * Purpose: Retrieves the space where the content should go
+	 * Parameters: void
+	 * Returns: D2D1_RECT_F - the area of the content
+	 */
+	D2D1_RECT_F GetContentSpace();
+
 	/**
 	 * Method: TabBar::SetBackgroundColor
 	 * Purpose: Sets the background color of the tab

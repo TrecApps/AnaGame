@@ -37,6 +37,26 @@ public:
         TrecSubPointer<TPage, TSwitchControl> actControl = TrecPointerKey::GetSubPointerFromSoft<>(switchControl);
         actControl->RemovePage(page);
     }
+    /**
+     * Method: TabBarHolder::GetContentSpace
+     * Purpose: Retrieves the space where the content should go
+     * Parameters: void
+     * Returns: D2D1_RECT_F - the area of the content
+     *
+     * Attributes: abstract
+     */
+    virtual D2D1_RECT_F GetContentSpace() override {
+        TrecSubPointer<TPage, TSwitchControl> actControl = TrecPointerKey::GetSubPointerFromSoft<>(switchControl);
+        auto ret = actControl->area;
+
+        auto retAdjust = actControl->GetTabBar()->GetArea();
+
+        if (ret.top == retAdjust.top && ret.bottom)
+            ret.top = retAdjust.bottom;
+        else if (ret.bottom == retAdjust.bottom && ret.bottom)
+            ret.bottom = retAdjust.top;
+        return ret;
+    }
 
 protected:
     /**
@@ -370,7 +390,7 @@ void TSwitchControl::SetView(TrecPointer<TPage> page)
 
     }
 
-    pageStack.push_back(page);
+    pageStack.push_back(dynamic_cast<TabBar::Tab*>(page.Get()) ? dynamic_cast<TabBar::Tab*>(page.Get())->GetContent() : page);
 }
 
 void TSwitchControl::RemovePage(TrecPointer<TPage> page)

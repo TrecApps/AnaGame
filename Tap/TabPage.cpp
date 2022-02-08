@@ -41,6 +41,18 @@ public:
 			actualTarget->RemovePage(page);
 		}
 	}
+	/**
+	 * Method: TabBarHolder::GetContentSpace
+	 * Purpose: Retrieves the space where the content should go
+	 * Parameters: void
+	 * Returns: D2D1_RECT_F - the area of the content
+	 *
+	 * Attributes: abstract
+	 */
+	virtual D2D1_RECT_F GetContentSpace() override {
+		TrecSubPointer<TPage, TabPage> actualTarget = TrecPointerKey::GetSubPointerFromSoft<>(targetHolder);
+		return actualTarget.Get() ? actualTarget->GetChildSpace() : D2D1_RECT_F{ 0.0f,0.0f,0.0f,0.0f };
+	}
 };
 
 

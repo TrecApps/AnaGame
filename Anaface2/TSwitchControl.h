@@ -12,6 +12,7 @@
 class _ANAFACE_DLL2 TSwitchControl :
     public TRandomLayout
 {
+	friend class TabBarSwitchControlHolder;
 public:
 
 	/**

@@ -218,6 +218,12 @@ void TabBar::InjectTabAt(TrecPointer<TPage> page, UINT index)
     SetTabSizes();
 }
 
+D2D1_RECT_F TabBar::GetContentSpace()
+{
+    TObjectLocker lock(&thread);
+    return holder.Get() ? holder->GetContentSpace() : D2D1_RECT_F{0.0f,0.0f,0.0f,0.0f};
+}
+
 bool TabBar::SetBackgroundColor(const TColor& color)
 {
     if (!drawingBoard.Get())

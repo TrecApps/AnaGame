@@ -977,7 +977,7 @@ UINT TWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3
 
 		if (ch->type == TWebNode::NodeContainerType::nct_text)
 		{
-			TrecSubPointer<TPage, TTextInput> t = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(ch->control);
+			TrecSubPointer<TPage, TTextLayout> t = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextLayout>(ch->control);
 			if(!t.Get())
 			{
 				// Take care of null elements
@@ -2012,6 +2012,7 @@ void TWebNode::CompileText(TrecPointer<TWebNode::TWebNodeContainer> textNode, D2
 	textField->AddAttribute(L"|CanEdit", falseString);
 	textField->AddAttribute(L"|VerticalAlignment", vertiString);
 	textField->AddAttribute(L"|AutoGenContent", falseString);
+	textField->AddAttribute(L"|HorizontalAlignment", L"left");
 	if (thisTextData.hasBackgroundColor)
 		textField->AddAttribute(L"|ContentColor", thisTextData.backgroundColor.toString());
 	textField->onCreate(loc, TrecPointer<TWindowEngine>(), TrecPointer<TFileShell>());
