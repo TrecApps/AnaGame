@@ -30,6 +30,14 @@ class _ANAFACE_DLL2 TTextInput :
 public:
 
 	/**
+	 * Method: TTextInput::GetInterceptor
+	 * Purpose: Reports the Interceptor object used to capture Keyboard input
+	 * Parameters; void
+	 * Returns: TrecPointer<TTextIntercepter> - the interceptor used
+	 */
+	TrecPointer<TTextIntercepter> GetInterceptor();
+
+	/**
 	 * Method: TGadget::TGadget
 	 * Purpose: Constructor
 	 * Parameters: TrecPointer<DrawingBoard> rt - the Render Target to use

@@ -32,6 +32,11 @@ TString TextIncrementControl::GetString()
 	 return ret;
 }
 
+TrecPointer<TTextIntercepter> TTextInput::GetInterceptor()
+{
+	return text.Get() ? text->GetTextInterceptor() : TrecPointer<TTextIntercepter>();
+}
+
 TTextInput::TTextInput(TrecPointer<DrawingBoard> rt, TrecPointer<TArray<styleTable>> ta, HWND win) : TGadget(rt, ta)
 {
 	useNumber = usePassword = passwordPeek = useNumBoxes = showPassword = textLock = false;

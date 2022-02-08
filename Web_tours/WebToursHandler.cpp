@@ -1,5 +1,6 @@
 #include "WebToursHandler.h"
 #include <TPage.h>
+#include <TLayout.h>
 
 /**
  * Method: WebToursHandler::EventHandler
@@ -45,15 +46,23 @@ TString WebToursHandler::GetType()
  */
 void WebToursHandler::Initialize(TrecPointer<TPage> page)
 {
-	//this->page = page;
+	this->page = page;
 
-	//window = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TWebWindow>(page->GetWindowHandle());
+	assert(dynamic_cast<AnafacePage*>(page.Get()));
 
-	//TrecSubPointer<TaPge, TLayout> root = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(page->GetRootControl());
+	TrecSubPointer<TPage, TLayout> rootLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>( dynamic_cast<AnafacePage*>(page.Get())->GetRootControl() );
 
-	//assert(root.Get() && window.Get());
+	assert(rootLayout.Get());
 
-	//urlBox = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(root->GetLayoutChild(3, 0));
+	tabs = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TSwitchControl>(rootLayout->GetPage(1, 0));
+
+	assert(tabs.Get());
+
+	rootLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(rootLayout->GetPage(0, 0));
+
+	assert(rootLayout.Get());
+
+	urlBox = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootLayout->GetPage(0, 2));
 }
 
 /**
@@ -82,6 +91,16 @@ void WebToursHandler::ProcessMessage(TrecPointer<HandlerMessage> message)
 
 bool WebToursHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut)
 {
+	if (urlBox.Get() && textIntercepter.Get() && urlBox->GetInterceptor().Get() == textIntercepter.Get())
+	{
+		if (fromChar && nChar == VK_RETURN)
+		{
+			if(window.Get() && tabs.Get())
+				window->AddNewTab(urlBox->GetText(), false);
+			
+		}
+	}
+
 	/*if (urlBox.Get() && urlBox->isOnFocus())
 	{
 		if (fromChar && nChar == VK_RETURN)

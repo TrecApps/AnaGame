@@ -1,6 +1,7 @@
 #pragma once
 #include <EventHandler.h>
 #include <TWebWindow.h>
+#include <TSwitchControl.h>
 class WebToursHandler :
     public TapEventHandler
 {
@@ -78,6 +79,7 @@ protected:
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 
 	TrecSubPointer<TPage, TTextInput> urlBox;
+	TrecSubPointer<TPage, TSwitchControl> tabs;
 
 	TrecSubPointer<TWindow, TWebWindow> window;
 };

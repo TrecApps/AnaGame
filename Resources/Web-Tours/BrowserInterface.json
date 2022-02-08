@@ -1,0 +1,55 @@
+{
+	"TLayout" : {
+		"RowHeights" : [40, "1*"],
+		"Children" : [
+		{
+			"TLayout" : {
+				"RowPosition": 0,
+				"IsGallery": true,
+				"ColumnWidths": [40,40,"10*, "1*"],
+				"ContentColor": "0.0,0.2,0.9,0.7",
+				"Children" : [
+				{
+					"TControl" : {
+						"ColPosition": 0,
+						"BorderColor": "0.5,0.0,0.0,1.0",
+						"EventOnClick": "OnBackwards",
+						"ImageSource": "Left.png"
+					}
+				},{
+					"TControl" : {
+						"ColPosition": 1,
+						"BorderColor": "0.5,0.0,0.0,1.0",
+						"EventOnClick": "OnForward",
+						"ImageSource": "Right.png"
+					}
+				},{
+					"TInput" : { 
+						"ColPosition": 2,
+						"BorderThickness": 2.0,
+						"BorderColor": "0.5,0.0,0.0,1.0",
+						"HorizontalAlignment" : "Center",
+						"VerticalAlignment": "Center",
+						"FontSize": 14,
+						"BlockReturn": true
+					}
+				},{
+					"TControl" : {
+						"ColPosition": 3,
+						"BorderColor": "0.5,0.0,0.0,1.0",
+						"EventOnClick": "OnOptions",
+						"Caption": "Options"
+					}
+				}
+				]
+			}
+		},
+		{
+			"TSwitchControl": {
+				"RowPosition": 1,
+				"TabHeight": 40
+			}
+		}
+		]
+	}
+}

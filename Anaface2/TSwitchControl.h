@@ -14,6 +14,14 @@ class _ANAFACE_DLL2 TSwitchControl :
 {
 public:
 
+	/**
+	 * Method: TSwitchControl::GetTabBar
+	 * Purpose: Retrieves the Tab-Bar used by this control
+	 * Parameters: void
+	 * Returns: TrecSubPointer<TPage, TabBar> - the Tab Bar used
+	 */
+	TrecSubPointer<TPage, TabBar> GetTabBar();
+
 
 	/**
 	 * Method: TSwitchControl::TSwitchControl

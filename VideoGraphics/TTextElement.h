@@ -61,6 +61,12 @@ class _VIDEO_GRAPHICS TTextElement : public TObject
 {
 	friend class TrecPointerKey;
 protected:
+
+	/**
+	 * Object that directs tect input to this element
+	 */
+	TrecPointer<TTextIntercepter> interceptor;
+
 	/**
 	 * Whether the base format has been changed
 	 */

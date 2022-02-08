@@ -952,7 +952,7 @@ void TControl::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOu
 				this->args.point = point;
 				this->args.positive = true;
 				this->args.type = L'\0';
-				EventID_Cred cred(R_Message_Type::On_Resized, TrecPointerKey::GetTrecPointerFromSoft<>(self));
+				EventID_Cred cred(R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<>(self));
 				cred.args = TrecPointerKey::GetNewTrecPointer<EventArgs>(this->args);
 
 				eventAr.push_back(cred);

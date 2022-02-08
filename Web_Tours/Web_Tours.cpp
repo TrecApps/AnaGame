@@ -36,7 +36,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // TODO: Place code here.
     TString tmlFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable));
-    tmlFile.Append(L"Resources\\Web-Tours\\BrowserInterface.tml.txt");
+    tmlFile.Append(L"Resources\\Web-Tours\\BrowserInterface.json");
 
     TString title(L"Web-Tours");
     TString winClass(L"WebToursWindow");

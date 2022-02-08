@@ -46,6 +46,11 @@ protected:
 };
 
 
+TrecSubPointer<TPage, TabBar> TSwitchControl::GetTabBar()
+{
+    return tabBar;
+}
+
 TSwitchControl::TSwitchControl(TrecPointer<DrawingBoard> drawingBoard, TrecPointer<TArray<styleTable>> styles)
 	: TRandomLayout(drawingBoard, styles)
 {

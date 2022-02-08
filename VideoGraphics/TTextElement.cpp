@@ -351,8 +351,13 @@ bool TTextElement::SetText(const TString& text)
  */
 TrecPointer<TTextIntercepter> TTextElement::GetTextInterceptor()
 {
-	auto fullSelf = TrecPointerKey::GetTrecPointerFromSoft<>(self);
-	return TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter, TTextElementIntercepter>(fullSelf);
+	if (!interceptor.Get())
+	{
+		auto fullSelf = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+		interceptor = TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter, TTextElementIntercepter>(fullSelf);
+	}
+
+	return interceptor;
 }
 
 void TTextElement::GetText(TString& text)
