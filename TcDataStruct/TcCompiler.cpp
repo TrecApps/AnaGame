@@ -1,4 +1,6 @@
 #include "TcCompiler.h"
+#include "TContainerVariable.h"
+#include <CodeStatement.h>
 
 TcPreStatement::TcPreStatement()
 {
@@ -117,8 +119,149 @@ void TcPreStatement::AddStatement(const TcPreStatement& statement)
 	subStatements.push_back(statement);
 }
 
+
+typedef void (StatementCollector::* StatementCollectorMethods)(TDataArray<TString>&);
+
+struct StatementParseFields
+{
+	TString field;
+	TDataArray<TString>* target;
+	StatementCollectorMethods method;
+};
+
+void PerformCall(StatementCollector* collect, StatementCollectorMethods method, TDataArray<TString>& strings)
+{
+	(collect->*method)(strings);
+}
+
+void ConvertStatements(TDataArray<TcPreStatement>& statements, TDataArray<TrecPointer<CodeStatement>>& oldStatements)
+{
+	for (UINT Rust = 0; Rust < oldStatements.Size(); Rust++)
+	{
+		TrecPointer<CodeStatement> curState = oldStatements[Rust];
+
+		while (curState.Get())
+		{
+			TcPreStatement newState;
+			newState.SetStartLine(curState->lineStart);
+			newState.SetStatementText(curState->statement);
+			
+			if (curState->block.Size())
+			{
+				TDataArray<TcPreStatement> chStatements;
+				ConvertStatements(chStatements, curState->block);
+
+				for (UINT C = 0; C < chStatements.Size(); C++)
+				{
+					newState.AddStatement(chStatements[C]);
+				}
+			}
+			statements.push_back(newState);
+			curState = curState->next;
+		}
+	}
+}
+
 void TcPreStatement::GenerateStatements(TDataArray<TcPreStatement>& statements, TrecPointer<TVariable> languageAtts, TrecPointer<TFileShell> codeFile, TDataArray<CompileMessage>& messages)
 {
+	TrecSubPointer<TVariable, TContainerVariable> containerAtts = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(languageAtts);
+
+	if (!containerAtts.Get())
+	{
+		CompileMessage m;
+		m.file = codeFile;
+		m.message.Set(L"Expected Language Attributes to come in the form of a collection!");
+		messages.push_back(m);
+		return;
+	}
+	bool pres;
+	languageAtts = containerAtts->GetValue(L"StatementParsing", pres);
+
+	if (!languageAtts.Get())
+	{
+		CompileMessage m;
+		m.file = codeFile;
+		m.message.Set(L"Expected Language Attributes to provide a 'StatementParsing' Field! This is Needed to help the compiler parse out statements!");
+		messages.push_back(m);
+		return;
+	}
+
+	containerAtts = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(languageAtts);
+	if (!containerAtts.Get())
+	{
+		CompileMessage m;
+		m.file = codeFile;
+		m.message.Set(L"Expected 'StatementParsing' field to come in the form of a collection!");
+		messages.push_back(m);
+		return;
+	}
+
+	// Here, We'll piggy back off of the existing Code Statement Structure
+	// Set up the Statement Collector and the attributres
+
+	TDataArray<TString> statementseperator, // How to recognize when a Statement ends
+		singleLineComment,                  // Token for recognizing the start of a single line comment
+		multiLineCommentStart,              // Tokens for recognizing start of  multiline comment
+		multiLineCommentEnd,                // Tokens for recognizing End of a multiline comment
+		singleString,                       // Tokens for recognizing a single line String
+		multiString,                        // Tokens for recognizing a multiline String
+		blockStart,                         // Tokens for recognizing the start of a block (if this is blank, indentation is assumed)
+		blockEnd,                           // Tokens for recognizing the end of a block
+		oneLineStatement;                   // Strings that, if they start the statement, signal that the statement should be one line
+
+	bool nextLineComment,       // Use '\' to allow single line comments to go to the next line
+		nextLineString,         // Use '\' to allow single line strings to go to the next line
+		nextLineStatement,      // Use '\' to allow single line sttements to go to the next line
+		newLineEndsStatement;   // Whether statements stop at new Line
+
+	StatementCollector collector;
+
+	StatementParseFields fields[] = {
+		{L"StatementSeperator", &statementseperator, StatementCollector::SetStatementSeperator},
+
+		{L"SingleLineComment", &singleLineComment, StatementCollector::SetSingleLine},
+		{L"MultiLineCommentStart", &multiLineCommentStart, StatementCollector::SetMultiLineStart},
+		{L"MultiLineCommentEnd", &multiLineCommentEnd, StatementCollector::SetMultiLineEnd},
+		{L"SingleString", &singleString, StatementCollector::SetSingleString},
+		{L"MultiString", &multiString, StatementCollector::SetMultiString},
+		{L"BlockStart", &blockStart, StatementCollector::SetBlockStart},
+		{L"BlockEnd", &blockEnd, StatementCollector::SetBlockEnd},
+		{L"OneLineStatement", &oneLineStatement, StatementCollector::SetOneLine}
+	};
+
+	for (UINT Rust = 0; Rust < ARRAYSIZE(fields); Rust++)
+	{
+		TrecSubPointer<TVariable, TContainerVariable> strings = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(containerAtts->GetValue(fields[Rust].field, pres));
+
+		if (!strings.Get())
+			continue;
+		for (UINT C = 0; C < strings->GetSize(); C++)
+		{
+			TrecPointer<TVariable> vars = strings->GetValueAt(C);
+			if (vars.Get())
+				fields[Rust].target->push_back(vars->GetString());
+		}
+		
+		if (fields[Rust].target->Size())
+			PerformCall(&collector, fields[Rust].method, *fields[Rust].target);
+	}
+	TString errorMessage;
+	UINT line;
+	if (collector.RunCollector(codeFile, errorMessage, line))
+	{
+		CompileMessage m;
+		m.file = codeFile;
+		m.message.Set(errorMessage);
+		m.line = line;
+		messages.push_back(m);
+		return;
+	}
+
+	TDataArray<TrecPointer<CodeStatement>> origStatements;
+	collector.CollectStatement(origStatements);
+
+	
+	ConvertStatements(statements, origStatements);
 }
 
 TcBaseStatement::TcBaseStatement()
