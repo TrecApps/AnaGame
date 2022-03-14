@@ -3,7 +3,20 @@
 #include "AnaWeb.h"
 #include <TStringSlice.h>
 #include <TDataMap.h>
-
+/**
+ * Enum Class: WebSizeUnit
+ * Purpose: Represents a unit a size value is given in
+ */
+typedef enum class WebSizeUnit
+{
+    wsu_px, // pixel
+    wsu_in, // inch
+    wsu_pt, // points
+    wsu_cm, // centimeter
+    wsu_mm, // millimeter
+    wsu_em, // element relativity
+    wsu_bl  // Blank
+}WebSizeUnit;
 
 
 /**
@@ -43,6 +56,86 @@ typedef enum class TcWebNodeDisplayInternal
     wndi_caption
 }TcWebNodeDisplayInternal;
 
+/**
+ * Class: EventPropagater
+ * Purpose: Helps determine if a web node should report it's event first or let any child nodes report
+ *
+ * Note: Information related to event propagation could be found here:
+ *   https://stackoverflow.com/questions/4616694/what-is-event-bubbling-and-capturing#:~:text=Event%20bubbling%20and%20capturing%20are%20two%20ways%20of,in%20which%20order%20the%20elements%20receive%20the%20event.
+ */
+class ANA_WEB_DLL EventPropagater {
+public:
+    /**
+     * Method: EventPropagater::EventPropagater
+     * Purpose: Default Constructor
+     * Parameters: void
+     * Returns: new Event Propagater obj
+     */
+    EventPropagater();
+
+    /**
+     * Method: EventPropagater::EventPropagater
+     * Purpose: Copy Constructor
+     * Parameters: const EventPropagater& orig - the object to copy from
+     * Returns: new Event Propagater obj
+     */
+    EventPropagater(const EventPropagater& orig);
+
+    /**
+     * Method: EventPropagater::EventPropagater
+     * Purpose: Copy Constructor
+     * Parameters: const TString& e - the string to check for
+     *              bool useCapture - true, then use capture, false, use bubbling
+     * Returns: new Event Propagater obj
+     */
+    EventPropagater(const TString& e, bool useCapture);
+
+    /**
+     * The name of the event
+     */
+    TString event;
+
+    /**
+     * the propagation mode
+     */
+    bool useCapture;
+};
+
+typedef enum class tc_border_side
+{
+    bs_all,
+    bs_top,
+    bs_bottom,
+    bs_left,
+    bs_right
+}tc_border_side;
+
+typedef enum class list_style
+{
+    ls_disc,
+    ls_circle,
+    ls_none,
+    ls_square,
+
+    ls_armenian,
+    ls_cjk,
+    ls_decimal,
+    ls_decimal_0,
+    ls_georgian,
+    ls_hebrew,
+    ls_hiragana,
+    ls_hiragana_iroha,
+    ls_katakana,
+    ls_katakana_iroha,
+    ls_lower_alph,
+    ls_lower_greek,
+    ls_lower_latin,
+    ls_lower_roman,
+    ls_upper_alpha,
+    ls_upper_greek,
+    ls_upper_latin,
+    ls_upper_roman
+};
 
 
 /**
@@ -69,6 +162,57 @@ public:
 
     bool fontSizeUpdated, flowDirectionUpdated, fontStretchUpdated,
         fontStyleUpdated, fontWeightUpdated, lineSpacingUpdated, textColorUpdated;
+};
+
+typedef struct BorderCorners
+{
+    USHORT v, h;
+}BorderCorners;
+
+class ANA_WEB_DLL TColorSet
+{
+public:
+    TColorSet();
+    TColorSet(const TColorSet& copy);
+    TColorSet operator=(const TColorSet& color);
+    TColorSet operator=(const TColor& color);
+
+    TColor color;
+    bool set;
+};
+
+class ANA_WEB_DLL TcBorderData
+{
+public:
+    TcBorderData();
+    TcBorderData(const TcBorderData& copy);
+    ~TcBorderData();
+
+    void CompileAttributes(TString& atts, tc_border_side side);
+
+    void CompileBorder(TString& atts, tc_border_side side);
+
+    void CompileColor(TString& atts, tc_border_side side);
+
+    bool CompileStyle(TString& atts, tc_border_side side);
+
+    void CompileCorner(TString& atts, tc_border_side side);
+
+    USHORT GetBorderThickness(tc_border_side side);
+
+    bool GetBorderColor(TColor& color, tc_border_side);
+
+    stroke_style GetStrokeStyle(tc_border_side side);
+
+    stroke_style borderStyle, topStyle, bottomStyle, rightStyle, leftStyle;
+    USHORT thick, topThick, bottomThick, rightThick, leftThick;
+    TColor color;
+    TColorSet topColor, bottomColor, rightColor, leftColor;
+    TrecPointer<TBrush> brush;
+    BorderCorners* topLeft, * topRight, * bottomLeft, * bottomRight;
+
+private:
+    void ClearCorner(tc_border_side side);
 };
 
 class ANA_WEB_DLL TcWebNode :
@@ -119,6 +263,13 @@ protected:
         virtual D2D1_RECT_F GetLocation() override;
     };
 
+    class TcTextStructure
+    {
+    public:
+        TrecSubPointer<TTextElement, TComplexTextElement> text;
+        TDataArray<DWRITE_TEXT_RANGE> ranges;
+    };
+
     /**
      * represents the Element Node's innerHTML attribute
      */
@@ -138,7 +289,11 @@ protected:
      * Basic string attributes
      */
     TString tagName, id, nodeClass, name, value;
-
+    
+    /**
+     * 3D Engine
+     */
+    TrecPointer<TWindowEngine> d3dEngine;
     /**
      * Window Handle
      */
@@ -164,6 +319,55 @@ protected:
      * Whether it is a List item
      */
     bool isListItem;
+    /**
+     * For list objects, what to send to the next list item that asks, for List items, what to prepend to the text
+     */
+    TString listInfo;
+    /**
+     * whether to send the list forward, or backwards
+     */
+    bool listForward;
+    /**
+     * list Style Mode
+     */
+    list_style listStyle;
+
+    /**
+     * Basic Border Attributes
+     */
+    TcBorderData borderData;
+    /**
+     * Basic Text Attributes
+     */
+    TcTextData textData;
+
+    /**
+     * Margins of the App (inner between text/content and border, outer between border and boundaries)
+     */
+    D2D1_RECT_F innerMargin, outerMargin;
+
+    /**
+     * List of Text Elements to Draw
+     */
+    TDataArray<TrecPointer<TcTextStructure>> textElements;
+
+    /**
+     * Represents the handlers that are meant to Run
+     */
+    TDataMap<EventPropagater> handlers;
+
+    /// Table resources
+
+    /**
+     * Column and Row Data
+     */
+    TDataArray<UINT> columnSizes, rowSizes;
+
+    /**
+     * Column and Row Spans
+     */
+    UCHAR columnSpan, rowSpan;
+
 public:
 
     /**
@@ -201,16 +405,16 @@ public:
     virtual void Draw(TrecPointer<TVariable> object) override;
 
     /**
- * Method: TcWebNode::OnRButtonUp
- * Purpose: Responds to the Right Button Up Message
- * Parameters: UINT nFlags - flags associated with the message
- *				const TPoint& point - the point included in the message
- *				message_output& mOut -  the result of the message
- *				TDataArray<EventID_Cred>& - list of events to be handled
- * Returns: void
- *
- * Attributes: message; override
- */
+     * Method: TcWebNode::OnRButtonUp
+     * Purpose: Responds to the Right Button Up Message
+     * Parameters: UINT nFlags - flags associated with the message
+     *				const TPoint& point - the point included in the message
+     *				message_output& mOut -  the result of the message
+     *				TDataArray<EventID_Cred>& - list of events to be handled
+     * Returns: void
+     *
+     * Attributes: message; override
+     */
     ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 
@@ -325,6 +529,25 @@ public:
      */
     UINT ProcessHtml(TStringSliceManager& html, UINT& start, HWND win, TrecPointer<TArray<styleTable>>& styles);
     
+    /**
+     * Method: TcWebNode::PreCreate
+     * Purpose: Allows Node to predict ahead of time what space it will need and how it will be shown
+     * Parameters: TrecPointerSoft<TWebNode> parent - the Web Node that called the method
+     *              TrecPointer<TArray<styleTable>> styles - list of CSS styles that the node should adhere to
+     * Returns: void
+     */
+    void PreCreate(TrecSubPointerSoft<TPage, TcWebNode> parent, TrecPointer<TArray<styleTable>>& styles);
+
+    /**
+     * Method: TcWebNode::CreateWebNode
+     * Purpose: Sets up the Web Node for Rendering, same purpose as TControl::onCreate()
+     * Parameters: D2D1_RECT_F location - the location within the Window the Node is expected to operate in
+     *              TrecPointer<TWindowEngine> d3dEngine - Pointer to the 3D manager, for controls with a 3D component to them
+     *              HWND window - handle to the window the node is operating in
+     *              TrecPointerSoft<TWebNode> parent - the node that called this method
+     * Returns: UINT - Error Code
+     */
+    virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window);
 protected:
 
     /**
@@ -357,6 +580,57 @@ protected:
      * Returns: bool - whether the Node can be treated as text that can be inserted into parent text
      */
     bool IsText();
+
+    /**
+     * Method: TcWebNode::ProcessTextNodes
+     * Purpose: Processes a Set of Text Nodes so that they can be compiled into a sinle line of text
+     * Parameters:  TDataArray<TrecPointer<TcNodeElement>>& textNodes - the text nodes to process
+     *              const D2D1_RECT_F& location - the area where the text can be located at
+     * Returns: void
+     */
+    void ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, D2D1_RECT_F& location);
+
+    /**
+     * Method: TcWebNode::RetrieveTextNodes
+     * Purpose: Enables Parent Nodes to retrieve a collection of TextNodes
+     * Parameters: TDataArray<TrecPointer<TcNodeElement>>& textNodes - the textNodes to collect
+     * Returns: void:
+     */
+    void RetrieveTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes);
+
+    /**
+     * Method: TcWebNode::GetListPrePend
+     * Purpose: Called by list-items, provides the list item with the Prepend String
+     * Parameters: void
+     * Returns: TString - the current prepender
+     */
+    TString GetListPrepend();
+
+    /**
+     * Method: TWebNode::ShrinkHeight
+     * Purpose: Shrinks the Node to the minimum neccesary to display
+     * Parameters: void
+     * Returns: void
+     */
+    void ShrinkHeight();
+
+    /**
+     * Method: TWebNode::CompileMargin
+     * Purpose: Converts String data into a margin
+     * Parameters: const TSTring& marginString
+     *              border_side side - the border side to focus on
+     *              bool inner - inner border
+     * Returns: void
+     */
+    void CompileMargin(const TString& marginString, tc_border_side side, bool inner);
+
+    /**
+     * Method: TcWebNode::ConvertMeasurement
+     * Purpose: Converts a value based off of the measurement unit provided
+     * Parameters: TString& atts - the value to convert
+     * Return: float - the value provided
+     */
+    float ConvertMeasurement(TString& atts);
 
     /**
      * Method: TWebNode::ProcessInnerHtml
