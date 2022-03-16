@@ -390,7 +390,14 @@ void TTextElement::SetLocation(const D2D1_RECT_F& loc)
 
 bool TTextElement::SetBasicFormatting(const TextFormattingDetails& details)
 {
-	this->basicDetails = details;
+	TextFormattingDetails tempDetails = details;
+
+	if (!tempDetails.color.Get())
+		tempDetails.color = basicDetails.color;
+	if (!tempDetails.bColor.Get())
+		tempDetails.bColor = basicDetails.bColor;
+
+	this->basicDetails = tempDetails;
 	recreateFormat = true;
 	ReCreateLayout();
 	return true;

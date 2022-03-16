@@ -9,6 +9,7 @@
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): TPage(board)
 {
 	windowHandle = win;
+	styles = TrecPointerKey::GetNewTrecPointer<TArray<styleTable>>();
 }
 
 TString WebPage::GetType()
@@ -324,7 +325,7 @@ TString WebPage::SetUpCSS()
 	cssFiles.push_back(TFileShell::GetFileInfo(defaultCssFile));
 
 	// Now Read the CSS Files into a Stylesheet table
-	styles = TrecPointerKey::GetNewTrecPointer<TArray<styleTable>>();
+
 	for (UINT Rust = 0; Rust < cssFiles.Size(); Rust++)
 	{
 		if (!cssFiles[Rust].Get())

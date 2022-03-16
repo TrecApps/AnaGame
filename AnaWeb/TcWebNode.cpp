@@ -1,5 +1,6 @@
 #include "TcWebNode.h"
 #include <TComplexTextElement.h>
+#include <TStringVariable.h>
 
 
 #define WEB_EVENT_HANDLER_COUNT 71
@@ -331,6 +332,22 @@ bool TcWebNode::TcWebNodeElement::GetVariable(const TString& name, TrecPointer<T
 
 bool TcWebNode::TcWebNodeElement::SetVariable(const TString& name, TrecPointer<TVariable> var)
 {
+    if (!name.Compare(L"NodeType"))
+    {
+        if (var.Get())
+        {
+            if (!var->GetString().Compare(L"Text"))
+            {
+                this->nodeType = NodeContainerType::nct_tex_node;
+                return true;
+            }
+            if (!var->GetString().Compare(L"Web"))
+            {
+                this->nodeType = NodeContainerType::nct_reg_node;
+                return true;
+            }
+        }
+    }
     return false;
 }
 
@@ -681,6 +698,10 @@ void TcWebNode::PreCreate(TrecSubPointerSoft<TPage, TcWebNode> parent, TrecPoint
 {
     this->parent = TrecPointerKey::GetSoftPointerFromSubSoft<>( parent);
 
+
+
+
+
     for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
     {
         TrecPointer<TcWebNode::TcNodeElement> ch = childNodes[Rust];
@@ -689,6 +710,23 @@ void TcWebNode::PreCreate(TrecSubPointerSoft<TPage, TcWebNode> parent, TrecPoint
         if (ch->GetElementType() != TcWebNode::NodeContainerType::nct_raw_text && dynamic_cast<TcWebNodeElement*>(ch.Get())->GetWebNode().Get())
         {
             dynamic_cast<TcWebNodeElement*>(ch.Get())->GetWebNode()->PreCreate(TrecPointerKey::GetSoftSubPointerFromSoft<TPage, TcWebNode>( self ), styles);
+        }
+    }
+
+    CompileProperties(styles);
+
+    for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+    {
+        TrecPointer<TcWebNode::TcNodeElement> ch = childNodes[Rust];
+
+        if (ch->GetElementType() != NodeContainerType::nct_raw_text)
+        {
+            TrecSubPointer<TcNodeElement, TcWebNodeElement> webCh = TrecPointerKey::GetTrecSubPointerFromTrec<TcNodeElement, TcWebNodeElement>(ch);
+            assert(webCh.Get());
+
+            webCh->SetVariable(L"NodeType", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(
+                webCh->GetWebNode()->IsText() ? L"Text" : L"Web"
+                ));
         }
     }
 }
@@ -1341,11 +1379,15 @@ UINT TcWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND wi
             UINT result = newNode->ProcessHtml(html, start, win, styles);
             if (result)return result;
 
-            newNode->CompileProperties(styles);
+            // newNode->CompileProperties(styles);
             childNodes.push_back(TrecPointerKey::GetNewTrecPointerAlt<TcNodeElement, TcWebNodeElement>(newNode));
 
 
             if (!start)break;
+        }
+        else
+        {
+            printableText.AppendChar(ch);
         }
     }
     return 0;

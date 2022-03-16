@@ -12,7 +12,7 @@ void TComplexTextElement::ReCreateLayout()
 		if (f.color.Get())
 			brushHolder = new TDoubleBrushHolder(f.color->GetUnderlyingBrush().Get(), f.bColor->GetUnderlyingBrush().Get());
 		else
-			brushHolder = new TDoubleBrushHolder(basicDetails.color->GetUnderlyingBrush().Get(), f.bColor->GetUnderlyingBrush().Get());
+			brushHolder = new TDoubleBrushHolder(basicDetails.color->GetUnderlyingBrush().Get(), f.bColor.Get() ? f.bColor->GetUnderlyingBrush().Get(): nullptr);
 	
 		if (brushHolder)
 			mainLayout->SetDrawingEffect(brushHolder, f.range);
