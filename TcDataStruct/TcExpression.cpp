@@ -239,6 +239,11 @@ TrecSubPointer<TVariable, TcExpression> TcExpression::GenerateNumberExpression(T
 	return ret;
 }
 
+TrecSubPointer<TVariable, TcExpression> TcExpression::GenerateExpression(TrecPointer<TVariable> v)
+{
+	return TrecSubPointer<TVariable, TcExpression>();
+}
+
 TcExpression::TcExpression()
 {
 	type = tc_exp_type::expression;

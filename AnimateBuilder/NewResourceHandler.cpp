@@ -70,6 +70,7 @@ bool NewResourceHandler::GetSpecs(TString& name, TString& type)
 
 	type.Set(boxVar.Get() ? boxVar->GetString() : L"");
 	name.Set(nameInput->GetText());
+	return true;
 }
 
 void NewResourceHandler::OnOkay(TrecPointer<TPage> tc, EventArgs ea)

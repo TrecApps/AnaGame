@@ -2,6 +2,8 @@
 #include <atltrace.h>
 #include <TPrimitiveVariable.h>
 
+static TDataArray<TString> standardPOperators;
+
 TString GetPyStringFromStatementType(code_statement_type cst);
 
 TcPythonInterpretor::TcPythonInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env): 
@@ -702,13 +704,13 @@ void TcPythonInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement
 
 
         bool foundOp = false;
-        for (UINT Rust = 0; Rust < standardAOperators.Size(); Rust++)
+        for (UINT Rust = 0; Rust < standardPOperators.Size(); Rust++)
         {
-            if (exp.StartsWith(standardAOperators[Rust], true))
+            if (exp.StartsWith(standardPOperators[Rust], true))
             {
-                ops.push_back(standardAOperators[Rust]);
+                ops.push_back(standardPOperators[Rust]);
                 foundOp = true;
-                exp.Delete(0, standardAOperators[Rust].GetSize());
+                exp.Delete(0, standardPOperators[Rust].GetSize());
                 break;
             }
         }

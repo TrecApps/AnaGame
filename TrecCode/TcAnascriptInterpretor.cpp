@@ -9,7 +9,8 @@
 #include <TFunctionGen.h>
 
 
-
+// Other resources
+static TDataArray<TString> standardAOperators;
 
 static TrecPointer<ObjectOperator> asOperators;
 
@@ -1576,7 +1577,7 @@ UINT TcAnascriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, U
 
         // If an error was detected, return
         if (ret.returnCode)
-            return;
+            return 0;
 
         // If blocks were detected, go through and retrieve the current statement we are on
         bool jumped = false;
@@ -1619,13 +1620,13 @@ UINT TcAnascriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, U
         function = dynamic_cast<TFunctionGen*>(proc.Get())->Generate(params);
         assert(function.Get());
         ret.errorObject = function->GetIterator();
-        return;
+        return 0;
     }
 
     if (!function.Get())
     {
         PrepReturn(ret, L"found Null or Undefined Getter/Setter!", L"", ReturnObject::ERR_BROKEN_REF, statement->lineStart);
-        return;
+        return 0;
     }
 
     assert(function.Get());
@@ -1643,7 +1644,7 @@ UINT TcAnascriptInterpretor::ProcessProcedureCall(UINT& parenth, UINT& square, U
         // Calling 'await' on a non async function is an error
         ret.returnCode = ReturnObject::ERR_IMPROPER_TYPE;
         ret.errorMessage.Set(L"Cannot call await on non-async function");
-        return;
+        return 0;
     }
 
     // This is a method if object is valid

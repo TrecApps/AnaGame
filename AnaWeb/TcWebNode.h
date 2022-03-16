@@ -3,6 +3,7 @@
 #include "AnaWeb.h"
 #include <TStringSlice.h>
 #include <TDataMap.h>
+#include <TComplexTextElement.h>
 /**
  * Enum Class: WebSizeUnit
  * Purpose: Represents a unit a size value is given in
@@ -247,6 +248,28 @@ protected:
         virtual D2D1_RECT_F GetLocation() override;
         bool IsFirst();
 
+        /**
+         * Method: TVObject::GetVariable
+         * Purpose: Revtrieves a value in Variable form
+         * Parameters: const TString& name - the name of the variable
+         *              TrecPointer<TVariable>& var - holds the variable retrieved if valid
+         * Returns: bool - whether the variable was valid or not
+         *
+         * Attributes: abstract
+         */
+        virtual bool GetVariable(const TString& name, TrecPointer<TVariable>& var) override;
+
+        /**
+         * Method: TVObject::SetVariable
+         * Purpose: Sets a value in Variable form
+         * Parameters: const TString& name - the name of the variable
+         *              TrecPointer<TVariable> var - the value to set
+         * Returns: bool - whether the variable was valid or not
+         *
+         * Attributes: abstract
+         */
+        virtual bool SetVariable(const TString& name, TrecPointer<TVariable> var) override;
+
         TcTextData data;
     };
 
@@ -261,6 +284,28 @@ protected:
 
         virtual NodeContainerType GetElementType() override;
         virtual D2D1_RECT_F GetLocation() override;
+
+        /**
+         * Method: TVObject::GetVariable
+         * Purpose: Revtrieves a value in Variable form
+         * Parameters: const TString& name - the name of the variable
+         *              TrecPointer<TVariable>& var - holds the variable retrieved if valid
+         * Returns: bool - whether the variable was valid or not
+         *
+         * Attributes: abstract
+         */
+        virtual bool GetVariable(const TString& name, TrecPointer<TVariable>& var) override;
+
+        /**
+         * Method: TVObject::SetVariable
+         * Purpose: Sets a value in Variable form
+         * Parameters: const TString& name - the name of the variable
+         *              TrecPointer<TVariable> var - the value to set
+         * Returns: bool - whether the variable was valid or not
+         *
+         * Attributes: abstract
+         */
+        virtual bool SetVariable(const TString& name, TrecPointer<TVariable> var) override;
     };
 
     class TcTextStructure
@@ -631,6 +676,14 @@ protected:
      * Return: float - the value provided
      */
     float ConvertMeasurement(TString& atts);
+
+    /**
+     * Method: TWebNode::DrawBorder
+     * Purpose: Holds the logic for actually drawing a border around the content
+     * Parameters: void
+     * Returns: void
+     */
+    void DrawBorder();
 
     /**
      * Method: TWebNode::ProcessInnerHtml

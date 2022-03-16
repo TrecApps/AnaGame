@@ -5,7 +5,7 @@
 #define WEB_EVENT_HANDLER_COUNT 71
 #define WEB_BORDER_STYLE_COUNT 8
 #define WEB_LIST_STYLE_COUNT 22
-#define WEB_VOID_ELEMENT_COUNT 14\
+#define WEB_VOID_ELEMENT_COUNT 14
 
 static TString tcEventHandlers[WEB_EVENT_HANDLER_COUNT] = {
     // Window Events
@@ -130,6 +130,133 @@ static TcListStyleString tcListStyleStrings[WEB_LIST_STYLE_COUNT] = {
     {TString(L"upper-roman"), list_style::ls_upper_roman},
 };
 
+
+void TcIncrementDecrementString(TString& str, WCHAR lower, WCHAR upper, UCHAR mode)
+{
+    if (!mode)
+        return;
+
+    if (mode > 0)
+    {
+        // Incrementing
+        bool changeDetected = false;
+        UINT Rust = str.GetSize() - 1;
+        for (; Rust < str.GetSize(); Rust--)
+        {
+            if (str.GetAt(Rust) < upper)
+            {
+                str[Rust] = str[Rust] + 1;
+                changeDetected = true;
+                break;
+            }
+        }
+
+        if (changeDetected)
+            Rust++;
+        else
+        {
+            Rust = 1;
+            str.Set(TString(lower) + str);
+        }
+        for (; Rust < str.GetSize(); Rust++)
+            str[Rust] = lower;
+    }
+    else
+    {
+        if (!str.Compare(lower))
+            return; // Can't go any lower
+
+        // Decrementing
+        UINT Rust = str.GetSize() - 1;
+        bool changeDetected = false;
+        for (; Rust < str.GetSize(); Rust--)
+        {
+            if (str[Rust] > lower)
+            {
+                str[Rust] = str[Rust] - 1;
+                changeDetected = true;
+                break;
+            }
+        }
+
+        if (changeDetected)
+            Rust++;
+        else
+        {
+            // They are all the lower letter, delete one character and set the rest to the upper char
+            Rust = 0;
+            str.Delete(0);
+        }
+        for (; Rust < str.GetSize(); Rust++)
+            str[Rust] = upper;
+    }
+}
+
+/**
+ * Function: GetListPrepend
+ * Purpose: Helper function for getting the list bullet
+ * Parameters: TString& str - the current point
+ *				list_style style - the list style
+ *				UCHAR mode - positive if getting the next one, negtive if moving backwards
+ * Returns: void
+ *
+ * Note: Values for the unordered list were found courtesy of https://unicode-table.com/en/
+ */
+void TcGetListPrepend(TString& str, list_style style, signed char mode)
+{
+    switch (style)
+    {
+    case list_style::ls_disc:
+        str.Set(L'\x25cf');
+        break;
+    case list_style::ls_circle:
+        str.Set(L'\x25cb');
+        break;
+    case list_style::ls_square:
+        str.Set(L'\x25ad');
+        break;
+    case list_style::ls_none:
+        str.Set(L' ');
+        break;
+    case list_style::ls_decimal:
+    case list_style::ls_decimal_0:
+        if (!str.GetSize())
+            str.Set(style == list_style::ls_decimal ? L"1." : L"01.");
+        else
+        {
+            TString num(str.SubString(0, str.GetSize() - 1));
+            int val = 1;
+            num.ConvertToInt(val);
+            if (mode > 0)
+                val++;
+            else if (mode < 0)
+                val--;
+            str.Format(style == list_style::ls_decimal ? L"%i." : L"0%i.", val);
+        }
+        break;
+    case list_style::ls_lower_alph:
+        if (!str.GetSize())
+            str.Set(L"a.");
+        else
+        {
+            str.Set(str.SubString(0, str.GetSize() - 1));
+            TcIncrementDecrementString(str, L'a', L'z', mode);
+            str.AppendChar(L'.');
+        }
+        break;
+    case list_style::ls_upper_alpha:
+        if (!str.GetSize())
+            str.Set(L"A.");
+        else
+        {
+            str.Set(str.SubString(0, str.GetSize() - 1));
+            TcIncrementDecrementString(str, L'A', L'Z', mode);
+            str.AppendChar(L'.');
+        }
+        break;
+    }
+}
+
 bool TcIsVoidElement(const TString& tag)
 {
     for (UINT Rust = 0; Rust < WEB_VOID_ELEMENT_COUNT; Rust++)
@@ -175,6 +302,16 @@ bool TcWebNode::TcTextNodeElement::IsFirst()
     return isFirst;
 }
 
+bool TcWebNode::TcTextNodeElement::GetVariable(const TString& name, TrecPointer<TVariable>& var)
+{
+    return false;
+}
+
+bool TcWebNode::TcTextNodeElement::SetVariable(const TString& name, TrecPointer<TVariable> var)
+{
+    return false;
+}
+
 TcWebNode::TcWebNodeElement::TcWebNodeElement(TrecSubPointer<TPage, TcWebNode> node)
 {
     nodeType = NodeContainerType::ntc_null; // don't know what it is yet
@@ -185,6 +322,16 @@ TcWebNode::TcWebNodeElement::TcWebNodeElement(TrecSubPointer<TPage, TcWebNode> n
 TrecSubPointer<TPage, TcWebNode> TcWebNode::TcWebNodeElement::GetWebNode()
 {
     return node;
+}
+
+bool TcWebNode::TcWebNodeElement::GetVariable(const TString& name, TrecPointer<TVariable>& var)
+{
+    return false;
+}
+
+bool TcWebNode::TcWebNodeElement::SetVariable(const TString& name, TrecPointer<TVariable> var)
+{
+    return false;
 }
 
 TcWebNode::NodeContainerType TcWebNode::TcWebNodeElement::GetElementType()
@@ -227,7 +374,7 @@ void TcWebNode::Draw(TrecPointer<TVariable> object)
     if (!shouldDraw)
         return;
 
-    //DrawBorder();
+    DrawBorder();
 
     // Now draw the ChildNodes
     for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
@@ -240,6 +387,150 @@ void TcWebNode::Draw(TrecPointer<TVariable> object)
     for (UINT Rust = 0; Rust < textElements.Size(); Rust++)
     {
         textElements[Rust]->text->OnDraw(object);
+    }
+}
+
+void TcWebNode::DrawBorder()
+{
+    TColor color;
+
+    // Start with the top border
+    float curThick = static_cast<float>(borderData.GetBorderThickness(tc_border_side::bs_top));
+    stroke_style curStyle = borderData.GetStrokeStyle(tc_border_side::bs_top);
+
+    // These values will be used when preparing a rounded corner
+    bool doTop = false, doLeft = false, doBottom = false, doRight = false;
+
+    if (curThick && hasStyle(curStyle))
+    {
+        doTop = true;
+        borderData.GetBorderColor(color, tc_border_side::bs_top);
+        if (!borderData.brush.Get())
+            borderData.brush = drawingBoard->GetBrush(color);
+        else borderData.brush->SetColor(color);
+        if (borderData.brush.Get())
+        {
+            float top = area.top + (static_cast<float>(curThick) / 2.0f);
+            borderData.brush->DrawLine(D2D1::Point2F(borderData.topLeft ? area.left + borderData.topLeft->h : area.left, top),
+                D2D1::Point2F(borderData.topRight ? area.right - borderData.topRight->h : area.right, top), drawingBoard->GetStrokeStyle(curStyle), curThick);
+        }
+    }
+
+    // go for the right border
+    curThick = static_cast<float>(borderData.GetBorderThickness(tc_border_side::bs_right));
+    curStyle = borderData.GetStrokeStyle(tc_border_side::bs_right);
+    if (curThick && hasStyle(curStyle))
+    {
+        doRight = true;
+        borderData.GetBorderColor(color, tc_border_side::bs_right);
+        if (!borderData.brush.Get())
+            borderData.brush = drawingBoard->GetBrush(color);
+        else borderData.brush->SetColor(color);
+        if (borderData.brush.Get())
+        {
+            float right = area.right - (static_cast<float>(curThick) / 2.0f);
+            borderData.brush->DrawLine(D2D1::Point2F(right, borderData.topRight ? area.top + borderData.topRight->v : area.top),
+                D2D1::Point2F(right, borderData.bottomRight ? area.bottom - borderData.bottomRight->v : area.bottom), drawingBoard->GetStrokeStyle(curStyle), curThick);
+        }
+    }
+
+    // now the left border
+    curThick = static_cast<float>(borderData.GetBorderThickness(tc_border_side::bs_left));
+    curStyle = borderData.GetStrokeStyle(tc_border_side::bs_left);
+    if (curThick && hasStyle(curStyle))
+    {
+        doLeft = true;
+        borderData.GetBorderColor(color, tc_border_side::bs_left);
+        if (!borderData.brush.Get())
+            borderData.brush = drawingBoard->GetBrush(color);
+        else borderData.brush->SetColor(color);
+        if (borderData.brush.Get())
+        {
+            float left = area.left + (static_cast<float>(curThick) / 2.0f);
+            borderData.brush->DrawLine(D2D1::Point2F(left, borderData.topLeft ? area.top + borderData.topLeft->v : area.top),
+                D2D1::Point2F(left, borderData.bottomLeft ? area.bottom - borderData.bottomLeft->v : area.bottom), drawingBoard->GetStrokeStyle(curStyle), curThick);
+        }
+    }
+
+    // finally, the bottom border
+    curThick = static_cast<float>(borderData.GetBorderThickness(tc_border_side::bs_bottom));
+    curStyle = borderData.GetStrokeStyle(tc_border_side::bs_bottom);
+    if (curThick && hasStyle(curStyle))
+    {
+        doBottom = true;
+        borderData.GetBorderColor(color, tc_border_side::bs_bottom);
+        if (!borderData.brush.Get())
+            borderData.brush = drawingBoard->GetBrush(color);
+        else borderData.brush->SetColor(color);
+        if (borderData.brush.Get())
+        {
+            float bottom = area.bottom + (static_cast<float>(curThick) / 2.0f);
+            borderData.brush->DrawLine(D2D1::Point2F(borderData.bottomLeft ? borderData.bottomLeft->h + area.left : area.left, bottom),
+                D2D1::Point2F(borderData.bottomRight ? area.right - borderData.bottomRight->h : area.right, bottom), drawingBoard->GetStrokeStyle(curStyle), curThick);
+        }
+    }
+
+    D2D1_ROUNDED_RECT rRect;
+    rRect.rect = area;
+
+    if (borderData.topLeft && doTop && doLeft)
+    {
+        rRect.radiusX = borderData.topLeft->h;
+        rRect.radiusY = borderData.topLeft->v;
+
+        borderData.GetBorderColor(color, tc_border_side::bs_left);
+        if (!borderData.brush.Get())
+            borderData.brush = drawingBoard->GetBrush(color);
+        else borderData.brush->SetColor(color);
+
+        drawingBoard->AddLayer(D2D1::RectF(area.left, area.top, area.left + borderData.topLeft->h, area.top + borderData.topLeft->v));
+        borderData.brush->DrawRoundedRectangle(rRect, borderData.GetBorderThickness(tc_border_side::bs_left));
+        drawingBoard->PopLayer();
+    }
+
+    if (borderData.topRight && doTop && doRight)
+    {
+        rRect.radiusX = borderData.topRight->h;
+        rRect.radiusY = borderData.topRight->v;
+
+        borderData.GetBorderColor(color, tc_border_side::bs_right);
+        if (!borderData.brush.Get())
+            borderData.brush = drawingBoard->GetBrush(color);
+        else borderData.brush->SetColor(color);
+
+        drawingBoard->AddLayer(D2D1::RectF(area.right - borderData.topRight->h, area.top, area.right, area.top + borderData.topRight->v));
+        borderData.brush->DrawRoundedRectangle(rRect, borderData.GetBorderThickness(tc_border_side::bs_right));
+        drawingBoard->PopLayer();
+    }
+
+    if (borderData.bottomLeft && doTop && doLeft)
+    {
+        rRect.radiusX = borderData.bottomLeft->h;
+        rRect.radiusY = borderData.bottomLeft->v;
+
+        borderData.GetBorderColor(color, tc_border_side::bs_left);
+        if (!borderData.brush.Get())
+            borderData.brush = drawingBoard->GetBrush(color);
+        else borderData.brush->SetColor(color);
+
+        drawingBoard->AddLayer(D2D1::RectF(area.left, area.bottom - borderData.bottomLeft->v, area.left + borderData.bottomLeft->h, area.bottom));
+        borderData.brush->DrawRoundedRectangle(rRect, borderData.GetBorderThickness(tc_border_side::bs_left));
+        drawingBoard->PopLayer();
+    }
+
+    if (borderData.bottomRight && doTop && doLeft)
+    {
+        rRect.radiusX = borderData.bottomRight->h;
+        rRect.radiusY = borderData.bottomRight->v;
+
+        borderData.GetBorderColor(color, tc_border_side::bs_right);
+        if (!borderData.brush.Get())
+            borderData.brush = drawingBoard->GetBrush(color);
+        else borderData.brush->SetColor(color);
+
+        drawingBoard->AddLayer(D2D1::RectF(area.right - borderData.bottomRight->h, area.bottom - borderData.bottomRight->v, area.right, area.bottom));
+        borderData.brush->DrawRoundedRectangle(rRect, borderData.GetBorderThickness(tc_border_side::bs_right));
+        drawingBoard->PopLayer();
     }
 }
 
@@ -595,7 +886,7 @@ void TcWebNode::CompileProperties(TDataMap<TString>& atts)
         TcGetListStyle(val, listStyle);
     }
 
-    ::TcGetListPrepend(this->listInfo, this->listStyle, 0);
+    TcGetListPrepend(this->listInfo, this->listStyle, 0);
 
 
     // take care of text attributes
@@ -976,9 +1267,9 @@ TString TcWebNode::GetListPrepend()
     TString ret(listInfo);
 
     if (this->listForward)
-        ::TcGetListPrepend(listInfo, listStyle, 1);
+        TcGetListPrepend(listInfo, listStyle, 1);
     else
-        ::TcGetListPrepend(listInfo, listStyle, -1);
+        TcGetListPrepend(listInfo, listStyle, -1);
     return ret;
 }
 
@@ -1826,128 +2117,3 @@ void TcBorderData::ClearCorner(tc_border_side side)
     }
 }
 
-void TcIncrementDecrementString(TString& str, WCHAR lower, WCHAR upper, UCHAR mode)
-{
-    if (!mode)
-        return;
-
-    if (mode > 0)
-    {
-        // Incrementing
-        bool changeDetected = false;
-        UINT Rust = str.GetSize() - 1;
-        for (; Rust < str.GetSize(); Rust--)
-        {
-            if (str.GetAt(Rust) < upper)
-            {
-                str[Rust] = str[Rust] + 1;
-                changeDetected = true;
-                break;
-            }
-        }
-
-        if (changeDetected)
-            Rust++;
-        else
-        {
-            Rust = 1;
-            str.Set(TString(lower) + str);
-        }
-        for (; Rust < str.GetSize(); Rust++)
-            str[Rust] = lower;
-    }
-    else
-    {
-        if (!str.Compare(lower))
-            return; // Can't go any lower
-
-        // Decrementing
-        UINT Rust = str.GetSize() - 1;
-        bool changeDetected = false;
-        for (; Rust < str.GetSize(); Rust--)
-        {
-            if (str[Rust] > lower)
-            {
-                str[Rust] = str[Rust] - 1;
-                changeDetected = true;
-                break;
-            }
-        }
-
-        if (changeDetected)
-            Rust++;
-        else
-        {
-            // They are all the lower letter, delete one character and set the rest to the upper char
-            Rust = 0;
-            str.Delete(0);
-        }
-        for (; Rust < str.GetSize(); Rust++)
-            str[Rust] = upper;
-    }
-}
-
-/**
- * Function: GetListPrepend
- * Purpose: Helper function for getting the list bullet
- * Parameters: TString& str - the current point
- *				list_style style - the list style
- *				UCHAR mode - positive if getting the next one, negtive if moving backwards
- * Returns: void
- *
- * Note: Values for the unordered list were found courtesy of https://unicode-table.com/en/
- */
-void TcGetListPrepend(TString& str, list_style style, signed char mode)
-{
-    switch (style)
-    {
-    case list_style::ls_disc:
-        str.Set(L'\x25cf');
-        break;
-    case list_style::ls_circle:
-        str.Set(L'\x25cb');
-        break;
-    case list_style::ls_square:
-        str.Set(L'\x25ad');
-        break;
-    case list_style::ls_none:
-        str.Set(L' ');
-        break;
-    case list_style::ls_decimal:
-    case list_style::ls_decimal_0:
-        if (!str.GetSize())
-            str.Set(style == list_style::ls_decimal ? L"1." : L"01.");
-        else
-        {
-            TString num(str.SubString(0, str.GetSize() - 1));
-            int val = 1;
-            num.ConvertToInt(val);
-            if (mode > 0)
-                val++;
-            else if (mode < 0)
-                val--;
-            str.Format(style == list_style::ls_decimal ? L"%i." : L"0%i.", val);
-        }
-        break;
-    case list_style::ls_lower_alph:
-        if (!str.GetSize())
-            str.Set(L"a.");
-        else
-        {
-            str.Set(str.SubString(0, str.GetSize() - 1));
-            TcIncrementDecrementString(str, L'a', L'z', mode);
-            str.AppendChar(L'.');
-        }
-        break;
-    case list_style::ls_upper_alpha:
-        if (!str.GetSize())
-            str.Set(L"A.");
-        else
-        {
-            str.Set(str.SubString(0, str.GetSize() - 1));
-            TcIncrementDecrementString(str, L'A', L'Z', mode);
-            str.AppendChar(L'.');
-        }
-        break;
-    }
-}

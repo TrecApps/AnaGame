@@ -37,3 +37,8 @@ void TcCodeObjectInterpretor::PreProcess(ReturnObject& ret)
 void TcCodeObjectInterpretor::ProcessIndividualStatement(const TString& statement, ReturnObject& ret)
 {
 }
+
+TrecPointer<TVariable> TcCodeObjectInterpretor::Clone()
+{
+	return TrecPointer<TVariable>();
+}
