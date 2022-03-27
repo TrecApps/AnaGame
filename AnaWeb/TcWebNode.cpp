@@ -766,6 +766,7 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
     UINT firstText = 0xf0000000;
 
     TDataArray<TrecPointer<TcNodeElement>> textNodes;
+    TDataArray<TcTextData> textDataList;
     textElements.RemoveAll();
 
     for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
@@ -776,8 +777,9 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
         {
             if (textNodes.Size())
             {
-                ProcessTextNodes(textNodes, location);
+                ProcessTextNodes(textNodes, textDataList, location);
                 textNodes.RemoveAll();
+                textDataList.RemoveAll();
             }
             TrecSubPointer<TPage, TcWebNode> childNode = dynamic_cast<TcWebNodeElement*>(element.Get())->GetWebNode();
             childNode->CreateWebNode(location, d3dEngine, window);
@@ -788,14 +790,17 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
         else
         {
             if (element->GetElementType() == NodeContainerType::nct_raw_text)
+            {
                 textNodes.push_back(element);
-            else dynamic_cast<TcWebNodeElement*>(element.Get())->GetWebNode()->RetrieveTextNodes(textNodes);
+                textDataList.push_back(textData);
+            }
+            else dynamic_cast<TcWebNodeElement*>(element.Get())->GetWebNode()->RetrieveTextNodes(textNodes, textDataList);
         }
     }
 
     if (textNodes.Size())
     {
-        ProcessTextNodes(textNodes, location);
+        ProcessTextNodes(textNodes, textDataList, location);
         textNodes.RemoveAll();
     }
 
@@ -903,8 +908,10 @@ void TcWebNode::CompileProperties(TrecPointer<TArray<styleTable>>& styles)
 
         if (ch->GetElementType() != NodeContainerType::nct_raw_text)
         {
-
-            dynamic_cast<TcWebNodeElement*>(ch.Get())->GetWebNode()->CompileProperties(styles);
+            auto webNode = dynamic_cast<TcWebNodeElement*>(ch.Get())->GetWebNode();
+            webNode->textData.Update(textData);
+            webNode->CompileProperties(styles);
+            
         }
     }
 }
@@ -1256,7 +1263,7 @@ TextFormattingDetails getTextFormattingDetails(TcTextData& textData, TrecPointer
     return ret;
 }
 
-void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, D2D1_RECT_F& location)
+void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, TDataArray<TcTextData>& textDataList, D2D1_RECT_F& location)
 {
     TrecSubPointer<TTextElement, TComplexTextElement> element = TrecPointerKey::GetNewSelfTrecSubPointer<TTextElement, TComplexTextElement>(drawingBoard, win, false);
     TrecPointer<TcTextStructure> elementStructure = TrecPointerKey::GetNewTrecPointer<TcTextStructure>();
@@ -1288,7 +1295,7 @@ void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNod
     {
         TrecSubPointer<TcNodeElement, TcTextNodeElement> textElement = TrecPointerKey::GetTrecSubPointerFromTrec<TcNodeElement, TcTextNodeElement>(textNodes[Rust]);
 
-        TextFormattingDetails details = getTextFormattingDetails(textElement->data, drawingBoard);
+        TextFormattingDetails details = getTextFormattingDetails(textDataList[Rust], drawingBoard);
         details.range = elementStructure->ranges[Rust];
         element->SetFormatting(details, details.range.startPosition, details.range.startPosition + details.range.length, false);
     }
@@ -1298,6 +1305,8 @@ void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNod
     loc.bottom = loc.top + element->GetMinHeight(w);
     element->SetLocation(loc);
     location.top = loc.bottom;
+
+    textElements.push_back(elementStructure);
 }
 
 TString TcWebNode::GetListPrepend()
@@ -1311,17 +1320,18 @@ TString TcWebNode::GetListPrepend()
     return ret;
 }
 
-void TcWebNode::RetrieveTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes)
+void TcWebNode::RetrieveTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, TDataArray<TcTextData>& textDataList)
 {
     for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
     {
         switch (childNodes[Rust]->GetElementType())
         {
         case NodeContainerType::nct_tex_node:
-            dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->RetrieveTextNodes(textNodes);
+            dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->RetrieveTextNodes(textNodes, textDataList);
             break;
         case NodeContainerType::nct_raw_text:
             textNodes.push_back(childNodes[Rust]);
+            textDataList.push_back(textData);
             break;
         case NodeContainerType::nct_reg_node:
             return;

@@ -633,15 +633,16 @@ protected:
      *              const D2D1_RECT_F& location - the area where the text can be located at
      * Returns: void
      */
-    void ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, D2D1_RECT_F& location);
+    void ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, TDataArray<TcTextData>& textDataList, D2D1_RECT_F& location);
 
     /**
      * Method: TcWebNode::RetrieveTextNodes
      * Purpose: Enables Parent Nodes to retrieve a collection of TextNodes
      * Parameters: TDataArray<TrecPointer<TcNodeElement>>& textNodes - the textNodes to collect
+     *              TDataArray<TcTextData>& textDataList - details about the formatting of the specific section of text
      * Returns: void:
      */
-    void RetrieveTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes);
+    void RetrieveTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, TDataArray<TcTextData>& textDataList);
 
     /**
      * Method: TcWebNode::GetListPrePend
