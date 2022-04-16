@@ -123,6 +123,15 @@
     <ClInclude Include="TcCompiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TcType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tc2Compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcLanguage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -225,6 +234,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TcCompiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tc2Compiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcLanguage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
