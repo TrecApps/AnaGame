@@ -86,6 +86,7 @@ public:
     TString message;
     UINT line;
     TrecPointer<TFileShell> file;
+    bool isError;
     CompileMessage();
     CompileMessage(const CompileMessage& message);
 };

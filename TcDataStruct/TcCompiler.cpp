@@ -2,6 +2,7 @@
 #include "TContainerVariable.h"
 #include <CodeStatement.h>
 
+
 TcPreStatement::TcPreStatement()
 {
 	this->startLine = 0;
@@ -308,6 +309,7 @@ bool TcBaseStatement::ConvertBaseToByteCode(TDataArray<TcBaseStatement>& baseSta
 CompileMessage::CompileMessage()
 {
 	line = 0;
+	isError = false;
 }
 
 CompileMessage::CompileMessage(const CompileMessage& message)
@@ -315,4 +317,5 @@ CompileMessage::CompileMessage(const CompileMessage& message)
 	this->message.Set(message.message);
 	this->line = message.line;
 	this->file = message.file;
+	this->isError = message.isError;
 }
