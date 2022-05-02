@@ -1,15 +1,21 @@
 #include "AnagameRunners.h"
 #include <TFile.h>
+#include "RunOps.h"
 
 static TDataMap<runner_op_code> opCodeMap;
+
+static TDataArray<AnagameAssembly::AssemblyOp> opList;
 
 void PrepOpCodeMap()
 {
     if (opCodeMap.count())
         return;
     opCodeMap.addEntry(L"", runner_op_code::reserved);
+    opList.push_back(&AnagameAssembly::Nothing);
     opCodeMap.addEntry(L"line", runner_op_code::line);
+    opList.push_back(&AnagameAssembly::Line);
     opCodeMap.addEntry(L"statement", runner_op_code::statement);
+    opList.push_back(&AnagameAssembly::Statement);
 
     opCodeMap.addEntry(L"add_ff", runner_op_code::add_ff);
     opCodeMap.addEntry(L"add_dd", runner_op_code::add_dd);
@@ -18,6 +24,13 @@ void PrepOpCodeMap()
     opCodeMap.addEntry(L"add_ll", runner_op_code::add_ll);
     opCodeMap.addEntry(L"add_ulul", runner_op_code::add_ulul);
     opCodeMap.addEntry(L"add_oo", runner_op_code::add_oo);
+    opList.push_back(&AnagameAssembly::AddFF);
+    opList.push_back(&AnagameAssembly::AddDD);
+    opList.push_back(&AnagameAssembly::AddII);
+    opList.push_back(&AnagameAssembly::AddUU);
+    opList.push_back(&AnagameAssembly::AddLL);
+    opList.push_back(&AnagameAssembly::AddULUL);
+    opList.push_back(&AnagameAssembly::AddOO);
 
     opCodeMap.addEntry(L"sub_ff", runner_op_code::sub_ff);
     opCodeMap.addEntry(L"sub_dd", runner_op_code::sub_dd);
@@ -26,6 +39,13 @@ void PrepOpCodeMap()
     opCodeMap.addEntry(L"sub_ll", runner_op_code::sub_ll);
     opCodeMap.addEntry(L"sub_ulul", runner_op_code::sub_ulul);
     opCodeMap.addEntry(L"sub_oo", runner_op_code::sub_oo);
+    opList.push_back(&AnagameAssembly::SubFF);
+    opList.push_back(&AnagameAssembly::SubDD);
+    opList.push_back(&AnagameAssembly::SubII);
+    opList.push_back(&AnagameAssembly::SubUU);
+    opList.push_back(&AnagameAssembly::SubLL);
+    opList.push_back(&AnagameAssembly::SubULUL);
+    opList.push_back(&AnagameAssembly::SubOO);
 
     opCodeMap.addEntry(L"mul_ff", runner_op_code::mul_ff);
     opCodeMap.addEntry(L"mul_dd", runner_op_code::mul_dd);
@@ -34,6 +54,13 @@ void PrepOpCodeMap()
     opCodeMap.addEntry(L"mul_ll", runner_op_code::mul_ll);
     opCodeMap.addEntry(L"mul_ulul", runner_op_code::mul_ulul);
     opCodeMap.addEntry(L"mul_oo", runner_op_code::mul_oo);
+    opList.push_back(&AnagameAssembly::MulFF);
+    opList.push_back(&AnagameAssembly::MulDD);
+    opList.push_back(&AnagameAssembly::MulII);
+    opList.push_back(&AnagameAssembly::MulUU);
+    opList.push_back(&AnagameAssembly::MulLL);
+    opList.push_back(&AnagameAssembly::MulULUL);
+    opList.push_back(&AnagameAssembly::MulOO);
 
     opCodeMap.addEntry(L"div_ff", runner_op_code::div_ff);
     opCodeMap.addEntry(L"div_dd", runner_op_code::div_dd);
@@ -42,6 +69,13 @@ void PrepOpCodeMap()
     opCodeMap.addEntry(L"div_ll", runner_op_code::div_ll);
     opCodeMap.addEntry(L"div_ulul", runner_op_code::div_ulul);
     opCodeMap.addEntry(L"div_oo", runner_op_code::div_oo);
+    opList.push_back(&AnagameAssembly::DivFF);
+    opList.push_back(&AnagameAssembly::DivDD);
+    opList.push_back(&AnagameAssembly::DivII);
+    opList.push_back(&AnagameAssembly::DivUU);
+    opList.push_back(&AnagameAssembly::DivLL);
+    opList.push_back(&AnagameAssembly::DivULUL);
+    opList.push_back(&AnagameAssembly::DivOO);
 
     opCodeMap.addEntry(L"mod_ff", runner_op_code::mod_ff);
     opCodeMap.addEntry(L"mod_dd", runner_op_code::mod_dd);
@@ -50,6 +84,13 @@ void PrepOpCodeMap()
     opCodeMap.addEntry(L"mod_ll", runner_op_code::mod_ll);
     opCodeMap.addEntry(L"mod_ulul", runner_op_code::mod_ulul);
     opCodeMap.addEntry(L"mod_oo", runner_op_code::mod_oo);
+    opList.push_back(&AnagameAssembly::ModFF);
+    opList.push_back(&AnagameAssembly::ModDD);
+    opList.push_back(&AnagameAssembly::ModII);
+    opList.push_back(&AnagameAssembly::ModUU);
+    opList.push_back(&AnagameAssembly::ModLL);
+    opList.push_back(&AnagameAssembly::ModULUL);
+    opList.push_back(&AnagameAssembly::ModOO);
 }
 
 
