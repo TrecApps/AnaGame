@@ -3,6 +3,7 @@
 #include <TVariable.h>
 #include <TcInterpretor.h>
 #include "TcOperator.h"
+#include "TPrimitiveVariable.h"
 
 /**
  * Enum Class: tc_exp_type
@@ -10,12 +11,12 @@
  */
 typedef enum class tc_exp_type
 {
-	expression,
-	function,
-	number,
-	string,
-	string_exp,
-	variable
+	expression,		// Holds an Operation
+	function,		// Holds a Function
+	number,			// Holds a number
+	string,			// Holds a Confirmed String
+	string_exp,		// Holds a String with Expressions within
+	variable		// Holds a variable Reference
 }tc_exp_type;
 
 
@@ -47,7 +48,7 @@ public:
 	 * Parameters: TrecPointer<TVariable>& value - reference to the Variable to return
 	 * Returns: bool - whether the Expression returned a valid variable
 	 */
-	virtual bool GetValue() = 0;
+	virtual bool GetValue(TrecPointer<TVariable>& value) = 0;
 };
 
 class TcStringExpression : public TcExpression
@@ -83,7 +84,7 @@ public:
 	 * Parameters: void
 	 * Returns: bool - whether the value is available at run time
 	 */
-	virtual bool IsCompileConfirmed();
+	virtual bool IsCompileConfirmed()override;
 
 	/**
 	 * Method: TcStringExpression::GetExpressionType
@@ -91,7 +92,7 @@ public:
 	 * Parameters: void
 	 * Returns: tc_exp_type - the expression type this Expression Represents
 	 */
-	virtual tc_exp_type GetExpressionType();
+	virtual tc_exp_type GetExpressionType()override;
 
 	/**
 	 * Method: TcStringExpression::GetValue
@@ -99,6 +100,57 @@ public:
 	 * Parameters: TrecPointer<TVariable>& value - reference to the Variable to return
 	 * Returns: bool - whether the Expression returned a valid variable
 	 */
-	virtual bool GetValue(TrecPointer<TVariable>& value);
+	virtual bool GetValue(TrecPointer<TVariable>& value) override;
 };
 
+class TcNumberExpression : public TcExpression
+{
+protected:
+	TrecSubPointer<TVariable, TPrimitiveVariable> variable;
+public:
+	/**
+	 * Method: TcNumberExpression::TcNumberExpression
+	 * Purpose: Constructor
+	 * Parameters: TrecSubPointer<TVariable, TPrimitiveVariable> v
+	 * Returns: New Number Expression Object
+	 */
+	TcNumberExpression(TrecSubPointer<TVariable, TPrimitiveVariable> v);
+
+	
+	/**
+	 * Method: TcNumberExpression::IsCompileConfirmed
+	 * Purpose: Reports whether the Value of the expression can be confirmed at compile time. If so, simply calulate the value at compile time
+	 *	instead of having the Runners calculate it each time the statement in question is run
+	 * Parameters: void
+	 * Returns: bool - whether the value is available at run time
+	 */
+	virtual bool IsCompileConfirmed()override;
+
+	/**
+	 * Method: TcNumberExpression::GetExpressionType
+	 * Purpose: Reports the type of expression being handled here
+	 * Parameters: void
+	 * Returns: tc_exp_type - the expression type this Expression Represents
+	 */
+	virtual tc_exp_type GetExpressionType()override;
+
+	/**
+	 * Method: TcNumberExpression::GetValue
+	 * Purpose: Returns a value that the Expression Represents
+	 * Parameters: TrecPointer<TVariable>& value - reference to the Variable to return
+	 * Returns: bool - whether the Expression returned a valid variable
+	 */
+	virtual bool GetValue(TrecPointer<TVariable>& value) override;
+};
+
+class TcVariableExpression : public TcExpression
+{
+protected:
+	TString variableName;
+
+public:
+
+	TcVariableExpression(const TString& variableName);
+
+
+};

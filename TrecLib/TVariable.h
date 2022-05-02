@@ -20,7 +20,8 @@ typedef enum class var_type
     accessor,            // Type of variable that holds a Getter and Setter method
     special_value,       // Holds a special value that doesn't fit in any of the other categories
     iterator,            // Serves as an iterator
-    async                // Serves as a brdge between threads
+    async,               // Serves as a brdge between threads
+    runner               // Function/Procedure that 'Runs' in some form
 }var_type;
 
 

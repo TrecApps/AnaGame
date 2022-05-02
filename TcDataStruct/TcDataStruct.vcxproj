@@ -154,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnagameRunners.h" />
     <ClInclude Include="BNFBase.h" />
     <ClInclude Include="DefaultObjectOperator.h" />
     <ClInclude Include="framework.h" />
@@ -196,6 +197,7 @@
     <ClInclude Include="TVariableType.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnagameRunners.cpp" />
     <ClCompile Include="BNFBase.cpp" />
     <ClCompile Include="DefaultObjectOperator.cpp" />
     <ClCompile Include="dllmain.cpp" />

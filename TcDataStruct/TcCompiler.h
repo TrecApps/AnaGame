@@ -117,6 +117,22 @@ public:
     static void GenerateStatements(TDataArray<TcPreStatement>& statements,TrecPointer<TVariable> languageAtts, TrecPointer<TFileShell> codeFile, TDataArray<CompileMessage>& messages);
 };
 
+class TcVariableContainer
+{
+public:
+    typedef enum class var_source
+    {
+        global,
+        parameter,
+        scoped,
+
+    }var_source;
+    bool isObject;
+
+    TString name;
+
+};
+
 class TcProcessor : public TVariable
 {
 public:

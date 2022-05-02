@@ -36,3 +36,24 @@ bool TcStringExpression::GetValue(TrecPointer<TVariable>& value)
 	value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(stringExpression);
 	return true;
 }
+
+TcNumberExpression::TcNumberExpression(TrecSubPointer<TVariable, TPrimitiveVariable> v)
+{
+	assert(v.Get());
+}
+
+bool TcNumberExpression::IsCompileConfirmed()
+{
+	// This holds a raw value
+	return true;
+}
+
+tc_exp_type TcNumberExpression::GetExpressionType()
+{
+	return tc_exp_type::number;
+}
+
+bool TcNumberExpression::GetValue(TrecPointer<TVariable>& value)
+{
+	return false;
+}

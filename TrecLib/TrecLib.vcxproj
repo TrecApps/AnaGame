@@ -163,6 +163,7 @@
     <ClInclude Include="TBlankNode.h" />
     <ClInclude Include="TcBashInterpretor.h" />
     <ClInclude Include="TcInterpretor.h" />
+    <ClInclude Include="TcRunner.h" />
     <ClInclude Include="TDataMap.h" />
     <ClInclude Include="TLinkedList.h" />
     <ClInclude Include="TSliceManager.h" />
@@ -209,6 +210,7 @@
     <ClCompile Include="CodeStatement.cpp" />
     <ClCompile Include="ObjectOperator.cpp" />
     <ClCompile Include="TBlankNode.cpp" />
+    <ClCompile Include="TcRunner.cpp" />
     <ClCompile Include="TLinkedList.cpp" />
     <ClCompile Include="TSliceManager.cpp" />
     <ClCompile Include="TStringSlice.cpp" />
