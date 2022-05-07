@@ -77,15 +77,11 @@ void PrepOpCodeMap()
     opList.push_back(&AnagameAssembly::DivULUL);
     opList.push_back(&AnagameAssembly::DivOO);
 
-    opCodeMap.addEntry(L"mod_ff", runner_op_code::mod_ff);
-    opCodeMap.addEntry(L"mod_dd", runner_op_code::mod_dd);
     opCodeMap.addEntry(L"mod_ii", runner_op_code::mod_ii);
     opCodeMap.addEntry(L"mod_uu", runner_op_code::mod_uu);
     opCodeMap.addEntry(L"mod_ll", runner_op_code::mod_ll);
     opCodeMap.addEntry(L"mod_ulul", runner_op_code::mod_ulul);
     opCodeMap.addEntry(L"mod_oo", runner_op_code::mod_oo);
-    opList.push_back(&AnagameAssembly::ModFF);
-    opList.push_back(&AnagameAssembly::ModDD);
     opList.push_back(&AnagameAssembly::ModII);
     opList.push_back(&AnagameAssembly::ModUU);
     opList.push_back(&AnagameAssembly::ModLL);
@@ -194,9 +190,20 @@ ReturnObject AnagameRunner::GenerateRunners(TDataMap<TrecSubPointer<TVariable, A
     return ReturnObject();
 }
 
+AnagameRunner::AnagameRunner()
+{
+    isBinary = isObject = false;
+    currentCodeLines = currentLine = 0;
+}
+
 void AnagameRunner::SetCurrentStack(TrecPointer<BinaryStack> stack)
 {
+    binaryStack = stack;
+}
 
+void AnagameRunner::SetCurrentStack(TrecPointer<ObjectStack> stack)
+{
+    objectStack = stack;
 }
 
 ReturnObject AnagameRunner::Run()
@@ -206,6 +213,16 @@ ReturnObject AnagameRunner::Run()
 
 void AnagameRunner::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
 {
+}
+
+void AnagameRunner::SetCurrentLine(UINT line)
+{
+    this->currentLine = line;
+}
+
+void AnagameRunner::SetCurrentCodeLine(UINT line)
+{
+    currentCodeLines = line;
 }
 
 AnagameRunner::RunnerCode::RunnerCode()

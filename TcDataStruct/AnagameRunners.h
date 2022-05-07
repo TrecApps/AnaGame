@@ -38,8 +38,6 @@ typedef enum class runner_op_code
     div_ll,         // Divides 2 longs and places the result onto the stack
     div_ulul,       // Divides 2 unsligned longs and places the result onto the stack
     div_oo,         // Divides 2 Objects together (looks to the Object Stack)
-    mod_ff,         // (To-Do: see if necessary) Mod Divides 2 floating point numbers and places the result on the stack
-    mod_dd,         // (To-Do: see if necessary) Mod Divides 2 double numbers and places the result onto the stask
     mod_ii,         // Mod Divides 2 integers and places the result onto the stack
     mod_uu,         // Mod Divides 2 unsigned integers and places the result onto the stack
     mod_ll,         // Mod Divides 2 longs and places the result onto the stack
@@ -51,6 +49,20 @@ typedef enum class runner_op_code
     cast_fi,        // Converts a float to an int
     cast_fd,        // Converts a float to a double
     cast_df,        // Converts a double to a float 
+    cast_iu,        // Converts an int to a uint
+    cast_ui,        // Converts a uint to an int
+    cast_uul,       // Doubles a uint
+    cast_ulu,       // Halves a 64-bit uint
+    cast_il,        // Doubles an integer
+    cast_li,        // Halves a 64-bit int
+
+    // Basic Stack 
+    push_1,         // Pushes a 32-bit value onto the stack
+    push_2,         // Pushes a 64-bit value onto the stack
+    push_b,         // Retrieves a value from within the binary stack and places it on top
+    pop_n,          // Pops the specified number of 4-byte values off of the binary stack
+    push_o,         // Retrieves a value from within the object stack and places it on top
+    pop_o,          // Pops the specified number of objects off of the Object stack
 }runner_op_code;
 
 
@@ -73,6 +85,14 @@ public:
 
     static ReturnObject GenerateRunners(TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, TrecPointer<TFileShell> file);
 
+    /**
+     * Method: AnagameRunner::AnagameRunner
+     * Purpose: Constructor
+     * Parameters: void
+     * Returns: new Runner
+     */
+    AnagameRunner();
+
 
     /**
      * Mehtod: AnagameRunner::SetCurrentStack
@@ -81,6 +101,15 @@ public:
      * Returns: void
      */
     virtual void SetCurrentStack(TrecPointer<BinaryStack> stack);
+
+
+    /**
+     * Mehtod: AnagameRunner::SetCurrentStack
+     * Purpose: Sets the binary Stack for the runner (meant for Anagame Binary and Hybrid Runners)
+     * Parameters: TrecPointer<BinaryStack> stack - binary Stack
+     * Returns: void
+     */
+    virtual void SetCurrentStack(TrecPointer<ObjectStack> stack);
 
     /**
      * Method: TcRunner::Run
@@ -97,6 +126,22 @@ public:
      * Returns: void
      */
     virtual void SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params);
+
+    /**
+     * Method: AnagameRunner::SetCurrentLine
+     * Purpose: Sets the current line of the code being processed
+     * Parameters: UINT line - th eline to set
+     * Returns: void
+     */
+    void SetCurrentLine(UINT line);
+
+    /**
+     * Method: AnagameRunner::SetCurrentCodeLine
+     * Purpose: Sets the current line of the code being processed
+     * Parameters: UINT line - th eline to set
+     * Returns: void
+     */
+    void SetCurrentCodeLine(UINT line);
     
 
 protected:
@@ -104,8 +149,12 @@ protected:
     TString file, name;
     TDataArray<TString> variableCites;
     TDataArray<TString> codeLines;      // Easier to Highlight the lines
+    
 
+    UINT currentLine, currentCodeLines;
 
+    TrecPointer<BinaryStack> binaryStack;
+    TrecPointer<ObjectStack> objectStack;
 
     TDataArray<RunnerCode> code;
 };

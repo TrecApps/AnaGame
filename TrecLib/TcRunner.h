@@ -31,6 +31,31 @@ public:
 };
 
 /**
+ * Class: BinaryStack
+ * Purpose: Represents a Binary Stack
+ */
+class _TREC_LIB_DLL ObjectStack
+{
+protected:
+    TDataArray<TrecPointer<TVariable>> objects;
+    ReturnObject retObj;
+public:
+    bool IsError();
+    ReturnObject GetError(bool reset);
+
+    UINT GetSize();
+
+    ObjectStack();
+    ObjectStack(const ObjectStack& copy);
+
+    void Push(TrecPointer<TVariable> var);
+
+    TrecPointer<TVariable> Pop();
+
+
+};
+
+/**
  * Class: TcVariableHolder
  * Purpose: Holds Variables, including value, type and mutbility status
  */

@@ -183,4 +183,53 @@ ULONG64 BinaryStack::Pop2()
 	return (static_cast<ULONG64>(highEnd) << 4) + static_cast<ULONG64>(lowEnd);
 }
 
+bool ObjectStack::IsError()
+{
+	return retObj.returnCode > 0;
+}
 
+ReturnObject ObjectStack::GetError(bool reset)
+{
+	ReturnObject r(retObj);
+	if (reset)
+	{
+		retObj.errorMessage.Empty();
+		retObj.errorObject.Nullify();
+		retObj.errorObject2.Nullify();
+		retObj.mode = return_mode::rm_regular;
+		retObj.stackTrace.RemoveAll();
+		retObj.returnCode = 0;
+	}
+	return r;
+}
+
+UINT ObjectStack::GetSize()
+{
+	return objects.Size();
+}
+
+ObjectStack::ObjectStack()
+{
+}
+
+ObjectStack::ObjectStack(const ObjectStack& copy)
+{
+	this->objects = copy.objects;
+	this->retObj = copy.retObj;
+}
+
+void ObjectStack::Push(TrecPointer<TVariable> var)
+{
+	objects.push_back(var);
+}
+
+TrecPointer<TVariable> ObjectStack::Pop()
+{
+	if (!objects.Size())
+	{
+		retObj.returnCode = retObj.ERR_INTERNAL;
+		retObj.errorMessage.Set(L"Binary Attempt to pop value from an Empty Stack!");
+		return TrecPointer<TVariable>();
+	}
+	return objects.RemoveAt(objects.Size() - 1);
+}
