@@ -37,6 +37,38 @@ bool TcStringExpression::GetValue(TrecPointer<TVariable>& value)
 	return true;
 }
 
+void TcStringExpression::CompileExpression(TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, TDataArray<CompileMessage>& messages)
+{
+	TrecSubPointer<TVariable, AnagameRunner> runner;
+	if (!runners.retrieveEntry(currentRunner, runner) || !runner.Get())
+	{
+		CompileMessage m;
+		m.isError = true;
+		m.message.Format("Internal Error! Attempt to compile Procedure %ws failed. Proc not found!", currentRunner.GetConstantBuffer().getBuffer());
+		messages.push_back(m);
+		return;
+	}
+
+	runner->AddOp(this->stringExpression);
+
+	for (UINT Rust = 0; Rust < subExpressions.Size(); Rust++)
+	{
+		if (subExpressions[Rust]->IsCompileConfirmed())
+		{
+			TrecPointer<TVariable> value;
+			subExpressions[Rust]->GetValue(value);
+
+			runner->AddOp(value.Get() ? value->GetString() : L"null");
+		}
+		else
+		{
+			subExpressions[Rust]->CompileExpression(vars, runners, currentRunner, messages);
+		}
+	}
+
+	runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::str_cond, subExpressions.Size()));
+}
+
 TcNumberExpression::TcNumberExpression(TrecSubPointer<TVariable, TPrimitiveVariable> v)
 {
 	assert(v.Get());
@@ -56,4 +88,24 @@ tc_exp_type TcNumberExpression::GetExpressionType()
 bool TcNumberExpression::GetValue(TrecPointer<TVariable>& value)
 {
 	return false;
+}
+
+VariableContiainer::Variable::Variable()
+{
+	stackLoc = 0;
+	useObject = true;
+	rawData = 0;
+}
+
+VariableContiainer::Variable::Variable(const Variable& copy)
+{
+	stackLoc = copy.stackLoc;
+	useObject = copy.useObject;
+	rawData = copy.rawData;
+	objData = copy.objData;
+	type = copy.type;
+}
+
+void TcExpression::CompileExpression(TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, TDataArray<CompileMessage>& messages)
+{
 }

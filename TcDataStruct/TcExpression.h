@@ -4,6 +4,9 @@
 #include <TcInterpretor.h>
 #include "TcOperator.h"
 #include "TPrimitiveVariable.h"
+#include "TcType.h"
+#include "AnagameRunners.h"
+#include "TcCompiler.h"
 
 /**
  * Enum Class: tc_exp_type
@@ -18,6 +21,27 @@ typedef enum class tc_exp_type
 	string_exp,		// Holds a String with Expressions within
 	variable		// Holds a variable Reference
 }tc_exp_type;
+
+
+class VariableContiainer
+{
+public:
+	class Variable
+	{
+	public:
+		UINT stackLoc;
+		bool useObject;
+		ULONG64 rawData;
+		TrecPointer<TVariable> objData;
+
+		TrecPointer<TcType> type;
+
+		Variable();
+		Variable(const Variable& copy);
+	};
+
+	TMap<Variable> variables;
+};
 
 
 
@@ -49,10 +73,21 @@ public:
 	 * Returns: bool - whether the Expression returned a valid variable
 	 */
 	virtual bool GetValue(TrecPointer<TVariable>& value) = 0;
+
+	/**
+	 * Method: TcExpression::CompileExpression
+	 * Purpose: Compiles the Expression
+	 * Parameters: TDataArray<VariableContiainer>& vars - variables available
+	 *					TMap<TrecSubPointer<TVariable, AnagameRunner>>& runners - runners available
+	 *					const TString& currentRunner - name of the runner to look at
+	 *					TDataArray<CompileMessage>& messages - output info
+	 */
+	virtual void CompileExpression(TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, TDataArray<CompileMessage>& messages);
 };
 
 class TcStringExpression : public TcExpression
 {
+	friend class BNFString;
 protected:
 	TDataArray<TrecPointer<TcExpression>> subExpressions;
 	TString stringExpression;
@@ -101,6 +136,16 @@ public:
 	 * Returns: bool - whether the Expression returned a valid variable
 	 */
 	virtual bool GetValue(TrecPointer<TVariable>& value) override;
+
+	/**
+	 * Method: TcStringExpression::CompileExpression
+	 * Purpose: Compiles the Expression
+	 * Parameters: TDataArray<VariableContiainer>& vars - variables available
+	 *					TMap<TrecSubPointer<TVariable, AnagameRunner>>& runners - runners available
+	 *					const TString& currentRunner - name of the runner to look at
+	 *					TDataArray<CompileMessage>& messages - output info
+	 */
+	virtual void CompileExpression(TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, TDataArray<CompileMessage>& messages)override;
 };
 
 class TcNumberExpression : public TcExpression

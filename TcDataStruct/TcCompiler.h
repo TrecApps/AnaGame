@@ -168,13 +168,13 @@ public:
 
 class TcBaseStatement
 {
-private:
+public:
 	TString statementText;
 	UINT startLine;
 	TDataArray<TrecPointer<TcBaseStatement>> subStatements;
     tc_statement_type type;
 
-public:
+
     TcBaseStatement();
     TcBaseStatement(tc_statement_type type, const TcPreStatement& statement);
     TcBaseStatement(const TcBaseStatement& statement);

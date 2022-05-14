@@ -75,6 +75,14 @@ public:
 
 public:
 
+	/**
+	 * Method: TString::FindInContainer
+	 * Purpose: Reports whether this string can be found in a given container and where
+	 * Parameters: const TDataArray<TString>& container - the container to search
+	 * Returns: int - location in the container (-1 if not found)
+	 */
+	int FindInContainer(TDataArray<TString>& container);
+
 
 	/**
 	 * Method: TString::ConvertStringToUint

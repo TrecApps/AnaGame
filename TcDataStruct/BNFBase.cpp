@@ -1,4 +1,5 @@
 #include "BNFBase.h"
+#include "TContainerVariable.h"
 
 bool BNFBase::BNFStringToken::IsRawToken()
 {
@@ -139,58 +140,131 @@ bool BNFBase::IsStatement(TDataMap<TrecPointer<BNFBase>>& otherBnfs, const TStri
     return ret;
 }
 
-void BNFIf::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
+void BNFString::Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+    UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
 {
+    TrecSubPointer<TVariable, TContainerVariable> langDets = TrecPointerKey::GetTrecSubPointerFromTrec < TVariable, TContainerVariable>(languageDetails);
+
+    assert(langDets.Get());
+
+    TDataArray<TString> singleString, multiString, templateBounds;
+
+    TrecPointer<TVariable> v;
+    TrecSubPointer<TVariable, TContainerVariable> sv;
+    bool pres; 
+
+
+    v = langDets->GetValue(L"StatementParsing::SingleString", pres, L"::");
+    sv = TrecPointerKey::GetTrecSubPointerFromTrec < TVariable, TContainerVariable>(v);
+    if (sv.Get())
+        sv->CollectAsStrings(singleString);
+
+    v = langDets->GetValue(L"StatementParsing::MultiString", pres, L"::");
+    sv = TrecPointerKey::GetTrecSubPointerFromTrec < TVariable, TContainerVariable>(v);
+    if (sv.Get())
+        sv->CollectAsStrings(multiString);
+
+    v = langDets->GetValue(L"String::TemplateBounds", pres, L"::");
+    sv = TrecPointerKey::GetTrecSubPointerFromTrec < TVariable, TContainerVariable>(v);
+    if (sv.Get())
+        sv->CollectAsStrings(templateBounds);
+
+    TString starter;
+    
+    TString statementStr(statement->statementText.SubString(stringStart));
+
+    for (UINT Rust = 0; Rust < singleString.Size(); Rust++)
+    {
+        if (statementStr.StartsWith(singleString[Rust]))
+        {
+            starter.Set(singleString[Rust]);
+            int newLineLoc = statementStr.Find('\n', 1, false);
+            int endPoint = statementStr.Find(singleString[Rust], 1, false);
+
+            if ((endPoint == -1) || (endPoint < newLineLoc && newLineLoc != -1))
+            {
+                CompileMessage m;
+                m.isError = true;
+                m.line = statement->startLine + statement->statementText.SubString(0, stringStart).CountFinds(L'\n');
+                m.message.Set(L"Compile Error! Expected Single-line String to end");
+                messages.push_back(m);
+                return;
+            }
+
+            statementStr.Set(statementStr.SubString(starter.GetSize(), endPoint));
+            break;
+        }
+    }
+
+    if(!starter.GetSize())
+        for (UINT Rust = 0; Rust < multiString.Size(); Rust++)
+        {
+            if (statementStr.StartsWith(multiString[Rust]))
+            {
+                starter.Set(multiString[Rust]);
+                int endPoint = statementStr.Find(singleString[Rust], 1, false);
+
+                if ((endPoint == -1))
+                {
+                    CompileMessage m;
+                    m.isError = true;
+                    m.line = statement->startLine + statement->statementText.SubString(0, stringStart).CountFinds(L'\n');
+                    m.message.Set(L"Compile Error! Expected Multi-line String to end");
+                    messages.push_back(m);
+                    return;
+                }
+
+                statementStr.Set(statementStr.SubString(starter.GetSize(), endPoint));
+                break;
+            }
+        }
+
+    if (!starter.GetSize())
+        return;
+
+    bool useTemplates = starter.FindInContainer(templateBounds);
+
+    TrecSubPointer<TcExpression, TcStringExpression> exp = TrecPointerKey::GetNewSelfTrecSubPointer<TcExpression, TcStringExpression>(statementStr);
+
+    bool works = true;
+
+    if (useTemplates)
+    {
+        v = langDets->GetValue(L"String::TemplateStartMarker", pres, L"::");
+        TString s(v.Get() ? v->GetString() : L"");
+        v = langDets->GetValue(L"String::TemplateEndMarker", pres, L"::");
+        TString e(v.Get() ? v->GetString() : L"");
+
+        if (s.GetSize() && e.GetSize())
+        {
+            TString subExp;
+            for (int start = exp->GetSubExpression(0, subExp, s, e); start != -1;
+                start = exp->GetSubExpression(start, subExp, s, e))
+            {
+                TrecPointer<BNFBase> expBnf;
+                if (!bnfs.retrieveEntry(L"expression", expBnf) || !dynamic_cast<BNFExpression*>(expBnf.Get()))
+                {
+                    CompileMessage m;
+                    m.isError = true;
+                    m.line = statement->startLine + statement->statementText.SubString(0, stringStart).CountFinds(L'\n');
+                    m.message.Set(L"Language Error! Expression BNF Object to be generated");
+                    messages.push_back(m);
+                    return;
+                }
+                TrecPointer<TcExpression> tSubExp;
+                if (dynamic_cast<BNFExpression*>(expBnf.Get())->GenerateExpression(messages, languageDetails, subExp, bnfs, vars, tSubExp))
+                    exp->subExpressions.push_back(tSubExp);
+                else works = false;
+            }
+        }
+    }
+
+    if (works)
+        exp->CompileExpression(vars, runners, currentRunner, messages);
 }
 
-void BNFElse::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
+bool BNFExpression::GenerateExpression(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, const TString& e, TDataMap<TrecPointer<BNFBase>>& bnfs,
+    TDataArray<VariableContiainer>& vars, TrecPointer<TcExpression>& exp)
 {
-}
-
-void BNFNumber::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFTypeBlock::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFTypeState::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFBlock::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFFinally::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFCatch::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFTry::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFFor::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFFor3::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFSwitchBlock::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFSwitch::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
-}
-
-void BNFWhile::Compile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, AnagameRunner> codeToCompile, TDataArray<TrecSubPointer<TVariable, AnagameRunner>>& otherCode, TrecPointer<TcBaseStatement> statement, UINT stringStart, bool expectTerminal)
-{
+    return false;
 }

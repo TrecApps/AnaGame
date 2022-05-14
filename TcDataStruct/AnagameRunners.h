@@ -63,6 +63,8 @@ typedef enum class runner_op_code
     pop_n,          // Pops the specified number of 4-byte values off of the binary stack
     push_o,         // Retrieves a value from within the object stack and places it on top
     pop_o,          // Pops the specified number of objects off of the Object stack
+    push_str,       // Pushes a string onto the Object Stack
+    str_cond,       // Condenses Strings
 }runner_op_code;
 
 
@@ -142,6 +144,22 @@ public:
      * Returns: void
      */
     void SetCurrentCodeLine(UINT line);
+
+    /**
+     * Method: AnagameRunner::AddOp
+     * Purpose: Allows Compiltion Process to add the Code
+     * Parameters: const RunnerCode& - operation to add
+     * Returns: void
+     */
+    void AddOp(const RunnerCode& code);
+
+    /**
+     * Method: AnagameRunner::AddOp
+     * Purpose: Allows Compiltion Process to add the Code
+     * Parameters: const TString& - String to load
+     * Returns: void
+     */
+    void AddOp(const TString&);
     
 
 protected:
@@ -149,6 +167,7 @@ protected:
     TString file, name;
     TDataArray<TString> variableCites;
     TDataArray<TString> codeLines;      // Easier to Highlight the lines
+    TDataArray<TString> strings;        // List of strings written by the Source code
     
 
     UINT currentLine, currentCodeLines;

@@ -598,3 +598,14 @@ ContainerType TContainerVariable::GetContainerType()
 {
     return this->type;
 }
+
+void TContainerVariable::CollectAsStrings(TDataArray<TString>& collector)
+{
+    for (UINT Rust = 0; Rust < values.count(); Rust++)
+    {
+        auto ent = values.GetEntryAt(Rust);
+
+        if (ent->object.Get())
+            collector.push_back(ent->object->GetString());
+    }
+}

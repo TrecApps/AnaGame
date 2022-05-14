@@ -225,6 +225,24 @@ void AnagameRunner::SetCurrentCodeLine(UINT line)
     currentCodeLines = line;
 }
 
+void AnagameRunner::AddOp(const RunnerCode& code)
+{
+    this->code.push_back(code);
+}
+
+void AnagameRunner::AddOp(const TString& str)
+{
+    for (UINT Rust = 0; Rust < this->strings.Size(); Rust++)
+    {
+        if (!str.Compare(this->strings[Rust]))
+        {
+            code.push_back(RunnerCode(runner_op_code::push_str, Rust));
+            return;
+        }
+    }
+    code.push_back(RunnerCode(runner_op_code::push_str, strings.push_back(str) - 1));
+}
+
 AnagameRunner::RunnerCode::RunnerCode()
 {
     operand1 = operand2 = 0;
