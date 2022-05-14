@@ -65,6 +65,13 @@ typedef enum class runner_op_code
     pop_o,          // Pops the specified number of objects off of the Object stack
     push_str,       // Pushes a string onto the Object Stack
     str_cond,       // Condenses Strings
+
+    // Moving around
+    jump_cond,      // Causes the runner to go to the given instruction on the stack
+    jump_mark,      // Serves as a marker at which the program can jump to
+    jump,           // Causes the runner to go to the given instruction on the stack
+    assess_true,    // Converts the value at the end of the Object Stack to 
+    
 }runner_op_code;
 
 
@@ -161,6 +168,23 @@ public:
      */
     void AddOp(const TString&);
     
+
+    /**
+     * Method: AnagameRunner::GetOpCount
+     * Purpose: Returns the number of Op instructions present in the Procedure
+     * Parameters: void
+     * Returns: UINT - the number of op instructions in the runner
+     */
+    UINT GetOpCount();
+
+    /**
+     * Method: AnagameRunner::UpdateOp
+     * Purpose: Allows Compiltion Process to add the Code
+     * Parameters: const RunnerCode& - operation to add
+     *              UINT index - index to update the op at
+     * Returns: void
+     */
+    void UpdateOp(const RunnerCode& code, UINT index);
 
 protected:
     bool isBinary, isObject;

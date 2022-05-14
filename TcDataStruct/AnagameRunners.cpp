@@ -243,6 +243,11 @@ void AnagameRunner::AddOp(const TString& str)
     code.push_back(RunnerCode(runner_op_code::push_str, strings.push_back(str) - 1));
 }
 
+UINT AnagameRunner::GetOpCount()
+{
+    return code.Size();
+}
+
 AnagameRunner::RunnerCode::RunnerCode()
 {
     operand1 = operand2 = 0;

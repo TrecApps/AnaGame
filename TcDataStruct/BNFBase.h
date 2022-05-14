@@ -37,7 +37,8 @@ public:
 
 	virtual bool IsStatement(TDataMap<TrecPointer<BNFBase>>& otherBnfs, const TString& statement, UINT& stringStart,bool expectTerminal = true);
 
-	virtual void Compile(TDataArray<CompileMessage>& messages,				// List of Messages to report
+	virtual void Compile(UINT tokenList,									// the Token List to use
+		TDataArray<CompileMessage>& messages,								// List of Messages to report
 		TrecPointer<TVariable> languageDetails,								// Details about the language
 		TrecPointer<TcBaseStatement> statement,								// The Statement to compile
 		TDataMap<TrecPointer<BNFBase>>& bnfs,								// Collection of BNFs 
@@ -55,7 +56,7 @@ public:
 class BNFIf : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -64,7 +65,7 @@ public:
 class BNFElse : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -73,7 +74,7 @@ public:
 class BNFWhile : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -82,7 +83,7 @@ public:
 class BNFSwitch : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -91,7 +92,7 @@ public:
 class BNFSwitchBlock : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -100,7 +101,7 @@ public:
 class BNFFor3 : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -109,7 +110,7 @@ public:
 class BNFFor : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -118,7 +119,7 @@ public:
 class BNFTry: public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -127,7 +128,7 @@ public:
 class BNFCatch : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -136,7 +137,7 @@ public:
 class BNFFinally : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -145,7 +146,7 @@ public:
 class BNFBlock : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -154,7 +155,7 @@ public:
 class BNFTypeState : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -163,7 +164,7 @@ public:
 class BNFTypeBlock : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -172,7 +173,7 @@ public:
 class BNFNumber : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
@@ -181,7 +182,7 @@ public:
 class BNFString : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 };
@@ -189,7 +190,7 @@ public:
 class BNFExpression : public BNFBase
 {
 public:
-	virtual void Compile(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
+	virtual void Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
 		UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,
 		const TString& currentRunner, bool expectTerminal = true)override;
 
