@@ -310,7 +310,7 @@ bool TWebWindow::OnScroll(const TPoint& point, const TPoint& direction)
 
 TString TWebWindow::FixUrl(const TString& url)
 {
-    if (url.StartsWith(L"Anagame://") || url.StartsWith(L"File://") || url.StartsWith(L"http://") || url.StartsWith(L"https://") || url.StartsWith(L"ftp://"))
+    if (url.StartsWith(L"Anagame://", true) || url.StartsWith(L"File://", true) || url.StartsWith(L"http://", true) || url.StartsWith(L"https://", true) || url.StartsWith(L"ftp://", true))
     {
         return TString(url);
     }
