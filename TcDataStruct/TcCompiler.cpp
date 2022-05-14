@@ -267,12 +267,13 @@ void TcPreStatement::GenerateStatements(TDataArray<TcPreStatement>& statements, 
 
 TcBaseStatement::TcBaseStatement()
 {
-	this->startLine = 0;
+	this->startLine = this->bnfLine = 0;
 	this->type = tc_statement_type::_unset;
 }
 
 TcBaseStatement::TcBaseStatement(tc_statement_type type, const TcPreStatement& statement)
 {
+	this->bnfLine = 0;
 	this->type = type;
 	this->startLine = statement.GetStartLine();
 	this->statementText.Set(statement.GetStatementText());
@@ -280,6 +281,7 @@ TcBaseStatement::TcBaseStatement(tc_statement_type type, const TcPreStatement& s
 
 TcBaseStatement::TcBaseStatement(const TcBaseStatement& statement)
 {
+	this->bnfLine = statement.bnfLine;
 	this->type = statement.type;
 	this->startLine = statement.startLine;
 	this->statementText.Set(statement.statementText);

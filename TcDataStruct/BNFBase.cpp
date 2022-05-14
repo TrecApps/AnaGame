@@ -1,6 +1,139 @@
 #include "BNFBase.h"
 #include "TContainerVariable.h"
 
+typedef struct StatementTypeMapEntry
+{
+    TString bnf;
+    tc_statement_type type;
+}StatementTypeMapEntry;
+
+TDataArray<StatementTypeMapEntry> statementBnfMap;
+
+void PrepBnfMap()
+{
+    if (statementBnfMap.Size())return;
+
+    statementBnfMap.push_back({ L"", tc_statement_type::_unset });
+    statementBnfMap.push_back({ L"global_decl", tc_statement_type::_var });
+    statementBnfMap.push_back({ L"local_decl", tc_statement_type::_let });
+    statementBnfMap.push_back({ L"inmut_decl", tc_statement_type::_const });
+    statementBnfMap.push_back({ L"", tc_statement_type::_type });
+    statementBnfMap.push_back({ L"", tc_statement_type::_declare });
+
+    // Flow Blocks
+
+    statementBnfMap.push_back({ L"if_statement", tc_statement_type::_if });
+    statementBnfMap.push_back({ L"else_statement", tc_statement_type::_else });
+    statementBnfMap.push_back({ L"", tc_statement_type::_else_if });
+    statementBnfMap.push_back({ L"while_statement", tc_statement_type::_while });
+    statementBnfMap.push_back({ L"for_loop", tc_statement_type::_for });
+    statementBnfMap.push_back({ L"for_3_loop", tc_statement_type::_for_3 });
+    statementBnfMap.push_back({ L"do_while", tc_statement_type::_do });
+    statementBnfMap.push_back({ L"", tc_statement_type::_until });
+    statementBnfMap.push_back({ L"try_block", tc_statement_type::_try_ });
+    statementBnfMap.push_back({ L"catch_block", tc_statement_type::_catch });
+    statementBnfMap.push_back({ L"finally_block", tc_statement_type::_finally_ });
+    statementBnfMap.push_back({ L"throw", tc_statement_type::_throw });
+    statementBnfMap.push_back({ L"switch_statement", tc_statement_type::_switch });
+    statementBnfMap.push_back({ L"", tc_statement_type::_case });
+    statementBnfMap.push_back({ L"", tc_statement_type::_default });
+    statementBnfMap.push_back({ L"", tc_statement_type::_match });
+
+
+    statementBnfMap.push_back({ L"", tc_statement_type::_goto });
+    statementBnfMap.push_back({ L"", tc_statement_type::_goto_target });
+    statementBnfMap.push_back({ L"", tc_statement_type::_return });
+    statementBnfMap.push_back({ L"break", tc_statement_type::_break });
+    statementBnfMap.push_back({ L"continue", tc_statement_type::_continue });
+    statementBnfMap.push_back({ L"", tc_statement_type::_yield });
+    statementBnfMap.push_back({ L"", tc_statement_type::_end });
+
+
+    statementBnfMap.push_back({ L"function_statement", tc_statement_type::_function });
+    statementBnfMap.push_back({ L"", tc_statement_type::_function_gen });
+    statementBnfMap.push_back({ L"", tc_statement_type::_method });
+    statementBnfMap.push_back({ L"", tc_statement_type::_constructor });
+    statementBnfMap.push_back({ L"", tc_statement_type::_destructor });
+    statementBnfMap.push_back({ L"", tc_statement_type::_class });
+    statementBnfMap.push_back({ L"", tc_statement_type::_union });
+    statementBnfMap.push_back({ L"", tc_statement_type::_enum });
+    statementBnfMap.push_back({ L"", tc_statement_type::_delete });
+
+
+    statementBnfMap.push_back({ L"", tc_statement_type::_module });
+    statementBnfMap.push_back({ L"", tc_statement_type::_include });
+
+    statementBnfMap.push_back({ L"", tc_statement_type::_virtual_assign });
+    statementBnfMap.push_back({ L"expression", tc_statement_type::_regular });
+}
+
+
+void ProcessSeriesOfStatements(TDataArray<TrecPointer<TcBaseStatement>> statements, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails,
+    TDataMap<TrecPointer<BNFBase>>& bnfs, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner)
+{
+    PrepBnfMap();
+    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+    {
+        switch (statements[Rust]->type)
+        {
+        case tc_statement_type::_else:
+        case tc_statement_type::_else_if:
+            if (!Rust || (statements[Rust - 1]->type != tc_statement_type::_if &&
+                statements[Rust - 1]->type != tc_statement_type::_else &&
+                statements[Rust - 1]->type != tc_statement_type::_else_if))
+            {
+                CompileMessage m;
+                m.isError = true;
+                m.line = statements[Rust]->startLine;
+                m.message.Set(L"Compile Error! Expected 'if' or and 'else if' statement before current 'else' block!");
+                messages.push_back(m);
+            }
+            break;
+        case tc_statement_type::_catch:
+            if (!Rust || (statements[Rust - 1]->type != tc_statement_type::_try_ &&
+                statements[Rust - 1]->type != tc_statement_type::_catch))
+            {
+                CompileMessage m;
+                m.isError = true;
+                m.line = statements[Rust]->startLine;
+                m.message.Set(L"Compile Error! Expected 'catch' or 'try' statement before current 'catch' block!");
+                messages.push_back(m);
+            }
+            break;
+        case tc_statement_type::_finally_:
+            if (!Rust || (statements[Rust - 1]->type != tc_statement_type::_try_ &&
+                statements[Rust - 1]->type != tc_statement_type::_catch))
+            {
+                CompileMessage m;
+                m.isError = true;
+                m.line = statements[Rust]->startLine;
+                m.message.Set(L"Compile Error! Expected 'catch' or 'try' statement before current 'finally' block!");
+                messages.push_back(m);
+            }
+            break;
+        }
+
+        TString bnfExp(statementBnfMap.at(static_cast<UINT>(statements[Rust]->type)).bnf);
+
+        if (bnfExp.IsEmpty())
+            bnfExp.Set(L"expression");
+
+        TrecPointer<BNFBase> bnf;
+        UINT stringStart = 0;
+        if (!bnfs.retrieveEntry(bnfExp, bnf))
+        {
+            CompileMessage m;
+            m.isError = true;
+            m.line = statements[Rust]->startLine;
+            m.message.Format(L"Language Error! BNF '%ws' not available!", bnfExp.GetConstantBuffer().getBuffer());
+            messages.push_back(m);
+        }
+
+        else bnf->Compile(statements[Rust]->bnfLine, messages, languageDetails, statements[Rust], bnfs, stringStart, vars, runners, currentRunner, false);
+
+    }
+}
+
 bool BNFBase::BNFStringToken::IsRawToken()
 {
     return true;
@@ -428,4 +561,39 @@ void BNFWhile::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, Tre
             }
         }
     }
+}
+
+void BNFTypeBlock::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement,
+    TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+    vars.push_back(VariableContiainer());
+    ProcessSeriesOfStatements(statement->subStatements, messages, languageDetails, bnfs, vars, runners, currentRunner);
+
+    VariableContiainer vc(vars.RemoveAt(vars.Size() - 1));
+
+    UINT pop_o = 0, pop_b = 0;
+
+    for (UINT Rust = 0; Rust < vc.variables.count(); Rust++)
+    {
+        auto var = vc.variables.GetEntryAt(Rust);
+
+        assert(var.Get());
+        if (var->object->useObject)
+        {
+            pop_o++;
+        }
+        else
+        {
+            // To-Do: Handle Binary Mode
+        }
+    }
+
+    TrecSubPointer<TVariable, AnagameRunner> runner;
+    if (!runners.retrieveEntry(currentRunner, runner)) return;
+
+    if (pop_o)
+        runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::pop_o, pop_o));
+    if (pop_b)
+        runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::pop_n, pop_b));
+
 }

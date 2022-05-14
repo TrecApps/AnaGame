@@ -171,6 +171,7 @@ class TcBaseStatement
 public:
 	TString statementText;
 	UINT startLine;
+    UCHAR bnfLine;
 	TDataArray<TrecPointer<TcBaseStatement>> subStatements;
     tc_statement_type type;
 

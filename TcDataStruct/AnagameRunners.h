@@ -70,7 +70,12 @@ typedef enum class runner_op_code
     jump_cond,      // Causes the runner to go to the given instruction on the stack
     jump_mark,      // Serves as a marker at which the program can jump to
     jump,           // Causes the runner to go to the given instruction on the stack
-    assess_true,    // Converts the value at the end of the Object Stack to 
+    assess_true,    // Converts the value at the end of the Object Stack to
+
+    // Error Handling
+    jump_err,       // Sets the place to jump to if an exception is raised
+    clear_err,      // Clears the error and lets the progrm proceed
+    umjump_err,     // Clears the place to jump to if an exception is raised (if one is active, then the runner returns and the caller has to deal with the exception
     
 }runner_op_code;
 
