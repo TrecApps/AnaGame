@@ -566,6 +566,66 @@ void BNFWhile::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, Tre
 void BNFTypeBlock::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement,
     TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
 {
+
+
+}
+
+void BNFTry::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+    TrecSubPointer<TVariable, AnagameRunner> runner;
+    if (!runners.retrieveEntry(currentRunner, runner)) return;
+
+    runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::jump_err));
+
+    UINT tempStartPoint = stringStart;
+    bool resources = false;
+
+    for (UINT C = 0; C < this->tokenList[tokenList].Size(); C++)
+    {
+        auto token = this->tokenList[tokenList][C];
+        if (token->IsRawToken())
+        {
+            int index = statement->statementText.Find(token->token, tempStartPoint);
+
+            tempStartPoint = index + token->token.GetSize();
+        }
+        else
+        {
+            TString tokenTarget(token->token);
+
+            TrecPointer<BNFBase> bnf;
+            if (!bnfs.retrieveEntry(tokenTarget, bnf))
+            {
+                // To-Do: Handle Language Error
+                return;
+            }
+
+            if (!dynamic_cast<BNFBlock*>(bnf.Get()))
+            {
+                resources = true;
+                vars.push_back(VariableContiainer());
+            }
+
+            bnf->Compile(tokenList, messages, languageDetails, statement, bnfs, tempStartPoint, vars, runners, currentRunner, C == this->tokenList[tokenList].Size() - 1);
+
+            if (dynamic_cast<BNFBlock*>(bnf.Get()))
+            {
+                if (resources)
+                {
+                    // To-Do: Handle Resources Mode
+                }
+                runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::umjump_err));
+            }
+        }
+    }
+}
+
+void BNFTypeState::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+}
+
+void BNFBlock::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
     vars.push_back(VariableContiainer());
     ProcessSeriesOfStatements(statement->subStatements, messages, languageDetails, bnfs, vars, runners, currentRunner);
 
@@ -595,5 +655,124 @@ void BNFTypeBlock::Compile(UINT tokenList, TDataArray<CompileMessage>& messages,
         runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::pop_o, pop_o));
     if (pop_b)
         runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::pop_n, pop_b));
+}
 
+void BNFFinally::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+    // Get the runner soon, so we can mark a place for the finally block to begin
+    TrecSubPointer<TVariable, AnagameRunner> runner;
+    if (!runners.retrieveEntry(currentRunner, runner)) return;
+
+    AnagameRunner::RunnerCode opCode;
+    runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::jump_mark));
+    UINT finallyTarget = runner->GetOpCount() - 1;
+
+    for (UINT Rust = finallyTarget; static_cast<runner_op_code>(opCode.op_code) != runner_op_code::jump_err; Rust--)
+    {
+        runner->GetOpAt(Rust, opCode);
+        if (static_cast<runner_op_code>(opCode.op_code) == runner_op_code::jump_f)
+        {
+            opCode.operand1 = finallyTarget;
+            runner->UpdateOp(opCode, Rust);
+        }
+    }
+
+    vars.push_back(VariableContiainer());
+    ProcessSeriesOfStatements(statement->subStatements, messages, languageDetails, bnfs, vars, runners, currentRunner);
+
+    VariableContiainer vc(vars.RemoveAt(vars.Size() - 1));
+
+    UINT pop_o = 0, pop_b = 0;
+
+    for (UINT Rust = 0; Rust < vc.variables.count(); Rust++)
+    {
+        auto var = vc.variables.GetEntryAt(Rust);
+
+        assert(var.Get());
+        if (var->object->useObject)
+        {
+            pop_o++;
+        }
+        else
+        {
+            // To-Do: Handle Binary Mode
+        }
+    }
+
+    if (pop_o)
+        runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::pop_o, pop_o));
+    if (pop_b)
+        runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::pop_n, pop_b));
+
+}
+
+void BNFCatch::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+    TrecSubPointer<TVariable, AnagameRunner> runner;
+    if (!runners.retrieveEntry(currentRunner, runner)) return;
+
+    UINT tempStartPoint = stringStart;
+    bool resources = false;
+
+    TrecPointer<TcExpression> decl;
+
+    for (UINT C = 0; C < this->tokenList[tokenList].Size(); C++)
+    {
+        auto token = this->tokenList[tokenList][C];
+        if (token->IsRawToken())
+        {
+            int index = statement->statementText.Find(token->token, tempStartPoint);
+
+            tempStartPoint = index + token->token.GetSize();
+        }
+        else
+        {
+            TString tokenTarget(token->token);
+
+            // Catch Blocks expect some sort of declaration to hold the exception raised
+            TrecPointer<BNFBase> bnf;
+            if (!bnfs.retrieveEntry(tokenTarget, bnf))
+            {
+                // To-Do: Handle Language Error
+                return;
+            }
+
+            if (dynamic_cast<BNFDeclBase*>(bnf.Get()))
+            {
+                decl = dynamic_cast<BNFDeclBase*>(bnf.Get())->CreateDeclaration(messages, statement, bnfs, tempStartPoint, vars);
+                  
+            }
+            else
+            {
+                // To-Do: Handle Expression mamagment
+
+
+                // End To-Do
+
+                UINT tryTarget = runner->GetOpCount();
+
+                runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::jump_mark, 0, 1));
+
+                AnagameRunner::RunnerCode opCode;
+
+                for (UINT Rust = tryTarget; static_cast<runner_op_code>(opCode.op_code) != runner_op_code::jump_err; Rust--)
+                {
+                    runner->GetOpAt(Rust, opCode);
+                    if (static_cast<runner_op_code>(opCode.op_code) == runner_op_code::jump_err)
+                    {
+                        if (!opCode.operand1)
+                        {
+                            opCode.operand1 = tryTarget;
+                            runner->UpdateOp(opCode, Rust);
+                        }
+                        break;
+                    }
+                }
+
+                bnf->Compile(tokenList, messages, languageDetails, statement, bnfs, tempStartPoint, vars, runners, currentRunner, C == this->tokenList[tokenList].Size() - 1);
+                runner->AddOp(AnagameRunner::RunnerCode(runner_op_code::clear_err));
+            }
+
+        }
+    }
 }

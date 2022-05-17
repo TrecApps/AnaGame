@@ -187,6 +187,12 @@ public:
 		const TString& currentRunner, bool expectTerminal = true)override;
 };
 
+class BNFDeclBase : public BNFBase
+{
+public:
+	virtual TrecPointer<TcExpression> CreateDeclaration(TDataArray<CompileMessage>& messages, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars) = 0;
+};
+
 class BNFExpression : public BNFBase
 {
 public:

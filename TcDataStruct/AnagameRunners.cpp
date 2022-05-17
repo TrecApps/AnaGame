@@ -193,7 +193,7 @@ ReturnObject AnagameRunner::GenerateRunners(TDataMap<TrecSubPointer<TVariable, A
 AnagameRunner::AnagameRunner()
 {
     isBinary = isObject = false;
-    currentCodeLines = currentLine = 0;
+    currentCodeLines = currentLine = exceptionJump = 0;
 }
 
 void AnagameRunner::SetCurrentStack(TrecPointer<BinaryStack> stack)
@@ -246,6 +246,22 @@ void AnagameRunner::AddOp(const TString& str)
 UINT AnagameRunner::GetOpCount()
 {
     return code.Size();
+}
+
+void AnagameRunner::UpdateOp(const RunnerCode& code, UINT index)
+{
+    if (index < this->code.Size())
+    {
+        this->code[index] = code;
+    }
+}
+
+bool AnagameRunner::GetOpAt(UINT index, RunnerCode& code)
+{
+    if(index >= this->code.Size())
+        return false;
+    code = this->code[index];
+    return true;
 }
 
 AnagameRunner::RunnerCode::RunnerCode()

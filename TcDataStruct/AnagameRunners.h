@@ -70,6 +70,7 @@ typedef enum class runner_op_code
     jump_cond,      // Causes the runner to go to the given instruction on the stack
     jump_mark,      // Serves as a marker at which the program can jump to
     jump,           // Causes the runner to go to the given instruction on the stack
+    jump_f,         // Same as Jump, but used by the compiler to identify update if a finally block is provided
     assess_true,    // Converts the value at the end of the Object Stack to
 
     // Error Handling
@@ -191,6 +192,15 @@ public:
      */
     void UpdateOp(const RunnerCode& code, UINT index);
 
+    /**
+     * Method: AnagameRunner::GetOpAt
+     * Purpose: Retureves the current Op code at a given Location
+     * Parameters: UINT index - the index to look at
+     *              RunnerCode& code - the code holding at the index (invalid if return value is false)
+     * Returns: bool - false if index exceeds the op-Count
+     */
+    bool GetOpAt(UINT index, RunnerCode& code);
+
 protected:
     bool isBinary, isObject;
     TString file, name;
@@ -201,9 +211,13 @@ protected:
 
     UINT currentLine, currentCodeLines;
 
+    UINT exceptionJump;
+
     TrecPointer<BinaryStack> binaryStack;
     TrecPointer<ObjectStack> objectStack;
 
     TDataArray<RunnerCode> code;
+
+    ReturnObject obj;
 };
 
