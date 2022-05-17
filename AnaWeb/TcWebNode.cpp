@@ -396,8 +396,16 @@ void TcWebNode::Draw(TrecPointer<TVariable> object)
     // Now draw the ChildNodes
     for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
     {
-        if (childNodes[Rust]->GetElementType() != NodeContainerType::nct_raw_text)
+        switch (childNodes[Rust]->GetElementType())
+        {
+        case NodeContainerType::nct_reg_node:
+        case NodeContainerType::nct_tex_node:
             dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->Draw(object);
+            continue;
+        case NodeContainerType::net_tab_node:
+
+        }
+
     }
 
     // Draw Text
@@ -722,11 +730,16 @@ void TcWebNode::PreCreate(TrecSubPointerSoft<TPage, TcWebNode> parent, TrecPoint
         if (ch->GetElementType() != NodeContainerType::nct_raw_text)
         {
             TrecSubPointer<TcNodeElement, TcWebNodeElement> webCh = TrecPointerKey::GetTrecSubPointerFromTrec<TcNodeElement, TcWebNodeElement>(ch);
-            assert(webCh.Get());
+            assert(webCh.GetBase());
 
+            if (webCh.Get() && webCh->GetWebNode()->insideDisplay == TcWebNodeDisplayInside::wndi_table)
+            {
+                TrecSubPointer<TcNodeElement, TcTableNodeElement> tabCh = TrecPointerKey::GetNewTrecSubPointer<TcNodeElement, TcTableNodeElement>(webCh->GetWebNode());
+                childNodes[Rust] = TrecSubToTrec<>(tabCh);
+            }
+            else if(webCh.Get())
             webCh->SetVariable(L"NodeType", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(
-                webCh->GetWebNode()->IsText() ? L"Text" : L"Web"
-                ));
+                webCh->GetWebNode()->IsText() ? L"Text" : L"Web"));
         }
     }
 }
@@ -1400,6 +1413,7 @@ UINT TcWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND wi
             printableText.AppendChar(ch);
         }
     }
+    // CompileProperties(styles);
     return 0;
 }
 
@@ -2169,3 +2183,16 @@ void TcBorderData::ClearCorner(tc_border_side side)
     }
 }
 
+TcWebNode::TcTableNodeElement::TcTableNodeElement(TrecSubPointer<TPage, TcWebNode> node)
+{
+}
+
+TcWebNode::NodeContainerType TcWebNode::TcTableNodeElement::GetElementType()
+{
+    return NodeContainerType::net_tab_node;
+}
+
+D2D1_RECT_F TcWebNode::TcTableNodeElement::GetLocation()
+{
+    return D2D1_RECT_F();
+}

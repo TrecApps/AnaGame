@@ -225,6 +225,7 @@ protected:
         nct_raw_text,   // The Inner HTML was text
         nct_reg_node,   // The Inner HTML was a Regular blocked Node
         nct_tex_node,   // The Inner HTML was an inline (texted node)
+        net_tab_node,   // The Inner HTML was a Table
         ntc_null
     };
 
@@ -282,6 +283,39 @@ protected:
         TcWebNodeElement(TrecSubPointer<TPage, TcWebNode> node);
         TrecSubPointer<TPage, TcWebNode> GetWebNode();
 
+        virtual NodeContainerType GetElementType() override;
+        virtual D2D1_RECT_F GetLocation() override;
+
+        /**
+         * Method: TVObject::GetVariable
+         * Purpose: Revtrieves a value in Variable form
+         * Parameters: const TString& name - the name of the variable
+         *              TrecPointer<TVariable>& var - holds the variable retrieved if valid
+         * Returns: bool - whether the variable was valid or not
+         *
+         * Attributes: abstract
+         */
+        virtual bool GetVariable(const TString& name, TrecPointer<TVariable>& var) override;
+
+        /**
+         * Method: TVObject::SetVariable
+         * Purpose: Sets a value in Variable form
+         * Parameters: const TString& name - the name of the variable
+         *              TrecPointer<TVariable> var - the value to set
+         * Returns: bool - whether the variable was valid or not
+         *
+         * Attributes: abstract
+         */
+        virtual bool SetVariable(const TString& name, TrecPointer<TVariable> var) override;
+    };
+
+    class TcTableNodeElement : public TcNodeElement
+    {
+    protected:
+
+
+    public:
+        TcTableNodeElement(TrecSubPointer<TPage, TcWebNode> node);
         virtual NodeContainerType GetElementType() override;
         virtual D2D1_RECT_F GetLocation() override;
 
