@@ -312,12 +312,19 @@ protected:
     class TcTableNodeElement : public TcNodeElement
     {
     protected:
-
-
+        TrecSubPointer<TPage, TcWebNode> node;  // The Node holding the table
+        TDataArray<UINT> cols, rows;            // The Size of the Rows and Columns
+        TDataArray<TDataMap<TString>> colProps; // Addresses properties within colgroups and col's
     public:
         TcTableNodeElement(TrecSubPointer<TPage, TcWebNode> node);
         virtual NodeContainerType GetElementType() override;
         virtual D2D1_RECT_F GetLocation() override;
+
+        TrecSubPointer<TPage, TcWebNode> GetWebNode();
+
+        void PrepTable();
+
+        void CreateTable(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window);
 
         /**
          * Method: TVObject::GetVariable
@@ -727,5 +734,35 @@ protected:
      * Returns: UINT - error code (0 for success)
      */
     UINT ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win, TrecPointer<TArray<styleTable>>& styles);
+
+    // Table Management
+
+    /**
+     * Method: TWebNode::PreEstablishTable
+     * Purpose: Allows Table Elements to establish their elements and determine the dimensions they have
+     * Parameters: TDataArray<UINT>& cols - size of the columns to use
+     *              TDataArray<UINT>& rows - size of the rows to use
+     * Returns: void
+     */
+    void PreEstablishTable(TDataArray<UINT>& cols, TDataArray<UINT>& rows);
+
+
+    /**
+     * Method: TWebNode::SetColumnsAndRows
+     * Purpose: Sets the attributes for the Columns and rows
+     * Parameters: TDataArray<UINT>& cols - set of columns
+     *              TDataArray<UINT>& rows - set of rows
+     * Returns: void
+     */
+    void SetColumnsAndRows(TDataArray<UINT>& cols, TDataArray<UINT>& rows);
+
+    /**
+     * Method: TWebNode::SetColumnProps
+     * Purpose: Enables Rows to figure out what properties and widths to apply to their elements
+     * Parameters: TDataArray<TDataMap<TString>>& colProps - properties to apply to each column
+     *              TDataArray<UINT>& colSizes - size of each column
+     * Returns: void
+     */
+    void SetColumnProps(TDataArray<TDataMap<TString>>& colProps, TDataArray<UINT>& colSizes);
 };
 
