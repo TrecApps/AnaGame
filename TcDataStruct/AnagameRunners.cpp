@@ -264,6 +264,35 @@ bool AnagameRunner::GetOpAt(UINT index, RunnerCode& code)
     return true;
 }
 
+bool AnagameRunner::GetStringAt(TString& val, UINT loc)
+{
+    if(loc >= strings.Size())
+    return false;
+    val.Set(strings[loc]);
+    return true;
+}
+
+bool AnagameRunner::Jump(UINT jumpPoint)
+{
+    if(jumpPoint >= code.Size() || static_cast<runner_op_code>(code[jumpPoint].op_code) != runner_op_code::jump_mark)
+    return false;
+    currentInstruction = jumpPoint;
+    return true;
+}
+
+bool AnagameRunner::SetErrorJump(UINT jumpPoint)
+{
+    if (!jumpPoint)
+    {
+        exceptionJump = 0;
+        return true;
+    }
+    if (jumpPoint >= code.Size() || static_cast<runner_op_code>(code[jumpPoint].op_code) != runner_op_code::jump_mark)
+        return false;
+    exceptionJump = jumpPoint;
+    return true;
+}
+
 AnagameRunner::RunnerCode::RunnerCode()
 {
     operand1 = operand2 = 0;

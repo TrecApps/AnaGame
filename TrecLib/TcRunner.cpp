@@ -188,6 +188,14 @@ ULONG64 BinaryStack::Pop2()
 	return (static_cast<ULONG64>(highEnd) << 4) + static_cast<ULONG64>(lowEnd);
 }
 
+bool BinaryStack::GetValueFromTop(UINT loc, UINT& val)
+{
+	if (++loc > binaries.Size())
+		return false;
+	val = binaries[binaries.Size() - loc];
+	return true;
+}
+
 bool ObjectStack::IsError()
 {
 	return retObj.returnCode > 0;
@@ -237,4 +245,12 @@ TrecPointer<TVariable> ObjectStack::Pop()
 		return TrecPointer<TVariable>();
 	}
 	return objects.RemoveAt(objects.Size() - 1);
+}
+
+bool ObjectStack::GetValueFromTop(UINT loc, TrecPointer<TVariable>& val)
+{
+	if (++loc > objects.Size())
+		return false;
+	val = objects[objects.Size() - loc];
+	return true;
 }

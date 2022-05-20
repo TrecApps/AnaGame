@@ -28,6 +28,8 @@ public:
     UINT Pop1();
     ULONG64 Pop2();
 
+    bool GetValueFromTop(UINT loc, UINT& val);
+
 };
 
 /**
@@ -52,7 +54,7 @@ public:
 
     TrecPointer<TVariable> Pop();
 
-
+    bool GetValueFromTop(UINT loc,TrecPointer<TVariable>& val);
 };
 
 /**

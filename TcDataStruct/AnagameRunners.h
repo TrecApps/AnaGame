@@ -201,6 +201,33 @@ public:
      */
     bool GetOpAt(UINT index, RunnerCode& code);
 
+    /**
+     * Method: AnagameRunner::GetStringAt
+     * Purpose: Retrieves a String for Processing
+     * Parameters: TString& - the string to store
+     *              UINT loc - the index to look at
+     * Returns: bool - false if loc was out of bounds
+     */
+    bool GetStringAt(TString& val, UINT loc);
+
+    /**
+     * Method: AnagameRunner::Jump
+     * Purpose: Instructs the Runner to jump at the operation at a specific point
+     * Parameters: UINT jumpPoint - the point into the code to jump to
+     * Returns: bool - true if jump was valid
+     * 
+     * Note: The Jump point must refer to an actual instruction and one that is marked as a jump mark (a security mechanism)
+     */
+    bool Jump(UINT jumpPoint);
+
+    /**
+     * Method: AnagameRunner::SetErrorJump
+     * Purpose: Sets the jump point in case an error is detected
+     * Parameters: UINT jumpPoint - point to jump to if error is detected (0 to clear the jump point)
+     * Returns: bool - true if jumpPoint is 0 or points to a jump mark
+     */
+    bool SetErrorJump(UINT jumpPoint);
+
 protected:
     bool isBinary, isObject;
     TString file, name;
@@ -210,6 +237,8 @@ protected:
     
 
     UINT currentLine, currentCodeLines;
+
+    UINT currentInstruction;
 
     UINT exceptionJump;
 
