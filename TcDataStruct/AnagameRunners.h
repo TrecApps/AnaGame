@@ -1,7 +1,11 @@
 #pragma once
 #include <TcRunner.h>
 #include <TFileShell.h>
-
+#include <TEnvironment.h>
+/**
+ * enum class: runner_op_code
+ * Purpose: Represents an Op code for the anagame runner
+ */
 typedef enum class runner_op_code
 {
     // Basic Runner tweaks
@@ -80,6 +84,22 @@ typedef enum class runner_op_code
     
 }runner_op_code;
 
+/**
+ * enum class: runner_operator
+ * Purpose: Human Readable representation of the operations that can be performed on Objects
+ */
+typedef enum class runner_operator
+{
+    str_cond,
+    bool_op,
+    add,
+    sub,
+    mul,
+    div,
+    mod,
+    last        // Marker to indicate the last operator (as more are added in development
+}runner_operator;
+
 
 
 /**
@@ -98,7 +118,7 @@ public:
         RunnerCode(runner_op_code code, UINT op1 = 0, UINT op2 = 0);
     };
 
-    static ReturnObject GenerateRunners(TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, TrecPointer<TFileShell> file);
+    static ReturnObject GenerateRunners(TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, TrecPointer<TFileShell> file, TrecPointer<TEnvironment> env);
 
     /**
      * Method: AnagameRunner::AnagameRunner
@@ -228,6 +248,14 @@ public:
      */
     bool SetErrorJump(UINT jumpPoint);
 
+    /**
+     * Method: AnagameRunner::SetOperators
+     * Purpose: Allows Runners to use Specialized Object Operators when the instruction is hit
+     * Parameters: TrecPointer<TVariable> ops - the list of Operators to work with
+     * Returns: TString - error information (empty if successful)
+     */
+    TString SetOperators(TrecPointer<TVariable> ops);
+
 protected:
     bool isBinary, isObject;
     TString file, name;
@@ -248,5 +276,7 @@ protected:
     TDataArray<RunnerCode> code;
 
     ReturnObject obj;
+
+    TDataArray<TrecSubPointer<TVariable, TcRunner>> operators;
 };
 

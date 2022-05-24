@@ -26,6 +26,8 @@ public:
 	};
 
 	Tc2Compiler(TrecPointer<CompilerHolder> parent, TrecPointer<TFileShell> file, TrecPointer<TcLanguage> language);
+
+
 protected:
 	TDataArray<Tc2Compiler> otherCompilers;
 	TrecPointer<TcLanguage> language;

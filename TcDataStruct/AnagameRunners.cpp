@@ -1,6 +1,7 @@
 #include "AnagameRunners.h"
 #include <TFile.h>
 #include "RunOps.h"
+#include "TContainerVariable.h"
 
 static TDataMap<runner_op_code> opCodeMap;
 
@@ -91,7 +92,7 @@ void PrepOpCodeMap()
 
 
 
-ReturnObject AnagameRunner::GenerateRunners(TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, TrecPointer<TFileShell> file)
+ReturnObject AnagameRunner::GenerateRunners(TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, TrecPointer<TFileShell> file, TrecPointer<TEnvironment> env)
 {
     PrepOpCodeMap();
 
@@ -155,6 +156,30 @@ ReturnObject AnagameRunner::GenerateRunners(TDataMap<TrecSubPointer<TVariable, A
                 runner->variableCites.push_back(vars->at(Rust));
             }
             continue;
+        }
+
+        if (line.StartsWith(L"__Operators__"))
+        {
+            line.Set(line.GetDelete(i, 0, 13).GetTrim());
+
+            bool present = true;
+
+            TrecPointer<TVariable> ops= env->GetVariable(line, present);
+            ReturnObject ret;
+            if (!present)
+            {
+                
+                ret.errorMessage.Set(L"Can't Generate Runners: Requested set of Operators not available!");
+                ret.returnCode = ret.ERR_UNSUPPORTED_OP;
+                return ret;
+            }
+            
+            ret.errorMessage.Set(runner->SetOperators(ops));
+            if (ret.errorMessage.GetSize())
+            {
+                ret.returnCode = ret.ERR_BROKEN_REF;
+                return ret;
+            }
         }
 
         auto ops = line.split(L' ');
@@ -291,6 +316,32 @@ bool AnagameRunner::SetErrorJump(UINT jumpPoint)
         return false;
     exceptionJump = jumpPoint;
     return true;
+}
+
+TString AnagameRunner::SetOperators(TrecPointer<TVariable> ops)
+{
+    TrecSubPointer<TVariable, TContainerVariable> contOps = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(ops);
+    if (!contOps.Get())
+        return L"Needed Container Variable!";
+
+    for (UINT Rust = 0; Rust < static_cast<UINT>(runner_operator::last); Rust++)
+    {
+        
+        TString key;
+
+        bool present = contOps->GetValueAt(Rust, key, ops);
+
+        if (!present)
+            return L"Insufficient Supply of Operators";
+
+        if (!ops.Get() || ops->GetVarType() == var_type::runner)
+        {
+            this->operators.push_back(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcRunner>(ops));
+        }
+        else
+            return L"Operators provided must be either Null or a TcRunner";
+    }
+    return TString();
 }
 
 AnagameRunner::RunnerCode::RunnerCode()
