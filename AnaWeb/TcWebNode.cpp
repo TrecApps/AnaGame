@@ -403,7 +403,7 @@ void TcWebNode::Draw(TrecPointer<TVariable> object)
             dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->Draw(object);
             continue;
         case NodeContainerType::net_tab_node:
-
+            dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->Draw(object);
         }
 
     }
@@ -1494,16 +1494,30 @@ void TcWebNode::PreEstablishTable(TDataArray<UINT>& cols, TDataArray<UINT>& rows
             }
         }
 
+        //if (!cols.Size())
+        //    cols.push_back(0);
         break;
         
     default:
-        columnSizes.push_back(0);
+        cols.push_back(0);
         return;
     }
 }
 
 void TcWebNode::SetColumnsAndRows(TDataArray<UINT>& cols, TDataArray<UINT>& rows)
 {
+    this->columnSizes = cols;
+    this->rowSizes = rows;
+
+    for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+    {
+        switch (childNodes[Rust]->GetElementType())
+        {
+        case NodeContainerType::nct_reg_node:
+        case NodeContainerType::nct_tex_node:
+            dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->SetColumnsAndRows(cols, rows);
+        }
+    }
 }
 
 void TcWebNode::SetColumnProps(TDataArray<TDataMap<TString>>& colProps, TDataArray<UINT>& colSizes)
@@ -1623,7 +1637,7 @@ float TcWebNode::ConvertMeasurement(TString& atts)
         switch (unit)
         {
         case WebSizeUnit::wsu_cm:
-            sizeVal = sizeVal * 2.54 / dpif;
+            sizeVal = sizeVal * 2.54f / dpif;
             break;
         case WebSizeUnit::wsu_em:
             sizeVal = sizeVal * textData.fontSize;
@@ -1632,7 +1646,7 @@ float TcWebNode::ConvertMeasurement(TString& atts)
             sizeVal = sizeVal / dpif;
             break;
         case WebSizeUnit::wsu_mm:
-            sizeVal = sizeVal * 0.254 / dpif;
+            sizeVal = sizeVal * 0.254f / dpif;
             break;
         case WebSizeUnit::wsu_pt:
             sizeVal = sizeVal * 72.0f / dpif;
@@ -1839,7 +1853,7 @@ void TcBorderData::CompileBorder(TString& atts, tc_border_side size)
         switch (unit)
         {
         case WebSizeUnit::wsu_cm:
-            sizeVal = sizeVal * 2.54 / dpif;
+            sizeVal = sizeVal * 2.54f / dpif;
             break;
         case WebSizeUnit::wsu_em:
 
@@ -1848,7 +1862,7 @@ void TcBorderData::CompileBorder(TString& atts, tc_border_side size)
             sizeVal = sizeVal / dpif;
             break;
         case WebSizeUnit::wsu_mm:
-            sizeVal = sizeVal * 0.254 / dpif;
+            sizeVal = sizeVal * 0.254f / dpif;
             break;
         case WebSizeUnit::wsu_pt:
             sizeVal = sizeVal * 72.0f / dpif;
@@ -2084,7 +2098,7 @@ void TcBorderData::CompileCorner(TString& atts, tc_border_side side)
             switch (unit)
             {
             case WebSizeUnit::wsu_cm:
-                vAtts[Rust] = vAtts[Rust] * 2.54 / dpif;
+                vAtts[Rust] = vAtts[Rust] * 2.54f / dpif;
                 break;
             case WebSizeUnit::wsu_em:
 
@@ -2093,7 +2107,7 @@ void TcBorderData::CompileCorner(TString& atts, tc_border_side side)
                 vAtts[Rust] = vAtts[Rust] / dpif;
                 break;
             case WebSizeUnit::wsu_mm:
-                vAtts[Rust] = vAtts[Rust] * 0.254 / dpif;
+                vAtts[Rust] = vAtts[Rust] * 0.254f / dpif;
                 break;
             case WebSizeUnit::wsu_pt:
                 vAtts[Rust] = vAtts[Rust] * 72.0f / dpif;
@@ -2375,7 +2389,10 @@ void TcWebNode::TcTableNodeElement::CreateTable(D2D1_RECT_F location, TrecPointe
         cols[Rust] = totalWidth / cols.Size();
     }
 
-    for (UINT Rust = 0; node->childNodes.Size(); Rust++)
+    // Now Set the columns and Rows of child nodes
+    node->SetColumnsAndRows(this->cols, this->rows);
+
+    for (UINT Rust = 0; Rust < node->childNodes.Size(); Rust++)
     {
         if (node->childNodes[Rust]->GetElementType() == NodeContainerType::nct_reg_node)
             dynamic_cast<TcWebNodeElement*>(node->childNodes[Rust].Get())->GetWebNode()->SetColumnProps(this->colProps, cols);
