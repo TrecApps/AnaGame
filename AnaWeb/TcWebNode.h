@@ -248,6 +248,7 @@ protected:
         virtual NodeContainerType GetElementType() override;
         virtual D2D1_RECT_F GetLocation() override;
         bool IsFirst();
+        TrecPointer<TTextElement> GetTextElement();
 
         /**
          * Method: TVObject::GetVariable
@@ -453,6 +454,10 @@ protected:
      * Column and Row Spans
      */
     UCHAR columnSpan, rowSpan;
+    /**
+     * Whether the node should attempt to shrink height
+     */
+    bool doShrink;
 
 public:
 
@@ -634,7 +639,15 @@ public:
      * Returns: UINT - Error Code
      */
     virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window);
+    void HandleRowSpan();
+    void ShrinkWidth(UINT minWidth);
 protected:
+
+    void TableGetNeededWidth(TDataArray<TDataArray<float>>& needed);
+
+    void SetTableColWidth(TDataArray<float>& use);
+
+    float NeedsWidth(UINT column);
 
     /**
      * Method: TWebNode::CompileProperties
