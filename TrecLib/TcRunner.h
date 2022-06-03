@@ -211,3 +211,35 @@ protected:
     TDataMap<TcVariableHolder> variables;       // List of Variables to Hold
 };
 
+typedef void (*NativeTcRunner1)(TDataMap<TcVariableHolder> variables, ReturnObject& ret);
+
+class TcNativeRunner1 :
+    public TcRunner
+{
+private:
+    NativeTcRunner1 function;
+public:
+    /**
+     * Method: TcNativeRunner1::Run
+     * Purpose: Allows the Interpretor to run the Code As Is
+     * Parameters: void
+     * Returns: ReturnObject - information about the Run
+     */
+    virtual ReturnObject Run() override;
+
+    /**
+     * Method: TcNativeRunner1::SetInitialVariables
+     * Purpose: Allows Callers to Set Intial Variables, i.e. parameters in a function/method call
+     * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters to set when calling the function
+     * Returns: void
+     */
+    virtual void SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params) override;
+
+    /**
+     * Method: TcNaticeRunner1::TcNativeRunner1
+     * Purpose: Constructor
+     * Parameters: NativeTcRunner1 function
+     * Returns: New TcNativeRunner1 object
+     */
+    TcNativeRunner1(NativeTcRunner1 function);
+};

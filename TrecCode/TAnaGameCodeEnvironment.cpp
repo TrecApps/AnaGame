@@ -10,7 +10,7 @@
 #include <AnafacePage.h>
 #include <DirectoryInterface.h>
 #include <TerminalHandler.h>
-
+#include <JsMath.h>
 
 class AnagameCodePageHandlerBuilder : public TPageEnvironment::PageHandlerBuilder {
 private:
@@ -87,6 +87,9 @@ TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell):
 	compileErrorHandling = CompileErrorHandling::ceh_stop;
 
 	codePageBuilder = TrecPointerKey::GetNewTrecPointerAlt<TPageEnvironment::PageHandlerBuilder, AnagameCodePageHandlerBuilder>(shell);
+
+	envVariables.addEntry(L"js.ops", JsOperatorsTc::GetJsOperators());
+
 }
 
 TString TAnaGameCodeEnvironment::GetType()

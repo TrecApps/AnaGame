@@ -37,6 +37,28 @@ void TcRunner::SetCurrentStack(TrecPointer<BinaryStack> stack)
 	
 }
 
+ReturnObject TcNativeRunner1::Run()
+{
+	ReturnObject obj;
+	function(variables, obj);
+	return obj;
+}
+
+
+void TcNativeRunner1::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params) {
+	this->variables.clear();
+	for (UINT Rust = 0; Rust < params.Size(); Rust++)
+	{
+		variables.addEntry(Rust, TcVariableHolder(true, L"", params[Rust]));
+	}
+}
+
+
+TcNativeRunner1::TcNativeRunner1(NativeTcRunner1 function)
+{
+	this->function = function;
+}
+
 
 
 
