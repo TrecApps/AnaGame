@@ -33,6 +33,7 @@ protected:
 
 public:
 
+	static tc_statement_type GetStatementType(const TString& bnfTag);
 	static TrecPointer<BNFBase> GetBnf(const TString& name, TDataArray<TString>& tokens);
 
 	virtual bool IsStatement(TDataMap<TrecPointer<BNFBase>>& otherBnfs, const TString& statement, UINT& stringStart,bool expectTerminal = true);

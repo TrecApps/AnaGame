@@ -157,6 +157,18 @@ BNFBase::BNFToken::BNFToken(const TString& token)
     this->token.Set(token);
 }
 
+tc_statement_type BNFBase::GetStatementType(const TString& bnfTag)
+{
+    PrepBnfMap();
+
+    for (UINT Rust = 0; Rust < statementBnfMap.Size(); Rust++)
+    {
+        if (!bnfTag.Compare(statementBnfMap[Rust].bnf))
+            return statementBnfMap[Rust].type;
+    }
+    return tc_statement_type::_regular;
+}
+
 TrecPointer<BNFBase> BNFBase::GetBnf(const TString& name, TDataArray<TString>& tokens)
 {
     TrecPointer<BNFBase> ret;
