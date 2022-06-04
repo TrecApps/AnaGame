@@ -2,6 +2,7 @@
 #include "BNFBase.h"
 #include <TMap.h>
 #include "TContainerVariable.h"
+#include "TStringVariable.h"
 #include "TcCompiler.h"
 
 class TcLanguage
@@ -10,6 +11,8 @@ protected:
 	TMap<BNFBase> languageBnf;
 	TrecSubPointer<TVariable, TContainerVariable> languageComponents;
 public:
+
+	bool SupportsFile(TrecPointer<TFileShell> file);
 
 	TcLanguage(TrecPointer<TVariable> languageData);
 

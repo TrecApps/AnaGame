@@ -44,6 +44,19 @@ TrecPointer<Tc2Compiler> Tc2Compiler::CompilerHolder::SetUpCompiler(const TStrin
     return ret;
 }
 
+bool Tc2Compiler::CompilerHolder::SubmitSourceFile(TrecPointer<TFileShell> file)
+{
+    for (UINT Rust = 0; Rust < languages.Size(); Rust++)
+    {
+        if (languages[Rust]->SupportsFile(file))
+        {
+            // To-Do: Add Compiler to compiler-map
+            return true;
+        }
+    }
+    return false;
+}
+
 void Tc2Compiler::CompilerHolder::Compile(TDataArray<CompileMessage>& messages)
 {
     bool worked = true;

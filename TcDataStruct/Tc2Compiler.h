@@ -29,6 +29,8 @@ public:
 
 		TrecPointer<Tc2Compiler> SetUpCompiler(const TString& str);
 
+		bool SubmitSourceFile(TrecPointer<TFileShell> file);
+
 		void Compile(TDataArray<CompileMessage>& messages);
 	};
 

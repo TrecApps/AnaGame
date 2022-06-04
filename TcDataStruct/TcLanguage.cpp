@@ -1,5 +1,29 @@
 #include "TcLanguage.h"
 
+bool TcLanguage::SupportsFile(TrecPointer<TFileShell> file)
+{
+	if(!file.Get() || file->IsDirectory())
+	return false;
+	bool present = true;
+
+	TString ext(file->GetName());
+	ext.Set(ext.SubString(ext.FindLast(L'.')));
+	TrecSubPointer<TVariable, TContainerVariable> extList = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(languageComponents->GetValue(L"FileExt", present));
+	TrecSubPointer<TVariable, TStringVariable> extStr = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(languageComponents->GetValue(L"FileExt", present));
+	if (extStr.Get())
+		return !ext.CompareNoCase(extStr->GetString());
+	if (!extList.Get())
+		return false;
+	present = true;
+	TString ind;
+	TrecPointer<TVariable> var;
+	for (UINT Rust = 0; extList->GetValueAt(Rust, ind, var); Rust++)
+	{
+		if (var.Get() && !ext.CompareNoCase(var->GetString())) return true;
+	}
+	return false;
+}
+
 TcLanguage::TcLanguage(TrecPointer<TVariable> languageData)
 {
 	languageComponents = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TContainerVariable>(languageData);
