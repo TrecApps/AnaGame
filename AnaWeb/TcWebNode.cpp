@@ -752,7 +752,7 @@ void TcWebNode::PreCreate(TrecSubPointerSoft<TPage, TcWebNode> parent, TrecPoint
     }
 }
 
-UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window)
+UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window, bool shrinkHeight)
 {
     // Go through each bit of the child elements, determining where they lay
     if (this->doDisplay && !TcIsVoidElement(tagName))
@@ -800,7 +800,7 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
         {
             if (textNodes.Size())
             {
-                ProcessTextNodes(textNodes, textDataList, location);
+                ProcessTextNodes(textNodes, textDataList, location, shrinkHeight);
                 textNodes.RemoveAll();
                 textDataList.RemoveAll();
             }
@@ -859,8 +859,8 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
             else dynamic_cast<TcWebNodeElement*>(element.Get())->GetWebNode()->RetrieveTextNodes(textNodes, textDataList);
         }
     }
-
-    ShrinkHeight();
+    if(shrinkHeight)
+        ShrinkHeight();
     if (insideDisplay == TcWebNodeDisplayInside::wndi_table)
     {
         TDataArray<TDataArray<float>> widthTable;
@@ -909,67 +909,119 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
             }
         }
 
+        rowSizes.RemoveAll();
+
+        CollectRowSizes(rowSizes);
+        for (UINT Rust = 0, C = 0; Rust < childNodes.Size(); Rust++)
+        {
+            TrecSubPointer<TPage, TcWebNode> node;
+            switch (childNodes[Rust]->GetElementType())
+            {
+            case NodeContainerType::nct_reg_node:
+            case NodeContainerType::nct_tex_node:
+                node = dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode();
+                break;
+            case NodeContainerType::net_tab_node:
+                node = dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode();
+            }
+            node->HandleRowSpan(rowSizes, C);
+        }
+
+
         //ShrinkWidth(0);
         //HandleRowSpan();
     }
 
     if (textNodes.Size())
     {
-        ProcessTextNodes(textNodes, textDataList, location);
+        ProcessTextNodes(textNodes, textDataList, location, shrinkHeight);
         textNodes.RemoveAll();
     }
 
     return 0;
 }
 
-void TcWebNode::HandleRowSpan()
+void TcWebNode::HandleRowSpan(TDataArray<UINT>& sizes, UINT& row)
 {
-
-
     if (internalDisplay == TcWebNodeDisplayInternal::wndi_row)
     {
         for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
         {
-            auto cNode = childNodes[Rust];
-
-            TrecSubPointer<TPage, TcWebNode> webNode;
-
-            if (cNode->GetElementType() == NodeContainerType::nct_reg_node || cNode->GetElementType() == NodeContainerType::nct_tex_node)
-                webNode = dynamic_cast<TcWebNodeElement*>(cNode.Get())->GetWebNode();
-            else if (cNode->GetElementType() == NodeContainerType::net_tab_node)
-                webNode = dynamic_cast<TcTableNodeElement*>(cNode.Get())->GetWebNode();
-            if (webNode.Get() && webNode->rowSpan > 1)
+            TrecSubPointer<TPage, TcWebNode> node;
+            switch (childNodes[Rust]->GetElementType())
             {
-                UINT rSpan = webNode->rowSpan;
-                UINT curRSpan = rowSpan;
-                webNode->area.bottom = webNode->area.top;
-                while (rSpan && curRSpan < rowSizes.Size())
-                {
-                    webNode->area.bottom += rowSizes[curRSpan++];
-                    rSpan--;
-                }
-                webNode->doShrink = false;
-                webNode->CreateWebNode(webNode->area, d3dEngine, this->win);
+            case NodeContainerType::nct_reg_node:
+            case NodeContainerType::nct_tex_node:
+                node = dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode();
+                break;
+            case NodeContainerType::net_tab_node:
+                node = dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode();
             }
+            D2D1_RECT_F loc = node->area;
+            loc.top -= node->outerMargin.top;
+            loc.left -= node->outerMargin.left;
+            loc.right += node->outerMargin.right;
+            loc.bottom += node->outerMargin.bottom;
+
+            for (UINT C = 1, c = row + 1; C < node->rowSpan && c < sizes.Size(); C++, c++)
+            {
+                loc.bottom += sizes[c];
+            }
+
+            node->CreateWebNode(loc, d3dEngine, this->win, false);
         }
+        row++;
     }
+    else if (insideDisplay == TcWebNodeDisplayInside::wndi_table)
+        return;
     else
     {
         for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
         {
-            auto cNode = childNodes[Rust];
-            TrecSubPointer<TPage, TcWebNode> webNode;
-            if (cNode->GetElementType() == NodeContainerType::nct_reg_node || cNode->GetElementType() == NodeContainerType::nct_tex_node)
-                webNode = dynamic_cast<TcWebNodeElement*>(cNode.Get())->GetWebNode();
-            else if (cNode->GetElementType() == NodeContainerType::net_tab_node)
-                webNode = dynamic_cast<TcTableNodeElement*>(cNode.Get())->GetWebNode();
-            if (webNode.Get())
+            TrecSubPointer<TPage, TcWebNode> node;
+            switch (childNodes[Rust]->GetElementType())
             {
-                webNode->HandleRowSpan();
+            case NodeContainerType::nct_reg_node:
+            case NodeContainerType::nct_tex_node:
+                node = dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode();
+                break;
+            case NodeContainerType::net_tab_node:
+                node = dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode();
             }
+            node->HandleRowSpan(sizes, row);
         }
     }
 }
+
+void TcWebNode::CollectRowSizes(TDataArray<UINT>& sizes)
+{
+
+    for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+    {
+        TrecSubPointer<TPage, TcWebNode> node;
+        switch (childNodes[Rust]->GetElementType())
+        {
+        case NodeContainerType::nct_reg_node:
+        case NodeContainerType::nct_tex_node:
+            node = dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode();
+            break;
+        case NodeContainerType::net_tab_node:
+            node = dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode();
+        }
+
+        if (node->insideDisplay == TcWebNodeDisplayInside::wndi_table)
+            continue;
+        if (node->internalDisplay == TcWebNodeDisplayInternal::wndi_row)
+        {
+            D2D1_RECT_F loc = node->area;
+            loc.top -= node->outerMargin.top;
+            loc.bottom += node->outerMargin.bottom;
+            sizes.push_back(loc.bottom - loc.top);
+        }
+        else node->CollectRowSizes(sizes);
+    }
+}
+
 
 void TcWebNode::ShrinkWidth(UINT minWidth)
 {
@@ -1732,7 +1784,7 @@ TextFormattingDetails getTextFormattingDetails(TcTextData& textData, TrecPointer
     return ret;
 }
 
-void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, TDataArray<TcTextData>& textDataList, D2D1_RECT_F& location)
+void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, TDataArray<TcTextData>& textDataList, D2D1_RECT_F& location, bool shrink)
 {
     TrecSubPointer<TTextElement, TComplexTextElement> element = TrecPointerKey::GetNewSelfTrecSubPointer<TTextElement, TComplexTextElement>(drawingBoard, win, false);
     TrecPointer<TcTextStructure> elementStructure = TrecPointerKey::GetNewTrecPointer<TcTextStructure>();
@@ -1754,7 +1806,7 @@ void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNod
 
     element->SetText(theString);
     element->SetHorizontallignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-    element->SetVerticalAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+    element->SetVerticalAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
     element->SetLocation(location);
     if (textData.textColorUpdated)
         element->SetColor(textData.textColor);
@@ -1771,8 +1823,11 @@ void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNod
 
     D2D1_RECT_F loc = element->GetLocation();
     bool w;
-    loc.bottom = loc.top + element->GetMinHeight(w);
-    element->SetLocation(loc);
+    if (shrink)
+    {
+        loc.bottom = loc.top + element->GetMinHeight(w);
+        element->SetLocation(loc);
+    }
     location.top = loc.bottom;
 
     textElements.push_back(elementStructure);

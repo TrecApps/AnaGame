@@ -638,8 +638,9 @@ public:
      *              TrecPointerSoft<TWebNode> parent - the node that called this method
      * Returns: UINT - Error Code
      */
-    virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window);
-    void HandleRowSpan();
+    virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window, bool shrinkHeight = true);
+    void HandleRowSpan(TDataArray<UINT>& sizes, UINT& row);
+    void CollectRowSizes(TDataArray<UINT>& sizes);
     void ShrinkWidth(UINT minWidth);
 protected:
 
@@ -687,7 +688,7 @@ protected:
      *              const D2D1_RECT_F& location - the area where the text can be located at
      * Returns: void
      */
-    void ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, TDataArray<TcTextData>& textDataList, D2D1_RECT_F& location);
+    void ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNodes, TDataArray<TcTextData>& textDataList, D2D1_RECT_F& location, bool shrink);
 
     /**
      * Method: TcWebNode::RetrieveTextNodes
