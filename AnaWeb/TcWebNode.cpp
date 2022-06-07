@@ -64,6 +64,43 @@ static TString tcEventHandlers[WEB_EVENT_HANDLER_COUNT] = {
     TString(L"ontoggle")
 };
 
+TDataMap<R_Message_Type> messageTypeMap;
+
+bool GetMessageType(const TString& messageStr, R_Message_Type& message)
+{
+    if (!messageTypeMap.count())
+    {
+        messageTypeMap.addEntry(L"onkeypress", R_Message_Type::On_Char);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_check);
+        messageTypeMap.addEntry(L"onclick", R_Message_Type::On_Click);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Click_Release);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Flyout);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Focus);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Hold_Click);
+        messageTypeMap.addEntry(L"onmousemove", R_Message_Type::On_Hover);
+        messageTypeMap.addEntry(L"onmouseover", R_Message_Type::On_Hover_Enter);
+        messageTypeMap.addEntry(L"onmouseout", R_Message_Type::On_Hover_Leave);
+        messageTypeMap.addEntry(L"ondblclick", R_Message_Type::On_LDoubleClick);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Lose_Focus);
+        messageTypeMap.addEntry(L"onmousedown", R_Message_Type::On_L_Button_Down);
+
+        messageTypeMap.addEntry(L"onmouseup", R_Message_Type::On_L_Button_Up);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_radio_change);
+        messageTypeMap.addEntry(L"onresize", R_Message_Type::On_Resized);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Right_Click);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Right_Release);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_R_Button_Down);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_R_Button_Up);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Scrolled);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Select_Scroller);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_sel_change);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_SubmitDrag);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_Text_Change);
+        messageTypeMap.addEntry(L"", R_Message_Type::On_L_Button_Down);
+    }
+}
+
+
 typedef struct TcStyleString {
     TString str;
     stroke_style style;
@@ -387,6 +424,8 @@ TcWebNode::TcWebNode(TrecPointer<DrawingBoard> board): TPage(board)
     listStyle = list_style::ls_none;
 
     innerMargin = outerMargin = { 0,0,0,0 };
+
+    onLClick = onMouse = onRClick = false;
 }
 
 bool TcWebNode::HandlesEvents()
@@ -567,38 +606,460 @@ void TcWebNode::DrawBorder()
     }
 }
 
-ag_msg void TcWebNode::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TcWebNode::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+    EventPropagater prop;
+    if (onRClick && handlers.retrieveEntry(L"onclick", prop))
+    {
+        EventID_Cred c;
+        c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        c.expression.Set(prop.event);
+        c.eventType = R_Message_Type::On_Right_Click;
+        cred.push_back(c);
+    }
+
+    onRClick = false;
+    if (!IsContained(point, area))
+    {
+        return;
+    }
+
+    bool hasEventProp = handlers.retrieveEntry(L"onmouseup", prop);
+
+    TDataArray<TPoint> points;
+    for (UINT Rust = 0; Rust < textElements.Size(); Rust++)
+    {
+        UINT i = 0;
+        if (textElements[Rust]->text->GetClickIndex(i, point))
+            points.push_back(TPoint(Rust, i));
+    }
+
+    UINT curCredCount = cred.Size();
+
+    if (!points.Size())
+    {
+        if (outsideDisplay == TcWebNodeDisplayOutside::wndo_inline)
+            hasEventProp = false;
+        for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+        {
+            switch (childNodes[Rust]->GetElementType())
+            {
+            case NodeContainerType::nct_reg_node:
+            case NodeContainerType::nct_tex_node:
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                break;
+            case NodeContainerType::net_tab_node:
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+            }
+        }
+    }
+    else
+    {
+        // To-Do: Handle scenario where second (or third...) Complext Text Element is used
+        UINT indexStart = 0;
+        FishForTextEvents(L"ommouseup", indexStart, points[0].y, cred);
+    }
+
+
+    
+
+    if (hasEventProp)
+    {
+        EventID_Cred c;
+        c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        c.expression.Set(prop.event);
+        c.eventType = R_Message_Type::On_R_Button_Up;
+
+        curCredCount = cred.Size() - curCredCount;
+
+        if (prop.useCapture && curCredCount)
+        {
+            cred.InsertAt(c, cred.Size() - (curCredCount + 1));
+        }
+        else
+            cred.push_back(c);
+    }
+}
+
+ag_msg void TcWebNode::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
+{
+    if (!IsContained(point, area))
+    {
+        return;
+    }
+
+    onRClick = true;
+
+    EventPropagater prop;
+    bool hasEventProp = handlers.retrieveEntry(L"onmousedown", prop);
+
+    TDataArray<TPoint> points;
+    for (UINT Rust = 0; Rust < textElements.Size(); Rust++)
+    {
+        UINT i = 0;
+        if (textElements[Rust]->text->GetClickIndex(i, point))
+            points.push_back(TPoint(Rust, i));
+    }
+
+    UINT curCredCount = cred.Size();
+
+    if (!points.Size())
+    {
+        if (outsideDisplay == TcWebNodeDisplayOutside::wndo_inline)
+            hasEventProp = false;
+        for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+        {
+            switch (childNodes[Rust]->GetElementType())
+            {
+            case NodeContainerType::nct_reg_node:
+            case NodeContainerType::nct_tex_node:
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                break;
+            case NodeContainerType::net_tab_node:
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+            }
+        }
+    }
+    else
+    {
+        // To-Do: Handle scenario where second (or third...) Complext Text Element is used
+        UINT indexStart = 0;
+        FishForTextEvents(L"onmousedown", indexStart, points[0].y, cred);
+    }
+
+
+
+
+    if (hasEventProp)
+    {
+        EventID_Cred c;
+        c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        c.expression.Set(prop.event);
+        c.eventType = R_Message_Type::On_R_Button_Up;
+
+        curCredCount = cred.Size() - curCredCount;
+
+        if (prop.useCapture && curCredCount)
+        {
+            cred.InsertAt(c, cred.Size() - (curCredCount + 1));
+        }
+        else
+            cred.push_back(c);
+    }
 
 }
 
-ag_msg void TcWebNode::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TcWebNode::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+    EventPropagater prop;
+    if (onLClick && handlers.retrieveEntry(L"onclick", prop))
+    {
+        EventID_Cred c;
+        c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        c.expression.Set(prop.event);
+        c.eventType = R_Message_Type::On_Click;
+        cred.push_back(c);
+    }
 
+    onLClick = false;
+    if (!IsContained(point, area))
+    {
+        return;
+    }
+
+    bool hasEventProp = handlers.retrieveEntry(L"onmouseup", prop);
+
+    TDataArray<TPoint> points;
+    for (UINT Rust = 0; Rust < textElements.Size(); Rust++)
+    {
+        UINT i = 0;
+        if (textElements[Rust]->text->GetClickIndex(i, point))
+            points.push_back(TPoint(Rust, i));
+    }
+
+    UINT curCredCount = cred.Size();
+
+    if (!points.Size())
+    {
+        if (outsideDisplay == TcWebNodeDisplayOutside::wndo_inline)
+            hasEventProp = false;
+        for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+        {
+            switch (childNodes[Rust]->GetElementType())
+            {
+            case NodeContainerType::nct_reg_node:
+            case NodeContainerType::nct_tex_node:
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                break;
+            case NodeContainerType::net_tab_node:
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+            }
+        }
+    }
+    else
+    {
+        // To-Do: Handle scenario where second (or third...) Complext Text Element is used
+        UINT indexStart = 0;
+        FishForTextEvents(L"ommouseup", indexStart, points[0].y, cred);
+    }
+
+    if (hasEventProp)
+    {
+        EventID_Cred c;
+        c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        c.expression.Set(prop.event);
+        c.eventType = R_Message_Type::On_L_Button_Up;
+
+        curCredCount = cred.Size() - curCredCount;
+
+        if (prop.useCapture && curCredCount)
+        {
+            cred.InsertAt(c, cred.Size() - (curCredCount + 1));
+        }
+        else
+            cred.push_back(c);
+    }
 }
 
-ag_msg void TcWebNode::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TcWebNode::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+    if (!IsContained(point, area))
+    {
+        return;
+    }
 
+    onLClick = true;
+
+    EventPropagater prop;
+    bool hasEventProp = handlers.retrieveEntry(L"onmousedown", prop);
+
+    TDataArray<TPoint> points;
+    for (UINT Rust = 0; Rust < textElements.Size(); Rust++)
+    {
+        UINT i = 0;
+        if (textElements[Rust]->text->GetClickIndex(i, point))
+            points.push_back(TPoint(Rust, i));
+    }
+
+    UINT curCredCount = cred.Size();
+
+    if (!points.Size())
+    {
+        if (outsideDisplay == TcWebNodeDisplayOutside::wndo_inline)
+            hasEventProp = false;
+        for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+        {
+            switch (childNodes[Rust]->GetElementType())
+            {
+            case NodeContainerType::nct_reg_node:
+            case NodeContainerType::nct_tex_node:
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                break;
+            case NodeContainerType::net_tab_node:
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+            }
+        }
+    }
+    else
+    {
+        // To-Do: Handle scenario where second (or third...) Complext Text Element is used
+        UINT indexStart = 0;
+        FishForTextEvents(L"onmousedown", indexStart, points[0].y, cred);
+    }
+
+    if (hasEventProp)
+    {
+        EventID_Cred c;
+        c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        c.expression.Set(prop.event);
+        c.eventType = R_Message_Type::On_R_Button_Up;
+
+        curCredCount = cred.Size() - curCredCount;
+
+        if (prop.useCapture && curCredCount)
+        {
+            cred.InsertAt(c, cred.Size() - (curCredCount + 1));
+        }
+        else
+            cred.push_back(c);
+    }
 }
 
-ag_msg void TcWebNode::OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TcWebNode::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+    EventPropagater prop;
 
+
+    if (!IsContained(point, area))
+    {
+        if (onMouse && handlers.retrieveEntry(L"onmouseout", prop))
+        {
+            EventID_Cred c;
+            c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+            c.expression.Set(prop.event);
+            c.eventType = R_Message_Type::On_Hover_Leave;
+            cred.push_back(c);
+        }
+        onMouse = false;
+        return;
+    }
+    // in nFlags is 0, then the call is directly due to an event. if 1, then the window is cleaning up pages from a previous call
+    if (nFlags)
+        return;
+
+    TString eventToUse(onMouse ? L"onmousemove" : L"onmouseover");
+    onMouse = true;
+
+    bool hasEventProp = handlers.retrieveEntry(eventToUse, prop);
+
+    TDataArray<TPoint> points;
+    for (UINT Rust = 0; Rust < textElements.Size(); Rust++)
+    {
+        UINT i = 0;
+        if (textElements[Rust]->text->GetClickIndex(i, point))
+            points.push_back(TPoint(Rust, i));
+    }
+
+    UINT curCredCount = cred.Size();
+
+    if (!points.Size())
+    {
+        if (outsideDisplay == TcWebNodeDisplayOutside::wndo_inline)
+            hasEventProp = false;
+        for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+        {
+            switch (childNodes[Rust]->GetElementType())
+            {
+            case NodeContainerType::nct_reg_node:
+            case NodeContainerType::nct_tex_node:
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                break;
+            case NodeContainerType::net_tab_node:
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+            }
+        }
+    }
+    else
+    {
+        // To-Do: Handle scenario where second (or third...) Complext Text Element is used
+        UINT indexStart = 0;
+        FishForTextEvents(eventToUse, indexStart, points[0].y, cred);
+    }
+
+    if (hasEventProp)
+    {
+        EventID_Cred c;
+        c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        c.expression.Set(prop.event);
+        c.eventType = R_Message_Type::On_L_Button_Up;
+
+        curCredCount = cred.Size() - curCredCount;
+
+        if (prop.useCapture && curCredCount)
+        {
+            cred.InsertAt(c, cred.Size() - (curCredCount + 1));
+        }
+        else
+            cred.push_back(c);
+    }
 }
 
-ag_msg void TcWebNode::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void TcWebNode::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
+    if (!IsContained(point, area))
+    {
+        return;
+    }
 
-}
+    EventPropagater prop;
+    bool hasEventProp = handlers.retrieveEntry(L"ondblclick", prop);
 
-ag_msg void TcWebNode::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& eventAr)
-{
+    TDataArray<TPoint> points;
+    for (UINT Rust = 0; Rust < textElements.Size(); Rust++)
+    {
+        UINT i = 0;
+        if (textElements[Rust]->text->GetClickIndex(i, point))
+            points.push_back(TPoint(Rust, i));
+    }
 
+    UINT curCredCount = cred.Size();
+
+    if (!points.Size())
+    {
+        if (outsideDisplay == TcWebNodeDisplayOutside::wndo_inline)
+            hasEventProp = false;
+        for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+        {
+            switch (childNodes[Rust]->GetElementType())
+            {
+            case NodeContainerType::nct_reg_node:
+            case NodeContainerType::nct_tex_node:
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                break;
+            case NodeContainerType::net_tab_node:
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+            }
+        }
+    }
+    else
+    {
+        // To-Do: Handle scenario where second (or third...) Complext Text Element is used
+        UINT indexStart = 0;
+        FishForTextEvents(L"ondblclick", indexStart, points[0].y, cred);
+    }
+
+    if (hasEventProp)
+    {
+        EventID_Cred c;
+        c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        c.expression.Set(prop.event);
+        c.eventType = R_Message_Type::On_R_Button_Up;
+
+        curCredCount = cred.Size() - curCredCount;
+
+        if (prop.useCapture && curCredCount)
+        {
+            cred.InsertAt(c, cred.Size() - (curCredCount + 1));
+        }
+        else
+            cred.push_back(c);
+    }
 }
 
 ag_msg void TcWebNode::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
+    UINT curCredCount = eventAr.Size();
+    for (UINT Rust = 0; Rust < childNodes.Size(); Rust++)
+    {
+        switch (childNodes[Rust]->GetElementType())
+        {
+        case NodeContainerType::nct_reg_node:
+        case NodeContainerType::nct_tex_node:
+            dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnResize(newLoc, nFlags, eventAr);
+            break;
+        case NodeContainerType::net_tab_node:
+            dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnResize(newLoc, nFlags, eventAr);
+        }
+    }
+    EventPropagater prop;
+    bool hasEventProp = handlers.retrieveEntry(L"onresize", prop);
+
+    if (hasEventProp)
+    {
+        EventID_Cred c;
+        c.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        c.expression.Set(prop.event);
+        c.eventType = R_Message_Type::On_R_Button_Up;
+
+        curCredCount = eventAr.Size() - curCredCount;
+
+        if (prop.useCapture && curCredCount)
+        {
+            eventAr.InsertAt(c, eventAr.Size() - (curCredCount + 1));
+        }
+        else
+            eventAr.push_back(c);
+    }
 
 }
 
@@ -1122,6 +1583,84 @@ void TcWebNode::ShrinkWidth(UINT minWidth)
         }
     }
 
+}
+
+void TcWebNode::AffirmDownEvent(R_Message_Type rType)
+{
+    if (rType == R_Message_Type::On_Hover_Enter)
+        onMouse = true;
+    if (rType == R_Message_Type::On_R_Button_Down)
+        onRClick = true;
+    if (rType == R_Message_Type::On_L_Button_Down)
+        onLClick = true;
+}
+
+UINT TcWebNode::FishForTextEvents(const TString& eventType, UINT& startText, UINT textIndex, TDataArray<EventID_Cred>& cred)
+{
+    if (startText > textIndex)
+        return;
+    textIndex -= startText;
+    UINT textSize = 0;
+    UINT found = 0;
+    bool bFound = false;
+    for (UINT Rust = 0; !found && !bFound && Rust < childNodes.Size(); Rust++)
+    {
+        switch (childNodes[Rust]->GetElementType())
+        {
+        case NodeContainerType::nct_raw_text:
+            textSize = dynamic_cast<TcTextNodeElement*>(childNodes[Rust].Get())->data.text.GetSize();
+            
+            if (textIndex < textSize)
+            {
+                bFound = 1;
+                break;
+            }
+            else
+                textIndex -= textSize;
+
+            break;
+        case NodeContainerType::nct_tex_node:
+            textSize = 0;
+            found += dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->FishForTextEvents(eventType, startText, textIndex, cred);
+
+        }
+        startText += textSize;
+    }
+
+    EventPropagater prop;
+    bool hasEventProp = handlers.retrieveEntry(eventType, prop);
+
+    if (hasEventProp)
+    {
+        R_Message_Type type;
+        bool foundEvent = GetMessageType(eventType, type);
+        EventArgs args;
+        args.eventType = type;
+        EventID_Cred cr;
+        cr.eventType = type;
+        cr.control = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+        cr.expression.Set(prop.event);
+
+        if (found || bFound)
+        {
+
+
+            if (found && prop.useCapture)
+            {
+                EventID_Cred cr2;
+                cred.InsertAt(cr, cred.Size() - (found + 1));
+                found++;
+            }
+            else
+                cred.push_back(cr);
+        }
+        else if (bFound)
+        {
+            cred.push_back(cr);
+        }
+    }
+
+    return found + bFound;
 }
 
 void TcWebNode::TableGetNeededWidth(TDataArray<TDataArray<float>>& needed)

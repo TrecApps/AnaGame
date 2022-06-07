@@ -642,7 +642,14 @@ public:
     void HandleRowSpan(TDataArray<UINT>& sizes, UINT& row);
     void CollectRowSizes(TDataArray<UINT>& sizes);
     void ShrinkWidth(UINT minWidth);
+
+    void AffirmDownEvent(R_Message_Type rType);
 protected:
+    bool onLClick, onMouse, onRClick;
+
+
+
+    UINT FishForTextEvents(const TString& eventType, UINT& startText, UINT textIndex, TDataArray<EventID_Cred>& cred);
 
     void TableGetNeededWidth(TDataArray<TDataArray<float>>& needed);
 

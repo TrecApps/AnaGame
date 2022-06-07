@@ -271,6 +271,22 @@ TrecPointer<TBrush> TTextElement::GetBrush()
 	return this->basicDetails.color;
 }
 
+bool TTextElement::GetClickIndex(UINT& index, const TPoint& point)
+{
+	if(!this->mainLayout.Get())
+	return false;
+
+	BOOL trailingHist = false, isInside = false;
+	DWRITE_HIT_TEST_METRICS mets;
+	ZeroMemory(&mets, sizeof(mets));
+	if(FAILED(mainLayout->HitTestPoint(point.x, point.y, &trailingHist, &isInside, &mets)))
+		return false;
+
+	if (isInside)
+		index =  mets.textPosition;
+	return isInside;
+}
+
 bool TTextElement::TakesInput()
 {
 	return false;
