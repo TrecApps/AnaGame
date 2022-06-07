@@ -647,8 +647,6 @@ public:
 protected:
     bool onLClick, onMouse, onRClick;
 
-
-
     UINT FishForTextEvents(const TString& eventType, UINT& startText, UINT textIndex, TDataArray<EventID_Cred>& cred);
 
     void TableGetNeededWidth(TDataArray<TDataArray<float>>& needed);

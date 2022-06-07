@@ -244,6 +244,7 @@ public:
 	TString GetTitle();
 
 protected:
+
 	TString directory;
 
 	TString SetUpCSS();

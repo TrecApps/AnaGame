@@ -98,6 +98,8 @@ bool GetMessageType(const TString& messageStr, R_Message_Type& message)
         messageTypeMap.addEntry(L"", R_Message_Type::On_Text_Change);
         messageTypeMap.addEntry(L"", R_Message_Type::On_L_Button_Down);
     }
+
+    return messageStr.GetSize() && messageTypeMap.retrieveEntry(messageStr, message);
 }
 
 
@@ -1598,7 +1600,7 @@ void TcWebNode::AffirmDownEvent(R_Message_Type rType)
 UINT TcWebNode::FishForTextEvents(const TString& eventType, UINT& startText, UINT textIndex, TDataArray<EventID_Cred>& cred)
 {
     if (startText > textIndex)
-        return;
+        return 0;
     textIndex -= startText;
     UINT textSize = 0;
     UINT found = 0;

@@ -4,6 +4,7 @@
 #include <SSGenerator.h>
 #include <DirectoryInterface.h>
 #include "WebHandler.h"
+#include "WebEventManager.h"
 
 
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): TPage(board)
@@ -124,32 +125,44 @@ void WebPage::Draw(TrecPointer<TVariable> object)
 		anafaceFallBack->Draw(object);
 }
 
-ag_msg void WebPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void WebPage::OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
-	return ag_msg void();
+	if (rootNode.Get())
+	{
+		rootNode->OnRButtonUp(nFlags, point, mOut, cred);
+
+		if (dynamic_cast<WebHandler*>(handler.Get()))
+		{
+			dynamic_cast<WebHandler*>(handler.Get())->SetCurrentMessageType(R_Message_Type::On_R_Button_Up);
+			dynamic_cast<WebHandler*>(handler.Get())->HandleEvents(cred);
+		}
+	}
 }
 
-ag_msg void WebPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&)
+ag_msg void WebPage::OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
-	return ag_msg void();
+	if (rootNode.Get())
+	{
+		rootNode->OnRButtonDown(nFlags, point, mOut, cred);
+
+		if (dynamic_cast<WebHandler*>(handler.Get()))
+		{
+			dynamic_cast<WebHandler*>(handler.Get())->SetCurrentMessageType(R_Message_Type::On_R_Button_Down);
+			dynamic_cast<WebHandler*>(handler.Get())->HandleEvents(cred);
+		}
+	}
 }
 
 ag_msg void WebPage::OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& cred)
 {
 	if (rootNode.Get())
 	{
-		TDataArray<TString> script;
-		TDataArray<TrecObjectPointer> objects;
-
-		TrecPointer<TWebNode> newFocus;
-
 		rootNode->OnLButtonUp(nFlags, point, mOut, cred);
 
-		
 		if (dynamic_cast<WebHandler*>(handler.Get()))
 		{
-			for (UINT Rust = 0; Rust < script.Size() && Rust < objects.Size(); Rust++)
-				dynamic_cast<WebHandler*>(handler.Get())->HandleWebEvents(script[Rust], TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(objects[Rust]));
+			dynamic_cast<WebHandler*>(handler.Get())->SetCurrentMessageType(R_Message_Type::On_L_Button_Up);
+			dynamic_cast<WebHandler*>(handler.Get())->HandleEvents(cred);
 		}
 	}
 }
@@ -158,15 +171,12 @@ ag_msg void WebPage::OnLButtonDown(UINT nFlags, const TPoint& point, message_out
 {
 	if (rootNode.Get())
 	{
-		TDataArray<TString> script;
-		TDataArray<TrecObjectPointer> objects;
-
 		rootNode->OnLButtonDown(nFlags, point, mOut, cred);
 
 		if (dynamic_cast<WebHandler*>(handler.Get()))
 		{
-			for (UINT Rust = 0; Rust < script.Size() && Rust < objects.Size(); Rust++)
-				dynamic_cast<WebHandler*>(handler.Get())->HandleWebEvents(script[Rust], TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(objects[Rust]));
+			dynamic_cast<WebHandler*>(handler.Get())->SetCurrentMessageType(R_Message_Type::On_L_Button_Down);
+			dynamic_cast<WebHandler*>(handler.Get())->HandleEvents(cred);
 		}
 	}
 }
@@ -175,22 +185,12 @@ ag_msg void WebPage::OnMouseMove(UINT nFlags, TPoint point, message_output& mOut
 {
 	if (rootNode.Get())
 	{
-		TDataArray<TString> script;
-		TDataArray<TrecObjectPointer> objects;
-
 		rootNode->OnMouseMove(nFlags, point, mOut, cred);
 
-		for (UINT Rust = 0; Rust < moveNodes.Size(); Rust++)
-		{
-			auto node = moveNodes[Rust];
-			if (!node.Get())
-				continue;
-			node->OnMouseMove(script, objects, moveNodes, point);
-		}
 		if (dynamic_cast<WebHandler*>(handler.Get()))
 		{
-			for (UINT Rust = 0; Rust < script.Size() && Rust < objects.Size(); Rust++)
-				dynamic_cast<WebHandler*>(handler.Get())->HandleWebEvents(script[Rust], TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(objects[Rust]));
+			dynamic_cast<WebHandler*>(handler.Get())->SetCurrentMessageType(R_Message_Type::On_Hover);
+			dynamic_cast<WebHandler*>(handler.Get())->HandleEvents(cred);
 		}
 	}
 }
@@ -199,17 +199,31 @@ ag_msg void WebPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& 
 {
 	if (rootNode.Get())
 	{
-		TDataArray<TString> script;
-		TDataArray<TrecObjectPointer> objects;
+		rootNode->OnMouseMove(nFlags, point, mOut, args);
 
-		rootNode->OnLButtonDblClk(nFlags, point, mOut, args);
+		if (dynamic_cast<WebHandler*>(handler.Get()))
+		{
+			dynamic_cast<WebHandler*>(handler.Get())->SetCurrentMessageType(R_Message_Type::On_LDoubleClick);
+			dynamic_cast<WebHandler*>(handler.Get())->HandleEvents(args);
+		}
 	}
 }
 
 ag_msg void WebPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
-	area = newLoc;
+	auto win = TrecPointerKey::GetTrecPointerFromSoft<>(windowHandle);
+	if (rootNode.Get() && win.Get())
+	{
+		rootNode->CreateWebNode(newLoc, win->GetWindowEngine(), win->GetWindowHandle());
 
+		rootNode->OnResize(newLoc, nFlags, eventAr);
+
+		if (dynamic_cast<WebHandler*>(handler.Get()))
+		{
+			dynamic_cast<WebHandler*>(handler.Get())->SetCurrentMessageType(R_Message_Type::On_Resized);
+			dynamic_cast<WebHandler*>(handler.Get())->HandleEvents(eventAr);
+		}
+	}
 }
 
 ag_msg bool WebPage::OnDestroy()
