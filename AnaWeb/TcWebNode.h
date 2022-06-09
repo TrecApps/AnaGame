@@ -644,6 +644,7 @@ public:
     void ShrinkWidth(UINT minWidth);
 
     void AffirmDownEvent(R_Message_Type rType);
+    bool AffirmClickEvent(R_Message_Type rType);
 protected:
     bool onLClick, onMouse, onRClick;
 

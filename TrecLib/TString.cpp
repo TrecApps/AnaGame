@@ -2091,7 +2091,7 @@ int TString::Compare(const WCHAR* other) const
 	}
 
 	if (size == lstrlenW(other)) { return 0; }
-	if (size > lstrlenW(other)) { return lstrlenW(other); }
+	if (size > lstrlenW(other)) { return size; }
 	return static_cast<int>(-1);
 }
 

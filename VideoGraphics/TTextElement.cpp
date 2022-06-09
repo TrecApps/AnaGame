@@ -279,7 +279,7 @@ bool TTextElement::GetClickIndex(UINT& index, const TPoint& point)
 	BOOL trailingHist = false, isInside = false;
 	DWRITE_HIT_TEST_METRICS mets;
 	ZeroMemory(&mets, sizeof(mets));
-	if(FAILED(mainLayout->HitTestPoint(point.x, point.y, &trailingHist, &isInside, &mets)))
+	if(FAILED(mainLayout->HitTestPoint(point.x - this->bounds.left, point.y - this->bounds.top, &trailingHist, &isInside, &mets)))
 		return false;
 
 	if (isInside)

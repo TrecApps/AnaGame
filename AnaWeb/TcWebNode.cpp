@@ -715,10 +715,10 @@ ag_msg void TcWebNode::OnRButtonDown(UINT nFlags, const TPoint& point, message_o
             {
             case NodeContainerType::nct_reg_node:
             case NodeContainerType::nct_tex_node:
-                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonDown(nFlags, point, mOut, cred);
                 break;
             case NodeContainerType::net_tab_node:
-                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonDown(nFlags, point, mOut, cred);
             }
         }
     }
@@ -791,10 +791,10 @@ ag_msg void TcWebNode::OnLButtonUp(UINT nFlags, const TPoint& point, message_out
             {
             case NodeContainerType::nct_reg_node:
             case NodeContainerType::nct_tex_node:
-                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnLButtonUp(nFlags, point, mOut, cred);
                 break;
             case NodeContainerType::net_tab_node:
-                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnLButtonUp(nFlags, point, mOut, cred);
             }
         }
     }
@@ -803,6 +803,8 @@ ag_msg void TcWebNode::OnLButtonUp(UINT nFlags, const TPoint& point, message_out
         // To-Do: Handle scenario where second (or third...) Complext Text Element is used
         UINT indexStart = 0;
         FishForTextEvents(L"ommouseup", indexStart, points[0].y, cred);
+        indexStart = 0;
+        FishForTextEvents(L"onclick", indexStart, points[0].y, cred);
     }
 
     if (hasEventProp)
@@ -855,10 +857,10 @@ ag_msg void TcWebNode::OnLButtonDown(UINT nFlags, const TPoint& point, message_o
             {
             case NodeContainerType::nct_reg_node:
             case NodeContainerType::nct_tex_node:
-                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnLButtonDown(nFlags, point, mOut, cred);
                 break;
             case NodeContainerType::net_tab_node:
-                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnLButtonDown(nFlags, point, mOut, cred);
             }
         }
     }
@@ -934,10 +936,10 @@ ag_msg void TcWebNode::OnMouseMove(UINT nFlags, TPoint point, message_output& mO
             {
             case NodeContainerType::nct_reg_node:
             case NodeContainerType::nct_tex_node:
-                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnMouseMove(nFlags, point, mOut, cred);
                 break;
             case NodeContainerType::net_tab_node:
-                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnMouseMove(nFlags, point, mOut, cred);
             }
         }
     }
@@ -996,10 +998,10 @@ ag_msg void TcWebNode::OnLButtonDblClk(UINT nFlags, TPoint point, message_output
             {
             case NodeContainerType::nct_reg_node:
             case NodeContainerType::nct_tex_node:
-                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnLButtonDblClk(nFlags, point, mOut, cred);
                 break;
             case NodeContainerType::net_tab_node:
-                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnRButtonUp(nFlags, point, mOut, cred);
+                dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode()->OnLButtonDblClk(nFlags, point, mOut, cred);
             }
         }
     }
@@ -1597,6 +1599,17 @@ void TcWebNode::AffirmDownEvent(R_Message_Type rType)
         onLClick = true;
 }
 
+bool TcWebNode::AffirmClickEvent(R_Message_Type rType)
+{
+    bool ret = true;
+    if (rType == R_Message_Type::On_Click)
+    {
+        ret = onRClick || onLClick;
+        onRClick = onLClick = false;
+    }
+    return ret;
+}
+
 UINT TcWebNode::FishForTextEvents(const TString& eventType, UINT& startText, UINT textIndex, TDataArray<EventID_Cred>& cred)
 {
     if (startText > textIndex)
@@ -1605,6 +1618,10 @@ UINT TcWebNode::FishForTextEvents(const TString& eventType, UINT& startText, UIN
     UINT textSize = 0;
     UINT found = 0;
     bool bFound = false;
+    
+    R_Message_Type type;
+    bool foundEvent = GetMessageType(eventType, type);
+    
     for (UINT Rust = 0; !found && !bFound && Rust < childNodes.Size(); Rust++)
     {
         switch (childNodes[Rust]->GetElementType())
@@ -1615,6 +1632,9 @@ UINT TcWebNode::FishForTextEvents(const TString& eventType, UINT& startText, UIN
             if (textIndex < textSize)
             {
                 bFound = 1;
+
+                
+
                 break;
             }
             else
@@ -1623,19 +1643,22 @@ UINT TcWebNode::FishForTextEvents(const TString& eventType, UINT& startText, UIN
             break;
         case NodeContainerType::nct_tex_node:
             textSize = 0;
-            found += dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->FishForTextEvents(eventType, startText, textIndex, cred);
+            found += dynamic_cast<TcWebNodeElement*>(childNodes[Rust].Get())->GetWebNode()->FishForTextEvents(eventType, textSize, textIndex, cred);
 
         }
         startText += textSize;
     }
-
+    bool doOp = false;
+    if (bFound || found)
+    {
+        AffirmDownEvent(type);
+        doOp = AffirmClickEvent(type);
+    }
     EventPropagater prop;
     bool hasEventProp = handlers.retrieveEntry(eventType, prop);
 
-    if (hasEventProp)
+    if (hasEventProp && doOp)
     {
-        R_Message_Type type;
-        bool foundEvent = GetMessageType(eventType, type);
         EventArgs args;
         args.eventType = type;
         EventID_Cred cr;
@@ -1645,7 +1668,7 @@ UINT TcWebNode::FishForTextEvents(const TString& eventType, UINT& startText, UIN
 
         if (found || bFound)
         {
-
+            
 
             if (found && prop.useCapture)
             {
