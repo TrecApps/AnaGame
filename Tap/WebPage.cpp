@@ -211,6 +211,7 @@ ag_msg void WebPage::OnLButtonDblClk(UINT nFlags, TPoint point, message_output& 
 
 ag_msg void WebPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr)
 {
+	area = newLoc;
 	auto win = TrecPointerKey::GetTrecPointerFromSoft<>(windowHandle);
 	if (rootNode.Get() && win.Get())
 	{

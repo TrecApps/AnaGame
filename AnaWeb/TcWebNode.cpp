@@ -2345,6 +2345,14 @@ void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNod
         theString.Append(curText);
     }
 
+    UINT beginningIndex = 0;
+    if (isListItem)
+    {
+        theString.Set(listInfo + L"  " + theString);
+        beginningIndex = listInfo.GetSize() + 2;
+    }
+
+
     element->SetText(theString);
     element->SetHorizontallignment(DWRITE_TEXT_ALIGNMENT_LEADING);
     element->SetVerticalAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
@@ -2359,7 +2367,7 @@ void TcWebNode::ProcessTextNodes(TDataArray<TrecPointer<TcNodeElement>>& textNod
 
         TextFormattingDetails details = getTextFormattingDetails(textDataList[Rust], drawingBoard);
         details.range = elementStructure->ranges[Rust];
-        element->SetFormatting(details, details.range.startPosition, details.range.startPosition + details.range.length, false);
+        element->SetFormatting(details, details.range.startPosition + beginningIndex, details.range.startPosition + details.range.length, false);
     }
 
     D2D1_RECT_F loc = element->GetLocation();
