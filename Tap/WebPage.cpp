@@ -33,12 +33,18 @@ void WebPage::SetEnvironment(TrecPointer<TEnvironment> env)
 		environment->AddVariable(L"document", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(
 			TrecPointerKey::GetTrecObjectPointer<TPage>(TrecPointerKey::GetTrecPointerFromSoft<TPage>(self))));
 
+		TrecPointer<TWindow> actWin = TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle);
+
+		assert(actWin.Get());
+
 		// Set up Access to the BOM
 		environment->AddVariable(L"window", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(
-			TrecPointerKey::GetTrecObjectPointer<TWindow>(TrecPointerKey::GetTrecPointerFromSoft<TWindow>(windowHandle))));
+			TrecPointerKey::GetTrecObjectPointer<TWindow>(actWin)));
 
 
 		htmlBuilder = TrecPointerKey::GetNewTrecPointer<HtmlBuilder>(environment, this->drawingBoard);
+
+		handler = TrecPointerKey::GetNewSelfTrecPointerAlt<EventHandler, WebHandler>(env, actWin->GetInstance());
 	}
 	ThreadRelease();	
 }

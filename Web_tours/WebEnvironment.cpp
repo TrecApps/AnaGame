@@ -123,7 +123,7 @@ TrecPointer<TVariable> WebEnvironment::GetVariable(TString& var, bool& present, 
     present = false;
     if (evtType == env_var_type::evt_interpretor)
     {
-        if (var.Compare(L"JavaScript"))
+        if (!var.Compare(L"JavaScript"))
         {
             present = true;
             return TrecPointerKey::GetTrecPointerFromSub<>(mainJavaScript);

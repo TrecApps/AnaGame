@@ -358,8 +358,9 @@ TrecSubPointer<TPage, WebPage> TWebWindow::GetWebPage(const TString& url)
         }
 
         // To-Do: Set up Web-Handler
-
-        ret->SetEnvironment(envGenerator->GetEnvironment(TFileShell::GetFileInfo(index->GetParent()->GetPath())));
+        TrecPointer<TEnvironment> env = envGenerator->GetEnvironment(TFileShell::GetFileInfo(index->GetParent()->GetPath()));
+        env->SetUpEnv();
+        ret->SetEnvironment(env);
         ret->OnResize(this->webPage, 0, cred);
         ret->PrepPage(index, TrecPointer < TPage::EventHandler>());
 
@@ -383,8 +384,9 @@ TrecSubPointer<TPage, WebPage> TWebWindow::GetWebPage(const TString& url)
         }
 
         // To-Do: Set up Web-Handler
-
-        ret->SetEnvironment(envGenerator->GetEnvironment(TFileShell::GetFileInfo(index->GetParent()->GetPath())));
+        TrecPointer<TEnvironment> env = envGenerator->GetEnvironment(TFileShell::GetFileInfo(index->GetParent()->GetPath()));
+        env->SetUpEnv();
+        ret->SetEnvironment(env);
         ret->directory.Set(index->GetParent()->GetPath());
         ret->PrepPage(index, TrecPointer < TPage::EventHandler>());
     }
