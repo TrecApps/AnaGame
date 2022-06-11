@@ -162,7 +162,7 @@ public:
 	* Method: TDataArray::push_back
 	* Purpose: Appends an element to the DataArray
 	* Parameters: T element - the data to append
-	* Returns: UINT - the new size of the DataArray
+	* Returns: UINT - the index of the new element (1 less than the size)
 	*/
 	UINT push_back(T element)
 	{
