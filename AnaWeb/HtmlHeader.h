@@ -48,6 +48,8 @@ public:
 
     TrecPointer<HtmlLink> GetLink(UINT index);
 
+    TDataArray<TrecPointer<HtmlScriptBlock>> GetScripts();
+
 
 private:
     /**

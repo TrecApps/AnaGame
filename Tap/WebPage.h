@@ -249,6 +249,8 @@ protected:
 
 	TString SetUpCSS();
 
+	TString PrepScripts();
+
 	TrecPointer<TArray<styleTable>> styles;
 
 	TrecPointer<HtmlBuilder> htmlBuilder;

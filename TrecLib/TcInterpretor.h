@@ -399,7 +399,7 @@ public:
 
     UCHAR GetVarStatus(TString& varName);
 
-
+    TDataMap<TcVariableHolder> GetVariables();
 protected:
 
     /**

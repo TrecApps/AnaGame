@@ -5,6 +5,7 @@
 #include <DirectoryInterface.h>
 #include "WebHandler.h"
 #include "WebEventManager.h"
+#include <TcInterpretor.h>
 
 
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): TPage(board)
@@ -91,6 +92,8 @@ TString WebPage::PrepPage(TrecPointer<TFileShell> file_, TrecPointer<EventHandle
 		}
 
 		res.Set(SetUpCSS());
+		if (!res.GetSize());
+		res.Set(PrepScripts());
 
 		TrecPointer<HtmlBody> hBody = htmlBuilder->RetrieveBody();
 
@@ -371,6 +374,45 @@ TString WebPage::SetUpCSS()
 		}
 	}
 	ThreadRelease();
+	return TString();
+}
+
+TString WebPage::PrepScripts()
+{
+	if (!environment.Get() || !htmlBuilder.Get())
+		return L"Error! Environment not set up for Script processing!";
+	TString javaScipt(L"#$_New_JS_");
+
+	TrecPointer<HtmlHeader> headers = htmlBuilder->RetrieveHeader();
+	ReturnObject ret;
+	if (headers.Get())
+	{
+		auto scripts = headers->GetScripts();
+
+		for (UINT Rust = 0; Rust < scripts.Size(); Rust++)
+		{
+			auto fileLoc = scripts[Rust]->GetFile();
+			if (!fileLoc.Get())
+				continue;
+			bool w = true;
+			auto scriptVar = TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>( environment->GetVariable(javaScipt, w, env_var_type::evt_interpretor));
+			if (!scriptVar.Get())
+				continue;
+			scriptVar->SetFile(fileLoc, ret, false);
+			if (!ret.returnCode)
+				scriptVar->PreProcess(ret);
+			if (!ret.returnCode)
+				scriptVar->Run();
+			if (ret.returnCode)
+				continue;
+			auto vars = scriptVar->GetVariables();
+			TDataEntry<TcVariableHolder> varHolder;
+			for (UINT C = 0; vars.GetEntryAt(C, varHolder); C++)
+			{
+				environment->AddVariable(varHolder.key, varHolder.object.value);
+			}
+		}
+	}
 	return TString();
 }
 

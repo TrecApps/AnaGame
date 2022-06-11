@@ -2,7 +2,8 @@
 #include <TObject.h>
 #include <TEnvironment.h>
 #include <TDataMap.h>
-class HtmlScriptBlock : public TObject
+#include "AnaWeb.h"
+class ANA_WEB_DLL HtmlScriptBlock : public TObject
 {
 public:
 	HtmlScriptBlock(TrecPointer<TEnvironment> env);
@@ -16,6 +17,8 @@ public:
      * Returns: UINT - error code (0 for success)
      */
     TString ProcessHtml(TrecPointer<TFile> file, const TString& data);
+
+    TrecPointer<TFileShell> GetFile();
 
 private:
 	TrecPointer<TEnvironment> env;

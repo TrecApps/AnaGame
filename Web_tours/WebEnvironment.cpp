@@ -1,6 +1,6 @@
 #include "WebEnvironment.h"
 #include <TDialog.h>
-#include <TNativeInterpretor.h>
+#include <TcNativeInterpretor.h>
 
 /**
  * Function: JsWebAlert
@@ -10,12 +10,12 @@
  *               ReportObject& ret - return information
  * Returns: void
  */
-void JsWebAlert(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsWebAlert(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     TrecSubPointer<TEnvironment, WebEnvironment> webEnv = TrecPointerKey::GetTrecSubPointerFromTrec<TEnvironment, WebEnvironment>(env);
     if (!webEnv.Get())
     {
-        ret.returnCode = ReportObject::broken_reference;
+        ret.returnCode = ReturnObject::ERR_BROKEN_REF;
         ret.errorMessage.Set(L"Js Alert function lacks reference to environment in which it runs!");
         return;
     }
@@ -128,6 +128,11 @@ TrecPointer<TVariable> WebEnvironment::GetVariable(TString& var, bool& present, 
             present = true;
             return TrecPointerKey::GetTrecPointerFromSub<>(mainJavaScript);
         }
+        if (!var.Compare(L"#$_New_JS_"))
+        {
+            present = true;
+            return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcJavaScriptInterpretor>(TrecSubPointer<TVariable, TcInterpretor>(), TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+        }
     }
     return TEnvironment::GetVariable(var, present, evtType);
 }
@@ -174,7 +179,7 @@ TrecPointer<TEnvironment> WebEnvGenerator::GetEnvironment(TrecPointer<TFileShell
     auto regRet = TrecPointerKey::GetTrecPointerFromSub<TEnvironment, WebEnvironment>(ret);
 
     // Now Add Basic Functions to Environment for Web Access
-    ret->AddVariable(L"alert", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsWebAlert, TrecSubPointer<TVariable, TInterpretor>(), regRet)); // alert() function
+    ret->AddVariable(L"alert", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsWebAlert, TrecSubPointer<TVariable, TcInterpretor>(), regRet)); // alert() function
 
 
     // Time to return
