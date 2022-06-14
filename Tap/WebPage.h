@@ -244,9 +244,12 @@ public:
 	TString GetTitle();
 
 protected:
+
 	TString directory;
 
 	TString SetUpCSS();
+
+	TString PrepScripts();
 
 	TrecPointer<TArray<styleTable>> styles;
 
@@ -254,7 +257,7 @@ protected:
 
 	TrecPointer<TEnvironment> environment;
 
-	TrecPointer<TWebNode> rootNode, focusNode;
+	TrecSubPointer<TPage, TcWebNode> rootNode, focusNode;
 
 	TrecSubPointer<TPage, AnafacePage> anafaceFallBack;
 

@@ -57,8 +57,13 @@ public:
 	 */
 	void HandleWebEvents(const TString& exp, TrecPointer<TVariable> ev);
 
+	void SetCurrentMessageType(R_Message_Type r);
 
 protected:
+
+	R_Message_Type currentMessageType;
+
+	TrecObjectPointer webEventManager;
 
 	/**
 	 * Method: EventHandler::ShouldProcessMessageByType

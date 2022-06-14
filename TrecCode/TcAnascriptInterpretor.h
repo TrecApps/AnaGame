@@ -4,6 +4,8 @@
 #include <DefaultObjectOperator.h>
 #include "TrecCode.h"
 
+
+
 class _TREC_CODE_DLL AnascriptExpression2
 {
 public:
@@ -170,7 +172,6 @@ protected:
     void HandleAssignment(TDataArray<AnascriptExpression2>& expresions, TDataArray<TString>& operators, ReturnObject& ret);
     TrecSubPointer<TVariable, TContainerVariable> ConstructObject(const TString& type);
 
-    // Other resources
-    static TDataArray<TString> standardAOperators;
+
 };
 

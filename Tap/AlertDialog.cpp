@@ -55,7 +55,7 @@ int AlertDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 {
 	TString file = GetDirectoryWithSlash(CentralDirectories::cd_Executable);
 
-	file.Append(L"Resources\\TextDialog.tml");
+	file.Append(L"Resources\\TextDialog.json");
 
 	TrecPointer<TPage::EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<TPage::EventHandler, OkayHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 

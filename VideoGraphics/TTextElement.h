@@ -155,6 +155,8 @@ protected:
 
 public:
 
+	bool GetClickIndex(UINT& index, const TPoint& point);
+
 	virtual bool TakesInput();
 
 	float GetMinWidth(bool& worked);

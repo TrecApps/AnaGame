@@ -271,6 +271,22 @@ TrecPointer<TBrush> TTextElement::GetBrush()
 	return this->basicDetails.color;
 }
 
+bool TTextElement::GetClickIndex(UINT& index, const TPoint& point)
+{
+	if(!this->mainLayout.Get())
+	return false;
+
+	BOOL trailingHist = false, isInside = false;
+	DWRITE_HIT_TEST_METRICS mets;
+	ZeroMemory(&mets, sizeof(mets));
+	if(FAILED(mainLayout->HitTestPoint(point.x - this->bounds.left, point.y - this->bounds.top, &trailingHist, &isInside, &mets)))
+		return false;
+
+	if (isInside)
+		index =  mets.textPosition;
+	return isInside;
+}
+
 bool TTextElement::TakesInput()
 {
 	return false;
@@ -390,7 +406,14 @@ void TTextElement::SetLocation(const D2D1_RECT_F& loc)
 
 bool TTextElement::SetBasicFormatting(const TextFormattingDetails& details)
 {
-	this->basicDetails = details;
+	TextFormattingDetails tempDetails = details;
+
+	if (!tempDetails.color.Get())
+		tempDetails.color = basicDetails.color;
+	if (!tempDetails.bColor.Get())
+		tempDetails.bColor = basicDetails.bColor;
+
+	this->basicDetails = tempDetails;
 	recreateFormat = true;
 	ReCreateLayout();
 	return true;

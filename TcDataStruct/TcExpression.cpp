@@ -97,6 +97,15 @@ VariableContiainer::Variable::Variable()
 	rawData = 0;
 }
 
+
+
+//TrecSubPointer<TVariable, TcExpression> TcExpression::GenerateExpression(TrecPointer<TVariable> v)
+//{
+//	return TrecSubPointer<TVariable, TcExpression>();
+//}
+
+//TcExpression::TcExpression()
+
 VariableContiainer::Variable::Variable(const Variable& copy)
 {
 	stackLoc = copy.stackLoc;
@@ -108,4 +117,9 @@ VariableContiainer::Variable::Variable(const Variable& copy)
 
 void TcExpression::CompileExpression(TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, TDataArray<CompileMessage>& messages)
 {
+}
+
+TcVariableExpression::TcVariableExpression(const TString& variableName)
+{
+	this->variableName = variableName;
 }

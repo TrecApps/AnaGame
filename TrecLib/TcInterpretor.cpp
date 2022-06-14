@@ -350,6 +350,11 @@ UCHAR TcInterpretor::GetVarStatus(TString& varName)
 	return 0;
 }
 
+TDataMap<TcVariableHolder> TcInterpretor::GetVariables()
+{
+	return variables;
+}
+
 void TcInterpretor::AddModifiers()
 {
 }

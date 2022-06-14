@@ -195,6 +195,7 @@
     <ClInclude Include="TWebWindow.h" />
     <ClInclude Include="TWindow.h" />
     <ClInclude Include="EventHandler.h" />
+    <ClInclude Include="WebEventManager.h" />
     <ClInclude Include="WebHandler.h" />
     <ClInclude Include="WebPage.h" />
   </ItemGroup>
@@ -236,6 +237,7 @@
     <ClCompile Include="TWebWindow.cpp" />
     <ClCompile Include="TWindow.cpp" />
     <ClCompile Include="EventHandler.cpp" />
+    <ClCompile Include="WebEventManager.cpp" />
     <ClCompile Include="WebHandler.cpp" />
     <ClCompile Include="WebPage.cpp" />
   </ItemGroup>

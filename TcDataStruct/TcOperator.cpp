@@ -915,65 +915,65 @@ TrecPointer<TcOperator>TC_DATA_STRUCT GenerateDefaultOperator(tc_int_op op, bool
 	{
 		// Arithmetic
 	case tc_int_op::add:
-		return stringAdd ? TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcStringAddOp>(treatNullAsZero):
-			TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicAddOp>(stringAdd, treatNullAsZero);
+		return stringAdd ? TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcStringAddOp>(treatNullAsZero):
+			TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicAddOp>(stringAdd, treatNullAsZero);
 	case tc_int_op::add_assign:
-		return stringAdd ? TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcStringAddOp>(treatNullAsZero,true) :
-			TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicAddOp>(stringAdd, treatNullAsZero,true);
+		return stringAdd ? TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcStringAddOp>(treatNullAsZero,true) :
+			TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicAddOp>(treatNullAsZero,true);
 	case tc_int_op::sub:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicSubOp>(stringAdd, treatNullAsZero);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicSubOp>(treatNullAsZero);
 	case tc_int_op::sub_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicSubOp>(stringAdd, treatNullAsZero,true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicSubOp>(treatNullAsZero,true);
 	case tc_int_op::mult:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicMulOp>(stringAdd, treatNullAsZero);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicMulOp>(treatNullAsZero);
 	case tc_int_op::mul_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicMulOp>(stringAdd, treatNullAsZero, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicMulOp>(treatNullAsZero, true);
 	case tc_int_op::div:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicDivOp>(stringAdd, treatNullAsZero);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicDivOp>(treatNullAsZero);
 	case tc_int_op::div_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicDivOp>(stringAdd, treatNullAsZero, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicDivOp>(treatNullAsZero, true);
 	case tc_int_op::mod:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicModOp>(stringAdd, treatNullAsZero);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicModOp>(treatNullAsZero);
 	case tc_int_op::mod_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBasicModOp>(stringAdd, treatNullAsZero, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBasicModOp>(treatNullAsZero, true);
 
 		// Logical
 	case tc_int_op::and_l:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalAndOp>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcLogicalAndOp>(stringAdd);
 	case tc_int_op::and_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalAndOp>(stringAdd, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcLogicalAndOp>(stringAdd, true);
 	case tc_int_op::or_l:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalOrOp>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcLogicalOrOp>(stringAdd);
 	case tc_int_op::or_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalOrOp>(stringAdd, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcLogicalOrOp>(stringAdd, true);
 	case tc_int_op::xor_l:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalXorOp>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcLogicalXorOp>(stringAdd);
 	case tc_int_op::xor_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalXorOp>(stringAdd, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcLogicalXorOp>(stringAdd, true);
 	case tc_int_op::not_l:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcLogicalNotOp>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcLogicalNotOp>(stringAdd);
 
 		// Bitwise
 	case tc_int_op::and_b:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseAndOp>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseAndOp>(stringAdd);
 	case tc_int_op::b_and_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseAndOp>(stringAdd, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseAndOp>(stringAdd, true);
 	case tc_int_op::or_b:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseOrOp>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseOrOp>(stringAdd);
 	case tc_int_op::b_or_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseOrOp>(stringAdd, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseOrOp>(stringAdd, true);
 	case tc_int_op::xor_b:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseXorOp>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseXorOp>(stringAdd);
 	case tc_int_op::b_xor_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseXorOp>(stringAdd, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseXorOp>(stringAdd, true);
 	case tc_int_op::left_b:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseLeftOp>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseLeftOp>(stringAdd);
 	case tc_int_op::b_left_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseLeftOp>(stringAdd, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseLeftOp>(stringAdd, true);
 	case tc_int_op::right_b:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseRightOp>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseRightOp>(stringAdd);
 	case tc_int_op::b_right_assign:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcBitwiseRightOp>(stringAdd, true);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcBitwiseRightOp>(stringAdd, true);
 
 		// Equality
 	case tc_int_op::eq:
@@ -984,9 +984,9 @@ TrecPointer<TcOperator>TC_DATA_STRUCT GenerateDefaultOperator(tc_int_op op, bool
 	case tc_int_op::lte:
 	case tc_int_op::not_e:
 	case tc_int_op::not_e_t:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcEqualityOperator>(op, stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcEqualityOperator>(op, stringAdd);
 	case tc_int_op::conditional:
-		return TrecPointerKey::GetNewSelfTrecPointerAlt<TcOperator, TcTernaryOperator>(stringAdd);
+		return TrecPointerKey::GetNewTrecPointerAlt<TcOperator, TcTernaryOperator>(stringAdd);
 	}
 	return TrecPointer<TcOperator>();
 }

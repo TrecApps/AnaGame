@@ -216,7 +216,7 @@ public:
 	*				T& entry - the object being held
 	* Returns: TrecPointer<t2> - the entry found
 	*/
-	bool removeEntry(TString& str, T& entry)
+	bool removeEntry(const TString& str, T& entry)
 	{
 		for (UINT c = 0; c < fields.Size(); c++)
 		{

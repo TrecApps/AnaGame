@@ -256,7 +256,13 @@ TString _TREC_LIB_DLL GetShadowFilePath(TrecPointer<TFileShell> f)
 	}
 
 	if (dirNum > 8)
-		return TString();
-
+	{
+		TString directory(f->GetParent()->GetPath());
+		directory.AppendChar(L'\\');
+		directory.Replace(L"\\\\", L"\\");
+		directory.Append(L"ShadowDir\\");
+		ForgeDirectory(directory);
+		return directory + f->GetName();
+	}
 	return shadowDirectories[dirNum] + TString(L"\\") + returnable;
 }

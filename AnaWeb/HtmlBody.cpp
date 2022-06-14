@@ -7,7 +7,7 @@ HtmlBody::HtmlBody(TrecPointer<TEnvironment> env, TrecPointer<DrawingBoard> boar
     this->board = board;
 }
 
-TString HtmlBody::ProcessHtml(TrecPointer<TFile> file, const TString& data, HWND win)
+TString HtmlBody::ProcessHtml(TrecPointer<TFile> file, const TString& data, HWND win, TrecPointer<TArray<styleTable>>& styles)
 {
     if (!file.Get() || !file->IsOpen())
     {
@@ -30,15 +30,15 @@ TString HtmlBody::ProcessHtml(TrecPointer<TFile> file, const TString& data, HWND
 
     bodyContents = TrecPointerKey::GetNewSelfTrecSubPointer<TSliceManager, TStringSliceManager>(nodeData);
 
-    rootNode = TrecPointerKey::GetNewSelfTrecPointer<TWebNode>(board);
+    rootNode = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, TcWebNode>(board);
     UINT start = 0;
-    if(rootNode->ProcessHtml(*bodyContents.Get(), start, win))
+    if(rootNode->ProcessHtml(*bodyContents.Get(), start, win, styles))
         return L"Error Processing Web Nodes!";
     return TString();
 }
 
 
-TrecPointer<TWebNode> HtmlBody::RetrieveWebNode()
+TrecSubPointer<TPage, TcWebNode> HtmlBody::RetrieveWebNode()
 {
     return rootNode;
 }

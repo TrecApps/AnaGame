@@ -1562,6 +1562,16 @@ public:
 		return ret;
 	}
 
+	template <class T, class U> static TrecPointerSoft<T> GetSoftPointerFromSubSoft(const TrecSubPointerSoft<T, U>& trec)
+	{
+		TrecPointerSoft<T> ret;
+
+		ret.pointer = trec.pointer;
+		if (ret.pointer)
+			ret.pointer->IncrementSoft();
+		return ret;
+	}
+
 	/**
 	 * Method: static TrecPointerKey::GetTrecObjectPointer<T>
 	 * Purpose: Retrieves a TrecObjectPointer that just sees a TObject

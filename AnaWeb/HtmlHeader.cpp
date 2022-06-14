@@ -229,6 +229,11 @@ TrecPointer<HtmlLink> HtmlHeader::GetLink(UINT index)
 	return links[index];
 }
 
+TDataArray<TrecPointer<HtmlScriptBlock>> HtmlHeader::GetScripts()
+{
+	return scripts;
+}
+
 void HtmlHeader::getBaseElement(const TString& att, const TString& val)
 {
 	if (!att.Compare(L"href"))
