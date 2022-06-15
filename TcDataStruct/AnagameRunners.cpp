@@ -5,7 +5,7 @@
 
 static TDataMap<runner_op_code> opCodeMap;
 
-static TDataArray<AnagameAssembly::AssemblyOp> opList;
+static std::vector<AnagameAssembly::AssemblyOp> opList;
 
 void PrepOpCodeMap()
 {

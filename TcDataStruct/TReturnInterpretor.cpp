@@ -1,14 +1,5 @@
 #include "TReturnInterpretor.h"
 
-COMPILE_TYPE TReturnInterpretor::CanCompile()
-{
-	return 0;
-}
-
-void TReturnInterpretor::Compile(COMPILE_TYPE type, ReturnObject& ret)
-{
-	ret.returnCode = ReturnObject::ERR_UNSUPPORTED_OP;
-}
 
 void TReturnInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst)
 {

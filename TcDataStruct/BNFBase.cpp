@@ -285,6 +285,10 @@ bool BNFBase::IsStatement(TDataMap<TrecPointer<BNFBase>>& otherBnfs, const TStri
     return ret;
 }
 
+void BNFBase::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+}
+
 void BNFString::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs,
     UINT stringStart, TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
 {
@@ -369,7 +373,7 @@ void BNFString::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, Tr
 
     bool useTemplates = starter.FindInContainer(templateBounds);
 
-    TrecSubPointer<TcExpression, TcStringExpression> exp = TrecPointerKey::GetNewSelfTrecSubPointer<TcExpression, TcStringExpression>(statementStr);
+    TrecSubPointer<TcExpression, TcStringExpression> exp = TrecPointerKey::GetNewTrecSubPointer<TcExpression, TcStringExpression>(statementStr);
 
     bool works = true;
 
@@ -406,6 +410,10 @@ void BNFString::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, Tr
 
     if (works)
         exp->CompileExpression(vars, runners, currentRunner, messages);
+}
+
+void BNFExpression::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
 }
 
 bool BNFExpression::GenerateExpression(TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, const TString& e, TDataMap<TrecPointer<BNFBase>>& bnfs,
@@ -787,4 +795,24 @@ void BNFCatch::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, Tre
 
         }
     }
+}
+
+void BNFSwitch::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+}
+
+void BNFSwitchBlock::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+}
+
+void BNFFor3::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+}
+
+void BNFFor::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
+}
+
+void BNFNumber::Compile(UINT tokenList, TDataArray<CompileMessage>& messages, TrecPointer<TVariable> languageDetails, TrecPointer<TcBaseStatement> statement, TDataMap<TrecPointer<BNFBase>>& bnfs, UINT stringStart, TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, bool expectTerminal)
+{
 }

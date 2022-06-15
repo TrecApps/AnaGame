@@ -106,7 +106,7 @@ typedef enum class runner_operator
  * Class: AnagameRunner
  * Purpose: Represents Anagame's Virtual Machine, at the Procedure Level
  */
-class AnagameRunner : TcRunner
+class AnagameRunner : public TcRunner
 {
 public:
     class RunnerCode {

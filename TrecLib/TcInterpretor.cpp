@@ -360,37 +360,6 @@ void TcInterpretor::AddModifiers()
 }
 
 
-
-/**
- * Method: TCInterpretor::SetParamNames
- * Purpose: Allows Parameter names to be set
- * Parameters: TDataArray<TString>& paramNames - the Names of Initial parameters
- * Returns: void
- */
-void TcInterpretor::SetParamNames(TDataArray<TString>& paramNames_)
-{
-	this->paramNames.RemoveAll();
-	for (UINT Rust = 0; Rust < paramNames_.Size(); Rust++)
-	{
-		this->paramNames.push_back(paramNames_[Rust]);
-	}
-}
-
-/**
- * Method: TCInterpretor::SetParamTypes
- * Purpose: Allows Parameter types to be set
- * Parameters: TDataArray<TString>& paramTypes - the Types of Initial parameters
- * Returns: void
- */
-void TcInterpretor::SetParamTypes(TDataArray<TString>& paramTypes_)
-{
-	this->paramTypes.RemoveAll();
-	for (UINT Rust = 0; Rust < paramTypes_.Size(); Rust++)
-	{
-		this->paramTypes.push_back(paramTypes_[Rust]);
-	}
-}
-
 /**
  * Method: TCInterpretor::SetDefaultValues
  * Purpose: Allows Parameter Defaults to be set

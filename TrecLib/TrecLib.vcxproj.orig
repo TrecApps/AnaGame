@@ -189,6 +189,7 @@
     <ClInclude Include="TTrecPointerArray.h" />
     <ClInclude Include="TType.h" />
     <ClInclude Include="TTypeMetadata.h" />
+    <ClInclude Include="TcRunner.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DirectoryInterface.cpp" />
@@ -222,6 +223,7 @@
     <ClCompile Include="TString.cpp" />
     <ClCompile Include="TType.cpp" />
     <ClCompile Include="TTypeMetadata.cpp" />
+    <ClCompile Include="TcRunner.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

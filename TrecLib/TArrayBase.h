@@ -44,7 +44,7 @@ public:
      * Parameters: void
      * Returns: UINT - the number of elements currently held
      */
-	UINT Count();
+	UINT Count() const;
 
 	/**
      * Method: TArrayBase::GetObjectAt

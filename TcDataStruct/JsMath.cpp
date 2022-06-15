@@ -2061,7 +2061,6 @@ void JsOperatorsTc::bool_op(TDataMap<TcVariableHolder> variables, ReturnObject& 
             // If a Primitive value, boolean false, 
             retVal = var1.object.value->Get8Value() > 0;
             break;
-        default:
 
         }
 

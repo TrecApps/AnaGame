@@ -5,16 +5,6 @@ TcNativeInterpretor::TcNativeInterpretor(NativeTFunction function, TrecSubPointe
 	nativeFunction = function;
 }
 
-COMPILE_TYPE TcNativeInterpretor::CanCompile()
-{
-	return NO_COMPILE;
-}
-
-void TcNativeInterpretor::Compile(COMPILE_TYPE type, ReturnObject& ret)
-{
-	ret.returnCode = ReturnObject::ERR_UNSUPPORTED_OP;
-	ret.errorMessage.Set(L"Native Method is Already compiled!");
-}
 
 void TcNativeInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst)
 {

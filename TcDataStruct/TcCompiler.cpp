@@ -218,16 +218,16 @@ void TcPreStatement::GenerateStatements(TDataArray<TcPreStatement>& statements, 
 	StatementCollector collector;
 
 	StatementParseFields fields[] = {
-		{L"StatementSeperator", &statementseperator, StatementCollector::SetStatementSeperator},
+		{L"StatementSeperator", &statementseperator, &StatementCollector::SetStatementSeperator},
 
-		{L"SingleLineComment", &singleLineComment, StatementCollector::SetSingleLine},
-		{L"MultiLineCommentStart", &multiLineCommentStart, StatementCollector::SetMultiLineStart},
-		{L"MultiLineCommentEnd", &multiLineCommentEnd, StatementCollector::SetMultiLineEnd},
-		{L"SingleString", &singleString, StatementCollector::SetSingleString},
-		{L"MultiString", &multiString, StatementCollector::SetMultiString},
-		{L"BlockStart", &blockStart, StatementCollector::SetBlockStart},
-		{L"BlockEnd", &blockEnd, StatementCollector::SetBlockEnd},
-		{L"OneLineStatement", &oneLineStatement, StatementCollector::SetOneLine}
+		{L"SingleLineComment", &singleLineComment, &StatementCollector::SetSingleLine},
+		{L"MultiLineCommentStart", &multiLineCommentStart, &StatementCollector::SetMultiLineStart},
+		{L"MultiLineCommentEnd", &multiLineCommentEnd, &StatementCollector::SetMultiLineEnd},
+		{L"SingleString", &singleString, &StatementCollector::SetSingleString},
+		{L"MultiString", &multiString, &StatementCollector::SetMultiString},
+		{L"BlockStart", &blockStart, &StatementCollector::SetBlockStart},
+		{L"BlockEnd", &blockEnd, &StatementCollector::SetBlockEnd},
+		{L"OneLineStatement", &oneLineStatement, &StatementCollector::SetOneLine}
 	};
 
 	for (UINT Rust = 0; Rust < ARRAYSIZE(fields); Rust++)

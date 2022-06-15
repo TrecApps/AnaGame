@@ -95,10 +95,12 @@ public:
     TcVariableHolder(bool mut, const TString& type, TrecPointer<TVariable> value);
 };
 
-class TcRunner :
+class _TREC_LIB_DLL TcRunner :
     public TVariable
 {
 public:
+
+    virtual var_type GetVarType() override;
 
     /**
      * Method: TcRunner::Run
@@ -213,7 +215,7 @@ protected:
 
 typedef void (*NativeTcRunner1)(TDataMap<TcVariableHolder> variables, ReturnObject& ret);
 
-class TcNativeRunner1 :
+class _TREC_LIB_DLL TcNativeRunner1 :
     public TcRunner
 {
 private:

@@ -7,7 +7,7 @@
 #include "TcType.h"
 #include "AnagameRunners.h"
 #include "TcCompiler.h"
-
+#include <TMap.h>
 /**
  * Enum Class: tc_exp_type
  * Purpose: Helps label the type of Expression we are dealing with
@@ -39,6 +39,10 @@ public:
 		Variable();
 		Variable(const Variable& copy);
 	};
+
+	VariableContiainer();
+	VariableContiainer(const VariableContiainer& copy);
+	void operator=(const VariableContiainer& copy);
 
 	TMap<Variable> variables;
 };

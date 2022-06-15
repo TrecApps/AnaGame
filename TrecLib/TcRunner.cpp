@@ -2,6 +2,11 @@
 
 
 
+var_type TcRunner::GetVarType()
+{
+	return var_type::runner;
+}
+
 /**
  * Method: TcRunner::SetParamNames
  * Purpose: Allows Parameter names to be set

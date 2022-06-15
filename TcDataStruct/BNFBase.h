@@ -2,6 +2,7 @@
 #include <TString.h>
 #include "AnagameRunners.h"
 #include "TcCompiler.h"
+#include "TcExpression.h"
 
 class BNFBase
 {
@@ -48,7 +49,7 @@ public:
 		 TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners,			// the Series of Runners to work with
 		const TString& currentRunner,										// Current Runner to Operate on
 		bool expectTerminal = true											// Whether the statement should end once the BNF Tag has gone through successfully
-	) = 0;
+	);
 
 	//virtual void CompileExpression(TDataArray<VariableContiainer>& vars,  TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner) = 0;
 };

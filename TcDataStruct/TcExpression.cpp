@@ -123,3 +123,27 @@ TcVariableExpression::TcVariableExpression(const TString& variableName)
 {
 	this->variableName = variableName;
 }
+
+VariableContiainer::VariableContiainer()
+{
+}
+
+VariableContiainer::VariableContiainer(const VariableContiainer& copy)
+{
+	for (UINT Rust = 0; Rust < copy.variables.count(); Rust++)
+	{
+		auto ent = copy.variables.GetEntryAt(Rust);
+		if (ent.Get())
+			variables.addEntry(ent->key, ent->object);
+	}
+}
+
+void VariableContiainer::operator=(const VariableContiainer& copy)
+{
+	for (UINT Rust = 0; Rust < copy.variables.count(); Rust++)
+	{
+		auto ent = copy.variables.GetEntryAt(Rust);
+		if (ent.Get())
+			variables.addEntry(ent->key, ent->object);
+	}
+}

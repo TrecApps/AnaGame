@@ -67,7 +67,7 @@ public:
 	* Parameters: UINT at - the element to look at
 	* Returns: TrecPointer<t> loc - the element at the location (call .Get() to make sure it's not NULL)
 	*/
-	TrecPointer<t> ElementAt(UINT at)
+	TrecPointer<t> ElementAt(UINT at) const
 	{
 		if (at > count)
 			return TrecPointer<t>();
@@ -217,7 +217,7 @@ private:
 	/**
 	 * Allows Array to be extended
 	 */
-	TrecPointer<TArray<t>> extension;
+	mutable TrecPointer<TArray<t>> extension;
 
 	/*
 	* Method: TArray::clearNull

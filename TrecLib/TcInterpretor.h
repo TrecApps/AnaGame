@@ -136,30 +136,6 @@ public:
 
 /// Interpretor Functionality
 
-
-    /**
-     * Method: TcInterpreotr::CanCompile
-     * Purpose: Whether the Compiler is capable of compiling it's statements into a more compact form
-     * Parameters: void
-     * Returns: COMPILE_TYPE - marker indicating the Compilation the Interpretor can do
-     * 
-     * Attributes: abstract
-     * 
-     * Note: If the Returned Value is 0, then the Interpretor will not Attempt to Compile and is expected to run the Statements AS IS
-     */
-    virtual COMPILE_TYPE CanCompile() = 0;
-
-    /**
-     * Method: TcInterpretor::Compile
-     * Purpose: Attempts to Compile the Statements into more compact code according to the Specifications provided
-     * Parameters: COMPILE_TYPE type - specifications for the code to be compiled
-     *              ReturnObject& ret - allows method to report any error information encountered
-     * Returns: void
-     * 
-     * Attributes: abstract
-     */
-    virtual void Compile(COMPILE_TYPE type, ReturnObject& ret) = 0;
-
     /**
      * Method: TcInterpretor::SetFile
      * Purpose: Sets the File Where Sourcecode is expected to be read
@@ -172,38 +148,6 @@ public:
      */
     virtual void SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst = true) = 0;
 
-    /**
-     * Method: TcInterpretor::Run
-     * Purpose: Allows the Interpretor to run the Code As Is
-     * Parameters: void
-     * Returns: ReturnObject - information about the Run
-     */
-    virtual ReturnObject Run() = 0;
-
-    /**
-     * Method: TcInterpretor::SetInitialVariables
-     * Purpose: Allows Callers to Set Intial Variables, i.e. parameters in a function/method call
-     * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters to set when calling the function
-     * Returns: void
-     */
-    virtual void SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params) = 0;
-
-    /**
-     * Method: TCInterpretor::SetParamNames
-     * Purpose: Allows Parameter names to be set
-     * Parameters: TDataArray<TString>& paramNames - the Names of Initial parameters
-     * Returns: void
-     */
-    void SetParamNames(TDataArray<TString>& paramNames);
-
-
-    /**
-     * Method: TCInterpretor::SetParamTypes
-     * Purpose: Allows Parameter types to be set
-     * Parameters: TDataArray<TString>& paramTypes - the Types of Initial parameters
-     * Returns: void
-     */
-    void SetParamTypes(TDataArray<TString>& paramTypes);
 
     /**
      * Method: TCInterpretor::SetDefaultValues
