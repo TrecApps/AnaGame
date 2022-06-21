@@ -141,8 +141,16 @@ public:
      * Parameters: TrecPointer<BinaryStack> stack - binary Stack
      * Returns: void
      */
-    virtual void SetCurrentStack(TrecPointer<BinaryStack> stack);
+    virtual void SetCurrentStack(TrecPointer<BinaryStack>& stack);
     
+
+    /**
+     * Mehtod: TcRunner::SetCurrentStack
+     * Purpose: Sets the binary Stack for the runner (meant for Anagame Binary and Hybrid Runners)
+     * Parameters: TrecPointer<BinaryStack> stack - binary Stack
+     * Returns: void
+     */
+    virtual void SetCurrentStack(TrecPointer<ObjectStack>& stack);
 
 
 /// <summary>

@@ -88,16 +88,6 @@ TcAnascriptInterpretor::TcAnascriptInterpretor(TrecSubPointer<TVariable, TcInter
     }
 }
 
-COMPILE_TYPE TcAnascriptInterpretor::CanCompile()
-{
-	return COMPILE_TYPE(0);
-}
-
-void TcAnascriptInterpretor::Compile(COMPILE_TYPE type, ReturnObject& ret)
-{
-	ret.returnCode = ReturnObject::ERR_UNSUPPORTED_OP;
-	ret.errorMessage.Set(L"Support for Anascript Compilation is not available at this time!");
-}
 
 void TcAnascriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst)
 {

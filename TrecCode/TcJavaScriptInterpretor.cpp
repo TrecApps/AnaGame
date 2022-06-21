@@ -115,17 +115,6 @@ TrecPointer<TVariable> TcJavaScriptInterpretor::Clone()
     return TrecPointerKey::GetTrecPointerFromSub<>(ret);
 }
 
-COMPILE_TYPE TcJavaScriptInterpretor::CanCompile()
-{
-    return COMPILE_TYPE(0);
-}
-
-void TcJavaScriptInterpretor::Compile(COMPILE_TYPE type, ReturnObject& ret)
-{
-    ret.returnCode = ReturnObject::ERR_UNSUPPORTED_OP;
-    ret.errorMessage.Set(L"Support for JavaScript Compilation is not available at this time!");
-}
-
 void TcJavaScriptInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst)
 {
     // Make sure the file reference isn't null

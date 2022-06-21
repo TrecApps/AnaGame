@@ -37,10 +37,14 @@ void TcRunner::SetParamTypes(TDataArray<TString>& paramTypes_)
 	}
 }
 
-void TcRunner::SetCurrentStack(TrecPointer<BinaryStack> stack)
+void TcRunner::SetCurrentStack(TrecPointer<BinaryStack>& stack)
 {
-	
 }
+
+void TcRunner::SetCurrentStack(TrecPointer<ObjectStack>& stack)
+{
+}
+
 
 ReturnObject TcNativeRunner1::Run()
 {

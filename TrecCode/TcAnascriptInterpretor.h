@@ -37,29 +37,6 @@ public:
 
 
     /**
-     * Method: TcInterpreotr::CanCompile
-     * Purpose: Whether the Compiler is capable of compiling it's statements into a more compact form
-     * Parameters: void
-     * Returns: COMPILE_TYPE - marker indicating the Compilation the Interpretor can do
-     *
-     * Attributes: override
-     *
-     * Note: If the Returned Value is 0, then the Interpretor will not Attempt to Compile and is expected to run the Statements AS IS
-     */
-    virtual COMPILE_TYPE CanCompile() override;
-
-    /**
-     * Method: TcAnascriptInterpretor::Compile
-     * Purpose: Attempts to Compile the Statements into more compact code according to the Specifications provided
-     * Parameters: COMPILE_TYPE type - specifications for the code to be compiled
-     *              ReturnObject& ret - allows method to report any error information encountered
-     * Returns: void
-     *
-     * Attributes: override
-     */
-    virtual void Compile(COMPILE_TYPE type, ReturnObject& ret) override;
-
-    /**
      * Method: TcAnascriptInterpretor::SetFile
      * Purpose: Sets the File Where Sourcecode is expected to be read
      * Parameters: TrecPointer<TFileShell> codeFile - file holding the intitial source code

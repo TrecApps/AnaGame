@@ -8,14 +8,6 @@ TcCodeObjectInterpretor::TcCodeObjectInterpretor(TrecSubPointer<TVariable, TcInt
 {
 }
 
-COMPILE_TYPE TcCodeObjectInterpretor::CanCompile()
-{
-	return COMPILE_TYPE();
-}
-
-void TcCodeObjectInterpretor::Compile(COMPILE_TYPE type, ReturnObject& ret)
-{
-}
 
 void TcCodeObjectInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst)
 {

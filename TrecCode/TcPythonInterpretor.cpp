@@ -12,17 +12,6 @@ TcPythonInterpretor::TcPythonInterpretor(TrecSubPointer<TVariable, TcInterpretor
     preProcessed = true;
 }
 
-COMPILE_TYPE TcPythonInterpretor::CanCompile()
-{
-	return 0;
-}
-
-void TcPythonInterpretor::Compile(COMPILE_TYPE type, ReturnObject& ret)
-{
-	ret.returnCode = ReturnObject::ERR_UNSUPPORTED_OP;
-	ret.errorMessage.Set(L"Support for JavaScript Compilation is not available at this time!");
-}
-
 void TcPythonInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst)
 {
     // Make sure the file reference isn't null
