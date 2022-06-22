@@ -1223,8 +1223,23 @@ UINT TcWebNode::ProcessHtml(TStringSliceManager& html, UINT& start, HWND win, Tr
     attributes.retrieveEntry(L"class", this->nodeClass);
     attributes.retrieveEntry(L"id", this->id);
     if (TcIsVoidElement(tagName))
+    {
+        TString printableText;
+        if (!tagName.CompareNoCase(L"img") && attributes.retrieveEntry(L"alt", printableText) && printableText.GetSize())
+        {
+            TrecSubPointer<TcNodeElement, TcTextNodeElement> textElement;
+            if (!childNodes.Size() || childNodes[childNodes.Size() - 1]->GetElementType() == NodeContainerType::nct_reg_node)
+                // This is a 'first' text node, meaning it should hold the TTextElement
+                textElement = TrecPointerKey::GetNewTrecSubPointer<TcNodeElement, TcTextNodeElement>();
+            else textElement = TrecPointerKey::GetNewTrecSubPointer<TcNodeElement, TcTextNodeElement>(false);
+
+            textElement->data.text.Set(printableText);
+            childNodes.push_back(TrecSubToTrec(textElement));
+            printableText.Empty();
+        }
         return 0;
-    return ProcessInnerHtml(html, start, win,styles);
+    }
+    return ProcessInnerHtml(html, start, win, styles);
 
     return 0;
 }
@@ -2270,6 +2285,13 @@ void TcWebNode::CompileProperties(TDataMap<TString>& atts)
         contentData.CompileAttachment(val);
     if (atts.retrieveEntry(L"background-position", val))
         contentData.CompilePosition(val);
+
+    // Handle the img tag
+    if (!tagName.CompareNoCase(L"img"))
+    {
+        if (atts.retrieveEntry(L"href", val))
+            contentData.file.Set(val.GetTrim());
+    }
 
     if (atts.retrieveEntry(L"rowspan", val) && internalDisplay != TcWebNodeDisplayInternal::wndi_row)
     {
