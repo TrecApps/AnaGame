@@ -411,6 +411,27 @@ D2D1_RECT_F TcWebNode::TcWebNodeElement::GetLocation()
     return node->GetArea();
 }
 
+void TcWebNode::AddFile(TrecPointer<TFileShell> file)
+{
+    if (!file.Get() || file->IsDirectory())return;
+
+    TString ext(file->GetName());
+    ext.Set(ext.SubString(ext.FindLast(L'.')).GetLower().GetTrim());
+    if (!ext.Compare(L"png") 
+        || !ext.Compare(L"jpeg")
+        || !ext.Compare(L"jpg")
+        || !ext.Compare(L"gif"))
+    {
+        TrecSubPointer<TBrush, TBitmapBrush> bitBrush = this->drawingBoard->GetBrush(file, area);
+        D2D1_SIZE_F imageSize = bitBrush->GetDefaultSize();
+
+        if (!contentData.size.height)
+            contentData.size.height = imageSize.height;
+        if (!contentData.size.width)
+            contentData.size.width = imageSize.width;
+    }
+}
+
 TcWebNode::TcWebNode(TrecPointer<DrawingBoard> board): TPage(board)
 {
 
@@ -440,6 +461,38 @@ void TcWebNode::Draw(TrecPointer<TVariable> object)
     if (!shouldDraw)
         return;
 
+    drawingBoard->AddLayer(area);
+
+    //To-Do: Addres more complex backgrounds
+    if (contentData.brush.Get())
+        contentData.brush->FillRectangle(area);
+
+    if (contentData.bitmap.Get())
+    {
+        auto picLoc = area;
+        picLoc.bottom = contentData.size.height ? (picLoc.top + contentData.size.height) : area.bottom;
+        picLoc.right = contentData.size.width ? (picLoc.left + contentData.size.width) : area.right;
+
+        while (picLoc.top < area.bottom)
+        {
+            while (picLoc.left < area.right)
+            {
+                contentData.bitmap->FillRectangle(picLoc);
+
+                if (!contentData.repeatX || !contentData.size.width)
+                    break;
+                picLoc.left += contentData.size.width;
+                picLoc.right += contentData.size.width;
+            }
+            if (!contentData.repeatY || !contentData.size.height)
+                break;
+
+            picLoc.top += contentData.size.height;
+            picLoc.bottom += contentData.size.height;
+            picLoc.right = contentData.size.width ? (picLoc.left + contentData.size.width) : area.right;
+        }
+    }
+
     DrawBorder();
 
     // Now draw the ChildNodes
@@ -462,6 +515,7 @@ void TcWebNode::Draw(TrecPointer<TVariable> object)
     {
         textElements[Rust]->text->OnDraw(object);
     }
+    drawingBoard->PopLayer();
 }
 
 void TcWebNode::DrawBorder()
@@ -1217,7 +1271,7 @@ void TcWebNode::PreCreate(TrecSubPointerSoft<TPage, TcWebNode> parent, TrecPoint
     }
 }
 
-UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window, bool shrinkHeight)
+UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window, TDataArray<FileRequest>& fileRequests, bool shrinkHeight, bool requestFiles)
 {
     // Go through each bit of the child elements, determining where they lay
     if (this->doDisplay && !TcIsVoidElement(tagName))
@@ -1236,6 +1290,17 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
     if (window)
         this->win = window;
     this->d3dEngine = d3dEngine;
+
+    if (requestFiles)
+    {
+        if (contentData.file.GetSize())
+        {
+            FileRequest newRequest;
+            newRequest.requesterNode = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TcWebNode>(TrecPointerKey::GetTrecPointerFromSoft<>(self));
+            newRequest.fileRequest.Set(contentData.file);
+            fileRequests.push_back(newRequest);
+        }
+    }
 
     // Handle Scenario where this Element is a table
     if (insideDisplay == TcWebNodeDisplayInside::wndi_table)
@@ -1280,11 +1345,11 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
                     location.left = location.right;
                     location.right = location.left + columnSizes[Rust];
                 }
-                childNode->CreateWebNode(location, d3dEngine, window);
+                childNode->CreateWebNode(location, d3dEngine, window, fileRequests, true, requestFiles);
             }
             else
             {
-                childNode->CreateWebNode(location, d3dEngine, window);
+                childNode->CreateWebNode(location, d3dEngine, window, fileRequests,true, requestFiles);
                 childNode->ShrinkHeight();
                 if(childNode->GetArea().bottom > location.top)
                     location.top = childNode->GetArea().bottom;
@@ -1305,12 +1370,12 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
                     location.right = location.left + columnSizes[Rust];
                 }
                 tableElement->PrepTable();
-                tableElement->CreateTable(location, d3dEngine, window);
+                tableElement->CreateTable(location, d3dEngine, window, fileRequests, requestFiles);
             }
             else
             {
                 tableElement->PrepTable();
-                tableElement->CreateTable(location, d3dEngine, window);
+                tableElement->CreateTable(location, d3dEngine, window, fileRequests, requestFiles);
                 location.top = tableElement->GetLocation().bottom;
             }
         }
@@ -1389,7 +1454,7 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
             case NodeContainerType::net_tab_node:
                 node = dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode();
             }
-            node->HandleRowSpan(rowSizes, C);
+            node->HandleRowSpan(rowSizes, C, fileRequests, requestFiles);
         }
 
 
@@ -1406,7 +1471,7 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
     return 0;
 }
 
-void TcWebNode::HandleRowSpan(TDataArray<UINT>& sizes, UINT& row)
+void TcWebNode::HandleRowSpan(TDataArray<UINT>& sizes, UINT& row, TDataArray<FileRequest>& fileRequests, bool requestFiles)
 {
     if (internalDisplay == TcWebNodeDisplayInternal::wndi_row)
     {
@@ -1433,7 +1498,7 @@ void TcWebNode::HandleRowSpan(TDataArray<UINT>& sizes, UINT& row)
                 loc.bottom += sizes[c];
             }
 
-            node->CreateWebNode(loc, d3dEngine, this->win, false);
+            node->CreateWebNode(loc, d3dEngine, this->win, fileRequests, false, requestFiles);
         }
         row++;
     }
@@ -1453,7 +1518,7 @@ void TcWebNode::HandleRowSpan(TDataArray<UINT>& sizes, UINT& row)
             case NodeContainerType::net_tab_node:
                 node = dynamic_cast<TcTableNodeElement*>(childNodes[Rust].Get())->GetWebNode();
             }
-            node->HandleRowSpan(sizes, row);
+            node->HandleRowSpan(sizes, row, fileRequests, requestFiles);
         }
     }
 }
@@ -1529,7 +1594,8 @@ void TcWebNode::ShrinkWidth(UINT minWidth)
                 {
                     auto nodeLoc = node->GetArea();
                     nodeLoc.right = nodeLoc.left + width;
-                    node->CreateWebNode(nodeLoc, d3dEngine, nullptr);
+                    TDataArray<FileRequest> req;
+                    node->CreateWebNode(nodeLoc, d3dEngine, nullptr, req);
                 }
             }
         }
@@ -1576,7 +1642,8 @@ void TcWebNode::ShrinkWidth(UINT minWidth)
                 }
                 Rust += span;
                 tempLoc.right = tempLoc.left + curWidth;
-                node->CreateWebNode(tempLoc, d3dEngine, nullptr);
+                TDataArray<FileRequest> req;
+                node->CreateWebNode(tempLoc, d3dEngine, nullptr,req);
             }
 
             if ((Rust) < columnSizes.Size())
@@ -1742,7 +1809,8 @@ void TcWebNode::SetTableColWidth(TDataArray<float>& use)
         }
 
         loc.right = loc.left + width;
-        node->CreateWebNode(loc,d3dEngine, nullptr);
+        TDataArray<FileRequest> req;
+        node->CreateWebNode(loc,d3dEngine, nullptr, req);
 
         loc.left = loc.right;
     }
@@ -2190,8 +2258,18 @@ void TcWebNode::CompileProperties(TDataMap<TString>& atts)
     if (atts.retrieveEntry(L"border-top-left-radius", val))
         borderData.CompileCorner(val, tc_border_side::bs_top);		// Top-Left
 
-
-
+    if (atts.retrieveEntry(L"background", val))
+        contentData.CompileAttributes(val, drawingBoard);
+    if (atts.retrieveEntry(L"background-color", val))
+        contentData.CompileColor(val, drawingBoard);
+    if (atts.retrieveEntry(L"background-image", val))
+        contentData.CompileImage(val);
+    if (atts.retrieveEntry(L"background-repeat", val))
+        contentData.CompileRepeat(val);
+    if (atts.retrieveEntry(L"background-attachment", val))
+        contentData.CompileAttachment(val);
+    if (atts.retrieveEntry(L"background-position", val))
+        contentData.CompilePosition(val);
 
     if (atts.retrieveEntry(L"rowspan", val) && internalDisplay != TcWebNodeDisplayInternal::wndi_row)
     {
@@ -2211,6 +2289,15 @@ void TcWebNode::CompileProperties(TDataMap<TString>& atts)
         name.Set(val);
     if (atts.retrieveEntry(L"value", val))
         value.Set(val);
+
+    if (atts.retrieveEntry(L"height", val))
+    {
+        contentData.size.height = ConvertMeasurement(val);
+    }
+    if (atts.retrieveEntry(L"width", val))
+    {
+        contentData.size.width = ConvertMeasurement(val);
+    }
 }
 
 void TcWebNode::SetDisplay(const TString& display)
@@ -2490,6 +2577,10 @@ void TcWebNode::ShrinkHeight()
     }
     if (curBottom > area.top)
         area.bottom = curBottom + innerMargin.bottom;
+
+    float curHeight = area.bottom - area.top;
+    if (contentData.size.height && curHeight < contentData.size.height)
+        area.bottom = area.top + contentData.size.height;
 }
 
 UINT TcWebNode::ProcessInnerHtml(TStringSliceManager& html, UINT& start, HWND win, TrecPointer<TArray<styleTable>>& styles)
@@ -3472,7 +3563,7 @@ void TcWebNode::TcTableNodeElement::PrepTable()
     node->PreEstablishTable(cols, rows);
 }
 
-void TcWebNode::TcTableNodeElement::CreateTable(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window)
+void TcWebNode::TcTableNodeElement::CreateTable(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window, TDataArray<FileRequest>& req, bool requestFile)
 {
     // To-Do: Figure out the actual sizes of the columns. 
 
@@ -3493,7 +3584,7 @@ void TcWebNode::TcTableNodeElement::CreateTable(D2D1_RECT_F location, TrecPointe
 
     }
 
-    node->CreateWebNode(location, d3dEngine, window);
+    node->CreateWebNode(location, d3dEngine, window, req, true, requestFile);
     node->ShrinkHeight();
 }
 
@@ -3503,6 +3594,104 @@ bool TcWebNode::TcTableNodeElement::GetVariable(const TString& name, TrecPointer
 }
 
 bool TcWebNode::TcTableNodeElement::SetVariable(const TString& name, TrecPointer<TVariable> var)
+{
+    return false;
+}
+
+TcWebNode::FileRequest::FileRequest()
+{
+}
+
+TcWebNode::FileRequest::FileRequest(const FileRequest& copy)
+{
+    this->fileRequest.Set(copy.fileRequest);
+    this->requesterNode = copy.requesterNode;
+}
+
+TcContentData::TcContentData()
+{
+    repeatX = repeatY = true;
+    locked = false;
+    this->size = { 0.0f,0.0f };
+}
+
+TcContentData::TcContentData(const TcContentData& copy)
+{
+    this->brush = copy.brush;
+    this->bitmap = copy.bitmap;
+    this->file = copy.file;
+    this->locked = copy.locked;
+    this->repeatX = copy.repeatX;
+    this->repeatY = copy.repeatY;
+    this->size = copy.size;
+}
+
+void TcContentData::CompileAttributes(TString& atts, TrecPointer<DrawingBoard> board)
+{
+    auto multiAtts = atts.split(L' ', 3);
+    for (UINT Rust = 0; Rust < multiAtts->Size(); Rust++)
+    {
+        TString curAtt(multiAtts->at(Rust));
+        (CompileImage(curAtt) ||
+            CompileColor(curAtt, board) ||
+            CompileAttachment(curAtt) ||
+            CompilePosition(curAtt) ||
+            CompileRepeat(curAtt));
+           
+    }
+}
+
+bool TcContentData::CompileImage(TString& atts)
+{
+    TString att(atts);
+    if(!att.StartsWith(L"url", true))
+        return false;
+    att.Delete(0, 3);
+    att.Trim();
+    if (att.StartsWith(L'(') && att.EndsWith(L')'))
+        att.Set(att.SubString(1, att.GetSize() - 1));
+    else return false;
+
+    att.Trim();
+    if ((att.StartsWith(L'\'') && att.EndsWith(L'\'')) ||
+        (att.StartsWith(L'\"') && att.EndsWith(L'\"')))
+    {
+        att.Set(att.SubString(1, att.GetSize() - 1));
+        this->file.Set(att.GetTrim());
+        return true;
+    }
+    return false;
+}
+
+bool TcContentData::CompileColor(TString& atts, TrecPointer<DrawingBoard> board)
+{
+    bool ret = false;
+    TColor color = TColor::GetColorFromString(atts, ret);
+    if (ret)
+    {
+        brush = board->GetBrush(color);
+    }
+    return ret;
+}
+
+bool TcContentData::CompileRepeat(TString& atts)
+{
+    if (!atts.CompareNoCase(L"no-repeat"))
+        repeatX = repeatY = false;
+    else if (!atts.CompareNoCase(L"repeat-x"))
+        repeatY = false;
+    else if (!atts.CompareNoCase(L"repeat-y"))
+        repeatX = false;
+    else return false;
+    return true;
+}
+
+bool TcContentData::CompilePosition(TString& atts)
+{
+    return false;
+}
+
+bool TcContentData::CompileAttachment(TString& atts)
 {
     return false;
 }

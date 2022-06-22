@@ -57,6 +57,8 @@ typedef enum class TcWebNodeDisplayInternal
     wndi_caption
 }TcWebNodeDisplayInternal;
 
+
+
 /**
  * Class: EventPropagater
  * Purpose: Helps determine if a web node should report it's event first or let any child nodes report
@@ -216,9 +218,39 @@ private:
     void ClearCorner(tc_border_side side);
 };
 
+class ANA_WEB_DLL TcContentData
+{
+public:
+    TcContentData();
+    TcContentData(const TcContentData& copy);
+
+    void CompileAttributes(TString& atts, TrecPointer<DrawingBoard> board);
+    bool CompileImage(TString& atts);
+    bool CompileColor(TString& atts, TrecPointer<DrawingBoard> board);
+    bool CompileRepeat(TString& atts);
+    bool CompilePosition(TString& atts);
+    bool CompileAttachment(TString& atts);
+    TString file;
+    TrecPointer<TBrush> brush, bitmap;
+
+    D2D1_SIZE_F size;
+
+    bool repeatX, repeatY;
+    bool locked;
+};
+
 class ANA_WEB_DLL TcWebNode :
     public TPage
 {
+public:
+    class ANA_WEB_DLL FileRequest
+    {
+    public:
+        TString fileRequest;
+        TrecSubPointer<TPage, TcWebNode> requesterNode;
+        FileRequest();
+        FileRequest(const FileRequest& copy);
+    };
 protected:
     typedef enum class NodeContainerType
     {
@@ -325,7 +357,7 @@ protected:
 
         void PrepTable();
 
-        void CreateTable(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window);
+        void CreateTable(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window, TDataArray<FileRequest>& req, bool requestFiles);
 
         /**
          * Method: TVObject::GetVariable
@@ -427,6 +459,10 @@ protected:
      * Basic Text Attributes
      */
     TcTextData textData;
+    /**
+     * Background Data
+     */
+    TcContentData contentData;
 
     /**
      * Margins of the App (inner between text/content and border, outer between border and boundaries)
@@ -460,6 +496,17 @@ protected:
     bool doShrink;
 
 public:
+
+
+    /**
+     * Method: TcWebNode::AddFile
+     * Purpose: Adds a new File to the Node (Indended to be called after initial creation), such as an Image
+     * Parameters: TrecPointer<TFileShell> file - the file to add to the specific node
+     * Returns: void
+     * 
+     * Note: Wrtitten with Image Files in mind
+     */
+    void AddFile(TrecPointer<TFileShell> file);
 
     /**
      * Method: TWebNode::TWebNode
@@ -638,8 +685,8 @@ public:
      *              TrecPointerSoft<TWebNode> parent - the node that called this method
      * Returns: UINT - Error Code
      */
-    virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window, bool shrinkHeight = true);
-    void HandleRowSpan(TDataArray<UINT>& sizes, UINT& row);
+    virtual UINT CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window, TDataArray<FileRequest>& fileRequests, bool shrinkHeight = true, bool requestFiles = false);
+    void HandleRowSpan(TDataArray<UINT>& sizes, UINT& row, TDataArray<FileRequest>& fileRequests, bool requestFiles);
     void CollectRowSizes(TDataArray<UINT>& sizes);
     void ShrinkWidth(UINT minWidth);
 

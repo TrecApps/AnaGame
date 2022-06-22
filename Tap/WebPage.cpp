@@ -8,6 +8,8 @@
 #include <TcInterpretor.h>
 
 
+
+
 WebPage::WebPage(TrecPointer<DrawingBoard> board, TrecPointerSoft<TWindow> win): TPage(board)
 {
 	windowHandle = win;
@@ -111,8 +113,9 @@ TString WebPage::PrepPage(TrecPointer<TFileShell> file_, TrecPointer<EventHandle
 		rootNode->PreCreate(TrecSubPointerSoft<TPage, TcWebNode>(), styles);
 		D2D1_RECT_F tempArea = area;
 		tempArea.bottom = 50000.0f;
-		UINT createResult = rootNode->CreateWebNode(tempArea, win->GetWindowEngine(), win->GetWindowHandle());
-
+		TDataArray<TcWebNode::FileRequest> fileRequests;
+		UINT createResult = rootNode->CreateWebNode(tempArea, win->GetWindowEngine(), win->GetWindowHandle(),fileRequests, true, true);
+		PrepFiles(fileRequests);
 	}
 	else if (file->GetFileName().EndsWith(L".tml"))
 	{
@@ -224,7 +227,8 @@ ag_msg void WebPage::OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<Event
 	auto win = TrecPointerKey::GetTrecPointerFromSoft<>(windowHandle);
 	if (rootNode.Get() && win.Get())
 	{
-		rootNode->CreateWebNode(newLoc, win->GetWindowEngine(), win->GetWindowHandle());
+		TDataArray<TcWebNode::FileRequest> reqs;
+		rootNode->CreateWebNode(newLoc, win->GetWindowEngine(), win->GetWindowHandle(), reqs);
 
 		rootNode->OnResize(newLoc, nFlags, eventAr);
 
@@ -297,6 +301,22 @@ TString WebPage::GetTitle()
 	}
 	ThreadRelease();
 	return TString();
+}
+
+void WebPage::PrepFiles(TDataArray<TcWebNode::FileRequest> req)
+{
+	if (!environment.Get())
+		return;
+	// To-Do: When Socket Support is semi-stable in Anagame, migrate this code to a series of Threads
+	for (UINT Rust = 0; Rust < req.Size(); Rust++)
+	{
+		auto requester = req.at(Rust).requesterNode;
+		auto file = environment->GetFile(req.at(Rust).fileRequest);
+		if (file.Get() && requester.Get())
+		{
+			requester->AddFile(file);
+		}
+	}
 }
 
 TString WebPage::SetUpCSS()

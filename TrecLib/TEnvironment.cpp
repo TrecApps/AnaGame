@@ -92,6 +92,14 @@ TString TEnvironment::GetName()
 	return name;
 }
 
+TrecPointer<TFileShell> TEnvironment::GetFile(const TString& file)
+{
+	TrecPointer<TFileShell> ret = TFileShell::GetFileInfo(file);
+	if (!ret.Get() && this->rootDirectory.Get())
+		ret = TFileShell::GetFileInfo(this->rootDirectory->GetPath() + L"//" + file);
+	return ret;
+}
+
 /**
  * Method: TEnvironment::UpdateProjectRepo
  * Purpose: Allows Environment Objects to update the Repository for Environment Projects, called by Objects

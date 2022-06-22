@@ -15,6 +15,14 @@ class _VIDEO_GRAPHICS TBitmapBrush : public TBrush
 public:
 
 	/**
+	 * Method: TBitmapBrush::GetDefaultSize
+	 * Purpose: Retrieves the Default (Max) Size of the Image in question
+	 * Parameters: void
+	 * Returns: D2D1_SIZE_F - the size of the image (if 0-0, then assume somehting went wrong)
+	 */
+	D2D1_SIZE_F GetDefaultSize();
+
+	/**
 	 * Method: TBitmapBrush::GetType
 	 * Purpose: Returns a String Representation of the object type
 	 * Parameters: void
