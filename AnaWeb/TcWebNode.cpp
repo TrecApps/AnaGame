@@ -515,6 +515,7 @@ void TcWebNode::Draw(TrecPointer<TVariable> object)
     }
 
     // Draw Text
+    if(tagName.CompareNoCase(L"img") || !contentData.bitmap.Get())
     for (UINT Rust = 0; Rust < textElements.Size(); Rust++)
     {
         textElements[Rust]->text->OnDraw(object);
