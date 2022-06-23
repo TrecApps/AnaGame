@@ -416,19 +416,23 @@ void TcWebNode::AddFile(TrecPointer<TFileShell> file)
     if (!file.Get() || file->IsDirectory())return;
 
     TString ext(file->GetName());
-    ext.Set(ext.SubString(ext.FindLast(L'.')).GetLower().GetTrim());
+    ext.Set(ext.SubString(ext.FindLast(L'.')+1).GetLower().GetTrim());
     if (!ext.Compare(L"png") 
         || !ext.Compare(L"jpeg")
         || !ext.Compare(L"jpg")
         || !ext.Compare(L"gif"))
     {
         TrecSubPointer<TBrush, TBitmapBrush> bitBrush = this->drawingBoard->GetBrush(file, area);
+        if (!bitBrush.Get())
+            return;
+
         D2D1_SIZE_F imageSize = bitBrush->GetDefaultSize();
 
         if (!contentData.size.height)
             contentData.size.height = imageSize.height;
         if (!contentData.size.width)
             contentData.size.width = imageSize.width;
+        contentData.bitmap = TrecSubToTrec<>(bitBrush);
     }
 }
 
@@ -1289,7 +1293,7 @@ void TcWebNode::PreCreate(TrecSubPointerSoft<TPage, TcWebNode> parent, TrecPoint
 UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d3dEngine, HWND window, TDataArray<FileRequest>& fileRequests, bool shrinkHeight, bool requestFiles)
 {
     // Go through each bit of the child elements, determining where they lay
-    if (this->doDisplay && !TcIsVoidElement(tagName))
+    if (this->doDisplay && (!TcIsVoidElement(tagName) || !tagName.CompareNoCase(L"img")))
     {
         location.top += outerMargin.top;
         location.left += outerMargin.left;
@@ -2289,7 +2293,7 @@ void TcWebNode::CompileProperties(TDataMap<TString>& atts)
     // Handle the img tag
     if (!tagName.CompareNoCase(L"img"))
     {
-        if (atts.retrieveEntry(L"href", val))
+        if (atts.retrieveEntry(L"src", val))
             contentData.file.Set(val.GetTrim());
     }
 
@@ -2393,10 +2397,13 @@ void TcWebNode::SetDisplay(const TString& display)
 
 bool TcWebNode::IsText()
 {
+    
     shouldDraw = true;
     if (this->outsideDisplay != TcWebNodeDisplayOutside::wndo_inline)
         return false; // In this case, text generated here cannot be injected into a parent Node
     if (this->isListItem)
+        return false;
+    if (!tagName.CompareNoCase(L"img"))
         return false;
 
     // Assume true until discovered Otherwise
