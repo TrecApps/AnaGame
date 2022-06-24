@@ -465,7 +465,7 @@ void TcWebNode::Draw(TrecPointer<TVariable> object)
     if (!shouldDraw)
         return;
 
-    drawingBoard->AddLayer(area);
+    // drawingBoard->AddLayer(area);
 
     //To-Do: Addres more complex backgrounds
     if (contentData.brush.Get())
@@ -520,7 +520,7 @@ void TcWebNode::Draw(TrecPointer<TVariable> object)
     {
         textElements[Rust]->text->OnDraw(object);
     }
-    drawingBoard->PopLayer();
+    //drawingBoard->PopLayer();
 }
 
 void TcWebNode::DrawBorder()

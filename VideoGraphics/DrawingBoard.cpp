@@ -714,12 +714,12 @@ void DrawingBoard::PrepStyles()
 
 	props.dashCap = D2D1_CAP_STYLE_ROUND;
 	props.dashOffset = 0.0f;
-	props.dashStyle = D2D1_DASH_STYLE_CUSTOM;
+	props.dashStyle = D2D1_DASH_STYLE_DOT;
 	props.endCap = D2D1_CAP_STYLE_ROUND;
 	props.lineJoin = D2D1_LINE_JOIN_ROUND;
 	//props.miterLimit = 0.0f;
 	props.startCap = D2D1_CAP_STYLE_ROUND;
-	HRESULT res = fact->CreateStrokeStyle(props, dashes, 2, holder.GetPointerAddress());
+	HRESULT res = fact->CreateStrokeStyle(props, nullptr, 0, holder.GetPointerAddress());
 	strokeStyles.push_back(StrokeStyle(stroke_style::bs_dotted, holder.Extract()));
 
 
