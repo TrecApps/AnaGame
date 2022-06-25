@@ -158,6 +158,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CBaseCompiler.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="JavaScriptModifiers.h" />
     <ClInclude Include="JsArray.h" />
@@ -183,6 +184,7 @@
     <ClInclude Include="TrecCode.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CBaseCompiler.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="JavaScriptModifiers.cpp" />
     <ClCompile Include="JsArray.cpp" />
