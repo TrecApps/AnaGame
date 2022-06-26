@@ -260,6 +260,9 @@ void EnvironmentHandler::OnSelectAvailable(TrecPointer<TPage> tc, EventArgs ea)
         nameEntry->SetText(L"");
     }
     envFile.Nullify();
+
+    
+
     mode = environment_handler_mode::ehm_available_set;
 
     RefreshView();
