@@ -2861,7 +2861,7 @@ int TString::Replace(const TString& oldStr, const TString& newStr, bool doAll)
 		if (index == -1)
 			break;
 		indices.push_back(index);
-		index++;
+		index+= oldStr.GetSize();
 		if (!doAll)
 			break;
 	}

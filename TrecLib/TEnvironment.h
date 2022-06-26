@@ -559,6 +559,18 @@ public:
 	 */
 	TString GetName();
 
+	/**
+	 * Method: TEnvironment::GetFile
+	 * Purpose: Retrieves a File from anywhere, as long as it exists and we are allowed access to it
+	 * Parameters: const TString& file - the link to the file
+	 * Returns: TrecPointer<TFileShell> - the link to the File to create (null of it cannot be accessed)
+	 * 
+	 * Attributes: virtual
+	 * 
+	 * Notes: Primarily, this is intended to provide access to files based off of relative paths. The Base Environment class will Look into the working directory
+	 *	While extendsions can offer Web Support
+	 */
+	virtual TrecPointer<TFileShell> GetFile(const TString& file);
 
 
 protected:

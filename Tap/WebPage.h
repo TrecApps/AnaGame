@@ -245,6 +245,8 @@ public:
 
 protected:
 
+	void PrepFiles(TDataArray<TcWebNode::FileRequest> req);
+
 	TString directory;
 
 	TString SetUpCSS();

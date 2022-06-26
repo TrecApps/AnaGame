@@ -15,6 +15,29 @@ TString TBitmapBrush::GetType()
 	return TString(L"TBitmapBrush;") + TBrush::GetType();
 }
 
+D2D1_SIZE_F TBitmapBrush::GetDefaultSize()
+{
+	D2D1_SIZE_F ret = D2D1::SizeF();
+
+	TObjectLocker lock(&thread);
+	if (!valid || bitmaps.Size())
+		return ret;
+
+	for (UINT Rust = 0; Rust < bitmaps.Size(); Rust++)
+	{
+		auto bit = bitmaps[Rust];
+		if (bit.Get())
+		{
+			auto newSize = bit->GetSize();
+			if (newSize.height > ret.height)
+				ret.height = newSize.height;
+			if (newSize.width > ret.width)
+				ret.width = newSize.width;
+
+		}
+	}
+	return ret;
+}
 
 /**
  * Method: TBitmapBrush::NextFrame
