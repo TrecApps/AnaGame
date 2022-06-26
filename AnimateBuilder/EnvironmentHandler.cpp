@@ -175,6 +175,7 @@ void EnvironmentHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
     int e_id = -1;
     EventArgs ea;
+    TapEventHandler::HandleEvents(eventAr);
     for (UINT c = 0; c < eventAr.Size(); c++)
     {
         auto tc = eventAr.at(c).args;

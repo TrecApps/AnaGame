@@ -63,7 +63,7 @@ TString TAnagameEnvironmentBuilder::GetEnvironmentTypes(TrecPointer<TFileShell> 
 			continue;
 		}
 
-		if (!name.Compare(L"code_project.tml"))
+		if (!name.Compare(L"code_project.tml") || !name.Compare(L"treccode.tml"))
 			ret.Append(L"AnaCode ");
 
 	}

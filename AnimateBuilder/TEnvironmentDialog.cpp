@@ -46,7 +46,7 @@ int TEnvironmentDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	file.Append(L"Resources\\Environments_Dialog.json");
 
-	TrecPointer<TPage::EventHandler> eh = TrecPointerKey::GetNewTrecPointerAlt<TPage::EventHandler, EnvironmentHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
+	TrecPointer<TPage::EventHandler> eh = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, EnvironmentHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(windowInstance));
 
 	dynamic_cast<TapEventHandler*>(eh.Get())->SetWindow(TrecPointerKey::GetTrecPointerFromSoft<>(self));
 

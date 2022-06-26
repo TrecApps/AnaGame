@@ -345,6 +345,7 @@ TrecPointer<TConsoleHolder> TEnvironment::GetPrompt()
  */
 bool TEnvironment::Print(const TString& input)
 {
+	UNREFERENCED_PARAMETER(input);
 	return false;
 }
 
@@ -356,6 +357,7 @@ bool TEnvironment::Print(const TString& input)
  */
 bool TEnvironment::PrintLine(const TString& input)
 {
+	UNREFERENCED_PARAMETER(input);
 	return false;
 }
 

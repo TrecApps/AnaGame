@@ -2,6 +2,7 @@
 #include <AgCompiler.h>
 class CBaseCompiler : public AgCompiler
 {
+	friend class TrecPointerKey;
 private:
 	CBaseCompiler(TrecPointer<TFileShell> file);
 	TrecPointer<TFileShell> file;

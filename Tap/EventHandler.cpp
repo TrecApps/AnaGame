@@ -160,6 +160,7 @@ void TapEventHandler::SetSelf(TrecPointer<TPage::EventHandler> handleSelf)
 	hSelf = TrecPointerKey::GetSoftPointerFromTrec<TPage::EventHandler>(handleSelf);
 	if (app.Get())
 		dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<TProcess>(app).Get())->RegisterHandler(handleSelf);
+	ThreadRelease();
 }
 
 /**

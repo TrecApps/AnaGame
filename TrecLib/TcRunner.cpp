@@ -39,10 +39,12 @@ void TcRunner::SetParamTypes(TDataArray<TString>& paramTypes_)
 
 void TcRunner::SetCurrentStack(TrecPointer<BinaryStack>& stack)
 {
+	UNREFERENCED_PARAMETER(stack);
 }
 
 void TcRunner::SetCurrentStack(TrecPointer<ObjectStack>& stack)
 {
+	UNREFERENCED_PARAMETER(stack);
 }
 
 

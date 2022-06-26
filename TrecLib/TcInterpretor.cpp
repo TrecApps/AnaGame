@@ -87,6 +87,8 @@ public:
 	 */
 	virtual bool SetReverse(bool doReverse, bool reset)
 	{
+		UNREFERENCED_PARAMETER(doReverse);
+		UNREFERENCED_PARAMETER(reset);
 		return false;
 	}
 

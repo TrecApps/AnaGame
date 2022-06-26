@@ -2,6 +2,7 @@
 #include <TString.h>
 #include <TVariable.h>
 #include <TFileShell.h>
+#include "TcDataStruct.h"
 //#include "TcExpression.h"
 
 ///
@@ -82,7 +83,7 @@ typedef enum class tc_statement_type
     _regular         // Statement that does not fall under other statement types
 }tc_statement_type;
 
-class CompileMessage
+class TC_DATA_STRUCT CompileMessage
 {
 public:
     TString message;
@@ -93,7 +94,7 @@ public:
     CompileMessage(const CompileMessage& message);
 };
 
-class TcPreStatement
+class TC_DATA_STRUCT TcPreStatement
 {
 private:
 	TString statementText;
@@ -166,7 +167,7 @@ public:
     virtual UINT GetVType() override;
 };
 
-class TcBaseStatement
+class TC_DATA_STRUCT TcBaseStatement
 {
 public:
 	TString statementText;
