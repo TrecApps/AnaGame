@@ -59,6 +59,7 @@ void TDataLayout::Draw(TrecPointer<TVariable> object)
 						tempPage->Draw(varValue);
 					tempRec.bottom += height;
 					tempRec.top += height;
+					tempPage->OnResize(tempRec, 0, cred);
 				}
 			}
 			else

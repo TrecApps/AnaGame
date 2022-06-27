@@ -154,17 +154,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AgCompiler.h" />
+    <ClInclude Include="AnagameRunners.h" />
+    <ClInclude Include="BNFBase.h" />
     <ClInclude Include="DefaultObjectOperator.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="JsMath.h" />
     <ClInclude Include="JsNumber.h" />
+    <ClInclude Include="RunOps.h" />
     <ClInclude Include="TAccessorVariable.h" />
     <ClInclude Include="TAsyncVariable.h" />
+    <ClInclude Include="Tc2Compiler.h" />
+    <ClInclude Include="TcCompiler.h" />
     <ClInclude Include="TcDataStruct.h" />
     <ClInclude Include="JavaScriptFunc.h" />
     <ClInclude Include="Operator.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TcExpression.h" />
+    <ClInclude Include="TcLanguage.h" />
     <ClInclude Include="TClassStruct.h" />
     <ClInclude Include="TcNativeInterpretor.h" />
     <ClInclude Include="TContainerVariable.h" />
@@ -188,9 +195,13 @@
     <ClInclude Include="TReturnInterpretor.h" />
     <ClInclude Include="TSpecialVariable.h" />
     <ClInclude Include="TStringVariable.h" />
+    <ClInclude Include="TcType.h" />
     <ClInclude Include="TVariableType.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AgCompiler.cpp" />
+    <ClCompile Include="AnagameRunners.cpp" />
+    <ClCompile Include="BNFBase.cpp" />
     <ClCompile Include="DefaultObjectOperator.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="JavaScriptFunc.cpp" />
@@ -202,9 +213,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RunOps.cpp" />
     <ClCompile Include="TAccessorVariable.cpp" />
     <ClCompile Include="TAsyncVariable.cpp" />
+    <ClCompile Include="Tc2Compiler.cpp" />
+    <ClCompile Include="TcCompiler.cpp" />
     <ClCompile Include="TcExpression.cpp" />
+    <ClCompile Include="TcLanguage.cpp" />
     <ClCompile Include="TClassStruct.cpp" />
     <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
@@ -228,6 +243,7 @@
     <ClCompile Include="TReturnInterpretor.cpp" />
     <ClCompile Include="TSpecialVariable.cpp" />
     <ClCompile Include="TStringVariable.cpp" />
+    <ClCompile Include="TcType.cpp" />
     <ClCompile Include="TVariableType.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

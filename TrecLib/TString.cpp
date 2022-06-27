@@ -112,6 +112,16 @@ bool ConvertTStringToHex(const TString& string, UINT& val)
 	return true;
 }
 
+int TString::FindInContainer(TDataArray<TString>& container)
+{
+	for (UINT Rust = 0; Rust < container.Size(); Rust++)
+	{
+		if (!Compare(container[Rust]))
+			return Rust;
+	}
+	return -1;
+}
+
 /**
  * Method: TString::ConvertStringToUint
  * Purpose: Allows TString class to convert itself into a numeral representation

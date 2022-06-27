@@ -1230,7 +1230,6 @@ UINT TFile::Read(void* buffer, UINT count)
 
 	if (!res)
 	{
-		int e = GetLastError();
 		delete resCount;
 		delete lap2;
 		RETURN_THREAD_UNLOCK 0;

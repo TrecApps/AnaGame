@@ -53,6 +53,7 @@ bool VarFunction::IsTrue(TrecPointer<TVariable> var, bool& result, UCHAR def)
  */
 TString TVariable::GetString(const TString& detail)
 {
+	UNREFERENCED_PARAMETER(detail);
 	return GetString();
 }
 
@@ -62,11 +63,11 @@ TString TVariable::GetString(const TString& detail)
  * Parameters: TrecPointer<TVariable> - reference to assign
  * Returns: void
  */
-void TVariable::SetSelf(TrecPointer<TVariable> vSelf)
+void TVariable::SetSelf(TrecPointer<TVariable> pvSelf)
 {
-	if (vSelf.Get() != this)
+	if (pvSelf.Get() != this)
 		throw L"Non Matching reference!";
-	this->vSelf = TrecPointerKey::GetSoftPointerFromTrec <> (vSelf);
+	this->vSelf = TrecPointerKey::GetSoftPointerFromTrec <> (pvSelf);
 }
 
 /**

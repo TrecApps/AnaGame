@@ -16,10 +16,12 @@ typedef enum class var_type
     string,              // References a String
     interpretor,         // References an Interpretor (i.e. procedures/functions that are stored as variables
     interpretor_gen,     // Generates new Interpretors
+    processor,
     accessor,            // Type of variable that holds a Getter and Setter method
     special_value,       // Holds a special value that doesn't fit in any of the other categories
     iterator,            // Serves as an iterator
-    async                // Serves as a brdge between threads
+    async,               // Serves as a brdge between threads
+    runner               // Function/Procedure that 'Runs' in some form
 }var_type;
 
 

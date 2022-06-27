@@ -79,7 +79,7 @@ public:
 	* Parameters: UINT c - the index to target
 	* Returns: TrecPointer<tEntry<t2>> - the entry to return
 	*/
-	TrecPointer<tEntry<t2>> GetEntryAt(UINT c)
+	TrecPointer<tEntry<t2>> GetEntryAt(UINT c) const
 	{
 		if (c < map.Count())
 			return map.ElementAt(c);
@@ -163,7 +163,7 @@ public:
 	* Parameters: void
 	* Returns: UINT - the count of entries in the TMap
 	*/
-	UINT count() { return map.Count(); }
+	UINT count() const { return map.Count(); }
 
 	/*
 	* Method: TMap::operator=

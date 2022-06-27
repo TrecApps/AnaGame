@@ -1,8 +1,7 @@
 #pragma once
-#include "TVariable.h"
+#include "TcRunner.h"
 #include "TDirectory.h"
 #include "TEnvironment.h"
-#include "TDataMap.h"
 #include "CodeStatement.h"
 #include "ObjectOperator.h"
 #include "TFileModifier.h"
@@ -85,45 +84,6 @@ typedef enum class tc_int_op
 }tc_int_op;
 
 
-/**
- * Class: TcVariableHolder
- * Purpose: Holds Variables, including value, type and mutbility status
- */
-class _TREC_LIB_DLL TcVariableHolder
-{
-public:
-    bool mut;                       // Is this variable mutable
-    TString type;                   // The type of Variable this should be (empty string means anything)
-    TrecPointer<TVariable> value;   // The Value held by the Variable
-
-    /**
-     * Mehtod: TcVariableHolder::TcVariableHolder
-     * Purpose: Default Constructor
-     * Parameters: void
-     * Returns: new Variable Holder
-     */
-    TcVariableHolder();
-
-    /**
-     * Mehtod: TcVariableHolder::TcVariableHolder
-     * Purpose: Copy Constructor
-     * Parameters: const TcVariableHolder& copy - Variable Holder to copy
-     * Returns: new Variable Holder
-     */
-    TcVariableHolder(const TcVariableHolder& copy);
-
-    /**
-     * Method: TcVariableHolder::TcVariableHolder
-     * Purpose: Param Constructor
-     * Parameters: bool mut - whether this variable is mutable or not
-     *              const TString& type - the type of variable this is (empty for 'any')
-     *              TrecPointer<TVariable> value - the actual value held
-     * Returns: New variable holder
-     */
-    TcVariableHolder(bool mut, const TString& type, TrecPointer<TVariable> value);
-};
-
-
 
 /**
  * Class: TcInterpretor
@@ -132,7 +92,7 @@ public:
  * SuperClass: TVariable
  */
 class _TREC_LIB_DLL TcInterpretor :
-    public TVariable
+    public TcRunner
 {
 public:
 
@@ -171,89 +131,10 @@ public:
 
 
 
-    /**
-     * Method: TcInterpretor::GetObject
-     * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
-     * Parameters: void
-     * Returns: TString - The TString referered by the variable (empty if not a string)
-     *
-     * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
-     *
-     * Attributes: override
-     */
-    virtual TString GetString() override;
-
-    /**
-     * Method: TcInterpretor::Get4Value
-     * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)
-     * Parameters: void
-     * Returns: UINT - The value held as a UINT (0 if not a primitive type)
-     *
-     * Note: Call "GetVarType" first and make sure that it returns "var_type::primitive" first
-     *
-     * Attributes: override
-     */
-    virtual UINT Get4Value() override;
 
 
-
-    /**
-     * Method: TcInterpretor::Get8Value
-     * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
-     * Parameters: void
-     * Returns: ULONG64 - The value held as an 8 bit integer (0 if not a primitive type)
-     *
-     * Attributes: override
-     */
-    virtual ULONG64 Get8Value() override;
-
-
-    /**
-     * Method: TcInterpretor::GetSize
-     * Purpose: Returns the estimated size of the value held
-     * Parameters: void
-     * Returns: UINT - The estimated size in bytes of the data
-     *
-     * Attributes: override
-     */
-    virtual UINT GetSize() override;
-
-
-    /**
-     * Method: TcInterpretor::GetType
-     * Purpose: Returns the basic type of the object
-     * Parameters: void
-     * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
-     *
-     * Attributes: override
-     */
-    virtual UINT GetVType() override;
 
 /// Interpretor Functionality
-
-
-    /**
-     * Method: TcInterpreotr::CanCompile
-     * Purpose: Whether the Compiler is capable of compiling it's statements into a more compact form
-     * Parameters: void
-     * Returns: COMPILE_TYPE - marker indicating the Compilation the Interpretor can do
-     * 
-     * Attributes: abstract
-     * 
-     * Note: If the Returned Value is 0, then the Interpretor will not Attempt to Compile and is expected to run the Statements AS IS
-     */
-    virtual COMPILE_TYPE CanCompile() = 0;
-
-    /**
-     * Method: TcInterpretor::Compile
-     * Purpose: Attempts to Compile the Statements into more compact code according to the Specifications provided
-     * Parameters: COMPILE_TYPE type - specifications for the code to be compiled
-     *              ReturnObject& ret - allows method to report any error information encountered
-     * Returns: void
-     * 
-     * Attributes: abstract
-     */
-    virtual void Compile(COMPILE_TYPE type, ReturnObject& ret) = 0;
 
     /**
      * Method: TcInterpretor::SetFile
@@ -267,38 +148,6 @@ public:
      */
     virtual void SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst = true) = 0;
 
-    /**
-     * Method: TcInterpretor::Run
-     * Purpose: Allows the Interpretor to run the Code As Is
-     * Parameters: void
-     * Returns: ReturnObject - information about the Run
-     */
-    virtual ReturnObject Run() = 0;
-
-    /**
-     * Method: TcInterpretor::SetInitialVariables
-     * Purpose: Allows Callers to Set Intial Variables, i.e. parameters in a function/method call
-     * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters to set when calling the function
-     * Returns: void
-     */
-    virtual void SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params) = 0;
-
-    /**
-     * Method: TCInterpretor::SetParamNames
-     * Purpose: Allows Parameter names to be set
-     * Parameters: TDataArray<TString>& paramNames - the Names of Initial parameters
-     * Returns: void
-     */
-    void SetParamNames(TDataArray<TString>& paramNames);
-
-
-    /**
-     * Method: TCInterpretor::SetParamTypes
-     * Purpose: Allows Parameter types to be set
-     * Parameters: TDataArray<TString>& paramTypes - the Types of Initial parameters
-     * Returns: void
-     */
-    void SetParamTypes(TDataArray<TString>& paramTypes);
 
     /**
      * Method: TCInterpretor::SetDefaultValues
@@ -423,10 +272,9 @@ protected:
     TrecPointer<TEnvironment> environment;
 
     TrecPointer<TVariable> methodObject;            // 'this' or 'self' object to act on
-    TDataArray<TString> paramNames, paramTypes;     // Parameter Names and Types
     TDataArray<TrecPointer<TVariable>> defaultVars; // List of Default Values to use
 
-    TDataMap<TcVariableHolder> variables;       // List of Variables to Hold
+
     TDataMap<TcVariableHolder> strictVariables; // List of Variables to hold and Generate prior to runtime (must not be removed)
     
     TString selfWord;

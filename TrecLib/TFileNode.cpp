@@ -226,6 +226,7 @@ void TFileNode::DropChildNodes()
 */
 TString TFileNode::getVariableValueStr(const TString& varName)
 {
+	UNREFERENCED_PARAMETER(varName);
 	return GetContent();
 }
 

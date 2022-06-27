@@ -120,6 +120,30 @@
     <ClInclude Include="TFormatReaderYaml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TcCompiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tc2Compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcLanguage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BNFBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AnagameRunners.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RunOps.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AgCompiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -219,6 +243,30 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TFormatReaderYaml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcCompiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tc2Compiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcLanguage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BNFBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AnagameRunners.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RunOps.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AgCompiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

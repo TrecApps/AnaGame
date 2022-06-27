@@ -60,6 +60,7 @@ UCHAR * TObject::GetAnaGameType()
  */
 TString TObject::getVariableValueStr(const TString & varName)
 {
+	UNREFERENCED_PARAMETER(varName);
 	return TString();
 }
 
@@ -95,16 +96,19 @@ TObject* TObject::ProcessPointer(TObject* obj)
 
 TObject* TObject::ProcessPointer(void* obj)
 {
+	UNREFERENCED_PARAMETER(obj);
 	return nullptr;
 }
 
 TObject* TObject::ProcessPointer(int* obj)
 {
+	UNREFERENCED_PARAMETER(obj);
 	return nullptr;
 }
 
 TObject* TObject::ProcessPointer(float* obj)
 {
+	UNREFERENCED_PARAMETER(obj);
 	return nullptr;
 }
 

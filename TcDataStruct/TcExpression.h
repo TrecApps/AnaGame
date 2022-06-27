@@ -3,205 +3,203 @@
 #include <TVariable.h>
 #include <TcInterpretor.h>
 #include "TcOperator.h"
-
+#include "TPrimitiveVariable.h"
+#include "TcType.h"
+#include "AnagameRunners.h"
+#include "TcCompiler.h"
+#include <TMap.h>
 /**
  * Enum Class: tc_exp_type
  * Purpose: Helps label the type of Expression we are dealing with
  */
 typedef enum class tc_exp_type
 {
-	expression,
-	function,
-	number,
-	string,
-	string_exp,
-	variable
+	expression,		// Holds an Operation
+	function,		// Holds a Function
+	number,			// Holds a number
+	string,			// Holds a Confirmed String
+	string_exp,		// Holds a String with Expressions within
+	variable		// Holds a variable Reference
 }tc_exp_type;
 
 
-
-class TC_DATA_STRUCT TcExpression : public TVariable
+class VariableContiainer
 {
 public:
-    class TC_DATA_STRUCT ExpressionComponent
-    {
-    public: 
-        ExpressionComponent();
-        ExpressionComponent(const ExpressionComponent& copy);
-        ExpressionComponent(TrecSubPointer<TVariable, TcExpression> ex);
-        ExpressionComponent(tc_int_op o);
-        TrecSubPointer<TVariable, TcExpression> expression;
-        tc_int_op op;   // If None, then this is an expression
-    };
+	class Variable
+	{
+	public:
+		UINT stackLoc;
+		bool useObject;
+		ULONG64 rawData;
+		TrecPointer<TVariable> objData;
+
+		TrecPointer<TcType> type;
+
+		Variable();
+		Variable(const Variable& copy);
+	};
+
+	VariableContiainer();
+	VariableContiainer(const VariableContiainer& copy);
+	void operator=(const VariableContiainer& copy);
+
+	TMap<Variable> variables;
+};
+
+
+
+class TC_DATA_STRUCT TcExpression
+{
+public:
+
+	/**
+	 * Method: TcExpression::IsCompileConfirmed
+	 * Purpose: Reports whether the Value of the expression can be confirmed at compile time. If so, simply calulate the value at compile time
+	 *	instead of having the Runners calculate it each time the statement in question is run
+	 * Parameters: void
+	 * Returns: bool - whether the value is available at run time
+	 */
+	virtual bool IsCompileConfirmed() = 0;
+
+	/**
+	 * Method: TcExpression::GetExpressionType
+	 * Purpose: Reports the type of expression being handled here
+	 * Parameters: void
+	 * Returns: tc_exp_type - the expression type this Expression Represents
+	 */
+	virtual tc_exp_type GetExpressionType() = 0;
+
+	/**
+	 * Method: TcExpression::GetValue
+	 * Purpose: Returns a value that the Expression Represents
+	 * Parameters: TrecPointer<TVariable>& value - reference to the Variable to return
+	 * Returns: bool - whether the Expression returned a valid variable
+	 */
+	virtual bool GetValue(TrecPointer<TVariable>& value) = 0;
+
+	/**
+	 * Method: TcExpression::CompileExpression
+	 * Purpose: Compiles the Expression
+	 * Parameters: TDataArray<VariableContiainer>& vars - variables available
+	 *					TMap<TrecSubPointer<TVariable, AnagameRunner>>& runners - runners available
+	 *					const TString& currentRunner - name of the runner to look at
+	 *					TDataArray<CompileMessage>& messages - output info
+	 */
+	virtual void CompileExpression(TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, TDataArray<CompileMessage>& messages);
+};
+
+class TcStringExpression : public TcExpression
+{
+	friend class BNFString;
 protected:
+	TDataArray<TrecPointer<TcExpression>> subExpressions;
+	TString stringExpression;
+	
+public:
+	/**
+	 * Method: TcStringExpression::TcStringExpression
+	 * Purpose: Constructor
+	 * Parameters: void
+	 * Returns: New String Expression Object
+	 */
+	TcStringExpression(const TString& exp);
 
-    /**
-     * List of Components in an expression
-     */
-    TDataArray<ExpressionComponent> components;
-    /**
-     * String expression or the variable
-     */
-    TString str;
+	/**
+	 * Mehtod: TcStringExpression::GetSubExpression
+	 * Purpose: Retrieves the expression Strings within the Template String (managed by BNF tags)
+	 * Parameters: UINT start - index of the string to start looking for
+	 *				TString& expression - the expression extracted
+	 *				const TString& begin - the beginning of the expression
+	 *				const TString& end - the ending tag
+	 * Returns: int - the index to begin the next search (-1 if no more sub-expressions are available)
+	 */
+	int GetSubExpression(UINT start, TString& expression, const TString& begin, const TString& end);
 
-    /**
-     * Variable involved
-     */
-    TrecPointer<TVariable> var;
+	/**
+	 * Method: TcStringExpression::IsCompileConfirmed
+	 * Purpose: Reports whether the Value of the expression can be confirmed at compile time. If so, simply calulate the value at compile time
+	 *	instead of having the Runners calculate it each time the statement in question is run
+	 * Parameters: void
+	 * Returns: bool - whether the value is available at run time
+	 */
+	virtual bool IsCompileConfirmed()override;
 
-    /**
-     * type of expression
-     */
-    tc_exp_type type;
+	/**
+	 * Method: TcStringExpression::GetExpressionType
+	 * Purpose: Reports the type of expression being handled here
+	 * Parameters: void
+	 * Returns: tc_exp_type - the expression type this Expression Represents
+	 */
+	virtual tc_exp_type GetExpressionType()override;
 
-    void ProcessExpression(TrecSubPointer<TVariable, TcInterpretor> processor, TDataArray<TcOperatorGroup>& operators,
-        ReturnObject& ret, const TDataArray<ExpressionComponent>& comp);
+	/**
+	 * Method: TcStringExpression::GetValue
+	 * Purpose: Returns a value that the Expression Represents
+	 * Parameters: TrecPointer<TVariable>& value - reference to the Variable to return
+	 * Returns: bool - whether the Expression returned a valid variable
+	 */
+	virtual bool GetValue(TrecPointer<TVariable>& value) override;
 
-    void ProcessOperators(TrecSubPointer<TVariable, TcInterpretor> processor, TDataArray<TcOperatorGroup>& operators,
-        ReturnObject& ret, TDataArray<ExpressionComponent>& comp, UINT opIndex);
+	/**
+	 * Method: TcStringExpression::CompileExpression
+	 * Purpose: Compiles the Expression
+	 * Parameters: TDataArray<VariableContiainer>& vars - variables available
+	 *					TMap<TrecSubPointer<TVariable, AnagameRunner>>& runners - runners available
+	 *					const TString& currentRunner - name of the runner to look at
+	 *					TDataArray<CompileMessage>& messages - output info
+	 */
+	virtual void CompileExpression(TDataArray<VariableContiainer>& vars, TDataMap<TrecSubPointer<TVariable, AnagameRunner>>& runners, const TString& currentRunner, TDataArray<CompileMessage>& messages)override;
+};
 
-    void ProcessOperator(TrecSubPointer<TVariable, TcInterpretor> processor, TDataArray<TcOperatorGroup>& operators,
-        ReturnObject& ret, TDataArray<ExpressionComponent>& comp, UINT expIndex, TrecPointer<TcOperator> op);
+class TcNumberExpression : public TcExpression
+{
+protected:
+	TrecSubPointer<TVariable, TPrimitiveVariable> variable;
+public:
+	/**
+	 * Method: TcNumberExpression::TcNumberExpression
+	 * Purpose: Constructor
+	 * Parameters: TrecSubPointer<TVariable, TPrimitiveVariable> v
+	 * Returns: New Number Expression Object
+	 */
+	TcNumberExpression(TrecSubPointer<TVariable, TPrimitiveVariable> v);
 
-    bool InspectContainers(TrecSubPointer<TVariable, TcInterpretor> processor, TDataArray<TcOperatorGroup>& operators,
-        ReturnObject& ret, TDataArray<TrecSubPointer<TVariable, TcExpression>>& comps, TDataArray<tc_int_op>& opList);
+	
+	/**
+	 * Method: TcNumberExpression::IsCompileConfirmed
+	 * Purpose: Reports whether the Value of the expression can be confirmed at compile time. If so, simply calulate the value at compile time
+	 *	instead of having the Runners calculate it each time the statement in question is run
+	 * Parameters: void
+	 * Returns: bool - whether the value is available at run time
+	 */
+	virtual bool IsCompileConfirmed()override;
 
-    static TrecSubPointer<TVariable, TcExpression> GenerateNumberExpression(TrecPointer<TVariable> v);
-    static TrecSubPointer<TVariable, TcExpression> GenerateExpression(TrecPointer<TVariable> v);
+	/**
+	 * Method: TcNumberExpression::GetExpressionType
+	 * Purpose: Reports the type of expression being handled here
+	 * Parameters: void
+	 * Returns: tc_exp_type - the expression type this Expression Represents
+	 */
+	virtual tc_exp_type GetExpressionType()override;
 
+	/**
+	 * Method: TcNumberExpression::GetValue
+	 * Purpose: Returns a value that the Expression Represents
+	 * Parameters: TrecPointer<TVariable>& value - reference to the Variable to return
+	 * Returns: bool - whether the Expression returned a valid variable
+	 */
+	virtual bool GetValue(TrecPointer<TVariable>& value) override;
+};
+
+class TcVariableExpression : public TcExpression
+{
+protected:
+	TString variableName;
 
 public:
 
+	TcVariableExpression(const TString& variableName);
 
 
-    /**
-     * Method: TcExpression::TcExpression
-     * Purpose: Default Constructor
-     * Parameters:
-     * Returns: New Expression
-     */
-    TcExpression();
-
-    /**
-     * Method: TcExpression::AppendString
-     * Purpose: Adds a String expression to the Tree
-     * Parameters: const TString& str - the string to add
-     *              bool ex - whether the string contians expressions that need to be processed
-     * Returns: bool - whether a string could be added
-     */
-    TrecSubPointer<TVariable, TcExpression> AppendString(const TString& str, bool ex);
-
-
-    /**
-     * Method: TcExpression::AppendNumber
-     * Purpose: Adds a String expression to the Tree
-     * Parameters: const TString& str - the string to add
-     *              bool ex - whether the string contians expressions that need to be processed
-     * Returns: bool - whether a Number could be added
-     */
-    bool AppendNumber(TrecPointer<TVariable> num);
-
-
-    /**
-     * Method: TcExpression::AppendVariable
-     * Purpose: Adds a Variable expression to the Tree
-     * Parameters: const TString& str - the variable to add
-     * Returns: bool - whether a variable could be added
-     */
-    bool AppendVariable(const TString& str);
-
-
-    /**
-     * Method: TcExpression::AppendExpression
-     * Purpose: Adds an expression to the Tree
-     * Parameters: TrecSubPointer<TVariable, TcExpression> exp - the expression to add
-     * Returns: bool - whether a Number could be added
-     */
-    bool AppendExpression(TrecSubPointer<TVariable, TcExpression> exp);
-
-    /**
-     * Method: TcExpression::AppendOperator
-     * Purpose: Adds an Operator to the expression
-     * Parameters: tc_int_op op - the operator to add
-     * Returns bool - whether an operator can be added
-     */
-    bool AppendOperator(tc_int_op op);
-
-    /**
-     * Method: TcExpression::Process
-     * Purpose: Processed the Operation
-     * Parameters: TrecSubPointer<TVariable, TcInterpretor> processor - the interpretor caling the operations (needed to resolve variables)
-     *              TDataArray<TcOperatorGroup>& operators - the operators the Processor has to work with
-     *              ReturnObject& ret - the means of recieving information and returning information
-     * Returns: void
-     */
-    void Process(TrecSubPointer<TVariable, TcInterpretor> processor, TDataArray<TcOperatorGroup>& operators, ReturnObject& ret);
-
-    /**
-     * Method: TcExpression::GetVarType
-     * Purpose: Reports the type of varible that this object represents
-     * Parameters: void
-     * Returns: var_type - the type of variable this represents
-     *
-     * Attributes: override
-     */
-    virtual var_type GetVarType() override;
-
-
-    /**
-     * Method: TcExpression::GetObject
-     * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
-     * Parameters: void
-     * Returns: TString - The TString referered by the variable (empty if not a string)
-     *
-     * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
-     *
-     * Attributes: override
-     */
-    virtual TString GetString() override;
-
-    /**
-     * Method: TcExpression::Get4Value
-     * Purpose: Returns the value held by the variable assuming four bytes (it is up to the interpretor to determine if conversion needs to be done)
-     * Parameters: void
-     * Returns: UINT - The value held as a UINT (0 if not a primitive type)
-     *
-     * Note: Call "GetVarType" first and make sure that it returns "var_type::primitive" first
-     *
-     * Attributes: override
-     */
-    virtual UINT Get4Value() override;
-
-
-    /**
-     * Method: TcExpression::Get8Value
-     * Purpose: Returns the value held by the variable assuming eight bytes (it is up to the interpretor to determine if conversion needs to be done)
-     * Parameters: void
-     * Returns: ULONG64 - The value held as an 8 bit integer (0 if not a primitive type)
-     *
-     * Attributes: override
-     */
-    virtual ULONG64 Get8Value() override;
-
-
-    /**
-     * Method: TcExpression::GetSize
-     * Purpose: Returns the estimated size of the value held
-     * Parameters: void
-     * Returns: UINT - The estimated size in bytes of the data
-     *
-     * Attributes: override
-     */
-    virtual UINT GetSize() override;
-
-
-    /**
-     * Method: TcExpression::GetType
-     * Purpose: Returns the basic type of the object
-     * Parameters: void
-     * Returns: UCHAR - The value held as a UINT (0 if not a primitive type)
-     *
-     * Attributes: override
-     */
-    virtual UINT GetVType() override;
 };

@@ -35,7 +35,7 @@ TShell::TShell()
 
 	// Location of the Command Prompt is held by "COMSPEC", so use it to get our prompt program
 	auto ret = GetEnvironmentVariableW(L"COMSPEC", shellBuffer, 150);
-	auto er = GetLastError();
+	//auto er = GetLastError();
 
 	programShell.Set(shellBuffer);
 	outputLoc = 0;
@@ -223,7 +223,7 @@ TString TShell::GetOutput()
 			output.Set(str);
 		else
 		{
-			auto err = GetLastError();
+			//auto err = GetLastError();
 			output.Set(L"Error Obtaining Standard Output");
 		}
 		delete[] str;

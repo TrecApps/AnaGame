@@ -43,7 +43,7 @@ UCHAR * TArrayBase::GetAnaGameType()
  * Parameters: void
  * Returns: UINT - the number of elements currently held
  */
-UINT TArrayBase::Count()
+UINT TArrayBase::Count() const
 {
 	return count;
 }

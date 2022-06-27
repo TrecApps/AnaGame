@@ -32,26 +32,25 @@ TrecPointer<TFileShell> TEnvironment::GetRootDirectory()
  */
 TrecPointer<TVariable> TEnvironment::GetVariable(TString& var, bool& present, env_var_type evtType)
 {
-	AG_THREAD_LOCK
+	TObjectLocker lock(&thread);
 	for (UINT Rust = 0; Rust < envVariables.count(); Rust++)
 	{
 		auto entry = envVariables.GetEntryAt(Rust);
 		if (!entry.Get())
 		{
 			present = false;
-			RETURN_THREAD_UNLOCK TrecPointer<TVariable>();
+			return TrecPointer<TVariable>();
 		}
 
 		if (!entry->key.Compare(var))
 		{
 			present = true;
-			ThreadRelease();
 			if(evtType == env_var_type::evt_any || dynamic_cast<TcInterpretor*>(entry->object.Get()))
 				return entry->object;
 		}
 	}
 	present = false;
-	RETURN_THREAD_UNLOCK TrecPointer<TVariable>();
+	return TrecPointer<TVariable>();
 }
 
 /**
@@ -354,6 +353,7 @@ TrecPointer<TConsoleHolder> TEnvironment::GetPrompt()
  */
 bool TEnvironment::Print(const TString& input)
 {
+	UNREFERENCED_PARAMETER(input);
 	return false;
 }
 
@@ -365,6 +365,7 @@ bool TEnvironment::Print(const TString& input)
  */
 bool TEnvironment::PrintLine(const TString& input)
 {
+	UNREFERENCED_PARAMETER(input);
 	return false;
 }
 

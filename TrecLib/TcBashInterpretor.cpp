@@ -1,16 +1,6 @@
 #include "TcBashInterpretor.h"
 #include "CodeStatement.h"
 
-COMPILE_TYPE TcBashInterpretor::CanCompile()
-{
-    return COMPILE_TYPE(0);
-}
-
-void TcBashInterpretor::Compile(COMPILE_TYPE type, ReturnObject& ret)
-{
-    UNREFERENCED_PARAMETER(type);
-    ret.returnCode = ret.ERR_UNSUPPORTED_OP;
-}
 
 void TcBashInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst)
 {

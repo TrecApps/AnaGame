@@ -36,6 +36,7 @@ TObjectNode::~TObjectNode()
 
 TString TObjectNode::GetCommand(const TString& info)
 {
+	UNREFERENCED_PARAMETER(info);
 	return L"";
 }
 
@@ -87,5 +88,6 @@ void TObjectNode::SetSelf(TrecPointer<TObjectNode> s)
  */
 TString TObjectNode::getVariableValueStr(const TString& varName)
 {
+	UNREFERENCED_PARAMETER(varName);
 	return TString(L"{}");
 }

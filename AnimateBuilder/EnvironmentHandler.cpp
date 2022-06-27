@@ -175,6 +175,7 @@ void EnvironmentHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
     int e_id = -1;
     EventArgs ea;
+    TapEventHandler::HandleEvents(eventAr);
     for (UINT c = 0; c < eventAr.Size(); c++)
     {
         auto tc = eventAr.at(c).args;
@@ -259,6 +260,9 @@ void EnvironmentHandler::OnSelectAvailable(TrecPointer<TPage> tc, EventArgs ea)
         nameEntry->SetText(L"");
     }
     envFile.Nullify();
+
+    
+
     mode = environment_handler_mode::ehm_available_set;
 
     RefreshView();

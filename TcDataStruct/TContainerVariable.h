@@ -283,6 +283,14 @@ public:
      */
     ContainerType GetContainerType();
 
+    /**
+     * Method: TContainerVarable::CollectAsStrings
+     * Purpose: Simplifies the process of collecting Variables into string form
+     * Parameters: TDataArray<TString>& - string collector
+     * Returns: void
+     */
+    void CollectAsStrings(TDataArray<TString>& collector);
+
 
  private:
     /**
