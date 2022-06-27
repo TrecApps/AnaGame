@@ -32,11 +32,12 @@ public:
 	*/
 	TDataArray(const TDataArray<T>& newArray) : TDataArrayBase(newArray.Size(), newArray.Capacity())
 	{
-		array = new T[newArray.Capacity()];
+		UINT cap = newArray.Capacity()
+		array = new T[cap];
 		
-		for (UINT c = 0; c < newArray.Size() && c < newArray.Capacity(); c++)
+		for (UINT c = 0; c < cap; c++)
 		{
-			if (c < newArray.Capacity())
+			if (c < cap)
 				array[c] = newArray.array[c];
 		}
 		//memcpy_s(array, capacity, newArray.GetArray(), capacity);
