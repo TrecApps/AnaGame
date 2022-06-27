@@ -16,11 +16,11 @@ public:
 
 	virtual void Close() override;
 
-protected:
+
 
 	TString Send(TDataArray<char>& bytes);
 	TString Recieve(TDataArray<char>& bytes);
-
+protected:
 	bool initSuccess;
 	ADDRINFOW* results;
 	SOCKET sock;

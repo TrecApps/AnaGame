@@ -25,12 +25,32 @@ bool TClientConnection::GetSettings(TDataMap<TString>& Settings)
     return false;
 }
 
+bool TClientConnection::GetSetting(const TString& key, TString& value)
+{
+    return false;
+}
+
 bool TClientConnection::GetHeaders(TDataMap<TString>& headers)
 {
     return false;
 }
 
 bool TClientConnection::GetHeader(const TString& key, TString& value)
+{
+    return false;
+}
+
+bool TClientConnection::SetMainData(const TString& body)
+{
+    return false;
+}
+
+bool TClientConnection::SetMainData(const TDataArray<UCHAR>& body)
+{
+    return false;
+}
+
+bool TClientConnection::GetMainData(bool& readString, TString& strValue, TDataArray<UCHAR>& binValue)
 {
     return false;
 }
@@ -51,6 +71,11 @@ bool TClientConnection::SupportsSettings()
 }
 
 bool TClientConnection::SetSettings(const TDataMap<TString>& Settings)
+{
+    return false;
+}
+
+bool TClientConnection::SetSetting(const TString& key, const TString& value)
 {
     return false;
 }

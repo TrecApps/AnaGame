@@ -1,6 +1,7 @@
 #pragma once
-#include <TVariable.h>
 #include <TClientSocket.h>
+#include <TVariable.h>
+
 #include <TDataMap.h>
 #include <TcRunner.h>
 #include <TAsyncVariable.h>
@@ -11,6 +12,8 @@ protected:
     TrecPointer<TClientSocket> mainSocket;
 
 public:
+    virtual UINT SetAddress(const TString& address) = 0;
+
     virtual bool SupportsHeaders() ;
     virtual bool SetHeaders(const TDataMap<TString>& headers) ;
     virtual bool SetHeader(const TString& key, const TString& value) ;
@@ -19,15 +22,19 @@ public:
 
     virtual bool SupportsSettings() ;
     virtual bool SetSettings(const TDataMap<TString>& Settings) ;
-    virtual bool SetHeader(const TString& key, const TString& value) ;
+    virtual bool SetSetting(const TString& key, const TString& value) ;
     virtual bool GetSettings(TDataMap<TString>& Settings) ;
-    virtual bool GetHeader(const TString& key, TString& value) ;
+    virtual bool GetSetting(const TString& key, TString& value) ;
 
     virtual bool SupportsParameters() ;
     virtual bool SetParameters(const TDataMap<TString>& Parameters) ;
     virtual bool SetHeader(const TString& key, const TString& value) ;
     virtual bool GetParameters(TDataMap<TString>& Parameters) ;
     virtual bool GetHeader(const TString& key, TString& value) ;
+
+    virtual bool SetMainData(const TString& body);
+    virtual bool SetMainData(const TDataArray<UCHAR>& body);
+    virtual bool GetMainData(bool& readString, TString& strValue, TDataArray<UCHAR>& binValue);
 
     virtual TString CompileAndSend() = 0;
 

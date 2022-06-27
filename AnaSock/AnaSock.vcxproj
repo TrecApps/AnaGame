@@ -160,6 +160,7 @@
     <ClInclude Include="SocketWall.h" />
     <ClInclude Include="TClientConnection.h" />
     <ClInclude Include="TDataDoc.h" />
+    <ClInclude Include="THttpClientConnection.h" />
     <ClInclude Include="THttpClientSocket.h" />
     <ClInclude Include="TXMLHttpRequest.h" />
   </ItemGroup>
@@ -174,6 +175,7 @@
     <ClCompile Include="SocketWall.cpp" />
     <ClCompile Include="TClientConnection.cpp" />
     <ClCompile Include="TDataDoc.cpp" />
+    <ClCompile Include="THttpClientConnection.cpp" />
     <ClCompile Include="THttpClientSocket.cpp" />
     <ClCompile Include="TXMLHttpRequest.cpp" />
   </ItemGroup>
