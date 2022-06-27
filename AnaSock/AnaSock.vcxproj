@@ -158,6 +158,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SocketWall.h" />
+    <ClInclude Include="TClientConnection.h" />
     <ClInclude Include="TDataDoc.h" />
     <ClInclude Include="THttpClientSocket.h" />
     <ClInclude Include="TXMLHttpRequest.h" />
@@ -171,6 +172,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SocketWall.cpp" />
+    <ClCompile Include="TClientConnection.cpp" />
     <ClCompile Include="TDataDoc.cpp" />
     <ClCompile Include="THttpClientSocket.cpp" />
     <ClCompile Include="TXMLHttpRequest.cpp" />

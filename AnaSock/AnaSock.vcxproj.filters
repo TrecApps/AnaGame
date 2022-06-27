@@ -36,6 +36,9 @@
     <ClInclude Include="TDataDoc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TClientConnection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -54,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TDataDoc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TClientConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
