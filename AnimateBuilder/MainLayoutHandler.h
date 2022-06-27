@@ -1,31 +1,24 @@
 #pragma once
 #include <EventHandler.h>
-#include <MiniHandler.h>
 #include <MiniApp.h>
+#include <TTextInput.h>
 
 class MainLayoutHandler;
 
-typedef void (MainLayoutHandler::* LayoutCall)(TrecPointer<TControl> tc, EventArgs ea);
+typedef void (MainLayoutHandler::* LayoutCall)(TrecPointer<TPage> tc, EventArgs ea);
 
-class MainLayoutHandler : public EventHandler
+class MainLayoutHandler : public TapEventHandler
 {
 public:
-	MainLayoutHandler(TrecPointer<TInstance> ins);
+	MainLayoutHandler(TrecPointer<TProcess> ins);
 	~MainLayoutHandler();
 
-	afx_msg void OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg void OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut) override;
-	afx_msg void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut) override;
-	afx_msg bool OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut) override;
 
-	void Initialize(TrecPointer<Page> page)override;
-	void HandleEvents(TDataArray<EventID_Cred>& eventAr);
+	void Initialize(TrecPointer<TPage> page)override;
+	void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr);
 
 	void Draw();
-	void OnSwitchTab(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSwitchTab(TrecPointer<TPage> tc, EventArgs ea);
 
 
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message)override;
@@ -37,12 +30,14 @@ protected:
 	TDataArray<LayoutCall> calls;
 
 	// Pointers to frequently access controls in the main layout
-	TrecPointer<TControl> rootControl;
+	TrecPointer<TPage> rootControl;
 	bool init;
 	TString fileAnaface;
-	TDataArray<eventNameID> idMatch;
+	TDataMap<UINT> events;
 
 	D2D1_COLOR_F backColor;
+
+	TrecSubPointer<TPage, TTextInput> input;
 
 	TrecPointer<TControl> ribbon;					// AnafaceUI
 
@@ -58,33 +53,36 @@ protected:
 	TrecPointer<TControl> ribbon5;					// TLayout
 	TrecPointer<TControl> docStack2;					// TLayout
 
+	// New TPage Resources
+	TrecPointer<TEnvironment> environment;
+
 	
 	//TrecPointer<BuilderApp> currentDocument;
 
 	// Found on the Home Tab
-	void OnLoadNewSolution(TrecPointer<TControl> tc, EventArgs ea);
-	void OnSaveFile(TrecPointer<TControl> tc, EventArgs ea);
-	void OnSaveAllFiles(TrecPointer<TControl> tc, EventArgs ea);
-	void OnNewFile(TrecPointer<TControl> tc, EventArgs ea);
-	void OnImportFile(TrecPointer<TControl> tc, EventArgs ea);
-	void OnPrint(TrecPointer<TControl> tc, EventArgs ea);
+	void OnLoadNewSolution(TrecPointer<TPage> tc, EventArgs ea);
+	void OnSaveFile(TrecPointer<TPage> tc, EventArgs ea);
+	void OnSaveAllFiles(TrecPointer<TPage> tc, EventArgs ea);
+	void OnNewResource(TrecPointer<TPage> tc, EventArgs ea);
+	void OnImportFile(TrecPointer<TPage> tc, EventArgs ea);
+	void OnPrint(TrecPointer<TPage> tc, EventArgs ea);
 
 	// Found on the Arena Tab
-	void OnNewArena(TrecPointer<TControl> tc, EventArgs ea);
-	void OnUpdateClearColor(TrecPointer<TControl> tc, EventArgs ea);
-	void OnNewModel(TrecPointer<TControl> tc, EventArgs ea);
+	void OnNewArena(TrecPointer<TPage> tc, EventArgs ea);
+	void OnUpdateClearColor(TrecPointer<TPage> tc, EventArgs ea);
+	void OnNewModel(TrecPointer<TPage> tc, EventArgs ea);
 
 	// Found on the Document (Source Code) Tab
-	void OnNewCodeFile(TrecPointer<TControl> tc, EventArgs ea);
-	void OnImportCode(TrecPointer<TControl> tc, EventArgs ea);
-	void OnProcessCode(TrecPointer<TControl> tc, EventArgs ea);
+	void OnNewCodeFile(TrecPointer<TPage> tc, EventArgs ea);
+	void OnImportCode(TrecPointer<TPage> tc, EventArgs ea);
+	void OnProcessCode(TrecPointer<TPage> tc, EventArgs ea);
 
 
 	/// Now to host the various mini apps that the user g=could launch on the builder
 	TDataArray<TrecPointer<MiniApp>> ActiveDocuments;
 	TrecPointer<MiniApp> currentDocument;
 
-	TrecSubPointer<TWindow, TIdeWindow> window;
+	TrecSubPointer<TWindow, TIdeWindow> ideWindow;
 
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 };

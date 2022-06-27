@@ -221,6 +221,20 @@ TString::~TString()
 	return;
 }
 
+TString::TString(UINT num)
+{
+	this->capacity = this->size = 0;
+	this->string = nullptr;
+	Format(L"%d", num);
+}
+
+TString::TString(float num)
+{
+	this->capacity = this->size = 0;
+	this->string = nullptr;
+	Format(L"%f", num);
+}
+
 
 /*
 * Method: TString::Constructor 
@@ -363,7 +377,7 @@ TString::TString(WCHAR c)
 * Parameters: int* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToInt(int& value)
+short TString::ConvertToInt(int& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)
@@ -375,7 +389,7 @@ short TString::ConvertToInt(int& value)
 	int hold;
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
@@ -404,7 +418,7 @@ short TString::ConvertToInt(int& value)
 * Parameters: long* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToInt(long& value)
+short TString::ConvertToInt(long& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)
@@ -417,7 +431,7 @@ short TString::ConvertToInt(long& value)
 	int hold;
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
@@ -446,7 +460,7 @@ short TString::ConvertToInt(long& value)
 * Parameters: long* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToLong(long long& value)
+short TString::ConvertToLong(long long& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)
@@ -460,7 +474,7 @@ short TString::ConvertToLong(long long& value)
 
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (convertToNumber(this->GetAt(c), &hold))
 		{
@@ -490,7 +504,7 @@ short TString::ConvertToLong(long long& value)
 * Parameters: double* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToDouble(double& value)
+short TString::ConvertToDouble(double& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)
@@ -506,7 +520,7 @@ short TString::ConvertToDouble(double& value)
 
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (fullInt && convertToNumber(this->GetAt(c), &hold))
 		{
@@ -546,7 +560,7 @@ short TString::ConvertToDouble(double& value)
 * Parameters: float* value - the value to store
 * Returns: short - 0 if successful, error code otherwise
 */
-short TString::ConvertToFloat(float& value)
+short TString::ConvertToFloat(float& value)const
 {
 	TObjectLocker threadLock(&thread);
 	if (!size)
@@ -561,7 +575,7 @@ short TString::ConvertToFloat(float& value)
 	int hold;
 	bool positive = true;
 
-	for (int c = 0; c < size; c++)
+	for (UINT c = 0; c < size; c++)
 	{
 		if (fullInt && convertToNumber(this->GetAt(c), &hold))
 		{
@@ -668,7 +682,6 @@ TrecPointer<TDataArray<TString>> TString::splitn(TString str, UINT elements, UCH
 				tok.Set(this->SubString(begPos, pos));
 			}
 		}
-		WCHAR q = L'\0';
 
 		for (UINT Rust = 0; Rust < str.size; Rust++)
 		{
@@ -2078,7 +2091,7 @@ int TString::Compare(const WCHAR* other) const
 	}
 
 	if (size == lstrlenW(other)) { return 0; }
-	if (size > lstrlenW(other)) { return lstrlenW(other); }
+	if (size > lstrlenW(other)) { return size; }
 	return static_cast<int>(-1);
 }
 
@@ -2117,7 +2130,7 @@ int TString::Compare(const TString& str1, const TString& str2)
  *				int count - the number of characters to remove
  * Returns: int - the new size of the string
  */
-int TString::Delete(int index, int count)
+int TString::Delete(UINT index, int count)
 {
 	TObjectLocker threadLock(&thread);
 	if (count < 1)
@@ -2131,7 +2144,7 @@ int TString::Delete(int index, int count)
 	WCHAR* newString = new WCHAR[capacity];
 	for (int c = 0; c < index; c++)
 	{
-		newString[c] = string[c];
+		newString[c] = static_cast<WCHAR>(string[c]);
 	}
 
 	for (int c = index, rust = index + count; rust < capacity; c++, rust++)
@@ -2826,7 +2839,7 @@ TString TString::GetRemove(int& ret, WCHAR c, bool outOfQuotes)
  *				const TString& newStr - the String to replace the old string with
  * Returns: int - the number of instances where the replacement operaiton was applied
  */
-int TString::Replace(const TString& oldStr, const TString& newStr)
+int TString::Replace(const TString& oldStr, const TString& newStr, bool doAll)
 {
 	TObjectLocker threadLock(&thread);
 	TDataArray<int> indices;
@@ -2838,7 +2851,9 @@ int TString::Replace(const TString& oldStr, const TString& newStr)
 		if (index == -1)
 			break;
 		indices.push_back(index);
-		index++;
+		index+= oldStr.GetSize();
+		if (!doAll)
+			break;
 	}
 
 	// If the old string does not appear, make no changes
@@ -2894,11 +2909,11 @@ int TString::Replace(const TString& oldStr, const TString& newStr)
  *				const TString& newStr - the String to replace the old string with
  * Returns: TString::The Copy with the Replace operation applied
  */
-TString TString::GetReplace(int& ret, const TString& oldStr, const TString& newStr) const 
+TString TString::GetReplace(int& ret, const TString& oldStr, const TString& newStr, bool doAll) const
 {
 	TObjectLocker threadLock(&thread);
 	TString retStr(this);
-	ret = retStr.Replace(oldStr, newStr);
+	ret = retStr.Replace(oldStr, newStr, doAll);
 	return retStr;
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "TEnvironmentBuilder.h"
-#include <Page.h>
+#include <TPage.h>
 
 
 
@@ -108,6 +108,6 @@ public:
 	 * 
 	 * Attributes: override
 	 */
-	virtual TrecPointer<Page> GetPage(const TString& type) override;
+	virtual TrecPointer<TPage> GetPage(const TString& type) override;
 };
 

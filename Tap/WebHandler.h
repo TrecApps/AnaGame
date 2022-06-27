@@ -2,7 +2,7 @@
 #include "EventHandler.h"
 #include <TEnvironment.h>
 class WebHandler :
-    public EventHandler
+    public TapEventHandler
 {
 public:
 
@@ -14,7 +14,7 @@ public:
 	 *
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 
 	/**
 	 * Method: WebHandler::HandleEvents
@@ -24,7 +24,7 @@ public:
 	 *
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr) override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr) override;
 
 
 	/**
@@ -44,7 +44,7 @@ public:
 	 *				TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New Web Handler Obejct
 	 */
-	WebHandler(TrecPointer<TEnvironment> env, TrecPointer<TInstance> instance);
+	WebHandler(TrecPointer<TEnvironment> env, TrecPointer<TProcess> instance);
 
 	/**
 	 * Method: WebHandler::HandleWebEvents
@@ -57,8 +57,13 @@ public:
 	 */
 	void HandleWebEvents(const TString& exp, TrecPointer<TVariable> ev);
 
+	void SetCurrentMessageType(R_Message_Type r);
 
 protected:
+
+	R_Message_Type currentMessageType;
+
+	TrecObjectPointer webEventManager;
 
 	/**
 	 * Method: EventHandler::ShouldProcessMessageByType

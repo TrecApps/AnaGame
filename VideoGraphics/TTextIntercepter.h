@@ -1,11 +1,11 @@
 #pragma once
-#include "D:\DX Projects\AnaGame\TrecLib\TObject.h"
-
+#include <TObject.h>
+#include "VideoGraphics.h"
 /**
  * Class: TTextIntercepter
  * Purpose: Retrieves a character from the message infrastructure and directs it towards some Text-based object
  */
-class TTextIntercepter : public TObject
+class _VIDEO_GRAPHICS  TTextIntercepter : public TObject
 {
 public:
     /**
@@ -70,6 +70,14 @@ public:
      * Attributes: abstract
      */
     virtual void* GetTarget() = 0;
+
+    /**
+     * Method: TTextInterceptor::TakesInput
+     * Purpose: Reports whather input will be added to the target
+     * Parameters: void
+     * Returns: bool - whether the target supports input or not
+     */
+    virtual bool TakesInput() = 0;
 
 
     // virtual void OnPaste() = 0;

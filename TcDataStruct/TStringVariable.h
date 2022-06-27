@@ -34,6 +34,15 @@ public:
     virtual var_type GetVarType() override;
 
 
+    /**
+     * Method: TVariable::GetIterator
+     * Purpose: for type that support it, retrieves an Iterator Variable of this Variable
+     * Parameters: void
+     * Return: TrecPointer<TVariable> - for some variable types, this would be null, but other variable types woudld support iteration
+     *
+     * Attributes: virtual
+     */
+    virtual TrecPointer<TVariable> GetIterator();
 
     /**
      * Method: TStringVariable::GetObject

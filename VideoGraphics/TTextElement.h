@@ -6,6 +6,7 @@
 #include <TPoint.h>
 #include "TTextRenderer.h"
 #include "TTextIntercepter.h"
+#include <TVariable.h>
 
 /**
  * Enum CLass: control_text_mode
@@ -60,6 +61,12 @@ class _VIDEO_GRAPHICS TTextElement : public TObject
 {
 	friend class TrecPointerKey;
 protected:
+
+	/**
+	 * Object that directs tect input to this element
+	 */
+	TrecPointer<TTextIntercepter> interceptor;
+
 	/**
 	 * Whether the base format has been changed
 	 */
@@ -147,6 +154,11 @@ protected:
 	virtual void ReCreateLayout();
 
 public:
+
+	bool GetClickIndex(UINT& index, const TPoint& point);
+
+	virtual bool TakesInput();
+
 	float GetMinWidth(bool& worked);
 	float GetMinHeight(bool& worked);
 	/**
@@ -156,6 +168,8 @@ public:
 	 * Returns: TrecCOmPointer<IDWriteTextLayout> - the layout held
 	 */
 	TrecComPointer<IDWriteTextLayout> GetLayout();
+
+	UINT GetTextLength();
 
 	/**
 	 * Method: TTextElement::GetBrush
@@ -343,6 +357,16 @@ public:
 	 virtual void OnDraw(TObject* obj);
 
 	 /**
+	  * Method: TTextElement::OnDraw
+	  * Purpose: Draws the Text, using a TVariable for data Binding
+	  * Parameters: TrecPointer<TVariable> dataText - the text to inject
+	  * Returns: void
+	  * 
+	  * Attributes: virtual
+	  */
+	 virtual void OnDraw(TrecPointer<TVariable> dataText);
+
+	 /**
 	  * Method: TTextElement::GetColor
 	  * Purpose: Retrieves the specified color
 	  * Parameters: TColor& color - the color to retrieve
@@ -422,6 +446,8 @@ public:
 	  * Returns: bool - should be true under get, false if setting failed
 	  */
 	 bool GetSetFontSize(float& fontSize, bool doGet = true);
+
+	 virtual void LockText(bool doLock);
 };
 
 _VIDEO_GRAPHICS TrecComPointer<TTextRenderer> GetTTextRenderer();

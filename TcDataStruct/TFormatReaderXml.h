@@ -1,5 +1,6 @@
 #pragma once
 #include "TFormatReader.h"
+#include "TContainerVariable.h"
 #include <TFile.h>
 
 /**
@@ -9,6 +10,7 @@
 class TFormatReaderXml :
     public TFormatReader
 {
+    friend class TrecPointerKey;
 public:
     /**
      * Class: TFormatReaderBuilderXml
@@ -68,5 +70,9 @@ protected:
      * Returns: new Reader object
      */
     TFormatReaderXml(TrecPointer<TFileShell> file);
+
+    TrecPointer<TVariable> ProcessObject(TString& worked, TString& name);
+
+    void ProcessSubObjects(TrecSubPointer<TVariable, TContainerVariable>& ret, TString& worked, TString& name);
 };
 

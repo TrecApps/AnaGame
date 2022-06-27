@@ -23,32 +23,32 @@
     <ProjectGuid>{D51F30ED-A597-4CB8-9BEB-7EC42AECE350}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TrecLib</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -188,6 +188,7 @@
     <ClInclude Include="TFile.h" />
     <ClInclude Include="TFileNode.h" />
     <ClInclude Include="TFileShell.h" />
+    <ClInclude Include="TFileModifier.h" />
     <ClInclude Include="TMap.h" />
     <ClInclude Include="TMapBase.h" />
     <ClInclude Include="TML_Reader_.h" />
@@ -233,12 +234,12 @@
     </ClCompile>
     <ClCompile Include="TArrayBase.cpp" />
     <ClCompile Include="TClientSocket.cpp" />
-    <ClCompile Include="TControlComponent.cpp" />
     <ClCompile Include="TDataArrayBase.cpp" />
     <ClCompile Include="TDirectory.cpp" />
     <ClCompile Include="TFile.cpp" />
     <ClCompile Include="TFileNode.cpp" />
     <ClCompile Include="TFileShell.cpp" />
+    <ClCompile Include="TFileModifier.cpp" />
     <ClCompile Include="TMapBase.cpp" />
     <ClCompile Include="TML_Reader_.cpp" />
     <ClCompile Include="TObject.cpp" />

@@ -23,7 +23,7 @@ public:
 	 *				TString& caption - The message to present to the User once the Dialog is drawn
 	 * Returns: New AlertDialog instance
 	 */
-	AlertDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode, TString& caption);
+	AlertDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode, TString& caption);
 	/**
 	 * Method: AlertDialog::~AlertDialog
 	 * Purpose: Destructor
@@ -53,7 +53,7 @@ private:
 	/**
 	 * The Text field holding the message for the user
 	 */
-	TrecPointer<TControl> textField;
+	TrecPointer<TPage> textField;
 	
 	/**
 	 * Holds the message to send to the user, especially before an Anaface is created for the dialog

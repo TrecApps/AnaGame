@@ -705,8 +705,8 @@ TrecComPointer<ID2D1StrokeStyle> DrawingBoard::GetStrokeStyle(stroke_style tag)
 
 void DrawingBoard::PrepStyles()
 {
-	D2D1_STROKE_STYLE_PROPERTIES props;
-	float dashes[] = { 10.0f, 10.0f };
+	D2D1_STROKE_STYLE_PROPERTIES props = D2D1::StrokeStyleProperties();
+	float dashes[] = { 10.0f, 20.0f };
 	TrecComPointer<ID2D1StrokeStyle>::TrecComHolder holder;
 
 	strokeStyles.push_back(StrokeStyle(stroke_style::bs_not_set, TrecComPointer<ID2D1StrokeStyle>()));
@@ -714,12 +714,12 @@ void DrawingBoard::PrepStyles()
 
 	props.dashCap = D2D1_CAP_STYLE_ROUND;
 	props.dashOffset = 0.0f;
-	props.dashStyle = D2D1_DASH_STYLE_CUSTOM;
+	props.dashStyle = D2D1_DASH_STYLE_DOT;
 	props.endCap = D2D1_CAP_STYLE_ROUND;
 	props.lineJoin = D2D1_LINE_JOIN_ROUND;
-	props.miterLimit = 10.0f;
+	//props.miterLimit = 0.0f;
 	props.startCap = D2D1_CAP_STYLE_ROUND;
-	HRESULT res = fact->CreateStrokeStyle(props, dashes, 2, holder.GetPointerAddress());
+	HRESULT res = fact->CreateStrokeStyle(props, nullptr, 0, holder.GetPointerAddress());
 	strokeStyles.push_back(StrokeStyle(stroke_style::bs_dotted, holder.Extract()));
 
 

@@ -1,6 +1,6 @@
 #include "WebEnvironment.h"
 #include <TDialog.h>
-#include <TNativeInterpretor.h>
+#include <TcNativeInterpretor.h>
 
 /**
  * Function: JsWebAlert
@@ -10,12 +10,12 @@
  *               ReportObject& ret - return information
  * Returns: void
  */
-void JsWebAlert(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReportObject& ret)
+void JsWebAlert(TDataArray<TrecPointer<TVariable>>& params, TrecPointer<TEnvironment> env, ReturnObject& ret)
 {
     TrecSubPointer<TEnvironment, WebEnvironment> webEnv = TrecPointerKey::GetTrecSubPointerFromTrec<TEnvironment, WebEnvironment>(env);
     if (!webEnv.Get())
     {
-        ret.returnCode = ReportObject::broken_reference;
+        ret.returnCode = ReturnObject::ERR_BROKEN_REF;
         ret.errorMessage.Set(L"Js Alert function lacks reference to environment in which it runs!");
         return;
     }
@@ -41,7 +41,7 @@ WebEnvironment::WebEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shel
 {
 }
 
-WebEnvironment::WebEnvironment(TrecSubPointer<TControl, TPromptControl> prompt):TEnvironment(prompt)
+WebEnvironment::WebEnvironment(TrecPointer<TConsoleHolder> prompt):TEnvironment(prompt)
 {
 }
 
@@ -113,7 +113,7 @@ TrecPointer<TWindow> WebEnvironment::GetWindow()
     return window;
 }
 
-TrecPointer<TInstance> WebEnvironment::GetInstance()
+TrecPointer<TProcess> WebEnvironment::GetInstance()
 {
     return instance;
 }
@@ -123,24 +123,48 @@ TrecPointer<TVariable> WebEnvironment::GetVariable(TString& var, bool& present, 
     present = false;
     if (evtType == env_var_type::evt_interpretor)
     {
-        if (var.Compare(L"JavaScript"))
+        if (!var.Compare(L"JavaScript"))
         {
             present = true;
             return TrecPointerKey::GetTrecPointerFromSub<>(mainJavaScript);
+        }
+        if (!var.Compare(L"#$_New_JS_"))
+        {
+            present = true;
+            return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcJavaScriptInterpretor>(TrecSubPointer<TVariable, TcInterpretor>(), TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
         }
     }
     return TEnvironment::GetVariable(var, present, evtType);
 }
 
+UINT WebEnvironment::SaveEnv()
+{
+    return 0;
+}
 
-void WebEnvironment::SetResources(TrecPointer<TInstance> instance, TrecPointer<TWindow> window)
+void WebEnvironment::AddResource(TrecPointer<TFileShell> fileResource)
+{
+}
+
+TString WebEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
+{
+    return TString();
+}
+
+TrecPointer<TObjectNode> WebEnvironment::GetProjectLyout()
+{
+    return TrecPointer<TObjectNode>();
+}
+
+
+void WebEnvironment::SetResources(TrecPointer<TProcess> instance, TrecPointer<TWindow> window)
 {
     assert(instance.Get() && window.Get());
     this->instance = instance;
     this->window = window;
 }
 
-WebEnvGenerator::WebEnvGenerator(TrecPointer<TInstance> i, TrecPointer<TWindow> w)
+WebEnvGenerator::WebEnvGenerator(TrecPointer<TProcess> i, TrecPointer<TWindow> w)
 {
     assert(i.Get() && w.Get());
     this->window = w;
@@ -155,7 +179,7 @@ TrecPointer<TEnvironment> WebEnvGenerator::GetEnvironment(TrecPointer<TFileShell
     auto regRet = TrecPointerKey::GetTrecPointerFromSub<TEnvironment, WebEnvironment>(ret);
 
     // Now Add Basic Functions to Environment for Web Access
-    ret->AddVariable(L"alert", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TNativeInterpretor>(JsWebAlert, TrecSubPointer<TVariable, TInterpretor>(), regRet)); // alert() function
+    ret->AddVariable(L"alert", TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcNativeInterpretor>(JsWebAlert, TrecSubPointer<TVariable, TcInterpretor>(), regRet)); // alert() function
 
 
     // Time to return

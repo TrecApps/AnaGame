@@ -23,32 +23,32 @@
     <ProjectGuid>{4E953C1F-DA8F-418D-95BC-7E9E5019F929}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>VideoGraphics</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\Windows-classic-samples\Samples\DX11VideoRenderer\cpp;..\..\DirectXTex\DirectXTex;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\Windows-classic-samples\Samples\DX11VideoRenderer\cpp;..\..\DirectXTex\DirectXTex;..\TcDataStruct;..\TrecLib;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Windows-classic-samples\Samples\DX11VideoRenderer\cpp\Debug\DX11VideoRenderer.dll\debug;..\..\DirectXTex\DirectXTex\Bin\Desktop_2019\Win32\Debug;../Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -100,7 +100,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;d2d1.lib;dwrite.lib;d3d11.lib;evr.lib;mf.lib;mfplay.lib;mfreadwrite.lib;mfuuid.lib;Winmm.lib;mfplat.lib;dxva2.lib;Strmiids.lib;D3DCompiler.lib;DirectXTex.lib;Ole32.lib;windowscodecs.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;TcDataStruct.lib;d2d1.lib;dwrite.lib;d3d11.lib;evr.lib;mf.lib;mfplay.lib;mfreadwrite.lib;mfuuid.lib;Winmm.lib;mfplat.lib;dxva2.lib;Strmiids.lib;D3DCompiler.lib;DirectXTex.lib;Ole32.lib;windowscodecs.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -165,6 +165,7 @@
     <ClInclude Include="DrawingBoard.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="SSGenerator.h" />
     <ClInclude Include="Structure2D.h" />
     <ClInclude Include="T2DSpriteEngine.h" />
     <ClInclude Include="T3DModelParser.h" />
@@ -188,6 +189,7 @@
     <ClInclude Include="TPresenter.h" />
     <ClInclude Include="TSampleTexture.h" />
     <ClInclude Include="TScheduler.h" />
+    <ClInclude Include="TScrollerPage.h" />
     <ClInclude Include="TShaderHost.h" />
     <ClInclude Include="TShaderParser.h" />
     <ClInclude Include="TStreamSink.h" />
@@ -208,6 +210,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SSGenerator.cpp" />
     <ClCompile Include="T2DSpriteEngine.cpp" />
     <ClCompile Include="T3DModelParser.cpp" />
     <ClCompile Include="TActivate.cpp" />
@@ -229,6 +232,7 @@
     <ClCompile Include="TPresenter.cpp" />
     <ClCompile Include="TSampleTexture.cpp" />
     <ClCompile Include="TScheduler.cpp" />
+    <ClCompile Include="TScrollerPage.cpp" />
     <ClCompile Include="TShaderHost.cpp" />
     <ClCompile Include="TShaderParser.cpp" />
     <ClCompile Include="TStreamSink.cpp" />

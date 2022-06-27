@@ -2,6 +2,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TFile.h"
+#include "TFileShell.h"
 
 /*
  * Class: TShell
@@ -90,6 +91,15 @@ public:
 	 * Returns: TString - the working directory of this shell
 	 */
 	TString GetWorkingDirectory();
+
+
+	/**
+	 * Method: TShell::GetWorkingDirectory
+	 * Purpose: Reports the current working directory of the shell in TString form
+	 * Parameters: void
+	 * Returns: TString - the working directory of this shell
+	 */
+	void SetWorkingDirectory(TrecPointer<TFileShell> directory);
 
 private:
 

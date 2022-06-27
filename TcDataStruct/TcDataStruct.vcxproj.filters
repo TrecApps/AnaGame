@@ -93,6 +93,12 @@
     <ClInclude Include="TReturnInterpretor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TcExpression.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcOperator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="TFormatReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -186,6 +192,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TReturnInterpretor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcOperator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcExpression.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TFormatReader.cpp">

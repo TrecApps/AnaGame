@@ -1,0 +1,33 @@
+{
+	"TLayout" : {
+		"RowHeights": [ "1*", "1*", "1*" ],
+		"children": [
+		{
+			"TInput" : { 
+				"RowPosition": 0,
+				"CanEdit":false,
+				"BorderColor": "1.0,1.0,1.0,1.0",
+				"ContentColor": "1.0,1.0,1.0,0.1"
+			}
+		},{
+			"TInput" : { 
+				"RowPosition": 1,
+				"CanEdit":false,
+				"BorderColor": "0.0,0.0,0.0,1.0",
+				"ContentColor": "0.0,0.0,0.0,0.3"
+			}
+		},{
+			"TControl" : { 
+				"RowPosition": 2,
+				"Caption": "Okay",
+				"ContentColor": "0.0,0.0,1.0,0.3",
+				"HoverContentColor": "0.0,0.0,1.0,0.7",
+				"ClickContentColor": "1.0,0.0,0.0,0.3",
+				"HorizontalAlignment": "Center",
+				"VerticalAlignment": "Center",
+				"EventOnClick": "OnOkay"
+			}
+		}
+		]
+	}
+}

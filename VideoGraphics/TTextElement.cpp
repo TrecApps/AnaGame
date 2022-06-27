@@ -19,7 +19,7 @@ TrecComPointer<TTextRenderer> GetTTextRenderer()
  * Class: TTextElementInterceter
  * Purpose: Intercepts text from handlers to the TTextElements
  */
-class TTextElementIntercepter : public TTextIntercepter
+class _VIDEO_GRAPHICS TTextElementIntercepter : public TTextIntercepter
 {
 public:
 	/**
@@ -102,6 +102,18 @@ public:
 	virtual void* GetTarget() override
 	{
 		return element.Get();
+	}
+
+
+	/**
+	 * Method: TTextInterceptor::TakesInput
+	 * Purpose: Reports whather input will be added to the target
+	 * Parameters: void
+	 * Returns: bool - whether the target supports input or not
+	 */
+	virtual bool TakesInput() override
+	{
+		return element->TakesInput();
 	}
 
 	TTextElementIntercepter(TrecPointer<TTextElement> element)
@@ -249,9 +261,35 @@ TrecComPointer<IDWriteTextLayout> TTextElement::GetLayout()
 	return mainLayout;
 }
 
+UINT TTextElement::GetTextLength()
+{
+	return text.GetSize();
+}
+
 TrecPointer<TBrush> TTextElement::GetBrush()
 {
 	return this->basicDetails.color;
+}
+
+bool TTextElement::GetClickIndex(UINT& index, const TPoint& point)
+{
+	if(!this->mainLayout.Get())
+	return false;
+
+	BOOL trailingHist = false, isInside = false;
+	DWRITE_HIT_TEST_METRICS mets;
+	ZeroMemory(&mets, sizeof(mets));
+	if(FAILED(mainLayout->HitTestPoint(point.x - this->bounds.left, point.y - this->bounds.top, &trailingHist, &isInside, &mets)))
+		return false;
+
+	if (isInside)
+		index =  mets.textPosition;
+	return isInside;
+}
+
+bool TTextElement::TakesInput()
+{
+	return false;
 }
 
 /*
@@ -329,8 +367,13 @@ bool TTextElement::SetText(const TString& text)
  */
 TrecPointer<TTextIntercepter> TTextElement::GetTextInterceptor()
 {
-	auto fullSelf = TrecPointerKey::GetTrecPointerFromSoft<>(self);
-	return TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter, TTextElementIntercepter>(fullSelf);
+	if (!interceptor.Get())
+	{
+		auto fullSelf = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+		interceptor = TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter, TTextElementIntercepter>(fullSelf);
+	}
+
+	return interceptor;
 }
 
 void TTextElement::GetText(TString& text)
@@ -363,7 +406,14 @@ void TTextElement::SetLocation(const D2D1_RECT_F& loc)
 
 bool TTextElement::SetBasicFormatting(const TextFormattingDetails& details)
 {
-	this->basicDetails = details;
+	TextFormattingDetails tempDetails = details;
+
+	if (!tempDetails.color.Get())
+		tempDetails.color = basicDetails.color;
+	if (!tempDetails.bColor.Get())
+		tempDetails.bColor = basicDetails.bColor;
+
+	this->basicDetails = tempDetails;
 	recreateFormat = true;
 	ReCreateLayout();
 	return true;
@@ -514,6 +564,31 @@ void TTextElement::OnDraw(TObject* obj)
 	
 }
 
+void TTextElement::OnDraw(TrecPointer<TVariable> dataText)
+{
+	TString curText;
+	if (dataText.Get() && text.GetSize() > 0 && text.GetAt(0) == L'{' && text.GetAt(text.GetSize() - 1) == L'}')
+	{
+		curText.Set(text);
+		text.Set(dataText->GetString(text.SubString(1, text.GetSize() - 1)));
+		ReCreateLayout();
+		text.Set(curText);
+		curText.Empty();
+	}
+
+
+	mainLayout->SetMaxHeight(bounds.bottom - bounds.top);
+	mainLayout->SetMaxWidth(bounds.right - bounds.left);
+	ID2D1Brush* b = basicDetails.color->GetUnderlyingBrush().Get();
+	if (b)
+	{
+		TDrawingContext tContext{ drawingBoard->GetRenderer().Get(), b };
+		mainLayout->Draw(&tContext, GetTTextRenderer().Get(), bounds.left, bounds.top);
+		//drawingBoard->GetRenderer()->DrawTextLayout(D2D1::Point2F(), fontLayout.Get(), b);
+	}
+
+}
+
 bool TTextElement::GetColor(TColor& color, bool foreground)
 {
 	if (foreground)
@@ -634,6 +709,10 @@ bool TTextElement::GetSetFontSize(float& fontSize, bool doGet)
 	basicDetails.fontSize = fontSize;
 	ReCreateLayout();
 	return true;
+}
+
+void TTextElement::LockText(bool doLock)
+{
 }
 
 

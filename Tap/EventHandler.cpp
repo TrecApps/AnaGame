@@ -1,71 +1,76 @@
 #include "EventHandler.h"
-#include "TInstance.h"
 #include <DirectoryInterface.h>
+#include "TInstance.h"
 
 /**
- * Method: EventHandler::EventHandler
+ * Method: TapEventHandler::TapEventHandler
  * Purpose: Constructor
- * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
+ * Parameters: TrecPointer<TProcess> instance - instance associated with this handler
  * Returns: New EventHandler Object
  */
-EventHandler::EventHandler(TrecPointer<TInstance> instance)
+TapEventHandler::TapEventHandler(TrecPointer<TProcess> instance)
 {
-	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(instance);
+	app = TrecPointerKey::GetSoftPointerFromTrec<TProcess>(instance);
 }
 
 /**
- * Method: EventHandler::EventHandler
+ * Method: TapEventHandler::TapEventHandler
  * Purpose: Constructor
- * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
+ * Parameters: TrecPointer<TProcess> instance - instance associated with this handler
  *				const TString& name - the Name to give this handler
  * Returns: New EventHandler Object
  */
-EventHandler::EventHandler(TrecPointer<TInstance> instance, const TString& name)
+TapEventHandler::TapEventHandler(TrecPointer<TProcess> instance, const TString& name)
 {
-	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(instance);
+	app = TrecPointerKey::GetSoftPointerFromTrec<TProcess>(instance);
 	this->name.Set(name);
 }
 
+void TapEventHandler::SetWindow(TrecPointer<TWindow> window)
+{
+	this->window = window;
+}
+
 /**
- * Method: EventHandler::~EventHandler
+ * Method: TapEventHandler::~TapEventHandler
  * Purpose: Destructor
  * Parameters: void
  * Returns: void
  */
-EventHandler::~EventHandler()
+TapEventHandler::~TapEventHandler()
 {
 
 }
 
 /**
- * Method: EventHandler::GetType
+ * Method: TapEventHandler::GetType
  * Purpose: Returns a String Representation of the object type
  * Parameters: void
  * Returns: TString - representation of the object type
  */
-TString EventHandler::GetType()
+TString TapEventHandler::GetType()
 {
 	return TString(L"EventHandler;") + TObject::GetType();
 }
 
 /**
- * Method: EventHandler::OnFirstDraw
+ * Method: TapEventHandler::OnFirstDraw
  * Purpose: Allows Handlers to perform some task after the first draw
  * Parameter: void
  * Returns: void
  */
-void EventHandler::OnFirstDraw()
+void TapEventHandler::OnFirstDraw()
 {
 }
 
 /**
- * Method: EventHandler::ShouldProcessMessage
+ * Method: TapEventHandler::ShouldProcessMessage
  * Purpose: Reports whether the Message is to be processed by this handler
  * Parameters: TrecPointer<HandlerMessage> message - the message to process
  * Returns: bool - whether this is the handler for the submitted message
  */
 
-bool EventHandler::ShouldProcessMessage(TrecPointer<HandlerMessage> message)
+bool TapEventHandler::ShouldProcessMessage(TrecPointer<HandlerMessage> message)
 {
 	ThreadLock();
 	if (!message.Get())
@@ -106,97 +111,26 @@ bool EventHandler::ShouldProcessMessage(TrecPointer<HandlerMessage> message)
 }
 
 /**
- * Method: EventHandler::OnDestroy
+ * Method: TapEventHandler::OnDestroy
  * Purpose: Reports whether the Handler is ready to be destroyed
  * Parameters: void
  * Returns: bool - true
  */
-bool EventHandler::OnDestroy()
+bool TapEventHandler::OnDestroy()
 {
     return true;
 }
 
-/**
- * Method: EventHandler::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
- */
-void EventHandler::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-}
 
 /**
- * Method: EventHandler::
+ * Method: TapEventHandler::
  * Purpose:
  * Parameters:
  * Returns:
  *
  * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
  */
-void EventHandler::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-}
-
-/**
- * Method: EventHandler::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
- */
-void EventHandler::OnRButtonDown(UINT nFlags, TPoint, messageOutput* mOut)
-{
-}
-
-/**
- * Method: EventHandler::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
- */
-void EventHandler::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-}
-
-/**
- * Method: EventHandler::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
- */
-void EventHandler::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-}
-
-/**
- * Method: EventHandler::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
- */
-void EventHandler::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut)
-{
-}
-
-/**
- * Method: EventHandler::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
- */
-bool EventHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut)
+bool TapEventHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, message_output* mOut)
 {
 	if (textIntercepter.Get())
 	{
@@ -211,66 +145,32 @@ bool EventHandler::OnChar(bool fromChar, UINT nChar, UINT nRepCnt, UINT nFlags, 
 	return false;
 }
 
-/**
- * Method: EventHandler::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
- */
-void EventHandler::OnResize(D2D1_RECT_F newSize)
-{
-}
 
 /**
- * Method: EventHandler::GetEventNameList
- * Purpose: Provides the list of event names and their associated IDs
- * Parameters: void
- * Returns: TDataArray<eventNameID>& - list of event names and ids
- */
-TDataArray<eventNameID>& EventHandler::GetEventNameList()
-{
-	return events;
-}
-
-/**
- * Method: EventHandler::
- * Purpose:
- * Parameters:
- * Returns:
- *
- * Note: deprecated - should be handled by Instance, Window, Page and TControls, not by the Handler
- */
-void EventHandler::Draw()
-{
-}
-
-/**
- * Method: EventHandler::SetSelf
+ * Method: TapEventHandler::SetSelf
  * Purpose: Allows the Event Handler to supply a reference to itself
  * Parameters: TrecPointer<EventHandler> handleSelf - the reference generated by the TrecPointerKey
  * Returns: void
  */
-void EventHandler::SetSelf(TrecPointer<EventHandler> handleSelf)
+void TapEventHandler::SetSelf(TrecPointer<TPage::EventHandler> handleSelf)
 {
 	if (handleSelf.Get() != this)
 		throw L"Error! Needs to be set to Self";
 	ThreadLock();
-	hSelf = TrecPointerKey::GetSoftPointerFromTrec<EventHandler>(handleSelf);
+	hSelf = TrecPointerKey::GetSoftPointerFromTrec<TPage::EventHandler>(handleSelf);
 	if (app.Get())
-		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->RegisterHandler(handleSelf);
+		dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<TProcess>(app).Get())->RegisterHandler(handleSelf);
 }
 
 /**
- * Method: EventHandler::GetId
+ * Method: TapEventHandler::GetId
  * Purpose: Retirves the ID of this Handler
  * Parameters: void
  * Returns: UINT - the id of the Handler
  *
  * Note: id is not currently set, so this is a redundant method for the time being
  */
-UINT EventHandler::GetId()
+UINT TapEventHandler::GetId()
 {
 	ThreadLock();
 	UINT ret = id;
@@ -279,12 +179,12 @@ UINT EventHandler::GetId()
 }
 
 /**
- * Method: EventHandler::GetPage
+ * Method: TapEventHandler::GetPage
  * Purpose: Retrieves the Page associated with this Handler
  * Parameters: void
  * Returns: TrecPointer<Page> - the page provided when Initialize was called
  */
-TrecPointer<Page> EventHandler::GetPage()
+TrecPointer<TPage> TapEventHandler::GetPage()
 {
 	ThreadLock();
 	auto ret = page;
@@ -293,12 +193,12 @@ TrecPointer<Page> EventHandler::GetPage()
 }
 
 /**
- * Method: EventHandler::SetMiniApp
+ * Method: TapEventHandler::SetMiniApp
  * Purpose: Sets the MiniApp associted with this Handler
  * Parameters: TrecPointer<MiniApp> mApp - the miniApp that called for this Handler
  * Returns: void
  */
-void EventHandler::SetMiniApp(TrecPointer<MiniApp> mApp)
+void TapEventHandler::SetMiniApp(TrecPointer<MiniApp> mApp)
 {
 	ThreadLock();
 	miniApp = mApp;
@@ -306,16 +206,16 @@ void EventHandler::SetMiniApp(TrecPointer<MiniApp> mApp)
 }
 
 /**
- * Method: EventHandler::OnFocus
+ * Method: TapEventHandler::OnFocus
  * Purpose: Lets the handler know that this is the current focus of the User. Used to Set the Main MiniApp of the
  *		IDE Window, if one is set
  * Parameters: void
  * Returns: void
  */
-void EventHandler::OnFocus()
+void TapEventHandler::OnFocus()
 {
 	ThreadLock();
-	if (!page.Get() || !page->GetWindowHandle().Get())
+	if (!page.Get() || !window.Get())
 	{
 		ThreadRelease();
 		return;
@@ -323,7 +223,7 @@ void EventHandler::OnFocus()
 
 	if (miniApp.Get())
 	{
-		auto win = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(page->GetWindowHandle());
+		auto win = TrecPointerKey::GetTrecSubPointerFromTrec<TWindow, TIdeWindow>(window);
 		if (win.Get())
 			win->SetCurrentApp(miniApp);
 	}
@@ -333,39 +233,38 @@ void EventHandler::OnFocus()
 
 	if (app.Get())
 	{
-		auto realApp = TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app);
+		auto realApp = TrecPointerKey::GetTrecPointerFromSoft<TProcess>(app);
 
 		auto message = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name, handler_type::handler_type_main, 0, message_transmission::message_transmission_by_type, 0, onFocusString);
 
-		realApp->DispatchAnagameMessage(message);
+		dynamic_cast<TInstance*>(realApp.Get())->DispatchAnagameMessage(message);
 	}
 	ThreadRelease();
 }
 
 /**
- * Method: EventHandler::OnSave
+ * Method: TapEventHandler::OnSave
  * Purpose: Provides a Save method in case there is a way to save
  * Parameters: void
  * Returns: void
  */
-void EventHandler::OnSave()
+void TapEventHandler::OnSave()
 {
 }
 
 /**
- * Method: EventHandler::SetSaveFile
+ * Method: TapEventHandler::SetSaveFile
  * Purpose: Sets up the file to save if OnSave is called
  * Parameters: TrecPointer<TFileShell> file - the file to focus on
  * Returns: void
  */
-void EventHandler::SetSaveFile(TrecPointer<TFileShell> file)
+void TapEventHandler::SetSaveFile(TrecPointer<TFileShell> file)
 {
-	ThreadLock();
+	TObjectLocker lock(&thread);
 	filePointer = file;
-	ThreadRelease();
 }
 
-TrecPointer<TFileShell> EventHandler::GetFilePointer()
+TrecPointer<TFileShell> TapEventHandler::GetFilePointer()
 {
 	ThreadLock();
 	auto ret = filePointer;
@@ -373,13 +272,64 @@ TrecPointer<TFileShell> EventHandler::GetFilePointer()
 	return ret;
 }
 
-/**
- * Method: EventHandler::SetSaveFile
- * Purpose: Sets up the file to save if OnSave is called
- * Parameters: void
- * Returns: void
- */
-void EventHandler::SetSaveFile()
+TrecPointer<TTextIntercepter> TapEventHandler::GetTextIntercepter()
+{
+	return textIntercepter;
+}
+
+void TapEventHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
+{
+	bool assigned = false;
+	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
+	{
+		if (eventAr[Rust].textIntercepter.Get())
+		{
+			if (textIntercepter.Get() != eventAr[Rust].textIntercepter.Get())
+			{
+				assigned = true;
+				textIntercepter = eventAr[Rust].textIntercepter;
+			}
+		}
+	}
+
+	if (assigned && app.Get())
+	{
+		TrecPointer<TProcess> fullApp = TrecPointerKey::GetTrecPointerFromSoft<>(app);
+		dynamic_cast<TInstance*>(fullApp.Get())->SetCharIntercepter(TrecPointerKey::GetTrecPointerFromSoft<>(hSelf), textIntercepter);
+	}
+}
+
+void TapEventHandler::SetCallerHandler(TrecPointer<EventHandler> caller)
+{
+	
+}
+
+void TapEventHandler::ReportHelperPages(TDataArray<TString>& pages)
+{
+
+}
+
+
+void TapEventHandler::SetSupPageCodes(TDataArray<TString>& pageCodes)
+{
+	supPages.RemoveAll();
+	for (UINT Rust = 0; Rust < pageCodes.Size(); Rust++)
+	{
+		supPages.push_back(pageCodes[Rust]);
+	}
+}
+
+void TapEventHandler::GetSupPageCodes(TDataArray<TString>& pageCodes)
+{
+	pageCodes.RemoveAll();
+	for (UINT Rust = 0; Rust < supPages.Size(); Rust++)
+	{
+		pageCodes.push_back(supPages[Rust]);
+	}
+}
+
+
+void TapEventHandler::SetSaveFile()
 {
 	ThreadLock();
 	if (filePointer.Get())
@@ -387,12 +337,11 @@ void EventHandler::SetSaveFile()
 		ThreadRelease();
 		return;
 	}
-	if (!page.Get() || !page->GetWindowHandle().Get())
+	if (!page.Get() || !window.Get())
 	{
 		ThreadRelease();
 		return;
 	}
-	auto win = page->GetWindowHandle();
 
 	TString initialSearch(GetDirectory(CentralDirectories::cd_Documents));
 
@@ -401,8 +350,8 @@ void EventHandler::SetSaveFile()
 	ZeroMemory(&fileInfo, sizeof(fileInfo));
 
 	fileInfo.lStructSize = sizeof(OPENFILENAMEW);
-	fileInfo.hwndOwner = win->GetWindowHandle();
-	fileInfo.hInstance = win->GetInstance()->GetInstanceHandle();
+	fileInfo.hwndOwner = window->GetWindowHandle();
+	fileInfo.hInstance = window->GetInstance()->GetInstanceHandle();
 	fileInfo.lpstrFilter = nullptr;
 	fileInfo.lpstrInitialDir = initialSearch.GetConstantBuffer().getBuffer();
 	fileInfo.lpstrFile = new WCHAR[255];
@@ -416,4 +365,38 @@ void EventHandler::SetSaveFile()
 
 	delete[] fileInfo.lpstrFile;
 	ThreadRelease();
+}
+
+TPageEnvironment::TPageEnvironment(TrecPointer<TFileShell> shell) : TEnvironment(shell)
+{
+}
+
+void TPageEnvironment::GetPageAndHandler(handler_type hType, const TString& name, TrecPointer<PageHandlerBuilder>& builder)
+{
+	GetPageAndHandler_(hType, name, builder);
+
+	if (builder.Get())
+		return;
+
+	for (UINT Rust = 0; Rust < environments.Size(); Rust++)
+	{
+		if (dynamic_cast<TPageEnvironment*>(environments[Rust].Get()))
+		{
+			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageAndHandler_(hType, name, builder);
+			if (builder.Get())
+				return;
+		}
+	}
+}
+
+void TPageEnvironment::GetPageList(handler_type hType, const TString& ext, TDataArray<TString>& extensions)
+{
+	GetPageList_(hType, ext, extensions);
+	for (UINT Rust = 0; Rust < environments.Size(); Rust++)
+	{
+		if (dynamic_cast<TPageEnvironment*>(environments[Rust].Get()))
+		{
+			dynamic_cast<TPageEnvironment*>(environments[Rust].Get())->GetPageList_(hType, ext, extensions);
+		}
+	}
 }

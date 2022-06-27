@@ -114,6 +114,22 @@ public:
 	*/
 	~TString();
 
+	/**
+	 * Method: TString::Constructor
+	 * Purpose: Generates a String from a Number
+	 * Parameters:
+	 * Returns: void
+	 */
+	TString(UINT num);
+
+	/**
+	 * Method: TString::Constructor
+	 * Purpose: Generates a String from a Number
+	 * Parameters:
+	 * Returns: void
+	 */
+	TString(float num);
+
 	/*
 	* Method: TString::Constructor
 	* Purpose: Uses a pointer to another TString to build this one
@@ -168,7 +184,7 @@ public:
 	* Parameters: int* value - the value to store
 	* Returns: short - 0 if successful, error code otherwise
 	*/
-	short ConvertToInt(int&);
+	short ConvertToInt(int&)const;
 
 	/*
 	 * Method: TString::ConvertToInt
@@ -176,7 +192,7 @@ public:
 	 * Parameters: long* value - the value to store
 	 * Returns: short - 0 if successful, error code otherwise
 	 */
-	short ConvertToInt(long& value);
+	short ConvertToInt(long& value)const;
 
 	/*
 	* Method: TString::ConvertToDouble
@@ -184,7 +200,7 @@ public:
 	* Parameters: double* value - the value to store
 	* Returns: short - 0 if successful, error code otherwise
 	*/
-	short ConvertToDouble(double&);
+	short ConvertToDouble(double&)const;
 
 	/*
 	* Method: TString::ConvertToLong
@@ -192,7 +208,7 @@ public:
 	* Parameters: long* value - the value to store
 	* Returns: short - 0 if successful, error code otherwise
 	*/
-	short ConvertToLong(long long&);
+	short ConvertToLong(long long&)const;
 
 	/*
 	* Method: TString::ConvertToFloat
@@ -200,7 +216,7 @@ public:
 	* Parameters: float* value - the value to store
 	* Returns: short - 0 if successful, error code otherwise
 	*/
-	short ConvertToFloat(float&);
+	short ConvertToFloat(float&)const;
 
 	/*
 	* Method: TString::split
@@ -604,7 +620,7 @@ public:
 	 *				int count - the number of characters to remove
 	 * Returns: int - the new size of the string
 	 */
-	int Delete(int index, int count = 1);
+	int Delete(UINT index, int count = 1);
 	/**
 	 * Method: TString::GetDelete
 	 * Purpose: Retrieves a TString with a section deleted
@@ -859,18 +875,20 @@ public:
 	 * Purpose: Applies the Replace operation via TStrings as parameters
 	 * Parameters: const TString& oldStr - the String to replace
 	 *				const TString& newStr - the String to replace the old string with
+	 *				bool doAll - if true, replaces all instances - otherwise, just replaces the first instance
 	 * Returns: int - the number of instances where the replacement operaiton was applied
 	 */
-	int Replace(const TString& oldStr, const TString& newStr);
+	int Replace(const TString& oldStr, const TString& newStr, bool doAll = true);
 	/**
 	 * Method: TString::GetReplace
 	 * Purpose: Returns a copy of the TString with the old String replaced by the new one
 	 * Parameters: int& ret - reference of the replacemnt counter
 	 *				const TString& oldStr - the String to replace
 	 *				const TString& newStr - the String to replace the old string with
+	 *				bool doAll - if true, replaces all instances - otherwise, just replaces the first instance
 	 * Returns: TString::The Copy with the Replace operation applied
 	 */
-	TString GetReplace(int& ret, const TString& oldStr, const TString& newStr) const;
+	TString GetReplace(int& ret, const TString& oldStr, const TString& newStr, bool doAll = true) const;
 	/**
 	 * Method: TString::Replace
 	 * Purpose: In-place character replacement operation

@@ -58,6 +58,10 @@ public:
      * Returns: DoubleLong - the value held by the variable
      */
     static DoubleLong GetValueFromPrimitive(TrecPointer<TVariable> var);
+
+    static DoubleLong GetValueFromString(const TString& str);
+
+    TString ToString();
 };
 
 DoubleLong TC_DATA_STRUCT Add(const DoubleLong& v1, const DoubleLong& v2);

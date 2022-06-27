@@ -2,6 +2,7 @@
 #include <windowsx.h>
 #include "TDialog.h"
 #include "TIdeWindow.h"
+#include <TFormatReader.h>
 
 // Various Built-in handlers Anagame offers
 #include "TCodeHandler.h"
@@ -25,6 +26,12 @@ static TString dialogClassName(L"TDialog");
  */
 TInstance::TInstance(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, HINSTANCE ins, WNDPROC wp)
 {
+	// Set up Format Readers
+	TFormatReader::EstablishDefaultBuilders();
+
+	assert(SUCCEEDED(CoInitialize(nullptr)));
+
+
 	handlerID = 1;
 	messageStack = 0;
 	if (!wp)
@@ -38,7 +45,7 @@ TInstance::TInstance(TString& name, TString& winClass, UINT style, HWND parent, 
 
 	TrecComPointer<ID2D1Factory1>::TrecComHolder factoryHolder;
 
-	D2D1_FACTORY_OPTIONS d2dDebugLevel = { D2D1_DEBUG_LEVEL_WARNING };
+	D2D1_FACTORY_OPTIONS d2dDebugLevel = { D2D1_DEBUG_LEVEL_INFORMATION };
 
 	D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, d2dDebugLevel, factoryHolder.GetPointerAddress());
 	factory = factoryHolder.Extract();
@@ -58,6 +65,8 @@ TString TInstance::GetType()
 
 TInstance::~TInstance()
 {
+	CoUninitialize();
+
 	mainWindow.Delete();
 
 	for (UINT Rust = 0; Rust < windowList.Size(); Rust++)
@@ -106,9 +115,9 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
-	case WM_APP_PLAYER_EVENT:
-		win->OnVideoEvent(wParam);
-		break;
+	//case WM_APP_PLAYER_EVENT:
+	//	win->OnVideoEvent(wParam);
+	//	break;
 	case WM_PAINT:
 		win->Draw();
 		break;
@@ -159,7 +168,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		if (charHandler.Get())
 		{
-			messageOutput mo = messageOutput::negative;
+			message_output mo = message_output::mo_negative;
 			if (charHandler->OnChar(message == WM_CHAR, wParam, lParam & 0x0000FFFF, 0, &mo))
 				win->Draw();
 		}
@@ -197,7 +206,7 @@ LRESULT TInstance::Proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
  *				t_window_type winType - type of window desired (default provides a regular TWindow)
  * Returns: int - error code
  */
-int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<EventHandler> eh, t_window_type winType)
+int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<TPage::EventHandler> eh, const TString& mainPage, t_window_type winType)
 {
 	ThreadLock();
 	WORD regResult = RegisterClassExW(&wcex);
@@ -211,7 +220,7 @@ int TInstance::SetMainWindow(WNDCLASSEXW& wcex, TString& file, TrecPointer<Event
 	{
 	case t_window_type::t_window_type_ide:
 		mainWindow = TrecPointerKey::GetNewSelfTrecPointerAlt<TWindow, TIdeWindow>(mainWindowName, mainWindowClass, mainStyle, mainWindowHandle, command,
-			TrecPointerKey::GetTrecPointerFromSoft(self), 150, 30);
+			TrecPointerKey::GetTrecPointerFromSoft(self), 150, 30, mainPage);
 		break;
 	case t_window_type::t_window_type_plain:
 		mainWindow = TrecPointerKey::GetNewSelfTrecPointer<TWindow>(mainWindowName, mainWindowClass, mainStyle, mainWindowHandle, command, 
@@ -434,11 +443,11 @@ TrecComPointer<ID2D1Factory1> TInstance::GetFactory()
  * Parameters: TrecPointer<TInstance> i - the instance to hold
  * Returns: void
  */
-void TInstance::SetSelf(TrecPointer<TInstance> i)
+void TInstance::SetSelf(TrecPointer<TProcess> i)
 {
-	if (this != i.Get() || i.Get() != this)
+	if (this != (void*)i.Get() || i.Get() != (void*)this)
 		throw L"Error! Function expected to recieve a protected reference to 'this' Object!";
-	this->self = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(i);
+	this->self = TrecPointerKey::GetSoftPointerFromTrec<>(i);
 
 	AssertDialogRegistered();
 }
@@ -455,8 +464,8 @@ void TInstance::DispatchAnagameMessage(TrecPointer<HandlerMessage> message)
 	CleanHandlerList();
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
 	{
-		if (registeredHandlers[Rust].Get() && registeredHandlers[Rust]->ShouldProcessMessage(message))
-			registeredHandlers[Rust]->ProcessMessage(message);
+		if (registeredHandlers[Rust].Get() && dynamic_cast<TapEventHandler*>(registeredHandlers[Rust].Get())->ShouldProcessMessage(message))
+			dynamic_cast<TapEventHandler*>(registeredHandlers[Rust].Get())->ProcessMessage(message);
 	}
 	ThreadRelease();
 }
@@ -468,15 +477,15 @@ void TInstance::DispatchAnagameMessage(TrecPointer<HandlerMessage> message)
  *				anagame_page pageType - the type of handler
  * Returns: TrecPointer<EventHandler> - the handler specified (null if not found)
  */
-TrecPointer<EventHandler> TInstance::GetHandler(const TString& name, anagame_page pageType)
+TrecPointer<TPage::EventHandler> TInstance::GetHandler(const TString& name, anagame_page pageType)
 {
 	ThreadLock();
-	TrecPointer<EventHandler> ret;
+	TrecPointer<TPage::EventHandler> ret;
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
 	{
 		if (registeredHandlers[Rust].Get())
 		{
-			if (registeredHandlers[Rust]->name.Compare(name))
+			if (dynamic_cast<TapEventHandler*>(registeredHandlers[Rust].Get())->name.Compare(name))
 				continue;
 			switch (pageType)
 			{
@@ -508,21 +517,22 @@ TrecPointer<EventHandler> TInstance::GetHandler(const TString& name, anagame_pag
  *				TrecPointer<TTextIntercepter> the intercepter to recieve characters
  * Returns: void
  */
-void TInstance::SetCharIntercepter(TrecPointer<EventHandler> handler, TrecPointer<TTextIntercepter> intercepter)
+void TInstance::SetCharIntercepter(TrecPointer<TPage::EventHandler> handler, TrecPointer<TTextIntercepter> intercepter)
 {
 	if (handler.Get() && intercepter.Get())
 	{
 
-		if (charHandler.Get() && charHandler->textIntercepter.Get())
+		if (charHandler.Get() && charHandler->GetTextIntercepter().Get())
 		{
-			if (intercepter->GetTarget() == charHandler->textIntercepter->GetTarget())
+			auto oldInt = charHandler->GetTextIntercepter();
+			if (intercepter->GetTarget() == oldInt->GetTarget())
 				return;
 
-			charHandler->textIntercepter->OnLoseFocus();
-			charHandler->textIntercepter.Nullify();
+			oldInt->OnLoseFocus();
+			oldInt.Nullify();
 		}
 
-		handler->textIntercepter = intercepter;
+		dynamic_cast<TapEventHandler*>(handler.Get())->textIntercepter = intercepter;
 		charHandler = handler;
 	}
 }
@@ -570,7 +580,7 @@ void TInstance::CleanWindows()
  * Parameters:TrecPointer<EventHandler> handler - the handler to remove
  * Returns: void
  */
-void TInstance::UnregisterHandler(TrecPointer<EventHandler> handler)
+void TInstance::UnregisterHandler(TrecPointer<TPage::EventHandler> handler)
 {
 	ThreadLock();
 	for (UINT Rust = 0; Rust < registeredHandlers.Size(); Rust++)
@@ -590,7 +600,7 @@ void TInstance::UnregisterHandler(TrecPointer<EventHandler> handler)
  * Parameters: TrecPointer<EventHandler> handler - the handler to add
  * Returns: bool whether the handler was added or not
  */
-bool TInstance::RegisterHandler(TrecPointer<EventHandler> handler)
+bool TInstance::RegisterHandler(TrecPointer<TPage::EventHandler> handler)
 {
 	if(!handler.Get())
 		return false;
@@ -606,7 +616,7 @@ bool TInstance::RegisterHandler(TrecPointer<EventHandler> handler)
 	}
 
 	registeredHandlers.push_back(handler);
-	handler->id = handlerID++;
+	//handler->id = handlerID++;
 	ThreadRelease();
 	return true;
 }

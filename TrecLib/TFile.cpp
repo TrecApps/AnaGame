@@ -79,7 +79,7 @@ bool TFile::Open(const TString& lpszFileName, UINT nOpenFlags)
 	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
 		fileHandle = 0;
-		int err = GetLastError();
+		//int err = GetLastError();
 		RETURN_THREAD_UNLOCK false;
 	}
 
@@ -449,7 +449,7 @@ UINT TFile::ReadString(TString & rString, WCHAR chara)
  * Flags variable values:
  *		0b00000001 - TFile::include_end - include the terminating character in the return String
  *      0b00000010 - TFile::out_of_quotes - makesure that when we do find the characters, they are outside of quotes
- *      0booooo100 - TFile::watch_backslash - factor backslashes in handling the other flags
+ *      0b00000100 - TFile::watch_backslash - factor backslashes in handling the other flags
  */
 UINT TFile::ReadString(TString& rString, const TString& chars, UCHAR flags, UINT max)
 {
@@ -961,7 +961,7 @@ void TFile::Write(const void* buffer, UINT count)
 
 	if (!res)
 	{
-		int err = GetLastError();
+		//int err = GetLastError();
 		delete resCount2;
 		delete lap2;
 		RETURN_THREAD_UNLOCK;
@@ -1105,28 +1105,29 @@ UCHAR TFile::ReadUnicode8Char(char* seq4)
 	if(!Read(seq4,1))
 	return 0;
 	AG_THREAD_LOCK
+	UINT ret = 0;
 	if ((seq4[0] & 0b11110000) == 0b11110000)
 	{
 		// we are dealing with a 4 byte sequence in UTF-8
 		// Already have the first byte, now get the other three
-		RETURN_THREAD_UNLOCK 1 + Read(&seq4[1], 3);
+		ret = 1 + Read(&seq4[1], 3);
 	}
-
+	else
 	if ((seq4[0] & 0b11100000) == 0b11100000)
 	{
 		// At this point, we are dealing with a 3 byte sequence,
 		// Get the other two
-		RETURN_THREAD_UNLOCK 1 + Read(&seq4[1], 2);
+		ret = 1 + Read(&seq4[1], 2);
 	}
-
+	else
 	if ((seq4[0] & 0b11000000) == 0b11000000)
 	{
 		// Just a two byte sequence
 		// Get the second byte
-		RETURN_THREAD_UNLOCK 1 + Read(&seq4[1], 1);
+		ret = 1 + Read(&seq4[1], 1);
 	}
 	// just one byte
-	RETURN_THREAD_UNLOCK 1;
+	RETURN_THREAD_UNLOCK static_cast<UCHAR>(ret);
 }
 
 /**

@@ -23,7 +23,7 @@ public:
 	 *				TString& caption - The message to present to the User once the Dialog is drawn
 	 * Returns: New Name Dialog Object
 	 */
-	NameDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode, TString& caption);
+	NameDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode, TString& caption);
 
 	/**
 	 * Method: NameDialog::NameDialog
@@ -76,7 +76,7 @@ private:
 	/**
 	 * The Text Control the User enters input into
 	 */
-	TrecPointer<TControl> textField;
+	TrecPointer<TPage> textField;
 
 	/**
 	 * The Message to present to the User

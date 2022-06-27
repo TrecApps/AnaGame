@@ -2,13 +2,91 @@
 #include "TAnascriptInterpretor.h"
 #include "TJavaScriptInterpretor.h"
 #include <TFileNode.h>
-#include <TPromptControl.h>
 #include "TcJavaScriptInterpretor.h"
+#include "TcPythonInterpretor.h"
 #include <TStringVariable.h>
 #include <TBlankNode.h>
+#include <TCodeHandler.h>
+#include <AnafacePage.h>
+#include <DirectoryInterface.h>
+#include <TerminalHandler.h>
 
-TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TEnvironment(shell)
+
+class AnagameCodePageHandlerBuilder : public TPageEnvironment::PageHandlerBuilder {
+private:
+	TDataMap<TrecPointer<TPage>> singularPages;
+	TrecPointer<TFileShell> directory;
+public:
+
+	AnagameCodePageHandlerBuilder(TrecPointer<TFileShell> directory)
+	{
+		assert(directory.Get() && directory->IsDirectory());
+		this->directory = directory;
+	}
+
+	virtual void RetrievePageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler,
+		TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc, const D2D1_RECT_F& loc)
+	{
+		if (!name.Compare(L"ag_ce_code"))
+		{
+			handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(proc);
+			TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+			aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\LineTextEditor.json"), handler);
+			page = TrecSubToTrec(aPage);
+		}
+
+		if (!name.Compare(L"ag_ce_fBrowser"))
+		{
+			if (!singularPages.retrieveEntry(name, page))
+			{
+				handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TCodeHandler>(proc);
+				TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+				aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\FileBrowser.json"), handler);
+				page = TrecSubToTrec(aPage);
+				singularPages.addEntry(name, page);
+			}
+			else handler = page->GetHandler();
+		}
+
+		if (!name.Compare(L"ag_ce_i_console"))
+		{
+			handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(proc, directory);
+			TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+			aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\InputConsole.json"), handler);
+			page = TrecSubToTrec(aPage);
+		}
+
+		if (!name.Compare(L"ag_ce_o_console"))
+		{
+			handler = TrecPointerKey::GetNewSelfTrecPointerAlt<TPage::EventHandler, TerminalHandler>(proc, directory);
+			TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetNewSelfTrecSubPointer<TPage, AnafacePage>(board);
+
+
+			aPage->PrepPage(TFileShell::GetFileInfo(GetDirectoryWithSlash(CentralDirectories::cd_Executable) + L"Resources\\OutputConsole.json"), handler);
+			page = TrecSubToTrec(aPage);
+		}
+
+		// This object only uses Anaface Pages
+		if(page.Get())
+		dynamic_cast<AnafacePage*>(page.Get())->Create(loc, board->GetWindowEngine());
+		
+	}
+};
+
+
+
+TAnaGameCodeEnvironment::TAnaGameCodeEnvironment(TrecPointer<TFileShell> shell): TPageEnvironment(shell)
 {
+	targetMachine = TargetAnagameMachine::tam_object_register;
+	compileErrorHandling = CompileErrorHandling::ceh_stop;
+
+	codePageBuilder = TrecPointerKey::GetNewTrecPointerAlt<TPageEnvironment::PageHandlerBuilder, AnagameCodePageHandlerBuilder>(shell);
 }
 
 TString TAnaGameCodeEnvironment::GetType()
@@ -105,6 +183,29 @@ UINT TAnaGameCodeEnvironment::RunTask(TString& task)
 			TrecPointer<TFileShell> jsFile = TFileShell::GetFileInfo(task);
 			Run(jsFile);
 
+		}
+		else if (task.GetSize() > 3 && task.EndsWith(L".py"))
+		{
+			auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcPythonInterpretor>(TrecSubPointer<TVariable, TcInterpretor>(),
+				TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+			ReturnObject ret;
+			javaScriptInterpretor->SetFile(TFileShell::GetFileInfo(task), ret);
+
+			javaScriptInterpretor->PreProcess(ret);
+			if (ret.returnCode)
+			{
+				TString message;
+				message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", task.GetConstantBuffer().getBuffer(), ret.returnCode);
+				this->PrintLine(message);
+				this->PrintLine(ret.errorMessage);
+
+				for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+				{
+					this->Print(L'\t');
+					this->PrintLine(ret.stackTrace[Rust]);
+				}
+				return ret.returnCode;
+			}
 		}
 	}
 	return 0;
@@ -219,6 +320,29 @@ void TAnaGameCodeEnvironment::Run(TrecPointer<TFileShell> file)
 		}
 		int e = 3;
 	}
+	else if (path.GetSize() > 3 && path.EndsWith(L".py"))
+	{
+		auto javaScriptInterpretor = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TcPythonInterpretor>(TrecSubPointer<TVariable, TcInterpretor>(),
+			TrecPointerKey::GetTrecPointerFromSoft<TEnvironment>(self));
+		ReturnObject ret;
+		javaScriptInterpretor->SetFile(file, ret);
+
+		javaScriptInterpretor->PreProcess(ret);
+		if (ret.returnCode)
+		{
+			TString message;
+			message.Format(L"Java Script '%ws' file Preprocessing exited with Error code: %d", path.GetConstantBuffer().getBuffer(), ret.returnCode);
+			this->PrintLine(message);
+			this->PrintLine(ret.errorMessage);
+
+			for (UINT Rust = 0; Rust < ret.stackTrace.Size(); Rust++)
+			{
+				this->Print(L'\t');
+				this->PrintLine(ret.stackTrace[Rust]);
+			}
+			return;
+		}
+	}
 }
 
 TrecPointer<TObjectNode> TAnaGameCodeEnvironment::GetBrowsingNode()
@@ -270,7 +394,7 @@ bool TAnaGameCodeEnvironment::PrintLine(const TString& input)
 {
 	if (shellRunner.Get())
 	{
-		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input));
+		shellRunner->Log(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariable>(input + L'\n'));
 		RedrawWindow(nullptr, nullptr, nullptr, 0);
 		return true;
 	}
@@ -365,4 +489,56 @@ TString TAnaGameCodeEnvironment::SetLoadFile(TrecPointer<TFileShell> file)
 	name.Set(file->GetDirectoryName());
 	actFile.Close();
 	return TString();
+}
+
+void TAnaGameCodeEnvironment::GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<PageHandlerBuilder>& builder)
+{
+	if (hType == handler_type::ht_file && !name.Compare(L"ag_ce_code"))
+	{
+		builder = codePageBuilder;
+		return; 
+	}
+
+	if (hType == handler_type::ht_singular && !name.Compare(L"ag_ce_fBrowser"))
+	{
+		builder = codePageBuilder;
+		return;
+	}
+
+	if (hType == handler_type::ht_i_console || hType == handler_type::ht_o_console)
+	{
+		builder = codePageBuilder;
+		return;
+	}
+}
+
+void TAnaGameCodeEnvironment::GetPageList_(handler_type hType, const TString& ext, TDataArray<TString>& extensions)
+{
+	switch (hType)
+	{
+	case handler_type::ht_file:
+		if (!ext.CompareNoCase(L"js") ||
+			!ext.CompareNoCase(L"py") ||
+			!ext.CompareNoCase(L"ascrpt") ||
+			!ext.GetSize())
+		{
+			extensions.push_back(L"ag_ce_code");
+		}
+		break;
+	case handler_type::ht_singular:
+		if (!ext.CompareNoCase(L"filebrowser"))
+		{
+			extensions.push_back(L"ag_ce_fBrowser");
+		}
+		break;
+
+	case handler_type::ht_i_console:
+		extensions.push_back(L"ag_ce_i_console");
+		break;
+	case handler_type::ht_o_console:
+		extensions.push_back(L"ag_ce_o_console");
+	//case handler_type::ht_ribbon:
+	//	if (!ext.CompareNoCase(L"code"))
+	//		extensions.push_back(L"ag_ce_code_blade");
+	}
 }

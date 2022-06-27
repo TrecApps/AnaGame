@@ -28,13 +28,28 @@ protected:
 	HWND window;
 
 	/**
+	 * Whether to allow Editing
+	 */
+	bool editAllowed;
+
+
+public:
+
+	bool FindString(const TString& target, UINT& index, bool fromFront = true);
+
+	/**
 	 * Method: TInputTextElement::UpdateCarotByPosition
 	 * Purpose: Sets the carot position by text index
 	 * Parameters: UINT loc - the location to move the carot to
 	 * Returns: void
 	 */
 	void UpdateCarotPoisition(UINT loc);
-public:
+
+	UINT GetCarotLoc();
+
+	virtual bool TakesInput() override;
+
+	virtual void LockText(bool doLock)override;
 	/**
 	 * Method: TInputTextElement::TInputTextElement
 	 * Purpose: Constructor

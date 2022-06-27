@@ -1,25 +1,14 @@
 #pragma once
 #include <TObject.h>
 #include <DrawingBoard.h>
-#include <TPromptControl.h>
 #include <TStringSlice.h>
 #include <TDataMap.h>
 #include "AnaWeb.h"
+#include <TPage.h>
+#include <TTextLayout.h>
+#include "TcWebNode.h"
 
-/**
- * Enum Class: WebSizeUnit
- * Purpose: Represents a unit a size value is given in
- */
-typedef enum class WebSizeUnit
-{
-    wsu_px, // pixel
-    wsu_in, // inch
-    wsu_pt, // points
-    wsu_cm, // centimeter
-    wsu_mm, // millimeter
-    wsu_em, // element relativity
-    wsu_bl  // Blank
-}WebSizeUnit;
+
 
 /**
  * Enum Class: WebNodeDisplayOutside
@@ -59,50 +48,7 @@ typedef enum class WebNodeDisplayInternal
 };
 
 
-/**
- * Class: EventPropagater
- * Purpose: Helps determine if a web node should report it's event first or let any child nodes report
- * 
- * Note: Information related to event propagation could be found here:
- *   https://stackoverflow.com/questions/4616694/what-is-event-bubbling-and-capturing#:~:text=Event%20bubbling%20and%20capturing%20are%20two%20ways%20of,in%20which%20order%20the%20elements%20receive%20the%20event.
- */
-class ANA_WEB_DLL EventPropagater {
-public:
-    /**
-     * Method: EventPropagater::EventPropagater
-     * Purpose: Default Constructor
-     * Parameters: void
-     * Returns: new Event Propagater obj
-     */
-    EventPropagater();
 
-    /**
-     * Method: EventPropagater::EventPropagater
-     * Purpose: Copy Constructor
-     * Parameters: const EventPropagater& orig - the object to copy from
-     * Returns: new Event Propagater obj
-     */
-    EventPropagater(const EventPropagater& orig);
-
-    /**
-     * Method: EventPropagater::EventPropagater
-     * Purpose: Copy Constructor
-     * Parameters: const TString& e - the string to check for
-     *              bool useCapture - true, then use capture, false, use bubbling
-     * Returns: new Event Propagater obj
-     */
-    EventPropagater(const TString& e, bool useCapture);
-
-    /**
-     * The name of the event
-     */
-    TString event;
-
-    /**
-     * the propagation mode
-     */
-    bool useCapture;
-};
 
 
 
@@ -115,32 +61,7 @@ typedef enum class border_side
     bs_right
 };
 
-typedef enum class list_style
-{
-    ls_disc,
-    ls_circle,
-    ls_none,
-    ls_square,
 
-    ls_armenian,
-    ls_cjk,
-    ls_decimal,
-    ls_decimal_0,
-    ls_georgian,
-    ls_hebrew,
-    ls_hiragana,
-    ls_hiragana_iroha,
-    ls_katakana,
-    ls_katakana_iroha,
-    ls_lower_alph,
-    ls_lower_greek,
-    ls_lower_latin,
-    ls_lower_roman,
-    ls_upper_alpha,
-    ls_upper_greek,
-    ls_upper_latin,
-    ls_upper_roman
-};
 
 /**
  * Class: TextData
@@ -168,22 +89,9 @@ public:
         fontStyleUpdated, fontWeightUpdated, lineSpacingUpdated, textColorUpdated;
 };
 
-class ANA_WEB_DLL TColorSet
-{
-public:
-    TColorSet();
-    TColorSet(const TColorSet& copy);
-    TColorSet operator=(const TColorSet& color);
-    TColorSet operator=(const TColor& color);
 
-    TColor color;
-    bool set;
-};
 
-typedef struct BorderCorners
-{
-    USHORT v, h;
-}BorderCorners;
+
 
 class ANA_WEB_DLL BorderData
 {
@@ -242,13 +150,13 @@ protected:
     class TWebNodeContainer : public TObject
     {
     public:
-        TWebNodeContainer(TrecSubPointer<TControl, TTextField> text);
-        TWebNodeContainer(TrecPointer<TControl> control);
+        TWebNodeContainer(TrecSubPointer<TPage, TTextLayout> text);
+        TWebNodeContainer(TrecPointer<TPage> control);
         TWebNodeContainer(TrecPointer<TWebNode> webNode);
 
         D2D1_RECT_F GetLocation();
 
-        TrecPointer<TControl> control;
+        TrecPointer<TPage> control;
         TrecPointer<TWebNode> webNode;
         NodeContainerType type;
         UINT initTextSize;                  // Text From this Node
@@ -679,7 +587,7 @@ protected:
      */
     TrecPointerSoft<TWebNode> self, parent;
 
-    TDataArray<FormattingDetails> formattingDetails;
+    TDataArray<TextFormattingDetails> formattingDetails;
 
     TextData thisTextData;
 

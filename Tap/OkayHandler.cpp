@@ -1,5 +1,4 @@
 #include "OkayHandler.h"
-#include "Page.h"
 #include "TWindow.h"
 
 /**
@@ -8,13 +7,8 @@
  * Parameters: TrecPointer<TInstance> instance - the instance associated with this Handler
  * Returns: new OkayHandler Object
  */
-OkayHandler::OkayHandler(TrecPointer<TInstance> instance): EventHandler(instance, TString(L"Okay"))
+OkayHandler::OkayHandler(TrecPointer<TProcess> instance): TapEventHandler(instance, TString(L"Okay"))
 {
-	eventNameID enid;
-
-	enid.eventID = 0;
-	enid.name.Set(L"OnOkay");
-	events.push_back(enid);
 
 }
 
@@ -46,13 +40,11 @@ TString OkayHandler::GetType()
  * Parameters: TrecPointer<Page> page - the page the Handler is to associate with
  * Returns: void
  */
-void OkayHandler::Initialize(TrecPointer<Page> page)
+void OkayHandler::Initialize(TrecPointer<TPage> page)
 {
 	ThreadLock();
 	assert(page.Get());
 	this->page = page;
-	auto tempApp = page->GetInstance();
-	app = TrecPointerKey::GetSoftPointerFromTrec<TInstance>(tempApp);
 }
 
 /**
@@ -61,21 +53,18 @@ void OkayHandler::Initialize(TrecPointer<Page> page)
  * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
  * Returns: void
  */
-void OkayHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void OkayHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	ThreadLock();
 	bool markDestroy = false; EventArgs ea;
 	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
 	{
-		auto cont = eventAr[Rust].control;
-		if (!cont.Get()) continue;
-
-		ea = cont->getEventArgs();
-
-		if (ea.methodID == 0)
-		{
+		auto cont = eventAr[Rust].args;
+		if (!cont.Get())
+			continue;
+		if (!cont->methodID.Compare(L"OnOkay"))
 			markDestroy = true;
-		}
+		eventAr[Rust].args.Nullify();
 	}
 
 	if (markDestroy)
@@ -109,13 +98,12 @@ void OkayHandler::OnOkay(TControl* control, EventArgs ea)
 		ThreadRelease();
 		throw L"Error! Handler expected pointer to a page!";
 	}
-	TrecPointer<TWindow> windHandle = page->GetWindowHandle();
-	if (!windHandle.Get())
+	if (!window.Get())
 	{
 		ThreadRelease();
 		throw L"Error! Handler's Page Object returned a NULL window handle";
 	}
-	DestroyWindow(windHandle->GetWindowHandle());
+	DestroyWindow(window->GetWindowHandle());
 	ThreadRelease();
 }
 

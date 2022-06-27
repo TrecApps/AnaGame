@@ -23,14 +23,14 @@ public:
      *              const TString& data - The line that was already read
      * Returns: UINT - error code (0 for success)
      */
-    TString ProcessHtml(TrecPointer<TFile> file, const TString& data, HWND win);
+    TString ProcessHtml(TrecPointer<TFile> file, const TString& data, HWND win, TrecPointer<TArray<styleTable>>& styles);
 
-    TrecPointer<TWebNode> RetrieveWebNode();
+    TrecSubPointer<TPage, TcWebNode> RetrieveWebNode();
 
 private:
     TrecPointer<TEnvironment> env;
 
-    TrecPointer<TWebNode> rootNode;
+    TrecSubPointer<TPage, TcWebNode> rootNode;
 
     TrecSubPointer<TSliceManager,TStringSliceManager> bodyContents;
     TrecPointer<DrawingBoard> board;

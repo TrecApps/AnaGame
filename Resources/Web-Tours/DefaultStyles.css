@@ -245,6 +245,7 @@ iframe[seamless] {
 
 img {
   display: inline-block;
+  background-repeat: no-repeat;
 }
 
 ins {
@@ -375,6 +376,7 @@ tbody {
 td {
   display: table-cell;
   vertical-align: inherit;
+  padding: 1 1 1 1;
 }
 
 tfoot {
@@ -388,6 +390,7 @@ th {
   vertical-align: inherit;
   font-weight: bold;
   text-align: center;
+  padding: 1 1 1 1;
 }
 
 thead {

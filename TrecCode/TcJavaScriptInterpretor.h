@@ -146,6 +146,22 @@ public:
 protected:
 
     /**
+     * The file being used
+     */
+    TrecPointer<TFileShell> sourceFile;
+
+
+    /**
+     * Method: TcInterpretor::AddModifiers
+     * Purpose: Configures the file Modifiers before processing the file
+     * Parameters: void
+     * Returns: void
+     *
+     * Attributes: override
+     */
+    virtual void AddModifiers() override;
+
+    /**
      * Method: TcJavaScriptInterpretor::DetermineParenthStatus
      * Purpose: Reports whether there are more open or closed parenthesis
      * Parameters: const TString& string - string to read

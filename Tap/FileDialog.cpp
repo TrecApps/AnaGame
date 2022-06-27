@@ -2,7 +2,7 @@
 #include <DirectoryInterface.h>
 #include "TInstance.h"
 
-FileDialog::FileDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins, TDialogMode mode, TrecSubPointer<EventHandler, FileDialogHandler> handler) :
+FileDialog::FileDialog(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins, TDialogMode mode, TrecSubPointer<TPage::EventHandler, FileDialogHandler> handler) :
 	TDialog(name, winClass, style, parent, commandShow, ins, mode)
 {
 	this->handler = handler;
@@ -30,7 +30,7 @@ int FileDialog::CompileView(TrecComPointer<ID2D1Factory1> fact)
 
 	file.Append(L"Resources\\FileDialog.tml");
 	ThreadLock();
-	int returnable = TWindow::CompileView(file, TrecPointerKey::GetTrecPointerFromSub<EventHandler, FileDialogHandler>( handler));
+	int returnable = TWindow::CompileView(file, TrecPointerKey::GetTrecPointerFromSub<TPage::EventHandler, FileDialogHandler>( handler));
 
 	if (!returnable && !mainPage.Get())
 	{
@@ -60,7 +60,7 @@ TrecPointer<TFileShell> FileDialog::GetFile()
 	return ret;
 }
 
-TrecPointer<TFileShell> BrowseForFile(TrecPointer<TInstance> in, HWND parent, TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile, file_node_filter_mode filter_mode)
+TrecPointer<TFileShell> BrowseForFile(TrecPointer<TProcess> in, HWND parent, TrecPointer<TFileShell> directory, const TString& extensions, bool allowCreateFile, file_node_filter_mode filter_mode)
 {
 	if (!in.Get() || !parent)
 		return TrecPointer<TFileShell>();
@@ -69,7 +69,7 @@ TrecPointer<TFileShell> BrowseForFile(TrecPointer<TInstance> in, HWND parent, Tr
 	TString winClass(L"Dialog");
 	UINT style = WS_OVERLAPPEDWINDOW;
 
-	auto handler = TrecPointerKey::GetNewTrecSubPointer<EventHandler, FileDialogHandler>(in);
+	auto handler = TrecPointerKey::GetNewTrecSubPointer<TPage::EventHandler, FileDialogHandler>(in);
 
 	handler->SetAttributes(directory, extensions, allowCreateFile, filter_mode);
 

@@ -169,7 +169,7 @@ void TBrush::DrawLine(const POINT_2D& p1, const POINT_2D& p2, TrecComPointer<ID2
 {
 	if (Refresh())
 	{
-		currentRenderer->DrawLine(p1, p2, brush.Get(), thickness), style.Get();
+		currentRenderer->DrawLine(p1, p2, brush.Get(), thickness, style.Get());
 	}
 }
 

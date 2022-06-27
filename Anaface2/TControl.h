@@ -2,6 +2,7 @@
 #include "Anaface2.h"
 #include <TPage.h>
 #include <TTextElement.h>
+#include <TDataMap.h>
 
 /**
  * Enum Class: dimension_spec
@@ -26,9 +27,11 @@ class _ANAFACE_DLL2 EventTypeID
 {
 public:
 	EventTypeID();
+	EventTypeID(R_Message_Type type, const TString& id);
+	EventTypeID(const EventTypeID& copy);
 
 	R_Message_Type eventType;
-	int eventID;
+	TString eventID;
 };
 
 
@@ -52,6 +55,7 @@ class _ANAFACE_DLL2 TControlComponent : TObject
 {
 	friend class TControl;
 	friend class TControlComponent;
+	friend class TrecPointerKey;
 public:
 
 	/**
@@ -62,14 +66,6 @@ public:
 	 */
 	virtual TString GetType() override;
 
-	/*
-	* Method:  TControlComponent::TControlComponent
-	* Purpose: Constructor
-	* Parameters: TrecPointer<DrawingBoard> dbp - Smart Pointer to the Render target to draw against
-	*				TControl* tc - the TControl to which the TControlComponent is a party to
-	* Returns: New TControlComponent Object
-	*/
-	TControlComponent(TrecPointer<DrawingBoard>, TrecPointer<TPage> parent);
 	/*
 	* Method: TControlComponent::TControlComponent
 	* Purpose: Constructor
@@ -303,6 +299,7 @@ class _ANAFACE_DLL2 TControl :
 {
 public:
 
+	void AddAttribute(const TString& att, const TString& value);
 
 	/**
 	 * Method: TControl::GetType
@@ -348,7 +345,7 @@ public:
 	 *
 	 * Attributes: virtual
 	 */
-	virtual bool onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d);
+	virtual bool onCreate(const D2D1_RECT_F& loc, TrecPointer<TWindowEngine> d3d, TrecPointer<TFileShell> d);
 
 	/**
 	 * Method:  TControl::updateArrayID
@@ -460,7 +457,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 
 	/**
@@ -474,7 +471,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 
 	/**
@@ -488,21 +485,8 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
-
-	/**
-	 * Method: TControl::OnLButtonDown
-	 * Purpose: Responds to the Left Button Down Message
-	 * Parameters: UINT nFlags - flags associated with the message
-	 *				const TPoint& point - the point included in the message
-	 *				message_output& mOut -  the result of the message
-	 *				TDataArray<EventID_Cred>& - list of events to be handled
-	 * Returns: void
-	 *
-	 * Attributes: message; override
-	 */
-	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
 
 	/**
 	 * Method: TControl::OnMouseMove
@@ -514,7 +498,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&) override;
 
 	/**
 	 * Method: TControl::OnLButtonDblClk
@@ -526,7 +510,20 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>& eventAr) override;
+
+	/**
+	 * Method: TControl::OnLButtonDown
+	 * Purpose: Responds to the Left Button Down Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				const TPoint& point - the point included in the message
+	 *				message_output& mOut -  the result of the message
+	 *				TDataArray<EventID_Cred>& - list of events to be handled
+	 * Returns: void
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>& args) override;
 
 	/**
 	 * Method: TControl::OnResize
@@ -541,7 +538,7 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr, TDataArray<EventArgs>&) override;
+	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr) override;
 
 	/**
 	 * Method: Page::OnDestroy
@@ -563,16 +560,76 @@ public:
 	 *
 	 * Attributes: message; override
 	 */
-	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction, TDataArray<EventArgs>&) override;
+	ag_msg virtual bool OnScroll(bool, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>& args) override;
+
+	/**
+	 * Method: TText::GetMinWidth
+	 * Purpose: Retirvees the minimum width needed before DirectWrtie has to add emergency breaks in line
+	 * Parameters: bool& worked - whether the value returned is truely the reported value
+	 * Returns: float - the min width needed. If inspection fails, this represents the width currently used
+	 */
+	virtual float GetMinWidth();
 
 
+	/*
+	* Method: TControl::ShrinkHeight
+	* Purpose: Reduces the height of the control down to what is needed --> just shrinks its children
+	*		some of whom might find ways to shrink themselves
+	* Parameters: void
+	* Returns: void
+	*
+	* Attributes: virtual
+	*/
+	virtual void ShrinkHeight();
+
+	/**
+	 * Method: TControl::InjectChildTemplate
+	 * Purpose: Some TControls can take in a single child page as a 'template', so this method allows this to happen
+	 * Parameters: TrecPointer<TPage> page - the page to inject
+	 * Returns: bool - whether the control takes in a ChildTemplate Or not
+	 */
+	virtual bool InjectChildTemplate(TrecPointer<TPage> page);
+
+	/**
+	 * Method: TControl::SupportsChildTemplateInjection
+	 * Purpose: Reports whether the Control supports TTemplate Injection before the Anaface-Page attempts to perform it
+	 * Parameters: void
+	 * Returns: bool - whether InjectChildTemplate could work on this control
+	 */
+	virtual bool SupportsChildTemplateInjection();
 
 protected:
+
+
+	/**
+	 * Method: TControl::SetUpTextElement
+	 * Purpose: Sets up Text Elements in case Some attributes support it
+	 * Parameters: void
+	 * Returns: void
+	 *
+	 * Attributes: virtual - allows sub classes to create more complex Text Elements than what the standard TControl uses
+	 */
+	virtual void SetUpTextElement();
+
+	/**
+	 * Attributes for creation
+	 */
+	TDataMap<TString> attributes;
+	
+	/**
+	 * whether the sizes are fixed upon creation or not
+	 */
+	bool fixedWidth, fixedHeight;
 
 	/**
 	 * The Border and Content of the Control
 	 */
 	TrecPointer<TControlComponent> border, content;
+
+	/**
+	 * Text Support for TControls
+	 */
+	TrecPointer<TTextElement> text;
 
 	/**
 	 * List of Style classes
@@ -585,7 +642,20 @@ protected:
 	/**
 	 * Where the Control is to reside
 	 */
-	D2D1_RECT_F location, margin, bounds;
+	D2D1_RECT_F margin, bounds;
+
+
+	/**
+	 * the ellipse to pass into the Border and content if used
+	 */
+	D2D1_ELLIPSE ellipse;
+	/**
+	 * the rounded rect to pass into the Border and content if used
+	 */
+	D2D1_ROUNDED_RECT roundedRect;
+
+	TrecPointer<TArray<styleTable>> styles;
+
 	/**
 	 * ScrollBars in case content is larger than it's allocated drawing space
 	 */
@@ -638,5 +708,75 @@ protected:
 	 * Controls can be disabled, through this bool
 	 */
 	bool isActive;
+
+	/**
+	 * Keeps track of being Clicked, and mouse movements
+	 */
+	bool isRightClicked, isLeftClicked, isMouseIn;
+
+protected:
+
+	/**
+	 * Method: TControl::InspectEventAttributes
+	 * Purpose: Derive Event Attributres from list of Regular Attributes
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void InspectEventAttributes();
+
+	/**
+	 * Method: TControl::HasEvent
+	 * Purpose: Whether the TControl Possesses the Event type specified
+	 * Parameters: R_Message_Type mType - the message Type to check for
+	 * Returns: TString - the name of the event method (or empty string)
+	 */
+	TString HasEvent(R_Message_Type mType);
+
+	/**
+	 * Method: TControl::OnCreateSize
+	 * Purpose: Aids the creation Method by Handling Sizing Logic
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void OnCreateSize();
+
+	/**
+	 * Method: TControl::SetSize
+	 * Purpose: Aids the setting of the controls location upon being set with new bounds
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void SetSize();
+
+	/**
+	 *
+	 */
+	void OnCreateStyle(TDataMap<TString>& atts, TrecPointer<TFileShell> d);
 };
 
+
+/**
+ * Function: convertStringToTextAlignment
+ * Purpose: Reads the String and returns whether the Text should be right, left, center, or justified
+ * Parameters: TString* t - the string to parse
+ * Returns: DWRITE_TEXT_ALIGNMENT - the Text position (Center if string is invalid)
+ */
+DWRITE_TEXT_ALIGNMENT convertStringToTextAlignment(const TString& t);
+
+/**
+ * Function: convertStringToParagraphAlignment
+ * Purpose: Reads the String and returns whether the Text should be top, bottom, or center
+ * Parameters: TString* t - the string to parse
+ * Returns: DWRITE_PARAGRAPH_ALIGNMENT - the text alignment (Center if string is invalid)
+ */
+DWRITE_PARAGRAPH_ALIGNMENT convertStringToParagraphAlignment(const TString& t);
+
+
+/**
+ * Function: isContained
+ * Purpose: Checks of a point is within a given Direct2D Rectangle
+ * Parameters: const TPoint& - the point to check
+ *				const D2D1_RECT_F& - the rectangle to check
+ * Returns: bool - whether the point is withing the bounds
+ */
+bool IsContained(const TPoint& p, const D2D1_ELLIPSE& e);

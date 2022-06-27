@@ -1,5 +1,7 @@
 #include "CameraHandler.h"
 #include "TInstance.h"
+#include <TLayout.h>
+#include <AnafacePage.h>
 
 // Series of Handlers in String form, so that they could be referenced in a TML file
 TString on_TextDirectionX(L"TextDirectionX");
@@ -27,7 +29,7 @@ TString on_ToggleObjectAndCamera(L"OnToggleObjectAndCamera");
  *				TString& name - name of the handler, used for identifying the Arena Handler
  * Returns: New ArenaHandler instance
  */
-CameraHandler::CameraHandler(TrecPointer<TInstance> instance, TString& name): EventHandler(instance, name)
+CameraHandler::CameraHandler(TrecPointer<TProcess> instance, TString& name): TapEventHandler(instance, name)
 {
 	arenaName.Set(name);
 	
@@ -53,75 +55,23 @@ CameraHandler::CameraHandler(TrecPointer<TInstance> instance, TString& name): Ev
 	arenaHandlers.push_back(&CameraHandler::OnToggleObjectAndCamera);
 
 	// Now set the structure to link the listeners to their text name
-	eventNameID enid;
-
-	enid.eventID = 0;
-	enid.name.Set(on_TextDirectionX);
-	events.push_back(enid);
-
-	enid.eventID = 1;
-	enid.name.Set(on_TextDirectionY);
-	events.push_back(enid);
-
-	enid.eventID = 2;
-	enid.name.Set(on_TextDirectionZ);
-	events.push_back(enid);
-
-	enid.eventID = 3;
-	enid.name.Set(on_TextLocationX);
-	events.push_back(enid);
-
-	enid.eventID = 4;
-	enid.name.Set(on_TextLocationY);
-	events.push_back(enid);
-
-	enid.eventID = 5;
-	enid.name.Set(on_TextLocationZ);
-	events.push_back(enid);
-
-	enid.eventID = 6;
-	enid.name.Set(on_Up);
-	events.push_back(enid);
-
-	enid.eventID = 7;
-	enid.name.Set(on_Down);
-	events.push_back(enid);
-
-	enid.eventID = 8;
-	enid.name.Set(on_Left);
-	events.push_back(enid);
-
-	enid.eventID = 9;
-	enid.name.Set(on_Right);
-	events.push_back(enid);
-
-	enid.eventID = 10;
-	enid.name.Set(on_Far);
-	events.push_back(enid);
-
-	enid.eventID = 11;
-	enid.name.Set(on_Near);
-	events.push_back(enid);
-
-	enid.eventID = 12;
-	enid.name.Set(on_SetCameraRotate);
-	events.push_back(enid);
-
-	enid.eventID = 13;
-	enid.name.Set(on_SetCameraTranslate);
-	events.push_back(enid);
-
-	enid.eventID = 14;
-	enid.name.Set(on_GetDefaultObject);
-	events.push_back(enid);
-
-	enid.eventID = 15;
-	enid.name.Set(on_SelectCurrentObject);
-	events.push_back(enid);
-
-	enid.eventID = 16;
-	enid.name.Set(on_ToggleObjectAndCamera);
-	events.push_back(enid);
+	events.addEntry(on_TextDirectionX, 0);
+	events.addEntry(on_TextDirectionY,1);
+	events.addEntry(on_TextDirectionZ,2);
+	events.addEntry(on_TextLocationX,3);
+	events.addEntry(on_TextLocationY,4);
+	events.addEntry(on_TextLocationZ,5);
+	events.addEntry(on_Up,6);
+	events.addEntry(on_Down,7);
+	events.addEntry(on_Left,8);
+	events.addEntry(on_Right,9);
+	events.addEntry(on_Far,10);
+	events.addEntry(on_Near,11);
+	events.addEntry(on_SetCameraRotate,12);
+	events.addEntry(on_SetCameraTranslate,13);
+	events.addEntry(on_GetDefaultObject, 14);
+	events.addEntry(on_SelectCurrentObject,15);
+	events.addEntry(on_ToggleObjectAndCamera,16);
 
 	change = 0.1;
 	t_dx = t_dy = t_dz = t_lx = t_ly = 0.0f;
@@ -156,27 +106,27 @@ TString CameraHandler::GetType()
  * Parameters: TrecPointer<Page> page - page that holds the Controls to latch on to
  * Returns: void
  */
-void CameraHandler::Initialize(TrecPointer<Page> page)
+void CameraHandler::Initialize(TrecPointer<TPage> page)
 {
 	if (!page.Get())
 		return;
 	ThreadLock();
-	auto control = page->GetRootControl();
+	auto control = dynamic_cast<AnafacePage*>(page.Get())->GetRootControl();
 
-	TrecSubPointer<TControl, TLayout> mainLay = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(control);
+	TrecSubPointer<TPage, TLayout> mainLay = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(control);
 
 	assert(mainLay.Get());
 
-	TrecSubPointer<TControl, TLayout> panelLay = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(mainLay->GetLayoutChild(0, 0));
+	TrecSubPointer<TPage, TLayout> panelLay = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(mainLay->GetPage(0, 0));
 
 	assert(panelLay.Get());
 
-	d_x = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(panelLay->GetLayoutChild(1, 1));
-	l_x = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(panelLay->GetLayoutChild(3, 1));
-	d_y = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(panelLay->GetLayoutChild(1, 2));
-	l_y = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(panelLay->GetLayoutChild(3, 2));
-	d_z = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(panelLay->GetLayoutChild(1, 3));
-	l_z = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(panelLay->GetLayoutChild(3, 3));
+	d_x = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(panelLay->GetPage(1, 1));
+	l_x = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(panelLay->GetPage(3, 1));
+	d_y = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(panelLay->GetPage(1, 2));
+	l_y = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(panelLay->GetPage(3, 2));
+	d_z = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(panelLay->GetPage(1, 3));
+	l_z = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(panelLay->GetPage(3, 3));
 
 	assert(d_x.Get() && d_y.Get() && d_z.Get()&&
 		l_x.Get() && l_y.Get() && l_z.Get());
@@ -189,29 +139,34 @@ void CameraHandler::Initialize(TrecPointer<Page> page)
  * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
  * Returns: void
  */
-void CameraHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void CameraHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	int e_id = -1;
 	EventArgs ea;
 	ThreadLock();
 	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		auto tc = eventAr.at(c).control;
+		auto tc = eventAr.at(c).args;
 		if (!tc.Get())
 			continue;
-		ea = tc->getEventArgs();
-		e_id = ea.methodID;
+
+		UINT u_id = 0;
+		if (!events.retrieveEntry(tc->methodID, u_id))
+		{
+			eventAr[c].args.Nullify();
+			continue;
+		}
+		e_id = u_id;
 		// At this point, call the appropriate method
 		if (e_id > -1 && e_id < arenaHandlers.Size())
 		{
 			// call method
 			if (arenaHandlers[e_id])
-				(this->*arenaHandlers[e_id])(tc, ea);
+				(this->*arenaHandlers[e_id])(eventAr[c].control, ea);
 		}
-	}
 
-	//onDraw();
-	eventAr.RemoveAll();
+		eventAr[c].args.Nullify();
+	}
 	ThreadRelease();
 }
 
@@ -319,7 +274,7 @@ void CameraHandler::SendMessageToArena(const TString& target, const TString& att
 	TrecPointer<HandlerMessage> newMessage = TrecPointerKey::GetNewTrecPointer<HandlerMessage>(name,
 		handler_type::handler_type_arena, 0, message_transmission::message_transmission_name_type, 0, messageStr);
 	if(app.Get())
-		TrecPointerKey::GetTrecPointerFromSoft<TInstance>(app)->DispatchAnagameMessage(newMessage);
+		dynamic_cast<TInstance*>(TrecPointerKey::GetTrecPointerFromSoft<>(app).Get())->DispatchAnagameMessage(newMessage);
 	ThreadRelease();
 }
 
@@ -334,18 +289,18 @@ void CameraHandler::UpdatePanelText()
 {
 	ThreadLock();
 	if (d_x.Get())
-		d_x->setNumericText(t_dx);
+		d_x->SetNumericText(t_dx);
 	if (d_y.Get())
-		d_y->setNumericText(t_dy);
+		d_y->SetNumericText(t_dy);
 	if (d_z.Get())
-		d_z->setNumericText(t_dz);
+		d_z->SetNumericText(t_dz);
 
 	if (l_x.Get())
-		l_x->setNumericText(t_lx);
+		l_x->SetNumericText(t_lx);
 	if (l_y.Get())
-		l_y->setNumericText(t_ly);
+		l_y->SetNumericText(t_ly);
 	if (l_z.Get())
-		l_z->setNumericText(t_lz);
+		l_z->SetNumericText(t_lz);
 	ThreadRelease();
 }
 
@@ -356,7 +311,7 @@ void CameraHandler::UpdatePanelText()
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::TextDirectionX(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::TextDirectionX(TrecPointer<TPage> tc, EventArgs ea)
 {
 	float f = 0.0f;
 	ThreadLock();
@@ -377,7 +332,7 @@ void CameraHandler::TextDirectionX(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::TextLocationX(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::TextLocationX(TrecPointer<TPage> tc, EventArgs ea)
 {
 	float f = 0.0f;
 	ThreadLock();
@@ -398,7 +353,7 @@ void CameraHandler::TextLocationX(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::TextDirectionY(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::TextDirectionY(TrecPointer<TPage> tc, EventArgs ea)
 {
 	float f = 0.0f;
 	ThreadLock();
@@ -419,7 +374,7 @@ void CameraHandler::TextDirectionY(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::TextLocationY(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::TextLocationY(TrecPointer<TPage> tc, EventArgs ea)
 {
 	float f = 0.0f;
 	ThreadLock();
@@ -440,7 +395,7 @@ void CameraHandler::TextLocationY(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::TextDirectionZ(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::TextDirectionZ(TrecPointer<TPage> tc, EventArgs ea)
 {
 	float f = 0.0f;
 	ThreadLock();
@@ -461,7 +416,7 @@ void CameraHandler::TextDirectionZ(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::TextLocationZ(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::TextLocationZ(TrecPointer<TPage> tc, EventArgs ea)
 {
 	float f = 0.0f;
 	ThreadLock();
@@ -482,7 +437,7 @@ void CameraHandler::TextLocationZ(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnUp(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnUp(TrecPointer<TPage> tc, EventArgs ea)
 {
 	TString formatedText;
 	ThreadLock();
@@ -507,7 +462,7 @@ void CameraHandler::OnUp(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnDown(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnDown(TrecPointer<TPage> tc, EventArgs ea)
 {
 	TString formatedText;
 	ThreadLock();
@@ -533,7 +488,7 @@ void CameraHandler::OnDown(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnLeft(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnLeft(TrecPointer<TPage> tc, EventArgs ea)
 {
 	TString formatedText;
 	ThreadLock();
@@ -558,7 +513,7 @@ void CameraHandler::OnLeft(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnRight(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnRight(TrecPointer<TPage> tc, EventArgs ea)
 {
 	TString formatedText;
 	ThreadLock();
@@ -584,7 +539,7 @@ void CameraHandler::OnRight(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnNear(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnNear(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	if (!rotateMode)
@@ -604,7 +559,7 @@ void CameraHandler::OnNear(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnFar(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnFar(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	if (!rotateMode)
@@ -624,7 +579,7 @@ void CameraHandler::OnFar(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnSetCameraRotate(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnSetCameraRotate(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	rotateMode = true;
@@ -638,7 +593,7 @@ void CameraHandler::OnSetCameraRotate(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnSetCameraTranslate(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnSetCameraTranslate(TrecPointer<TPage> tc, EventArgs ea)
 {
 	ThreadLock();
 	rotateMode = false;
@@ -652,7 +607,7 @@ void CameraHandler::OnSetCameraTranslate(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnSelectObject(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnSelectObject(TrecPointer<TPage> tc, EventArgs ea)
 {
 	//if (!modelCollection.Get()) return;
 
@@ -666,7 +621,7 @@ void CameraHandler::OnSelectObject(TrecPointer<TControl> tc, EventArgs ea)
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnToggleObjectAndCamera(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnToggleObjectAndCamera(TrecPointer<TPage> tc, EventArgs ea)
 {
 	//focusOnModel = !focusOnModel;
 
@@ -688,7 +643,7 @@ void CameraHandler::OnToggleObjectAndCamera(TrecPointer<TControl> tc, EventArgs 
  *				EventArgs ea - The parameters of the event
  * Returns: void
  */
-void CameraHandler::OnGetDefaultObject(TrecPointer<TControl> tc, EventArgs ea)
+void CameraHandler::OnGetDefaultObject(TrecPointer<TPage> tc, EventArgs ea)
 {
 	//if (ea.arrayLabel >= 0 && ea.arrayLabel < basicModels.Size() && modelCollection.Get() && basicModels[ea.arrayLabel].Get())
 	//{

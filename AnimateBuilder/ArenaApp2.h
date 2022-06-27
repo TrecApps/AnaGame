@@ -19,9 +19,9 @@ public:
 private:
 	TString name;
 
-	TrecSubPointer<EventHandler, CameraHandler> cameraControls;
-	TrecSubPointer<EventHandler, ArenaHandler> arena;
+	TrecSubPointer<TPage::EventHandler, CameraHandler> cameraControls;
+	TrecSubPointer<TPage::EventHandler, ArenaHandler> arena;
 
-	TrecPointer<Page> cameraPage;
+	TrecPointer<TPage> cameraPage;
 };
 

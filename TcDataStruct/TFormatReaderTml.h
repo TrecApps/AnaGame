@@ -9,6 +9,7 @@
 class TFormatReaderTml :
     public TFormatReader
 {
+    friend class TrecPointerKey;
 public:
     /**
      * Class: TFormatReaderBuilderTML

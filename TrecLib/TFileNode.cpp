@@ -32,13 +32,19 @@ TString TFileNode::GetType()
  */
 TString TFileNode::GetContent()
 {
-	AG_THREAD_LOCK
-		if (!data.Get())
-		{
-			RETURN_THREAD_UNLOCK TString();
-		}
-	TString ret(data->GetName());
-	RETURN_THREAD_UNLOCK ret;
+	TObjectLocker lock(&thread);
+
+	return data.Get() ? data->GetName() : L"";
+}
+
+TString TFileNode::GetCommand(const TString& info)
+{
+	TObjectLocker lock(&thread);
+	if (!info.CompareNoCase(L"dbl_ck") && data.Get())
+	{
+		return TString(L"win_OpenFile \"") + data->GetPath() + L"\"";
+	}
+	return L"";
 }
 
 /*

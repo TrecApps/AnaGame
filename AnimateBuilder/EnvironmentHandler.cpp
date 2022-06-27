@@ -1,11 +1,13 @@
 #include "EnvironmentHandler.h"
 
 #include <TEnvironmentBuilder.h>
-#include <Page.h>
+#include <TPage.h>
 #include <DirectoryInterface.h>
 #include <shlobj.h>
 #include <TWindow.h>
 #include <TML_Reader_.h>
+#include <AnafacePage.h>
+#include <TObjectVariable.h>
 
 TString on_SelectRecent(L"OnSelectRecent");
 TString on_SelectAvailable(L"OnSelectAvailable");
@@ -20,7 +22,7 @@ TString on_FileType(L"OnFileType");
  * Parameters: TTrecPointerArray<SavedEnvironment>& envList - list of environments to populate
  * Returns: void
  */
-void CollectSavedEnv(TTrecPointerArray<SavedEnvironment>& envList)
+void CollectSavedEnv(TrecSubPointer<TVariable, TContainerVariable> envList)
 {
     TString repoName = GetDirectoryWithSlash(CentralDirectories::cd_AppData) + L"AnaGame\\";
 
@@ -52,7 +54,8 @@ void CollectSavedEnv(TTrecPointerArray<SavedEnvironment>& envList)
         if (!envEnt->GetFileLocation().Get())
             continue;
 
-        envList.push_back(envEnt);
+        envList->AppendValue(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(
+            TrecPointerKey::GetTrecObjectPointer<>(envEnt)));
     }
 
 
@@ -64,7 +67,7 @@ void CollectSavedEnv(TTrecPointerArray<SavedEnvironment>& envList)
  * Parameters: TrecPointer<TInstance> instance - the instance associated with this Handler
  * Returns: new EnvironmentHandler Object
  */
-EnvironmentHandler::EnvironmentHandler(TrecPointer<TInstance> instance) : EventHandler(instance)
+EnvironmentHandler::EnvironmentHandler(TrecPointer<TProcess> instance) : TapEventHandler(instance)
 {
     envEvents.push_back(&EnvironmentHandler::OnSelectRecent);
     envEvents.push_back(&EnvironmentHandler::OnSelectAvailable);
@@ -76,33 +79,18 @@ EnvironmentHandler::EnvironmentHandler(TrecPointer<TInstance> instance) : EventH
     envEvents.push_back(&EnvironmentHandler::OnFileType);
 
     // Now set the structure to link the listeners to their text name
-    eventNameID enid;
-
-    enid.eventID = 0;
-    enid.name.Set(on_SelectRecent);
-    events.push_back(enid);
-
-    enid.eventID = 1;
-    enid.name.Set(on_SelectAvailable);
-    events.push_back(enid);
-
-    enid.eventID = 2;
-    enid.name.Set(on_ImportProject);
-    events.push_back(enid);
-
-    enid.eventID = 3;
-    enid.name.Set(on_SelectWorkspace);
-    events.push_back(enid);
-
-    enid.eventID = 4;
-    enid.name.Set(on_Confirm);
-    events.push_back(enid);
-
-    enid.eventID = 5;
-    enid.name.Set(on_FileType);
-    events.push_back(enid);
+    events.addEntry(on_SelectRecent, 0);
+    events.addEntry(on_SelectAvailable, 1);
+    events.addEntry(on_ImportProject, 2);
+    events.addEntry(on_SelectWorkspace, 3);
+    events.addEntry(on_Confirm, 4);
+    events.addEntry(on_FileType, 5);
 
     mode = environment_handler_mode::ehm_not_set;
+
+    // Make sure our lists are initialized
+    availableEnvironments = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
+    savedEnvironments = TrecPointerKey::GetNewSelfTrecSubPointer<TVariable, TContainerVariable>(ContainerType::ct_array);
 }
 
 /**
@@ -121,49 +109,49 @@ EnvironmentHandler::~EnvironmentHandler()
  * Parameters: TrecPointer<Page> page - the page the Handler is to associate with
  * Returns: void
  */
-void EnvironmentHandler::Initialize(TrecPointer<Page> page)
+void EnvironmentHandler::Initialize(TrecPointer<TPage> page)
 {
-    if (!page.Get() || !page->GetRootControl().Get())
+    if (!page.Get() || !dynamic_cast<AnafacePage*>(page.Get())->GetRootControl().Get())
         return;
 
-    window = page->GetWindowHandle();
 
     RefreshEnvironmentList();
-    savedEnvironments.RemoveAll();
+    savedEnvironments->Clear();
     CollectSavedEnv(savedEnvironments);
 
-    auto rootStack = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(page->GetRootControl());
+    auto rootStack = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(dynamic_cast<AnafacePage*>(page.Get())->GetRootControl());
 
     assert(rootStack.Get());
 
-    grid = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(rootStack->GetLayoutChild(0,1));
+    grid = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(rootStack->GetPage(1, 0));
 
-    recentBinder = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TDataBind>(grid->GetLayoutChild(0, 1));
-    newBinder = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TDataBind>(grid->GetLayoutChild(1, 1));
+    recentBinder = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TDataLayout>(grid->GetPage(1, 0));
+    newBinder = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TDataLayout>(grid->GetPage(1, 1));
 
     assert(recentBinder.Get() && newBinder.Get());
 
-    selectReport = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(rootStack->GetLayoutChild(0, 2));
+    selectReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(2, 0));
     assert(selectReport.Get());
-    builderReport = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(rootStack->GetLayoutChild(0, 3));
+    builderReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(3, 0));
     assert(builderReport.Get());
-    environmentReport = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(rootStack->GetLayoutChild(0, 4));
+    environmentReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(4, 0));
     assert(environmentReport.Get());
-    directoryReport = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(rootStack->GetLayoutChild(0, 5));
+    directoryReport = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(rootStack->GetPage(5, 0));
     assert(directoryReport.Get());
 
-    auto nameGallery = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(rootStack->GetLayoutChild(0, 6));
+    auto nameGallery = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(rootStack->GetPage(6, 0));
     assert(nameGallery.Get());
 
-    nameEntry = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(nameGallery->GetLayoutChild(1, 0));
+    nameEntry = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(nameGallery->GetPage(0, 1));
 
-    confirmButton = rootStack->GetLayoutChild(0, 7);
-    assert(confirmButton.Get());
+    confirmButton = rootStack->GetPage(7, 0);
+    assert(dynamic_cast<TControl*>(confirmButton.Get()));
+
+    dynamic_cast<TControl*>(confirmButton.Get())->setActive(false);
 
 
-
-    newBinder->setData(&availableEnvironments);
-    recentBinder->setData(&savedEnvironments);
+    newBinder->SetData(TrecSubToTrec(availableEnvironments));
+    recentBinder->SetData(TrecSubToTrec(savedEnvironments));
 
     // Set a default directory for the workspace
 
@@ -183,28 +171,29 @@ void EnvironmentHandler::Initialize(TrecPointer<Page> page)
  * Parameters: TDataArray<EventID_Cred>& eventAr - list of events to process
  * Returns: void
  */
-void EnvironmentHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void EnvironmentHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
     int e_id = -1;
     EventArgs ea;
     for (UINT c = 0; c < eventAr.Size(); c++)
     {
-        auto tc = eventAr.at(c).control;
-        if (!tc.Get())
+        auto tc = eventAr.at(c).args;
+
+        if (!tc.Get()) continue;
+
+        UINT u_id = 0;
+        if (!events.retrieveEntry(tc->methodID, u_id))
             continue;
-        ea = tc->getEventArgs();
-        e_id = ea.methodID;
+        e_id = u_id;
         // At this point, call the appropriate method
         if (e_id > -1 && e_id < envEvents.Size())
         {
             // call method
             if (envEvents[e_id])
-                (this->*envEvents[e_id])(tc, ea);
+                (this->*envEvents[e_id])(eventAr[c].control, ea);
         }
+        eventAr[c].args.Nullify();
     }
-
-    //onDraw();
-    eventAr.RemoveAll();
 }
 
 /**
@@ -229,29 +218,41 @@ TrecPointer<TEnvironment> EnvironmentHandler::GetEnvironment()
     return environment;
 }
 
-void EnvironmentHandler::OnSelectRecent(TrecPointer<TControl> tc, EventArgs ea)
+void EnvironmentHandler::OnSelectRecent(TrecPointer<TPage> tc, EventArgs ea)
 {
     auto index = ea.arrayLabel;
 
-    if (index >= 0 && index < savedEnvironments.Size())
+    if (index >= 0 && index < savedEnvironments->GetSize())
     {
-        selectedEnvType = TrecPointerKey::GetNewTrecPointer<EnvironmentList>(savedEnvironments[index]->GetEnvironment(), savedEnvironments[index]->GetBuilder());
-        nameEntry->SetText(savedEnvironments[index]->GetName());
-        envFile = savedEnvironments[index]->GetFileLocation();
-        if (envFile.Get())
-            currentWorkspace = envFile->GetParent();
+        TrecPointer<TVariable> var = savedEnvironments->GetValueAt(index);
+        if (!var.Get() || var->GetVarType() != var_type::native_object || !dynamic_cast<SavedEnvironment*>(dynamic_cast<TObjectVariable*>(var.Get())->GetObjectW().Get()))
+        {
+            TString v;
+            v.Format(L"%d", index);
+            savedEnvironments->RemoveByKey(v);
+
+        }
+        else
+        {
+            auto envList = dynamic_cast<SavedEnvironment*>(dynamic_cast<TObjectVariable*>(var.Get())->GetObjectW().Get());
+            selectedEnvType = TrecPointerKey::GetNewTrecPointer<EnvironmentList>(envList->GetEnvironment(), envList->GetBuilder());
+            nameEntry->SetText(envList->GetName());
+            envFile = envList->GetFileLocation();
+            if (envFile.Get())
+                currentWorkspace = envFile->GetParent();
+        }
     }
     mode = environment_handler_mode::ehm_recent_set;
 
     RefreshView();
 }
 
-void EnvironmentHandler::OnSelectAvailable(TrecPointer<TControl> tc, EventArgs ea)
+void EnvironmentHandler::OnSelectAvailable(TrecPointer<TPage> tc, EventArgs ea)
 {
     auto index = ea.arrayLabel;
 
-    if (index >= 0 && index < availableEnvironments.Size())
-        selectedEnvType = availableEnvironments[index];
+    if (index >= 0 && index < availableEnvironments->GetSize())
+        selectedEnvType = TrecPointerKey::GetTrecPointerFromObject<EnvironmentList>( dynamic_cast<TObjectVariable*>(availableEnvironments->GetValueAt(index).Get())->GetObjectW());
 
     if (mode != environment_handler_mode::ehm_available_set)
     {
@@ -263,7 +264,7 @@ void EnvironmentHandler::OnSelectAvailable(TrecPointer<TControl> tc, EventArgs e
     RefreshView();
 }
 
-void EnvironmentHandler::OnImportProject(TrecPointer<TControl> tc, EventArgs ea)
+void EnvironmentHandler::OnImportProject(TrecPointer<TPage> tc, EventArgs ea)
 {
     auto result = BrowseFolder(L"Import Project for Anagame");
 
@@ -281,7 +282,7 @@ void EnvironmentHandler::OnImportProject(TrecPointer<TControl> tc, EventArgs ea)
     RefreshView();
 }
 
-void EnvironmentHandler::OnSelectWorkspace(TrecPointer<TControl> tc, EventArgs ea)
+void EnvironmentHandler::OnSelectWorkspace(TrecPointer<TPage> tc, EventArgs ea)
 {
     auto result = BrowseFolder(L"Browse Anagame Workspace");
 
@@ -299,7 +300,7 @@ void EnvironmentHandler::OnSelectWorkspace(TrecPointer<TControl> tc, EventArgs e
     RefreshView();
 }
 
-void EnvironmentHandler::OnConfirm(TrecPointer<TControl> tc, EventArgs ea)
+void EnvironmentHandler::OnConfirm(TrecPointer<TPage> tc, EventArgs ea)
 {
     assert(currentWorkspace.Get() && selectedEnvType.Get());
 
@@ -323,10 +324,13 @@ void EnvironmentHandler::OnConfirm(TrecPointer<TControl> tc, EventArgs ea)
     if (envFile.Get())
         assert(!environment->SetLoadFile(envFile).GetSize());
 
+    if (window.Get())
+        window->SetEnvironment(environment);
+
     DestroyWindow(window->GetWindowHandle());
 }
 
-void EnvironmentHandler::OnFileType(TrecPointer<TControl> tc, EventArgs ea)
+void EnvironmentHandler::OnFileType(TrecPointer<TPage> tc, EventArgs ea)
 {
     RefreshView();
 }
@@ -384,25 +388,25 @@ void EnvironmentHandler::RefreshView()
     {
     case environment_handler_mode::ehm_not_set:
         if (nameEntry.Get())
-            nameEntry->UnlockText();
+            nameEntry->LockText(false);
         break;
     case environment_handler_mode::ehm_available_set:
         if (nameEntry.Get())
-            nameEntry->UnlockText();
+            nameEntry->LockText(false);
         break;
     case environment_handler_mode::ehm_recent_set:
         if (nameEntry.Get())
-            nameEntry->LockText();
+            nameEntry->LockText(true);
         break;
     case environment_handler_mode::ehm_import_set:
         if (nameEntry.Get())
-            nameEntry->LockText();
+            nameEntry->LockText(true);
 
     }
 
     if (confirmButton.Get() && nameEntry.Get())
     {
-        confirmButton->setActive((!nameEntry->GetActive() || nameEntry->GetText().GetSize()) && selectedEnvType.Get());
+        dynamic_cast<TControl*>(confirmButton.Get())->setActive((!nameEntry->GetActive() || nameEntry->GetText().GetSize()) && selectedEnvType.Get());
     }
 }
 
@@ -414,7 +418,7 @@ void EnvironmentHandler::RefreshEnvironmentList()
     else
         TEnvironmentBuilder::GetAvailableEnvironments(environmentMap);
 
-    availableEnvironments.RemoveAll();
+    availableEnvironments->Clear();
 
     for (UINT Rust = 0; Rust < environmentMap.count(); Rust++)
     {
@@ -427,15 +431,20 @@ void EnvironmentHandler::RefreshEnvironmentList()
 
         for (UINT C = 0; C < environmentList->Size(); C++)
         {
-            availableEnvironments.push_back(TrecPointerKey::GetNewTrecPointer<EnvironmentList>(environmentList->at(C), entry->key));
+            availableEnvironments->AppendValue(TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TObjectVariable>(
+                TrecPointerKey::GetTrecObjectPointer(
+                TrecPointerKey::GetNewTrecPointer<EnvironmentList>(environmentList->at(C), entry->key))));
         }
 
 
     }
     if (newBinder.Get() && grid.Get())
     {
-        auto rect = grid->getRawSectionLocation(1, 1);
-        newBinder->Resize(rect);
+        TrecPointer<TPage> rect = grid->GetPage(1, 1);
+
+        TDataArray<TPage::EventID_Cred> cred;
+        auto r = rect->GetArea();
+        newBinder->OnResize(r, 0, cred);
     }
 }
 

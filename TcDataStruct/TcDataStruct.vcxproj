@@ -23,32 +23,32 @@
     <ProjectGuid>{0A481E2C-4124-4B2F-8A85-F182C1F09214}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TcDataStruct</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -164,9 +164,11 @@
     <ClInclude Include="JavaScriptFunc.h" />
     <ClInclude Include="Operator.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TcExpression.h" />
     <ClInclude Include="TClassStruct.h" />
     <ClInclude Include="TcNativeInterpretor.h" />
     <ClInclude Include="TContainerVariable.h" />
+    <ClInclude Include="TcOperator.h" />
     <ClInclude Include="TcTypeInterpretor.h" />
     <ClInclude Include="TFormatReader.h" />
     <ClInclude Include="TFormatReaderHtml.h" />
@@ -202,9 +204,11 @@
     </ClCompile>
     <ClCompile Include="TAccessorVariable.cpp" />
     <ClCompile Include="TAsyncVariable.cpp" />
+    <ClCompile Include="TcExpression.cpp" />
     <ClCompile Include="TClassStruct.cpp" />
     <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
+    <ClCompile Include="TcOperator.cpp" />
     <ClCompile Include="TcTypeInterpretor.cpp" />
     <ClCompile Include="TFormatReader.cpp" />
     <ClCompile Include="TFormatReaderHtml.cpp" />

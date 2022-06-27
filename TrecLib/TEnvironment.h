@@ -13,7 +13,7 @@ typedef enum class env_var_type
 {
 	evt_any,
 	evt_interpretor
-};
+}env_var_type;
 
 class _TREC_LIB_DLL EnvironmentEntry
 {
@@ -267,6 +267,8 @@ class _TREC_LIB_DLL TEnvironment :
 	public TObject
 {
 public:
+
+	void AddEnvironment(TrecPointer<TEnvironment> env);
 
 	/**
 	 * Method: TEnvironment::GetProjectLayout
@@ -557,6 +559,18 @@ public:
 	 */
 	TString GetName();
 
+	/**
+	 * Method: TEnvironment::GetFile
+	 * Purpose: Retrieves a File from anywhere, as long as it exists and we are allowed access to it
+	 * Parameters: const TString& file - the link to the file
+	 * Returns: TrecPointer<TFileShell> - the link to the File to create (null of it cannot be accessed)
+	 * 
+	 * Attributes: virtual
+	 * 
+	 * Notes: Primarily, this is intended to provide access to files based off of relative paths. The Base Environment class will Look into the working directory
+	 *	While extendsions can offer Web Support
+	 */
+	virtual TrecPointer<TFileShell> GetFile(const TString& file);
 
 
 protected:
@@ -582,8 +596,9 @@ protected:
 	void SetUpLanguageExtensionMapping();
 
 	/**
-	 * 
+	 * Child Environments that a parent Environment can lean upon
 	 */
+	TDataArray<TrecPointer<TEnvironment>> environments;
 
 	/**
 	 * the Working directory of the Environment

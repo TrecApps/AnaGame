@@ -12,8 +12,9 @@ typedef enum class ContainerType
     ct_json_obj,    // mapped, index, any type, (DICTIONARY for Python)
     ct_set,         // unindex, anytype
     ct_array,       // indexed, same type
-    ct_tuple        // immutable, indexed
-
+    ct_tuple,        // immutable, indexed
+    ct_multi_value,  // mapped, index, any type, but allows for multiple types of the same key
+    ct_properties   // Adds support for property mamagement
 } ContainerType;
 
 
@@ -32,6 +33,23 @@ public:
     virtual TrecPointer<TVariable> Clone();
 
     /**
+     * Method: TContainerVariable::SupportsMultiValue
+     * Purpose: Whether the Container supports multiple values of the same key
+     * Parameters: void
+     * Returns: bool - true if multi-Value is supported, false otherwise
+     */
+    bool SupportMultiValue();
+
+    /**
+     * Method: TContainerVariable::GetValue
+     * Purpose: Retrieves the value by key and Occurance
+     * Parameters: const TString& key, UINT occurance, bool& present
+     * Returns: TrecPointer<TVariable>
+     */
+    TrecPointer<TVariable> GetValue(const TString& key, UINT occurance, bool& present);
+
+
+    /**
      * Method: TContainerVariable::Clear
      * Purpose: Empties the container
      * Parameters: void
@@ -46,6 +64,16 @@ public:
      * Returns: New Container Variable
      */
     TContainerVariable(ContainerType ct);
+
+    /**
+     * Method: TVariable::GetIterator
+     * Purpose: for type that support it, retrieves an Iterator Variable of this Variable
+     * Parameters: void
+     * Return: TrecPointer<TVariable> - for some variable types, this would be null, but other variable types woudld support iteration
+     *
+     * Attributes: virtual
+     */
+    virtual TrecPointer<TVariable> GetIterator();
 
     /**
      * Method: TContainerVariable::GetVarType
@@ -152,6 +180,19 @@ public:
      * Attributes: override
      */
     virtual TString GetString()override;
+
+
+    /**
+     * Method: TVariable::GetString
+     * Purpose: Returns the Object held by the variable, or null if variable is a raw data type
+     * Parameters: const TString& detail -
+     * Returns: TString - The TString referered by the variable (empty if not a string)
+     *
+     * Note:  Call "GetVarType" first and make sure that it returns "var_type::string" first
+     *
+     * Attributes: abstract
+     */
+    virtual TString GetString(const TString& detail);
 
     /**
      * Method: TContainerVariable::Get4Value

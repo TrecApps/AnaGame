@@ -43,10 +43,112 @@ TcVariableHolder::TcVariableHolder(bool mut, const TString& type, TrecPointer<TV
 	this->value = value;
 }
 
+
+
+class TcInterpretorIterator : public TVariableIterator
+{
+protected:
+	/**
+	 * The String to Analyse
+	 */
+	TrecSubPointer<TVariable, TcInterpretor> targetVar;
+
+	/**
+	 * Whether the function is considered Finished
+	 */
+	bool isDone;
+
+	/**
+	 * The current 'index' or how many times the function has been called previously
+	 */
+	UINT index;
+
+	ReturnObject ret;
+
+public:
+
+	TcInterpretorIterator(TrecSubPointer<TVariable, TcInterpretor> targetVar)
+	{
+		this->targetVar = targetVar;
+		assert(targetVar.Get());
+		isDone = false;
+		index = 0;
+	}
+
+
+	/**
+	 * Method: TcInterpretorIterator::SetReverse
+	 * Purpose: enables iterators to go through backwards
+	 * Parameters: bool doReverse - if true, the iterator will now go in reverse (if supported)
+	 *              bool reset - if true, will point to the beginning or end of the target variable
+	 * Returns: bool - whether the operation was supported
+	 *
+	 * Attributes: abstract
+	 */
+	virtual bool SetReverse(bool doReverse, bool reset)
+	{
+		return false;
+	}
+
+
+	/**
+	 * Method: TVariable::GetSize
+	 * Purpose: Returns the estimated size of the value held
+	 * Parameters: void
+	 * Returns: UINT - The estimated size in bytes of the data
+	 *
+	 * Attributes: abstract
+	 */
+	virtual UINT GetSize() override;
+
+	/**
+	 * Method: TcInterpretorIterator::Traverse
+	 * Purpose: Goues through the variable
+	 * Parameters: UINT& currentIndex - the index of the retrieved variable
+	 *              TString& currentName - the name of the retrieved variable
+	 *              TrecPointer<TVariable>& value - the retireved variable
+	 * Returns: bool - whether the variable was retrieved
+	 *
+	 * Attributes: abstract
+	 */
+	virtual bool Traverse(UINT& currentIndex, TString& currentName, TrecPointer<TVariable>& value)
+	{
+		if (isDone)
+			return false;
+		
+		ret = targetVar->Run();
+
+		if (ret.returnCode)
+		{
+			isDone = true;
+			return false;
+		}
+		if (ret.mode != return_mode::rm_yield)
+			isDone = true;
+
+		currentIndex = index++;
+		currentName.Empty();
+		value = ret.errorObject;
+		return true;
+	}
+
+	ReturnObject GetErrorInfo()
+	{
+		return ret;
+	}
+};
+
+
 ///
 /// TcInterpretor 
 ///
 
+
+TrecPointer<TVariable> TcInterpretor::GetIterator()
+{
+	TrecPointer<TVariable> v = TrecPointerKey::GetTrecPointerFromSoft<TVariable>(vSelf);
+	return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TcInterpretorIterator>(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TcInterpretor>(v));
+}
 
 UINT TcInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> value, bool addLocally, bool makeConst)
 {
@@ -71,11 +173,11 @@ UINT TcInterpretor::UpdateVariable(const TString& name, TrecPointer<TVariable> v
 			}
 		}
 	}
-	UINT res = dynamic_cast<TcInterpretor*>(parent.Get()) ? dynamic_cast<TcInterpretor*>(parent.Get())->UpdateVariable(name, value) : 1;
+	UINT res = dynamic_cast<TcInterpretor*>(parent.Get()) ? dynamic_cast<TcInterpretor*>(parent.Get())->UpdateVariable(name, value, makeConst) : 1;
 	if (res == 1 && addLocally)
 	{
 		TcVariableHolder hold;
-		hold.mut = true;
+		hold.mut = !makeConst;
 		hold.type.Set(L"");
 		hold.value = value;
 		variables.addEntry(name, hold);
@@ -191,11 +293,13 @@ TcInterpretor::TcInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInte
  *
  * Attributes: override
  */
-void TcInterpretor::SetSelf(TrecPointer<TVariable> self)
+void TcInterpretor::SetSelf(TrecPointer<TVariable> self_)
 {
-	if (this != self.Get())
+	TVariable::SetSelf(self_);
+	this->self = TrecPointerKey::GetSoftSubPointerFromSoft<TVariable, TcInterpretor>(TrecPointerKey::GetSoftPointerFromTrec<TVariable>(self_));
+	if (this != self_.Get())
 		throw L"Error! Not Properly called";
-	this->self = TrecPointerKey::GetSoftSubPointerFromSoft<TVariable, TcInterpretor>(TrecPointerKey::GetSoftPointerFromTrec<TVariable>(self));
+	this->self = TrecPointerKey::GetSoftSubPointerFromSoft<TVariable, TcInterpretor>(TrecPointerKey::GetSoftPointerFromTrec<TVariable>(self_));
 }
 
 /**
@@ -280,13 +384,13 @@ void TcInterpretor::PrepReturn(ReturnObject& ret, const TString& mess, const TSt
 	}
 }
 
-bool TcInterpretor::SetParent(TrecSubPointer<TVariable, TcInterpretor> parent, bool replace)
+bool TcInterpretor::SetParent(TrecSubPointer<TVariable, TcInterpretor> parent_, bool replace)
 {
-	if (!parent.Get())
+	if (!parent_.Get())
 		return false;
 	if (!this->parent.Get() || replace)
 	{
-		auto p = TrecPointerKey::GetTrecPointerFromSub<>(parent);
+		auto p = TrecPointerKey::GetTrecPointerFromSub<>(parent_);
 		this->parent = TrecPointerKey::GetSoftPointerFromTrec<TVariable>(p);
 		return true;
 	}
@@ -315,6 +419,15 @@ UCHAR TcInterpretor::GetVarStatus(TString& varName)
 	return 0;
 }
 
+TDataMap<TcVariableHolder> TcInterpretor::GetVariables()
+{
+	return variables;
+}
+
+void TcInterpretor::AddModifiers()
+{
+}
+
 
 
 /**
@@ -323,12 +436,12 @@ UCHAR TcInterpretor::GetVarStatus(TString& varName)
  * Parameters: TDataArray<TString>& paramNames - the Names of Initial parameters
  * Returns: void
  */
-void TcInterpretor::SetParamNames(TDataArray<TString>& paramNames)
+void TcInterpretor::SetParamNames(TDataArray<TString>& paramNames_)
 {
 	this->paramNames.RemoveAll();
-	for (UINT Rust = 0; Rust < paramNames.Size(); Rust++)
+	for (UINT Rust = 0; Rust < paramNames_.Size(); Rust++)
 	{
-		this->paramNames.push_back(paramNames[Rust]);
+		this->paramNames.push_back(paramNames_[Rust]);
 	}
 }
 
@@ -338,12 +451,12 @@ void TcInterpretor::SetParamNames(TDataArray<TString>& paramNames)
  * Parameters: TDataArray<TString>& paramTypes - the Types of Initial parameters
  * Returns: void
  */
-void TcInterpretor::SetParamTypes(TDataArray<TString>& paramTypes)
+void TcInterpretor::SetParamTypes(TDataArray<TString>& paramTypes_)
 {
 	this->paramTypes.RemoveAll();
-	for (UINT Rust = 0; Rust < paramTypes.Size(); Rust++)
+	for (UINT Rust = 0; Rust < paramTypes_.Size(); Rust++)
 	{
-		this->paramTypes.push_back(paramTypes[Rust]);
+		this->paramTypes.push_back(paramTypes_[Rust]);
 	}
 }
 
@@ -423,3 +536,7 @@ void ReturnObject::operator=(const ReturnObject& copy)
 	nextCount = copy.nextCount;
 }
 
+UINT TcInterpretorIterator::GetSize()
+{
+	return 0;
+}

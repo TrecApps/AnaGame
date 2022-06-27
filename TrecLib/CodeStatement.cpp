@@ -408,7 +408,7 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
 			if (line.GetTrim().GetSize() == 0)
 				continue;
 
-			UINT newTabCount = 0, newSpaceCount = 0;
+			USHORT newTabCount = 0, newSpaceCount = 0;
 			for (UINT Rust = 0; Rust < line.GetSize(); Rust++)
 			{
 				WCHAR ch = line[Rust];
@@ -608,10 +608,10 @@ USHORT StatementCollector::RunCollector(TrecPointer<TFileShell> file, TString& e
  * Parameters: TDataArray<TrecPointer<CodeStatement>>& statements - current list of statements to clean
  * Returns: void
  */
-void StatementCollector::CollectStatement(TDataArray<TrecPointer<CodeStatement>>& statements)
+void StatementCollector::CollectStatement(TDataArray<TrecPointer<CodeStatement>>& statements_)
 {
 	CleanStatements(this->statements);
-	statements = this->statements;
+	statements_ = this->statements;
 }
 
 
@@ -835,36 +835,36 @@ void StatementCollector::ParseNextMarker(statement_mode curMode, const TString& 
  * Parameters: TDataArray<TrecPointer<CodeStatement>>& statements - current list of statements to clean
  * Returns: void
  */
-void StatementCollector::CleanStatements(TDataArray<TrecPointer<CodeStatement>>& statements)
+void StatementCollector::CleanStatements(TDataArray<TrecPointer<CodeStatement>>& statements_)
 {
-	if (!statements.Size())
+	if (!statements_.Size())
 		return;
-	auto state = statements[0];
+	auto state = statements_[0];
 	auto oState = state;
 
 	// First Handle child blocks before the parent ones
 	CleanStatements(state->block);
 
-	for (UINT Rust = 1; Rust < statements.Size(); Rust++)
+	for (UINT Rust = 1; Rust < statements_.Size(); Rust++)
 	{
-		auto nState = statements[Rust];
+		auto nState = statements_[Rust];
 		// Check for duplicates
 		if (state->next.Get() == nState.Get() || state.Get() == nState.Get())
 		{
-			statements.RemoveAt(Rust--);
+			statements_.RemoveAt(Rust--);
 			continue;
 		}
 		// If statement is empty, remove it
 		if (nState->IsEmpty())
 		{
-			statements.RemoveAt(Rust--);
+			statements_.RemoveAt(Rust--);
 			continue;
 		}
 		state = nState;
 	}
 
 	if (oState->IsEmpty())
-		statements.RemoveAt(0);
+		statements_.RemoveAt(0);
 }
 
 /**
@@ -890,6 +890,10 @@ bool StatementCollector::StartAsSingleLine(const TString& statement)
 	// If we care about backslashes at the end and there is an odd number of them, the statement continues
 	if (nextLineStatement && (slashCount % 2))
 		return false;
+
+	// If there is nothing indicting the start of a block, then make sure that it is time to set a new statement
+	if (!blockStart.Size())
+		return slashCount % 2 == 0;
 
 	// If the statement might end, check for a marker that indicates it should
 	for (UINT Rust = 0; Rust < oneLineStatement.Size(); Rust++)
@@ -982,4 +986,5 @@ UINT StatementCollector::HandlePythonBlocks()
 			parent = current;
 		}
 	}
+	return 0;
 }

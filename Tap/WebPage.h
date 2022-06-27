@@ -1,152 +1,13 @@
 #pragma once
-#include "Page.h"
+
 #include <TEnvironment.h>
 #include <HtmlBuilder.h>
+#include <TabBar.h>
 
-// Remove this once the library managng HTML is created and provides the TWebNode
-class TWebNode;
-
-
-/**
- * Class: WebPageHolder
- * Purpose: Represents the 'tab' in the Web-Browser, holding the actual web-page
- */
-class WebPageHolder
-{
-	friend class WebPage;
-	friend class WebPageHolder;
-public:
-
-	/**
-	 * Method: WebPageHolder::WebPageHolder
-	 * Purpose: Constructor
-	 * Parameters: TString name, - name to present of the Tab
-	 *				TrecPointer<DrawingBoard> rt - the Drawing Board to draw with
-	 *				UINT barSpace - the size of the bar
-	 *				TrecPointer<EventHandler> handler - the handler to the new page
-	 *				TrecPointer<TWindow> win - the Window to draw against
-	 *				D2D1_RECT_F initLoc -  the initial location available (might be smaller than what's provided here)
-	 * Returns: New Page Holder Object
-	 */
-	WebPageHolder(TString name, TrecPointer<DrawingBoard> rt, UINT barSpace, TrecPointer<EventHandler> handler, TrecPointer<TWindow> win, D2D1_RECT_F initLoc);
-
-
-	/**
-	 * Method: WebPageHolder::~WebPageHolder
-	 * Purpose: Destructor
-	 * Parameters: void
-	 * Returns: void
-	 */
-	virtual ~WebPageHolder();
-
-	/**
-	 * Method: WebPageHolder::SetImage
-	 * Purpose: Sets up the image for the Tab to draw
-	 * Parameters: TrecPointer<TFileShell> file - reference to the file to call upon
-	 * Returns: bool - true if the file was established, false if an error occured
-	 */
-	bool SetImage(TrecPointer<TFileShell> file);
-
-
-	/**
-	 * Method: WebPageHolder::GetBasePage
-	 * Purpose: Retrieves the Base Reference to the Page it is holding
-	 * Parameters: void
-	 * Returns: TrecPointer<Page> - the Base Page reference
-	 */
-	TrecPointer<Page> GetBasePage();
-
-	/**
-	 * Method: WebPageHolder::GetName
-	 * Purpose: Retrievs the Name printed on the Tab
-	 * Parameters: void
-	 * Returns: TString - the Name held by the holder
-	 */
-	TString GetName();
-
-	/**
-	 * Method: WebPageHolder::GetLocation
-	 * Purpose: Retrieves the Location of the Tab
-	 * Parameters: void
-	 * Returns: D2D1_RECT_F - the Rectable occupied by the Tab
-	 */
-	D2D1_RECT_F GetLocation();
-	/**
-	 * Method: WebPageHolder::SetLocation
-	 * Purpose: Sets the boundaries of the Tab
-	 * Parameters: const D2D1_RECT_F& newLoc - reference to the space this tab is being allocated
-	 * Returns: D2D1_RECT_F - the Rectable occupied by the Tab
-	 */
-	D2D1_RECT_F SetLocation(const D2D1_RECT_F& newLoc);
-	/**
-	 * Method: WebPageHolder::Draw
-	 * Purpose: Draws the Tab
-	 * Parameters: void
-	 * Returns: void
-	 */
-	void Draw();
-	/**
-	 * Method: WebPageHolder::Move
-	 * Purpose: Moves the Tab by the specifed amount
-	 * Parameters: TPoint& moveBy - the amount to move by
-	 * Returns: void
-	 */
-	void Move(TPoint& moveBy);
-
-	/**
-	 * Method: WebPageHolder::SetCurrentPoint
-	 * Purpose: Sets the Current Point of the Tab
-	 * Parameters: TPoint& p - the starting position of the tab
-	 * Returns: void
-	 */
-	void SetCurrentPoint(TPoint& p);
-
-	/**
-	 * Method: WebPageHolder::SetPage
-	 * Purpose:sets the Page for this Tab
-	 * Parameters: TrecSubPointer<Page, WebPage> p - the page to set this to
-	 * Returns: void
-	 */
-	void SetPage(TrecPointer<Page> p);
-
-/// <summary>
-/// Event Handlers
-/// </summary>
-/// 
-
-
-protected:
-	/**
-	 * Image to draw on the Tab
-	 */
-	TrecSubPointer<TBrush, TBitmapBrush> image;
-
-	/**
-	 * the page this tab is holding on to
-	 */
-	TrecPointer<Page> page;
-
-	/**
-	 * The Text to print out
-	 */
-	TrecPointer<TText> text;
-
-	/**
-	 * the location this tab occupies
-	 */
-	D2D1_RECT_F location;
-
-	/**
-	 * Used for moving
-	 */
-	TPoint curPoint;
-
-	/**
-	 * Holds the Drawing Board
-	 */
-	TrecPointer<DrawingBoard> board;
-};
-
+#ifndef ag_msg
+#define ag_msg
+#endif
+#include <AnafacePage.h>
 
 /**
  * Class: WebPage
@@ -154,7 +15,7 @@ protected:
  * 
  * SuperClass: Page
  */
-class WebPage : public Page
+class WebPage : public TPage
 {
 	friend class TWebWindow;
 public:
@@ -186,25 +47,157 @@ public:
 
 	void SetEnvironment(TrecPointer<TEnvironment> env);
 
+
 	/**
-	 * Method: WebPage::SetAnaface
-	 * Purpose: Sets up the Anaface of this Page as well as the Handler
-	 * Parameters: TrecPointer<TFile> file - the file holding the TML file
-	 *				TrecPointer<EventHandler> eh -  the handler that goes with this TML Anaface
-	 * Returns: int error code (0 for success)
+	 * Method: TPage::HandlesEvents
+	 * Purpose: Whether the object is of a Page type that Handles Events (i.e. has what would be called an Event Handler, an object that
+	 *      runs it's own methods in response to receiving an "event"
+	 * Parameters: void
+	 * Returns: bool - whether the page had an "Event Handler" (Top level Page types, such as 'TAnafacePage' or 'TWebPage' should report true while sub pages such as
+	 *              'TControl' or 'TWebNode' should report false)
 	 *
-	 * Note: the file is expected to already be open
+	 * Attributes: abstract
 	 */
-	int SetAnaface(TrecPointer<TFile> file, TrecPointer<EventHandler> eh);
+	virtual bool HandlesEvents() override;
+
+	/**
+	 * Method: TPage::PrepPage
+	 * Purpose: Allows top-level Pages to set up subordinate Pages and manage event handling
+	 * Parameters: TrecPointer<TFileShell> file - the file to read
+	 *				TrecPointer<EventHandler> handler - the event handler to use
+	 * Returns: TString - error information (empty string means no errors)
+	 *
+	 * Attributes: virtual
+	 */
+	virtual TString PrepPage(TrecPointer<TFileShell> file, TrecPointer<EventHandler> handler)override;
 
 
 	/**
-	 * Method: WebPage::Draw
+	 * Method: TPage::Draw
 	 * Purpose: Draws the Page to the Window
-	 * Parameters: TWindowEngine* twe - the 3D Window Engine (not sure why this parameter is here)
+	 * Parameters: TrecPointer<TVariable> object - Memory Safe means of enabling Data-Binding, if the Page has to tailor it's drawing to data provided by this parameter
 	 * Returns: void
+	 *
+	 * Attributes: abstract
 	 */
-	virtual void Draw(TWindowEngine* twe = nullptr);
+	virtual void Draw(TrecPointer<TVariable> object) override;
+
+
+	/**
+	 * Method: TPage::OnRButtonUp
+	 * Purpose: Responds to the Right Button Up Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				const TPoint& point - the point included in the message
+	 *				message_output& mOut -  the result of the message
+	 *				TDataArray<EventID_Cred>& - list of events to be handled
+	 * Returns: void
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual void OnRButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
+
+
+	/**
+	 * Method: TPage::OnRButtonDown
+	 * Purpose: Responds to the Right Button Down Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				const TPoint& point - the point included in the message
+	 *				message_output& mOut -  the result of the message
+	 *				TDataArray<EventID_Cred>& - list of events to be handled
+	 * Returns: void
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual void OnRButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
+
+
+	/**
+	 * Method: TPage::OnLButtonUp
+	 * Purpose: Responds to the Left Button Up Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				const TPoint& point - the point included in the message
+	 *				message_output& mOut -  the result of the message
+	 *				TDataArray<EventID_Cred>& - list of events to be handled
+	 * Returns: void
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual void OnLButtonUp(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
+
+
+	/**
+	 * Method: TPage::OnLButtonDown
+	 * Purpose: Responds to the Left Button Down Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				const TPoint& point - the point included in the message
+	 *				message_output& mOut -  the result of the message
+	 *				TDataArray<EventID_Cred>& - list of events to be handled
+	 * Returns: void
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual void OnLButtonDown(UINT nFlags, const TPoint& point, message_output& mOut, TDataArray<EventID_Cred>&) override;
+
+	/**
+	 * Method: TPage::OnMouseMove
+	 * Purpose: Responds to the Mouse Move Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				TPoint point - the point included in the message
+	 *				message_output& mOut -  the result of the message
+	 * Returns: void
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&) override;
+
+	/**
+	 * Method: TPage::OnLButtonDblClk
+	 * Purpose: Responds to the Left Button Double CLick Message
+	 * Parameters: UINT nFlags - flags associated with the message
+	 *				TPoint point - the point included in the message
+	 *				message_output& mOut -  the result of the message
+	 * Returns: void
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, message_output& mOut, TDataArray<EventID_Cred>&) override;
+
+	/**
+	 * Method: TPage::OnResize
+	 * Purpose: Resizes the Page
+	 * Parameters: D2D1_RECT_F& newLoc - the new regoin of the Page
+	 *				UINT nFlags - flags associated with the move
+	 *				TrecPointer<TWindowEngine> - the 3D Engine to work with
+	 *				TDataArray<EventID_Cred>& eventAr - list of events
+	 * Returns: void
+	 *
+	 * Note: May be Deprecated soon once the MiniHandler is removed from the library
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual void OnResize(D2D1_RECT_F& newLoc, UINT nFlags, TDataArray<EventID_Cred>& eventAr) override;
+
+	/**
+	 * Method: Page::OnDestroy
+	 * Purpose: Reports whether the Page is ready to be destroyed
+	 * Parameters: void
+	 * Returns: bool - true if the Page doesn't have a handler or that handler is ready to be destroyed
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual bool OnDestroy() override;
+
+
+	/**
+	 * Method: TPage::OnScroll
+	 * Purpose: Sends Scroll Command to controls
+	 * Parameters: const TPoint& point - point of the mouse
+	 *				const TPoint& direction - how far to send the scroll
+	 * Returns: bool - whether message was recieved
+	 *
+	 * Attributes: message; abstract
+	 */
+	ag_msg virtual bool OnScroll(bool fromBars, const TPoint& point, const TPoint& direction, TDataArray<EventID_Cred>&) override;
 
 
 	// Because this Object more or less represents Anagame's version of the JavaScript Web DOM, here are methods
@@ -240,60 +233,6 @@ public:
 
 	void Close();
 
-
-
-	/**
-	 * Method: Page::OnLButtonDown
-	 * Purpose: Responds to the Left Button Down Message
-	 * Parameters: UINT nFlags - flags associated with the message
-	 *				TPoint point - the point included in the message
-	 *				messageOutput* mOut -  the result of the message
-	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
-	 * Returns: void
-	 *
-	 * Attributes: message; virtual
-	 */
-	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
-
-
-	/**
-	 * Method: Page::OnMouseMove
-	 * Purpose: Responds to the Mouse Move Message
-	 * Parameters: UINT nFlags - flags associated with the message
-	 *				TPoint point - the point included in the message
-	 *				messageOutput* mOut -  the result of the message
-	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
-	 * Returns: void
-	 *
-	 * Attributes: message; virtual
-	 */
-	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
-
-	/**
-	 * Method: Page::OnLButtonDblClk
-	 * Purpose: Responds to the Left Button Double CLick Message
-	 * Parameters: UINT nFlags - flags associated with the message
-	 *				TPoint point - the point included in the message
-	 *				messageOutput* mOut -  the result of the message
-	 * Returns: void
-	 *
-	 * Attributes: message; virtual
-	 */
-	afx_msg virtual void OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut);
-
-	/**
-	 * Method: Page::OnLButtonUp
-	 * Purpose: Responds to the Left Button Up Message
-	 * Parameters: UINT nFlags - flags associated with the message
-	 *				TPoint point - the point included in the message
-	 *				messageOutput* mOut -  the result of the message
-	 *				TrecPointer<TFlyout> fly -  any flyout that should have the chance to intercept the message first
-	 * Returns: void
-	 *
-	 * Attributes: message; virtual
-	 */
-	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TrecPointer<TFlyout> fly);
-
 	/**
 	 * Method: WebPage::GetTitle
 	 * Purpose: Retirves the title of this web page
@@ -305,9 +244,14 @@ public:
 	TString GetTitle();
 
 protected:
+
+	void PrepFiles(TDataArray<TcWebNode::FileRequest> req);
+
 	TString directory;
 
 	TString SetUpCSS();
+
+	TString PrepScripts();
 
 	TrecPointer<TArray<styleTable>> styles;
 
@@ -315,9 +259,15 @@ protected:
 
 	TrecPointer<TEnvironment> environment;
 
-	TrecPointer<TWebNode> rootNode, focusNode;
+	TrecSubPointer<TPage, TcWebNode> rootNode, focusNode;
 
-	TrecPointer<WebPageHolder> tab;
+	TrecSubPointer<TPage, AnafacePage> anafaceFallBack;
+
+	TrecSubPointer<TPage, TabBar::Tab> tab;
+
+	TrecPointer<EventHandler> handler;
 
 	TDataArray<TrecPointer<TWebNode>> clickNodes, moveNodes;
+
+	TrecPointerSoft<TWindow> windowHandle;
 };

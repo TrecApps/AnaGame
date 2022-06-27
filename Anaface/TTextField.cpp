@@ -653,10 +653,10 @@ D2D1_RECT_F TTextField::getLocation()
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				CPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
+afx_msg void TTextField::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControl)
 {
 	TObjectLocker threadLock(&thread);
 	resetArgs();
@@ -702,9 +702,8 @@ parentCall:
 				args.methodID = getEventID(R_Message_Type::On_Text_Change);
 				args.isClick = true;
 				args.isLeftClick = false;
-				args.control = this;
 
-				eventAr.push_back(EventID_Cred( R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+				eventAr.push_back(TPage::EventID_Cred( R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 		}
 		else if (isNumber && isContained(&point, &botBut))
@@ -720,9 +719,8 @@ parentCall:
 				args.methodID = getEventID(R_Message_Type::On_Text_Change);
 				args.isClick = true;
 				args.isLeftClick = false;
-				args.control = this;
 
-				eventAr.push_back(EventID_Cred( R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+				eventAr.push_back(TPage::EventID_Cred( R_Message_Type::On_Text_Change, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 		}
 
@@ -745,11 +743,11 @@ parentCall:
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
+void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& hoverControls)
 {
 	TObjectLocker threadLock(&thread);
 	if(text1->OnMouseMove(point))
@@ -763,10 +761,10 @@ void TTextField::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDa
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				CPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<EventID_Cred>& eventAr)
+void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (isContained(&point, &location))
@@ -775,7 +773,7 @@ void TTextField::OnLButtonUp(UINT nFlags, TPoint point, messageOutput * mOut, TD
 
 		//auto cThis = TrecPointerKey::GetTrecPointerFromSoft<>(tThis);
 
-		//EventID_Cred cred(R_Message_Type::On_Focus, cThis, TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter,
+		//TPage::EventID_Cred cred(R_Message_Type::On_Focus, cThis, TrecPointerKey::GetNewTrecPointerAlt<TTextIntercepter,
 		//	TTextFieldIntercepter>(TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(cThis)));
 		//eventAr.push_back(cred);
 	}

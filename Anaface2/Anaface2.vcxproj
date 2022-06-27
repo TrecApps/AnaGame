@@ -23,32 +23,32 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{2c627fe2-ff3a-4344-b538-a06bf0936439}</ProjectGuid>
     <RootNamespace>Anaface2</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -74,6 +74,7 @@
     <LinkIncremental>true</LinkIncremental>
     <ExternalIncludePath>..\VideoGraphics;..\TrecLib;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\TcDataStruct;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -97,7 +98,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TcDataStruct.lib;TrecLib.lib;VideoGraphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -155,11 +156,31 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Anaface2.h" />
+    <ClInclude Include="AnafacePage.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TabBar.h" />
+    <ClInclude Include="TArenaView.h" />
+    <ClInclude Include="TCheckbox.h" />
+    <ClInclude Include="TCombobox.h" />
+    <ClInclude Include="TConsoleLayout.h" />
+    <ClInclude Include="TConsoleText.h" />
     <ClInclude Include="TControl.h" />
+    <ClInclude Include="TDataLayout.h" />
+    <ClInclude Include="TDataNodeControl.h" />
+    <ClInclude Include="TGadget.h" />
+    <ClInclude Include="TGrid.h" />
+    <ClInclude Include="TLayout.h" />
+    <ClInclude Include="TRadiobutton.h" />
+    <ClInclude Include="TRandomLayout.h" />
+    <ClInclude Include="TSwitchControl.h" />
+    <ClInclude Include="TTextCombobox.h" />
+    <ClInclude Include="TTextInput.h" />
+    <ClInclude Include="TTextLayout.h" />
+    <ClInclude Include="TVideoPlayer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnafacePage.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -167,7 +188,25 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TabBar.cpp" />
+    <ClCompile Include="TArenaView.cpp" />
+    <ClCompile Include="TCheckbox.cpp" />
+    <ClCompile Include="TCombobox.cpp" />
+    <ClCompile Include="TConsoleLayout.cpp" />
+    <ClCompile Include="TConsoleText.cpp" />
     <ClCompile Include="TControl.cpp" />
+    <ClCompile Include="TDataLayout.cpp" />
+    <ClCompile Include="TDataNodeControl.cpp" />
+    <ClCompile Include="TGadget.cpp" />
+    <ClCompile Include="TGrid.cpp" />
+    <ClCompile Include="TLayout.cpp" />
+    <ClCompile Include="TRadiobutton.cpp" />
+    <ClCompile Include="TRandomLayout.cpp" />
+    <ClCompile Include="TSwitchControl.cpp" />
+    <ClCompile Include="TTextCombobox.cpp" />
+    <ClCompile Include="TTextInput.cpp" />
+    <ClCompile Include="TTextLayout.cpp" />
+    <ClCompile Include="TVideoPlayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

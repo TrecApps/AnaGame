@@ -8,10 +8,15 @@ COMPILE_TYPE TcBashInterpretor::CanCompile()
 
 void TcBashInterpretor::Compile(COMPILE_TYPE type, ReturnObject& ret)
 {
+    UNREFERENCED_PARAMETER(type);
+    ret.returnCode = ret.ERR_UNSUPPORTED_OP;
 }
 
 void TcBashInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst)
-{    // Make sure the file reference isn't null
+{
+    UNREFERENCED_PARAMETER(isFirst);
+
+    // Make sure the file reference isn't null
     if (!codeFile.Get())
     {
         ret.errorMessage.Set(L"Null File Reference passed!");
@@ -77,14 +82,18 @@ ReturnObject TcBashInterpretor::Run()
 
 void TcBashInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
 {
+    UNREFERENCED_PARAMETER(params);
 }
 
 void TcBashInterpretor::PreProcess(ReturnObject& ret)
 {
+    UNREFERENCED_PARAMETER(ret);
 }
 
 void TcBashInterpretor::ProcessIndividualStatement(const TString& statement, ReturnObject& ret)
 {
+    UNREFERENCED_PARAMETER(statement);
+    UNREFERENCED_PARAMETER(ret);
 }
 
 TcBashInterpretor::TcBashInterpretor(TrecSubPointer<TVariable, TcInterpretor> parentInterpretor, TrecPointer<TEnvironment> env)

@@ -1,6 +1,101 @@
 #include "pch.h"
 #include "TStringVariable.h"
+#include "TPrimitiveVariable.h"
 
+class TStringVariableIterator : public TVariableIterator
+{
+protected:
+    /**
+     * The String to Analyse
+     */
+    TrecSubPointer<TVariable, TStringVariable> targetVar;
+
+    /**
+     * Whether it is in reverse or not
+     */
+    bool doReverse;
+
+    /**
+     * UINT current Index
+     */
+    UINT currentIndex;
+
+public:
+    
+    TStringVariableIterator(TrecSubPointer<TVariable, TStringVariable> targetVar)
+    {
+        this->targetVar = targetVar;
+        assert(targetVar.Get());
+        doReverse = false;
+        currentIndex = 0;
+    }
+
+
+    /**
+     * Method: TVariable::GetSize
+     * Purpose: Returns the estimated size of the value held
+     * Parameters: void
+     * Returns: UINT - The estimated size in bytes of the data
+     *
+     * Attributes: abstract
+     */
+    virtual UINT GetSize() override
+    {
+        return targetVar->GetSize();
+    }
+
+
+    /**
+     * Method: TVariableIterator::SetReverse
+     * Purpose: enables iterators to go through backwards
+     * Parameters: bool doReverse - if true, the iterator will now go in reverse (if supported)
+     *              bool reset - if true, will point to the beginning or end of the target variable
+     * Returns: bool - whether the operation was supported
+     *
+     * Attributes: abstract
+     */
+    virtual bool SetReverse(bool doReverse, bool reset)
+    {
+        this->doReverse = doReverse;
+        if (reset)
+        {
+            currentIndex = doReverse ? targetVar->GetSize() - 1 : 0;
+        }
+        return true;
+    }
+
+
+    /**
+     * Method: TVariableIterator::Traverse
+     * Purpose: Goues through the variable
+     * Parameters: UINT& currentIndex - the index of the retrieved variable
+     *              TString& currentName - the name of the retrieved variable
+     *              TrecPointer<TVariable>& value - the retireved variable
+     * Returns: bool - whether the variable was retrieved
+     *
+     * Attributes: abstract
+     */
+    virtual bool Traverse(UINT& currentIndex, TString& currentName, TrecPointer<TVariable>& value)
+    {
+        if (this->currentIndex >= targetVar->GetSize())
+            return false;
+
+        currentName.Empty();
+        currentIndex = this->currentIndex;
+        value = TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TPrimitiveVariable>(targetVar->GetString().GetAt(currentIndex));
+        if (doReverse)
+            currentIndex--;
+        else
+            currentIndex++;
+        return true;
+    }
+};
+
+TrecPointer<TVariable> TStringVariable::GetIterator()
+{
+    TrecPointer<TVariable> v = TrecPointerKey::GetTrecPointerFromSoft<TVariable>(vSelf);
+    return TrecPointerKey::GetNewSelfTrecPointerAlt<TVariable, TStringVariableIterator>(TrecPointerKey::GetTrecSubPointerFromTrec<TVariable, TStringVariable>(v));
+}
 
 TrecPointer<TVariable> TStringVariable::Clone()
 {

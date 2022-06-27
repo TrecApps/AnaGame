@@ -103,11 +103,11 @@ void TAnagameEnvironmentBuilder::GetPageSupport(const TString& fileType, TDataAr
 	types.RemoveAll();
 }
 
-TrecPointer<Page> TAnagameEnvironmentBuilder::GetPage(const TString& type)
+TrecPointer<TPage> TAnagameEnvironmentBuilder::GetPage(const TString& type)
 {
 	if (!type.Compare(L"source_code"))
 	{
 		//TrecPointer<Page> ret = TrecPointerKey::GetNewSelfTrecPointer<Page>();
 	}
-	return TrecPointer<Page>();
+	return TrecPointer<TPage>();
 }

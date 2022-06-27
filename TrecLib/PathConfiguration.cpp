@@ -48,9 +48,9 @@ PathConfiguration::~PathConfiguration()
  * Parameters: TString& name - the name of the path config
  * Returns: void
  */
-void PathConfiguration::SetName(const TString& name)
+void PathConfiguration::SetName(const TString& name_)
 {
-	this->name.Set(name);
+	this->name.Set(name_);
 }
 
 /**
@@ -205,10 +205,10 @@ void InitializePathConfig()
 			// Get the property
 			TString prop(actualLine.SubString(0, colonLoc));
 			// Get the path toset to
-			TString path(actualLine.SubString(colonLoc + 1));
+			TString path_(actualLine.SubString(colonLoc + 1));
 
-			// Make sure that the path is a real path
-			if (!TFileShell::GetFileInfo(path).Get())
+			// Make sure that the path_ is a real path_
+			if (!TFileShell::GetFileInfo(path_).Get())
 				continue;
 
 			int periodLoc = prop.Find(L'.');
@@ -219,7 +219,7 @@ void InitializePathConfig()
 			TString command(prop.SubString(0, periodLoc));
 			TString attribute(prop.SubString(periodLoc + 1));
 
-			path.Trim();
+			path_.Trim();
 			command.Trim();
 			attribute.Trim();
 
@@ -232,13 +232,13 @@ void InitializePathConfig()
 			{
 				if (!paths[Rust].GetName().Compare(command))
 				{
-					if (!attribute.Compare(L"currentPath"))
+					if (!attribute.Compare(L"currentpath"))
 					{
-						paths[Rust].SetCurrentPath(path);
+						paths[Rust].SetCurrentPath(path_);
 					}
-					else if (!attribute.Compare(L"possiblePath"))
+					else if (!attribute.Compare(L"possiblepath"))
 					{
-						paths[Rust].AddToPath(path);
+						paths[Rust].AddToPath(path_);
 					}
 					attSet = true;
 					break;
@@ -248,17 +248,17 @@ void InitializePathConfig()
 			// If the config did not exist, the create it
 			if (!attSet)
 			{
-				PathConfiguration pathConfig;
-				pathConfig.SetName(command);
-				if (!attribute.Compare(L"currentPath"))
+				PathConfiguration path_Config;
+				path_Config.SetName(command);
+				if (!attribute.Compare(L"currentpath_"))
 				{
-					pathConfig.SetCurrentPath(path);
+					path_Config.SetCurrentPath(path_);
 				}
-				else if (!attribute.Compare(L"possiblePath"))
+				else if (!attribute.Compare(L"possiblepath_"))
 				{
-					pathConfig.AddToPath(path);
+					path_Config.AddToPath(path_);
 				}
-				paths.push_back(pathConfig);
+				paths.push_back(path_Config);
 			}
 		}
 

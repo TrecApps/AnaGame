@@ -1,23 +1,51 @@
 #pragma once
-#include "Page.h"
+#include <TPage.h>
 #include <TWindowEngine.h>
 #include <TControl.h>
+#include <TArenaEngine.h>
+#include <TPage.h>
+
+#include "TAnimationManager.h"
 
 bool IsD2D1RectEqual(const D2D1_RECT_F& r1, const  D2D1_RECT_F& r2, float difference);
-#include "TAnimationManager.h"
-#include <TVideo.h>
 
 
-
-class _TAP_DLL MediaControlLoc
+/**
+ * Class: TProcess
+ * Purpose: Serves as the Interface for the TInstance Class for the TWindow to Access
+ */
+class _TAP_DLL TProcess : public TObject
 {
 public:
-	MediaControlLoc();
-	MediaControlLoc(const MediaControlLoc& copy);
 
-	TrecPointer<TControl> control;
-	RECT loc;
+	/**
+	 * Method: TInstance::~TInstance
+	 * Purpose: Destructor
+	 * Parameters: void
+	 * Returns: void
+	 */
+	virtual ~TProcess();
+
+
+	/**
+	 * Method: TInstance::GetInstanceHandle
+	 * Purpose: Retrievs the raw instance handle
+	 * Parameters: void
+	 * Returns: HINSTANCE - instance provided during construction
+	 */
+	virtual HINSTANCE GetInstanceHandle() = 0;
+
+	/**
+	 * Method: TInstance::GetFactory
+	 * Purpose: retirevs the factory used for Direct2D
+	 * Parameters: void
+	 * Returns: TrecComPointer<ID2D1Factory1> - the factory used for Direct 2D drawing
+	 */
+	virtual TrecComPointer<ID2D1Factory1> GetFactory() = 0;
+
+	virtual void SetSelf(TrecPointer<TProcess> s) = 0;
 };
+
 
 
 /**
@@ -28,7 +56,6 @@ public:
  */
 class _TAP_DLL TWindow : public TObject
 {
-	friend class Page;
 public:
 
 	/**
@@ -42,7 +69,7 @@ public:
 	 *				TrecPointer ins - pointer to the TInstance involved (hence why TInstance has a SetSelf method)
 	 * Returns: New Window
 	 */
-	TWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TInstance> ins);
+	TWindow(TString& name, TString& winClass, UINT style, HWND parent, int commandShow, TrecPointer<TProcess> ins);
 
 	/**
 	 * Method: TWindow::~TWindow
@@ -82,18 +109,9 @@ public:
 	 * 
 	 * Attributes: virtual
 	 */
-	virtual int CompileView(TString& file, TrecPointer<EventHandler> eh);
+	virtual int CompileView(TString& file, TrecPointer<TPage::EventHandler> eh);
 
 
-	/**
-	 * Method: TWindow::MovePageToTop
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Attributes: deprecated
-	 */
-	bool MovePageToTop(TrecPointer<Page> p);
 
 	/**
 	 * Method: TWindow::GetWinClass
@@ -124,17 +142,6 @@ public:
 	 */
 	virtual void Draw();
 
-	/**
-	 * Method: TWindow::Draw
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Attributes: deprecated
-	 */
-	void Draw(Page& draw);
-
-	virtual void RefreshMediaControls();
 
 
 	/**
@@ -147,7 +154,7 @@ public:
 	 */
 	void InduceDraw();
 	
-	afx_msg void OnVideoEvent(WPARAM param);
+	ag_msg void OnVideoEvent(WPARAM param);
 
 	/**
 	 * Method: TWindow::OnRButtonUp
@@ -158,7 +165,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg void OnRButtonUp(UINT nFlags, TPoint point);
+	ag_msg void OnRButtonUp(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnLButtonDown
@@ -169,7 +176,7 @@ public:
 	 * 
 	 * Attributes: message; virtual
 	 */
-	afx_msg virtual void OnLButtonDown(UINT nFlags, TPoint point);
+	ag_msg virtual void OnLButtonDown(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnRButtonDown
@@ -180,7 +187,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg void OnRButtonDown(UINT nFlags, TPoint);
+	ag_msg void OnRButtonDown(UINT nFlags, TPoint);
 
 	/**
 	 * Method: TWindow::OnMouseMove
@@ -191,7 +198,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg virtual void OnMouseMove(UINT nFlags, TPoint point);
+	ag_msg virtual void OnMouseMove(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnLButtonDblClk
@@ -202,7 +209,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg void OnLButtonDblClk(UINT nFlags, TPoint point);
+	ag_msg void OnLButtonDblClk(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnLButtonUp
@@ -213,7 +220,7 @@ public:
 	 * 
 	 * Attributes: message; virtual
 	 */
-	afx_msg virtual void OnLButtonUp(UINT nFlags, TPoint point);
+	ag_msg virtual void OnLButtonUp(UINT nFlags, TPoint point);
 
 	/**
 	 * Method: TWindow::OnChar
@@ -226,7 +233,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags);
+	ag_msg bool OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags);
 
 	/**
 	 * Method: TWindow::OnWindowResize
@@ -237,7 +244,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg virtual void OnWindowResize(UINT width, UINT height);
+	ag_msg virtual void OnWindowResize(UINT width, UINT height);
 
 	/**
 	 * Method: TWindow::OnDestroy
@@ -247,7 +254,7 @@ public:
 	 * 
 	 * Attributes: message
 	 */
-	afx_msg virtual bool OnDestroy();
+	ag_msg virtual bool OnDestroy();
 
 
 	/**
@@ -259,50 +266,9 @@ public:
 	 *
 	 * Attributes: virtual
 	 */
-	afx_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
+	ag_msg virtual bool OnScroll(const TPoint& point, const TPoint& direction);
 
 
-	/**
-	 * Method: TWindow::GetHandlePage
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 */
-	TrecPointer<Page> GetHandlePage(bool singleton);
-
-	/**
-	 * Method: TWindow::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 */
-	TrecPointer<Page> GetHandlePage(const TString& name);
-
-	/**
-	 * Method: TWindow::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 * Attributes: deprecated
-	 */
-	TrecPointer<Page> Get3DPage(bool singleton, TString& engineId);
-
-	/**
-	 * Method: TWindow::
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 * Attributes: deprecated
-	 */
-	TrecPointer<Page> Get3DPage(bool singleton, TrecPointer<TArenaEngine> engine);
 
 
 	/**
@@ -330,24 +296,13 @@ public:
 	 */
 	void SetSelf(TrecPointer<TWindow> win);
 
-
-	/**
-	 * Method: TWindow::GetPageByArea
-	 * Purpose:
-	 * Parameters:
-	 * Returns:
-	 *
-	 * Note: deprecated in favor of the Ide Window/IDE Page
-	 */
-	TrecPointer<Page> GetPageByArea(D2D1_RECT_F r);
-
 	/**
 	 * Method: TWindow::GetInstance
 	 * Purpose: Retrievs the instance associated with this window
 	 * Parameters: void 
 	 * Returns: TrecPointer<TInstance> - the Instance this window is under
 	 */
-	TrecPointer<TInstance> GetInstance();
+	TrecPointer<TProcess> GetInstance();
 
 
 	/**
@@ -407,7 +362,7 @@ public:
 	 * Parameters: TrecPointer<Page> page - the page to prepare the animations for
 	 * Returns: bool - whether the page was set and the Window matched
 	 */
-	bool PrepAnimations(TrecPointer<Page> page);
+	bool PrepAnimations(TrecPointer<TPage> page);
 
 	/**
 	 * Method:: TWindow::SetFlyout
@@ -417,7 +372,7 @@ public:
 	 *
 	 * Note: This method is intended to be called by the Page Class. The Page looks for TFlyouts to draw and the Window takes it from there
 	 */
-	void SetFlyout(TrecPointer<TFlyout> fly);
+	void SetFlyout(TrecPointer<TPage> fly);
 
 
 	/**
@@ -436,17 +391,39 @@ public:
 	 */
 	TrecComPointer<ID2D1Factory1> GetFactory();
 
-	void submitPlayer(TrecPointer<TControl> play);
 
 	HDC GetTWindowDc();
 
 	void FlushDc();
 
+	/**
+	 * Method: TIdeWindow::SetEnvironment
+	 * Purpose: Sets the Environment of the Window
+	 * Parameters: TrecPointer<TEnvironment> env - the Environment to manage
+	 * Returns: void
+	 */
+	virtual void SetEnvironment(TrecPointer<TEnvironment> env);
+
+	/**
+	 * Method: TIdeWindow::GetEnvironment
+	 * Purpose: Gets the Environment held by the Window
+	 * Parameters: void
+	 * Returns: TrecPointer<TEnvironment> - the Environment to manage
+	 */
+	TrecPointer<TEnvironment> GetEnvironment();
+
 
 protected:
-	TDataArray<MediaControlLoc> mediaControls;
 
-	TrecSubPointer<TControl, TVideo> videoPlayer;
+	/**
+	 * the Environment to manage a Project
+	 */
+	TrecPointer<TEnvironment> environment;
+
+	void HandleWindowEvents(TDataArray<TPage::EventID_Cred>& cred);
+
+	virtual void RunWindowCommand(const TString& command);
+
 
 	// Draw Other pages that are special to the Window
 	/**
@@ -473,7 +450,7 @@ protected:
 	/**
 	 * instance managing the window
 	 */
-	TrecPointerSoft<TInstance> windowInstance;
+	TrecPointerSoft<TProcess> windowInstance;
 
 	/**
 	 * command used by Windows
@@ -490,26 +467,16 @@ protected:
 	/**
 	 * Main content of the window
 	 */
-	TrecPointer<Page> mainPage;
+	TrecPointer<TPage> mainPage;
 	/**
 	 * List of Pages
 	 */
-	TDataArray<TrecPointer<Page>> pages;
+	TDataArray<TrecPointer<TPage>> pages;
 	/**
 	 * Names used by Windows
 	 */
 	TString name, winClass;
-	
 
-	/**
-	 * Used when multiple objects might want to access the same page by ID
-	 */
-	TMap<Page> keyPages;
-	// Singleton Pages
-	/**
-	 * deprecated
-	 */
-	TrecPointer<Page> _3DPage, handlePage;
 
 
 	/**
@@ -530,10 +497,7 @@ protected:
 	 */
 	TrecPointerSoft<TWindow> self;
 
-	/**
-	 * Page to delete
-	 */
-	TrecPointer<Page> deletePage;
+
 
 
 	// 3D Resource
@@ -564,7 +528,7 @@ protected:
 	/**
 	 * Scroll Bar currently focusing on
 	 */
-	TrecPointer<TScrollBar> currentScrollBar;
+	TrecPointer<TPage::TScrollBar> currentScrollBar;
 
 
 	// Manage Flyouts
@@ -572,8 +536,77 @@ protected:
 	/**
 	 * Holds any flyout that needs to be drawn after everything else is
 	 */
-	TrecPointer<TFlyout> flyout;
+	TrecPointer<TPage> flyout;
 
 
 };
 
+/**
+ * Class: TPageEnvironment
+ * Purpose: Extends the TEnvironment to Support TPage and Handler Generation
+ */
+class _TAP_DLL TPageEnvironment : public TEnvironment
+{
+public:
+
+	typedef enum class handler_type {
+		ht_singular,
+		ht_multiple,
+		ht_ribbon,
+		ht_i_console,
+		ht_o_console,
+		ht_file
+	}handler_type;
+
+	class PageHandlerBuilder {
+	public:
+		virtual void RetrievePageAndHandler(const TString& name, TrecPointer<TPage>& page, TrecPointer<TPage::EventHandler>& handler,
+			TrecPointer<DrawingBoard> board, TrecPointer<TProcess> proc, const D2D1_RECT_F& loc) = 0;
+	};
+
+
+	TPageEnvironment(TrecPointer<TFileShell> shell);
+
+	/**
+	 * Method: TPageEnvironment::GetPageAndHandler
+	 * Purpose: Retrieves the Pages by the Specified name
+	 * Parameters: const TString& name, TrecPointer<TPage> page, TrecPointer<TPage::EventHandler> handler
+	 * Returns: void
+	 *
+	 * Note: If successful, the page and handler params should be assigned once the method returns
+	 */
+	void GetPageAndHandler(handler_type hType, const TString& name, TrecPointer<PageHandlerBuilder>& builder);
+
+	/**
+	 * Method: TPageEnvironment::GetPageList
+	 * Purpose: Retrieves the available Page Names by extension
+	 * Parameters: const TString& ext, TDataArray<TString>& extensions
+	 * Returns: void
+	 *
+	 * Note: if ext is an empty String, then return all that the Environment has to offer
+	 */
+	void GetPageList(handler_type hType, const TString& ext, TDataArray<TString>& extensions);
+
+protected:
+
+
+	/**
+	 * Method: TPageEnvironment::GetPageAndHandler
+	 * Purpose: Retrieves the Pages by the Specified name
+	 * Parameters: const TString& name, TrecPointer<TPage> page, TrecPointer<TPage::EventHandler> handler
+	 * Returns: void
+	 *
+	 * Note: If successful, the page and handler params should be assigned once the method returns
+	 */
+	virtual void GetPageAndHandler_(handler_type hType, const TString& name, TrecPointer<PageHandlerBuilder>& builder) = 0;
+
+	/**
+	 * Method: TPageEnvironment::GetPageList
+	 * Purpose: Retrieves the available Page Names by extension
+	 * Parameters: const TString& ext, TDataArray<TString>& extensions
+	 * Returns: void
+	 *
+	 * Note: if ext is an empty String, then return all that the Environment has to offer
+	 */
+	virtual void GetPageList_(handler_type hType, const TString& ext, TDataArray<TString>& extensions) = 0;
+};

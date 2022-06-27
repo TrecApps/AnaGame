@@ -1,12 +1,38 @@
 #include "TFormatReader.h"
 
+#include "TFormatReaderTml.h"
+#include "TFormatReaderJson.h"
+#include "TFormatReaderXml.h"
+#include "TFormatReaderHtml.h"
+#include "TFormatReaderProps.h"
+#include "TFormatReaderYaml.h"
+
 TDataArray <TrecPointer<TFormatReader::TFormatReaderBuilder>> builders;
 
+
+void TFormatReader::EstablishDefaultBuilders()
+{
+    static bool defaultBuildersAdded = false;
+
+    if (defaultBuildersAdded)
+        return;
+
+    defaultBuildersAdded = true;
+
+    SubmitBuilder(TrecPointerKey::GetNewTrecPointerAlt<TFormatReaderBuilder, TFormatReaderTml::TFormatReaderBuilderTml>());
+    SubmitBuilder(TrecPointerKey::GetNewTrecPointerAlt<TFormatReaderBuilder, TFormatReaderJson::TFormatReaderBuilderJson>());
+    SubmitBuilder(TrecPointerKey::GetNewTrecPointerAlt<TFormatReaderBuilder, TFormatReaderXml::TFormatReaderBuilderXml>());
+    SubmitBuilder(TrecPointerKey::GetNewTrecPointerAlt<TFormatReaderBuilder, TFormatReaderHtml::TFormatReaderBuilderHtml>());
+    SubmitBuilder(TrecPointerKey::GetNewTrecPointerAlt<TFormatReaderBuilder, TFormatReaderProps::TFormatReaderBuilderProps>());
+    SubmitBuilder(TrecPointerKey::GetNewTrecPointerAlt<TFormatReaderBuilder, TFormatReaderYaml::TFormatReaderBuilderYaml>());
+}
 
 UINT TFormatReader::SubmitBuilder(TrecPointer<TFormatReaderBuilder> builder)
 {
     if(!builder.Get())
         return 0;
+
+    EstablishDefaultBuilders();
 
     for (UINT Rust = 0; Rust < builders.Size(); Rust++)
     {

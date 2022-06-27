@@ -1,6 +1,7 @@
 #pragma once
 #include "TDataArrayBase.h"
 #include "TrecReference.h"
+#include "TString.h"
 /*
 * Class: TArray
 * Purpose: Holds references to objects (Not meant to store straight foward data in a row)

@@ -1,5 +1,5 @@
 #include "SourceCodeApp2.h"
-#include <IDEPage.h>
+#include <TabPage.h>
 
 SourceCodeApp2::SourceCodeApp2(TrecSubPointer<TWindow, TIdeWindow> win): MiniApp(win)
 {
@@ -14,18 +14,18 @@ UINT SourceCodeApp2::Initialize(TrecPointer<TFileShell> file)
 	if (!win.Get() || !instance.Get())
 		return 1;
 
-	codeHandler = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, TCodeHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance));
+	codeHandler = TrecPointerKey::GetNewSelfTrecSubPointer<TPage::EventHandler, TCodeHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(instance));
 
 	if (!codeHandler.Get())
 		return 2;
 
 	codeHandler->SetSaveFile(file);
 
-	commandHandler = TrecPointerKey::GetNewSelfTrecSubPointer<EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<TInstance>(instance));
+	commandHandler = TrecPointerKey::GetNewSelfTrecSubPointer<TPage::EventHandler, TerminalHandler>(TrecPointerKey::GetTrecPointerFromSoft<>(instance), TrecPointer<TFileShell>());
 	if (!commandHandler.Get())
 		return 3;
 
-	mainPage = win->AddNewPage(anagame_page::anagame_page_code_file, ide_page_type::ide_page_type_body, TString(L"Code"), TString(), TrecPointerKey::GetTrecPointerFromSub<EventHandler, TCodeHandler>(codeHandler));
+	mainPage = win->AddNewPage(anagame_page::anagame_page_code_file, ide_page_type::ide_page_type_body, TString(L"Code"), TString(), TrecPointerKey::GetTrecPointerFromSub<TPage::EventHandler, TCodeHandler>(codeHandler));
 	win->AddPage(anagame_page::anagame_page_command_prompt, ide_page_type::ide_page_type_deep_console, TString(L"Build"));
 	win->AddPage(anagame_page::anagame_page_command_prompt, ide_page_type::ide_page_type_deep_console, TString(L"Debug"));
 
@@ -42,12 +42,12 @@ UINT SourceCodeApp2::Initialize(TrecPointer<TFileShell> file)
 					ide_page_type::ide_page_type_deep_console,
 					TString(L"Program Output"),
 					TString(),
-					TrecPointerKey::GetTrecPointerFromSub<EventHandler, TerminalHandler>(commandHandler)
+					TrecPointerKey::GetTrecPointerFromSub<TPage::EventHandler, TerminalHandler>(commandHandler)
 				);
 
-			auto promptHandler = TrecPointerKey::GetTrecSubPointerFromTrec<EventHandler, TerminalHandler>(promptPage->GetHandler());
+			//auto promptHandler = TrecPointerKey::GetTrecSubPointerFromTrec<TPage::EventHandler, TerminalHandler>(promptPage->GetHandler());
 
-			env->SetPrompt(promptHandler->GetTerminal()->GetConsoleHolder());
+			//env->SetPrompt(promptHandler->GetTerminal()->GetConsoleHolder());
 		}
 	}
 
@@ -64,7 +64,7 @@ void SourceCodeApp2::OnSave()
 		codeHandler->OnSave();
 }
 
-TrecPointer<EventHandler> SourceCodeApp2::GetMainHandler()
+TrecPointer<TPage::EventHandler> SourceCodeApp2::GetMainHandler()
 {
-	return TrecPointerKey::GetTrecPointerFromSub<EventHandler, TCodeHandler>(codeHandler);
+	return TrecPointerKey::GetTrecPointerFromSub<TPage::EventHandler, TCodeHandler>(codeHandler);
 }

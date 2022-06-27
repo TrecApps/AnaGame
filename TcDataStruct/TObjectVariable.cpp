@@ -14,6 +14,11 @@ TObjectVariable::TObjectVariable(TrecObjectPointer obj)
 {
 	Set(obj);
 }
+
+TrecPointer<TVariable> TObjectVariable::Clone()
+{
+	return TrecPointerKey::GetTrecPointerFromSoft<TVariable>(this->oSelf);
+}
 /**
  * Method: TObjectVariable::GetVarType
  * Purpose: Reports the type of varible that this object represents
@@ -36,6 +41,13 @@ void TObjectVariable::Set(TrecObjectPointer obj)
 	ThreadLock();
 	object = obj;
 	ThreadRelease();
+}
+
+void TObjectVariable::SetSelf(TrecPointer<TVariable> o)
+{
+	if (this != o.Get())
+		throw L"Improper call of 'SetSelf'";
+	oSelf = TrecPointerKey::GetSoftPointerFromTrec<>(o);
 }
 
 
@@ -78,6 +90,10 @@ TString TObjectVariable::GetString()
  * Parameters: void
  * Returns: UINT - The value held as a UINT (0 if not a primitive type
  */
+TString TObjectVariable::GetString(const TString& detail)
+{
+	return object.Get() ? object->getVariableValueStr(detail): GetString();
+}
 UINT TObjectVariable::Get4Value()
 {
 	return 0;

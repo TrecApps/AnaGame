@@ -23,32 +23,32 @@
     <ProjectGuid>{EC4DD89F-71E2-439D-817F-81EBC5A578E9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TrecCode</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\TcDataStruct;..\Tap;..\Anaface;..\VideoGraphics;..\TrecLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\TcDataStruct;..\Tap;..\Anaface2;..\VideoGraphics;..\TrecLib;$(IncludePath)</IncludePath>
     <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -98,7 +98,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface.lib;Tap.lib;TcDataStruct.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TrecLib.lib;VideoGraphics.lib;Anaface2.lib;Tap.lib;TcDataStruct.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -159,6 +159,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="JavaScriptModifiers.h" />
     <ClInclude Include="JsArray.h" />
     <ClInclude Include="JsConsole.h" />
     <ClInclude Include="JsPromise.h" />
@@ -168,8 +169,11 @@
     <ClInclude Include="TAnaGameCodeEnvironment.h" />
     <ClInclude Include="TAnagameEnvironmentBuilder.h" />
     <ClInclude Include="TAnascriptInterpretor.h" />
+    <ClInclude Include="TcAnascriptInterpretor.h" />
+    <ClInclude Include="TcCodeObjectInterpretor.h" />
     <ClInclude Include="TcJavaScriptClassInterpretor.h" />
     <ClInclude Include="TcJavaScriptInterpretor.h" />
+    <ClInclude Include="TcPythonInterpretor.h" />
     <ClInclude Include="TEnvironmentBuilder.h" />
     <ClInclude Include="TGradleEnvironment.h" />
     <ClInclude Include="TJavaScriptClassInterpretor.h" />
@@ -180,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="JavaScriptModifiers.cpp" />
     <ClCompile Include="JsArray.cpp" />
     <ClCompile Include="JsConsole.cpp" />
     <ClCompile Include="JsPromise.cpp" />
@@ -194,8 +199,11 @@
     <ClCompile Include="TAnaGameCodeEnvironment.cpp" />
     <ClCompile Include="TAnagameEnvironmentBuilder.cpp" />
     <ClCompile Include="TAnascriptInterpretor.cpp" />
+    <ClCompile Include="TcAnascriptInterpretor.cpp" />
+    <ClCompile Include="TcCodeObjectInterpretor.cpp" />
     <ClCompile Include="TcJavaScriptClassInterpretor.cpp" />
     <ClCompile Include="TcJavaScriptInterpretor.cpp" />
+    <ClCompile Include="TcPythonInterpretor.cpp" />
     <ClCompile Include="TEnvironmentBuilder.cpp" />
     <ClCompile Include="TGradleEnvironment.cpp" />
     <ClCompile Include="TJavaScriptClassInterpretor.cpp" />

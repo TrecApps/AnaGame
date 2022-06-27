@@ -9,6 +9,7 @@
 class TFormatReaderProps :
     public TFormatReader
 {
+    friend class TrecPointerKey;
 public:
     /**
      * Class: TFormatReaderBuilderProps

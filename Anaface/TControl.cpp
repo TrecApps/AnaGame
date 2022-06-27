@@ -1,3 +1,4 @@
+#include "..\Anaface2\TControl.h"
 //#include "stdafx.h"
 #include "AnafaceUI.h"
 #include <Logger.h>
@@ -3132,10 +3133,10 @@ void TControl::addEventID(R_Message_Type rmt, int e_id)
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3166,7 +3167,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isLeftClick = false;
 		args.control = this;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_R_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_R_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 
 	if (hasEvent(R_Message_Type::On_Right_Click) && isRClick)
@@ -3180,7 +3181,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isLeftClick = false;
 		args.control = this;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Right_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Right_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 
 	isRClick = false;
@@ -3201,7 +3202,7 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 				args.isLeftClick = false;
 				args.control = this;
 
-				eventAr.push_back(EventID_Cred( R_Message_Type::On_Right_Release, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+				eventAr.push_back(TPage::EventID_Cred( R_Message_Type::On_Right_Release, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 		}
 	}
@@ -3215,11 +3216,11 @@ afx_msg void TControl::OnRButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
+afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3236,7 +3237,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.methodID = -1;
 		args.isClick = args.isLeftClick = true;
 		args.control = nullptr;;
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), vScroll));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), vScroll));
 		
 		return;
 	}
@@ -3252,7 +3253,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.isClick = args.isLeftClick = true;
 		args.control = nullptr;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), hScroll));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis), hScroll));
 	}
 
 	if (!isContained(point, getLocation()))
@@ -3315,7 +3316,7 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.isLeftClick = true;
 		args.control = this;
 
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_L_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_L_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 
 }
@@ -3326,11 +3327,11 @@ afx_msg void TControl::OnLButtonDown(UINT nFlags, TPoint point, messageOutput* m
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
+afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3378,7 +3379,7 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 		args.isClick = true;
 		args.isLeftClick = false;
 		args.control = this;
-		eventAr.push_back(EventID_Cred( R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred( R_Message_Type::On_R_Button_Down, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 	isRClick = true;
 	
@@ -3390,11 +3391,11 @@ afx_msg void TControl::OnRButtonDown(UINT nFlags, TPoint point, messageOutput* m
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
 * Returns: void
 */
-afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
+afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr, TDataArray<TControl*>& clickedControls)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3425,7 +3426,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 				args.isClick = false;
 				args.isLeftClick = false;
 				args.control = this;
-				eventAr.push_back(EventID_Cred(R_Message_Type::On_Lose_Focus, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+				eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Lose_Focus, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 
 			for (UINT Rust = 0; Rust < clickedControls.Size(); Rust++)
@@ -3486,7 +3487,7 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
 			args.point = point;
 			args.methodID = getEventID(R_Message_Type::On_Hover);
 			args.control = this;
-			eventAr.push_back(EventID_Cred(R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+			eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Hover, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 		}
 
 		
@@ -3503,11 +3504,11 @@ afx_msg void TControl::OnMouseMove(UINT nFlags, TPoint point, messageOutput* mOu
  * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
  *				TPoint point - the point on screen where the event occured
  *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
- *				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+ *				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
  *				TDataArray<TControl*>& clickedControls - list of controls that exprienced the on Button Down Event to alert when the button is released
  * Returns: void
  */
-bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	bool ret = false;
@@ -3522,7 +3523,7 @@ bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 		args.isClick = true;
 		args.isLeftClick = false;
 		args.control = this;
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Hover_Leave, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Hover_Leave, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 		ret = true;
 	}
 	
@@ -3535,10 +3536,10 @@ bool TControl::OnMouseLeave(UINT nFlags, TPoint point, messageOutput* mOut, TDat
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3588,7 +3589,7 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 		args.isClick = true;
 		args.isLeftClick = false;
 		args.control = this;
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_LDoubleClick, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_LDoubleClick, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 	
 }
@@ -3599,10 +3600,10 @@ void TControl::OnLButtonDblClk(UINT nFlags, TPoint point, messageOutput* mOut, T
 * Parameters: UINT nFlags - flags provided by MFC's Message system, not used
 *				TPoint point - the point on screen where the event occured
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3644,7 +3645,7 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isClick = true;
 		args.isLeftClick = true;
 		args.control = this;
-		eventAr.push_back(EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+		eventAr.push_back(TPage::EventID_Cred(R_Message_Type::On_Click, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 	}
 
 	if (hasEvent(R_Message_Type::On_Click) || isLClick)
@@ -3658,7 +3659,7 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 		args.isLeftClick = true;
 		args.control = this;
 
-		EventID_Cred cred(R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
+		TPage::EventID_Cred cred(R_Message_Type::On_L_Button_Up, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis));
 
 		if (text1.Get())
 			cred.textIntercepter = text1->GetTextInterceptor();
@@ -3686,10 +3687,10 @@ afx_msg void TControl::OnLButtonUp(UINT nFlags, TPoint point, messageOutput* mOu
 *				UINT nRepCnt - how many times the character was processed for this event
 *				UINT nFlags - flags provided by MFC's Message system, not used
 *				messageOutput* mOut - allows controls to keep track of whether ohter controls have caught the event
-*				TDataArray<EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
+*				TDataArray<TPage::EventID_Cred>& eventAr - allows Controls to add whatever Event Handler they have been assigned
 * Returns: void
 */
-afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<EventID_Cred>& eventAr)
+afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlags, messageOutput* mOut, TDataArray<TPage::EventID_Cred>& eventAr)
 {
 	TObjectLocker threadLock(&thread);
 	if (!isActive)
@@ -3713,7 +3714,7 @@ afx_msg bool TControl::OnChar(bool fromChar,UINT nChar, UINT nRepCnt, UINT nFlag
 				args.methodID = getEventID(R_Message_Type::On_Char);
 				args.type = static_cast<WCHAR>(LOWORD(nChar));
 				args.control = this;
-				eventAr.push_back(EventID_Cred( R_Message_Type::On_Char, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
+				eventAr.push_back(TPage::EventID_Cred( R_Message_Type::On_Char, TrecPointerKey::GetTrecPointerFromSoft<TControl>(tThis)));
 			}
 			
 			return true;
@@ -6353,12 +6354,12 @@ RECT convertD2DRectToRECT(D2D1_RECT_F f)
 	return ret;
 }
 
-EventID_Cred::EventID_Cred()
+TPage::EventID_Cred::TPage::EventID_Cred()
 {
 	eventType = R_Message_Type::On_Click;
 }
 
-EventID_Cred::EventID_Cred(const EventID_Cred& copy)
+TPage::EventID_Cred::TPage::EventID_Cred(const TPage::EventID_Cred& copy)
 {
 	eventType = copy.eventType;
 	control = copy.control;
@@ -6366,13 +6367,13 @@ EventID_Cred::EventID_Cred(const EventID_Cred& copy)
 	textIntercepter = copy.textIntercepter;
 }
 
-EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c)
+TPage::EventID_Cred::TPage::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c)
 {
 	eventType = t;
 	control = c;
 }
 
-EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TScrollBar> sb)
+TPage::EventID_Cred::TPage::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TScrollBar> sb)
 {
 	eventType = t;
 	control = c;
@@ -6380,14 +6381,14 @@ EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointe
 }
 
 
-EventID_Cred::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TTextIntercepter> i)
+TPage::EventID_Cred::TPage::EventID_Cred(R_Message_Type t, TrecPointer<TControl> c, TrecPointer<TTextIntercepter> i)
 {
 	eventType = t;
 	control = c;
 	textIntercepter = i;
 }
 
-EventID_Cred::EventID_Cred(TrecPointer<TFlyout> fly)
+TPage::EventID_Cred::TPage::EventID_Cred(TrecPointer<TFlyout> fly)
 {
 	eventType = R_Message_Type::On_Flyout;
 	if (!fly.Get())
@@ -6471,6 +6472,7 @@ EventTypeID::EventTypeID()
 	eventType = R_Message_Type::On_Click;
 	eventID = -1;
 }
+
 
 EventArgs::EventArgs()
 {

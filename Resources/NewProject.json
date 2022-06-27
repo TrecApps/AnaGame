@@ -1,0 +1,132 @@
+{
+	"Classes" : [
+		"ComboB" : {
+			"BorderColor":"0.0,0.0,0.0,1.0"
+		}
+	],
+	"TLayout" : {
+		"RowHeights":[
+			100,
+			100,
+			100,
+			100,
+			100,
+			100
+		],
+		"children" : [
+		{
+			"TControl" : { 
+				"RowPosition": 0,
+				"Caption": "New Project",
+				"HorizontalAlignment":"Center",
+				"FontSize":36,
+				"BorderThickness":3.5,
+				"Margin":"5,5,5,5",
+				"BorderColor":"0.0,0.0,0.7,1.0"
+			}
+		},{
+			"TLayout" : { 
+				"IsGallery": true,
+				"RowPosition": 1,
+				"ColumnWidths":[200, "1*"],
+				"children" : [
+				{
+					"TControl" : { 
+						"ColPosition": 0,
+						"Caption":"Project Name",
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center"
+					}
+				},{
+					"TInput": { 
+						"ColPosition": 1,
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Margin":"5,5,5,5",
+						"BorderThickness":0.7
+					}
+				}
+				]
+			}
+		}, {
+			"TLayout": { 
+				"IsGallery": true,
+				"RowPosition": 2,
+				"ColumnWidths": [200,"1*"],
+				"children": [
+				{
+					"TControl" : { 
+						"ColPosition": 0,
+						"Caption" : "Solution Name",
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center"
+					}
+				},{
+					"TInput": {
+						"ColPosition": 1,
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Margin":"5,5,5,5",
+						"BorderThickness":0.7
+				}
+				]
+			}
+		}, {
+			"TComboBox" : {
+				"RowPosition": 3,
+				"DefaultText":"ProjectType",
+				"Class":"ComboB",
+				"EventSelectionChange":"onProjectType",
+				"BoxEntry0":"Anagame Application",
+				"BoxEntry1":"Desktop Application",
+				"BoxEntry2:"Front-End App (Web-Site)",
+				"BoxEntry3:"Back-End App (Web-Service)",
+				"BoxEntry4:"Programming Language",
+				"BoxEntry5:"Anagame Extension",
+				"BoxEntry6:"Mobile Application",
+				"BoxEntry7:"Video",
+				"BoxEntry8:"Library",
+				"BoxEntry9:"Other"
+			}
+		}, {
+			"TComboBox" : {
+				"RowPosition": 4,
+				"DefaultText":"New Solution",
+				"Class":"ComboB",
+				"EventSelectionChange":"onSolutionChange",
+				"BoxEntry0":"New Solution",
+				"BoxEntry1":"Add To Current Solution"
+			}
+		},{
+			"TLayout": { 
+				"IsGallery": true,
+				"RowPosition": 5,
+				"ColumnWidths": ["1*", "1*"],
+				"children" : [
+				{
+					"TControl" : { 
+						"ColPosition": 0,
+						"Caption":"Cancel",
+						"EventOnClick":"onCancel",
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Margin":"5,5,5,5",
+						"BorderThickness":0.8
+					}
+				},{
+					"TControl": { 
+						"ColPosition": 1,
+						"Caption":"Okay",
+						"EventOnClick":"onOkay",
+						"HorizontalAlignment":"Center",
+						"VerticalAlignment":"Center",
+						"Margin":"5,5,5,5",
+						"BorderThickness":0.8
+					}
+				}
+				]
+			}
+		}
+		]
+	}
+}

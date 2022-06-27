@@ -1,6 +1,7 @@
 #pragma once
 #include "TObject.h"
 #include "TrecReference.h"
+#include "TVariable.h"
 
 /*
  * Class: TObjectNode
@@ -48,6 +49,17 @@ public:
 	 * Attributes: abstract
 	 */
 	virtual TString GetContent() = 0;
+
+	/**
+	 * Method: TObjectNode::GetCommand
+	 * Purpose: Retrieves a Variable tht can represent a command based off of the provided info
+	 * Parameters: const TString& info - the info enabing the node to know what needs to be done
+	 * Returns: TString - string that can represent a command to the window or software utilizing this node
+	 * 
+	 * Attributes: virtual
+	 */
+	virtual TString GetCommand(const TString& info);
+
 	/**
 	 * Method: TObjectNode::IsExtendable
 	 * Purpose: Whether the ndoe can be extended

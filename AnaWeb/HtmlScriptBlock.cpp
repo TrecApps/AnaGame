@@ -130,7 +130,21 @@ TString HtmlScriptBlock::ProcessHtml(TrecPointer<TFile> file, const TString& dat
 			scriptFile.WriteString(srcEntry);
 			scriptFile.Close();
 		}
+		this->attributes.addEntry(L"FileLocation", fileLoc);
 	}
 
 	return TString();
+}
+
+TrecPointer<TFileShell> HtmlScriptBlock::GetFile()
+{
+	auto ret = TrecPointer<TFileShell>();
+
+	bool pres = true;
+	TString ent;
+	if (attributes.retrieveEntry(L"FileLocation", ent))
+	{
+		ret = TFileShell::GetFileInfo(ent);
+	}
+	return ret;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "EventHandler.h"
 class TInterpretorEventHandler :
-    public EventHandler
+    public TapEventHandler
 {
 public:
 	/**
@@ -10,7 +10,7 @@ public:
 	 * Parameters: TrecPointer<TInstance> instance - instance associated with this handler
 	 * Returns: New EventHandler Object
 	 */
-	TInterpretorEventHandler(TrecPointer<TInstance> instance);
+	TInterpretorEventHandler(TrecPointer<TProcess> instance);
 
 
 	/**
@@ -21,7 +21,7 @@ public:
 	 *
 	 * Attributes: override
 	 */
-	virtual void Initialize(TrecPointer<Page> page) override;
+	virtual void Initialize(TrecPointer<TPage> page) override;
 
 
 	/**
@@ -32,7 +32,7 @@ public:
 	 *
 	 * Attributes: override
 	 */
-	virtual void HandleEvents(TDataArray<EventID_Cred>& eventAr) override;
+	virtual void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr) override;
 
 	/**
 	 * Method: TInterpretorEventHandler::ProcessMessage

@@ -1,5 +1,15 @@
 #include "TInputTextElement.h"
 
+bool TInputTextElement::FindString(const TString& target, UINT& index, bool fromFront)
+{
+	int iindex = fromFront ? text.Find(target, 0) : text.FindLast(target);
+	if(iindex == -1)
+		return false;
+	index = static_cast<UINT>(iindex);
+
+	return true;
+}
+
 void TInputTextElement::UpdateCarotPoisition(UINT loc)
 {
 	DWRITE_HIT_TEST_METRICS mets;
@@ -18,12 +28,28 @@ void TInputTextElement::UpdateCarotPoisition(UINT loc)
 
 }
 
+UINT TInputTextElement::GetCarotLoc()
+{
+	return carotLoc;
+}
+
+bool TInputTextElement::TakesInput()
+{
+	return editAllowed;
+}
+
+void TInputTextElement::LockText(bool doLock)
+{
+	editAllowed = !doLock;
+}
+
 TInputTextElement::TInputTextElement(TrecPointer<DrawingBoard> drawingBoard, HWND window) : TTextElement(drawingBoard)
 {
 	carotLoc = 0;
 	carotActive = false;
 	grabbedRange = false;
 	this->window = window;
+	editAllowed = true;
 }
 
 bool TInputTextElement::OnCLickDown(const TPoint& point)
@@ -166,7 +192,7 @@ void TInputTextElement::OnCutCopyPaste(control_text_mode mode)
 bool TInputTextElement::OnInputChar(WCHAR ch, UINT count)
 {
 	UINT start = 0, end = 0;
-	if (carotActive)
+	if (carotActive && editAllowed)
 	{
 		bool didDelete = false;
 		if (this->highlightRange.GetHighlightRange(start, end))

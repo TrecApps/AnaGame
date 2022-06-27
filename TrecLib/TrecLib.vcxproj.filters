@@ -24,12 +24,12 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="TArrayBase.cpp" />
     <ClCompile Include="TClientSocket.cpp" />
-    <ClCompile Include="TControlComponent.cpp" />
     <ClCompile Include="TDataArrayBase.cpp" />
     <ClCompile Include="TDirectory.cpp" />
     <ClCompile Include="TFile.cpp" />
     <ClCompile Include="TFileNode.cpp" />
     <ClCompile Include="TFileShell.cpp" />
+    <ClCompile Include="TFileModifier.cpp" />
     <ClCompile Include="TMapBase.cpp" />
     <ClCompile Include="TML_Reader_.cpp" />
     <ClCompile Include="TObject.cpp" />
@@ -73,6 +73,7 @@
     <ClInclude Include="TFile.h" />
     <ClInclude Include="TFileNode.h" />
     <ClInclude Include="TFileShell.h" />
+    <ClInclude Include="TFileModifier.h" />
     <ClInclude Include="TMap.h" />
     <ClInclude Include="TMapBase.h" />
     <ClInclude Include="TML_Reader_.h" />
