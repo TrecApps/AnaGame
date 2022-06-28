@@ -1,5 +1,4 @@
 #include "THttpClientConnection.h"
-
 typedef struct HttpMethodMap {
     THttpConnectionMethod method;
     TString methodStr;
