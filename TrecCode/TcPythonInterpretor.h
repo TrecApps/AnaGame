@@ -36,6 +36,23 @@ public:
     virtual ReturnObject Run() override;
 
     /**
+     * Method: TcJavaScriptInterpretor::Run
+     * Purpose: Allows the Interpretor to run the Code As Is
+     * Parameters: void
+     * Returns: ReturnObject - information about the Run
+     */
+    ReturnObject Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT start = 0);
+
+    /**
+     * Method: TcJavaScriptInterpretor::Run
+     * Purpose: Allows the Interpretor to run the Code As Is
+     * Parameters: void
+     * Returns: ReturnObject - information about the Run
+     */
+    ReturnObject Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, TrecPointer<CodeStatement> statement);
+
+
+    /**
      * Method: TcInterpretor::SetInitialVariables
      * Purpose: Allows Callers to Set Intial Variables, i.e. parameters in a function/method call
      * Parameters: TDataArray<TrecPointer<TVariable>>& params - the parameters to set when calling the function
@@ -66,9 +83,11 @@ public:
 
 protected:
 
-    void ProcessIf(UINT& index, ReturnObject& ret);
-    void ProcessWhile(UINT index, ReturnObject& ret);
-    void ProcessFor(UINT& index, ReturnObject& ret);
+    void ProcessIf(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, ReturnObject& ret);
+    void ProcessWhile(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, ReturnObject& ret);
+    void ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, ReturnObject& ret);
+    void ProcessElse(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, ReturnObject& ret);
+
 
     void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT index);
     void ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT index, UINT parenth, UINT square);
@@ -81,6 +100,8 @@ protected:
     void PythonPreProcess(TDataArray<TrecPointer<CodeStatement>>& statements, bool indentationExpected, ReturnObject& ret);
 
     void PrintStatement(UINT indent);
-
+    // Block Support
+    UINT yieldIndex;
+    TrecPointer<CodeStatement> yieldStatement;
 };
 

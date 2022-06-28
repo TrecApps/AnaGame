@@ -466,7 +466,7 @@ ReturnObject TcJavaScriptInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>
         ret = Run(statements, Rust, yieldStatement);
         if (ret.returnCode || (ret.mode != return_mode::rm_regular))
         {
-            if (ret.mode == return_mode::rm_yield)
+            if (ret.mode == return_mode::rm_yield || ret.mode == return_mode::rm_block)
             {
                 yieldIndex = Rust;
                 if (yieldStatement.Get())

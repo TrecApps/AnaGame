@@ -10,6 +10,7 @@ TcPythonInterpretor::TcPythonInterpretor(TrecSubPointer<TVariable, TcInterpretor
     TcAnascriptInterpretor(parentInterpretor, env)
 {
     preProcessed = true;
+    yieldIndex = 0;
 }
 
 void TcPythonInterpretor::SetFile(TrecPointer<TFileShell> codeFile, ReturnObject& ret, bool isFirst)
@@ -86,25 +87,69 @@ ReturnObject TcPythonInterpretor::Run()
         return ret;
     }
 
-    bool ifDone = false;
+    ret = Run(statements, yieldIndex);
+    return ret;
 
-    for (UINT Rust = 0; Rust < statements.Size(); Rust++)
+
+}
+
+ReturnObject TcPythonInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT start)
+{
+    ReturnObject ret;
+    for (UINT Rust = start; Rust < statements.Size(); Rust++)
     {
-        switch (statements[Rust]->statementType) {
-        case code_statement_type::cst_if:
-            ProcessIf(Rust, ret);
+        yieldIndex = 0;
+        ret = Run(statements, Rust, yieldStatement);
+        if (ret.returnCode || (ret.mode != return_mode::rm_regular))
+        {
+            if (ret.mode == return_mode::rm_yield || ret.mode == return_mode::rm_block)
+            {
+                yieldIndex = Rust;
+                if (yieldStatement.Get())
+                    yieldIndex++;
+                yieldStatement.Nullify();
+            }
             break;
-        case code_statement_type::cst_else:
-        case code_statement_type::cst_else_if:
-            // Set up error
-            break;
-        case code_statement_type::cst_while:
-            ProcessWhile(Rust, ret);
-            break;
-        case code_statement_type::cst_for:
-            ProcessFor(Rust, ret);
         }
     }
+
+
+    return ret;
+}
+
+ReturnObject TcPythonInterpretor::Run(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, TrecPointer<CodeStatement> statement)
+{
+    ReturnObject ret;
+
+    TrecPointer<CodeStatement> prev;
+    if (index > 0 && (index - 1) < statements.Size())
+        prev = statements[index - 1];
+    switch (statement->statementType) {
+    case code_statement_type::cst_if:
+        ProcessIf(statements, index, ret);
+        break;
+    case code_statement_type::cst_else:
+    case code_statement_type::cst_else_if:
+        // Set up error
+        ret.returnCode = ReturnObject::ERR_UNEXPECTED_TOK;
+        ret.errorMessage.Set(L"Else/Elif statements need to be preceeded by an if/elif statement!");
+        break;
+    case code_statement_type::cst_while:
+        ProcessWhile(statements, index, ret);
+        break;
+    case code_statement_type::cst_for:
+        ProcessFor(statements, index, ret);
+        break;
+    case code_statement_type::cst_yield:
+        ProcessExpression(statement, ret, 0);
+        if (!ret.returnCode)
+        {
+            ret.mode = return_mode::rm_yield;
+            yieldStatement = statement;
+        }
+        break;
+    }
+    return ret;
 }
 
 void TcPythonInterpretor::SetIntialVariables(TDataArray<TrecPointer<TVariable>>& params)
@@ -323,7 +368,7 @@ void TcPythonInterpretor::ProcessIndividualStatement(const TString& statement, R
     ProcessExpression(state, ret, 0);
 }
 
-void TcPythonInterpretor::ProcessIf(UINT& index, ReturnObject& ret)
+void TcPythonInterpretor::ProcessIf(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, ReturnObject& ret)
 {
     bool doContinue = false;
     bool done = false;
@@ -381,7 +426,7 @@ void TcPythonInterpretor::ProcessIf(UINT& index, ReturnObject& ret)
     } while (doContinue);
 }
 
-void TcPythonInterpretor::ProcessWhile(UINT index, ReturnObject& ret)
+void TcPythonInterpretor::ProcessWhile(TDataArray<TrecPointer<CodeStatement>>& statements, UINT index, ReturnObject& ret)
 {
     bool doContinue = false;
     do
@@ -401,7 +446,7 @@ void TcPythonInterpretor::ProcessWhile(UINT index, ReturnObject& ret)
     } while (doContinue);
 }
 
-void TcPythonInterpretor::ProcessFor(UINT& index, ReturnObject& ret)
+void TcPythonInterpretor::ProcessFor(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, ReturnObject& ret)
 {
     TString exp(statements[index]->statement);
 
@@ -475,6 +520,10 @@ void TcPythonInterpretor::ProcessFor(UINT& index, ReturnObject& ret)
             ret = dynamic_cast<TcInterpretor*>(statements[index]->statementVar.Get())->Run();
         }
     }
+}
+
+void TcPythonInterpretor::ProcessElse(TDataArray<TrecPointer<CodeStatement>>& statements, UINT& index, ReturnObject& ret)
+{
 }
 
 void TcPythonInterpretor::ProcessExpression(TrecPointer<CodeStatement> statement, ReturnObject& ret, UINT index)
