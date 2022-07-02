@@ -1,6 +1,5 @@
 #pragma once
 #include <TcTypeInterpretor.h>
-#include <TcExpression.h>
 /**
  * Enum Class: 
  */
@@ -15,7 +14,7 @@ class TcCodeObjectInterpretor :
 {
 protected:
 
-    TrecPointer<TDataArray<TcOperatorGroup>> operatorGroup;
+    //TrecPointer<TDataArray<TcOperatorGroup>> operatorGroup;
 
     TrecPointer<TDataArray<TDataArray<TString>>> operatorMap;
 

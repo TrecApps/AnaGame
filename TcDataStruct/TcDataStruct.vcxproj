@@ -156,7 +156,6 @@
   <ItemGroup>
     <ClInclude Include="AgCompiler.h" />
     <ClInclude Include="AnagameRunners.h" />
-    <ClInclude Include="BNFBase.h" />
     <ClInclude Include="DefaultObjectOperator.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="JsMath.h" />
@@ -164,14 +163,12 @@
     <ClInclude Include="RunOps.h" />
     <ClInclude Include="TAccessorVariable.h" />
     <ClInclude Include="TAsyncVariable.h" />
-    <ClInclude Include="Tc2Compiler.h" />
     <ClInclude Include="TcCompiler.h" />
     <ClInclude Include="TcDataStruct.h" />
     <ClInclude Include="JavaScriptFunc.h" />
     <ClInclude Include="Operator.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TcExpression.h" />
-    <ClInclude Include="TcLanguage.h" />
     <ClInclude Include="TClassStruct.h" />
     <ClInclude Include="TcNativeInterpretor.h" />
     <ClInclude Include="TContainerVariable.h" />
@@ -201,7 +198,6 @@
   <ItemGroup>
     <ClCompile Include="AgCompiler.cpp" />
     <ClCompile Include="AnagameRunners.cpp" />
-    <ClCompile Include="BNFBase.cpp" />
     <ClCompile Include="DefaultObjectOperator.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="JavaScriptFunc.cpp" />
@@ -216,10 +212,8 @@
     <ClCompile Include="RunOps.cpp" />
     <ClCompile Include="TAccessorVariable.cpp" />
     <ClCompile Include="TAsyncVariable.cpp" />
-    <ClCompile Include="Tc2Compiler.cpp" />
     <ClCompile Include="TcCompiler.cpp" />
     <ClCompile Include="TcExpression.cpp" />
-    <ClCompile Include="TcLanguage.cpp" />
     <ClCompile Include="TClassStruct.cpp" />
     <ClCompile Include="TcNativeInterpretor.cpp" />
     <ClCompile Include="TContainerVariable.cpp" />
