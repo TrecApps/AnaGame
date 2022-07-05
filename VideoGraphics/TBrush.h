@@ -198,6 +198,14 @@ public:
 	 */
 	virtual ~TBrush();
 
+	/**
+ * Method: TBrush::Refresh
+ * Purpose: Allows Brushes to know that it is safe to Draw and attempt to correct any issue that pops up
+ * Parameters: void
+ * Returns: bool
+ */
+	bool Refresh(bool forceBrushRefresh = false);
+
 protected:
 	brush_type brushType;
 
@@ -245,14 +253,6 @@ protected:
 	 */
 	TBrush(TrecPointer<DrawingBoard> rt);
 
-
-	/**
-	 * Method: TBrush::Refresh
-	 * Purpose: Allows Brushes to know that it is safe to Draw and attempt to correct any issue that pops up
-	 * Parameters: void
-	 * Returns: bool
-	 */
-	bool Refresh(bool forceBrushRefresh = false);
 
 	/**
 	 * Method: TBrush::RefreshBrush

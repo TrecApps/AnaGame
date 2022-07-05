@@ -94,6 +94,12 @@ void TWebWindow::OnWindowResize(UINT width, UINT height)
     {
         drawingBoard->Resize(currentWindow, size, d3dEngine);
     }
+    if(webPages.Get())
+        webPages->OnResize(tabs, 0, cred);
+    if(currentPage.Get())
+        currentPage->OnResize(webPage, 0, cred);
+
+
     ThreadRelease();
 }
 

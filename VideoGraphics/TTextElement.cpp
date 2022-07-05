@@ -579,6 +579,9 @@ void TTextElement::OnDraw(TrecPointer<TVariable> dataText)
 
 	mainLayout->SetMaxHeight(bounds.bottom - bounds.top);
 	mainLayout->SetMaxWidth(bounds.right - bounds.left);
+	basicDetails.color->Refresh();
+	if (basicDetails.bColor.Get())
+		basicDetails.bColor->Refresh();
 	ID2D1Brush* b = basicDetails.color->GetUnderlyingBrush().Get();
 	if (b)
 	{
