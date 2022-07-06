@@ -216,6 +216,8 @@ public:
      * Attributes: override
      */
     virtual TString GetString() override;
+
+    virtual bool IsTruthful(TrecPointer<TVariable> var);
 protected:
     TDataArray<TString> paramNames, paramTypes;     // Parameter Names and Types
     TDataMap<TcVariableHolder> variables;       // List of Variables to Hold
