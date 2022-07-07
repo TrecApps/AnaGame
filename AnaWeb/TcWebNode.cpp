@@ -1334,6 +1334,8 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
         listInfo.Set(dynamic_cast<TcWebNode*>(parent.Get())->GetListPrepend());
     }
 
+    //float curBottomMargin = 0;
+
     
 
     UINT firstText = 0xf0000000;
@@ -1358,6 +1360,7 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
 
             if (internalDisplay == TcWebNodeDisplayInternal::wndi_row)
             {
+                
                 if (!Rust)
                     location.right = location.left + columnSizes[0];
                 else if (Rust < columnSizes.Size())
@@ -1369,10 +1372,14 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
             }
             else
             {
+                //location.top -= min(curBottomMargin, childNode->outerMargin.top);
                 childNode->CreateWebNode(location, d3dEngine, window, fileRequests,true, requestFiles);
                 childNode->ShrinkHeight();
-                if(childNode->GetArea().bottom > location.top)
+                if (childNode->GetArea().bottom > location.top)
+                {
+                    //curBottomMargin = childNode->outerMargin.bottom;
                     location.top = childNode->GetArea().bottom;
+                }
             }
 
 
@@ -1394,9 +1401,12 @@ UINT TcWebNode::CreateWebNode(D2D1_RECT_F location, TrecPointer<TWindowEngine> d
             }
             else
             {
+               // location.top -= min(curBottomMargin, tableElement->GetOuterMargin().top);
                 tableElement->PrepTable();
                 tableElement->CreateTable(location, d3dEngine, window, fileRequests, requestFiles);
                 location.top = tableElement->GetLocation().bottom;
+
+                //curBottomMargin = tableElement->GetOuterMargin().bottom;
             }
         }
         else
@@ -2131,6 +2141,13 @@ void TcWebNode::CompileProperties(TDataMap<TString>& atts)
         textData.fontStyleUpdated = true;
     }
 
+    if (atts.retrieveEntry(L"font-size", val))
+    {
+        float size = ConvertMeasurement(val);
+        textData.fontSize = size;
+        textData.fontSizeUpdated = true;
+    }
+
 
     if (atts.retrieveEntry(L"font-weight", val))
     {
@@ -2855,7 +2872,7 @@ float TcWebNode::ConvertMeasurement(TString& atts)
             sizeVal = sizeVal * 2.54f / dpif;
             break;
         case WebSizeUnit::wsu_em:
-            sizeVal = sizeVal * textData.fontSize;
+            sizeVal = sizeVal * 16.0f;
             break;
         case WebSizeUnit::wsu_in:
             sizeVal = sizeVal / dpif;
@@ -3546,6 +3563,11 @@ D2D1_RECT_F TcWebNode::TcTableNodeElement::GetLocation()
 TrecSubPointer<TPage, TcWebNode> TcWebNode::TcTableNodeElement::GetWebNode()
 {
     return node;
+}
+
+D2D1_RECT_F TcWebNode::TcTableNodeElement::GetOuterMargin()
+{
+    return node->outerMargin;
 }
 
 void TcWebNode::TcTableNodeElement::PrepTable()

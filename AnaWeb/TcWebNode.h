@@ -354,6 +354,7 @@ protected:
         virtual D2D1_RECT_F GetLocation() override;
 
         TrecSubPointer<TPage, TcWebNode> GetWebNode();
+        D2D1_RECT_F GetOuterMargin();
 
         void PrepTable();
 
