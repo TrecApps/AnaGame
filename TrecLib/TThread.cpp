@@ -96,6 +96,17 @@ void TThread::SetMainThread()
 	threadList.push_back(thread);
 }
 
+bool TThread::IsMainThread()
+{
+	DWORD currentThread = GetCurrentThreadId();
+	for (UINT Rust = 0; Rust < threadList.Size(); Rust++)
+	{
+		if (threadList[Rust].details.threadId == currentThread)
+			return true;
+	}
+	return false;
+}
+
 bool TThread::Suspend(DWORD id)
 {
 	for (UINT Rust = 0; Rust < threadList.Size(); Rust++)

@@ -232,6 +232,14 @@ public:
 	 */
 	virtual UINT EndGroup();
 
+	/**
+	 * Method: TConsoleHolder::SendToEnvironment
+	 * Purpose: Directs the Command Console to direct the next set of input to the Environment
+	 * Parameters: TrecPointer<TEnvironment> - the Environment making the call
+	 * Returns: bool - whether the operation is supported
+	 */
+	virtual bool SendToEnvironment(TrecPointer<TEnvironment>) = 0;
+
 
 protected:
 	UINT groupLevel;
@@ -572,8 +580,34 @@ public:
 	 */
 	virtual TrecPointer<TFileShell> GetFile(const TString& file);
 
+	/**
+	 * Method: TEnvironment::RetrieveInput
+	 * Purpose: Retrieves User Input from the Command Line (should not be called from the main thread)
+	 * Parameters: TString& input - the input to retrieve
+	 * Returns: bool - successful response
+	 */
+	bool RetrieveInput(TString& input);
+
+	/**
+	 * Method: TEnvironment::SetInput
+	 * Purpose: Sets the input and resumes the requesting thread
+	 * Parameters: const TString& input - the input to return to the requesting Program
+	 * Returns: void
+	 */
+	void SetInput(const TString& input);
+
+	/**
+	 * Method: TEnvironment::EndProcess
+	 * Purpose: Ends the Process currently running
+	 * Parameters: void
+	 * Returns: void
+	 */
+	void EndProcess();
 
 protected:
+
+	DWORD inputThread;
+	TString consoleInput;
 
 	/**
 	 * Method: TEnvironment::UpdateProjectRepo

@@ -14,6 +14,8 @@ class _ANAFACE_DLL2 TConsoleLayout :
 protected:
     TShell shell;
 
+	TrecPointer<TEnvironment> env;
+
 	bool isInput;
 
 	bool doDraw;

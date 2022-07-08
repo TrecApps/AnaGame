@@ -42,6 +42,8 @@ public:
      */
     static void SetMainThread();
 
+    static bool IsMainThread();
+
     static bool Suspend(DWORD id);
     static bool Resume(DWORD id);
     static DWORD Sleep(DWORD dwMilliseconds);

@@ -169,6 +169,26 @@ public:
 		UnlockDrawing();
 	}
 
+	/**
+	 * Method: TConsoleHolder::SendToEnvironment
+	 * Purpose: Directs the Command Console to direct the next set of input to the Environment
+	 * Parameters: TrecPointer<TEnvironment> - the Environment making the call
+	 * Returns: bool - whether the operation is supported
+	 */
+	virtual bool SendToEnvironment(TrecPointer<TEnvironment> env) override
+	{
+		LockDrawing();
+		TrecSubPointer<TPage, TConsoleText> lay = TrecPointerKey::GetSubPointerFromSoft<>(layout);
+		bool ret = false;
+		if (lay.Get())
+		{
+			lay->env = env;
+			ret = true;
+		}
+		UnlockDrawing();
+		return ret;
+	}
+
 protected:
 	TConsoleTextHolder(TrecSubPointer<TPage, TConsoleText> layout) {
 		this->layout = TrecPointerKey::GetSoftSubPointerFromSub<>(layout);
@@ -215,7 +235,13 @@ bool TConsoleText::SubmitInput()
 	}
 	if (quote)
 		return false;
-	shell.SubmitCommand(input);
+	if (env.Get())
+	{
+		env->SetInput(input);
+		env.Nullify();
+	}
+	else
+		shell.SubmitCommand(input);
 	input.Empty();
     return false;
 }

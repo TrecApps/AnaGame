@@ -3,6 +3,7 @@
 #include "DirectoryInterface.h"
 #include "TcInterpretor.h"
 #include "TML_Reader_.h"
+#include "TThread.h"
 
 static bool languagesMapped = false;
 
@@ -99,14 +100,41 @@ TrecPointer<TFileShell> TEnvironment::GetFile(const TString& file)
 	return ret;
 }
 
-/**
- * Method: TEnvironment::UpdateProjectRepo
- * Purpose: Allows Environment Objects to update the Repository for Environment Projects, called by Objects
- * Parameters: TrecPointer<TFileShell> file - the file to save
- *				const TString& envSource - where the Environment can be found (in Anagame itself or a third party Library)
- *				const TString& envType - the actual type of environment used
- * Returns: void
- */
+bool TEnvironment::RetrieveInput(TString& input)
+{
+	if (TThread::IsMainThread() || !this->GetPrompt().Get()) return false;
+
+	if (this->consoleInput.GetSize())
+	{
+		input.Set(consoleInput);
+		consoleInput.Empty();
+		return true;
+	}
+
+	TrecPointer<TEnvironment> env = TrecPointerKey::GetTrecPointerFromSoft<>(self);
+	if(!this->GetPrompt()->SendToEnvironment(env))
+		return false;
+	this->inputThread = GetCurrentThreadId();
+	TThread::Suspend(inputThread);
+
+	input.Set(consoleInput);
+	consoleInput.Empty();
+	return true;
+}
+
+void TEnvironment::SetInput(const TString& input)
+{
+	consoleInput.Set(input);
+	TThread::Resume(inputThread);
+}
+
+
+void TEnvironment::EndProcess()
+{
+	
+}
+
+
 void TEnvironment::UpdateProjectRepo(TrecPointer<TFileShell> file, const TString& envSource, const TString& envType, const TString& name_)
 {
 	if (!file.Get() || file->IsDirectory())

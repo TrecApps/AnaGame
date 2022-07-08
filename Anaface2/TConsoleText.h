@@ -32,6 +32,8 @@ protected:
 	 */
 	void ProcessShellOutput(TString& output);
 
+	TrecPointer<TEnvironment> env;
+
 public:
 
 	/**
