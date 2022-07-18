@@ -8,6 +8,7 @@ typedef enum class ag_lang_output
 {
 	// Intermediate Code that can be processed further
 	ag_runner,		// Can Create an Anagame Runner
+	tc_interpreter,
 	transpile,		// Can convert code to that of a different Language (Read the String to determine specific languages)
 	intermediate,	// Intermediate Representation
 
@@ -54,6 +55,7 @@ public:
 
 	virtual bool CompleteCompile(TDataArray<CompileMessage>& messages, TrecSubPointer<TVariable, TContainerVariable>& details) = 0;
 
+	virtual TrecSubPointer<TVariable, TcRunner> Getrunner() = 0;
 
 
 	// Allows Registering of Compilers

@@ -158,6 +158,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AgJavaScriptCompiler.h" />
     <ClInclude Include="CBaseCompiler.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="JavaScriptModifiers.h" />
@@ -184,6 +185,7 @@
     <ClInclude Include="TrecCode.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AgJavaScriptCompiler.cpp" />
     <ClCompile Include="CBaseCompiler.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="JavaScriptModifiers.cpp" />
