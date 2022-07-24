@@ -131,6 +131,30 @@ public:
 		array = new T[5];
 	}
 
+	/**
+	 * Method: (TDataArray) (Constructor)
+	 * Purpose: Sets up a TDataArray
+	 * Parameters: void
+	 * Returns: void
+	 */
+	TDataArray(UINT initCapacity) : TDataArrayBase(initCapacity, initCapacity)
+	{
+		array = new T[initCapacity];
+	}
+
+	/**
+	 * Method: SetLooseSize
+	 * Purpose: Sets the Size of the TDataArray
+	 * Parameters: UINT newSize - the new Size of the Array (must not be greater than the capacity)
+	 * Returns: bool - true if less than or equal to capacity
+	 */
+	bool SetLooseSize(UINT newSize)
+	{
+		bool ret = newSize <= capacity;
+		if (ret)
+			size = newSize;
+		return ret;
+	}
 
 
 	/*

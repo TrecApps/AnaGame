@@ -1,5 +1,10 @@
 #pragma once
+
+#define SECURITY_MAC
+
 #include <winsock2.h>
+#include <schannel.h>
+#include <Security.h>
 #include <ws2tcpip.h>
 #include "TObject.h"
 #include "TString.h"

@@ -1,19 +1,160 @@
 #include "TClientSocket.h"
 
-#include <schannel.h>
+
 //#include <WinSock2.h>
 //#include <ws2tcpip.h>
 
 #define CLIENT_BUFFER_SIZE 512;
+
+#define AUTH_CLIENT_BUFFER_SIZE 2048
+
+BOOL SendBytes(
+	SOCKET  s,
+	PBYTE   pBuf,
+	DWORD   cbBuf)
+{
+	PBYTE pTemp = pBuf;
+	int   cbSent;
+	int   cbRemaining = cbBuf;
+
+	if (0 == cbBuf)
+		return(TRUE);
+
+	while (cbRemaining)
+	{
+		cbSent = send(
+			s,
+			(const char*)pTemp,
+			cbRemaining,
+			0);
+		if (SOCKET_ERROR == cbSent)
+		{
+			fprintf(stderr, "send failed: %u\n", GetLastError());
+			return FALSE;
+		}
+
+		pTemp += cbSent;
+		cbRemaining -= cbSent;
+	}
+
+	return TRUE;
+}
+
+BOOL ReceiveBytes(
+	SOCKET  s,
+	PBYTE   pBuf,
+	DWORD   cbBuf,
+	DWORD* pcbRead)
+{
+	PBYTE pTemp = pBuf;
+	int cbRead, cbRemaining = cbBuf;
+
+	while (cbRemaining)
+	{
+		cbRead = recv(
+			s,
+			(char*)pTemp,
+			cbRemaining,
+			0);
+		if (0 == cbRead)
+			break;
+		if (SOCKET_ERROR == cbRead)
+		{
+			fprintf(stderr, "recv failed: %u\n", GetLastError());
+			return FALSE;
+		}
+
+		cbRemaining -= cbRead;
+		pTemp += cbRead;
+	}
+
+	*pcbRead = cbBuf - cbRemaining;
+
+	return TRUE;
+}  // end ReceiveBytes
+
+BOOL SendMsg(
+	SOCKET  s,
+	PBYTE   pBuf,
+	DWORD   cbBuf)
+{
+	if (0 == cbBuf)
+		return(TRUE);
+
+	//----------------------------------------------------------
+	//  Send the size of the message.
+
+	if (!SendBytes(s, (PBYTE)&cbBuf, sizeof(cbBuf)))
+		return(FALSE);
+
+	//----------------------------------------------------------
+	//  Send the body of the message.
+
+	if (!SendBytes(
+		s,
+		pBuf,
+		cbBuf))
+	{
+		return(FALSE);
+	}
+
+	return(TRUE);
+}
+
+BOOL ReceiveMsg(
+	SOCKET  s,
+	PBYTE   pBuf,
+	DWORD   cbBuf,
+	DWORD* pcbRead)
+
+{
+	DWORD cbRead;
+	DWORD cbData;
+
+	//----------------------------------------------------------
+	//  Receive the number of bytes in the message.
+
+	if (!ReceiveBytes(
+		s,
+		(PBYTE)&cbData,
+		sizeof(cbData),
+		&cbRead))
+	{
+		return(FALSE);
+	}
+
+	if (sizeof(cbData) != cbRead)
+		return(FALSE);
+	//----------------------------------------------------------
+	//  Read the full message.
+
+	if (!ReceiveBytes(
+		s,
+		pBuf,
+		cbData,
+		&cbRead))
+	{
+		return(FALSE);
+	}
+
+	if (cbRead != cbData)
+		return(FALSE);
+
+	*pcbRead = cbRead;
+	return(TRUE);
+}  // end ReceiveMessage    
+
 
 TClientSocket::TClientSocket(UCHAR type)
 {
 	if (!type || (type > 2))
 		throw L"Error, Expected 1 (TCP) or 2 (UDP) for network type";
 	networkType = type;
-	initSuccess = false;
+	initSuccess = isEncrypted = false;
 	results = nullptr;
 	sock = INVALID_SOCKET;
+	hCred = nullptr;
+	hcText = nullptr;
 }
 
 TClientSocket::~TClientSocket()
@@ -23,6 +164,12 @@ TClientSocket::~TClientSocket()
 		FreeAddrInfo(results);
 		results = nullptr;
 	}
+
+	if (hcText)
+		DeleteSecurityContext(hcText);
+	hcText = nullptr;
+	if (hCred)
+		FreeCredentialHandle(hCred);
 	Close();
 }
 
@@ -77,7 +224,7 @@ UINT TClientSocket::InitializeSocket(TString& address)
 	return 0;
 }
 
-UINT TClientSocket::Connect()
+UINT TClientSocket::Connect(bool requireAuth)
 {
 	if (!initSuccess)
 		return 1;
@@ -91,6 +238,9 @@ UINT TClientSocket::Connect()
 		sock = INVALID_SOCKET;
 		return 2;
 	}
+
+
+
 	return 0;
 }
 
@@ -145,4 +295,127 @@ TString TClientSocket::Recieve(TDataArray<char>& bytes)
 	}
 
 	return ret;
+}
+
+bool TClientSocket::AttemptAuth()
+{
+	SYSTEMTIME sysTime;
+	GetLocalTime(&sysTime);
+	FILETIME fileTime;
+	assert(SystemTimeToFileTime(&sysTime, &fileTime));
+
+	TimeStamp cur;
+	memcpy_s(&cur, sizeof(cur), &fileTime, sizeof(fileTime));
+	if (hcText && Lifetime > cur)
+		return true;
+
+	UCHAR* inBuffer = new UCHAR[AUTH_CLIENT_BUFFER_SIZE];
+	UCHAR* outBuffer = new UCHAR[AUTH_CLIENT_BUFFER_SIZE];
+
+	static PTCHAR     lpPackageName = (PTCHAR)UNISP_NAME;
+
+	ss = AcquireCredentialsHandle(
+		nullptr,
+		lpPackageName,
+		SECPKG_CRED_OUTBOUND,
+		nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
+		hCred,
+		&Lifetime
+	);
+
+	if (ss < 0 || !PrepSecurityContext(inBuffer, outBuffer))
+	{
+		delete[] inBuffer;
+		delete[] outBuffer;
+		inBuffer = outBuffer = nullptr;
+		return false;
+	}
+	
+	delete[] inBuffer;
+	delete[] outBuffer;
+	inBuffer = outBuffer = nullptr;
+	if (!hcText)
+		hcText = new SecHandle;
+
+	ss = QueryContextAttributes(hcText, SECPKG_ATTR_NEGOTIATION_INFO, &SecPkgNegInfo);
+	if (ss < 1)
+		return false;
+
+	ss = QueryContextAttributes(
+		hcText,
+		SECPKG_ATTR_SIZES,
+		&SecPkgContextSizes);
+}
+
+bool TClientSocket::PrepSecurityContext(UCHAR* inBuffer, UCHAR* outBuffer)
+{
+	bool done = false;
+
+	TDataArray<UCHAR> inBuffer(AUTH_CLIENT_BUFFER_SIZE);
+	TDataArray<UCHAR> outBuffer(AUTH_CLIENT_BUFFER_SIZE);
+
+	SecBufferDesc     OutBuffDesc;
+	SecBuffer         OutSecBuff;
+	SecBufferDesc     InBuffDesc;
+	SecBuffer         InSecBuff;
+
+	UINT count = 0;
+	ULONG contextAtts = 0;
+
+	DWORD inSize = 0;
+
+	while (!done)
+	{
+		OutBuffDesc.ulVersion = 0;
+		OutBuffDesc.cBuffers = 1;
+		OutBuffDesc.pBuffers = &OutSecBuff;
+
+		OutSecBuff.cbBuffer = inSize;
+		OutSecBuff.BufferType = SECBUFFER_TOKEN;
+		OutSecBuff.pvBuffer = outBuffer;
+
+		InBuffDesc.ulVersion = 0;
+		InBuffDesc.cBuffers = 1;
+		InBuffDesc.pBuffers = &InSecBuff;
+
+		InSecBuff.cbBuffer = inSize;
+		InSecBuff.BufferType = SECBUFFER_TOKEN;
+		InSecBuff.pvBuffer = inBuffer;
+
+		ss = InitializeSecurityContext(
+			hCred,								// PCredHandle    phCredential
+			count ? hcText : nullptr,			// PCtxtHandle    phContext
+			nullptr,							// SEC_CHAR       *pszTargetName
+			ISC_REQ_CONFIDENTIALITY,			// ULONG          fContextReq
+			0,									// ULONG          Reserved1
+			0,									// ULONG          TargetDataRep
+			count ? (&InBuffDesc) : nullptr,	// PSecBufferDesc pInput
+			0,									// ULONG          Reserved2
+			hcText,
+			&OutBuffDesc,
+			&contextAtts,
+			&Lifetime
+		);
+
+		if (ss < -1)
+			return false;
+
+		if ((SEC_I_COMPLETE_NEEDED == ss)
+			|| (SEC_I_COMPLETE_AND_CONTINUE == ss))
+		{
+			ss = CompleteAuthToken(hcText, &OutBuffDesc);
+			if (ss < -1)
+				return false;
+			done = true;
+		}
+		
+		if (!SendMsg(sock, outBuffer, AUTH_CLIENT_BUFFER_SIZE) || !ReceiveMsg(sock, inBuffer, AUTH_CLIENT_BUFFER_SIZE, &inSize))
+			return false;
+
+
+	}
+	return true;
 }

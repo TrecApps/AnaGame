@@ -12,7 +12,7 @@ public:
 
 	virtual UINT InitializeSocket(TString& address);
 
-	UINT Connect();
+	UINT Connect(bool requireAuth = false);
 
 	virtual void Close() override;
 
@@ -21,6 +21,18 @@ public:
 	TString Send(TDataArray<char>& bytes);
 	TString Recieve(TDataArray<char>& bytes);
 protected:
+
+	bool AttemptAuth();
+	bool PrepSecurityContext(UCHAR* inBuffer, UCHAR* outBuffer);
+	// Security Attributes
+	bool isEncrypted;
+	SECURITY_STATUS   ss;
+	TimeStamp         Lifetime;
+	CredHandle* hCred;
+	struct _SecHandle* hcText;
+	SecPkgContext_NegotiationInfo  SecPkgNegInfo;
+	SecPkgContext_Sizes            SecPkgContextSizes;
+
 	bool initSuccess;
 	ADDRINFOW* results;
 	SOCKET sock;
