@@ -239,9 +239,10 @@ UINT TClientSocket::Connect(bool requireAuth)
 		return 2;
 	}
 
+	bool authAchieved = AttemptAuth();
 
 
-	return 0;
+	return (authAchieved || !requireAuth) ? 0 : 3;
 }
 
 void TClientSocket::Close()
@@ -263,6 +264,30 @@ TString TClientSocket::Send(TDataArray<char>& bytes)
 	if (!bytes.Size())
 		return TString(L"No Data to Send!");
 	TString ret;
+
+	if (isEncrypted)
+	{
+		assert(AttemptAuth());
+		ss = SEC_E_BUFFER_TOO_SMALL;
+
+		SecBufferDesc     BuffDesc;
+		SecBuffer         SecBuff[4];
+
+		BuffDesc.ulVersion = 0;
+		BuffDesc.cBuffers = 4;
+		BuffDesc.pBuffers = SecBuff;
+
+		SecBuff[0].BufferType = SECBUFFER_STREAM_HEADER;
+		SecBuff[2].BufferType = SECBUFFER_STREAM_TRAILER;
+		SecBuff[3].BufferType = SECBUFFER_EMPTY;
+
+		SecBuff[1].BufferType = SECBUFFER_DATA;
+		SecBuff[1].pvBuffer = (PBYTE)&bytes[0];
+		SecBuff[1].cbBuffer = bytes.Size();
+		
+		assert(EncryptMessage(hcText, 0, &BuffDesc, 0) >= 0);
+	}
+
 	int sendRes = send(sock, &bytes[0], bytes.Size(), 0);
 	if (sendRes == SOCKET_ERROR)
 	{
@@ -348,6 +373,54 @@ bool TClientSocket::AttemptAuth()
 		hcText,
 		SECPKG_ATTR_SIZES,
 		&SecPkgContextSizes);
+
+	isEncrypted = ss >= 0;
+}
+
+bool TClientSocket::DoDerypt(TDataArray<char>& encoded, TDataArray<char>& decoded)
+{
+	if (!isEncrypted)
+	{
+		decoded = encoded;
+		return true;
+	}
+
+	SecBufferDesc     BuffDesc;
+	SecBuffer         SecBuff[2];
+
+	// The Size of the Encrypted Buffer comes in the first four bytes of the response
+	PBYTE startBuffer = ((PBYTE)(&encoded[0]));
+	DWORD sigBufferSize = *((DWORD*)startBuffer);
+
+	// Set up the buffers. The encrypted buffer starts four bytes into the response.
+	// The Space for the unencrypted portion occurs immediately after the encrypted section
+	PBYTE             pSigBuffer = ((PBYTE)( & encoded[0])) + sizeof(DWORD);
+	PBYTE             pDataBuffer = pSigBuffer + sigBufferSize;
+
+	BuffDesc.ulVersion = 0;
+	BuffDesc.cBuffers = 2;
+	BuffDesc.pBuffers = SecBuff;
+
+	SecBuff[0].cbBuffer = sigBufferSize;
+	SecBuff[0].BufferType = SECBUFFER_TOKEN;
+	SecBuff[0].pvBuffer = pSigBuffer;
+
+	SecBuff[1].cbBuffer = encoded.Size() - (sizeof(DWORD) + sigBufferSize);
+	SecBuff[1].BufferType = SECBUFFER_DATA;
+	SecBuff[1].pvBuffer = pDataBuffer;
+
+	ss = DecryptMessage(hcText, &BuffDesc, 0, nullptr);
+	if (ss < 0)
+	{
+		// To- Do: Code best way to handle this scenario
+		return false;
+	}
+
+	for (UINT Rust = sigBufferSize + sizeof(DWORD); Rust < encoded.Size(); Rust++)
+	{
+		decoded.push_back(encoded[Rust]);
+	}
+	return true;
 }
 
 bool TClientSocket::PrepSecurityContext(UCHAR* inBuffer, UCHAR* outBuffer)

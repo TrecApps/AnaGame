@@ -23,6 +23,7 @@ public:
 protected:
 
 	bool AttemptAuth();
+	bool DoDerypt(TDataArray<char>& encoded, TDataArray<char>& decoded);
 	bool PrepSecurityContext(UCHAR* inBuffer, UCHAR* outBuffer);
 	// Security Attributes
 	bool isEncrypted;
