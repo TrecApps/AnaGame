@@ -1,8 +1,13 @@
 #pragma once
 #include <AgCompiler.h>
+#include <TcObjectInterpretor.h>
 class AgJavaScriptCompiler :
     public AgCompiler
 {
+protected:
+	TrecSubPointer<TVariable, TcObjectInterpretor> result;
+
+	TDataArray<CompilerPreStatement> statements;
 public:
 
 	/**

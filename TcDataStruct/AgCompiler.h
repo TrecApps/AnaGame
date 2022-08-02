@@ -3,6 +3,7 @@
 #include "TcCompiler.h"
 #include <TcRunner.h>
 #include "TContainerVariable.h"
+#include "TcDataStruct.h"
 
 typedef enum class ag_lang_output
 {
@@ -30,7 +31,7 @@ typedef enum class ag_lang_output
  * Class: AgCompiler 
  * Purpose: Represents any Compiler that is to be recognized by Anagame
  */
-class AgCompiler
+class TC_DATA_STRUCT AgCompiler
 {
 public:
 
@@ -85,3 +86,13 @@ public:
 	static bool RemoveBuilder(UINT index);
 };
 
+class TC_DATA_STRUCT CompilerPreStatement
+{
+public:
+	CompilerPreStatement();
+	CompilerPreStatement(const CompilerPreStatement& copy);
+	code_statement_type statementType;
+	TString statement;
+	TDataArray<CompilerPreStatement> subStatements;
+	UINT lineStart;
+};
