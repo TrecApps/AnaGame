@@ -59,6 +59,7 @@ private:
 	TrecPointer<THttpClientSocket::TAsyncHttpResponse> asyncResponse;
 	bool useAsync;
 	bool isAborted;
+	bool requireEnc;
 	USHORT state;
 	TString url;
 	DWORD threadId;

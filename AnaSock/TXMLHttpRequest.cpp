@@ -153,7 +153,7 @@ TXMLHttpRequest::TXMLHttpRequest(): request(THttpMethod::http_get), response("")
 {
 	state = 0; // UNSENT = 0
 	threadId = 0;
-	isAborted = false;
+	isAborted = requireEnc = false;
 	useAsync = true;
 }
 
@@ -226,6 +226,9 @@ void TXMLHttpRequest::Open(TDataArray<TrecPointer<TVariable>>& variables, Return
 	method.Set(variables[1].Get() ? variables[1]->GetString() : L"null");
 	url.Set(variables[2].Get() ? variables[2]->GetString() : L"null");
 
+	if (url.StartsWith(L"https:"))
+		requireEnc = true;
+
 	if (variables.Size() >= 4)
 		VarFunction::IsTrue(variables[3], useAsync, 0xFF);
 	THttpMethod meth = THttpMethod::http_get;
@@ -268,7 +271,7 @@ void TXMLHttpRequest::Open(TDataArray<TrecPointer<TVariable>>& variables, Return
 void TXMLHttpRequest::Send(TrecPointer<TVariable> pBody)
 {
 	TObjectLocker lock(&this->thread);
-	if (!clientSocket.Get() || clientSocket->Connect())
+	if (!clientSocket.Get() || clientSocket->Connect(requireEnc))
 	{
 		throw (UINT)1;
 	}
