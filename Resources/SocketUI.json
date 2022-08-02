@@ -1,0 +1,85 @@
+{
+	"TLayout" : {
+		"RowHeights": [ "40", "1*", "1*" ],
+		"InternalBorderColor": "0.0,0.0,0.0,1.0",
+		"InternalBorderThickness": 2,
+		"Children" : [
+		{
+			"TLayout": {
+				"RowPosition": 0,
+				"IsGallery": true,
+				"ColumnWidths": [ "60", "1*"],
+				"Children": [
+				{
+					"TInput" : {
+						"ColPosition": 0,
+						"FontColor": "0.0,0.0,0.0,1.0",
+						"Caption": "Submit (GET)",
+						"EventOnClick": "OnSubmitEndpoint",
+						"CanEdit": false
+					}
+				},
+				{
+					"TInput" : {
+						"ColPosition": 1,
+						"FontColor": "0.0,0.0,0.0,1.0"
+					}
+				}
+				]
+			}
+		},
+		{
+			"TSwitchControl" : {
+				"RowPosition": 1,
+				"TabHeight": 30,
+				"Children" : [
+				{
+					"Layout": {
+						"RowHeights": [20, 20, 20, 20],
+						"ID": "HttpMethod",
+						"Children": [
+						{
+							"TControl" : {
+								"RowPosition": 0,
+								"Caption": "GET",
+								"EventOnClick": "SetMethod"
+							}
+						},{
+							"TControl" : {
+								"RowPosition": 1,
+								"Caption": "POST",
+								"EventOnClick": "SetMethod"
+							}
+						},{
+							"TControl" : {
+								"RowPosition": 2,
+								"Caption": "PUT",
+								"EventOnClick": "SetMethod"
+							}
+						},{
+							"TControl" : {
+								"RowPosition": 3,
+								"Caption": "DELETE",
+								"EventOnClick": "SetMethod"
+							}
+						}
+						]
+					}
+				},
+				{
+					"TLongInput": {
+						"ID": "Headers"
+					}
+				},
+				{
+					"TLongInput": {
+						"ID": "Body"
+					}
+				}
+				]
+			}
+		}
+		]
+		
+	}
+}

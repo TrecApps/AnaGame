@@ -34,7 +34,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // TODO: Place code here.
 
     TString tmlFile(GetDirectoryWithSlash(CentralDirectories::cd_Executable));
-    tmlFile.Append(L"Resources\\SocketUI.tml");
+    tmlFile.Append(L"Resources\\SocketUI.json");
 
     TString title(L"Anagame Central");
     TString winClass(L"CentralWindow");
@@ -57,7 +57,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.lpszMenuName = MAKEINTRESOURCEW(IDI_SOCKETTESTER);
     wcex.lpszClassName = winClass.GetConstantBuffer().getBuffer();
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt<EventHandler, SocketHandler>(mainInstance));
+    mainInstance->SetMainWindow(wcex, tmlFile, TrecPointerKey::GetNewTrecPointerAlt<TPage::EventHandler, SocketHandler>(mainInstance),L"", t_window_type::t_window_type_plain);
 
 
 

@@ -1,22 +1,21 @@
 #pragma once
 #include <THttpClientSocket.h>
 #include <EventHandler.h>
-
-
-class SocketHandler;
-
-typedef void (SocketHandler::* socketMethod)(TrecPointer<TControl> tc, EventArgs ea);
+#include <TSwitchControl.h>
+#include <TTextInput.h>
 
 
 
-class SocketHandler : public EventHandler
+class SocketHandler : public TapEventHandler
 {
+protected:
+	typedef void (SocketHandler::* socketMethod)(TrecPointer<TPage> tc, EventArgs ea);
 public:
-	SocketHandler(TrecPointer<TInstance> ins);
+	SocketHandler(TrecPointer<TProcess> ins);
 	~SocketHandler();
 
-	void Initialize(TrecPointer<Page> page)override;
-	void HandleEvents(TDataArray<EventID_Cred>& eventAr)override;
+	void Initialize(TrecPointer<TPage> page)override;
+	void HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)override;
 
 	virtual void ProcessMessage(TrecPointer<HandlerMessage> message)override;
 protected:
@@ -32,10 +31,11 @@ protected:
 	virtual bool ShouldProcessMessageByType(TrecPointer<HandlerMessage> message) override;
 
 	// Relevent textBoxes
-	TrecSubPointer<TControl, TTextField> urlBar, submitBar, reqHeaders, reqBody, resHeaders, resBody;
+	TrecSubPointer<TPage, TTextInput> urlBar, submitBar, reqHeaders, reqBody, resHeaders, resBody;
+	TDataMap<UINT> events;
 
-	void OnSubmitEndpoint(TrecPointer<TControl> tc, EventArgs ea);
-	void SetMethod(TrecPointer<TControl> tc, EventArgs ea);
+	void OnSubmitEndpoint(TrecPointer<TPage> tc, EventArgs ea);
+	void SetMethod(TrecPointer<TPage> tc, EventArgs ea);
 
 	THttpMethod method;
 

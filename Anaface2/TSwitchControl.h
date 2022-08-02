@@ -169,6 +169,8 @@ public:
 
 	void RemovePage(TrecPointer<TPage> page);
 
+	TrecPointer<TPage> GetPage(UINT Rust);
+
 protected:
 
     /**

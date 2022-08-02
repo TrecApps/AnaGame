@@ -1,21 +1,17 @@
 #include "SocketHandler.h"
-#include <Page.h>
 #include <TWindow.h>
-SocketHandler::SocketHandler(TrecPointer<TInstance> ins): EventHandler(ins)
+#include <TLayout.h>
+#include <AnafacePage.h>
+
+SocketHandler::SocketHandler(TrecPointer<TProcess> ins): TapEventHandler(ins)
 {
 	method = THttpMethod::http_get;
 	window = 0;
 
-	eventNameID enid;
-
-	enid.eventID = 0;
-	enid.name.Set(L"OnSubmitEndpoint");
-	events.push_back(enid);
+	events.addEntry(L"OnSubmitEndpoint", 0);
 	sockHandlers.push_back(&SocketHandler::OnSubmitEndpoint);
 
-	enid.eventID = 1;
-	enid.name.Set(L"SetMethod");
-	events.push_back(enid);
+	events.addEntry(L"SetMethod", 1);
 	sockHandlers.push_back(&SocketHandler::SetMethod);
 }
 
@@ -23,52 +19,59 @@ SocketHandler::~SocketHandler()
 {
 }
 
-void SocketHandler::Initialize(TrecPointer<Page> page)
+void SocketHandler::Initialize(TrecPointer<TPage> page)
 {
-	TrecSubPointer<TControl, TLayout> rootLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(page->GetRootControl());
+	TrecSubPointer<TPage, AnafacePage> aPage = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, AnafacePage>(page);
+	assert(aPage.Get());
+	TrecSubPointer<TPage, TLayout> rootLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(aPage->GetRootControl());
 	assert(rootLayout.Get());
-	TrecSubPointer<TControl, TLayout> topLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TLayout>(rootLayout->GetLayoutChild(0,0));
+	TrecSubPointer<TPage, TLayout> topLayout = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TLayout>(rootLayout->GetPage(0,0));
 	assert(topLayout.Get());
 
-	submitBar = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(topLayout->GetLayoutChild(0, 0));
-	urlBar = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(topLayout->GetLayoutChild(1, 0));
+	submitBar = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(topLayout->GetPage(0, 0));
+	urlBar = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(topLayout->GetPage(1, 0));
 
 	assert(submitBar.Get() && urlBar.Get());
 
 	// Retrieve Resources for HTTP Request
-	TrecSubPointer<TControl, AnafaceUI> aUI = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, AnafaceUI>(rootLayout->GetLayoutChild(0, 1));
+	TrecSubPointer<TPage, TSwitchControl> aUI = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TSwitchControl>(rootLayout->GetPage(0, 1));
+	//assert(aUI.Get());
+
+	reqHeaders = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(aUI->GetPage(1));
+	reqBody = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(aUI->GetPage(2));
+
+	aUI = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TSwitchControl>(rootLayout->GetPage(0, 2));
 	assert(aUI.Get());
 
-	reqHeaders = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(aUI->GetChildAt(1));
-	reqBody = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(aUI->GetChildAt(2));
+	resHeaders = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(aUI->GetPage(0));
+	resBody = TrecPointerKey::GetTrecSubPointerFromTrec<TPage, TTextInput>(aUI->GetPage(1));
 
-	aUI = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, AnafaceUI>(rootLayout->GetLayoutChild(0, 2));
-	assert(aUI.Get());
 
-	resHeaders = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(aUI->GetChildAt(0));
-	resBody = TrecPointerKey::GetTrecSubPointerFromTrec<TControl, TTextField>(aUI->GetChildAt(1));
-
-	window = page->GetWindowHandle()->GetWindowHandle();
 }
 
-void SocketHandler::HandleEvents(TDataArray<EventID_Cred>& eventAr)
+void SocketHandler::HandleEvents(TDataArray<TPage::EventID_Cred>& eventAr)
 {
-	for (UINT Rust = 0; Rust < eventAr.Size(); Rust++)
+	int e_id = -1;
+	EventArgs ea;
+	TapEventHandler::HandleEvents(eventAr);
+	for (UINT c = 0; c < eventAr.Size(); c++)
 	{
-		auto cont = eventAr[Rust].control;
-		if (!cont.Get()) continue;
+		auto tc = eventAr.at(c).args;
 
-		EventArgs ea = cont->getEventArgs();
+		if (!tc.Get()) continue;
 
-
-		int ea_id = ea.methodID;
-
-		if (ea_id > -1 && ea_id < sockHandlers.Size())
+		UINT u_id = 0;
+		if (!events.retrieveEntry(tc->methodID, u_id))
+			continue;
+		e_id = u_id;
+		// At this point, call the appropriate method
+		if (e_id > -1 && e_id < this->sockHandlers.Size())
 		{
-			if (sockHandlers[ea_id])
-				(this->*sockHandlers[ea_id])(cont, ea);
+			// call method
+			if (sockHandlers[e_id])
+				(this->*sockHandlers[e_id])(eventAr[c].control, ea);
 		}
-		cont->resetArgs();
+		eventAr[c].args.Nullify();
 	}
 }
 
@@ -82,7 +85,7 @@ bool SocketHandler::ShouldProcessMessageByType(TrecPointer<HandlerMessage> messa
 	return false;
 }
 
-void SocketHandler::OnSubmitEndpoint(TrecPointer<TControl> tc, EventArgs ea)
+void SocketHandler::OnSubmitEndpoint(TrecPointer<TPage> tc, EventArgs ea)
 {
 	TString url(L"localhost:8080/");
 
@@ -153,7 +156,7 @@ void SocketHandler::OnSubmitEndpoint(TrecPointer<TControl> tc, EventArgs ea)
 	resHeaders->SetText(httpResult);
 }
 
-void SocketHandler::SetMethod(TrecPointer<TControl> tc, EventArgs ea)
+void SocketHandler::SetMethod(TrecPointer<TPage> tc, EventArgs ea)
 {
 	if (!ea.text.Compare(L"GET"))
 	{

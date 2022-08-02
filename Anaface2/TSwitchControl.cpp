@@ -404,3 +404,11 @@ void TSwitchControl::RemovePage(TrecPointer<TPage> page)
         }
     }
 }
+
+TrecPointer<TPage> TSwitchControl::GetPage(UINT Rust)
+{
+    TrecPointer<TPage> ret;
+    if (!this->tabBar.Get())
+        return ret;
+    return tabBar->GetTabAt(Rust, true);
+}
