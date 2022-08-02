@@ -1,6 +1,7 @@
 #pragma once
 #include <TVariable.h>
 #include "TcDataStruct.h"
+#include <TStringEx.h>
 
 /**
  * Class: TStringVariable
@@ -102,6 +103,6 @@ private:
     /**
      * The String held by the variable
      */
-    TString string;
+    TStringEx string;
 };
 

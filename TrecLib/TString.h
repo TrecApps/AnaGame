@@ -25,10 +25,16 @@ typedef enum class _TREC_LIB_DLL ColorFormat
 	cform_ana_a
 }ColorFormat;
 
-typedef struct IndexRange {
+class _TREC_LIB_DLL IndexRange {
+public:
+	IndexRange();
+	IndexRange(const IndexRange& copy);
+	IndexRange(int s, int e);
 	int start;
 	int end;
-}IndexRange;
+
+	bool active;
+};
 
 /**
  * Enum Class: number_base
@@ -120,7 +126,7 @@ public:
 	* Parameters: void
 	* Returns: void
 	*/
-	~TString();
+	virtual ~TString();
 
 	/**
 	 * Method: TString::Constructor
@@ -628,7 +634,7 @@ public:
 	 *				int count - the number of characters to remove
 	 * Returns: int - the new size of the string
 	 */
-	int Delete(UINT index, int count = 1);
+	virtual int Delete(UINT index, int count = 1);
 	/**
 	 * Method: TString::GetDelete
 	 * Purpose: Retrieves a TString with a section deleted
@@ -779,7 +785,7 @@ public:
 	 *				TString& subStr - the string to insert
 	 * Returns: int - the size of the new string
 	 */
-	int Insert(int index, const TString& subStr);
+	virtual int Insert(int index, const TString& subStr);
 	/**
 	 * Method: TString::GetInsert
 	 * Purpose: Retrieves a String with a another string inserted
@@ -1004,7 +1010,7 @@ public:
 	 */
 	std::string GetRegString();
 
-private:
+protected:
 	UINT size;			// Note: these values focus on the number of WCHARs
 	UINT capacity;
 	WCHAR* string;

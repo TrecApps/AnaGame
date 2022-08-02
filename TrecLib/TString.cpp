@@ -3022,3 +3022,23 @@ const WCHAR* TString::TConstBuffer::getBuffer()
 {
 	return string->string;
 }
+
+IndexRange::IndexRange()
+{
+	start = end = 0;
+	active = false;
+}
+
+IndexRange::IndexRange(const IndexRange& copy)
+{
+	this->start = copy.start;
+	this->end = copy.end;
+	this->active = copy.active;
+}
+
+IndexRange::IndexRange(int s, int e)
+{
+	start = s;
+	end = e;
+	active = false;
+}

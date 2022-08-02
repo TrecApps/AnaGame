@@ -42,6 +42,7 @@
     <ClCompile Include="TShell.cpp" />
     <ClCompile Include="TString.cpp" />
     <ClCompile Include="TcRunner.cpp" />
+    <ClCompile Include="TStringEx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CodeStatement.h" />
@@ -91,5 +92,6 @@
     <ClInclude Include="TTrecSoftPointerArray.h" />
     <ClInclude Include="TVariable.h" />
     <ClInclude Include="TcRunner.h" />
+    <ClInclude Include="TStringEx.h" />
   </ItemGroup>
 </Project>
