@@ -209,8 +209,8 @@ void TWebWindow::DrawOtherPages()
     {
         webPages->Draw(TrecPointer<TVariable>());
        
-        if (currentPage.Get())
-            currentPage->Draw(TrecPointer<TVariable>());
+        /*if (currentPage.Get())
+            currentPage->Draw(TrecPointer<TVariable>());*/
     }
     ThreadRelease();
 }

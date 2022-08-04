@@ -598,9 +598,9 @@ void DrawingBoard::BeginDraw()
 	ThreadLock();
 
 	renderer->BeginDraw();
-	renderer->Clear(D2D1::ColorF(D2D1::ColorF::White, 0.5f));
+	renderer->Clear(D2D1::ColorF(D2D1::ColorF::White, 1.0f));
 	renderer2->BeginDraw();
-	renderer2->Clear(D2D1::ColorF(D2D1::ColorF::White, 0.0f));
+	renderer2->Clear(D2D1::ColorF(D2D1::ColorF::White, 1.0f));
 	isDrawing = true;
 	ThreadRelease();
 }
